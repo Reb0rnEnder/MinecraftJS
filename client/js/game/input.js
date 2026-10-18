@@ -1,0 +1,93 @@
+// Keyboard/mouse input on top of the platform events. Codes: KeyboardEvent.code names or 'mouseN'.
+import { platform } from '../platform/platform.js';
+
+export class Input {
+  constructor(settings) {
+    const P = platform();
+    this.settings = settings;
+    this.down = new Set();
+    this.pressed = []; // queued presses for the next tick: codes
+    this.dx = 0;
+    this.dy = 0;
+    this.wheel = 0;
+    this.locked = false;
+    this.justLocked = false;
+    this.mouseX = 0; // GUI coords set by game
+    this.mouseY = 0;
+    this.rawX = 0;
+    this.rawY = 0;
+    this.listeners = { key: [], char: [], mouse: [], wheel: [], move: [], lock: [] };
+
+    P.on('pointerlock', (locked) => {
+      this.locked = locked;
+      if (locked) { this.justLocked = true; this.dx = 0; this.dy = 0; } else this.down.clear();
+      this.emit('lock', locked);
+    });
+    P.on('mousemove', (e) => {
+      this.rawX = e.x; this.rawY = e.y;
+      if (this.locked) {
+        if (this.justLocked) this.justLocked = false; // first delta after locking can be a warp
+        else {
+          // Guard against recenter / boundary delta spikes
+          this.dx += Math.abs(e.dx) > 300 ? 0 : e.dx;
+          this.dy += Math.abs(e.dy) > 300 ? 0 : e.dy;
+        }
+      }
+      this.emit('move', e);
+    });
+    P.on('mousedown', (e) => {
+      const code = 'mouse' + e.button;
+      this.rawX = e.x; this.rawY = e.y;
+      if (this.locked) { this.down.add(code); this.pressed.push(code); }
+      this.emit('mouse', { code, button: e.button, down: true, shift: e.shift });
+    });
+    P.on('mouseup', (e) => {
+      const code = 'mouse' + e.button;
+      this.down.delete(code);
+      this.emit('mouse', { code, button: e.button, down: false, shift: e.shift });
+    });
+    P.on('wheel', (d) => {
+      this.emit('wheel', d);
+      if (this.locked) this.wheel += d;
+    });
+    P.on('keydown', (e) => {
+      if (!e.repeat) { this.down.add(e.code); this.pressed.push(e.code); }
+      this.emit('key', { ...e, down: true });
+    });
+    P.on('char', (text) => {
+      // A key that opened a screen (e.g. T for chat) must not also type into it
+      if (this.suppressNextChar) { this.suppressNextChar = false; if (text.length === 1) return; }
+      for (const ch of text) if (ch >= ' ') this.emit('char', ch);
+    });
+    P.on('keyup', (e) => {
+      this.down.delete(e.code);
+      this.emit('key', { ...e, down: false });
+    });
+    P.on('blur', () => this.down.clear());
+  }
+
+  on(ev, fn) { this.listeners[ev].push(fn); }
+  emit(ev, a) { for (const fn of this.listeners[ev]) fn(a); }
+
+  isDown(bind) {
+    const code = this.settings.keys[bind];
+    return !!code && this.down.has(code);
+  }
+
+  consumePresses() {
+    const p = this.pressed;
+    this.pressed = [];
+    return p;
+  }
+
+  isBind(bind, code) { return this.settings.keys[bind] === code; }
+
+  lock() { if (!this.locked) platform().lockPointer(); }
+  unlock() { platform().unlockPointer(); }
+
+  takeMouseDelta() {
+    const r = [this.dx, this.dy];
+    this.dx = 0; this.dy = 0;
+    return r;
+  }
+}

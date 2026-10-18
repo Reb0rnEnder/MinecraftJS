@@ -1,0 +1,508 @@
+// Tile entity (block entity) rendering: chests, signs, skulls, banners, enchanting book, beacon beam, end portal.
+import { composeBanner, bannerLayers, buildBanner, bannerSwing } from './banner.js';
+import { Part, entityMaterial, entityMesh } from './boxmodel.js';
+import { buildTextMeshes, destroyTextMeshes } from './text-mesh.js';
+import { blocks } from '../world/blocks.js';
+import { colorParams, FORMAT } from '../gfx/device.js';
+import { D2R, aabbInFrustum } from '../gfx/math.js';
+import { Node, material } from '../gfx/scene.js';
+const FLOWER_POT = {
+  'minecraft:red_flower': ['rose', 'blue_orchid', 'allium', 'houstonia', 'red_tulip', 'orange_tulip', 'white_tulip', 'pink_tulip', 'oxeye_daisy'],
+  'minecraft:yellow_flower': ['dandelion'],
+  'minecraft:sapling': ['oak_sapling', 'spruce_sapling', 'birch_sapling', 'jungle_sapling', 'acacia_sapling', 'dark_oak_sapling'],
+  'minecraft:red_mushroom': ['mushroom_red'], 'minecraft:brown_mushroom': ['mushroom_brown'], 'minecraft:deadbush': ['dead_bush'],
+  'minecraft:tallgrass': ['dead_bush', 'fern', 'fern'], 'minecraft:cactus': ['cactus'],
+};
+const FLOWER_POT_IDS = { 38: 'minecraft:red_flower', 37: 'minecraft:yellow_flower', 6: 'minecraft:sapling', 40: 'minecraft:red_mushroom', 39: 'minecraft:brown_mushroom', 32: 'minecraft:deadbush', 31: 'minecraft:tallgrass', 81: 'minecraft:cactus' };
+
+const key = (x, y, z) => x + ',' + y + ',' + z;
+
+export class TileEntityRenderer {
+  constructor(game) {
+    this.game = game;
+    this.r = game.renderer;
+    this.device = game.device;
+    this.group = new Node();
+    this.r.entityRoot.add(this.group);
+    this.tiles = new Map(); // key -> { x,y,z, type, data, obj, ... }
+    this.signs = new Map(); // key -> lines
+    this.ticks = 0;
+  }
+
+  clear() {
+    for (const t of this.tiles.values()) this._dispose(t);
+    this.tiles.clear();
+    this.signs.clear();
+  }
+
+  removeChunk(cx, cz) {
+    for (const [k, t] of this.tiles) if ((t.x >> 4) === cx && (t.z >> 4) === cz) { this._dispose(t); this.tiles.delete(k); }
+    for (const k of [...this.signs.keys()]) { const [x, , z] = k.split(',').map(Number); if ((x >> 4) === cx && (z >> 4) === cz) this.signs.delete(k); }
+  }
+
+  _dispose(t) {
+    if (t.obj) { this.group.remove(t.obj); t.obj = null; }
+    for (const m of t.ownMeshes || []) this.device.destroyMesh(m);
+    t.ownMeshes = [];
+    destroyTextMeshes(this.device, t.textMeshes);
+    t.textMeshes = null;
+    if (t.texture) { this.device.destroyTexture(t.texture); t.texture = null; }
+  }
+
+  _get(x, y, z) { return this.tiles.get(key(x, y, z)); }
+
+  onBlockChanged(x, y, z, oldState, newState) {
+    const k = key(x, y, z);
+    const t = this.tiles.get(k);
+    if (t && (newState >> 4) !== (oldState >> 4)) { this._dispose(t); this.tiles.delete(k); }
+    this._ensure(x, y, z, newState);
+    // Neighbouring chests may need re-pairing
+    for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const n = this._get(x + dx, y, z + dz);
+      if (n && n.type === 'chest') { this._dispose(n); this.tiles.delete(key(x + dx, y, z + dz)); this._ensure(x + dx, y, z + dz, this.game.world.getState(x + dx, y, z + dz)); }
+    }
+  }
+
+  // Create tile visuals for blocks that need them (chests don't always get TE packets)
+  _ensure(x, y, z, state) {
+    const b = blocks[state >> 4];
+    if (!b) return null;
+    const k = key(x, y, z);
+    let t = this.tiles.get(k);
+    if (t) return t;
+    const n = b.name;
+    let type = null;
+    if (n === 'chest' || n === 'trapped_chest' || n === 'ender_chest') type = 'chest';
+    else if (n === 'standing_sign' || n === 'wall_sign') type = 'sign';
+    else if (n === 'skull') type = 'skull';
+    else if (n === 'standing_banner' || n === 'wall_banner') type = 'banner';
+    else if (n === 'enchanting_table') type = 'book';
+    else if (n === 'beacon') type = 'beacon';
+    else if (n === 'end_portal') type = 'endportal';
+    if (!type) return null;
+    t = { x, y, z, type, state, data: null, lid: 0, prevLid: 0, open: 0 };
+    this.tiles.set(k, t);
+    return t;
+  }
+
+  // Scan a newly loaded chunk for tile blocks
+  scanChunk(c) {
+    for (let sy = 0; sy < 16; sy++) {
+      const s = c.sections[sy];
+      if (!s) continue;
+      for (let i = 0; i < 4096; i++) {
+        const id = s.blocks[i] >> 4;
+        if (id === 54 || id === 146 || id === 130 || id === 63 || id === 68 || id === 144 || id === 176 || id === 177 || id === 116 || id === 138 || id === 119) {
+          const x = c.x * 16 + (i & 15), y = sy * 16 + (i >> 8), z = c.z * 16 + ((i >> 4) & 15);
+          this._ensure(x, y, z, s.blocks[i]);
+        }
+      }
+    }
+  }
+
+  setSign(pos, lines) {
+    this.signs.set(key(pos.x, pos.y, pos.z), lines);
+    const t = this._ensure(pos.x, pos.y, pos.z, this.game.world.getState(pos.x, pos.y, pos.z));
+    if (t) { t.lines = lines; this._rebuild(t); }
+  }
+
+  setTileEntity(pos, action, data) {
+    const w = this.game.world;
+    const st = w.getState(pos.x, pos.y, pos.z);
+    if (!data) return;
+    // Flower pot contents -> mesher property override
+    if ((st >> 4) === 140 || action === 5) {
+      let item = data.Item;
+      if (typeof item === 'number') item = FLOWER_POT_IDS[item];
+      const list = item ? FLOWER_POT[item] : null;
+      const contents = list ? list[data.Data || 0] || list[0] : 'empty';
+      this.game.tileProps.set(pos.x + ',' + pos.y + ',' + pos.z, { contents });
+      this.game.world.emit('sectionDirty', pos.x >> 4, pos.y >> 4, pos.z >> 4);
+      return;
+    }
+    const t = this._ensure(pos.x, pos.y, pos.z, st);
+    if (!t) return;
+    t.data = data;
+    if (t.type === 'sign' && data.Text1 !== undefined) {
+      // Signs can also arrive as tile entity NBT
+    }
+    this._rebuild(t);
+  }
+
+  onBlockAction(p) {
+    const b = blocks[p.blockId];
+    if (!b) return;
+    if (b.name === 'chest' || b.name === 'trapped_chest' || b.name === 'ender_chest') {
+      const t = this._ensure(p.location.x, p.location.y, p.location.z, this.game.world.getState(p.location.x, p.location.y, p.location.z));
+      if (t && p.byte1 === 1) t.open = p.byte2;
+    }
+  }
+
+  tick() {
+    this.ticks++;
+    const g = this.game;
+    const beaconUpdate = (Number(g.world.worldAge) || this.ticks) % 80 === 0;
+    for (const t of this.tiles.values()) {
+      if (t.type === 'beacon' && beaconUpdate) this._updateBeacon(t);
+      if (t.type === 'chest') {
+        t.prevLid = t.lid;
+        if (t.open > 0 && t.lid === 0 && !t.secondary) g.sound.play('random.chestopen', t.x + 0.5, t.y + 0.5, t.z + 0.5, 0.5, Math.random() * 0.1 + 0.9);
+        if ((t.open === 0 && t.lid > 0) || (t.open > 0 && t.lid < 1)) {
+          const before = t.lid;
+          t.lid = Math.max(0, Math.min(1, t.lid + (t.open > 0 ? 0.1 : -0.1)));
+          if (t.lid < 0.5 && before >= 0.5 && !t.secondary) g.sound.play('random.chestclosed', t.x + 0.5, t.y + 0.5, t.z + 0.5, 0.5, Math.random() * 0.1 + 0.9);
+        }
+      } else if (t.type === 'book') {
+        // TileEntityEnchantmentTable.update
+        const p = g.player;
+        const dx = p.x - (t.x + 0.5), dz = p.z - (t.z + 0.5), dy = p.y - (t.y + 0.5);
+        t.prevPageFlip = t.pageFlip || 0; t.prevBookSpread = t.bookSpread || 0; t.prevRot = t.bookRotation || 0;
+        if (dx * dx + dy * dy + dz * dz < 9) {
+          t.tRot = Math.atan2(dz, dx);
+          t.bookSpread = (t.bookSpread || 0) + 0.1;
+          if (Math.random() < 1 / 40) { const f = t.flipT || 0; do { t.flipT = f + Math.floor(Math.random() * 4) - Math.floor(Math.random() * 4); } while (f === t.flipT); }
+        } else {
+          t.tRot = (t.tRot || 0) + 0.02;
+          t.bookSpread = (t.bookSpread || 0) - 0.1;
+        }
+        let rot = t.bookRotation || 0;
+        while (rot >= Math.PI) rot -= Math.PI * 2; while (rot < -Math.PI) rot += Math.PI * 2;
+        let tr = t.tRot;
+        while (tr >= Math.PI) tr -= Math.PI * 2; while (tr < -Math.PI) tr += Math.PI * 2;
+        let d = tr - rot;
+        while (d >= Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2;
+        t.bookRotation = rot + d * 0.4;
+        t.bookSpread = Math.max(0, Math.min(1, t.bookSpread));
+        let f1 = ((t.flipT || 0) - (t.pageFlip || 0)) * 0.4;
+        f1 = Math.max(-0.2, Math.min(0.2, f1));
+        t.flipA = (t.flipA || 0) + (f1 - (t.flipA || 0)) * 0.9;
+        t.pageFlip = (t.pageFlip || 0) + t.flipA;
+      }
+    }
+  }
+
+  // TileEntityBeacon.updateSegmentColors: beam colour segments from stained glass above, blocked by opaque
+  // blocks (bedrock excepted); levels from the pyramid of iron/gold/emerald/diamond blocks below
+  _updateBeacon(t) {
+    const w = this.game.world;
+    const { x, y, z } = t;
+    t.beamSegments = [];
+    t.beamComplete = true;
+    let seg = { color: [1, 1, 1], height: 1 };
+    t.beamSegments.push(seg);
+    let first = true;
+    for (let yy = y + 1; yy < 256; yy++) {
+      const st = w.getState(x, yy, z), b = blocks[st >> 4];
+      let c;
+      if (b && (b.name === 'stained_glass' || b.name === 'stained_glass_pane')) c = DYE_RGB[st & 15];
+      else {
+        if (b && b.id !== 0 && (b.filterLight >= 15) && b.name !== 'bedrock') { t.beamComplete = false; t.beamSegments = []; break; }
+        seg.height++;
+        continue;
+      }
+      if (!first) c = [(seg.color[0] + c[0]) / 2, (seg.color[1] + c[1]) / 2, (seg.color[2] + c[2]) / 2].map(Math.fround);
+      if (c[0] === seg.color[0] && c[1] === seg.color[1] && c[2] === seg.color[2]) seg.height++;
+      else { seg = { color: c, height: 1 }; t.beamSegments.push(seg); }
+      first = false;
+    }
+    t.levels = 0;
+    if (t.beamComplete) {
+      const ok = new Set(['emerald_block', 'gold_block', 'diamond_block', 'iron_block']);
+      for (let l = 1; l <= 4; t.levels = l++) {
+        const yy = y - l;
+        if (yy < 0) break;
+        let full = true;
+        for (let xx = x - l; xx <= x + l && full; xx++) for (let zz = z - l; zz <= z + l; zz++) {
+          const b = blocks[w.getState(xx, yy, zz) >> 4];
+          if (!b || !ok.has(b.name)) { full = false; break; }
+        }
+        if (!full) break;
+      }
+      if (t.levels === 0) t.beamComplete = false;
+    }
+  }
+
+  // TileEntityBeacon.shouldBeamRender: brightness ramps up 0.025 per frame, drops while ticks are skipped
+  _beamBrightness(t) {
+    if (!t.beamComplete) return 0;
+    const now = Number(this.game.world.worldAge) || this.ticks;
+    const i = now - (t.beamCounter === undefined ? now : t.beamCounter);
+    t.beamCounter = now;
+    let f = t.beamFade || 0;
+    if (i > 1) f = Math.max(0, f - i / 40);
+    f = Math.min(1, f + 0.025);
+    t.beamFade = f;
+    return f;
+  }
+
+  // Fill the core / glow meshes (positions relative to the block's corner)
+  _buildBeam(t, partial) {
+    const f = this._beamBrightness(t);
+    const segs = f > 0 ? t.beamSegments || [] : [];
+    const core = [], glow = [];
+    const d0 = (Number(this.game.world.worldAge) || this.ticks) + partial;
+    const frac = (v) => v - Math.floor(v);
+    const d1 = frac(-d0 * 0.2 - Math.floor(-d0 * 0.1));
+    const rot = d0 * 0.025 * -1.5;
+    const P = (a) => [0.5 + Math.cos(rot + a) * 0.2, 0.5 + Math.sin(rot + a) * 0.2];
+    const [p4, p6, p8, p10] = [P(2.356194490192345), P(Math.PI / 4), P(3.9269908169872414), P(5.497787143782138)];
+    let j = 0;
+    const v = (out, px, py, pz, u, vv, c, a) => out.push(px, py, pz, u, vv, c[0], c[1], c[2], a);
+    for (const seg of segs) {
+      const k = j + seg.height, c = seg.color;
+      const v0 = -1 + d1, v1 = seg.height * f * (0.5 / 0.2) + v0;
+      for (const [A, B] of [[p4, p6], [p10, p8], [p6, p10], [p8, p4]]) {
+        v(core, A[0], k, A[1], 1, v1, c, 1); v(core, A[0], j, A[1], 1, v0, c, 1);
+        v(core, B[0], j, B[1], 0, v0, c, 1); v(core, B[0], k, B[1], 0, v1, c, 1);
+      }
+      const g0 = -1 + d1, g1 = seg.height * f + g0;
+      const q2 = [0.2, 0.2], q4 = [0.8, 0.2], q6 = [0.2, 0.8], q8 = [0.8, 0.8];
+      for (const [A, B] of [[q2, q4], [q8, q6], [q4, q8], [q6, q2]]) {
+        v(glow, A[0], k, A[1], 1, g1, c, 0.125); v(glow, A[0], j, A[1], 1, g0, c, 0.125);
+        v(glow, B[0], j, B[1], 0, g0, c, 0.125); v(glow, B[0], k, B[1], 0, g1, c, 0.125);
+      }
+      j = k;
+    }
+    const empty = new Float32Array(0);
+    this.device.updateMesh(t.beamCore, core.length ? new Float32Array(core) : empty, { quads: true });
+    this.device.updateMesh(t.beamGlow, glow.length ? new Float32Array(glow) : empty, { quads: true });
+  }
+
+  _rebuild(t) {
+    this._dispose(t);
+    t.built = false;
+  }
+
+  _build(t) {
+    t.built = true;
+    const g = this.game;
+    const w = g.world;
+    const st = w.getState(t.x, t.y, t.z);
+    if ((st >> 4) !== (t.state >> 4)) t.state = st;
+    const meta = st & 15;
+    const obj = new Node();
+    obj.position.set(t.x, t.y, t.z);
+    t.ownMeshes = [];
+    let mat;
+    switch (t.type) {
+      case 'chest': {
+        const id = st >> 4;
+        const isEnder = id === 130;
+        const same = (x, z) => (w.getState(x, t.y, z) >> 4) === id && !isEnder;
+        t.secondary = same(t.x - 1, t.z) || same(t.x, t.z - 1);
+        if (t.secondary) { t.obj = null; return; }
+        const xPos = same(t.x + 1, t.z), zPos = same(t.x, t.z + 1);
+        const large = xPos || zPos;
+        const texName = isEnder ? 'entity/chest/ender.png' : id === 146 ? (large ? 'entity/chest/trapped_double.png' : 'entity/chest/trapped.png') : (large ? 'entity/chest/normal_double.png' : 'entity/chest/normal.png');
+        mat = entityMaterial(texName, { alphaTest: 0.1 });
+        const W = large ? 30 : 14, tw = large ? 128 : 64;
+        const lid = new Part(tw, 64).tex(0, 0).box(0, -5, -14, W, 5, 14).pivot(1, 7, 15);
+        const knob = new Part(tw, 64).tex(0, 0).box(-1, -2, -15, 2, 4, 1).pivot(large ? 16 : 8, 7, 15);
+        const below = new Part(tw, 64).tex(0, 19).box(0, 0, 0, W, 10, 14).pivot(1, 6, 1);
+        const model = new Node();
+        for (const p of [lid, knob, below]) { model.add(p.build()); p.setMaterial(mat); }
+        model.scale.set(1 / 16, 1 / 16, 1 / 16);
+        // translate(x, y+1, z+1); scale(1,-1,-1); translate(.5,.5,.5); rotate; translate(-.5,-.5,-.5)
+        const a = new Node(); a.position.set(0, 1, 1); a.scale.set(1, -1, -1);
+        const b2 = new Node(); b2.position.set(0.5, 0.5, 0.5);
+        const facing = meta;
+        const rot = facing === 2 ? 180 : facing === 3 ? 0 : facing === 4 ? 90 : facing === 5 ? -90 : 0;
+        const c = new Node();
+        if (facing === 2 && xPos) c.position.x = 1;
+        if (facing === 5 && zPos) c.position.z = -1;
+        c.rotation.y = rot * D2R;
+        const d = new Node(); d.position.set(-0.5, -0.5, -0.5);
+        d.add(model); c.add(d); b2.add(c); a.add(b2); obj.add(a);
+        t.lidParts = [lid, knob];
+        break;
+      }
+      case 'sign': {
+        mat = entityMaterial('entity/sign.png', { alphaTest: 0.1 });
+        const board = new Part(64, 32).tex(0, 0).box(-12, -14, -1, 24, 12, 2);
+        const stick = new Part(64, 32).tex(0, 14).box(-1, -2, -1, 2, 14, 2);
+        const standing = (st >> 4) === 63;
+        const f = 0.6666667;
+        const outer = new Node();
+        outer.position.set(0.5, 0.75 * f, 0.5);
+        if (standing) outer.rotation.y = -(meta * 360 / 16) * D2R;
+        else outer.rotation.y = -(meta === 2 ? 180 : meta === 4 ? 90 : meta === 5 ? -90 : 0) * D2R;
+        const inner = new Node();
+        if (!standing) inner.position.set(0, -0.3125, -0.4375);
+        const sc = new Node(); sc.scale.set(f, -f, -f);
+        const model = new Node(); model.scale.set(1 / 16, 1 / 16, 1 / 16);
+        model.add(board.build()); board.setMaterial(mat);
+        if (standing) { model.add(stick.build()); stick.setMaterial(mat); }
+        sc.add(model);
+        // TileEntitySignRenderer: text in the rotated frame: translate(0, 0.5f, 0.07f), scale(f3, -f3, f3), f3 = 0.015625 * f
+        const lines = t.lines || this.signs.get(key(t.x, t.y, t.z)) || ['', '', '', ''];
+        if (lines.some((l) => l)) {
+          const font = g.gui.font;
+          const items = [];
+          for (let j = 0; j < 4; j++) {
+            const line = lines[j] || '';
+            if (line) items.push({ text: line, x: -font.width(line) / 2, y: j * 10 - 20, color: 0x000000 });
+          }
+          t.textMeshes = buildTextMeshes(this.device, font, items);
+          const tn = new Node();
+          const f3 = 0.015625 * f;
+          tn.position.set(0, 0.5 * f, 0.07 * f + 0.001);
+          tn.scale.set(f3, -f3, f3);
+          for (const m of t.textMeshes) tn.addDrawable(m.mesh, material('color', m.tex || g.gui.white, colorParams(1, 1, 1, 1, 0.05, 1), { blend: 'none' }));
+          inner.add(tn);
+        }
+        inner.add(sc); outer.add(inner); obj.add(outer);
+        break;
+      }
+      case 'skull': {
+        const type = t.data && t.data.SkullType !== undefined ? t.data.SkullType : 0;
+        const rotN = t.data && t.data.Rot !== undefined ? t.data.Rot : 0;
+        const tex = ['entity/skeleton/skeleton.png', 'entity/skeleton/wither_skeleton.png', 'entity/zombie/zombie.png', 'entity/steve.png', 'entity/creeper/creeper.png'][type] || 'entity/skeleton/skeleton.png';
+        mat = entityMaterial(tex, { alphaTest: 0.1 });
+        const th = type === 2 || type === 3 ? 64 : 32;
+        const head = new Part(64, th).tex(0, 0).box(-4, -8, -4, 8, 8, 8);
+        if (type === 3) head.tex(32, 0).box(-4, -8, -4, 8, 8, 8, 0.25);
+        const model = new Node(); model.scale.set(-1 / 16, -1 / 16, 1 / 16);
+        model.add(head.build()); head.setMaterial(mat);
+        const outer = new Node();
+        if (meta === 1) { outer.position.set(0.5, 0, 0.5); outer.rotation.y = -(rotN * 360 / 16) * D2R; }
+        else {
+          const pos = { 2: [0.5, 0.25, 0.74, 180], 3: [0.5, 0.25, 0.26, 0], 4: [0.74, 0.25, 0.5, 270], 5: [0.26, 0.25, 0.5, 90] }[meta] || [0.5, 0.25, 0.5, 0];
+          outer.position.set(pos[0], pos[1], pos[2]);
+          outer.rotation.y = -pos[3] * D2R;
+        }
+        outer.add(model);
+        obj.add(outer);
+        break;
+      }
+      case 'banner': {
+        const tex = this._bannerTexture(t);
+        if (!tex) { t.built = false; return; }
+        mat = entityMaterial(tex, { alphaTest: 0.1 });
+        const b = buildBanner(mat, (st >> 4) === 176, meta);
+        t.bannerSwing = b.swing;
+        obj.add(b.node);
+        break;
+      }
+      case 'book': {
+        mat = entityMaterial('entity/enchanting_table_book.png', { alphaTest: 0.1 });
+        const P = (u, v) => new Part(64, 32).tex(u, v);
+        const parts = {
+          coverRight: P(0, 0).box(-6, -5, 0, 6, 10, 0),
+          coverLeft: P(16, 0).box(0, -5, 0, 6, 10, 0),
+          pagesRight: P(0, 10).box(0, -4, -0.99, 5, 8, 1),
+          pagesLeft: P(12, 10).box(0, -4, -0.01, 5, 8, 1),
+          flipRight: P(24, 10).box(0, -4, 0, 5, 8, 0),
+          flipLeft: P(24, 10).box(0, -4, 0, 5, 8, 0),
+          spine: P(12, 0).box(-1, -5, 0, 2, 10, 0),
+        };
+        parts.coverLeft.pivot(0, 0, -1); parts.coverRight.pivot(0, 0, 1); parts.spine.rot(0, Math.PI / 2, 0);
+        const model = new Node(); model.scale.set(1 / 16, 1 / 16, 1 / 16);
+        for (const p of Object.values(parts)) { model.add(p.build()); p.setMaterial(mat); }
+        t.bookParts = parts;
+        const outer = new Node(); outer.position.set(0.5, 0.75, 0.5);
+        const rotG = new Node();
+        const tilt = new Node(); tilt.rotation.z = 80 * D2R;
+        tilt.add(model); rotG.add(tilt); outer.add(rotG);
+        t.bookOuter = outer; t.bookRot = rotG;
+        obj.add(outer);
+        break;
+      }
+      case 'beacon': {
+        // TileEntityBeaconRenderer: rebuilt every frame from the client-side beam segments
+        const tex = () => this.game.assets.texture('entity/beacon_beam.png', { wrap: 'repeat' });
+        t.beamCore = this.device.createMesh(FORMAT.color, new Float32Array(0), { quads: true, dynamic: true });
+        t.beamGlow = this.device.createMesh(FORMAT.color, new Float32Array(0), { quads: true, dynamic: true });
+        t.ownMeshes.push(t.beamCore, t.beamGlow);
+        const node = new Node();
+        // core: no blending, alpha test 0.1, depth write; glow: alpha blend, no depth write. Neither uses fog.
+        node.addDrawable(t.beamCore, material('color', tex, colorParams(1, 1, 1, 1, 0.1, 0), { blend: 'none', cull: false }), { order: 3 });
+        node.addDrawable(t.beamGlow, material('color', tex, colorParams(1, 1, 1, 1, 0, 0), { blend: 'alpha', depthWrite: false, cull: false }), { order: 4 });
+        t.beamNode = node;
+        obj.add(node);
+        break;
+      }
+      case 'endportal': {
+        const mesh = entityMesh([0, 0.75, 0, 0, 0.75, 1, 1, 0.75, 1, 1, 0.75, 0], [0, 0, 0, 1, 1, 1, 1, 0], [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0], null, { quads: true });
+        t.ownMeshes.push(mesh);
+        const pm = entityMaterial(() => this.game.assets.texture('entity/end_portal.png', { wrap: 'repeat' }), { alphaTest: 0, fullBright: true, noLighting: true });
+        pm.params.setTint(0.13, 0.19, 0.25, 1);
+        obj.addDrawable(mesh, pm);
+        t.portalMat = pm;
+        break;
+      }
+      default: break;
+    }
+    if (mat) t.mat = mat;
+    t.obj = obj;
+    this.group.add(obj);
+  }
+
+  // Composite banner texture (base + tinted pattern masks), or null while the images load
+  _bannerTexture(t) {
+    const data = t.data || {};
+    const img = composeBanner(this.game.assets, bannerLayers(data.Base !== undefined ? data.Base : 0, data.Patterns));
+    if (!img) return null;
+    t.texture = this.device.createTexture({ width: img.width, height: img.height, data: img.data });
+    return t.texture;
+  }
+
+  render(partial) {
+    const g = this.game;
+    const camPos = g.renderer.camPos;
+    const maxD = (g.settings.renderDistance * 16) ** 2;
+    for (const t of this.tiles.values()) {
+      const dx = t.x - camPos[0], dz = t.z - camPos[2];
+      if (dx * dx + dz * dz > Math.min(maxD, 64 * 64) && t.type !== 'beacon') { if (t.obj) t.obj.visible = false; continue; }
+      // Block entity culling: frustum + occlusion (beacon beams reach the sky, so only frustum-test their column)
+      const top = t.type === 'beacon' ? 256 : t.y + 1.5;
+      const seen = t.type === 'beacon' ? aabbInFrustum(g.renderer.frustum, t.x, t.y, t.z, t.x + 1, top, t.z + 1) : g.renderer.boxVisible(t.x - 0.25, t.y, t.z - 0.25, t.x + 1.25, top, t.z + 1.25);
+      if (!seen) { if (t.obj) t.obj.visible = false; continue; }
+      if (!t.built) this._build(t);
+      if (!t.obj) continue;
+      t.obj.visible = true;
+      if (t.mat) {
+        // Use the brightest neighbour for opaque-ish tiles
+        let sky = g.world.getSkyLight(t.x, t.y, t.z), blk = g.world.getBlockLight(t.x, t.y, t.z);
+        for (const [ox, oy, oz] of [[0, 1, 0], [1, 0, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1]]) {
+          sky = Math.max(sky, g.world.getSkyLight(t.x + ox, t.y + oy, t.z + oz) - 1);
+          blk = Math.max(blk, g.world.getBlockLight(t.x + ox, t.y + oy, t.z + oz) - 1);
+        }
+        t.mat.params.setLight(sky, blk);
+      }
+      if (t.type === 'chest' && t.lidParts) {
+        let f = t.prevLid + (t.lid - t.prevLid) * partial;
+        f = 1 - f; f = 1 - f * f * f;
+        for (const p of t.lidParts) { p.rx = -(f * Math.PI / 2); p.sync(); }
+      } else if (t.type === 'book' && t.bookParts) {
+        const ticks = this.ticks + partial;
+        t.bookOuter.position.y = 0.75 + 0.1 + Math.sin(ticks * 0.1) * 0.01;
+        const rot = (t.prevRot || 0) + ((t.bookRotation || 0) - (t.prevRot || 0)) * partial;
+        t.bookRot.rotation.y = -rot;
+        const flip = (t.prevPageFlip || 0) + ((t.pageFlip || 0) - (t.prevPageFlip || 0)) * partial;
+        let f3 = flip + 0.25 - Math.floor(flip + 0.25), f4 = flip + 0.75 - Math.floor(flip + 0.75);
+        f3 = f3 * 1.6 - 0.3; f4 = f4 * 1.6 - 0.3;
+        f3 = Math.min(1, Math.max(0, f3)); f4 = Math.min(1, Math.max(0, f4));
+        const spread = (t.prevBookSpread || 0) + ((t.bookSpread || 0) - (t.prevBookSpread || 0)) * partial;
+        const P = t.bookParts;
+        const f = (Math.sin(ticks * 0.02) * 0.1 + 1.25) * spread;
+        P.coverRight.ry = Math.PI + f; P.coverLeft.ry = -f; P.pagesRight.ry = f; P.pagesLeft.ry = -f;
+        P.flipRight.ry = f - f * 2 * f3; P.flipLeft.ry = f - f * 2 * f4;
+        P.pagesRight.px = Math.sin(f); P.pagesLeft.px = Math.sin(f); P.flipRight.px = Math.sin(f); P.flipLeft.px = Math.sin(f);
+        for (const p of Object.values(P)) p.sync();
+      } else if (t.type === 'banner' && t.bannerSwing) {
+        const time = this.ticks + partial + t.x * 7 + t.y * 9 + t.z * 13;
+        t.bannerSwing.rotation.x = bannerSwing(time);
+      } else if (t.type === 'beacon' && t.beamNode) {
+        this._buildBeam(t, partial);
+      } else if (t.type === 'endportal' && t.portalMat) {
+        const time = this.ticks + partial;
+        t.portalMat.params.setUvTransform(time / 400, time / 300, 0);
+      }
+    }
+  }
+}
+
+// EntitySheep.DYE_TO_RGB (stained glass beam colours), by dye metadata
+const DYE_RGB = [[1, 1, 1], [0.85, 0.5, 0.2], [0.7, 0.3, 0.85], [0.4, 0.6, 0.85], [0.9, 0.9, 0.2], [0.5, 0.8, 0.1], [0.95, 0.5, 0.65], [0.3, 0.3, 0.3],
+  [0.6, 0.6, 0.6], [0.3, 0.5, 0.6], [0.5, 0.25, 0.7], [0.2, 0.3, 0.7], [0.4, 0.3, 0.2], [0.4, 0.5, 0.2], [0.6, 0.2, 0.2], [0.1, 0.1, 0.1]].map((c) => c.map(Math.fround));
+

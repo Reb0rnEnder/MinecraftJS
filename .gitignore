@@ -1,0 +1,9 @@
+node_modules/
+# Mojang game files (the proxy downloads them at runtime)
+1.8.9/
+cache/
+# local test server (Mojang server.jar + world)
+server/
+*.log
+.DS_Store
+Thumbs.db

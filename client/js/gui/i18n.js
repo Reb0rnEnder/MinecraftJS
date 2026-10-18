@@ -1,0 +1,62 @@
+// Translation helper. Vanilla keys come from the game's .lang files (and resource packs); strings that only
+// exist in MinecraftJS's own screens live in MINECRAFTJS_EN below and are always available in English, so any
+// language without them falls back to English (just like vanilla falls back to en_US for missing keys).
+let translateFn = (key) => key;
+
+export function setTranslator(fn) { translateFn = fn; }
+
+// tr('options.fov') / tr('multiplayer.player.joined', name)
+export function tr(key, ...args) { return translateFn(key, args); }
+
+// "Label: VALUE" like vanilla's GameSettings.getKeyBinding
+export function trOption(key, value) { return tr(key) + ': ' + value; }
+export const onOff = (v) => tr(v ? 'options.on' : 'options.off');
+
+export const MINECRAFTJS_EN = {
+  'minecraftjs.version': 'MinecraftJS 1.8.9',
+  'minecraftjs.notAffiliated': 'Not affiliated with Mojang AB or Microsoft.',
+  'minecraftjs.accounts.title': 'Accounts',
+  'minecraftjs.accounts.use': 'Use Account',
+  'minecraftjs.accounts.addMicrosoft': 'Add Microsoft Account',
+  'minecraftjs.accounts.addOffline': 'Add Offline',
+  'minecraftjs.accounts.remove': 'Remove',
+  'minecraftjs.accounts.inUse': '(in use)',
+  'minecraftjs.accounts.microsoft': 'Microsoft account',
+  'minecraftjs.accounts.microsoftRefresh': 'Microsoft account (session refreshes on join)',
+  'minecraftjs.accounts.offline': 'Offline (offline-mode servers only)',
+  'minecraftjs.login.title': 'Sign in with Microsoft',
+  'minecraftjs.login.contacting': 'Contacting Microsoft...',
+  'minecraftjs.login.step1': '1. Open %s on any device',
+  'minecraftjs.login.step2': '2. Enter this code:',
+  'minecraftjs.login.waiting': 'Waiting for you to sign in',
+  'minecraftjs.login.copied': 'Code copied to clipboard',
+  'minecraftjs.login.openLink': 'Open Link',
+  'minecraftjs.login.copyCode': 'Copy Code',
+  'minecraftjs.login.retry': 'Try Again',
+  'minecraftjs.login.signedIn': 'Signed in as %s',
+  'minecraftjs.login.expired': 'The code expired. Please try again.',
+  'minecraftjs.login.privacy': 'Your login is used only to join servers; tokens are stored on this device.',
+  'minecraftjs.offline.title': 'Add Offline Account',
+  'minecraftjs.offline.username': 'Username',
+  'minecraftjs.offline.add': 'Add',
+  'minecraftjs.offline.info': 'Offline accounts can only join servers with online-mode=false.',
+  'minecraftjs.packs.add': 'Add Resource Pack...',
+  'minecraftjs.packs.hint': 'Click a pack icon to move it. Shift-click an available pack to delete it.',
+  'minecraftjs.packs.added': 'Added %s',
+  'minecraftjs.packs.deleted': 'Deleted %s',
+  'minecraftjs.packs.failed': 'Failed to load resources: %s',
+  'minecraftjs.packs.reloading': 'Reloading resources...',
+  'minecraftjs.packs.defaultName': 'Default',
+  'minecraftjs.packs.defaultDescription': 'The default look of MinecraftJS',
+  'minecraftjs.loading': 'Loading...',
+  'minecraftjs.key.hideGui': 'Hide GUI',
+  'minecraftjs.deathScreen.spectate': 'Spectate world',
+  'options.advancedTooltips': 'Advanced Tooltips',
+  'minecraftjs.options.graphicsApi': 'Graphics API',
+  'minecraftjs.options.restart': '(restart)',
+  'minecraftjs.options.graphicsApiChanged': 'Graphics API changes apply after a restart.',
+  'minecraftjs.realms.unavailable': 'Minecraft Realms',
+  'minecraftjs.disconnect.online': 'This server is in online mode and needs a Microsoft account.\nSign in with the account button on the title screen.',
+  'minecraftjs.multiplayer.pinging': 'Pinging...',
+  'minecraftjs.multiplayer.cantConnect': "Can't connect to server",
+};

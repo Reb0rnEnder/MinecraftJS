@@ -1,0 +1,92 @@
+// Game options (vanilla defaults), persisted through the platform settings store.
+import { platform } from '../platform/platform.js';
+
+export const DEFAULT_KEYS = {
+  forward: 'KeyW', left: 'KeyA', back: 'KeyS', right: 'KeyD', jump: 'Space', sneak: 'ShiftLeft', sprint: 'ControlLeft',
+  inventory: 'KeyE', drop: 'KeyQ', chat: 'KeyT', command: 'Slash', playerlist: 'Tab', pickItem: 'mouse1',
+  attack: 'mouse0', use: 'mouse2', perspective: 'F5', smoothCamera: '', screenshot: 'F2', hideGui: 'F1',
+  hotbar1: 'Digit1', hotbar2: 'Digit2', hotbar3: 'Digit3', hotbar4: 'Digit4', hotbar5: 'Digit5',
+  hotbar6: 'Digit6', hotbar7: 'Digit7', hotbar8: 'Digit8', hotbar9: 'Digit9', fullscreen: 'F11', spectatorOutlines: '',
+  streamStartStop: 'F6', streamPauseUnpause: 'F7', streamCommercial: '', streamToggleMic: '',
+};
+
+const DEFAULTS = {
+  fov: 70,
+  sensitivity: 0.5,
+  invertMouse: false,
+  renderDistance: 8,
+  guiScale: 0,
+  gamma: 0.5,
+  viewBobbing: true,
+  clouds: 2, // 0 off, 1 fast, 2 fancy
+  fancyGraphics: true,
+  smoothLighting: 2, // ambient occlusion: 0 off, 1 minimum, 2 maximum
+  enableVsync: true,
+  mipmapLevels: 4,
+  blockAlternatives: true,
+  useVbo: true,
+  touchscreen: false,
+  snooperEnabled: true,
+  pauseOnLostFocus: true,
+  chatHeightFocused: 1,
+  chatHeightUnfocused: 0.44366196,
+  particles: 0, // 0 all, 1 decreased, 2 minimal
+  chatOpacity: 1,
+  chatScale: 1,
+  chatWidth: 1,
+  chatVisibility: 0, // 0 shown, 1 commands only, 2 hidden
+  chatColors: true,
+  masterVolume: 1,
+  soundVolumes: { music: 0, record: 1, weather: 1, block: 1, hostile: 1, neutral: 1, player: 1, ambient: 1 },
+  showDebugInfo: false,
+  reducedDebugInfo: false,
+  advancedItemTooltips: false,
+  skinParts: 0x7f,
+  mainHand: 'right',
+  maxFps: 0,
+  graphicsApi: 'webgl2', // 'webgl2' | 'webgpu'
+  resourcePacks: [], // active pack ids, highest priority first
+  entityShadows: true,
+  language: 'en_US',
+  forceUnicodeFont: false,
+  keys: { ...DEFAULT_KEYS },
+  lastServer: { host: 'localhost', port: 25565 },
+  username: 'WebPlayer',
+  servers: [{ name: 'Local Server', host: 'localhost', port: 25565 }],
+};
+
+export class Settings {
+  constructor() {
+    let saved = {};
+    try { saved = JSON.parse((platform().loadSetting('minecraftjs.settings') || platform().loadSetting('minekampf.settings')) || '{}'); } catch (e) { saved = {}; }
+    Object.assign(this, JSON.parse(JSON.stringify(DEFAULTS)), saved);
+    this.keys = { ...DEFAULT_KEYS, ...(saved.keys || {}) };
+    this.soundVolumes = { ...DEFAULTS.soundVolumes, ...(saved.soundVolumes || {}) };
+    if (Array.isArray(this.servers)) {
+      for (const s of this.servers) delete s._icon;
+    }
+    // older saves stored these as booleans
+    if (typeof this.clouds === 'boolean') this.clouds = this.clouds ? 2 : 0;
+    if (typeof this.smoothLighting === 'boolean') this.smoothLighting = this.smoothLighting ? 2 : 0;
+  }
+
+  save() {
+    const out = {};
+    for (const k of Object.keys(DEFAULTS)) out[k] = this[k];
+    if (Array.isArray(this.servers)) {
+      out.servers = this.servers.map((s) => ({ name: s.name, host: s.host, port: s.port, ...(s._iconSrc ? { _iconSrc: s._iconSrc } : {}) }));
+    }
+    platform().saveSetting('minecraftjs.settings', JSON.stringify(out));
+  }
+
+  keyName(code) {
+    if (!code) return 'NONE';
+    if (code === 'mouse0') return 'Button 1';
+    if (code === 'mouse1') return 'Button 3';
+    if (code === 'mouse2') return 'Button 2';
+    if (code.startsWith('mouse')) return 'Button ' + (parseInt(code.slice(5), 10) + 1);
+    return code.replace(/^Key/, '').replace(/^Digit/, '').replace('ShiftLeft', 'LSHIFT').replace('ControlLeft', 'LCONTROL')
+      .replace('ShiftRight', 'RSHIFT').replace('ControlRight', 'RCONTROL').replace('AltLeft', 'LMENU').replace('Space', 'SPACE')
+      .replace('Slash', '/').replace('Tab', 'TAB');
+  }
+}
