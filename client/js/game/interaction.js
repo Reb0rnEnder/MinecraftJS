@@ -1,6 +1,6 @@
 // Player interaction (port of PlayerControllerMP + Minecraft.clickMouse/rightClickMouse).
 import { C } from '../net/packets.js';
-import { blocks } from '../world/blocks.js';
+import { blocks, blocksByName } from '../world/blocks.js';
 import { rayBox } from '../world/world.js';
 import { copy } from './container.js';
 
@@ -12,7 +12,9 @@ const INTERACTIVE = new Set(['chest', 'trapped_chest', 'ender_chest', 'crafting_
   'daylight_detector', 'daylight_detector_inverted', 'command_block', 'dragon_egg', 'standing_sign', 'wall_sign']);
 
 // Items whose onItemUse places/acts on the clicked block (returns true in vanilla)
-const PLACE_ITEMS = new Set([259, 295, 323, 324, 328, 330, 331, 338, 342, 343, 354, 355, 356, 361, 362, 372, 379, 380, 381, 383, 389, 390, 391, 392, 397, 401, 404, 407, 408, 416, 422, 425, 427, 428, 429, 430, 431, 287, 321]);
+
+// EnumFacing index -> direction (down, up, north, south, west, east)
+const FACE_DIR = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]];
 
 export class Interaction {
   constructor(game) {
@@ -83,7 +85,8 @@ export class Interaction {
 
   swing() {
     this.game.send(C.armAnimation());
-    if (!this.swinging || this.swingTicks >= 3 || this.swingTicks < 0) {
+    // EntityLivingBase.swingItem: restart only past half of getArmSwingAnimationEnd()
+    if (!this.swinging || this.swingTicks >= Math.floor((this.swingLength || 6) / 2) || this.swingTicks < 0) {
       this.swingTicks = -1;
       this.swinging = true;
     }
@@ -94,13 +97,13 @@ export class Interaction {
   tick(presses) {
     const g = this.game;
     const input = g.input;
-    this.updateSwing();
     this.updateEquip();
     if (this.rightClickDelay > 0) this.rightClickDelay--;
     this.updateTarget();
     const k = g.settings.keys;
     const attackDown = input.isDown('attack');
     const useDown = input.isDown('use');
+    if (this.leftClickCounter > 0) this.leftClickCounter--;
 
     if (this.player.usingItem) {
       this.useTicks++;
@@ -125,8 +128,10 @@ export class Interaction {
       }
       if (useDown && this.rightClickDelay === 0 && !this.player.usingItem) this.rightClickMouse();
     }
-    this.sendClickBlockToController(attackDown && !this.player.usingItem);
+    this.sendClickBlockToController(attackDown);
     this.lastHeld = g.inventory.held();
+    // EntityPlayer.updateArmSwingProgress runs in the player update, after this tick's clicks
+    this.updateSwing();
   }
 
   tickIdle() {
@@ -183,18 +188,27 @@ export class Interaction {
     }
   }
 
+  // PlayerControllerMP.attackEntity + client-side EntityPlayer.attackTargetEntityWithCurrentItem. On the client
+  // only other players accept the hit (EntityOtherPlayerMP.attackEntityFrom), so only then does sprinting stop,
+  // the 0.6 slowdown apply and crit particles appear locally; for mobs the server sends the crit animations.
   attackEntity(e) {
-    const g = this.game;
-    if (g.gameMode === 3) { g.send(C.spectate(e.uuid)); return; }
+    const g = this.game, pl = this.player;
     g.send(C.useEntity(e.id, 1));
-    if (this.player.sprinting && g.gameMode !== 3) {
-      this.player.motionX *= 0.6;
-      this.player.motionZ *= 0.6;
-      this.player.sprinting = false;
+    if (g.gameMode === 3) return;
+    if (e.kind === 'item' || e.kind === 'xp' || e.kind === 'arrow') return; // canAttackWithItem() is false
+    if (e.kind !== 'player') return;
+    const held = g.inventory.held();
+    let i = g.items.enchantLevel(held, 19); // knockback
+    if (pl.sprinting) i++;
+    const f1 = g.items.enchantLevel(held, 16) * 1.25; // sharpness vs EnumCreatureAttribute.UNDEFINED
+    const crit = pl.fallDistance > 0 && !pl.onGround && !pl.isOnLadder(g.world) && !pl.inWater && !g.effects.has(15) && !pl.ridingEntity;
+    if (i > 0) {
+      pl.motionX *= 0.6;
+      pl.motionZ *= 0.6;
+      pl.sprinting = false;
     }
-    // Crit particles when falling
-    if (this.player.fallDistance > 0 && !this.player.onGround && !this.player.inWater) g.particles.crit(e);
-    if (g.items.enchantLevel(g.inventory.held(), 16) > 0) g.particles.magicCrit(e);
+    if (crit) g.particles.crit(e);
+    if (f1 > 0) g.particles.magicCrit(e);
   }
 
   // PlayerControllerMP.clickBlock
@@ -207,7 +221,7 @@ export class Interaction {
     }
     if (g.gameMode === 1) {
       g.send(C.blockDig(0, pos.x, pos.y, pos.z, face));
-      this.destroyBlockClient(pos);
+      if (!this._extinguishFire(pos, face)) this.destroyBlockClient(pos);
       this.blockHitDelay = 5;
       return;
     }
@@ -264,19 +278,19 @@ export class Interaction {
     return canHarvest ? f / hardness / 30 : f / hardness / 100;
   }
 
+  // Minecraft.sendClickBlockToController (leftClickCounter is decremented once per tick before the clicks)
   sendClickBlockToController(leftDown) {
     const g = this.game;
     if (!leftDown) this.leftClickCounter = 0;
-    else if (this.leftClickCounter > 0) this.leftClickCounter--;
-    if (this.leftClickCounter <= 0 && leftDown && this.target && this.target.type === 'block') {
+    if (this.leftClickCounter <= 0 && !this.player.usingItem) {
       const t = this.target;
-      const b = blocks[t.state >> 4];
-      if (b && b.id !== 0 && this.onPlayerDamageBlock(t, t.face)) {
-        g.particles.blockHit(t.x, t.y, t.z, t.face);
-        this.swing();
-      }
-    } else if (this.isHitting) {
-      this.resetBreaking();
+      if (leftDown && t && t.type === 'block') {
+        const b = blocks[g.world.getState(t.x, t.y, t.z) >> 4];
+        if (b && b.id !== 0 && this.onPlayerDamageBlock(t, t.face)) {
+          g.particles.blockHit(t.x, t.y, t.z, t.face);
+          this.swing();
+        }
+      } else this.resetBreaking();
     }
   }
 
@@ -287,7 +301,7 @@ export class Interaction {
     if (g.gameMode === 1) {
       this.blockHitDelay = 5;
       g.send(C.blockDig(0, pos.x, pos.y, pos.z, face));
-      this.destroyBlockClient(pos);
+      if (!this._extinguishFire(pos, face)) this.destroyBlockClient(pos);
       return true;
     }
     if (g.gameMode === 3) return false;
@@ -352,6 +366,20 @@ export class Interaction {
 
   onBlockChange(pos, state) { /* reserved for prediction rollback */ }
 
+  _extinguishFire(pos, face) {
+    const g = this.game;
+    const d = FACE_DIR[face] || [0, 1, 0];
+    const x = pos.x + d[0], y = pos.y + d[1], z = pos.z + d[2];
+    const b = blocks[g.world.getState(x, y, z) >> 4];
+    if (!b || b.name !== 'fire') return false;
+    g.sound.onWorldEvent({ effectId: 1004, location: { x, y, z }, data: 0 });
+    g.world.setState(x, y, z, 0);
+    return true;
+  }
+
+  // ItemRenderer.resetEquippedProgress(2): the held item dips and comes back up
+  resetEquipped() { this.equipProgress = 0; }
+
   // Minecraft.rightClickMouse
   rightClickMouse() {
     const g = this.game;
@@ -363,42 +391,28 @@ export class Interaction {
     if (t && t.type === 'entity') {
       const e = t.entity;
       const p = g.entities.interp(e, 1);
+      // isPlayerRightClickingOnEntity: INTERACT_AT; armor stands (not markers) accept it client-side
       g.send(C.useEntity(e.id, 2, t.hit[0] - p.x, t.hit[1] - p.y, t.hit[2] - p.z));
-      g.send(C.useEntity(e.id, 0));
-      if (g.entities.isInteractive(e, held)) useItem = false;
+      const armorStandTakes = e.kind === 'armorstand' && !((e.armorFlags || 0) & 16);
+      if (armorStandTakes) useItem = false;
+      else {
+        g.send(C.useEntity(e.id, 0)); // interactWithEntitySendPacket
+        if (g.entities.isInteractive(e, held)) useItem = false;
+      }
     } else if (t && t.type === 'block') {
-      const b = blocks[t.state >> 4];
+      const b = blocks[g.world.getState(t.x, t.y, t.z) >> 4];
       if (b && b.id !== 0) {
+        const before = held ? held.count : 0;
         if (this.onPlayerRightClick(t)) { useItem = false; this.swing(); }
         if (!held) return;
-        if (held.count === 0) g.inventory.setHeld(null);
+        if (held.count <= 0) g.inventory.setHeld(null);
+        else if (held.count !== before || g.gameMode === 1) this.resetEquipped();
       }
     }
     if (useItem) {
       const h = g.inventory.held();
-      if (h) this.sendUseItem(h);
+      if (h && this.sendUseItem(h)) this.resetEquipped();
     }
-  }
-
-  // ItemBlock.onItemUse runs on the client too: if the block could go there, play its place sound right away
-  _placeSound(t, held) {
-    const g = this.game, w = g.world;
-    const nb = blocks[held.id];
-    if (!nb) return;
-    const replaceable = (st) => { const b = blocks[st >> 4]; return !b || b.id === 0 || b.isLiquid || /^(tallgrass|deadbush|vine|snow_layer|fire|double_plant)$/.test(b.name); };
-    let { x, y, z } = t;
-    if (!replaceable(t.state)) {
-      const d = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]][t.face] || [0, 1, 0];
-      x += d[0]; y += d[1]; z += d[2];
-      if (!replaceable(w.getState(x, y, z))) return;
-    }
-    if (y < 0 || y > 255) return;
-    // World.canBlockBePlaced: a solid block may not overlap the player
-    if (nb.boundingBox === 'block') {
-      const bb = this.player.bb();
-      if (bb[3] > x && bb[0] < x + 1 && bb[4] > y && bb[1] < y + 1 && bb[5] > z && bb[2] < z + 1) return;
-    }
-    g.sound.playBlockPlace(x, y, z, (held.id << 4) | ((held.damage || 0) & 15));
   }
 
   // PlayerControllerMP.onPlayerRightClick
@@ -406,19 +420,140 @@ export class Interaction {
     const g = this.game;
     const held = g.inventory.held();
     const fx = t.hit[0] - t.x, fy = t.hit[1] - t.y, fz = t.hit[2] - t.z;
-    const b = blocks[t.state >> 4];
+    const b = blocks[g.world.getState(t.x, t.y, t.z) >> 4];
     let activated = false;
-    if (g.gameMode !== 3 && (!this.player.sneaking || !held) && b && INTERACTIVE.has(b.name)) activated = true;
-    if (b && (b.name === 'iron_door' || b.name === 'iron_trapdoor')) activated = false;
+    if (g.gameMode !== 3) {
+      if ((!this.player.sneaking || !held) && b && INTERACTIVE.has(b.name) && b.name !== 'iron_door' && b.name !== 'iron_trapdoor') activated = true;
+      // ItemBlock.canPlaceBlockOnSide: no packet at all when the block could not go there
+      if (!activated && held && this._itemBlock(held) && !this._canPlaceBlockOnSide(t, held)) return false;
+    }
     g.send(C.blockPlace(t.x, t.y, t.z, t.face, held, Math.floor(fx * 16), Math.floor(fy * 16), Math.floor(fz * 16)));
     if (activated) {
       if (b.isDoor || b.name === 'trapdoor' || b.isFenceGate) this.predictToggle(t, b);
       return true;
     }
-    if (g.gameMode === 3 || !held) return false;
-    // ItemBlock and items whose onItemUse succeeds on blocks
-    if (held.id < 256) { this._placeSound(t, held); return true; }
-    return PLACE_ITEMS.has(held.id) || (held.id === 351 && held.damage === 15) || (held.id >= 290 && held.id <= 294);
+    if (g.gameMode === 3) return true;
+    if (!held) return false;
+    if (g.gameMode === 1) {
+      // creative: onItemUse runs but the stack is restored
+      const c = held.count, d = held.damage;
+      const r = this._onItemUse(t, held);
+      held.count = c; held.damage = d;
+      return r;
+    }
+    return this._onItemUse(t, held);
+  }
+
+  _itemBlock(held) { return held.id > 0 && held.id < 256 && !!blocks[held.id]; }
+
+  // Block a placer item puts down (ItemBlock or ItemReed-style items)
+  _placedBlock(held) {
+    if (this._itemBlock(held)) return blocks[held.id];
+    const n = { 331: 'redstone_wire', 338: 'reeds', 354: 'cake', 356: 'unpowered_repeater', 379: 'brewing_stand', 380: 'cauldron', 390: 'flower_pot',
+      404: 'unpowered_comparator', 287: 'tripwire' }[held.id];
+    return n ? blocksByName[n] || null : null;
+  }
+
+  _replaceable(st) {
+    const b = blocks[st >> 4];
+    if (!b || b.id === 0 || b.isLiquid) return true;
+    if (b.name === 'snow_layer') return (st & 7) === 0; // one layer
+    return /^(tallgrass|deadbush|vine|fire|double_plant)$/.test(b.name);
+  }
+
+  // World.canBlockBePlaced (+ Block.canPlaceBlockOnSide basics) at the position the item would use
+  _placementPos(t, held) {
+    const g = this.game;
+    const cur = blocks[g.world.getState(t.x, t.y, t.z) >> 4];
+    let face = t.face;
+    let p = { x: t.x, y: t.y, z: t.z };
+    if (cur && cur.name === 'snow_layer' && (g.world.getState(t.x, t.y, t.z) & 7) < 1) face = 1;
+    else if (!this._replaceable(g.world.getState(t.x, t.y, t.z))) {
+      const d = FACE_DIR[t.face] || [0, 1, 0];
+      p = { x: t.x + d[0], y: t.y + d[1], z: t.z + d[2] };
+    }
+    return { p, face };
+  }
+
+  _canPlaceBlockOnSide(t, held) {
+    const g = this.game, w = g.world;
+    const nb = this._placedBlock(held);
+    if (!nb) return false;
+    const { p, face } = this._placementPos(t, held);
+    if (p.y < 0 || p.y > 255) return false;
+    if (!this._replaceable(w.getState(p.x, p.y, p.z))) return false;
+    // entities in the way of a block with a collision box (EntityLivingBase, boats, minecarts, TNT, falling blocks)
+    if (nb.boundingBox === 'block') {
+      const hit = (b) => b[3] > p.x && b[0] < p.x + 1 && b[4] > p.y && b[1] < p.y + 1 && b[5] > p.z && b[2] < p.z + 1;
+      if (hit(this.player.bb())) return false;
+      for (const e of g.entities.all()) {
+        if (!['player', 'mob', 'armorstand', 'boat', 'minecart', 'tnt', 'falling'].includes(e.kind)) continue;
+        const hw = (e.width || 0) / 2;
+        if (hit([e.x - hw, e.y, e.z - hw, e.x + hw, e.y + (e.height || 0), e.z + hw])) return false;
+      }
+    }
+    // support for blocks that need something under them / beside them
+    const below = blocks[w.getState(p.x, p.y - 1, p.z) >> 4];
+    const solidBelow = !!(below && below.opaque);
+    const n = nb.name;
+    if (/^(redstone_wire|unpowered_repeater|unpowered_comparator|carpet|wooden_pressure_plate|stone_pressure_plate|light_weighted_pressure_plate|heavy_weighted_pressure_plate|rail|golden_rail|detector_rail|activator_rail|snow_layer|cake)$/.test(n) && !solidBelow) return false;
+    if (/^(yellow_flower|red_flower|sapling|tallgrass|double_plant|deadbush)$/.test(n) && !(below && /^(grass|dirt|farmland|sand)$/.test(below.name) && (n !== 'deadbush' || below.name === 'sand'))) return false;
+    if (/^(brown_mushroom|red_mushroom)$/.test(n) && !(below && below.opaque)) return false;
+    if (n === 'reeds' && !(below && (below.name === 'reeds' || /^(grass|dirt|sand)$/.test(below.name)))) return false;
+    if (/^(torch|redstone_torch|lever|stone_button|wooden_button|ladder|wall_sign|tripwire_hook)$/.test(n)) {
+      if (face === 0 && n !== 'lever' && !/button/.test(n)) return false;
+      const d = FACE_DIR[face] || [0, 1, 0];
+      const sup = blocks[w.getState(p.x - d[0], p.y - d[1], p.z - d[2]) >> 4];
+      if (!(sup && sup.opaque)) return false;
+    }
+    return true;
+  }
+
+  // Item.onItemUse on the client: whether the click "worked" (decides the swing), with the client-side effects
+  _onItemUse(t, held) {
+    const g = this.game, w = g.world, id = held.id;
+    const st = w.getState(t.x, t.y, t.z), b = blocks[st >> 4];
+    const above = (y) => blocks[w.getState(t.x, y, t.z) >> 4];
+    const air = (bb) => !bb || bb.id === 0;
+    const placer = this._placedBlock(held);
+    if (placer) {
+      if (!this._canPlaceBlockOnSide(t, held)) return false;
+      if (held.count <= 0) return false;
+      const { p } = this._placementPos(t, held);
+      this._predictPlace(p, held, placer);
+      held.count--; // the server's slot update follows
+      return true;
+    }
+    switch (id) {
+      case 259: return true; // flint and steel
+      case 295: case 361: case 362: case 391: case 392: // seeds / carrot / potato
+        return t.face === 1 && b && b.name === 'farmland' && air(above(t.y + 1));
+      case 372: return t.face === 1 && b && b.name === 'soul_sand' && air(above(t.y + 1));
+      case 324: case 330: case 427: case 428: case 429: case 430: case 431: // doors
+        return t.face === 1 && air(above(t.y + 1)) && air(above(t.y + 2)) && !!(b && b.opaque);
+      case 355: return t.face === 1 && air(above(t.y + 1)); // bed
+      case 323: case 425: case 397: return t.face !== 0 && !!(b && b.material !== 'plant' && b.boundingBox === 'block'); // sign, banner, skull
+      case 328: case 342: case 343: case 407: case 408: case 422: return !!(b && /rail$/.test(b.name)); // minecarts
+      case 383: case 401: return true; // spawn egg (client returns early), firework
+      case 389: case 321: return t.face >= 2; // item frame, painting
+      case 416: return t.face !== 0; // armor stand
+      case 290: case 291: case 292: case 293: case 294: // hoes
+        return t.face !== 0 && air(above(t.y + 1)) && !!(b && (b.name === 'grass' || b.name === 'dirt'));
+      case 351: return held.damage === 15 && !!(b && /^(sapling|wheat|carrots|potatoes|pumpkin_stem|melon_stem|grass|tallgrass|double_plant|brown_mushroom|red_mushroom|cocoa)$/.test(b.name));
+      case 381: return !!(b && b.name === 'end_portal_frame' && !((st & 15) & 4)); // eye of ender into a frame
+      default: return false;
+    }
+  }
+
+  // ItemBlock.onItemUse sets the block on the client right away; only for blocks whose placed state is just
+  // the item damage (no facing / orientation logic), the server's block change follows either way
+  _predictPlace(p, held, nb) {
+    if (!this._itemBlock(held)) return;
+    const SIMPLE = /^(stone|grass|dirt|cobblestone|planks|sand|gravel|gold_ore|iron_ore|coal_ore|sponge|glass|lapis_ore|lapis_block|sandstone|wool|gold_block|iron_block|brick_block|tnt|bookshelf|mossy_cobblestone|obsidian|diamond_ore|diamond_block|crafting_table|snow|ice|clay|netherrack|soul_sand|glowstone|stonebrick|melon_block|mycelium|nether_brick|end_stone|redstone_lamp|emerald_ore|emerald_block|redstone_block|quartz_ore|stained_hardened_clay|stained_glass|slime|barrier|prismarine|sea_lantern|hardened_clay|coal_block|packed_ice|red_sandstone|noteblock)$/;
+    if (!SIMPLE.test(nb.name)) return;
+    let meta = held.damage & 15;
+    if (/^(stone|dirt|planks|sand|sandstone|wool|stonebrick|stained_hardened_clay|stained_glass|prismarine|red_sandstone|sponge)$/.test(nb.name) === false) meta = 0;
+    this.game.world.setState(p.x, p.y, p.z, (nb.id << 4) | meta);
   }
 
   // Doors, trapdoors and gates toggle instantly client-side in vanilla
@@ -434,9 +569,10 @@ export class Interaction {
     g.sound.play(sound, x + 0.5, y + 0.5, z + 0.5, 1, Math.random() * 0.1 + 0.9);
   }
 
+  // PlayerControllerMP.sendUseItem: true when Item.onItemRightClick changed the stack (the item then dips)
   sendUseItem(held) {
     const g = this.game;
-    if (g.gameMode === 3) return;
+    if (g.gameMode === 3) return false;
     if (held.id === 386) {
       // ItemWritableBook opens the editor client-side
       import('../gui/screens/book.js').then((m) => g.screens.open(new m.BookScreen(g, held, true)));
@@ -450,8 +586,22 @@ export class Interaction {
         this.useTicks = 0;
       }
     }
-    // Throwables etc. animate the arm
-    if ([332, 344, 368, 373, 384, 381, 385, 346].includes(held.id) && !(held.id === 373 && !(held.damage & 16384))) this.swing();
+    if (held.id === 346) this.swing(); // ItemFishingRod swings the arm itself
+    const survival = g.gameMode !== 1;
+    const t = this.target;
+    const lookingAtFrame = t && t.type === 'block' && blocks[t.state >> 4] && blocks[t.state >> 4].name === 'end_portal_frame';
+    const thrown = [332, 344, 368, 384].includes(held.id) || (held.id === 373 && (held.damage & 16384)) || (held.id === 381 && !lookingAtFrame);
+    if (thrown && survival) {
+      held.count--;
+      if (held.count <= 0) g.inventory.setHeld(null);
+      return true;
+    }
+    // armour equips itself when that slot is empty
+    if (held.id >= 298 && held.id <= 317) {
+      const slot = 3 - ((held.id - 298) % 4);
+      if (!g.inventory.armor[slot]) return true;
+    }
+    return false;
   }
 
   stopUsingItem() {

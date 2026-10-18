@@ -2,7 +2,7 @@
 import * as M from './entity-models.js';
 
 const M_dragon = () => M.dragonParts();
-import { entityMaterial, entityMesh, modelDevice } from './boxmodel.js';
+import { entityMaterial, entityMesh, modelDevice, Part } from './boxmodel.js';
 import { applyTransform } from './item-renderer.js';
 import { buildTextMeshes, destroyTextMeshes } from './text-mesh.js';
 import { blocks } from '../world/blocks.js';
@@ -14,6 +14,7 @@ import { JavaRandom } from '../util/jrandom.js';
 import { decodePng } from '../util/png.js';
 import { decodeBase64 } from '../util/base64.js';
 import { platform } from '../platform/platform.js';
+import { EntityFire } from './entity-fire.js';
 
 const ARMOR_MATS = ['leather', 'chainmail', 'iron', 'diamond', 'gold'];
 
@@ -95,6 +96,7 @@ export class EntityRenderer {
     this.visuals = new Map();
     this.skins = new Map(); // uuid -> { path, slim, texture?, legacy }
     this.resolve = (t) => (typeof t === 'function' ? t() : game.assets.texture(t));
+    this.fire = new EntityFire(game);
     this.meshCache = new Map();
     this.atlasTex = () => game.assets.atlasTexture;
     // Shadow: unit quad on the XZ plane
@@ -177,6 +179,7 @@ export class EntityRenderer {
 
   _texFor(e) {
     if (e.kind === 'player') return null;
+    if (e.kind === 'armorstand') return 'entity/armorstand/wood.png';
     const t = e.type;
     switch (t) {
       case 50: return 'entity/creeper/creeper.png';
@@ -266,6 +269,43 @@ export class EntityRenderer {
     return g;
   }
 
+  // LayerMooshroomMushroom: red mushroom block models, two on the back and one on the head
+  _addMushrooms(v, model) {
+    const bm = this.game.assets.modelStore.bakeVariant('red_mushroom', {}, 'normal', 0);
+    const mesh = bm && this.game.itemRenderer.blockMesh({ baked: bm, name: 'red_mushroom' });
+    if (!mesh) return;
+    const mat = this._mat(v, this.atlasTex, { alphaTest: 0.1 });
+    // block meshes are centred, so translate(-0.5, -0.5, 0.5) becomes (0, 0, 1) plus the block's centre offset
+    const block = () => { const n = new Node(); n.position.set(0, 0, 1); n.addDrawable(mesh, mat); return n; };
+    const chain = (ops, leaf) => {
+      let root = null, cur = null;
+      for (const [k, x, y, z] of ops) {
+        const n = new Node();
+        if (k === 't') n.position.set(x, y, z); else if (k === 's') n.scale.set(x, y, z); else n.rotation.set(0, x * D2R, 0);
+        if (cur) cur.add(n); else root = n;
+        cur = n;
+      }
+      cur.add(leaf);
+      return root;
+    };
+    const back = new Node();
+    back.position.set(0, -1.5078125, 0);
+    back.add(chain([['s', 1, -1, 1], ['t', 0.2, 0.35, 0.5], ['r', 42]], (() => {
+      const g = new Node();
+      g.add(block());
+      g.add(chain([['t', 0.1, 0, -0.6], ['r', 42]], block()));
+      return g;
+    })()));
+    v.scaleGroup.add(back);
+    v.mushroomBack = back;
+    if (model.parts.head && model.parts.head.obj) {
+      const h = new Node(); h.scale.set(16, 16, 16); // undo the 1/16 model units: head.postRender(0.0625)
+      h.add(chain([['s', 1, -1, 1], ['t', 0, 0.7, -0.2], ['r', 12]], block()));
+      model.parts.head.obj.add(h);
+      v.mushroomHead = h;
+    }
+  }
+
   _mat(v, tex, opts) {
     const m = entityMaterial(tex, opts);
     v.materials.push(m);
@@ -310,9 +350,10 @@ export class EntityRenderer {
         if (markings && (e.horseType || 0) === 0) addLayer(M.horse(), 'entity/horse/horse_markings_' + markings + '.png');
       }
       if (e.type === 51 || e.type === 53 || e.type === 54 || e.type === 57) this._addArmorLayers(v, e);
+      if (e.type === 96) v.mushroomLayer = true;
     }
     if (e.kind === 'player' || e.kind === 'armorstand') this._addArmorLayers(v, e);
-    v.atlasMat = this._mat(v, this.atlasTex, { alphaTest: 0.1 });
+    v.atlasMat = this._mat(v, this.atlasTex, { alphaTest: 0.1, transparent: true }); // RenderItem blends
     // Held item holder (attached to right arm if present)
     v.itemHolder = null;
     if (model.parts && model.parts.rightArm && model.parts.rightArm.obj) {
@@ -327,6 +368,7 @@ export class EntityRenderer {
       model.parts.head.obj.add(h);
       v.headHolder = h;
     }
+    if (v.mushroomLayer) this._addMushrooms(v, model);
     this._addShadow(v);
     return v;
   }
@@ -490,7 +532,7 @@ export class EntityRenderer {
     let v;
     const atlasOnly = (kind) => {
       const vv = { root: new Node(), kind, materials: [] };
-      vv.atlasMat = this._mat(vv, this.atlasTex, { alphaTest: 0.1 });
+      vv.atlasMat = this._mat(vv, this.atlasTex, { alphaTest: 0.1, transparent: true });
       return vv;
     };
     switch (e.kind) {
@@ -615,6 +657,11 @@ export class EntityRenderer {
       case 'crystal': {
         v = { root: new Node(), kind: 'crystal', materials: [] };
         const mat = this._mat(v, 'entity/endercrystal/endercrystal.png', { fullBright: true });
+        // ModelEnderCrystal base (RenderEnderCrystal builds it with the base): scale 2, translate -0.5
+        const base = new Part(64, 32).tex(0, 16).box(-6, 0, -6, 12, 4, 12);
+        const bg = new Node(); bg.add(base.build()); base.setMaterial(mat);
+        bg.scale.set(2 / 16, 2 / 16, 2 / 16); bg.position.set(0, -1, 0);
+        v.root.add(bg);
         v.cubes = [];
         for (const [u, vv, s] of [[0, 0, 8], [32, 0, 8], [32, 0, 6]]) {
           const pp = M.biped(64, 32).parts.head;
@@ -674,6 +721,7 @@ export class EntityRenderer {
     this.frame = (this.frame || 0) + 1;
     const far = (g.settings.renderDistance * 16) ** 2;
     this.stats = { total: list.length, culled: 0, lod: 0 };
+    const burning = [];
     for (const e of list) {
       let v = this.visuals.get(e.id);
       if (v && v.kind === 'living' && e.kind === 'mob' && this._texFor(e) !== v.texPath) { this.remove(e); v = null; }
@@ -710,6 +758,7 @@ export class EntityRenderer {
       v.lodSkip = d2 > 4096 ? (this.frame + e.id) % 4 !== 0 : d2 > 1024 ? (this.frame + e.id) % 2 !== 0 : false;
       if (v.lodSkip) this.stats.lod++;
       v.root.position.set(p.x, p.y, p.z);
+      if (e.onFire) burning.push({ e, p });
       const light = this._light(p.x, p.y + (e.eyeHeight || 0.5), p.z);
       for (const m of v.materials) m.params.setLight(light[0], light[1]);
       try {
@@ -732,6 +781,11 @@ export class EntityRenderer {
       } catch (err) { console.warn('entity render', e.kind, err); }
       if (v.shadow) this._updateShadow(e, v, p);
     }
+    // RenderManager.playerViewY: the camera's yaw (front view looks back)
+    let viewYaw = g.player.prevYaw + (g.player.yaw - g.player.prevYaw) * partial;
+    if (g.debugCam) viewYaw = g.debugCam.yaw;
+    else if (g.thirdPerson === 2) viewYaw += 180;
+    this.fire.update(burning, viewYaw);
   }
 
   // Draw the entity tree (called by the world renderer)
@@ -774,7 +828,9 @@ export class EntityRenderer {
     const ls = e.limbSwing - e.limbSwingAmount * (1 - partial);
     let lsa = e.prevLimbSwingAmount + (e.limbSwingAmount - e.prevLimbSwingAmount) * partial;
     if (lsa > 1) lsa = 1;
-    const swing = e.prevSwingProgress + (e.swingProgress - e.prevSwingProgress) * partial;
+    let sd = e.swingProgress - e.prevSwingProgress;
+    if (sd < 0) sd += 1; // getSwingProgress
+    const swing = e.prevSwingProgress + sd * partial;
     // Death rotation (RendererLivingEntity.rotateCorpse)
     let deathRot = 0;
     if (e.deathTime > 0) {
@@ -873,6 +929,7 @@ export class EntityRenderer {
     if (v.wool) v.wool.obj.visible = !e.sheared;
     if (v.wool) { const c = FLEECE[e.fleece || 0]; v.wool.mat.params.setTint(c[0], c[1], c[2], 1); }
     if (v.saddle) v.saddle.obj.visible = !!e.saddled;
+    if (v.mushroomBack) { const vis = !e.child && !e.invisible; v.mushroomBack.visible = vis; if (v.mushroomHead) v.mushroomHead.visible = vis; }
     if (v.charge) {
       v.charge.obj.visible = !!e.powered;
       if (e.powered) {
@@ -1137,7 +1194,7 @@ export class EntityRenderer {
     if (v.flashMat) {
       const on = Math.floor(e.fuse / 5) % 2 === 0;
       v.flash.visible = on;
-      v.flashMat.params.p[3] = on ? (1 - (e.fuse - partial + 1) / 100) * 0.8 : 0;
+      v.flashMat.params.p[3] = on ? Math.min(1, Math.max(0, (1 - (e.fuse - partial + 1) / 100) * 0.8)) : 0; // GL clamps colour
     }
   }
 
@@ -1208,8 +1265,13 @@ export class EntityRenderer {
           h.position.set(0, 0, 0.4375);
           const s = io.gui3d ? 0.5 * 0.5 : 0.5;
           h.scale.setScalar(s);
-          h.rotation.set(0, io.gui3d ? Math.PI : 0, -(e.rotation || 0) * Math.PI / 4);
-          h.add(io.obj);
+          // RenderItemFrame: rotate(rotation * 45, Z), then flat items and skulls turn 180 around Y
+          const isSkull = e.item.id === 397;
+          h.rotation.set(0, 0, (e.rotation || 0) * Math.PI / 4);
+          const inner = new Node();
+          inner.rotation.set(0, !io.gui3d || isSkull ? Math.PI : 0, 0);
+          inner.add(io.obj);
+          h.add(inner);
           v.itemGroup.add(h);
         }
       }

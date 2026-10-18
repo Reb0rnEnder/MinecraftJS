@@ -771,7 +771,6 @@ export class Game {
     this.player.motionX += p.motionX;
     this.player.motionY += p.motionY;
     this.player.motionZ += p.motionZ;
-    this.sound.play('random.explode', p.x, p.y, p.z, 4, (1 + (Math.random() - Math.random()) * 0.2) * 0.7);
     this.particles.explosion(p.x, p.y, p.z, p.radius);
   }
 
@@ -799,8 +798,7 @@ export class Game {
   on_spawn_entity_weather(p) {
     this.renderer.lightningTicks = 2;
     this.entities.spawnLightning(p);
-    this.sound.play('ambient.weather.thunder', p.x, p.y, p.z, 10000, 0.8 + Math.random() * 0.2);
-    this.sound.play('random.explode', p.x, p.y, p.z, 2, 0.5 + Math.random() * 0.2);
+    // thunder / explosion sounds arrive from the server (EntityLightningBolt plays them through playSoundEffect)
   }
 
   on_open_window(p) {
@@ -1430,10 +1428,25 @@ export class Game {
     }
     if (this.thirdPerson === 0 && !this.debugCam) mat4.translate(pre, pre, 0, 0, -0.1);
     const look = this.lookVector(partial);
-    // F3 world direction axes (EntityRenderer.renderWorldDirections): just in front of the unbobbed eye
+    // F3 world direction axes (EntityRenderer.renderWorldDirections): identity modelview + orientCamera (no
+    // bobbing / hurt shake), under the projection renderHand left behind (70 degrees, not the FOV setting)
     const showAxes = this.showDebug && !this.hideGui && !this.reducedDebug && !this.settings.reducedDebugInfo;
-    const ad = this.thirdPerson === 0 ? 0.1 : 0;
-    this.debugLines.axesAt = showAxes ? [ex + look[0] * ad, ey + look[1] * ad, ez + look[2] * ad] : null;
+    if (showAxes) {
+      const view = mat4.create(), D = Math.PI / 180;
+      if (this.thirdPerson === 0) mat4.translate(view, view, 0, 0, -0.1);
+      else {
+        if (this.thirdPerson === 2) { mat4.rotateY(view, view, Math.PI); mat4.rotateX(view, view, -Math.PI); }
+        mat4.translate(view, view, 0, 0, -(this._thirdPersonDist || 4));
+        if (this.thirdPerson === 2) mat4.rotateX(view, view, Math.PI);
+      }
+      mat4.rotateX(view, view, pitch * D);
+      mat4.rotateY(view, view, (yaw + 180) * D);
+      let hf = 70;
+      const eb = blocks[this.world.getState(Math.floor(ex), Math.floor(ey), Math.floor(ez)) >> 4];
+      if (eb && eb.isWater) hf = hf * 60 / 70;
+      const proj = mat4.perspective(mat4.create(), hf * D, platform().width / platform().height, 0.05, 512);
+      this.debugLines.axesCam = { view, proj };
+    } else this.debugLines.axesCam = null;
     if (this.thirdPerson > 0) {
       let dist = 4;
       const dir = this.thirdPerson === 2 ? -1 : 1;
@@ -1444,6 +1457,7 @@ export class Game {
         if (hit && hit.dist < dist) dist = hit.dist;
       }
       ex += lx * dist; ey += ly * dist; ez += lz * dist;
+      this._thirdPersonDist = dist;
       if (this.thirdPerson === 2) { camYaw += 180; camPitch = -camPitch; }
     }
     let fov = this.settings.fov;

@@ -365,7 +365,7 @@ export class EntityManager {
     const e = this.map.get(p.collectedEntityId);
     const collector = p.collectorEntityId === this.game.entityId ? null : this.map.get(p.collectorEntityId);
     if (!e) return;
-    this.game.sound.play(e.kind === 'xp' ? 'random.orb' : 'random.pop', e.x, e.y, e.z, 0.2, ((Math.random() - Math.random()) * 0.7 + 1) * 2);
+    // (the pop / orb sound comes from the server: client-side World.playSoundAtEntity is a no-op in 1.8.9)
     // EntityPickupFX: fly to collector over 3 ticks
     e.pickup = { tick: 0, target: collector, start: [e.x, e.y, e.z] };
     e.pickable = false;

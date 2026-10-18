@@ -128,8 +128,9 @@ export function zombie(tw = 64, th = 64, villager = false) {
   m.animate = (mm, a) => {
     animateBiped(mm, a);
     const p = mm.parts;
-    const f = sin(a.swing * PI);
-    const f1 = sin((1 - (1 - a.swing) * (1 - a.swing)) * PI);
+    const sw = a.swing > 0 ? a.swing : 0; // swingProgress (0 when not swinging)
+    const f = sin(sw * PI);
+    const f1 = sin((1 - (1 - sw) * (1 - sw)) * PI);
     p.rightArm.rz = 0; p.leftArm.rz = 0;
     p.rightArm.ry = -(0.1 - f * 0.6); p.leftArm.ry = 0.1 - f * 0.6;
     p.rightArm.rx = -PI / 2; p.leftArm.rx = -PI / 2;
@@ -333,19 +334,19 @@ export function wolf() {
     animate: (m, a) => {
       const q = m.parts;
       if (a.sitting) {
-        q.mane.py = 16; q.mane.px = -1; q.mane.rx = PI * 2 / 5; q.mane.ry = 0;
+        q.mane.py = 16; q.mane.px = -1; q.mane.pz = -3; q.mane.rx = PI * 2 / 5; q.mane.ry = 0;
         q.body.py = 18; q.body.pz = 0; q.body.rx = PI / 4;
         q.tail.py = 21; q.tail.pz = 6;
-        q.leg1.py = 22.7; q.leg1.pz = 2; q.leg1.rx = PI * 3 / 2;
-        q.leg2.py = 22.7; q.leg2.pz = 2; q.leg2.rx = PI * 3 / 2;
+        q.leg1.px = -2.5; q.leg1.py = 22; q.leg1.pz = 2; q.leg1.rx = PI * 3 / 2;
+        q.leg2.px = 0.5; q.leg2.py = 22; q.leg2.pz = 2; q.leg2.rx = PI * 3 / 2;
         q.leg3.rx = 5.811947; q.leg3.px = -2.49; q.leg3.py = 17; q.leg3.pz = -4;
         q.leg4.rx = 5.811947; q.leg4.px = 0.51; q.leg4.py = 17; q.leg4.pz = -4;
       } else {
         q.body.py = 14; q.body.pz = 2; q.body.rx = PI / 2;
-        q.mane.py = 14; q.mane.pz = 2; q.mane.px = -1; q.mane.rx = PI / 2;
+        q.mane.py = 14; q.mane.pz = -3; q.mane.px = -1; q.mane.rx = PI / 2; // ModelWolf: mane sits in front of the body
         q.tail.py = 12; q.tail.pz = 8;
         q.leg1.py = 16; q.leg1.pz = 7; q.leg2.py = 16; q.leg2.pz = 7; q.leg3.py = 16; q.leg3.pz = -4; q.leg4.py = 16; q.leg4.pz = -4;
-        q.leg3.px = -2.5; q.leg4.px = 0.5;
+        q.leg1.px = -2.5; q.leg2.px = 0.5; q.leg3.px = -2.5; q.leg4.px = 0.5;
         q.leg1.rx = cos(a.ls * 0.6662) * 1.4 * a.lsa; q.leg2.rx = cos(a.ls * 0.6662 + PI) * 1.4 * a.lsa;
         q.leg3.rx = cos(a.ls * 0.6662 + PI) * 1.4 * a.lsa; q.leg4.rx = cos(a.ls * 0.6662) * 1.4 * a.lsa;
       }

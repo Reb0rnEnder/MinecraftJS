@@ -19,7 +19,9 @@ const EGG_COLORS = {
 };
 
 const ICON_PARAMS = colorParams(1, 1, 1, 1, 0.1, 0);
-const ICON_STATE = { blend: 'none', depthTest: true, depthWrite: true, cull: false };
+// RenderItem enables blending (SRC_ALPHA, ONE_MINUS_SRC_ALPHA): stained glass, ice etc. stay see-through
+const ICON_STATE = { blend: 'alpha', depthTest: true, depthWrite: false, depthFunc: 'equal', cull: false };
+const ICON_DEPTH_STATE = { blend: 'none', depthTest: true, depthWrite: true, colorWrite: false, cull: false };
 const DIR_N = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]];
 const SHADE_GUI = [0.5, 1.0, 0.8, 0.8, 0.6, 0.6];
 const rgbOf = (c) => [((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255];
@@ -210,7 +212,8 @@ export class ItemRenderer {
   }
 
   // RenderItem.setupGuiTransform (gui3d) + the model's gui transform + renderItem's scale/offset
-  _iconMatrix(x, y, z, display) {
+  // RenderItem.setupGuiTransform (3D) + GUI camera transform + renderItem (builtin renderers turn 180 around Y)
+  _iconMatrix(x, y, z, display, builtin = false) {
     const m = mat4.create();
     mat4.translate(m, m, x + 8, y + 8, z);
     mat4.scale(m, m, 1, 1, -1);
@@ -219,6 +222,7 @@ export class ItemRenderer {
     mat4.rotateY(m, m, -135 * D2R);
     transformMatrix(m, display && display.gui);
     mat4.scale(m, m, 0.5, 0.5, 0.5);
+    if (builtin) mat4.rotateY(m, m, Math.PI);
     mat4.translate(m, m, -0.5, -0.5, -0.5);
     return m;
   }
@@ -230,12 +234,16 @@ export class ItemRenderer {
       let im = this.iconMeshes.get(key);
       if (im === undefined) { im = this._blockIconMesh(m); this.iconMeshes.set(key, im); }
       if (!im) return;
-      gui.drawMesh({ mesh: im.mesh, pipeline: 'color', textures: [this.assets.atlasTexture], params: ICON_PARAMS, state: ICON_STATE }, this._iconMatrix(x, y, z, m.display));
+      // depth first, then colour only where a face is frontmost: hidden faces of translucent blocks (stained
+      // glass, ice) must not add a second layer of tint
+      const mtx = this._iconMatrix(x, y, z, m.display);
+      gui.drawMesh({ mesh: im.mesh, pipeline: 'color', textures: [this.assets.atlasTexture], params: ICON_PARAMS, state: ICON_DEPTH_STATE }, mtx);
+      gui.drawMesh({ mesh: im.mesh, pipeline: 'color', textures: [this.assets.atlasTexture], params: ICON_PARAMS, state: ICON_STATE }, mtx);
       return;
     }
     let node = this.iconMeshes.get(key);
     if (node === undefined) { node = this._builtinObject(item, m, true); if (node) this.iconMeshes.set(key, node); }
-    if (node) gui.drawNode(node, this._iconMatrix(x, y, z, m.display));
+    if (node) gui.drawNode(node, this._iconMatrix(x, y, z, m.display, true));
   }
 
   // GUI icon mesh (FORMAT.color) with vanilla GUI face shading baked into the vertex colours
@@ -340,7 +348,8 @@ export class ItemRenderer {
     if (res.builtin) {
       const o = res.builtin.clone();
       o.position.set(o.position.x - 0.5, o.position.y - 0.5, o.position.z - 0.5);
-      const g = new Node(); g.add(o);
+      // RenderItem.renderItem: isBuiltInRenderer -> rotate(180, Y) before translate(-0.5)
+      const g = new Node(); g.rotation.set(0, Math.PI, 0); g.add(o);
       return { obj: g, gui3d: true, model: res.model };
     }
     if (!res.mesh) return null;

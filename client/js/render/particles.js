@@ -63,7 +63,7 @@ export class Particles {
     if (this.list.length >= MAX) return;
     const s = this.setting();
     if (s === 2 && !p.important) return;
-    if (s === 1 && !p.important && rand() < 0.5) return;
+    if (s === 1 && !p.important && rand() * 3 < 1) return; // RenderGlobal.spawnEntityFX: 1 in 3 dropped
     p.age = 0;
     p.prevX = p.x; p.prevY = p.y; p.prevZ = p.z;
     p.mx = p.mx || 0; p.my = p.my || 0; p.mz = p.mz || 0;
@@ -90,6 +90,10 @@ export class Particles {
 
   tick() {
     const w = this.game.world;
+    if (this.emitters && this.emitters.length) {
+      for (const em of this.emitters) this._emit(em);
+      this.emitters = this.emitters.filter((em) => em.age < 3);
+    }
     const out = [];
     for (const p of this.list) {
       p.prevX = p.x; p.prevY = p.y; p.prevZ = p.z;
@@ -243,27 +247,45 @@ export class Particles {
     return tex ? g.assets.atlas.uv(tex) : null;
   }
 
+  // EntityParticleEmitter (CRIT / CRIT_MAGIC): 16 tries per tick for 3 ticks around the entity's middle
   crit(e, magic = false) {
-    for (let i = 0; i < 16; i++) {
-      const dx = rand() * 2 - 1, dy = rand() * 2 - 1, dz = rand() * 2 - 1;
-      if (dx * dx + dy * dy + dz * dz > 1) continue;
-      const x = e.x + dx * e.width / 4, y = e.y + e.height / 2 + dy * e.height / 4, z = e.z + dz * e.width / 4;
-      this.crit1(x, y, z, dx, dy + 0.2, dz, magic);
-    }
+    (this.emitters || (this.emitters = [])).push({ e, magic, age: 0 });
+    this._emit(this.emitters[this.emitters.length - 1]);
   }
   magicCrit(e) { this.crit(e, true); }
 
+  _emit(em) {
+    const e = em.e;
+    for (let i = 0; i < 16; i++) {
+      const dx = rand() * 2 - 1, dy = rand() * 2 - 1, dz = rand() * 2 - 1;
+      if (dx * dx + dy * dy + dz * dz > 1) continue;
+      const w = e.width || 0.6, h = e.height || 1.8;
+      this.crit1(e.x + dx * w / 4, e.y + h / 2 + dy * h / 4, e.z + dz * w / 4, dx, dy + 0.2, dz, em.magic);
+    }
+    em.age++;
+  }
+
+  // EntityCrit2FX (magic: tinted, next sprite): grows in over its first frames, green/blue fade
   crit1(x, y, z, mx, my, mz, magic) {
-    const p = this.fx(x, y, z, 0, 0, 0, { tex: 65, maxAge: 0 });
+    const p = this.fx(x, y, z, 0, 0, 0, { tex: magic ? 66 : 65 });
     p.mx = p.mx * 0.1 + mx * 0.4; p.my = p.my * 0.1 + my * 0.4; p.mz = p.mz * 0.1 + mz * 0.4;
-    const c = rand() * 0.3 + 0.6;
+    const c = rand() * 0.30000001192092896 + 0.6000000238418579;
     p.r = p.g = p.b = c;
     if (magic) { p.r *= 0.3; p.g *= 0.8; }
-    p.scale *= 0.75;
+    p.baseScale = (rand() * 0.5 + 0.5) * 2 * 0.75;
+    p.scale = p.baseScale;
     p.maxAge = Math.floor(6 / (rand() * 0.8 + 0.6));
-    p.gravity = 0.5;
-    p.drag = 0.7;
-    return this.add(p);
+    p.sizeFn = (q, pt) => q.baseScale * Math.min(1, Math.max(0, (q.age + pt) / q.maxAge * 32));
+    p.update = (q) => {
+      this.move(q, this.game.world);
+      q.g *= 0.96; q.b *= 0.9;
+      q.mx *= 0.7; q.my *= 0.7; q.mz *= 0.7;
+      q.my -= 0.02;
+      if (q.onGround) { q.mx *= 0.7; q.mz *= 0.7; }
+    };
+    const added = this.add(p);
+    if (added) { added.age = 1; added.prevX = added.x; added.prevY = added.y; added.prevZ = added.z; p.update(p); } // the constructor runs onUpdate once
+    return added;
   }
 
   smoke(x, y, z, mx, my, mz, scaleMul = 1) {

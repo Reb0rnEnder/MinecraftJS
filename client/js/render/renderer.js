@@ -52,7 +52,8 @@ export class Renderer {
     this.env = { sky: [0, 0, 0], skyVisible: true };
     this.outlineBox = null;
     this.breakState = null;
-    this.extraDraws = []; // functions(device) drawn in the world pass after entities, ordered by .order
+    this.extraDraws = [];
+    this.afterHand = []; // functions(device) drawn after the hand with depth cleared (F3 world axes) // functions(device) drawn in the world pass after entities, ordered by .order
     this._setupSky();
     this._setupOutline();
   }
@@ -443,7 +444,12 @@ export class Renderer {
       } else if (ct) d.draw({ mesh: this.cloudMesh, pipeline: 'color', textures: [ct], params: colorParams(cc[0], cc[1], cc[2], 0.8, 0.004, 1), state: { blend: 'alpha', depthWrite: false } });
     }
     for (const e of extras) if ((e.order || 0) >= 10) e(d);
-    if (hand) { d.clearDepth(); hand.draw(d); }
+    // EntityRenderer.renderWorldPass: clear depth, renderHand, then renderWorldDirections
+    if (hand || this.afterHand.some((f) => f.active && f.active())) {
+      d.clearDepth();
+      if (hand) hand.draw(d);
+      for (const f of this.afterHand) if (!f.active || f.active()) f(d);
+    }
   }
 
   // Title screen panorama (GuiMainMenu.drawPanorama): cube of 6 images, slowly rotating

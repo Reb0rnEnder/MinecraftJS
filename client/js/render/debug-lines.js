@@ -44,13 +44,17 @@ export class DebugLines {
     this.boxes = new LineBatch(game.device);
     this.axes = new LineBatch(game.device);
     this.axesAt = null; // [x, y, z] in world space, or null
-    const draw = (d) => {
-      this.boxes.draw(d, { blend: 'alpha', depthWrite: false, cull: false });
-      // drawn last with no depth test so the axes stay on top of the world (but under the hand)
-      this.axes.draw(d, { blend: 'alpha', depthWrite: false, depthTest: false, cull: false });
-    };
+    const draw = (d) => this.boxes.draw(d, { blend: 'alpha', depthWrite: false, cull: false });
     draw.order = 20;
     game.renderer.extraDraws.push(draw);
+    // EntityRenderer.renderWorldDirections: after the hand, with the hand's projection and an unbobbed camera
+    this.axesCam = null; // { view, proj } set by the game each frame, or null
+    const axes = (d) => {
+      d.setGlobals({ view: this.axesCam.view, proj: this.axesCam.proj, fogMode: 2 });
+      this.axes.draw(d, { blend: 'alpha', depthWrite: false, cull: false });
+    };
+    axes.active = () => !!this.axesCam;
+    game.renderer.afterHand.push(axes);
   }
 
   // Called once per frame after the entity renderer posed everything
@@ -81,10 +85,9 @@ export class DebugLines {
         }
       }
     }
-    const a = this.axesAt;
-    if (a) {
-      // AxisAlignedBB(0,0,0, 0.005,1e-4,1e-4) red / (.., 0.0033, ..) green / (.., .., 0.005) blue
-      const [x, y, z] = a;
+    if (this.axesCam) {
+      // AxisAlignedBB(0,0,0, 0.005,1e-4,1e-4) red / (.., 0.0033, ..) green / (.., .., 0.005) blue, at the eye
+      const x = 0, y = 0, z = 0;
       this.axes.box(x, y, z, x + 0.005, y + 1e-4, z + 1e-4, 1, 0, 0, 1);
       this.axes.box(x, y, z, x + 1e-4, y + 1e-4, z + 0.005, 0, 0, 1, 1);
       this.axes.box(x, y, z, x + 1e-4, y + 0.0033, z + 1e-4, 0, 1, 0, 1);

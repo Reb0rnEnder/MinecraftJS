@@ -146,11 +146,10 @@ export class TileEntityRenderer {
       if (t.type === 'beacon' && beaconUpdate) this._updateBeacon(t);
       if (t.type === 'chest') {
         t.prevLid = t.lid;
-        if (t.open > 0 && t.lid === 0 && !t.secondary) g.sound.play('random.chestopen', t.x + 0.5, t.y + 0.5, t.z + 0.5, 0.5, Math.random() * 0.1 + 0.9);
         if ((t.open === 0 && t.lid > 0) || (t.open > 0 && t.lid < 1)) {
           const before = t.lid;
           t.lid = Math.max(0, Math.min(1, t.lid + (t.open > 0 ? 0.1 : -0.1)));
-          if (t.lid < 0.5 && before >= 0.5 && !t.secondary) g.sound.play('random.chestclosed', t.x + 0.5, t.y + 0.5, t.z + 0.5, 0.5, Math.random() * 0.1 + 0.9);
+          void before; // chest open/close sounds come from the server's TileEntityChest
         }
       } else if (t.type === 'book') {
         // TileEntityEnchantmentTable.update

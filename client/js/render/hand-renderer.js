@@ -16,7 +16,8 @@ export class HandRenderer {
     this.root = new Node();
     this.proj = mat4.create();
     this.view = mat4.create();
-    this.atlasMat = entityMaterial(() => game.assets.atlasTexture, { alphaTest: 0.1 });
+    // items render with blending on (RenderItem), so translucent blocks stay translucent in the hand
+    this.atlasMat = entityMaterial(() => game.assets.atlasTexture, { alphaTest: 0.1, transparent: true });
     this.renderArmPitch = 0; this.prevRenderArmPitch = 0;
     this.renderArmYaw = 0; this.prevRenderArmYaw = 0;
     this.itemKey = undefined;
@@ -134,7 +135,9 @@ export class HandRenderer {
     R(base, (pitch - armPitch) * 0.1, 1, 0, 0);
     R(base, (yaw - armYaw) * 0.1, 0, 1, 0);
     const equip = 1 - (it.prevEquipProgress + (it.equipProgress - it.prevEquipProgress) * partial);
-    const sw = it.swinging || it.swingProgress > 0 ? (it.prevSwingProgress + (it.swingProgress - it.prevSwingProgress) * partial) : 0;
+    let swd = it.swingProgress - it.prevSwingProgress;
+    if (swd < 0) swd += 1;
+    const sw = it.prevSwingProgress + swd * partial;
     T(base, -0.4 * sin(sqrt(sw) * Math.PI), 0.2 * sin(sqrt(sw) * Math.PI * 2), -0.2 * sin(sw * Math.PI));
     // getMapAngleFromPitch
     let f3 = 1 - pitch / 45 + 0.1;
@@ -232,7 +235,10 @@ export class HandRenderer {
       R(f3, 1, 0, 0);
     }
     const equip = 1 - (it.prevEquipProgress + (it.equipProgress - it.prevEquipProgress) * partial);
-    const swing = it.swinging || it.swingProgress > 0 ? (it.prevSwingProgress + (it.swingProgress - it.prevSwingProgress) * partial) : 0;
+    // EntityLivingBase.getSwingProgress: when the swing wraps to 0 the arm finishes forward instead of snapping back
+    let sd = it.swingProgress - it.prevSwingProgress;
+    if (sd < 0) sd += 1;
+    const swing = it.prevSwingProgress + sd * partial;
     const armPitch = this.prevRenderArmPitch + (this.renderArmPitch - this.prevRenderArmPitch) * partial;
     const armYaw = this.prevRenderArmYaw + (this.renderArmYaw - this.prevRenderArmYaw) * partial;
     const pitch = pl.prevPitch + (pl.pitch - pl.prevPitch) * partial;
