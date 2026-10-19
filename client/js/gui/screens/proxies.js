@@ -157,13 +157,11 @@ class ProxyList extends SlotList {
       gui.text('§7' + ms, x + lw - gui.textWidth(ms) - 15 - 2, y + 1, 0x808080, false);
     }
     gui.blit('gui/icons.png', x + lw - 15, y, k * 10, 176 + l * 8, 10, 8);
-    gui.blit('misc/unknown_server.png', x, y, 0, 0, 32, 32, 32, 32);
     const rx = mx - x, ry = my - y;
     if (my >= this.top && my <= this.bottom && rx >= lw - 15 && rx <= lw - 5 && ry >= 0 && ry <= 8) s.hoverText = hover;
-    // Use / move arrows over the icon, like the server list
+    // Use / move arrows on hover, in the spot where the server list has its icons (proxies have none)
     if (s.game.settings.touchscreen || this.slotAt(mx, my) === i) {
       const SEL = 'gui/server_selection.png';
-      gui.rect(x, y, x + 32, y + 32, 0xa0909090);
       const over = my >= this.top && my <= this.bottom;
       gui.blit(SEL, x, y, 0, over && rx < 32 && rx > 16 && ry >= 0 && ry < 32 ? 32 : 0, 32, 32);
       if (i > 0) gui.blit(SEL, x, y, 96, over && rx >= 0 && rx < 16 && ry >= 0 && ry < 16 ? 32 : 0, 32, 32);

@@ -61,14 +61,14 @@ export class TitleScreen extends Screen {
       gui.text(name, acct.x + 20, acct.y + 6, hov ? 0xffffa0 : 0xe0e0e0, true);
     };
     this.buttons.push(acct);
-    // Proxy servers (below the account button), with the selected proxy's ping bars (no proxy: failed bars)
+    // Proxy servers (below the account button), the selected proxy's ping bars on the left (no proxy: failed bars)
     const prox = new Button(21, this.width - 104, 28, 100, 20, '', () => g.screens.open(new ProxiesScreen(g, this)));
     prox.render = (gui, mx, my) => {
       const p = g.proxies.current();
       const r = p ? ensureTested(p.url) : { error: 'none' };
       const hov = prox.hovered(mx, my);
       gui.button(prox.x, prox.y, prox.w, prox.h, '', hov);
-      gui.textCentered(tr('minecraftjs.proxies.title'), prox.x + (prox.w - 14) / 2 + 2, prox.y + 6, hov ? 0xffffa0 : 0xe0e0e0, true);
+      gui.textCentered(tr('minecraftjs.proxies.title'), prox.x + 14 + (prox.w - 14) / 2 - 2, prox.y + 6, hov ? 0xffffa0 : 0xe0e0e0, true);
       let k = 0, l, hover;
       if (r.pending) {
         k = 1;
@@ -82,7 +82,7 @@ export class TitleScreen extends Screen {
         l = r.ping < 150 ? 0 : r.ping < 300 ? 1 : r.ping < 600 ? 2 : r.ping < 1000 ? 3 : 4;
         hover = r.ping + 'ms';
       }
-      gui.blit('gui/icons.png', prox.x + prox.w - 14, prox.y + 6, k * 10, 176 + l * 8, 10, 8);
+      gui.blit('gui/icons.png', prox.x + 4, prox.y + 6, k * 10, 176 + l * 8, 10, 8);
       if (hov) this.hoverText = p ? p.name + ': ' + hover : hover;
     };
     this.buttons.push(prox);

@@ -671,6 +671,17 @@ export class Interaction {
     else this.remoteBreaks.set(entityId, { pos, stage, time: this.game.ticks });
   }
 
+  // Light for the crack overlay: the brightest sky and block light around the block (its exposed faces)
+  _lightAround(p) {
+    const w = this.game.world;
+    let sky = 0, block = 0;
+    for (const [dx, dy, dz] of [[0, 0, 0], [0, 1, 0], [0, -1, 0], [1, 0, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1]]) {
+      sky = Math.max(sky, w.getSkyLight(p.x + dx, p.y + dy, p.z + dz));
+      block = Math.max(block, w.getBlockLight(p.x + dx, p.y + dy, p.z + dz));
+    }
+    return { sky, block };
+  }
+
   renderSelection(partial) {
     const g = this.game;
     const r = g.renderer;
@@ -685,13 +696,13 @@ export class Interaction {
       const stage = Math.floor(dmg * 10) - 1;
       const st = g.world.getState(this.curBlock.x, this.curBlock.y, this.curBlock.z);
       const box = g.world.selectionBox(st, this.curBlock.x, this.curBlock.y, this.curBlock.z);
-      r.setBreakProgress(this.curBlock, stage, box);
+      r.setBreakProgress(this.curBlock, stage, box, this._lightAround(this.curBlock));
     } else {
       let shown = false;
       for (const rb of this.remoteBreaks.values()) {
         if (g.ticks - rb.time > 400) continue;
         const st = g.world.getState(rb.pos.x, rb.pos.y, rb.pos.z);
-        r.setBreakProgress(rb.pos, rb.stage, g.world.selectionBox(st, rb.pos.x, rb.pos.y, rb.pos.z));
+        r.setBreakProgress(rb.pos, rb.stage, g.world.selectionBox(st, rb.pos.x, rb.pos.y, rb.pos.z), this._lightAround(rb.pos));
         shown = true;
         break;
       }

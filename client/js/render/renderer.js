@@ -13,6 +13,7 @@ const P_SOLID = terrainParams(0, 1);
 const P_CUTOUT = terrainParams(0.1, 1);
 const P_TRANSLUCENT = terrainParams(0.004, 1);
 const P_WHITE = colorParams(1, 1, 1, 1);
+const P_BREAK = colorParams(1, 1, 1, 1, 0.1);
 
 // Builds a quad list in FORMAT.color: quads = [[x,y,z,u,v,r,g,b,a] x4, ...]
 export function colorMesh(device, quads, opts = {}) {
@@ -133,12 +134,14 @@ export class Renderer {
     this.cloudMesh = colorMesh(d, [[[0, 0, 0, 0, 0, 1, 1, 1, 1], [0, 0, 1, 0, 1, 1, 1, 1, 1], [1, 0, 1, 1, 1, 1, 1, 1, 1], [1, 0, 0, 1, 0, 1, 1, 1, 1]]], { dynamic: true });
     // Break overlay unit cube
     const cube = [];
-    const c = (x, y, z, u, v) => [x, y, z, u, v, 1, 1, 1, 1];
-    cube.push([c(0, 1, 0, 0, 0), c(0, 1, 1, 0, 1), c(1, 1, 1, 1, 1), c(1, 1, 0, 1, 0)]);
-    cube.push([c(0, 0, 1, 0, 0), c(0, 0, 0, 0, 1), c(1, 0, 0, 1, 1), c(1, 0, 1, 1, 0)]);
-    cube.push([c(1, 1, 0, 0, 0), c(1, 0, 0, 0, 1), c(0, 0, 0, 1, 1), c(0, 1, 0, 1, 0)]);
+    // Vertex colour = vanilla's face shading (up 1, down 0.5, north/south 0.8, east/west 0.6)
+    let shade = 1;
+    const c = (x, y, z, u, v) => [x, y, z, u, v, shade, shade, shade, 1];
+    shade = 1; cube.push([c(0, 1, 0, 0, 0), c(0, 1, 1, 0, 1), c(1, 1, 1, 1, 1), c(1, 1, 0, 1, 0)]);
+    shade = 0.5; cube.push([c(0, 0, 1, 0, 0), c(0, 0, 0, 0, 1), c(1, 0, 0, 1, 1), c(1, 0, 1, 1, 0)]);
+    shade = 0.8; cube.push([c(1, 1, 0, 0, 0), c(1, 0, 0, 0, 1), c(0, 0, 0, 1, 1), c(0, 1, 0, 1, 0)]);
     cube.push([c(0, 1, 1, 0, 0), c(0, 0, 1, 0, 1), c(1, 0, 1, 1, 1), c(1, 1, 1, 1, 0)]);
-    cube.push([c(0, 1, 0, 0, 0), c(0, 0, 0, 0, 1), c(0, 0, 1, 1, 1), c(0, 1, 1, 1, 0)]);
+    shade = 0.6; cube.push([c(0, 1, 0, 0, 0), c(0, 0, 0, 0, 1), c(0, 0, 1, 1, 1), c(0, 1, 1, 1, 0)]);
     cube.push([c(1, 1, 1, 0, 0), c(1, 0, 1, 0, 1), c(1, 0, 0, 1, 1), c(1, 1, 0, 1, 0)]);
     this.cubeMesh = colorMesh(d, cube);
   }
@@ -171,13 +174,15 @@ export class Renderer {
 
   setBreakTextures(paths) { this.breakTextures = paths; }
 
-  setBreakProgress(pos, stage, box) {
+  // light: { sky, block } levels at the block; the overlay is lit like the block (vanilla draws it through the
+  // block's own model with the lightmap on), otherwise the 2x multiply blend would brighten dark blocks
+  setBreakProgress(pos, stage, box, light = { sky: 15, block: 15 }) {
     if (!pos || stage < 0) { this.breakState = null; return; }
     const b = box || [0, 0, 0, 1, 1, 1];
     const m = mat4.create();
     mat4.translate(m, m, pos.x + b[0] - 0.001, pos.y + b[1] - 0.001, pos.z + b[2] - 0.001);
     mat4.scale(m, m, b[3] - b[0] + 0.002, b[4] - b[1] + 0.002, b[5] - b[2] + 0.002);
-    this.breakState = { tex: `blocks/destroy_stage_${Math.min(9, stage)}.png`, model: m };
+    this.breakState = { tex: `blocks/destroy_stage_${Math.min(9, stage)}.png`, model: m, light };
   }
 
   // ---------------------------------------------------------------- per tick / frame
@@ -422,7 +427,13 @@ export class Renderer {
     if (this.outlineBox) d.draw({ mesh: this.outlineMesh, pipeline: 'color', params: P_WHITE, primitive: 'lines', state: { blend: 'alpha', depthWrite: false } });
     if (this.breakState) {
       const t = this.assets.texture(this.breakState.tex);
-      if (t) d.draw({ mesh: this.cubeMesh, pipeline: 'color', textures: [t], params: P_WHITE, model: this.breakState.model, state: { blend: 'multiply', depthWrite: false, polygonOffset: true } });
+      if (t) {
+        // RenderGlobal.preRenderDamagedBlocks: blendFunc(DST_COLOR, SRC_COLOR), alpha test 0.1
+        const { sky, block } = this.breakState.light;
+        const i = (sky * 16 + block) * 4, L = this.lightmapData;
+        colorParams(L[i] / 255, L[i + 1] / 255, L[i + 2] / 255, 1, 0.1, 0, P_BREAK);
+        d.draw({ mesh: this.cubeMesh, pipeline: 'color', textures: [t], params: P_BREAK, model: this.breakState.model, state: { blend: 'multiply', depthWrite: false, polygonOffset: true } });
+      }
     }
     const extras = [...this.extraDraws].sort((a, b) => (a.order || 0) - (b.order || 0));
     for (const e of extras) if ((e.order || 0) < 10) e(d);
