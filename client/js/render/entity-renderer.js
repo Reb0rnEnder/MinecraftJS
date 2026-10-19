@@ -1059,8 +1059,8 @@ export class EntityRenderer {
     const g = this.game;
     let name = null;
     if (e.kind === 'player') {
+      // EntityPlayer.getDisplayName: team-formatted profile name; a custom name tag on a player is never shown
       if (e.invisible) name = null;
-      else if (e.customName) name = e.customName;
       else name = g.scoreboard.displayName ? g.scoreboard.displayName(e.uuid, e.name) : e.name;
     } else if (e.kind === 'armorstand') name = e.customName && e.nameVisible ? e.customName : null; // RenderArmorStand
     else if (e.customName && (e.nameVisible || (g.interaction.target && g.interaction.target.entity === e))) name = e.customName;

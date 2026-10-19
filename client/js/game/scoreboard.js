@@ -102,8 +102,15 @@ export class Scoreboard {
     const p = this.players.get(uuid);
     const name = p ? p.name : fallback;
     if (!name) return null;
+    // RendererLivingEntity.canRenderName: the team's nametag visibility, relative to the viewer's own team
     const t = this.playerTeam.get(name);
-    if (t && (t.nameTagVisibility === 'never')) return null;
+    if (t) {
+      const mine = this.playerTeam.get(this.game.username);
+      const v = t.nameTagVisibility;
+      if (v === 'never') return null;
+      if (v === 'hideForOtherTeams' && mine && mine !== t) return null;
+      if (v === 'hideForOwnTeam' && mine && mine === t) return null;
+    }
     return this.formatName(name);
   }
 
