@@ -14,7 +14,7 @@ export const onOff = (v) => tr(v ? 'options.on' : 'options.off');
 
 export const MINECRAFTJS_EN = {
   'minecraftjs.version': 'MinecraftJS 1.8.9',
-  'minecraftjs.notAffiliated': 'Not affiliated with Mojang AB or Microsoft.',
+  'minecraftjs.notAffiliated': 'Not affiliated with Mojang AB',
   'minecraftjs.accounts.title': 'Accounts',
   'minecraftjs.accounts.use': 'Use Account',
   'minecraftjs.accounts.addMicrosoft': 'Add Microsoft Account',

@@ -133,6 +133,47 @@ export class Pistons {
   constructor(game) {
     this.game = game;
     this.moving = new Map(); // "x,y,z" -> TileEntityPiston { x, y, z, state, facing, extending, head, progress, lastProgress }
+    this._tmp = [];
+  }
+
+  // BlockPistonMoving.getBoundingBox (1.8): the carried block's collision bounds at its cell, the side it moves
+  // away from pulled in by f along the facing; null when it has no box
+  _box(t, f) {
+    const out = this._tmp; out.length = 0;
+    this.game.world.collisionBoxes(t.x, t.y, t.z, out, t.state);
+    if (!out.length) return null;
+    const b = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity];
+    for (const c of out) for (let k = 0; k < 3; k++) { b[k] = Math.min(b[k], c[k]); b[k + 3] = Math.max(b[k + 3], c[k + 3]); }
+    const d = FACING[t.facing];
+    for (let k = 0; k < 3; k++) {
+      if (d[k] < 0) b[k] -= d[k] * f; else b[k + 3] -= d[k] * f;
+    }
+    return b;
+  }
+
+  // BlockPistonMoving.getCollisionBoundingBox: progress at the last tick (getProgress(0)), from the far end when
+  // extending
+  collision(bb, out) {
+    for (const t of this.moving.values()) {
+      if (t.x + 2 < bb[0] || t.x - 1 > bb[3] || t.y + 2 < bb[1] || t.y - 1 > bb[4] || t.z + 2 < bb[2] || t.z - 1 > bb[5]) continue;
+      const c = this._box(t, t.extending ? 1 - t.lastProgress : t.lastProgress);
+      if (c && c[3] > bb[0] && c[0] < bb[3] && c[4] > bb[1] && c[1] < bb[4] && c[5] > bb[2] && c[2] < bb[5]) out.push(c);
+    }
+  }
+
+  // TileEntityPiston.launchWithSlimeBlock for the local player: inside the block's box it is moved along the facing
+  // by amount (an extending slime block launches it instead)
+  _launch(t, p, amount) {
+    const g = this.game, pl = g.player;
+    if (!pl || pl.spectator) return;
+    const b = this._box(t, t.extending ? 1 - p : p - 1);
+    if (!b) return;
+    const e = pl.bb();
+    if (!(b[3] > e[0] && b[0] < e[3] && b[4] > e[1] && b[1] < e[4] && b[5] > e[2] && b[2] < e[5])) return;
+    const d = FACING[t.facing];
+    if ((blocks[t.state >> 4] || {}).name === 'slime' && t.extending) {
+      if (d[0]) pl.motionX = d[0]; else if (d[1]) pl.motionY = d[1]; else pl.motionZ = d[2];
+    } else pl.moveEntity(g.world, amount * d[0], amount * d[1], amount * d[2]);
   }
   clear() { this.moving.clear(); }
 
@@ -212,8 +253,11 @@ export class Pistons {
   tick() {
     for (const t of [...this.moving.values()]) {
       t.lastProgress = t.progress;
-      if (t.lastProgress >= 1) this._clearTile(t);
-      else t.progress = Math.min(1, t.progress + 0.5);
+      if (t.lastProgress >= 1) { this._launch(t, 1, 0.25); this._clearTile(t); }
+      else {
+        t.progress = Math.min(1, t.progress + 0.5);
+        if (t.extending) this._launch(t, t.progress, t.progress - t.lastProgress + 0.0625);
+      }
     }
   }
 

@@ -292,12 +292,15 @@ export class World {
   // ---------------- Collision ----------------
 
   // Collision boxes for the block at x,y,z in world coordinates
-  collisionBoxes(x, y, z, out) {
-    const state = this.getState(x, y, z);
+  // state: the block's collision boxes as if it were `state` (moving piston blocks ask for the block they carry)
+  collisionBoxes(x, y, z, out, state = this.getState(x, y, z)) {
     const id = state >> 4;
     if (id === 0) return;
     const b = blocks[id];
     if (!b) return;
+    // BlockPistonMoving: its box is wherever the piston has moved the carried block, which may be the
+    // neighbouring cell; getCollisions asks the moving blocks directly (movingCollider)
+    if (b.name === 'piston_extension') return;
     const m = state & 15;
     const add = (a, bb, c, d, e, f) => out.push([x + a, y + bb, z + c, x + d, y + e, z + f]);
     if (b.isFence || b.isPane || b.isWall) {
@@ -423,6 +426,7 @@ export class World {
         }
       }
     }
+    if (this.movingCollider) this.movingCollider(bb, out);
     return out;
   }
 

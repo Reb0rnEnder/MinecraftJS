@@ -360,6 +360,7 @@ export class Game {
     // World.getCollidingBoundingBoxes' entity part: boats are solid to every mover (getCollisionBoundingBox), and a
     // moving boat also collides with every other entity (EntityBoat.getCollisionBox). The mover's vehicle and rider
     // are skipped.
+    w.movingCollider = (bb, out) => this.pistons.collision(bb, out);
     w.entityCollider = (bb, mover) => {
       const out = [];
       const self = mover.entity || null; // the boat being simulated, or null for the player
