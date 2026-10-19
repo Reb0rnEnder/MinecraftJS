@@ -45,10 +45,14 @@ export class World {
     this.hasSky = dim === 0;
   }
 
+  // A new world (vanilla makes a new WorldClient on join and dimension change, with fresh WorldInfo: clear weather)
   clear() {
     for (const c of this.chunks.values()) this.emit('chunkUnloaded', c);
     this.chunks.clear();
     this._gen++;
+    this.raining = false;
+    this.rainStrength = this.prevRain = 0;
+    this.thunderStrength = 0;
   }
 
   loadChunk(x, z, groundUp, bitMap, data, offset, skyLight) {

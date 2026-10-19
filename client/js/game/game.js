@@ -522,6 +522,13 @@ export class Game {
   on_keep_alive(p) { this.send(C.keepAlive(p.keepAliveId)); }
 
   on_login(p) {
+    // handleJoinGame always starts a new WorldClient (proxies may send another Join Game on server switch)
+    if (this.inWorld) {
+      this.world.clear();
+      this._resetMeshing();
+      this.entities.clear();
+      this.tileRenderer.clear();
+    }
     this.entityId = p.entityId;
     if (this.gameMode !== (p.gameMode & 7)) this.previousGameMode = this.gameMode;
     this.gameMode = p.gameMode & 7;
