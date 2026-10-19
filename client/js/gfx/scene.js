@@ -113,7 +113,7 @@ export class Node {
   // Collect visible drawables with their world matrices
   collect(out) {
     if (!this.visible) return out;
-    for (const d of this.drawables) out.push({ d, world: this.world });
+    for (const d of this.drawables) if (d.visible !== false) out.push({ d, world: this.world });
     for (const c of this.children) c.collect(out);
     return out;
   }

@@ -169,7 +169,7 @@ export class Assets {
     if (!meta) throw new Error('Game assets not found: put the assets/ folder (built with `npm run assets`) next to index.html');
     try { this.defaultPackMeta = JSON.parse(decodeUtf8(meta)); } catch (e) { this.defaultPackMeta = {}; }
     step('Loading game data...', 5);
-    const names = ['blocks', 'items', 'entities', 'blockCollisionShapes', 'biomes', 'foods', 'effects', 'enchantments', 'windows', 'particles', 'materials', 'recipes', 'sounds'];
+    const names = ['blocks', 'items', 'entities', 'blockCollisionShapes', 'biomes', 'foods', 'effects', 'enchantments', 'windows', 'particles', 'materials', 'recipes', 'sounds', 'creative'];
     const datas = await Promise.all(names.map((n) => this.source.data(n)));
     names.forEach((n, i) => { this.data[n] = datas[i]; });
     // CraftingManager recipes in id order (id = 11 + index; 0 - 10 are the special recipes)
@@ -242,7 +242,7 @@ export class Assets {
 
     step('Loading interface...', 75);
     await Promise.all([
-      'gui/widgets.png', 'gui/icons.png', 'font/ascii.png', 'gui/options_background.png', 'gui/title/minecraft.png', 'gui/title/edition.png',
+      'gui/widgets.png', 'gui/icons.png', 'font/ascii.png', 'font/ascii_sga.png', 'gui/options_background.png', 'gui/title/minecraft.png', 'gui/title/edition.png',
       'gui/container/inventory.png', 'environment/sun.png', 'environment/moon_phases.png', 'environment/clouds.png',
       'misc/vignette.png', 'particle/particles.png', 'misc/shadow.png',
     ].map((p) => this.imageAsync(p).catch(() => null)));

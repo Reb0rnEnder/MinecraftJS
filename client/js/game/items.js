@@ -72,29 +72,94 @@ export class Items {
 
   potionName(item) { return this.names.potion(item); }
 
-  // Approximation of PotionHelper for common damage values
-  potionEffects(item) {
+  // 1.9+ potions, splash / lingering potions and tipped arrows: the PotionType in tag "Potion" (client/data/creative.json,
+  // read from the game) plus CustomPotionEffects (PotionUtils.getEffectsFromStack)
+  potionType(item) {
     const tag = this.nbt(item);
-    if (tag && tag.CustomPotionEffects) return tag.CustomPotionEffects.map((e) => ({ id: e.Id, amplifier: e.Amplifier || 0, duration: e.Duration || 0 }));
-    const d = item.damage & 15;
-    const map = { 1: 10, 2: 1, 3: 12, 4: 19, 5: 6, 6: 16, 8: 18, 9: 5, 10: 2, 11: 8, 12: 7, 13: 13, 14: 14 };
-    const id = map[d];
-    if (!id) return [];
-    return [{ id, amplifier: item.damage & 32 ? 1 : 0, duration: 0 }];
+    const P = this.assets.data.creative.potions;
+    let n = tag && typeof tag.Potion === 'string' ? tag.Potion : '';
+    if (n && !n.includes(':')) n = 'minecraft:' + n;
+    return P[n] || P['minecraft:empty'];
   }
 
-  potionColor(item) {
-    const colors = { 1: 0x7cafc6, 2: 0x5a6c81, 3: 0xd9c043, 4: 0x4a4217, 5: 0x932423, 6: 0xf82423, 7: 0x430a09, 8: 0x786297,
-      9: 0x551d4a, 10: 0xcd5cab, 11: 0x99453a, 12: 0xe49a3a, 13: 0x2e5299, 14: 0x7f8392, 15: 0x1f1f23, 16: 0x1f1fa1,
-      17: 0x587653, 18: 0x484d48, 19: 0x4e9331, 20: 0x352a27, 21: 0xf87d23, 22: 0x2552a5, 23: 0xf82423 };
-    const eff = this.potionEffects(item);
-    if (!eff.length) return 0x385dc6;
-    let r = 0, g = 0, b = 0, n = 0;
-    for (const e of eff) {
-      const c = colors[e.id] || 0x385dc6;
-      for (let i = 0; i <= e.amplifier; i++) { r += ((c >> 16) & 255) / 255; g += ((c >> 8) & 255) / 255; b += (c & 255) / 255; n++; }
+  potionEffects(item) {
+    const out = this.potionType(item).effects.map(([id, duration, amplifier]) => ({ id, duration, amplifier, particles: true }));
+    const tag = this.nbt(item);
+    if (tag && Array.isArray(tag.CustomPotionEffects)) {
+      for (const e of tag.CustomPotionEffects) {
+        if (!this.assets.data.creative.effects[e.Id & 255]) continue; // PotionEffect.readCustomPotionEffectFromNBT
+        out.push({ id: e.Id & 255, amplifier: e.Amplifier | 0, duration: e.Duration | 0, particles: e.ShowParticles === undefined ? true : !!e.ShowParticles });
+      }
     }
-    return (((r / n) * 255) << 16) | (((g / n) * 255) << 8) | ((b / n) * 255);
+    return out;
+  }
+
+  // PotionUtils.getColor
+  potionColor(item) {
+    const tag = this.nbt(item);
+    if (tag && typeof tag.CustomPotionColor === 'number') return tag.CustomPotionColor;
+    if (this.potionType(item).name === 'empty') return 0xf800f8;
+    return this.effectsColor(this.potionEffects(item));
+  }
+
+  // PotionUtils.getPotionColorFromEffectList
+  effectsColor(effects) {
+    if (!effects.length) return 3694022;
+    const E = this.assets.data.creative.effects, f32 = Math.fround;
+    let r = 0, g = 0, b = 0, n = 0;
+    for (const e of effects) {
+      if (!e.particles) continue;
+      const c = E[e.id] ? E[e.id].color : 0, l = e.amplifier + 1;
+      r = f32(r + f32(f32(l * ((c >> 16) & 255)) / 255)); g = f32(g + f32(f32(l * ((c >> 8) & 255)) / 255)); b = f32(b + f32(f32(l * (c & 255)) / 255));
+      n += l;
+    }
+    if (n === 0) return 0;
+    const ch = (v) => Math.trunc(f32(f32(v / n) * 255));
+    return (ch(r) << 16) | (ch(g) << 8) | ch(b);
+  }
+
+  // PotionUtils.addPotionTooltip (durationFactor: potions 1, lingering 0.25, tipped arrows 0.125)
+  potionTooltip(item, lines, factor) {
+    const E = this.assets.data.creative.effects;
+    const t = (k, ...a) => this.assets.translate(k, a).trim();
+    const effects = this.potionEffects(item), mods = [];
+    if (!effects.length) lines.push('§7' + t('effect.none'));
+    for (const e of effects) {
+      const def = E[e.id];
+      if (!def) continue;
+      let s = t(def.name);
+      for (const [attr, amount, op] of def.modifiers) mods.push([attr, amount * (e.amplifier + 1), op]); // getAttributeModifierAmount
+      if (e.amplifier > 0) s += ' ' + t('potion.potency.' + e.amplifier);
+      if (e.duration > 20) {
+        // Potion.getPotionDurationString -> StringUtils.ticksToElapsedTime
+        const ticks = Math.floor(Math.fround(e.duration * factor)), sec = Math.floor(ticks / 20), m = Math.floor(sec / 60), r = sec % 60;
+        s += ' (' + (e.duration >= 32767 && e.maxDuration ? '**:**' : m + ':' + (r < 10 ? '0' : '') + r) + ')';
+      }
+      lines.push((def.bad ? '§c' : '§9') + s);
+    }
+    if (!mods.length) return;
+    lines.push('');
+    lines.push('§5' + t('potion.whenDrank'));
+    const fmt = (d) => String(Math.round(d * 100) / 100); // ItemStack.DECIMALFORMAT "#.##"
+    for (const [attr, amount, op] of mods) {
+      const d = op === 1 || op === 2 ? amount * 100 : amount;
+      if (amount > 0) lines.push('§9' + t('attribute.modifier.plus.' + op, fmt(d), t('attribute.name.' + attr)));
+      else if (amount < 0) lines.push('§c' + t('attribute.modifier.take.' + op, fmt(-d), t('attribute.name.' + attr)));
+    }
+  }
+
+  // ItemMonsterPlacer.getNamedIdFrom: the entity in tag EntityTag.id, or null
+  eggEntity(item) {
+    const tag = this.nbt(item);
+    let id = tag && tag.EntityTag && typeof tag.EntityTag.id === 'string' ? tag.EntityTag.id : null;
+    if (id && !id.includes(':')) id = 'minecraft:' + id;
+    return id;
+  }
+
+  // EntityList.ENTITY_EGGS: [primary, secondary, translation name] or null
+  eggInfo(item) {
+    const id = this.eggEntity(item);
+    return (id && this.assets.data.creative.eggs[id]) || null;
   }
 
   enchantments(item) {
@@ -109,6 +174,22 @@ export class Items {
     if (item.id === 403 || item.id === 322 && item.damage === 1) return true;
     if (item.id === 384 || item.id === 399) return true;
     return this.enchantments(item).length > 0;
+  }
+
+  // ItemStack.hasEffect (the glint): enchanted items, plus ItemPotion.hasEffect for potions with any effect (splash and
+  // lingering potions too)
+  hasEffect(item) {
+    if (!item) return false;
+    if ((item.id === 373 || item.id === 438 || item.id === 441) && this.potionEffects(item).length) return true;
+    return this.isEnchanted(item);
+  }
+
+  // Enchantment.getTranslatedName: curses in red, the level unless a single-level enchantment at level 1
+  enchantmentName(id, level) {
+    const def = this.assets.data.enchantments.find((e) => e.id === id);
+    let s = this.assets.translate('enchantment.' + (ENCH_NAMES[id] || 'unknown'));
+    if (def && def.curse) s = '§c' + s;
+    return level === 1 && def && def.maxLevel === 1 ? s : s + ' ' + this.assets.translate('enchantment.level.' + level);
   }
 
   enchantLevel(item, id) {
@@ -136,14 +217,10 @@ export class Items {
     }
     lines.push(color + name);
     const t = (k, ...a) => this.assets.translate(k, a);
-    if (item.id === 373) {
-      const effects = this.potionEffects(item);
-      if (!effects.length) lines.push('§7' + t('potion.empty'));
-      for (const e of effects) {
-        const pot = e.amplifier > 0 ? t('potion.potency.' + e.amplifier) : '';
-        lines.push('§9' + this.names.effectName(e.id) + (pot && !pot.startsWith('potion.') ? ' ' + pot : ''));
-      }
-    }
+    // Item.addInformation: ItemPotion (and splash), ItemLingeringPotion, ItemTippedArrow
+    if (item.id === 373 || item.id === 438) this.potionTooltip(item, lines, 1);
+    else if (item.id === 441) this.potionTooltip(item, lines, 0.25);
+    else if (item.id === 440) this.potionTooltip(item, lines, 0.125);
     if (tag && tag.author && item.id === 387) lines.push('§7' + t('book.byAuthor', tag.author));
     const rec = this.names.recordDescription(item.id);
     if (rec) lines.push('§7' + rec);

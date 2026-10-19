@@ -646,7 +646,10 @@ export class Interaction {
     if (g.cooldownFraction(held.id, 0) > 0) return false; // CooldownTracker: still cooling down
     const action = g.items.useAction(held);
     if (action !== 'none') {
-      const food = action === 'eat' && held.id !== 322 && held.id !== 432 && g.food >= 20 && g.gameMode !== 1;
+      // ItemFood.onItemRightClick -> EntityPlayer.canEat(alwaysEdible): hungry (golden apples and chorus fruit always) and
+      // not invulnerable, so nothing is eaten in creative or spectator
+      const canEat = (held.id === 322 || held.id === 432 || g.food < 20) && !this.player.invulnerable;
+      const food = action === 'eat' && !canEat;
       if (!food) {
         this.player.usingItem = true;
         this.activeHand = hand;
@@ -697,14 +700,22 @@ export class Interaction {
       else if (e.kind === 'itemframe') item = e.item ? copy(e.item) : { id: 389, count: 1, damage: 0 };
       else if (e.kind === 'minecart') item = { id: 328, count: 1, damage: 0 };
       else if (e.kind === 'boat') item = { id: 333, count: 1, damage: 0 };
-      else if (e.kind === 'mob' && e.type) item = { id: 383, count: 1, damage: e.type };
+      else if (e.kind === 'mob' && e.type) {
+        // EntityLiving.getPickedResult: a spawn egg with EntityTag.id, when the entity has an egg
+        const def = g.assets.data.entities.find((d) => d.id === (e.entityType ?? e.type));
+        const key = def ? 'minecraft:' + def.name : null;
+        if (key && g.assets.data.creative.eggs[key]) {
+          item = { id: 383, count: 1, damage: 0, nbt: { t: 10, name: '', v: { EntityTag: { t: 10, v: { id: { t: 8, v: key } } } } } };
+        }
+      }
     }
     if (!item) return;
     const inv = g.inventory;
     // Already in hotbar?
     for (let i = 0; i < 9; i++) {
       const s = inv.main[i];
-      if (s && s.id === item.id && (s.damage === item.damage || item.id === 383 && false)) { g.selectSlot(i); return; }
+      // InventoryPlayer.getSlotFor: same item, damage and tag
+      if (s && s.id === item.id && s.damage === item.damage && JSON.stringify(g.items.nbt(s) || null) === JSON.stringify(g.items.nbt(item) || null)) { g.selectSlot(i); return; }
     }
     if (g.gameMode !== 1) {
       // Survival: swap from main inventory if present

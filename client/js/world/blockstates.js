@@ -396,7 +396,7 @@ const ITEM_RENAME = {
 export function itemModelName(itemName, damage) {
   const v = ITEM_VARIANTS[itemName];
   if (v) return v[damage] || v[0];
-  if (itemName === 'potion') return damage & 16384 ? 'bottle_splash' : 'bottle_drinkable';
+  if (itemName === 'potion') return 'bottle_drinkable'; // 1.9+: splash and lingering potions are their own items
   if (itemName === 'bow') return 'bow';
   return ITEM_RENAME[itemName] || itemName;
 }

@@ -924,10 +924,15 @@ export class Hud {
       lines.push(`Biome: ${biome.displayName || biome.name}`);
       lines.push(`Light: ${Math.max(sky, blk)} (${sky} sky, ${blk} block)`);
       const time = g.world.timeOfDay || 0;
-      lines.push(`Local Difficulty: ${f(localDifficulty(g.difficulty, time), 2)} (Day ${Math.trunc(time / 24000)})`);
-    } else lines.push('Waiting for chunk...');
+      const ld = localDifficulty(g.difficulty, time);
+      lines.push(`Local Difficulty: ${f(ld, 2)} // ${f(clampedDifficulty(ld), 2)} (Day ${Math.trunc(time / 24000)})`);
+    } else lines.push('Outside of world...'); // unloaded, or y outside 0 - 255
     const t = g.interaction.target;
     if (t && t.type === 'block') lines.push(`Looking at: ${t.x} ${t.y} ${t.z}`);
+    // GuiOverlayDebug.renderDebugInfoLeft
+    lines.push('');
+    lines.push(`Debug: Pie [shift]: ${g.showProfiler ? 'visible' : 'hidden'} FPS [alt]: ${g.showLagometer ? 'visible' : 'hidden'}`);
+    lines.push('For help: press F3 + Q');
     return lines;
   }
 
@@ -1055,14 +1060,26 @@ function lagColor(v) {
 }
 
 // DifficultyInstance.calculateAdditionalDifficulty (client chunks never know their inhabited time)
-function localDifficulty(difficulty, worldTime) {
+// DifficultyInstance (World.getDifficultyForLocation): float maths; the client's chunks have no inhabited time (0)
+function localDifficulty(difficulty, worldTime, inhabited = 0) {
   if (!difficulty) return 0;
-  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-  const moon = [1, 0.75, 0.5, 0.25, 0, 0.25, 0.5, 0.75][(((Math.trunc(worldTime / 24000) % 8) + 8) % 8)];
-  const f1 = clamp((worldTime - 72000) / 1440000, 0, 1) * 0.25;
-  let f2 = clamp(moon * 0.25, 0, f1);
-  if (difficulty === 1) f2 *= 0.5;
-  return difficulty * (0.75 + f1 + f2);
+  const f32 = Math.fround, clamp = (v, lo, hi) => (v < lo ? lo : v > hi ? hi : v);
+  const moon = [1, 0.75, 0.5, 0.25, 0, 0.25, 0.5, 0.75][((Math.trunc(worldTime / 24000) % 8) + 8) % 8];
+  let f = f32(0.75);
+  const f1 = f32(clamp(f32(f32(f32(worldTime) + -72000) / 1440000), 0, 1) * f32(0.25));
+  f = f32(f + f1);
+  let f2 = 0;
+  f2 = f32(f2 + f32(clamp(f32(f32(inhabited) / 3600000), 0, 1) * (difficulty === 3 ? 1 : f32(0.75))));
+  f2 = f32(f2 + clamp(f32(moon * f32(0.25)), 0, f1));
+  if (difficulty === 1) f2 = f32(f2 * f32(0.5));
+  return f32(difficulty * f32(f + f2));
+}
+
+// DifficultyInstance.getClampedAdditionalDifficulty
+function clampedDifficulty(d) {
+  if (d < 2) return 0;
+  if (d > 4) return 1;
+  return Math.fround(Math.fround(d - 2) / 2);
 }
 
 function chatText(json) { return chatToLegacy(json); }

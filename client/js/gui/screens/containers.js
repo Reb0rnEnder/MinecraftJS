@@ -1,4 +1,10 @@
 // Container GUIs (port of GuiContainer and subclasses, incl. GuiContainerCreative).
+import { FontRenderer } from '../font.js';
+import { JavaRandom } from '../../util/jrandom.js';
+import { mat4, D2R } from '../../gfx/math.js';
+import { Node } from '../../gfx/scene.js';
+import { blockModel } from '../../render/entity-models.js';
+import { entityMaterial } from '../../render/boxmodel.js';
 import { tr } from '../i18n.js';
 import { platform } from '../../platform/platform.js';
 import { Screen } from './manager.js';
@@ -362,20 +368,19 @@ export class InventoryScreen extends ContainerScreen {
 }
 
 const POTION_ICON = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 8: 10, 9: 11, 10: 7, 11: 14, 12: 15, 13: 16, 14: 8, 15: 13, 16: 12, 17: 9, 18: 5, 19: 6, 20: 17, 21: 23, 22: 18 };
-const POTION_NAMES = { 1: 'moveSpeed', 2: 'moveSlowdown', 3: 'digSpeed', 4: 'digSlowDown', 5: 'damageBoost', 6: 'heal', 7: 'harm', 8: 'jump',
-  9: 'confusion', 10: 'regeneration', 11: 'resistance', 12: 'fireResistance', 13: 'waterBreathing', 14: 'invisibility', 15: 'blindness',
-  16: 'nightVision', 17: 'hunger', 18: 'weakness', 19: 'poison', 20: 'wither', 21: 'healthBoost', 22: 'absorption', 23: 'saturation' };
+// Potion.getName (effect.moveSpeed, ...) by effect id, from client/data/creative.json
+const effectKey = (game, id) => (game.assets.data.creative.effects[id] || { name: 'effect.none' }).name;
 
 function drawEffects(game, gui, x, y) {
   const n = game.effects.size;
   let dy = 33;
   if (n > 5) dy = Math.floor(132 / (n - 1));
-  const names = POTION_NAMES, iconIdx = POTION_ICON;
+  const iconIdx = POTION_ICON;
   for (const [id, e] of game.effects) {
     gui.blit('gui/container/inventory.png', x, y, 0, 166, 140, 32);
     const ic = iconIdx[id];
     if (ic !== undefined) gui.blit('gui/container/inventory.png', x + 6, y + 7, (ic % 8) * 18, 198 + Math.floor(ic / 8) * 18, 18, 18);
-    let name = game.assets.translate('potion.' + (names[id] || 'unknown'));
+    let name = game.assets.translate(effectKey(game, id)); // Potion.getName: effect.*
     if (e.amplifier === 1) name += ' ' + game.assets.translate('enchantment.level.2');
     else if (e.amplifier === 2) name += ' ' + game.assets.translate('enchantment.level.3');
     else if (e.amplifier === 3) name += ' ' + game.assets.translate('enchantment.level.4');
@@ -446,47 +451,153 @@ class FurnaceScreen extends SimpleScreen {
   }
 }
 
+// GuiBrewingStand (1.9+): potion slots at y 51 / 58, ingredient, blaze powder fuel; fuel bar, brew arrow, bubbles
 class BrewingScreen extends SimpleScreen {
-  constructor(game, win) { super(game, win, 'gui/container/brewing_stand.png', [[0, 56, 46], [1, 79, 53], [2, 102, 46], [3, 79, 17]]); }
+  constructor(game, win) { super(game, win, 'gui/container/brewing_stand.png', [[0, 56, 51], [1, 79, 58], [2, 102, 51], [3, 79, 17], [4, 17, 17]]); }
   drawBackground(gui) {
     super.drawBackground(gui);
-    const t = this.container.properties[0] || 0;
+    const p = this.container.properties;
+    const fuel = p[1] || 0;
+    const w = Math.min(18, Math.max(0, Math.trunc((18 * fuel + 20 - 1) / 20)));
+    if (w > 0) gui.blit(this.tex, this.guiLeft + 60, this.guiTop + 44, 176, 29, w, 4);
+    const t = p[0] || 0;
     if (t > 0) {
-      let j1 = Math.floor(28 * (1 - t / 400));
+      const j1 = Math.trunc(28 * (1 - t / 400));
       if (j1 > 0) gui.blit(this.tex, this.guiLeft + 97, this.guiTop + 16, 176, 0, 9, j1);
-      const k1 = Math.floor(t / 2) % 7;
-      j1 = [29, 24, 20, 16, 11, 6, 0][k1];
-      if (j1 > 0) gui.blit(this.tex, this.guiLeft + 65, this.guiTop + 14 + 29 - j1, 185, 29 - j1, 12, j1);
+      const b = [29, 24, 20, 16, 11, 6, 0][Math.trunc(t / 2) % 7]; // BUBBLELENGTHS
+      if (b > 0) gui.blit(this.tex, this.guiLeft + 63, this.guiTop + 14 + 29 - b, 185, 29 - b, 12, b);
     }
   }
 }
 
+// EnchantmentNameParts: the clue words, 3 - 4 of them wrapped to two lines in the Standard Galactic font
+const NAME_PARTS = 'the elder scrolls klaatu berata niktu xyzzy bless curse light darkness fire air earth water hot dry cold wet ignite snuff embiggen twist shorten stretch fiddle destroy imbue galvanize enchant free limited range of towards inside sphere cube self other ball mental physical grow shrink demon elemental spirit animal creature beast humanoid undead fresh stale phnglui mglwnafh cthulhu rlyeh wgahnagl fhtagnbaguette'.split(' ');
+
+// GuiEnchantment
 class EnchantScreen extends SimpleScreen {
-  constructor(game, win) { super(game, win, 'gui/container/enchanting_table.png', [[0, 15, 47], [1, 35, 47]]); }
+  constructor(game, win) {
+    super(game, win, 'gui/container/enchanting_table.png', [[0, 15, 47], [1, 35, 47]]);
+    this.flip = 0; this.oFlip = 0; this.flipT = 0; this.flipA = 0; this.open = 0; this.oOpen = 0; this.lastItem = null;
+  }
+
+  // GuiEnchantment.tickBook: a new item flips some pages; the book opens while there is something to enchant
+  tick() {
+    super.tick();
+    const it = this.container.get(0);
+    const k = it ? JSON.stringify([it.id, it.damage, it.count, it.nbt || null]) : null;
+    if (k !== this.lastItem) {
+      this.lastItem = k;
+      do { this.flipT += Math.floor(Math.random() * 4) - Math.floor(Math.random() * 4); } while (this.flip <= this.flipT + 1 && this.flip >= this.flipT - 1);
+    }
+    this.oFlip = this.flip; this.oOpen = this.open;
+    const p = this.container.properties;
+    const any = [0, 1, 2].some((i) => (p[i] || 0) !== 0);
+    this.open = Math.min(1, Math.max(0, this.open + (any ? 0.2 : -0.2)));
+    const f1 = Math.min(0.2, Math.max(-0.2, (this.flipT - this.flip) * 0.4));
+    this.flipA += (f1 - this.flipA) * 0.9;
+    this.flip += this.flipA;
+  }
+
+  // GuiEnchantment.drawGuiContainerBackgroundLayer: ModelBook through its own 320 x 240 viewport and
+  // gluPerspective(90, 4 / 3, 9, 80), here folded into one matrix into GUI space
+  _drawBook(gui, partial) {
+    if (!this.book) {
+      const parts = blockModel('book', ['coverRight', 'coverLeft', 'pagesRight', 'pagesLeft', 'flipRight', 'flipLeft', 'spine']);
+      const mat = entityMaterial('entity/enchanting_table_book.png', { alphaTest: 0.1, cull: true, fullBright: true, noLighting: true });
+      const root = new Node();
+      for (const p of Object.values(parts)) { root.add(p.build()); p.setMaterial(mat); }
+      this.book = { parts, root };
+    }
+    const f3 = this.oOpen + (this.open - this.oOpen) * partial;
+    let f4 = this.oFlip + (this.flip - this.oFlip) * partial + 0.25, f5 = this.oFlip + (this.flip - this.oFlip) * partial + 0.75;
+    f4 = Math.min(1, Math.max(0, (f4 - Math.floor(f4)) * 1.6 - 0.3));
+    f5 = Math.min(1, Math.max(0, (f5 - Math.floor(f5)) * 1.6 - 0.3));
+    // ModelBook.setRotationAngles(0, f4, f5, f3)
+    const P = this.book.parts, f = 1.25 * f3;
+    P.coverRight.ry = Math.PI + f; P.coverLeft.ry = -f; P.pagesRight.ry = f; P.pagesLeft.ry = -f;
+    P.flipRight.ry = f - f * 2 * f4; P.flipLeft.ry = f - f * 2 * f5;
+    P.pagesRight.px = P.pagesLeft.px = P.flipRight.px = P.flipLeft.px = Math.sin(f);
+    for (const p of Object.values(P)) p.sync();
+    const W = this.width, H = this.height;
+    const vx = Math.trunc((W - 320) / 2), vy = H - Math.trunc((H - 240) / 2) - 240; // the GL viewport, from the top
+    const m = mat4.create();
+    // NDC -> GUI pixels (depth into the GUI's 3D range, nearer = higher)
+    mat4.translate(m, m, vx + 160, vy + 120, 100);
+    mat4.scale(m, m, 160, -120, -50);
+    mat4.translate(m, m, -0.34, 0.23, 0);
+    mat4.multiply(m, m, mat4.perspective(mat4.create(), 90 * D2R, 4 / 3, 9, 80));
+    mat4.translate(m, m, 0, 3.3, -16);
+    mat4.scale(m, m, 5, 5, 5);
+    mat4.rotateZ(m, m, Math.PI);
+    mat4.rotateX(m, m, 20 * D2R);
+    mat4.translate(m, m, (1 - f3) * 0.2, (1 - f3) * 0.1, (1 - f3) * 0.25);
+    mat4.rotateY(m, m, (-(1 - f3) * 90 - 90) * D2R);
+    mat4.rotateX(m, m, Math.PI);
+    mat4.scale(m, m, 1 / 16, 1 / 16, 1 / 16);
+    gui.drawNode(this.book.root, m);
+  }
+
   drawBackground(gui, mx, my) {
     super.drawBackground(gui);
-    const p = this.container.properties;
+    this._drawBook(gui, this.game.partialTicks || 0);
+    const g = this.game, p = this.container.properties;
     const lapis = this.container.get(1);
     const lapisCount = lapis ? lapis.count : 0;
-    const xp = this.game.xpLevel;
+    const sga = gui.galacticFont || (gui.galacticFont = new FontRenderer(gui, 'font/ascii_sga.png'));
+    // EnchantmentNameParts.reseedRandomGenerator(xpSeed): the same words while the seed holds
+    const rand = new JavaRandom(p[3] || 0);
     for (let l = 0; l < 3; l++) {
       const x = this.guiLeft + 60, y = this.guiTop + 14 + 19 * l;
       const cost = p[l] || 0;
       if (cost === 0) { gui.blit(this.tex, x, y, 0, 185, 108, 19); continue; }
       const s = '' + cost;
-      const affordable = (lapisCount >= l + 1 && xp >= cost) || this.game.player.creative;
-      const hover = mx >= x && my >= y && mx < x + 108 && my < y + 19;
-      if (!affordable) {
+      const w = 86 - gui.textWidth(s);
+      const n = rand.nextInt(2) + 3;
+      const words = [];
+      for (let i = 0; i < n; i++) words.push(NAME_PARTS[rand.nextInt(NAME_PARTS.length)]);
+      const clue = sga.wrap(words.join(' '), w).slice(0, 2).join(' ');
+      let color = 6839882;
+      if (!((lapisCount >= l + 1 && g.xpLevel >= cost) || g.player.creative)) {
         gui.blit(this.tex, x, y, 0, 185, 108, 19);
         gui.blit(this.tex, x + 1, y + 1, 16 * l, 239, 16, 16);
-        gui.text(s, x + 108 - gui.textWidth(s) - 2, y + 9, 0x407f10 >> 1 & 0x7f7f7f, true);
+        this._split(sga, clue, x + 20, y + 2, w, (color & 0xfefefe) >> 1);
+        color = 4226832;
       } else {
-        gui.blit(this.tex, x, y, 0, hover ? 204 : 166, 108, 19);
+        const hover = mx >= x && my >= y && mx < x + 108 && my < y + 19;
+        if (hover) { gui.blit(this.tex, x, y, 0, 204, 108, 19); color = 0xffff80; } else gui.blit(this.tex, x, y, 0, 166, 108, 19);
         gui.blit(this.tex, x + 1, y + 1, 16 * l, 223, 16, 16);
-        gui.text(s, x + 108 - gui.textWidth(s) - 2, y + 9, hover ? 0xffff80 : 0x80ff20, true);
+        this._split(sga, clue, x + 20, y + 2, w, color);
+        color = 8453920;
       }
-      // Clue text (vanilla uses the standard galactic alphabet font)
-      gui.text('§k' + ['the elder scrolls', 'klaatu berata niktu', 'xyzzy'][l].slice(0, 12), x + 20, y + 2, affordable ? 0x685e4a : 0x342f25, false);
+      gui.text(s, x + 20 + 86 - gui.textWidth(s), y + 2 + 7, color, true);
+    }
+  }
+
+  // FontRenderer.drawSplitString: wrapped lines, no shadow
+  _split(font, text, x, y, w, color) {
+    font.wrap(text, w).forEach((line, i) => font.draw(line, x, y + i * 9, color, false));
+  }
+
+  // GuiEnchantment.drawScreen: the clue tooltip with the lapis / level requirements
+  drawOverlay(gui, mx, my) {
+    const g = this.game, p = this.container.properties;
+    const lapis = this.container.get(1), lapisCount = lapis ? lapis.count : 0;
+    for (let i = 0; i < 3; i++) {
+      const lvl = p[i] || 0, ench = p[4 + i], clue = p[7 + i];
+      const x = this.guiLeft + 60, y = this.guiTop + 14 + 19 * i;
+      if (!(mx >= x - 1 && mx < x + 108 + 1 && my >= y - 1 && my < y + 17 + 1) || lvl <= 0 || clue === undefined || clue < 0 || ench === undefined || ench < 0) continue;
+      const lines = ['§f§o' + tr('container.enchant.clue', g.items.enchantmentName(ench, clue))];
+      if (!g.player.creative) {
+        lines.push('');
+        const k = i + 1;
+        if (g.xpLevel < lvl) lines.push('§c' + tr('container.enchant.level.requirement', lvl));
+        else {
+          lines.push((lapisCount >= k ? '§7' : '§c') + (k === 1 ? tr('container.enchant.lapis.one') : tr('container.enchant.lapis.many', k)));
+          lines.push('§7' + (k === 1 ? tr('container.enchant.level.one') : tr('container.enchant.level.many', k)));
+        }
+      }
+      gui.tooltip(lines, mx, my);
+      break;
     }
   }
   extraMouseDown(mx, my, button) {
@@ -612,7 +723,7 @@ class BeaconScreen extends ContainerScreen {
       if (b.confirm) text = this.game.assets.translate('gui.done');
       else if (b.cancel) text = this.game.assets.translate('gui.cancel');
       else {
-        text = this.game.assets.translate('potion.' + POTION_NAMES[b.effect]);
+        text = this.game.assets.translate(effectKey(this.game, b.effect));
         if (b.tier >= 3 && b.effect !== 10) text += ' II';
       }
       gui.tooltip([text], mx, my);
@@ -760,58 +871,48 @@ export function openContainerScreen(game, win) {
 
 // ---------------------------------------------------------------- creative inventory
 
-const TABS = ['buildingBlocks', 'decorations', 'redstone', 'transportation', 'misc', 'search', 'food', 'tools', 'combat', 'brewing', 'materials', 'inventory'];
-const TAB_ICONS = [{ id: 45 }, { id: 175, damage: 5 }, { id: 331 }, { id: 27 }, { id: 327 }, { id: 345 }, { id: 260 }, { id: 258 }, { id: 283 }, { id: 373 }, { id: 280 }, { id: 54 }];
+// CreativeTabs (1.12) from client/data/creative.json, read from the game (tools/creative-dump): index, label, icon,
+// column / row, background, and each tab's displayAllRelevantItems (search: every item's getSubItems(SEARCH) in
+// registry order)
+const stackOf = ([id, damage, tag]) => ({ id, count: 1, damage, nbt: tag ? { t: 10, name: '', v: tag } : null });
+const tabData = (game) => game.assets.data.creative.tabs;
+const tabInfo = (game, i) => tabData(game).find((t) => t.index === i);
+const label = (game, i) => (tabInfo(game, i) || {}).label;
 
 function buildCreativeTabs(game) {
   const tabs = {};
-  for (const t of TABS) tabs[t] = [];
-  const items = game.assets.data.items;
-  const deco = /flower|sapling|leaves|grass|fern|bush|web|torch|ladder|fence|wall|pane|bars|carpet|sign|painting|frame|pot|skull|banner|bed|chest|furnace|crafting|table|anvil|jukebox|ender|vine|lily|mushroom|cactus|reeds|snow_layer|cake|monster_egg|head|slime|stand|brewing|cauldron|beacon|spawner|portal|dragon_egg|end_portal_frame|sponge|cobweb|double_plant|tallgrass|deadbush|yellow_flower|red_flower|waterlily|glass_pane|iron_bars|flower_pot|item_frame|armor_stand/;
-  const redstone = /redstone|lever|button|pressure_plate|piston|repeater|comparator|daylight|tnt|dispenser|dropper|hopper|note|lamp|trapdoor|tripwire|door|fence_gate|trapped_chest|observer/;
-  const transport = /rail|minecart|boat|saddle|carrot_on_a_stick/;
-  const food = /apple|bread|porkchop|beef|chicken|fish|cookie|melon|carrot|potato|pie|stew|mutton|rabbit|cake|sugar|rotten_flesh|spider_eye/;
-  const tools = /pickaxe|shovel|axe|hoe|shears|flint_and_steel|compass|clock|fishing_rod|lead|name_tag|bucket|map/;
-  const combat = /sword|^bow$|arrow|helmet|chestplate|leggings|boots|horse_armor/;
-  const brewing = /potion|glass_bottle|ghast_tear|blaze_powder|magma_cream|fermented|speckled|brewing|cauldron|nether_wart/;
-  const exclude = new Set([0, 8, 9, 10, 11, 26, 34, 36, 43, 51, 52, 55, 59, 60, 62, 63, 64, 68, 71, 74, 75, 83, 90, 92, 93, 94, 104, 105, 115, 117, 118, 119, 124, 125, 127, 132, 137, 140, 141, 142, 144, 149, 150, 166, 176, 177, 178, 181, 193, 194, 195, 196, 197, 403, 401, 387, 358, 422]);
-  for (const it of items) {
-    if (exclude.has(it.id)) continue;
-    const name = it.name;
-    const variants = it.variations && it.variations.length ? it.variations.map((v) => v.metadata) : [0];
-    let tab;
-    if (it.id < 256) {
-      if (redstone.test(name)) tab = 'redstone';
-      else if (transport.test(name)) tab = 'transportation';
-      else if (deco.test(name)) tab = 'decorations';
-      else tab = 'buildingBlocks';
-      if (name === 'melon_block' || name === 'pumpkin' || name === 'hay_block') tab = 'buildingBlocks';
-    } else if (/^record/.test(name)) tab = 'misc';
-    else if (transport.test(name)) tab = 'transportation';
-    else if (food.test(name)) tab = 'food';
-    else if (combat.test(name)) tab = 'combat';
-    else if (tools.test(name)) tab = 'tools';
-    else if (brewing.test(name)) tab = 'brewing';
-    else if (redstone.test(name)) tab = 'redstone';
-    else if (/sign|painting|item_frame|flower_pot|skull|banner|bed|armor_stand|cake|reeds|brewing_stand|cauldron/.test(name)) tab = 'decorations';
-    else if (/spawn_egg|experience_bottle|fire_charge|book|writable|written|map|firework|emerald|nether_star|bone|slime|ender_eye|ender_pearl/.test(name)) tab = name.includes('spawn_egg') || name === 'experience_bottle' || name === 'fire_charge' || name === 'writable_book' || name === 'firework' ? 'misc' : 'materials';
-    else tab = 'materials';
-    if (it.id === 383) {
-      for (const id of [50, 51, 52, 54, 55, 56, 57, 58, 59, 60, 61, 62, 65, 66, 67, 68, 90, 91, 92, 93, 94, 95, 96, 98, 100, 101, 120]) tabs.misc.push({ id: 383, count: 1, damage: id });
-      continue;
-    }
-    if (it.id === 373) {
-      for (const d of [0, 16, 8193, 8194, 8195, 8196, 8197, 8198, 8200, 8201, 8202, 8204, 8205, 8206, 8225, 8226, 8228, 8229, 8233, 8235, 8236, 8257, 8258, 8259, 8260, 8262, 8264, 8265, 8266, 8269, 8270,
-        16385, 16386, 16387, 16388, 16389, 16390, 16392, 16393, 16394, 16396, 16397, 16398, 16417, 16418, 16420, 16421, 16425, 16427, 16428]) tabs.brewing.push({ id: 373, count: 1, damage: d });
-      continue;
-    }
-    if (it.id === 351) { for (let d = 0; d < 16; d++) tabs.materials.push({ id: 351, count: 1, damage: d }); continue; }
-    for (const d of variants) tabs[tab].push({ id: it.id, count: 1, damage: d });
-  }
-  const all = [];
-  for (const t of TABS) if (t !== 'search' && t !== 'inventory') all.push(...tabs[t]);
-  tabs.search = all;
+  for (const t of tabData(game)) tabs[t.label] = t.items.map(stackOf);
   return tabs;
+}
+
+// HotbarSnapshot storage (CreativeSettings, hotbar.nbt): nine saved toolbars, kept in the browser
+const HOTBARS_KEY = 'minecraftjs.hotbars';
+const toJson = (v) => JSON.stringify(v, (k, x) => (ArrayBuffer.isView(x) ? { $ta: x.constructor.name, a: Array.from(x, (n) => (typeof n === 'bigint' ? String(n) : n)) } : typeof x === 'bigint' ? { $big: String(x) } : x));
+const fromJson = (s) => JSON.parse(s, (k, x) => (x && x.$ta ? (x.$ta === 'BigInt64Array' ? BigInt64Array.from(x.a.map(BigInt)) : new globalThis[x.$ta](x.a)) : x && x.$big !== undefined ? BigInt(x.$big) : x));
+export function hotbarSnapshots() {
+  let list = null;
+  try { list = fromJson(localStorage.getItem(HOTBARS_KEY) || 'null'); } catch (e) { list = null; }
+  if (!Array.isArray(list) || list.length !== 9) list = Array.from({ length: 9 }, () => new Array(9).fill(null));
+  return list;
+}
+function saveHotbarSnapshots(list) { try { localStorage.setItem(HOTBARS_KEY, toJson(list)); } catch (e) { /* storage unavailable */ } }
+
+// GuiContainerCreative.handleHotbarSnapshots: load (X + number) or save (C + number) a toolbar in creative mode
+export function handleHotbarSnapshots(game, n, load, save) {
+  const list = hotbarSnapshots();
+  const strip = (it) => (it ? { id: it.id, count: it.count, damage: it.damage || 0, nbt: it.nbt || null } : null);
+  if (load) {
+    for (let i = 0; i < 9; i++) {
+      const it = list[n][i] ? strip(list[n][i]) : null;
+      game.inventory.main[i] = it;
+      game.send(C.creativeSlot(36 + i, it));
+    }
+  } else if (save) {
+    for (let i = 0; i < 9; i++) list[n][i] = strip(game.inventory.main[i]);
+    saveHotbarSnapshots(list);
+    const k = game.settings.keys;
+    game.hud.setActionBar(tr('inventory.hotbarSaved', game.settings.keyName(k.loadToolbarActivator), game.settings.keyName(k['hotbar' + (n + 1)])));
+  }
 }
 
 // Creative tab of an item id (first tab that lists it), e.g. for the recipe book's categories
@@ -820,8 +921,8 @@ export function creativeTabOf(game, id) {
   if (!tabOfId) {
     if (!CreativeScreen.tabs) CreativeScreen.tabs = buildCreativeTabs(game);
     tabOfId = new Map();
-    for (const t of TABS) {
-      if (t === 'search' || t === 'inventory') continue;
+    for (const t of tabData(game).map((x) => x.label)) {
+      if (t === 'search' || t === 'hotbar' || t === 'inventory') continue;
       for (const it of CreativeScreen.tabs[t]) if (!tabOfId.has(it.id)) tabOfId.set(it.id, t);
     }
   }
@@ -849,26 +950,51 @@ export class CreativeScreen extends ContainerScreen {
     this.setTab(this.tab);
   }
 
+  tabLabel(i = this.tab) { return label(this.game, i); }
+
+  // GuiContainerCreative.setCurrentCreativeTab
   setTab(i) {
     this.tab = i;
     CreativeScreen.lastTab = i;
     this.scroll = 0;
     this.fields = [];
-    if (TABS[i] === 'search') { this.fields.push(this.search); this.search.focused = true; this.filter(); }
-    else this.list = CreativeScreen.tabs[TABS[i]] || [];
+    const lab = this.tabLabel(i);
+    if (lab === 'search') { this.fields.push(this.search); this.search.focused = true; this.search.text = ''; this.filter(); }
+    else if (lab === 'hotbar') {
+      // saved toolbars; an empty one shows a locked paper on its own column saying how to save it
+      const g = this.game, k = g.settings.keys;
+      this.list = [];
+      hotbarSnapshots().forEach((bar, n) => {
+        if (bar.every((it) => !it)) {
+          for (let j = 0; j < 9; j++) {
+            if (j !== n) { this.list.push(null); continue; }
+            const name = tr('inventory.hotbarInfo', g.settings.keyName(k.saveToolbarActivator), g.settings.keyName(k['hotbar' + (n + 1)]));
+            this.list.push({ id: 339, count: 1, damage: 0, locked: true,
+              nbt: { t: 10, name: '', v: { CustomCreativeLock: { t: 10, v: {} }, display: { t: 10, v: { Name: { t: 8, v: name } } } } } });
+          }
+        } else for (const it of bar) this.list.push(it ? { ...it, count: it.count || 1 } : null);
+      });
+    } else this.list = CreativeScreen.tabs[lab] || [];
     this._layout();
   }
 
+  // GuiContainerCreative.updateCreativeSearch: SearchTreeManager.ITEMS matches the tooltip lines or the registry name
   filter() {
-    const q = this.search.text.toLowerCase();
+    const q = this.search.text.toLowerCase().trim();
     const all = CreativeScreen.tabs.search;
-    this.list = q ? all.filter((it) => this.game.items.displayName(it).toLowerCase().includes(q)) : all;
+    const items = this.game.items;
+    const hit = (it) => {
+      const def = items.def(it.id);
+      if (def && ('minecraft:' + def.name).includes(q)) return true;
+      return items.tooltip(it).some((l) => l.replace(/§./g, '').toLowerCase().includes(q));
+    };
+    this.list = q ? all.filter(hit) : all;
     this.scroll = 0;
     this._layout();
   }
 
   _layout() {
-    const inv = TABS[this.tab] === 'inventory';
+    const inv = this.tabLabel() === 'inventory';
     this.slotPos = [];
     if (inv) {
       // GuiContainerCreative survival tab (1.9+): armor 2x2 around the player, off hand at 35,20
@@ -884,7 +1010,7 @@ export class CreativeScreen extends ContainerScreen {
   maxScrollRows() { return Math.max(0, Math.ceil(this.list.length / 9) - 5); }
 
   gridItemAt(mx, my) {
-    if (TABS[this.tab] === 'inventory') return null;
+    if (this.tabLabel() === 'inventory') return null;
     const x = mx - this.guiLeft - 9, y = my - this.guiTop - 18;
     if (x < 0 || y < 0 || x >= 9 * 18 || y >= 5 * 18) return null;
     const col = Math.floor(x / 18), row = Math.floor(y / 18);
@@ -896,21 +1022,21 @@ export class CreativeScreen extends ContainerScreen {
     gui.worldBackground();
     const L = this.guiLeft, T = this.guiTop;
     // Tabs behind
-    for (let i = 0; i < 12; i++) if (i !== this.tab) this._drawTab(gui, i, false);
-    const tabTex = TABS[this.tab] === 'search' ? 'gui/container/creative_inventory/tab_item_search.png'
-      : TABS[this.tab] === 'inventory' ? 'gui/container/creative_inventory/tab_inventory.png' : 'gui/container/creative_inventory/tab_items.png';
+    const info = tabInfo(this.game, this.tab);
+    for (const t of tabData(this.game)) if (t.index !== this.tab) this._drawTab(gui, t, false);
+    const tabTex = 'gui/container/creative_inventory/tab_' + info.background; // CreativeTabs.getBackgroundImageName
     if (this.effectsShift) drawEffects(this.game, gui, L - 124, T);
     gui.blit(tabTex, L, T, 0, 0, this.xSize, this.ySize);
-    if (TABS[this.tab] !== 'inventory') {
+    if (info.scrollbar) {
       const sx = L + 175, sy = T + 18;
       const enabled = this.maxScrollRows() > 0;
       gui.blit('gui/container/creative_inventory/tabs.png', sx, sy + (112 - 17) * this.scroll, 232 + (enabled ? 0 : 12), 0, 12, 15);
     }
-    this._drawTab(gui, this.tab, true);
-    if (TABS[this.tab] !== 'inventory') gui.text(tr('itemGroup.' + TABS[this.tab]), L + 8, T + 6, 0x404040, false);
+    this._drawTab(gui, info, true);
+    if (info.title) gui.text(tr('itemGroup.' + info.label), L + 8, T + 6, 0x404040, false);
     // Grid items
     let hoverGrid = null;
-    if (TABS[this.tab] !== 'inventory') {
+    if (this.tabLabel() !== 'inventory') {
       const start = Math.round(this.scroll * this.maxScrollRows()) * 9;
       for (let i = 0; i < 45; i++) {
         const it = this.list[start + i];
@@ -928,10 +1054,10 @@ export class CreativeScreen extends ContainerScreen {
     for (const [i, x, y] of this.slotPos) {
       const it = this.container.get(i);
       if (it) this.game.itemRenderer.drawItem(gui, it, x, y);
-      else if (TABS[this.tab] === 'inventory') drawPlayerEmptySlot(this.game, gui, i, x, y);
+      else if (this.tabLabel() === 'inventory') drawPlayerEmptySlot(this.game, gui, i, x, y);
       if (mx >= L + x - 1 && mx < L + x + 17 && my >= T + y - 1 && my < T + y + 17) { this.hovered = i; gui.rect(x, y, x + 16, y + 16, 0x80ffffff); }
     }
-    if (TABS[this.tab] === 'inventory') {
+    if (this.tabLabel() === 'inventory') {
       // destroy item slot
       const dx = 173, dy = 112;
       if (mx >= L + dx - 1 && mx < L + dx + 17 && my >= T + dy - 1 && my < T + dy + 17) gui.rect(dx, dy, dx + 16, dy + 16, 0x80ffffff);
@@ -944,36 +1070,42 @@ export class CreativeScreen extends ContainerScreen {
     else if (this.hovered !== null && this.container.get(this.hovered)) gui.tooltip(this.game.items.tooltip(this.container.get(this.hovered)), mx, my);
     else {
       const t = this._tabAt(mx, my);
-      if (t >= 0) gui.tooltip([tr('itemGroup.' + TABS[t])], mx, my);
-      else if (TABS[this.tab] === 'inventory' && mx >= L + 172 && mx < L + 190 && my >= T + 111 && my < T + 129) gui.tooltip([tr('inventory.binSlot')], mx, my);
+      if (t >= 0) gui.tooltip([tr('itemGroup.' + this.tabLabel(t))], mx, my);
+      else if (this.tabLabel() === 'inventory' && mx >= L + 172 && mx < L + 190 && my >= T + 111 && my < T + 129) gui.tooltip([tr('inventory.binSlot')], mx, my);
     }
   }
 
-  _tabRect(i) {
-    const col = i % 6, top = i < 6;
+  // GuiContainerCreative.drawTab / isMouseOverTab: columns 28 apart (+1 per column), right-aligned tabs from the
+  // right edge; top row above the window, bottom row below it
+  _tabRect(t) {
+    const col = t.column;
     let x = this.guiLeft + 28 * col;
-    if (col === 5) x = this.guiLeft + this.xSize - 28;
+    if (t.right) x = this.guiLeft + this.xSize - 28 * (6 - col);
     else if (col > 0) x += col;
-    const y = top ? this.guiTop - 28 : this.guiTop + this.ySize - 4;
-    return { x, y, top, col };
+    const y = t.top ? this.guiTop - 28 : this.guiTop + this.ySize - 4;
+    return { x, y, top: t.top, col };
   }
 
   _tabAt(mx, my) {
-    for (let i = 0; i < 12; i++) {
-      const r = this._tabRect(i);
-      if (mx >= r.x && mx < r.x + 28 && my >= r.y + (r.top ? 0 : 0) && my < r.y + 32) return i;
+    for (const t of tabData(this.game)) {
+      // isMouseOverTab: x from 28 * column (+ column, or + 2 when right-aligned), y 32 above / at ySize
+      let x = 28 * t.column;
+      if (t.right) x = this.xSize - 28 * (6 - t.column) + 2;
+      else if (t.column > 0) x += t.column;
+      const y = t.top ? -32 : this.ySize;
+      const rx = mx - this.guiLeft, ry = my - this.guiTop;
+      if (rx >= x && rx <= x + 28 && ry >= y && ry <= y + 32) return t.index;
     }
     return -1;
   }
 
-  _drawTab(gui, i, selected) {
-    const r = this._tabRect(i);
+  _drawTab(gui, t, selected) {
+    const r = this._tabRect(t);
     let v = r.top ? 0 : 64;
     if (selected) v += 32;
     gui.blit('gui/container/creative_inventory/tabs.png', r.x, r.y, r.col * 28, v, 28, 32);
-    const icon = TAB_ICONS[i];
-    const ix = r.x + 6, iy = r.y + (r.top ? 9 : 7) + (r.top ? 1 : -1);
-    this.game.itemRenderer.drawItem(gui, { id: icon.id, damage: icon.damage || 0, count: 1 }, ix, iy, false);
+    const ix = r.x + 6, iy = r.y + 8 + (r.top ? 1 : -1);
+    this.game.itemRenderer.drawItem(gui, stackOf(t.icon), ix, iy, false);
   }
 
   wheel(d) {
@@ -987,7 +1119,7 @@ export class CreativeScreen extends ContainerScreen {
     const t = this._tabAt(mx, my);
     if (t >= 0 && button === 0) { if (t !== this.tab) { this.setTab(t); this.game.sound.playUi('ui.button.click', 1); } return true; }
     const L = this.guiLeft, T = this.guiTop;
-    if (TABS[this.tab] !== 'inventory' && mx >= L + 175 && mx < L + 187 && my >= T + 18 && my < T + 130) { this.isScrolling = true; this._scrollTo(my); return true; }
+    if (tabInfo(this.game, this.tab).scrollbar && mx >= L + 175 && mx < L + 187 && my >= T + 18 && my < T + 130) { this.isScrolling = true; this._scrollTo(my); return true; }
     const g = this.game;
     const inv = this.inv;
     const btn = button === 1 ? 2 : button === 2 ? 1 : 0;
@@ -995,6 +1127,8 @@ export class CreativeScreen extends ContainerScreen {
     const grid = this.gridItemAt(mx, my);
     if (grid) {
       const it = grid.item;
+      // a locked item (the empty saved toolbar's hint) cannot be taken (CustomCreativeLock)
+      if (it && it.locked) return true;
       const cur = inv.cursor;
       if (btn === 2) { if (!cur && it) { const c = copy(it); c.count = g.items.maxStack(c.id); inv.cursor = c; } return true; }
       if (cur && it && cur.id === it.id && cur.damage === it.damage) {
@@ -1009,7 +1143,7 @@ export class CreativeScreen extends ContainerScreen {
       return true;
     }
     // Destroy slot
-    if (TABS[this.tab] === 'inventory' && mx >= L + 172 && mx < L + 190 && my >= T + 111 && my < T + 129) {
+    if (this.tabLabel() === 'inventory' && mx >= L + 172 && mx < L + 190 && my >= T + 111 && my < T + 129) {
       if (shift) { for (let i = 0; i < 45; i++) { if (inv.get(i)) { inv.setSlot(i, null); g.send(C.creativeSlot(i, null)); } } }
       inv.cursor = null;
       return true;
@@ -1022,7 +1156,7 @@ export class CreativeScreen extends ContainerScreen {
         if (!inv.cursor && inv.get(slot)) { const c = copy(inv.get(slot)); c.count = g.items.maxStack(c.id); inv.cursor = c; }
         return true;
       }
-      if (shift && TABS[this.tab] !== 'inventory') {
+      if (shift && this.tabLabel() !== 'inventory') {
         inv.setSlot(slot, null);
       } else {
         inv.slotClick(slot, btn, shift ? 1 : 0);
@@ -1051,18 +1185,18 @@ export class CreativeScreen extends ContainerScreen {
 
   key(e) {
     const g = this.game;
-    if (TABS[this.tab] === 'search' && e.code !== 'Escape') {
+    if (this.tabLabel() === 'search' && e.code !== 'Escape') {
       if (this.search.key(e)) return true;
       return true;
     }
     if (e.code === 'Escape' || e.code === g.settings.keys.inventory) { this.close(); return true; }
-    if (e.code === g.settings.keys.chat && TABS[this.tab] !== 'search') { this.setTab(5); return true; }
+    if (e.code === g.settings.keys.chat && this.tabLabel() !== 'search') { this.setTab(5); return true; }
     // Number keys over grid items: put into hotbar
     const [mx, my] = g.screens._mouse();
     const grid = this.gridItemAt(mx, my);
     for (let i = 0; i < 9; i++) {
       if (e.code === g.settings.keys['hotbar' + (i + 1)]) {
-        if (grid && grid.item) {
+        if (grid && grid.item && !grid.item.locked) {
           const c = copy(grid.item); c.count = g.items.maxStack(c.id);
           this.inv.main[i] = c;
           g.send(C.creativeSlot(36 + i, c));
@@ -1078,7 +1212,7 @@ export class CreativeScreen extends ContainerScreen {
     return true;
   }
 
-  char(c) { if (TABS[this.tab] === 'search') return this.search.char(c); if (c === 't' || c === 'T') return true; return false; }
+  char(c) { if (this.tabLabel() === 'search') return this.search.char(c); if (c === 't' || c === 'T') return true; return false; }
 
   close() {
     const g = this.game;

@@ -23,10 +23,12 @@ const ARMOR = {
   legs: new Set([300, 304, 308, 312, 316]),
   boots: new Set([301, 305, 309, 313, 317]),
 };
+// EntityLiving.getSlotForItemStack's armour slots (0 head .. 3 feet): armour pieces, pumpkins and skulls on the head
+// (1.9+), elytra on the chest; -1 otherwise
 export function armorType(item) {
   if (!item) return -1;
-  if (ARMOR.helmet.has(item.id)) return 0;
-  if (ARMOR.chest.has(item.id)) return 1;
+  if (ARMOR.helmet.has(item.id) || item.id === 86 || item.id === 397) return 0;
+  if (ARMOR.chest.has(item.id) || item.id === 443) return 1;
   if (ARMOR.legs.has(item.id)) return 2;
   if (ARMOR.boots.has(item.id)) return 3;
   return -1;
@@ -35,7 +37,11 @@ export function armorType(item) {
 const SMELTABLE = new Set([15, 14, 12, 4, 17, 162, 81, 337, 87, 82, 98, 319, 363, 365, 349, 423, 411, 392, 16, 73, 74, 21, 56, 129, 153, 19, 24]);
 const FUEL = new Set([5, 6, 17, 162, 47, 53, 54, 58, 65, 72, 84, 85, 96, 107, 126, 134, 135, 136, 143, 146, 151, 163, 164, 173, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192,
   263, 268, 269, 270, 271, 290, 280, 327, 369, 346, 281, 323, 324, 333, 427, 428, 429, 430, 431, 425, 25]);
-const BREWING_INGREDIENTS = new Set([372, 348, 331, 289, 376, 353, 370, 382, 377, 378, 396, 375, 349, 414]);
+// PotionHelper.isReagent (1.12): conversion items (gunpowder, dragon's breath) and type reagents; fish only as pufferfish
+const BREWING_INGREDIENTS = new Set([372, 348, 331, 289, 437, 376, 353, 370, 382, 377, 378, 396, 375, 349, 414]);
+const isReagent = (it) => !!it && BREWING_INGREDIENTS.has(it.id) && (it.id !== 349 || it.damage === 3);
+// ContainerBrewingStand.Potion.canHoldPotion: potions of the three kinds and glass bottles
+const canHoldPotion = (it) => !!it && (it.id === 373 || it.id === 438 || it.id === 441 || it.id === 374);
 const BEACON_PAYMENT = new Set([388, 264, 266, 265]);
 
 // Base container: slots with rules; also used for the player inventory (window 0)
@@ -356,7 +362,7 @@ export class Inventory extends ContainerBase {
       const at = i; // 0 helmet .. 3 boots
       s.push({
         get item() { return self.armor[3 - at]; }, set item(v) { self.armor[3 - at] = v; }, limit: 1,
-        valid: (it) => !!it && (armorType(it) === at || (at === 0 && (it.id === 86 || it.id === 397))),
+        valid: (it) => !!it && armorType(it) === at,
       });
     }
     for (let i = 9; i < 36; i++) s.push({ get item() { return self.main[i]; }, set item(v) { self.main[i] = v; }, playerIndex: i });
@@ -429,6 +435,8 @@ export class Inventory extends ContainerBase {
       } else if (armorType(it) >= 0 && !this.get(5 + armorType(it))) {
         const t = 5 + armorType(it);
         if (!this.mergeItemStack(it, t, t + 1, false)) return false;
+      } else if (it.id === 442 && !this.get(45)) { // a shield goes to the empty off hand
+        if (!this.mergeItemStack(it, 45, 46, false)) return false;
       } else if (i >= 9 && i < 36) {
         if (!this.mergeItemStack(it, 36, 45, false)) return false;
       } else if (i >= 36 && i < 45) {
@@ -501,8 +509,9 @@ export class ContainerWindow extends ContainerBase {
         if (i === 1) slot.valid = (it) => !!it && (FUEL.has(it.id) || it.id === 325);
         break;
       case 'minecraft:brewing_stand':
-        if (i < 3) { slot.valid = (it) => !!it && (it.id === 373 || it.id === 374); slot.limit = 1; }
-        else slot.valid = (it) => !!it && BREWING_INGREDIENTS.has(it.id);
+        if (i < 3) { slot.valid = canHoldPotion; slot.limit = 1; }
+        else if (i === 3) slot.valid = isReagent;
+        else slot.valid = (it) => !!it && it.id === 377; // fuel: blaze powder
         break;
       case 'minecraft:enchanting_table':
         if (i === 0) { slot.limit = 1; }
@@ -555,13 +564,14 @@ export class ContainerWindow extends ContainerBase {
         return true;
       }
       if (t === 'minecraft:brewing_stand') {
-        if ((i < 0 || i > 2) && i !== 3) {
-          if (BREWING_INGREDIENTS.has(it.id) && !this.get(3)) { if (!m(3, 4, false)) return false; }
-          else if (it.id === 373 || it.id === 374) { if (!m(0, 3, false)) return false; }
-          else if (i >= 4 && i < 31) { if (!m(31, 40, false)) return false; }
-          else if (i >= 31 && i < 40) { if (!m(4, 31, false)) return false; }
-          else if (!m(4, 40, false)) return false;
-        } else if (!m(4, 40, true)) return false;
+        // ContainerBrewingStand.transferStackInSlot (5 slots: 3 potions, ingredient, fuel)
+        if (i >= 0 && i <= 4) { if (!m(5, 41, true)) return false; }
+        else if (isReagent(it)) { if (!m(3, 4, false)) return false; }
+        else if (canHoldPotion(it) && it.count === 1) { if (!m(0, 3, false)) return false; }
+        else if (it.id === 377) { if (!m(4, 5, false)) return false; }
+        else if (i >= 5 && i < 32) { if (!m(32, 41, false)) return false; }
+        else if (i >= 32 && i < 41) { if (!m(5, 32, false)) return false; }
+        else if (!m(5, 41, false)) return false;
         return true;
       }
       if (t === 'minecraft:enchanting_table') {

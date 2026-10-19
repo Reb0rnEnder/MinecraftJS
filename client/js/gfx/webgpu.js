@@ -82,6 +82,23 @@ const SHADERS = {
   if (D.p[1].y > 0.5) { c = mix(c, G.fogColor.rgb, fogFactor(i.depth)); }
   return vec4f(c, t.a);
 }`,
+  // TileEntityEndPortalRenderer layer (see the WebGL 2 shader); framebuffer y grows downwards here
+  endportal: `
+@vertex fn vs(@location(0) p: vec3f, @location(1) uv: vec2f, @location(2) col: vec4f) -> VOut {
+  var o: VOut; let mv = G.view * D.model * vec4f(p, 1.0);
+  o.pos = project(mv); o.uv = uv; o.col = col; o.light = vec2f(0.0); o.depth = length(mv.xyz); o.shade = 1.0; return o;
+}
+@fragment fn fs(i: VOut) -> @location(0) vec4f {
+  let ndc = vec2f(i.pos.x / D.p[2].x * 2.0 - 1.0, 1.0 - i.pos.y / D.p[2].y * 2.0);
+  let s = ndc * D.p[1].x;
+  let c = cos(D.p[1].y); let sn = sin(D.p[1].y);
+  let r = vec2f(s.x * c - s.y * sn, s.x * sn + s.y * c) + D.p[1].zw;
+  let t = textureSample(tex0, samp0, fract(0.5 + 0.5 * r));
+  let col = t.rgb * D.p[0].rgb;
+  let f = fogFactor(i.depth);
+  if (D.p[0].w < 0.5) { return vec4f(mix(col, G.fogColor.rgb, f), t.a); }
+  return vec4f(col * (1.0 - f), 1.0);
+}`,
 };
 
 const BLENDS = {

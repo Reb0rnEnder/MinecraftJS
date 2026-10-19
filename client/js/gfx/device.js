@@ -33,6 +33,9 @@
 //   lit     : FORMAT.lit      tex0 = any, uses globals.lightmap          params[0] = [alphaTest, -, -, -]   (light.x < 0 => full bright)
 //   entity  : FORMAT.entity   tex0 = any, uses globals.lightmap          params = [tint rgba], [overlay rgba], [sky, block, fullBright, lighting (0 world, 1 none, 2 GUI)], [alphaTest, uOffset, vOffset, uvScale (0 = 1)]
 //   color   : FORMAT.color    tex0 = any (white texture for flat colour) params = [colour rgba], [alphaTest, useFog, -, -]
+//   endportal: FORMAT.color   tex0 = layer texture, sampled at the fragment's screen position (TileEntityEndPortalRenderer's
+//              texgen): params = [colour rgb, layer (0: blended sky, 1+: additive)], [scale, angle (rad), offset u, v],
+//              [target width, target height, -, -]
 //
 // state: { blend: 'none'|'alpha'|'add'|'invert'|'darken'|'multiply', depthTest: bool, depthWrite: bool, cull: bool, polygonOffset: bool, depthFunc: 'lequal'|'equal', colorWrite: bool }
 
@@ -59,7 +62,7 @@ export function vertexLayout(f) {
 // Packs terrain vertices (see FORMAT.terrain)
 export const TERRAIN_POS_SCALE = 2048;
 
-export const PIPELINE_FORMAT = { terrain: FORMAT.terrain, lit: FORMAT.lit, entity: FORMAT.entity, color: FORMAT.color };
+export const PIPELINE_FORMAT = { terrain: FORMAT.terrain, lit: FORMAT.lit, entity: FORMAT.entity, color: FORMAT.color, endportal: FORMAT.color };
 
 export const DEFAULT_STATE = { blend: 'none', depthTest: true, depthWrite: true, cull: false, polygonOffset: false };
 
@@ -108,6 +111,7 @@ export const DEFAULT_PARAMS = {
   lit: litParams(0),
   entity: new EntityParams().setAlphaTest(0).p,
   color: colorParams(1, 1, 1, 1),
+  endportal: new Float32Array(16),
 };
 
 // Shared helpers ------------------------------------------------------------

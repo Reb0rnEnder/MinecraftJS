@@ -3,6 +3,13 @@ import { simplify } from '../net/nbt.js';
 import { blocks } from '../world/blocks.js';
 import { mcSin, mcCos } from './physics.js';
 
+// EntityAnimal subclasses by entity type id (pig, sheep, cow, chicken, wolf, mooshroom, ocelot, horses, rabbit, polar
+// bear, llamas, parrot)
+// Random.nextGaussian (Box-Muller)
+function gauss() { let u = 0; while (u === 0) u = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * Math.random()); }
+
+const ANIMALS = new Set([90, 91, 92, 93, 95, 96, 98, 100, 101, 102, 103, 105, 28, 29, 31, 32]);
+
 const MOB_SIZES = {
   50: [0.6, 1.8, 1.62], 51: [0.6, 1.95, 1.74], 52: [1.4, 0.9, 0.65], 53: [3.6, 10.8, 10.44], 54: [0.6, 1.95, 1.74], 55: [0.51, 0.51, 0.31],
   56: [4, 4, 2.6], 57: [0.6, 1.95, 1.74], 58: [0.6, 2.9, 2.55], 59: [0.7, 0.5, 0.45], 60: [0.4, 0.3, 0.1], 61: [0.6, 1.8, 1.62],
@@ -467,7 +474,10 @@ export class EntityManager {
     }
   }
 
+  // The vehicle's passengers in the server's order (SPacketSetPassengers; the first one steers)
   passengersOf(vehicleId) {
+    const v = this.map.get(vehicleId);
+    if (v && v.passengerList) return v.passengerList.slice();
     const out = [];
     for (const e of this.map.values()) if (e.riding === vehicleId) out.push(e.id);
     if (this.game.ridingEntityId === vehicleId && !out.includes(this.game.entityId)) out.push(this.game.entityId);
@@ -483,6 +493,21 @@ export class EntityManager {
   isLiving(id) { const e = this.map.get(id); return !!e && e.kind === 'mob'; }
 
   // Height offsets for riding (Entity.getMountedYOffset / getYOffset)
+  // Entity.updatePassenger: on the vehicle at getMountedYOffset + the rider's getYOffset (players -0.35). Boats
+  // (EntityBoat.updatePassenger) seat two riders apart: the first 0.2 forward, the second 0.6 back (animals 0.2 further
+  // forward), along Vec3d(f, 0, 0).rotateYaw(-yaw - 90 degrees)
+  riderPos(v, riderId, riderKind) {
+    const y = v.y + this.mountedOffset(v) + (riderKind === 'player' ? -0.35 : 0);
+    if (v.kind !== 'boat') return [v.x, y, v.z];
+    const list = this.passengersOf(v.id);
+    if (list.length < 2) return [v.x, y, v.z];
+    let f = list.indexOf(riderId) === 0 ? Math.fround(0.2) : Math.fround(-0.6);
+    const r = this.map.get(riderId);
+    if (r && r.kind === 'mob' && ANIMALS.has(r.entityType)) f = Math.fround(f + 0.2);
+    const a = Math.fround(Math.fround(-v.yaw * Math.fround(Math.PI / 180)) - Math.fround(Math.PI / 2));
+    return [v.x + f * mcCos(a), y, v.z - f * mcSin(a)];
+  }
+
   mountedOffset(v) {
     if (v.kind === 'boat') return -0.1;     // EntityBoat.getMountedYOffset (1.9+)
     if (v.kind === 'minecart') return 0;    // EntityMinecart.getMountedYOffset (1.9+)
@@ -673,6 +698,23 @@ export class EntityManager {
   }
 
   // EntityFireworkRocket.onUpdate, client side: a rocket attached to the gliding local player pushes it along its look
+  // EntityFireworkRocket.onUpdate (client): attached to a gliding entity it sits on it, else it speeds up (x / z * 1.15,
+  // y + 0.04); a spark every tick at y - 0.3
+  _fireworkTick(e) {
+    const g = this.game;
+    if (e.boostedId) {
+      const b = e.boostedId === g.entityId ? g.player : this.map.get(e.boostedId);
+      if (b) {
+        e.x = b.x; e.y = b.y; e.z = b.z; e.inc = 0;
+        e.motionX = b.motionX || 0; e.motionY = b.motionY || 0; e.motionZ = b.motionZ || 0;
+      }
+    } else if (!(e.inc > 0)) {
+      e.motionX = (e.motionX || 0) * 1.15; e.motionZ = (e.motionZ || 0) * 1.15; e.motionY = (e.motionY || 0) + 0.04;
+      e.x += e.motionX; e.y += e.motionY; e.z += e.motionZ;
+    }
+    g.particles.spark(e.x, e.y - 0.3, e.z, gauss() * 0.05, -(e.motionY || 0) * 0.5, gauss() * 0.05);
+  }
+
   _fireworkBoost(e) {
     const pl = this.game.player;
     if (!pl.elytraFlying) return;
@@ -703,6 +745,7 @@ export class EntityManager {
       e.prevSwingProgress = e.swingProgress;
       e.ticks++;
       if (e.boostedId && e.boostedId === g.entityId) this._fireworkBoost(e);
+      if (e.kind === 'projectile' && e.type === 76) this._fireworkTick(e);
       if (e.pickup) {
         e.pickup.tick++;
         if (e.pickup.tick >= 3) { this.game.entityRenderer.remove(e); this.map.delete(e.id); continue; }
@@ -733,7 +776,7 @@ export class EntityManager {
         e.yaw += wrap(e.newYaw - e.yaw) / e.inc;
         e.pitch += (e.newPitch - e.pitch) / e.inc;
         e.inc--;
-      } else if (e.kind === 'item' || e.kind === 'xp' || e.kind === 'arrow' || e.kind === 'projectile' || e.kind === 'falling' || e.kind === 'tnt') {
+      } else if ((e.kind === 'item' || e.kind === 'xp' || e.kind === 'arrow' || e.kind === 'projectile' || e.kind === 'falling' || e.kind === 'tnt') && !(e.kind === 'projectile' && e.type === 76)) {
         // Client-side motion between server updates
         if (e.kind !== 'arrow' || !e.inGround) {
           e.x += e.motionX; e.y += e.motionY; e.z += e.motionZ;
@@ -761,7 +804,11 @@ export class EntityManager {
         e.bodyYaw = e.prevBodyYaw = 180;
       }
       if (e.hurtTime > 0) e.hurtTime--;
-      if (e.dead) { e.deathTime++; }
+      if (e.dead) {
+        e.deathTime++;
+        // EntityLivingBase.onDeathUpdate: at 20 ticks the body is gone in a puff of smoke
+        if (e.deathTime === 20 && (e.kind === 'mob' || e.kind === 'player')) g.particles.deathPoof(e);
+      }
       if (e.eatingGrass > 0) e.eatingGrass--;
       // Swing progress
       if (e.swinging) {
@@ -786,7 +833,7 @@ export class EntityManager {
     for (const e of this.map.values()) {
       if (e.riding < 0) continue;
       const v = this.map.get(e.riding);
-      if (v) { e.x = v.x; e.z = v.z; e.y = v.y + this.mountedOffset(v) + (e.kind === 'player' ? -0.35 : 0); }
+      if (v) [e.x, e.y, e.z] = this.riderPos(v, e.id, e.kind);
     }
   }
 

@@ -10,6 +10,7 @@ import { D2R, aabbInFrustum } from '../gfx/math.js';
 import { Node, material } from '../gfx/scene.js';
 import { resolveState } from '../world/blockstates.js';
 import { Pistons } from '../game/pistons.js';
+import { JavaRandom } from '../util/jrandom.js';
 const FLOWER_POT = {
   'minecraft:red_flower': ['rose', 'blue_orchid', 'allium', 'houstonia', 'red_tulip', 'orange_tulip', 'white_tulip', 'pink_tulip', 'oxeye_daisy'],
   'minecraft:yellow_flower': ['dandelion'],
@@ -20,6 +21,17 @@ const FLOWER_POT = {
 const FLOWER_POT_IDS = { 38: 'minecraft:red_flower', 37: 'minecraft:yellow_flower', 6: 'minecraft:sapling', 40: 'minecraft:red_mushroom', 39: 'minecraft:brown_mushroom', 32: 'minecraft:deadbush', 31: 'minecraft:tallgrass', 81: 'minecraft:cactus' };
 
 const key = (x, y, z) => x + ',' + y + ',' + z;
+
+// TileEntityEndPortalRenderer's layer colours: new Random(31100), three nextFloat()s per layer, times 0.15 for the sky
+// layer and 2 / (18 - i) for portal layer i
+const END_PORTAL_COLORS = (() => {
+  const r = new JavaRandom(31100), f32 = Math.fround, out = [];
+  for (let i = 0; i < 16; i++) {
+    const f = i === 0 ? f32(0.15) : f32(2 / (18 - i));
+    out.push([f32(f32(r.nextFloat() * 0.5 + 0.1) * f), f32(f32(r.nextFloat() * 0.5 + 0.4) * f), f32(f32(r.nextFloat() * 0.5 + 0.5) * f)]);
+  }
+  return out;
+})();
 
 export class TileEntityRenderer {
   constructor(game) {
@@ -82,7 +94,7 @@ export class TileEntityRenderer {
     else if (n === 'standing_banner' || n === 'wall_banner') type = 'banner';
     else if (n === 'enchanting_table') type = 'book';
     else if (n === 'beacon') type = 'beacon';
-    else if (n === 'end_portal') type = 'endportal';
+    else if (n === 'end_portal' || n === 'end_gateway') type = 'endportal';
     else if (n === 'bed') type = 'bed';
     else if (n.endsWith('_shulker_box')) type = 'shulker';
     if (!type) return null;
@@ -99,7 +111,7 @@ export class TileEntityRenderer {
       for (let i = 0; i < 4096; i++) {
         const id = s.blocks[i] >> 4;
         if (id === 54 || id === 146 || id === 130 || id === 63 || id === 68 || id === 144 || id === 176 || id === 177 || id === 116 || id === 138 || id === 119 ||
-          id === 26 || (id >= 219 && id <= 234)) { // + beds, shulker boxes (1.12 block entities)
+          id === 26 || id === 209 || (id >= 219 && id <= 234)) { // + beds, end gateways, shulker boxes (1.12 block entities)
           const x = c.x * 16 + (i & 15), y = sy * 16 + (i >> 8), z = c.z * 16 + ((i >> 4) & 15);
           this._ensure(x, y, z, s.blocks[i]);
         }
@@ -399,7 +411,7 @@ export class TileEntityRenderer {
         break;
       }
       case 'book': {
-        mat = entityMaterial('entity/enchanting_table_book.png', { alphaTest: 0.1 });
+        mat = entityMaterial('entity/enchanting_table_book.png', { alphaTest: 0.1, cull: true }); // enableCull: the zero-thickness pages show one side
         // ModelBook
         const parts = blockModel('book', ['coverRight', 'coverLeft', 'pagesRight', 'pagesLeft', 'flipRight', 'flipLeft', 'spine']);
         const model = new Node(); model.scale.set(1 / 16, 1 / 16, 1 / 16);
@@ -428,12 +440,38 @@ export class TileEntityRenderer {
         break;
       }
       case 'endportal': {
-        const mesh = entityMesh([0, 0.75, 0, 0, 0.75, 1, 1, 0.75, 1, 1, 0.75, 0], [0, 0, 0, 1, 1, 1, 1, 0], [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0], null, { quads: true });
+        // TileEntityEndPortalRenderer: the top face at 0.75 (end portal) or every face not against an opaque block
+        // (end gateway, offset 1); 16 layers, the first the end sky blended, the rest end_portal.png added
+        const gateway = blocks[t.state >> 4].name === 'end_gateway';
+        const w = this.game.world, v = [];
+        const quad = (pts) => { for (const [x, y, z] of pts) v.push(x, y, z, 0, 0, 1, 1, 1, 1); };
+        const open = (dx, dy, dz) => {
+          if (!gateway) return false;
+          const b = blocks[w.getState(t.x + dx, t.y + dy, t.z + dz) >> 4];
+          return !(b && b.opaque) && !(b && b.name === 'end_gateway');
+        };
+        const top = gateway ? 1 : 0.75;
+        if (open(0, 0, 1)) quad([[0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]]);
+        if (open(0, 0, -1)) quad([[0, 1, 0], [1, 1, 0], [1, 0, 0], [0, 0, 0]]);
+        if (open(1, 0, 0)) quad([[1, 1, 0], [1, 1, 1], [1, 0, 1], [1, 0, 0]]);
+        if (open(-1, 0, 0)) quad([[0, 0, 0], [0, 0, 1], [0, 1, 1], [0, 1, 0]]);
+        if (open(0, -1, 0)) quad([[0, 0, 0], [1, 0, 0], [1, 0, 1], [0, 0, 1]]);
+        if (!gateway || open(0, 1, 0)) quad([[0, top, 1], [1, top, 1], [1, top, 0], [0, top, 0]]);
+        if (!v.length) break;
+        const mesh = this.device.createMesh(FORMAT.color, new Float32Array(v), { quads: true });
         t.ownMeshes.push(mesh);
-        const pm = entityMaterial(() => this.game.assets.texture('entity/end_portal.png', { wrap: 'repeat' }), { alphaTest: 0, fullBright: true, noLighting: true });
-        pm.params.setTint(0.13, 0.19, 0.25, 1);
-        obj.addDrawable(mesh, pm);
-        t.portalMat = pm;
+        const A = this.game.assets;
+        t.portalLayers = END_PORTAL_COLORS.map((c, i) => {
+          const params = new Float32Array(16);
+          params[0] = c[0]; params[1] = c[1]; params[2] = c[2]; params[3] = i;
+          const n = i + 1;
+          params[4] = 4.5 - n / 4; params[5] = (n * n * 4321 + n * 9) * 2 * D2R; params[6] = 17 / n;
+          const tex = i === 0 ? () => A.texture('environment/end_sky.png') : () => A.texture('entity/end_portal.png');
+          const m = material('endportal', tex, params, { blend: i === 0 ? 'alpha' : 'add', depthWrite: true });
+          obj.addDrawable(mesh, m);
+          return { params, n, d: obj.drawables[obj.drawables.length - 1], m };
+        });
+        t.gateway = gateway;
         break;
       }
       default: break;
@@ -581,9 +619,18 @@ export class TileEntityRenderer {
         t.bannerSwing.rotation.x = bannerSwing(time);
       } else if (t.type === 'beacon' && t.beamNode) {
         this._buildBeam(t, partial);
-      } else if (t.type === 'endportal' && t.portalMat) {
-        const time = this.ticks + partial;
-        t.portalMat.params.setUvTransform(time / 400, time / 300, 0);
+      } else if (t.type === 'endportal' && t.portalLayers) {
+        // getPasses: fewer layers with distance (squared, from the block corner); gateways one more
+        const cam = this.r.camPos || [0, 0, 0];
+        const dx = t.x - cam[0], dy = t.y - cam[1], dz = t.z - cam[2], d = dx * dx + dy * dy + dz * dz;
+        let passes = d > 36864 ? 1 : d > 25600 ? 3 : d > 16384 ? 5 : d > 9216 ? 7 : d > 4096 ? 9 : d > 1024 ? 11 : d > 576 ? 13 : d > 256 ? 14 : 15;
+        if (t.gateway) passes++;
+        const time = (performance.now() % 800000) / 800000; // Minecraft.getSystemTime() % 800000 / 800000
+        for (const [i, L] of t.portalLayers.entries()) {
+          L.d.visible = i < passes;
+          L.params[7] = (2 + L.n / 1.5) * time;
+          L.params[8] = this.device.width; L.params[9] = this.device.height;
+        }
       }
     }
   }

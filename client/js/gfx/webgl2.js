@@ -95,6 +95,27 @@ void main() {
   o = vec4(c, t.a);
 }`,
   },
+  // TileEntityEndPortalRenderer layer: texgen EYE_LINEAR times projection * modelview = the fragment's NDC, then the
+  // layer's scale, rotation and drift; uv = 0.5 + 0.5 * that
+  endportal: {
+    vs: `
+layout(location=0) in vec3 aPos; layout(location=1) in vec2 aUv; layout(location=2) in vec4 aCol;
+out float vDepth;
+void main() { vec4 mv = uView * uModel * vec4(aPos, 1.0); vDepth = length(mv.xyz); gl_Position = uProj * mv; }`,
+    fs: `
+in float vDepth; out vec4 o;
+void main() {
+  vec2 ndc = gl_FragCoord.xy / uP[2].xy * 2.0 - 1.0;
+  vec2 s = ndc * uP[1].x;
+  float c = cos(uP[1].y), sn = sin(uP[1].y);
+  vec2 r = vec2(s.x * c - s.y * sn, s.x * sn + s.y * c) + uP[1].zw;
+  vec4 t = texture(uTex0, fract(0.5 + 0.5 * r));
+  vec3 col = t.rgb * uP[0].rgb;
+  float f = fogFactor(vDepth);
+  // the sky pass blends with the scene; the portal passes add up, fogging towards black (setupFogColor(true))
+  o = uP[0].w < 0.5 ? vec4(mix(col, uFogColor, f), t.a) : vec4(col * (1.0 - f), 1.0);
+}`,
+  },
 };
 
 export class WebGL2Device {

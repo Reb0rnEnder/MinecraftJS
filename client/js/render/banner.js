@@ -23,9 +23,11 @@ export function bannerLayers(base, patterns) {
 
 // LayeredColorMaskTexture: start from banner_base.png; every pattern mask pixel with a non-zero blue channel
 // replaces the pixel with (base texture * dye colour) and alpha = mask blue. Returns null until images load.
-export function composeBanner(assets, layers) {
-  const bi = assets.image('entity/banner_base.png');
-  const imgs = layers.map((p) => (BANNER_CODES[p.Pattern] ? assets.image('entity/banner/' + BANNER_CODES[p.Pattern] + '.png') : false));
+// shield: BannerTextures.SHIELD_DESIGNS (shield_base.png and the entity/shield/ masks)
+export function composeBanner(assets, layers, shield = false) {
+  const bi = assets.image(shield ? 'entity/shield_base.png' : 'entity/banner_base.png');
+  const dir = shield ? 'entity/shield/' : 'entity/banner/';
+  const imgs = layers.map((p) => (BANNER_CODES[p.Pattern] ? assets.image(dir + BANNER_CODES[p.Pattern] + '.png') : false));
   if (!bi || imgs.some((i) => i === null)) return null;
   const W = bi.width, H = bi.height, src = bi.data;
   const out = new Uint8Array(src);

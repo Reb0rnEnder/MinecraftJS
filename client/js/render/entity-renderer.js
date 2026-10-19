@@ -187,12 +187,13 @@ export class EntityRenderer {
           this._rebuild(uuid);
         }).catch(() => {});
       }
-      // Mojang capes (LayerCape), used as downloaded
-      const cape = tj.textures && tj.textures.CAPE;
-      if (cape && cape.url) {
-        fetchSkin(cape.url).then((bytes) => {
+      // Mojang capes (LayerCape, and LayerElytra without an elytra texture) and elytra textures, used as downloaded
+      for (const [type, key] of [['CAPE', 'cape'], ['ELYTRA', 'elytra']]) {
+        const t = tj.textures && tj.textures[type];
+        if (!t || !t.url) continue;
+        fetchSkin(t.url).then((bytes) => {
           const img = decodePng(bytes);
-          s.cape = this.game.assets.makeTexture('cape:' + uuid, img.width, img.height, img.data);
+          s[key] = this.game.assets.makeTexture(key + ':' + uuid, img.width, img.height, img.data);
           this._rebuild(uuid);
         }).catch(() => {});
       }
@@ -399,7 +400,14 @@ export class EntityRenderer {
       this._addArmorLayers(v, e);
       // LayerElytra: translate(0, 0, 0.125) in model space
       const em = M.elytra();
-      const emat = this._mat(v, 'entity/elytra.png', { alphaTest: 0.1, cull: false });
+      // LayerElytra: the player's own elytra texture, else their cape (while the cape part is shown), else the default
+      const esk = e.kind === 'player' ? this.skinFor(e) : null;
+      const emat = this._mat(v, () => {
+        if (esk && esk.elytra) return esk.elytra;
+        const flags = e.skinFlags !== undefined ? e.skinFlags : 0x7f;
+        if (esk && esk.cape && (flags & 1)) return esk.cape;
+        return this.game.assets.texture('entity/elytra.png');
+      }, { alphaTest: 0.1, cull: false });
       const eobj = this._makeModelObject(em, emat);
       eobj.position.z = 2;
       v.modelGroup.add(eobj);
@@ -641,7 +649,8 @@ export class EntityRenderer {
         v = { root: new Node(), kind: 'projectile', materials: [] };
         if (itemId) {
           const ir = this.game.itemRenderer;
-          const item = e.type === 73 ? { id: 373, damage: e.objectData || 0, count: 1 } : { id: itemId, damage: 0, count: 1 };
+          // EntityPotion carries its ItemStack (splash or lingering potion) in metadata
+          const item = e.type === 73 ? (e.item || { id: 438, damage: 0, count: 1 }) : { id: itemId, damage: 0, count: 1 };
           const m = ir.modelFor(item);
           const layer = m.layers && m.layers[m.layers.length > 1 ? 1 : 0];
           const entry = layer ? this.game.assets.atlas.entries.get(layer) : null;
@@ -655,6 +664,13 @@ export class EntityRenderer {
             n.addDrawable(mesh, material('color', this.atlasTex, v.spriteParams, { blend: 'none' }));
             v.billboard = n;
             v.root.add(n);
+            // RenderSnowball draws the whole item: the potion's liquid layer tinted with PotionUtils.getColor
+            const over = e.type === 73 && m.layers.length > 1 ? this.game.assets.atlas.entries.get(m.layers[0]) : null;
+            if (over) {
+              const c = this.game.items.potionColor(item);
+              const om = this._cachedMesh('sprite:' + m.layers[0], () => spriteMesh(this.device, over.uv[0], over.uv[1], over.uv[2], over.uv[3]));
+              n.addDrawable(om, material('color', this.atlasTex, colorParams(((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255, 1, 0.1, 1), { blend: 'none' }));
+            }
           }
         } else if (e.type === 66) {
           // wither skull
@@ -1308,7 +1324,7 @@ export class EntityRenderer {
 
   _renderItem(e, v, p, partial) {
     const it = e.item;
-    const key = it ? it.id + ':' + it.damage + ':' + Math.min(5, it.count) + ':' + (this.game.items.isEnchanted(it) ? 1 : 0) : null;
+    const key = it ? it.id + ':' + it.damage + ':' + Math.min(5, it.count) + ':' + (this.game.items.hasEffect(it) ? 1 : 0) : null;
     if (key !== v.itemKey) {
       v.itemKey = key;
       if (v.inner) v.root.remove(v.inner);

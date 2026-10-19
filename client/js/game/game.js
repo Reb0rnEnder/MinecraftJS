@@ -28,7 +28,7 @@ import { ChatScreen } from '../gui/screens/chat.js';
 import { PauseScreen } from '../gui/screens/pause.js';
 import { DeathScreen } from '../gui/screens/death.js';
 import { SignEditScreen } from '../gui/screens/sign.js';
-import { openContainerScreen, InventoryScreen, CreativeScreen } from '../gui/screens/containers.js';
+import { openContainerScreen, InventoryScreen, CreativeScreen, handleHotbarSnapshots } from '../gui/screens/containers.js';
 import { BookScreen, SleepScreen } from '../gui/screens/book.js';
 import { Inventory, ContainerWindow } from './container.js';
 import { Items } from './items.js';
@@ -805,6 +805,8 @@ export class Game {
   // SPacketSetPassengers: the full passenger list of a vehicle
   on_set_passengers(p) {
     const before = this.entities.passengersOf(p.entityId);
+    const v = this.entities.get(p.entityId);
+    if (v) v.passengerList = p.passengers.slice(); // the server's order: the first passenger steers
     for (const id of before) if (!p.passengers.includes(id)) this._ride(id, -1);
     for (const id of p.passengers) if (!before.includes(id)) this._ride(id, p.entityId);
   }
@@ -1237,7 +1239,9 @@ export class Game {
     if (e.code === k.fullscreen) { platform().toggleFullscreen(); return; }
     for (let i = 1; i <= 9; i++) {
       if (e.code === k['hotbar' + i]) {
+        const load = this.input.isDown('loadToolbarActivator'), save = this.input.isDown('saveToolbarActivator');
         if (this.gameMode === 3) this.hud.spectatorSelect(i - 1);
+        else if (this.gameMode === 1 && !this.screens.current && (load || save)) handleHotbarSnapshots(this, i - 1, load, save);
         else this.selectSlot(i - 1);
         return;
       }
@@ -1368,7 +1372,7 @@ export class Game {
     // (minecart, pig, someone else's boat) has moved before we are put back on it (Entity.updatePassenger)
     if (this.player.ridingEntity) {
       const v = this.entities.get(this.ridingEntityId);
-      if (v && !v.controlled) this.player.setPosition(v.x, v.y + this.entities.mountedOffset(v) - 0.35, v.z);
+      if (v && !v.controlled) this.player.setPosition(...this.entities.riderPos(v, this.entityId, 'player'));
     }
     this.particles.tick();
     this.weather.tick();
@@ -1485,8 +1489,7 @@ export class Game {
       v.yaw = v.newYaw = ctl instanceof BoatController ? ctl.yaw : b.yaw;
     }
     if (v) {
-      // vehicle.getMountedYOffset() + EntityPlayer.getYOffset() (-0.35)
-      pl.setPosition(v.x, v.y + this.entities.mountedOffset(v) - 0.35, v.z);
+      pl.setPosition(...this.entities.riderPos(v, this.entityId, 'player'));
     }
     this.send(C.look(pl.yaw, pl.pitch, pl.onGround));
     this.send(C.steerVehicle(strafe, forward, (jump ? 1 : 0) | (inp.sneak ? 2 : 0)));

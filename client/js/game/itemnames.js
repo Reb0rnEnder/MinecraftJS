@@ -60,21 +60,7 @@ const VARIANTS = {
   425: (m) => 'item.banner.' + COLORS[15 - (m & 15)],
 };
 
-// Potion effect ids -> vanilla effect names (Potion.getName)
-const EFFECTS = ['', 'moveSpeed', 'moveSlowdown', 'digSpeed', 'digSlowDown', 'damageBoost', 'heal', 'harm', 'jump', 'confusion',
-  'regeneration', 'resistance', 'fireResistance', 'waterBreathing', 'invisibility', 'blindness', 'nightVision', 'hunger',
-  'weakness', 'poison', 'wither', 'healthBoost', 'absorption', 'saturation'];
-// PotionHelper.potionPrefixes, indexed by PotionHelper.getPotionPrefixIndex
-const POTION_PREFIXES = ['mundane', 'uninteresting', 'bland', 'clear', 'milky', 'diffuse', 'artless', 'thin', 'awkward', 'flat', 'bulky',
-  'bungling', 'buttered', 'smooth', 'suave', 'debonair', 'thick', 'elegant', 'fancy', 'charming', 'dashing', 'refined', 'cordial',
-  'sparkling', 'potent', 'foul', 'odorless', 'rank', 'harsh', 'acrid', 'gross', 'stinky'];
 const RECORDS = { 2256: '13', 2257: 'cat', 2258: 'blocks', 2259: 'chirp', 2260: 'far', 2261: 'mall', 2262: 'mellohi', 2263: 'stal', 2264: 'strad', 2265: 'ward', 2266: '11', 2267: 'wait' };
-
-// PotionHelper.getPotionPrefixIndex: damage bits 5, 4, 3, 2, 1 -> 16, 8, 4, 2, 1
-function potionPrefixIndex(d) {
-  const b = (n) => (d >> n) & 1;
-  return (b(5) << 4) | (b(4) << 3) | (b(3) << 2) | (b(2) << 1) | b(1);
-}
 
 export class ItemNames {
   constructor(assets, items) {
@@ -123,32 +109,20 @@ export class ItemNames {
   // ItemStack.getDisplayName without a custom name
   name(item, def, englishName) {
     const id = item.id, meta = item.damage || 0;
-    if (id === 373) return this.potion(item);
+    // ItemPotion / ItemSplashPotion / ItemLingeringPotion / ItemTippedArrow: the PotionType's prefixed name
+    const pre = { 373: 'potion.effect.', 438: 'splash_potion.effect.', 441: 'lingering_potion.effect.', 440: 'tipped_arrow.effect.' }[id];
+    if (pre) return this.t(pre + this.items.potionType(item).name);
     if (id === 383) {
-      const ent = this.assets.data.entities.find((e) => e.id === meta && e.type === 'mob');
-      const ek = ent ? 'entity.' + ent.name + '.name' : null;
-      const en = ek && this.has(ek) ? this.t(ek) : ent ? ent.displayName : '';
-      return (this.t('item.monsterPlacer.name') + ' ' + en).trim();
+      // ItemMonsterPlacer.getItemStackDisplayName: "Spawn" + the entity's name from EntityTag.id
+      let s = this.t('item.monsterPlacer.name').trim();
+      const egg = this.items.eggInfo(item);
+      if (egg) s += ' ' + this.t('entity.' + egg[2] + '.name');
+      return s;
     }
     if (RECORDS[id]) return this.t('item.record.name');
     const k = this.key(id, meta, englishName);
     return k ? this.t(k) : englishName;
   }
 
-  // ItemPotion.getItemStackDisplayName
-  potion(item) {
-    const d = item.damage || 0;
-    if (d === 0) return this.t('item.emptyPotion.name');
-    const splash = (d & 16384) ? this.t('potion.prefix.grenade') + ' ' : '';
-    const effects = this.items.potionEffects(item);
-    if (effects.length) {
-      const k = 'potion.' + (EFFECTS[effects[0].id] || 'empty') + '.postfix';
-      return splash + this.t(k);
-    }
-    const prefix = POTION_PREFIXES[potionPrefixIndex(d)] || 'mundane';
-    return splash + this.t('potion.prefix.' + prefix) + ' ' + this.t('item.potion.name');
-  }
-
-  effectName(id) { return this.t('potion.' + (EFFECTS[id] || 'empty')); }
   recordDescription(id) { return RECORDS[id] ? this.t('item.record.' + RECORDS[id] + '.desc') : null; }
 }

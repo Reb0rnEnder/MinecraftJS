@@ -11,14 +11,6 @@ import { Node } from '../gfx/scene.js';
 import { Part, entityMaterial, entityVertices } from './boxmodel.js';
 import { platform } from '../platform/platform.js';
 
-const EGG_COLORS = {
-  50: [894731, 0], 51: [12698049, 4802889], 52: [3419431, 11013646], 54: [44975, 7969893], 55: [5349438, 8306542],
-  56: [16382457, 12369084], 57: [15373203, 5009705], 58: [1447446, 0], 59: [803406, 11013646], 60: [7237230, 3158064],
-  61: [16167425, 16775294], 62: [3407872, 16579584], 65: [4996656, 986895], 66: [3407872, 5349438], 67: [1447446, 7237230],
-  68: [5931634, 15826224], 90: [15771042, 14377823], 91: [15198183, 16758197], 92: [4470310, 10592673], 93: [10592673, 16711680],
-  94: [2243405, 7375001], 95: [14144467, 13545366], 96: [10489616, 12040119], 98: [15720061, 5653556], 100: [12623485, 15656192],
-  101: [10051392, 7555121], 120: [5651507, 12422002],
-};
 
 const ICON_PARAMS = colorParams(1, 1, 1, 1, 0.1, 0);
 // RenderItem enables blending (SRC_ALPHA, ONE_MINUS_SRC_ALPHA): stained glass, ice etc. stay see-through
@@ -128,8 +120,10 @@ export class ItemRenderer {
       const tag = g.items.nbt(item);
       return tag && tag.display && tag.display.color !== undefined ? tag.display.color : 10511680;
     }
-    if (id === 373 && layer === 0) return g.items.potionColor(item);
-    if (id === 383) { const c = EGG_COLORS[item.damage]; return c ? c[layer] : 0xffffff; }
+    // ItemColors: potions (all three kinds) and tipped arrow heads take PotionUtils.getColor on tint index 0; spawn eggs
+    // the EntityList.ENTITY_EGGS colours of their EntityTag entity
+    if ((id === 373 || id === 438 || id === 441 || id === 440) && layer === 0) return g.items.potionColor(item);
+    if (id === 383) { const c = g.items.eggInfo(item); return c ? c[layer ? 1 : 0] : 0xffffff; }
     if (id === 402 && layer === 1) {
       const tag = g.items.nbt(item);
       const cols = tag && tag.Explosion && tag.Explosion.Colors;
@@ -145,12 +139,13 @@ export class ItemRenderer {
 
   iconKey(item) {
     let k = item.id + ':' + item.damage;
+    if (item.id === 373 || item.id === 438 || item.id === 441 || item.id === 440 || item.id === 383) k += ':' + this.layerTint(item, 0) + ',' + this.layerTint(item, 1);
     if (item.id >= 298 && item.id <= 301 || item.id === 402) {
       const tag = this.game.items.nbt(item);
       k += ':' + JSON.stringify(tag && (tag.display || tag.Explosion) || null);
     }
     k += ':' + this.modelFor(item).name; // overrides (bow pulling, clock, compass, ...)
-    if (item.id === 425) {
+    if (item.id === 425 || item.id === 442) { // banner / shield patterns
       const tag = this.game.items.nbt(item);
       k += ':' + JSON.stringify((tag && tag.BlockEntityTag) || null);
     }
@@ -176,7 +171,7 @@ export class ItemRenderer {
       gui.scaleBy(1 / f1, (f1 + 1) / 2);
       gui.translate(-(x + 8), -(y + 12));
     }
-    const glint = this.game.items.isEnchanted(item);
+    const glint = this.game.items.hasEffect(item);
     if (m.kind === 'generated') {
       if (glint) { gui.pushMatrix(); gui.translate(0, 0, gui.nextIconDepth()); gui.setDepth({ depthTest: true, depthWrite: true }); }
       this._drawLayers(gui, item, m, x, y);
@@ -347,6 +342,27 @@ export class ItemRenderer {
       root.add(g);
       return root;
     }
+    if (name === 'shield' || name === 'shield_blocking') {
+      // TileEntityItemStackRenderer: ModelShield under scale(1, -1, -1); the banner design (BannerTextures.SHIELD_DESIGNS,
+      // base colour from BlockEntityTag.Base, black without) or the plain shield texture
+      const tag = this.game.items.nbt(item);
+      const bet = tag && tag.BlockEntityTag;
+      let tex = 'entity/shield_base_nopattern.png';
+      if (bet) {
+        const base = bet.Base !== undefined ? bet.Base : 0;
+        const img = composeBanner(this.assets, bannerLayers(base, bet.Patterns), true);
+        if (!img) return null;
+        const key = 'shielditem:' + base + ':' + JSON.stringify(bet.Patterns || []);
+        tex = this.assets.textures.get(key) || this.assets.makeTexture(key, img.width, img.height, img.data);
+      }
+      const { plate, handle } = blockModel('shield', ['plate', 'handle']);
+      const g = new Node();
+      for (const p of [plate, handle]) g.add(p.build());
+      g.setMaterial(mat(tex));
+      g.scale.set(1 / 16, -1 / 16, -1 / 16);
+      root.add(g);
+      return root;
+    }
     if (name === 'banner') {
       // TileEntityBannerRenderer with no world: standing, rotation 0, flag at time 0, colours from the item
       const tag = this.game.items.nbt(item);
@@ -393,7 +409,7 @@ export class ItemRenderer {
     if (!res.mesh) return null;
     const n = new Node();
     n.addDrawable(res.mesh, atlasMat);
-    if (this.game.items.isEnchanted(item)) n.userData.glint = res.mesh;
+    if (this.game.items.hasEffect(item)) n.userData.glint = res.mesh;
     return { obj: n, gui3d: res.model.kind === 'block', model: res.model };
   }
 
