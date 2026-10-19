@@ -323,6 +323,11 @@ async function buildHtml(opts) {
   const src = fs.readFileSync(path.join(CLIENT, 'index.html'), 'utf8');
   const html = src
     .replace(/<link rel="stylesheet" href="style.css">/, () => `<style>\n${css}</style>`)
+    // favicons inline (the single file has nothing next to it)
+    .replace(/href="(favicon\.ico|favicon\.svg|apple-touch-icon\.png)"/g, (m, f) => {
+      const type = f.endsWith('.svg') ? 'image/svg+xml' : f.endsWith('.ico') ? 'image/x-icon' : 'image/png';
+      return `href="data:${type};base64,${fs.readFileSync(path.join(CLIENT, f)).toString('base64')}"`;
+    })
     .replace(/<script type="module" src="js\/main.js"><\/script>/, () =>
       (config ? `<script id="minecraftjs-config" type="application/json">${scriptSafe(JSON.stringify(config))}</script>\n` : '') +
       assetsTag +
