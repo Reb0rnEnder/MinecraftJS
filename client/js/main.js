@@ -20,10 +20,10 @@ async function boot() {
   try {
     const assets = new Assets();
     const device = await P.createGraphicsDevice(settings.graphicsApi);
-    if ((device.name === 'WebGPU') !== (settings.graphicsApi === 'webgpu')) {
-      settings.graphicsApi = device.name === 'WebGPU' ? 'webgpu' : 'webgl2';
-      settings.save();
-    }
+    const api = device.name === 'WebGPU' ? 'webgpu' : device.name === 'Software' ? 'software' : 'webgl2';
+    if (api !== settings.graphicsApi) { settings.graphicsApi = api; settings.save(); }
+    // Super Potato Mode: the setting, and always with the CPU rasteriser
+    if (P.setPotato) P.setPotato(!!settings.superPotato || device.name === 'Software');
     assets.setDevice(device);
     assets.language = settings.language || 'en_US';
     try { await assets.activatePacks(settings.resourcePacks || []); } catch (e) { console.warn('Resource packs unavailable', e); }

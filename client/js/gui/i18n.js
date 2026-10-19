@@ -53,6 +53,8 @@ export const MINECRAFTJS_EN = {
   'minecraftjs.deathScreen.spectate': 'Spectate world',
   'options.advancedTooltips': 'Advanced Tooltips',
   'minecraftjs.options.graphicsApi': 'Graphics API',
+  'minecraftjs.options.graphicsApi.software': 'Software (CPU)',
+  'minecraftjs.options.superPotato': 'Super Potato Mode',
   'minecraftjs.options.restart': '(restart)',
   'minecraftjs.options.graphicsApiChanged': 'Graphics API changes apply after a restart.',
   'minecraftjs.realms.unavailable': 'Minecraft Realms',

@@ -45,7 +45,8 @@ const DEFAULTS = {
   skinParts: 0x7f,
   mainHand: 'right',
   maxFps: 0,
-  graphicsApi: 'webgl2', // 'webgl2' | 'webgpu'
+  graphicsApi: 'webgl2', // 'webgl2' | 'webgpu' | 'software'
+  superPotato: false, // lower internal resolution, single-pass menu panorama (always on with the CPU rasteriser)
   resourcePacks: [], // active pack ids, highest priority first
   entityShadows: true,
   lodChunks: 8, // MinecraftJS: past this many chunks terrain is simplified and mobs re-pose less often (0 = off)
