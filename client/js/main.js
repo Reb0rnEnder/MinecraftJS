@@ -22,7 +22,8 @@ async function boot() {
     const device = await P.createGraphicsDevice(settings.graphicsApi);
     const api = device.name === 'WebGPU' ? 'webgpu' : device.name === 'Software' ? 'software' : 'webgl2';
     if (api !== settings.graphicsApi) { settings.graphicsApi = api; settings.save(); }
-    if (device.setPotato) { device.setPotato(!!settings.superPotato); P.refreshSize && P.refreshSize(); }
+    // Super Potato Mode: the setting, and always with the CPU rasteriser
+    if (P.setPotato) P.setPotato(!!settings.superPotato || device.name === 'Software');
     assets.setDevice(device);
     assets.language = settings.language || 'en_us';
     try { await assets.activatePacks(settings.resourcePacks || []); } catch (e) { console.warn('Resource packs unavailable', e); }

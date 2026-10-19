@@ -165,10 +165,14 @@ class VideoScreen extends OptionsBase {
           return trOption('minecraftjs.options.graphicsApi', (names[s.graphicsApi] || 'WebGL 2') + (s.graphicsApi !== cur ? ' ' + tr('minecraftjs.options.restart') : ''));
         },
         click: () => { const order = ['webgl2', 'webgpu', 'software']; s.graphicsApi = order[(order.indexOf(s.graphicsApi) + 1) % order.length]; } },
-      // MinecraftJS: the software rasteriser trades quality for speed (lower internal resolution, a single-pass
-      // menu panorama); no effect on WebGL 2 / WebGPU
-      { label: () => trOption('minecraftjs.options.superPotato', onOff(!!s.superPotato)),
-        click: () => { s.superPotato = !s.superPotato; if (g.device.setPotato) g.device.setPotato(s.superPotato); platform().refreshSize && platform().refreshSize(); } },
+      // MinecraftJS: Super Potato Mode trades quality for speed on any graphics API (lower internal resolution, a
+      // single-pass menu panorama); always on with the CPU rasteriser
+      { label: () => trOption('minecraftjs.options.superPotato', onOff(!!s.superPotato || g.device.name === 'Software')),
+        click: () => {
+          if (g.device.name === 'Software') return; // forced on
+          s.superPotato = !s.superPotato;
+          platform().setPotato && platform().setPotato(s.superPotato);
+        } },
     ];
     // GuiOptionsRowList: GuiListExtended(32, height - 32, 25), list width 400, scrollbar 32 further right
     this.rows = [];

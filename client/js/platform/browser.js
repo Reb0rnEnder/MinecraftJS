@@ -3,6 +3,8 @@ import { WebGL2Device } from '../gfx/webgl2.js';
 import { WebGPUDevice } from '../gfx/webgpu.js';
 import { SoftwareDevice } from '../gfx/software.js';
 
+const POTATO_PIXELS = 854 * 480; // Super Potato Mode: internal resolution cap
+
 class Emitter {
   constructor() { this.handlers = {}; }
   on(ev, fn) { (this.handlers[ev] ||= []).push(fn); }
@@ -176,8 +178,12 @@ export class BrowserPlatform extends Emitter {
   get width() { return this.canvas.width; }
   get height() { return this.canvas.height; }
 
-  // re-apply the surface size (e.g. after the software device's quality setting changed)
+  // re-apply the surface size
   refreshSize() { this._resize(); this.emit('resize'); }
+
+  // Super Potato Mode: render below the display resolution (any graphics API; always on for the CPU rasteriser),
+  // the canvas stretched to the window
+  setPotato(on) { this.potato = !!on; this.refreshSize(); }
 
   _resize() {
     // Backing store in device pixels so the pixel art maps 1:1 to screen pixels (a CSS-pixel canvas gets
@@ -185,9 +191,14 @@ export class BrowserPlatform extends Emitter {
     const dpr = window.devicePixelRatio || 1;
     this.dpr = dpr;
     const cw = Math.max(1, window.innerWidth), ch = Math.max(1, window.innerHeight);
-    const w = Math.max(1, Math.round(cw * dpr)), h = Math.max(1, Math.round(ch * dpr));
+    let w = Math.max(1, Math.round(cw * dpr)), h = Math.max(1, Math.round(ch * dpr));
     this.canvas.style.width = (w / dpr) + 'px';
     this.canvas.style.height = (h / dpr) + 'px';
+    if (this.potato) {
+      const s = Math.min(1, Math.sqrt(POTATO_PIXELS / (w * h)));
+      w = Math.max(1, Math.round(w * s)); h = Math.max(1, Math.round(h * s));
+    }
+    this.canvas.style.imageRendering = this.potato ? 'pixelated' : '';
     if (this.device) this.device.resize(w, h); else { this.canvas.width = w; this.canvas.height = h; }
     // canvas pixels per CSS pixel for mouse positions (the software device renders below device resolution)
     this.pxScale = this.canvas.width / cw;

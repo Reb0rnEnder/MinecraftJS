@@ -50,7 +50,7 @@ const DEFAULTS = {
   autoJump: true,     // GameSettings.autoJump (1.11+)
   maxFps: 0,
   graphicsApi: 'webgl2', // 'webgl2' | 'webgpu' | 'software'
-  superPotato: false, // software rasteriser: lower internal resolution, single-pass menu panorama
+  superPotato: false, // lower internal resolution, single-pass menu panorama (always on with the CPU rasteriser)
   resourcePacks: [], // active pack ids, highest priority first
   entityShadows: true,
   lodChunks: 8, // MinecraftJS: past this many chunks terrain is simplified and mobs re-pose less often (0 = off)

@@ -1,6 +1,6 @@
 // Software rasteriser implementing the graphics device contract (see device.js), for browsers with neither WebGL 2
-// nor WebGPU. Everything runs on the CPU into a Uint32 colour buffer and a Float32 depth buffer at a reduced internal
-// resolution (the canvas is stretched by CSS), presented with putImageData.
+// nor WebGPU. Everything runs on the CPU into a Uint32 colour buffer and a Float32 depth buffer, presented with
+// putImageData. The platform keeps Super Potato Mode (reduced resolution) on while this device runs.
 //
 // Speed comes from doing as little per pixel as possible:
 // - all lighting, tinting, overlay and fog work happens per vertex and is folded into colour = texel * mul + add
@@ -15,7 +15,6 @@ import { DEFAULT_PARAMS, PIPELINE_FORMAT, vertexLayout } from './device.js';
 const V = 14;
 // Transformed vertex: clip x y z w | u v | mul r g b | add r g b | alpha mul
 const T = 13;
-const POTATO_PIXELS = 854 * 480; // Super Potato Mode: internal resolution cap (the canvas is scaled up to the window)
 
 export class SoftwareDevice {
   constructor(canvas) {
@@ -26,8 +25,6 @@ export class SoftwareDevice {
     this.canvas = canvas;
     this.ctx = ctx;
     this.rtOriginBottom = false;
-    this.renderScale = 1;
-    this.potato = false;
     this.white = this.createTexture({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) });
     this.globals = { view: new Float32Array(16), proj: new Float32Array(16), fog: [0, 1, 0, 2], fogColor: [0, 0, 0], lightmap: null };
     this.scissor = null;
@@ -43,20 +40,13 @@ export class SoftwareDevice {
   // ---------------------------------------------------------------- surface
 
   resize(w, h) {
-    // Super Potato Mode keeps the internal resolution under POTATO_PIXELS; the canvas keeps the CSS size the
-    // platform gave it
-    const s = this.potato ? Math.min(1, Math.sqrt(POTATO_PIXELS / Math.max(1, w * h))) : 1;
-    this.renderScale = s;
-    const iw = Math.max(1, Math.round(w * s)), ih = Math.max(1, Math.round(h * s));
+    const iw = Math.max(1, Math.round(w)), ih = Math.max(1, Math.round(h));
     this.canvas.width = iw; this.canvas.height = ih;
-    this.canvas.style.imageRendering = 'pixelated';
     this.width = iw; this.height = ih;
     this.screen = this._buffers(iw, ih);
     this.screen.image = new ImageData(new Uint8ClampedArray(this.screen.color.buffer), iw, ih);
     if (!this.target) this.cur = this.screen;
   }
-
-  setPotato(on) { this.potato = !!on; }
 
   _buffers(w, h) { return { width: w, height: h, color: new Uint32Array(w * h), depth: new Float32Array(w * h) }; }
 

@@ -500,8 +500,8 @@ export class Renderer {
     const noDepth = { blend: 'alpha', depthTest: false, depthWrite: false };
     const texs = [];
     for (let i = 0; i < 6; i++) texs.push(this.assets.texture('gui/title/background/panorama_' + i + '.png'));
-    // Super Potato Mode on the software rasteriser: the cube once (64 jittered passes are 64 times the fill)
-    const passes = d.potato ? 1 : 64;
+    // Super Potato Mode: the cube once (64 jittered passes are 64 times the fill)
+    const passes = platform().potato ? 1 : 64;
     for (let j = 0; j < passes; j++) {
       mat4.identity(view);
       mat4.translate(view, view, ((j % 8) / 8 - 0.5) / 64, (Math.floor(j / 8) / 8 - 0.5) / 64, 0);
