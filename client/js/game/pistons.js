@@ -133,6 +133,82 @@ export class Pistons {
   constructor(game) {
     this.game = game;
     this.moving = new Map(); // "x,y,z" -> TileEntityPiston { x, y, z, state, facing, extending, head, progress, lastProgress }
+    this._tmp = [];
+  }
+
+  // TileEntityPiston.getCollisionRelatedBlockState: a retracting head collides as the piston head
+  _collisionState(t) {
+    if (!t.extending && t.head) return (blocksByName.piston_head.id << 4) | (t.state & 7) | ((blocks[t.state >> 4] || {}).name === 'sticky_piston' ? 8 : 0);
+    return t.state;
+  }
+
+  // The carried block's boxes at the origin cell (relative), or an empty list
+  _shape(t) {
+    const out = this._tmp; out.length = 0;
+    this.game.world.collisionBoxes(t.x, t.y, t.z, out, this._collisionState(t));
+    for (const c of out) { c[0] -= t.x; c[3] -= t.x; c[1] -= t.y; c[4] -= t.y; c[2] -= t.z; c[5] -= t.z; }
+    return out;
+  }
+
+  // BlockPistonMoving.getCollisionBoundingBox -> TileEntityPiston.getAABB: the carried block's bounds moved by the
+  // progress, unioned with where they were at the last progress
+  collision(bb, out) {
+    for (const t of this.moving.values()) this._collide(t, bb, out);
+  }
+
+  _collide(t, bb, out) {
+    const x = t.x, y = t.y, z = t.z;
+    if (t.x + 2 < bb[0] || t.x - 1 > bb[3] || t.y + 2 < bb[1] || t.y - 1 > bb[4] || t.z + 2 < bb[2] || t.z - 1 > bb[5]) return;
+    const sh = this._shape(t);
+    if (!sh.length) return;
+    let a0 = Infinity, a1 = Infinity, a2 = Infinity, a3 = -Infinity, a4 = -Infinity, a5 = -Infinity;
+    for (const c of sh) { a0 = Math.min(a0, c[0]); a1 = Math.min(a1, c[1]); a2 = Math.min(a2, c[2]); a3 = Math.max(a3, c[3]); a4 = Math.max(a4, c[4]); a5 = Math.max(a5, c[5]); }
+    const d = FACING[t.facing];
+    const e1 = t.extending ? t.progress - 1 : 1 - t.progress, e0 = t.extending ? t.lastProgress - 1 : 1 - t.lastProgress;
+    const lo = Math.min(e0, e1), hi = Math.max(e0, e1);
+    const ox0 = d[0] * (d[0] < 0 ? hi : lo), ox1 = d[0] * (d[0] < 0 ? lo : hi);
+    const oy0 = d[1] * (d[1] < 0 ? hi : lo), oy1 = d[1] * (d[1] < 0 ? lo : hi);
+    const oz0 = d[2] * (d[2] < 0 ? hi : lo), oz1 = d[2] * (d[2] < 0 ? lo : hi);
+    const c = [x + a0 + ox0, y + a1 + oy0, z + a2 + oz0, x + a3 + ox1, y + a4 + oy1, z + a5 + oz1];
+    if (c[3] > bb[0] && c[0] < bb[3] && c[4] > bb[1] && c[1] < bb[4] && c[5] > bb[2] && c[2] < bb[5]) out.push(c);
+  }
+
+  // TileEntityPiston.moveCollidedEntities(f) for the local player: whatever the block sweeps over this tick is
+  // pushed out of the way (slime blocks launch it instead)
+  _pushPlayer(t, f) {
+    const g = this.game, pl = g.player;
+    if (!pl || pl.spectator) return;
+    const sh = this._shape(t);
+    if (!sh.length) return;
+    const dir = t.extending ? t.facing : OPPOSITE[t.facing];
+    const d = FACING[dir], d0 = f - t.progress;
+    const e = t.extending ? t.progress - 1 : 1 - t.progress, pf = FACING[t.facing];
+    const ebb = pl.bb();
+    let d1 = 0;
+    for (const c of sh) {
+      // moveByPositionAndProgress, then getMovementArea: the box stretched over the distance it moves
+      const b = [t.x + c[0] + pf[0] * e, t.y + c[1] + pf[1] * e, t.z + c[2] + pf[2] * e, t.x + c[3] + pf[0] * e, t.y + c[4] + pf[1] * e, t.z + c[5] + pf[2] * e];
+      const area = b.slice();
+      for (let k = 0; k < 3; k++) {
+        if (d[k] > 0) { area[k] = b[k + 3]; area[k + 3] = b[k + 3] + d0; }
+        else if (d[k] < 0) { area[k] = b[k] - d0; area[k + 3] = b[k]; }
+      }
+      if (!(area[3] > ebb[0] && area[0] < ebb[3] && area[4] > ebb[1] && area[1] < ebb[4] && area[5] > ebb[2] && area[2] < ebb[5])) continue;
+      // getMovement: how far the entity has to go to clear the swept area
+      let m = 0;
+      for (let k = 0; k < 3; k++) {
+        if (d[k] > 0) m = area[k + 3] - ebb[k];
+        else if (d[k] < 0) m = ebb[k + 3] - area[k];
+      }
+      d1 = Math.max(d1, m);
+      if (d1 >= d0) break;
+    }
+    if (d1 <= 0) return;
+    if ((blocks[t.state >> 4] || {}).name === 'slime') {
+      if (d[0]) pl.motionX = d[0]; else if (d[1]) pl.motionY = d[1]; else pl.motionZ = d[2];
+    }
+    d1 = Math.min(d1, d0) + 0.01;
+    pl.moveEntity(g.world, d1 * d[0], d1 * d[1], d1 * d[2]);
   }
   clear() { this.moving.clear(); }
 
@@ -213,7 +289,11 @@ export class Pistons {
     for (const t of [...this.moving.values()]) {
       t.lastProgress = t.progress;
       if (t.lastProgress >= 1) this._clearTile(t);
-      else t.progress = Math.min(1, t.progress + 0.5);
+      else {
+        const f = t.progress + 0.5;
+        this._pushPlayer(t, f);
+        t.progress = Math.min(1, f);
+      }
     }
   }
 

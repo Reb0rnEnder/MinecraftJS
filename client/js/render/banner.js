@@ -56,7 +56,7 @@ export function buildBanner(mat, standing, meta) {
   if (standing) { outer.position.set(0.5, 0.75 * f, 0.5); outer.rotation.y = -(meta * 360 / 16) * D2R; }
   else {
     const rot = meta === 2 ? 180 : meta === 4 ? 90 : meta === 5 ? -90 : 0;
-    outer.position.set(0.5, -0.25 * f + 0.75 * f, 0.5); outer.rotation.y = -rot * D2R;
+    outer.position.set(0.5, -0.25 * f, 0.5); outer.rotation.y = -rot * D2R; // translate(x + 0.5, y - 0.25 * f, z + 0.5)
     inner = new Node(); inner.position.set(0, -0.3125, -0.4375);
   }
   const sc = new Node(); sc.scale.set(f, -f, -f);

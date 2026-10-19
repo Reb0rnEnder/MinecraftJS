@@ -18,6 +18,31 @@ const MOB_SIZES = {
   94: [0.95, 0.95, 0.475], 95: [0.6, 0.8, 0.68], 96: [0.9, 1.3, 1.105], 97: [0.7, 1.9, 1.7], 98: [0.6, 0.7, 0.595],
   99: [1.4, 2.9, 2.465], 100: [1.4, 1.6, 1.36], 101: [0.6, 0.7, 0.595], 120: [0.6, 1.95, 1.62],
 };
+// 1.9+ mobs by registry id (setSize): wither skeleton, illagers, vex, shulker (eye 0.5), polar bear, llama, parrot
+const MOB_SIZES_BY_ID = {
+  5: [0.7, 2.4, 2.04], 34: [0.6, 1.95, 1.62], 35: [0.4, 0.8, 0.68], 36: [0.6, 1.95, 1.62], 37: [0.6, 1.95, 1.62],
+  69: [1, 1, 0.5], 102: [1.3, 1.4, 1.19], 103: [0.9, 1.87, 1.59], 105: [0.5, 0.9, 0.77],
+};
+
+// EntityShulker's box: 1 x 1 at its position, grown towards the opening by 0.5 - sin((0.5 + peek) * PI) * 0.5
+// (attach face: 0 down .. 5 east; the shell opens away from it). Returns [minX, minY, minZ, maxX, maxY, maxZ].
+export function shulkerBox(e, peek = e.peek || 0) {
+  const d = 0.5 - Math.sin((0.5 + peek) * Math.PI) * 0.5;
+  const b = [e.x - 0.5, e.y, e.z - 0.5, e.x + 0.5, e.y + 1, e.z + 0.5];
+  switch (e.attachFace || 0) {
+    case 0: b[4] += d; break;
+    case 1: b[1] -= d; break;
+    case 2: b[5] += d; break;
+    case 3: b[2] -= d; break;
+    case 4: b[3] += d; break;
+    case 5: b[0] -= d; break;
+    default: break;
+  }
+  return b;
+}
+// the direction a shulker's growing box pushes things (EntityShulker.onUpdate, MoverType.SHULKER)
+const SHULKER_PUSH = [[0, 1, 0], [0, -1, 0], [0, 0, 1], [0, 0, -1], [1, 0, 0], [-1, 0, 0]];
+
 const MOB_NAMES = {
   50: 'Creeper', 51: 'Skeleton', 52: 'Spider', 53: 'Giant', 54: 'Zombie', 55: 'Slime', 56: 'Ghast', 57: 'PigZombie', 58: 'Enderman',
   59: 'CaveSpider', 60: 'Silverfish', 61: 'Blaze', 62: 'LavaSlime', 63: 'EnderDragon', 64: 'WitherBoss', 65: 'Bat', 66: 'Witch',
@@ -117,7 +142,7 @@ export class EntityManager {
     if (fam) Object.assign(e, fam[1]);
     e.typeName = MOB_NAMES[e.type] || 'Mob';
     e.headYaw = e.prevHeadYaw = p.headPitch; // packet's "headPitch" is the head yaw
-    const s = MOB_SIZES[e.type] || [0.6, 1.8, 1.62];
+    const s = MOB_SIZES_BY_ID[p.type] || MOB_SIZES[e.type] || [0.6, 1.8, 1.62];
     e.width = s[0]; e.height = s[1]; e.eyeHeight = s[2];
     e.motionX = p.velocity.x / 8000; e.motionY = p.velocity.y / 8000; e.motionZ = p.velocity.z / 8000;
     // EntityList id 30: handleSpawnMob creates a real armor stand (ViaRewind sends hologram stands this way)
@@ -801,6 +826,16 @@ export class EntityManager {
         e.prevPeek = e.peek || 0;
         if (e.prevPeek > f1) e.peek = Math.max(f1, Math.min(1, e.prevPeek - 0.05));
         else if (e.prevPeek < f1) e.peek = Math.max(0, Math.min(f1, e.prevPeek + 0.05));
+        // opening pushes whatever its box now overlaps (the local player is ours to move)
+        const grow = (0.5 - Math.sin((0.5 + e.peek) * Math.PI) * 0.5) - (0.5 - Math.sin((0.5 + e.prevPeek) * Math.PI) * 0.5);
+        const pl = g.player;
+        if (grow > 0 && pl && !pl.spectator && !pl.noClip) {
+          const b = shulkerBox(e), pb = pl.bb();
+          if (b[3] > pb[0] && b[0] < pb[3] && b[4] > pb[1] && b[1] < pb[4] && b[5] > pb[2] && b[2] < pb[5]) {
+            const d = SHULKER_PUSH[e.attachFace || 0];
+            pl.moveEntity(g.world, d[0] * grow, d[1] * grow, d[2] * grow);
+          }
+        }
         e.bodyYaw = e.prevBodyYaw = 180;
       }
       if (e.hurtTime > 0) e.hurtTime--;

@@ -32,7 +32,7 @@ import { openContainerScreen, InventoryScreen, CreativeScreen, handleHotbarSnaps
 import { BookScreen, SleepScreen } from '../gui/screens/book.js';
 import { Inventory, ContainerWindow } from './container.js';
 import { Items } from './items.js';
-import { EntityManager } from './entities.js';
+import { EntityManager, shulkerBox } from './entities.js';
 import { EntityRenderer } from '../render/entity-renderer.js';
 import { ItemRenderer } from '../render/item-renderer.js';
 import { HandRenderer } from '../render/hand-renderer.js';
@@ -407,6 +407,7 @@ export class Game {
     // World.getCollisionBoxes' entity part (1.12): boats and live shulkers are solid to every mover
     // (getCollisionBoundingBox); a moving boat also collides with pushable entities (EntityBoat.getCollisionBox).
     // Passengers of the same vehicle never collide (isRidingSameEntity).
+    w.movingCollider = (bb, out) => this.pistons.collision(bb, out);
     w.entityCollider = (bb, mover) => {
       const out = [];
       const self = mover.entity || null; // the vehicle being steered, or null for the player
@@ -415,7 +416,7 @@ export class Game {
         if (e === self || e.dead) continue;
         if (self ? e.riding === self.id : e.id === this.ridingEntityId) continue;
         const hw = (e.width || 0) / 2;
-        const eb = [e.x - hw, e.y, e.z - hw, e.x + hw, e.y + (e.height || 0), e.z + hw];
+        const eb = e.kind === 'mob' && e.type === 69 ? shulkerBox(e) : [e.x - hw, e.y, e.z - hw, e.x + hw, e.y + (e.height || 0), e.z + hw];
         if (!(eb[3] > g[0] && eb[0] < g[3] && eb[4] > g[1] && eb[1] < g[4] && eb[5] > g[2] && eb[2] < g[5])) continue;
         const solid = e.kind === 'boat' || (e.kind === 'mob' && e.type === 69);
         const pushable = self && self.kind === 'boat' && (e.kind === 'player' || e.kind === 'mob' || e.kind === 'boat' || e.kind === 'minecart') && e.riding < 0;
