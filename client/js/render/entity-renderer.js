@@ -9,7 +9,7 @@ import { blocks } from '../world/blocks.js';
 import { resolveState } from '../world/blockstates.js';
 import { FORMAT, colorParams, EntityParams } from '../gfx/device.js';
 import { mat4, D2R, aabbInFrustum } from '../gfx/math.js';
-import { Node, material, drawTree, toDraw } from '../gfx/scene.js';
+import { Node, material, drawTree, toDraw, Batcher } from '../gfx/scene.js';
 import { JavaRandom } from '../util/jrandom.js';
 import { decodePng } from '../util/png.js';
 import { decodeBase64 } from '../util/base64.js';
@@ -849,7 +849,9 @@ export class EntityRenderer {
 
   // Draw the entity tree (called by the world renderer)
   draw(device, camRot) {
-    drawTree(device, this.group, { camRot, resolve: this.resolve });
+    // model parts sharing a material go out as one draw (scene.js Batcher)
+    if (!this.batcher) this.batcher = new Batcher(device, FORMAT.entity);
+    drawTree(device, this.group, { camRot, resolve: this.resolve, batcher: this.noBatch ? null : this.batcher });
     for (const node of this.glints || []) this.drawGlint(device, node, null);
   }
 
