@@ -22,8 +22,11 @@
 //   saveFile(name, bytes, mime)
 //   openUrl(url)
 //   fetchBytes(path) / fetchText(path) / fetchJson(path)     assets served next to the client
-//   postJson(path, body) -> Promise<{ status, json }>       requests to the proxy (e.g. account sign in)
-//   openSocket() -> Promise<Socket>   Socket: sendText(s), sendBinary(u8), close(), on('text'|'binary'|'close', fn)
+//   postJson(url, body) -> Promise<{ status, json }>        requests to the proxy (e.g. account sign in)
+//   openSocket(url) -> Promise<Socket>   Socket: sendText(s), sendBinary(u8), close(), on('text'|'binary'|'close', fn)
+//   originSocketUrl() -> url | null       optional: proxy hosting the page, the default proxy
+//   embeddedAssets() -> Uint8Array | null optional: asset zip bundled with the client (single-file build)
+//   loadConfig() -> Promise<object>       optional: site configuration (config.json: proxies, servers)
 //   now() -> ms, requestFrame(fn), vsync (bool, frames follow the display refresh when true)
 //   cpuCount                              logical CPU cores (sizes the mesh worker pool)
 //   info() -> { runtime, bits, memory: { used, total, max } | null, cpu }   for the debug screen

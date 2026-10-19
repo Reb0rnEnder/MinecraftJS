@@ -285,10 +285,11 @@ export class BrowserPlatform extends Emitter {
   }
   async fetchJson(path) { const r = await fetch(path); if (!r.ok) throw new Error(`Failed to load ${path} (${r.status})`); return r.json(); }
 
-  openSocket() {
+  // WebSocket to a MinecraftJS proxy
+  openSocket(url) {
     return new Promise((resolve, reject) => {
-      const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-      const ws = new WebSocket(`${proto}://${location.host}`);
+      let ws;
+      try { ws = new WebSocket(url); } catch (e) { reject(new Error('Bad proxy address ' + url)); return; }
       ws.binaryType = 'arraybuffer';
       const sock = new Emitter();
       sock.sendText = (s) => { if (ws.readyState === 1) ws.send(s); };
@@ -302,6 +303,45 @@ export class BrowserPlatform extends Emitter {
         else sock.emit('binary', new Uint8Array(e.data));
       };
     });
+  }
+
+  // The proxy at the page's own server (the proxy serves the client), or null for file:// pages
+  originSocketUrl() {
+    if (location.protocol !== 'http:' && location.protocol !== 'https:') return null;
+    return `${location.protocol === 'https:' ? 'wss' : 'ws'}://${location.host}/`;
+  }
+
+  // Asset zip embedded by the single-file build (tools/build.js), decoded once
+  embeddedAssets() {
+    if (this._embedded !== undefined) return this._embedded;
+    const el = document.getElementById('minecraftjs-assets');
+    this._embedded = null;
+    if (el) {
+      const text = el.textContent.trim();
+      el.remove();
+      if (Uint8Array.fromBase64) this._embedded = Uint8Array.fromBase64(text);
+      else {
+        const bin = atob(text);
+        const out = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+        this._embedded = out;
+      }
+    }
+    return this._embedded;
+  }
+
+  // Site configuration: defaults embedded by the build, overridden by a config.json next to the page
+  async loadConfig() {
+    let config = {};
+    const el = document.getElementById('minecraftjs-config');
+    if (el) { try { config = JSON.parse(el.textContent); } catch (e) { console.warn('Bad embedded config', e); } }
+    if (location.protocol === 'http:' || location.protocol === 'https:') {
+      try {
+        const r = await fetch('config.json', { cache: 'no-cache' });
+        if (r.ok) config = { ...config, ...(await r.json()) };
+      } catch (e) { console.warn('Could not read config.json:', e.message); }
+    }
+    return config;
   }
 
   now() { return performance.now(); }

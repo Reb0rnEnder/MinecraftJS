@@ -1,5 +1,5 @@
 // Pure-JS PNG decode/encode (no browser image APIs). Decodes to { width, height, data: Uint8Array RGBA }.
-import { inflate, deflate } from '/lib/pako/pako.esm.mjs';
+import { inflate, deflate } from '../lib/pako.esm.mjs';
 
 const SIG = [137, 80, 78, 71, 13, 10, 26, 10];
 

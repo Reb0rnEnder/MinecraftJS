@@ -7,3 +7,8 @@ server/
 *.log
 .DS_Store
 Thumbs.db
+dist/
+client/assets/
+# 1.12.2 work in progress (kept out of the 1.8.9 branch)
+1.12.2-wip/
+*.claudechats.json

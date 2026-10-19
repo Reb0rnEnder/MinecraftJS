@@ -7,13 +7,18 @@ import { Game } from './game/game.js';
 import { initRecipes } from './game/crafting.js';
 import { TitleScreen } from './gui/screens/menus.js';
 import { Splash } from './render/splash.js';
+import { ProxyList } from './net/proxies.js';
+import { parseAddress } from './net/address.js';
 
 async function boot() {
   setPlatform(new BrowserPlatform());
   const P = platform();
-  const settings = new Settings();
-  const assets = new Assets();
+  let config = {};
+  try { config = P.loadConfig ? await P.loadConfig() : {}; } catch (e) { console.warn('Config unavailable', e); }
+  const settings = new Settings(config);
+  const proxies = new ProxyList(settings);
   try {
+    const assets = new Assets();
     const device = await P.createGraphicsDevice(settings.graphicsApi);
     if ((device.name === 'WebGPU') !== (settings.graphicsApi === 'webgpu')) {
       settings.graphicsApi = device.name === 'WebGPU' ? 'webgpu' : 'webgl2';
@@ -31,11 +36,13 @@ async function boot() {
     splash.stop();
     if (assets.data.recipes) initRecipes(assets.data.recipes);
     const game = new Game(assets, settings, device);
+    game.proxies = proxies;
     globalThis.game = game; // debugging handle
     const params = P.launchParams ? P.launchParams() : {};
     if (params.connect) {
-      const [host, port] = params.connect.split(':');
-      game.connect(host || 'localhost', parseInt(port, 10) || 25565, params.user || null);
+      const a = parseAddress(params.connect);
+      if (a && a.kind === 'eagler') game.connect(params.connect, 0, params.user || null);
+      else game.connect(a ? a.host : 'localhost', a ? a.port : 25565, params.user || null);
     } else {
       game.screens.open(new TitleScreen(game));
     }

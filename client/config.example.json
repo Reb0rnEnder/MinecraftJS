@@ -1,0 +1,9 @@
+{
+  "proxies": [
+    { "name": "My Proxy", "url": "wss://proxy.example.com/" }
+  ],
+  "servers": [
+    { "name": "My Server", "address": "mc.example.com" },
+    { "name": "My Eaglercraft Server", "address": "wss://eagler.example.com/" }
+  ]
+}

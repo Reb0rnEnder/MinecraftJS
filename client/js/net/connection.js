@@ -1,6 +1,13 @@
-// Socket link to the proxy (through the platform layer). Binary frames carry raw play packets (varint id + body).
+// Socket link to the game server. Vanilla servers go through the selected MinecraftJS proxy (platform().openSocket);
+// Eaglercraft servers (ws:// / wss:// addresses) are reached directly over their own WebSocket (eagler.js). Both
+// sockets look the same: binary frames carry raw play packets (varint id + body), text frames JSON control messages.
 import { decodePacket } from './packets.js';
 import { platform } from '../platform/platform.js';
+import { parseAddress } from './address.js';
+import { openEaglerSocket, pingEagler } from './eagler.js';
+import { currentProxyUrl } from './proxies.js';
+
+const NO_PROXY = 'No proxy selected: add one in Proxy Servers on the title screen (or join an Eaglercraft wss:// server)';
 
 export class Connection {
   constructor() {
@@ -15,9 +22,15 @@ export class Connection {
   on(ev, fn) { (this.handlers[ev] ||= []).push(fn); }
   emit(ev, ...a) { for (const fn of this.handlers[ev] || []) fn(...a); }
 
-  async open() {
+  async open(eagler) {
     if (this.ws) return;
-    const sock = await platform().openSocket();
+    let sock;
+    if (eagler) sock = await openEaglerSocket(eagler);
+    else {
+      const url = currentProxyUrl();
+      if (!url) throw new Error(NO_PROXY);
+      sock = await platform().openSocket(url);
+    }
     this.ws = sock;
     sock.on('close', () => {
       const was = this.state;
@@ -44,22 +57,29 @@ export class Connection {
     });
   }
 
-  // auth: { accessToken, uuid } for online-mode servers (Microsoft accounts), else null
+  // auth: { accessToken, uuid } for online-mode servers (Microsoft accounts), else null.
+  // host may be an Eaglercraft address (then port is ignored).
   async connect(host, port, username, auth = null) {
-    await this.open();
+    const a = parseAddress(host);
+    const eagler = a && a.kind === 'eagler' ? a : null;
+    await this.open(eagler);
     this.state = 'login';
-    this.ws.sendText(JSON.stringify({ type: 'connect', host, port, username, auth }));
+    this.ws.sendText(JSON.stringify({ type: 'connect', host, port, username, auth: eagler ? null : auth }));
   }
 
   async ping(host, port) {
+    const a = parseAddress(host);
+    if (a && a.kind === 'eagler') return pingEagler(a);
     // Use a separate socket so pings don't interfere with a live session
+    const url = currentProxyUrl();
+    if (!url) return { error: 'No proxy' };
     let sock;
-    try { sock = await platform().openSocket(); } catch (e) { return { error: 'Proxy unreachable' }; }
+    try { sock = await platform().openSocket(url); } catch (e) { return { error: 'Proxy unreachable' }; }
     return new Promise((resolve) => {
       let done = false;
       const finish = (r) => { if (done) return; done = true; clearTimeout(timer); sock.close(); resolve(r); };
       const timer = setTimeout(() => finish({ error: 'Timed out' }), 6000);
-      sock.on('text', (t) => { try { finish(JSON.parse(t)); } catch (err) { finish({ error: 'Bad response' }); } });
+      sock.on('text', (t) => { try { const m = JSON.parse(t); if (m.type === 'ping_result') finish(m); } catch (err) { finish({ error: 'Bad response' }); } });
       sock.on('close', () => finish({ error: 'Proxy closed the connection' }));
       sock.sendText(JSON.stringify({ type: 'ping', host, port, id: 1 }));
     });

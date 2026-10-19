@@ -2,9 +2,7 @@
 // and serves the game's 1.8.9 assets.
 const net = require('net');
 const http = require('http');
-const https = require('https');
 const fs = require('fs');
-const os = require('os');
 const path = require('path');
 const zlib = require('zlib');
 const dns = require('dns');
@@ -13,118 +11,19 @@ const { WebSocketServer } = require('ws');
 const crypto = require('crypto');
 const { ZipFile } = require('./lib/zip');
 const msauth = require('./lib/msauth');
+const mcassets = require('./lib/mcassets');
 
 const PORT = parseInt(process.env.PORT, 10) || 3000;
-const MC_VERSION = '1.8.9';
-const CACHE_DIR = path.join(__dirname, 'cache');
+const CLIENT_DIR = path.join(__dirname, 'client');
+const PROXY_VERSION = require('./package.json').version || '';
 
 // ---------------------------------------------------------------------------
-// Asset discovery
+// Game assets. A built client/assets/ folder (npm run assets) is served as is; without one the proxy serves the
+// same layout straight from the 1.8.9 jar and asset index (see tools/build.js for the layout).
 // ---------------------------------------------------------------------------
-
-function minecraftDirs() {
-  const dirs = [];
-  if (process.env.MC_DIR) dirs.push(process.env.MC_DIR);
-  if (process.env.APPDATA) dirs.push(path.join(process.env.APPDATA, '.minecraft'));
-  dirs.push(path.join(os.homedir(), '.minecraft'));
-  dirs.push(path.join(os.homedir(), 'Library', 'Application Support', 'minecraft'));
-  return dirs;
-}
-
-function fetchBuffer(url) {
-  return new Promise((resolve, reject) => {
-    https.get(url, (res) => {
-      if (res.statusCode >= 300 && res.statusCode < 400 && res.headers.location) {
-        res.resume();
-        return fetchBuffer(res.headers.location).then(resolve, reject);
-      }
-      if (res.statusCode !== 200) {
-        res.resume();
-        return reject(new Error(`HTTP ${res.statusCode} for ${url}`));
-      }
-      const chunks = [];
-      res.on('data', (c) => chunks.push(c));
-      res.on('end', () => resolve(Buffer.concat(chunks)));
-      res.on('error', reject);
-    }).on('error', reject);
-  });
-}
-
-async function getVersionJson() {
-  for (const dir of minecraftDirs()) {
-    const p = path.join(dir, 'versions', MC_VERSION, MC_VERSION + '.json');
-    if (fs.existsSync(p)) return JSON.parse(fs.readFileSync(p, 'utf8'));
-  }
-  const cached = path.join(CACHE_DIR, MC_VERSION + '.json');
-  if (fs.existsSync(cached)) return JSON.parse(fs.readFileSync(cached, 'utf8'));
-  console.log('Downloading version manifest from Mojang...');
-  const manifest = JSON.parse(await fetchBuffer('https://piston-meta.mojang.com/mc/game/version_manifest_v2.json'));
-  const entry = manifest.versions.find((v) => v.id === MC_VERSION);
-  const buf = await fetchBuffer(entry.url);
-  fs.mkdirSync(CACHE_DIR, { recursive: true });
-  fs.writeFileSync(cached, buf);
-  return JSON.parse(buf);
-}
-
-async function locateJar() {
-  if (process.env.MC_JAR && fs.existsSync(process.env.MC_JAR)) return process.env.MC_JAR;
-  for (const dir of minecraftDirs()) {
-    const p = path.join(dir, 'versions', MC_VERSION, MC_VERSION + '.jar');
-    if (fs.existsSync(p)) return p;
-  }
-  const cached = path.join(CACHE_DIR, MC_VERSION + '.jar');
-  if (fs.existsSync(cached)) return cached;
-  const vjson = await getVersionJson();
-  console.log('Downloading 1.8.9 game assets...');
-  const buf = await fetchBuffer(vjson.downloads.client.url);
-  fs.mkdirSync(CACHE_DIR, { recursive: true });
-  fs.writeFileSync(cached, buf);
-  return cached;
-}
-
-let assetIndex = null; // { objects: { 'minecraft/sounds/...': { hash, size } } }
-let assetObjectDirs = [];
-
-async function loadAssetIndex() {
-  const vjson = await getVersionJson();
-  const id = vjson.assetIndex ? vjson.assetIndex.id : '1.8';
-  for (const dir of minecraftDirs()) {
-    const p = path.join(dir, 'assets', 'indexes', id + '.json');
-    if (fs.existsSync(p)) {
-      assetIndex = JSON.parse(fs.readFileSync(p, 'utf8'));
-      break;
-    }
-  }
-  if (!assetIndex) {
-    const cached = path.join(CACHE_DIR, 'assets-' + id + '.json');
-    if (!fs.existsSync(cached)) {
-      console.log('Downloading asset index...');
-      fs.mkdirSync(CACHE_DIR, { recursive: true });
-      fs.writeFileSync(cached, await fetchBuffer(vjson.assetIndex.url));
-    }
-    assetIndex = JSON.parse(fs.readFileSync(cached, 'utf8'));
-  }
-  assetObjectDirs = minecraftDirs().map((d) => path.join(d, 'assets', 'objects'));
-  assetObjectDirs.push(path.join(CACHE_DIR, 'objects'));
-}
-
-async function readAssetObject(name) {
-  if (!assetIndex) return null;
-  const obj = assetIndex.objects[name];
-  if (!obj) return null;
-  const sub = obj.hash.slice(0, 2);
-  for (const dir of assetObjectDirs) {
-    const p = path.join(dir, sub, obj.hash);
-    if (fs.existsSync(p)) return fs.readFileSync(p);
-  }
-  const buf = await fetchBuffer(`https://resources.download.minecraft.net/${sub}/${obj.hash}`);
-  const outDir = path.join(CACHE_DIR, 'objects', sub);
-  fs.mkdirSync(outDir, { recursive: true });
-  fs.writeFileSync(path.join(outDir, obj.hash), buf);
-  return buf;
-}
 
 let jar = null;
+let assetIndex = null; // mcassets.loadAssetIndex(): { objects, read(name) }
 const bundleCache = new Map();
 
 function jarJson(name) {
@@ -132,25 +31,21 @@ function jarJson(name) {
   return b ? JSON.parse(b.toString('utf8')) : null;
 }
 
+// bundles/models.json and bundles/textures.bin, gzipped
 function buildBundle(kind) {
   if (bundleCache.has(kind)) return bundleCache.get(kind);
   const P = 'assets/minecraft/';
-  const out = {};
-  if (kind === 'models') {
-    out.blockstates = {};
-    out.models = {};
-    for (const f of jar.list(P + 'blockstates/')) {
-      out.blockstates[path.basename(f, '.json')] = jarJson(f);
-    }
+  let raw;
+  if (kind === 'models.json') {
+    const out = { blockstates: {}, models: {} };
+    for (const f of jar.list(P + 'blockstates/')) out.blockstates[path.basename(f, '.json')] = jarJson(f);
     for (const f of jar.list(P + 'models/')) {
-      if (!f.endsWith('.json')) continue;
-      out.models[f.slice((P + 'models/').length, -5)] = jarJson(f);
+      if (f.endsWith('.json')) out.models[f.slice((P + 'models/').length, -5)] = jarJson(f);
     }
-  } else if (kind === 'textures') {
-    // Binary container: u32 headerLength, JSON header { files: [[name, offset, length]], mcmeta }, then raw PNG bytes
-    const files = [];
-    const blobs = [];
-    const mcmeta = {};
+    raw = Buffer.from(JSON.stringify(out));
+  } else if (kind === 'textures.bin') {
+    // u32 headerLength, JSON header { files: [[name, offset, length]], mcmeta }, then the PNG bytes
+    const files = [], blobs = [], mcmeta = {};
     let offset = 0;
     for (const dir of ['blocks', 'items']) {
       for (const f of jar.list(P + 'textures/' + dir + '/')) {
@@ -168,14 +63,34 @@ function buildBundle(kind) {
     const header = Buffer.from(JSON.stringify({ files, mcmeta }));
     const len = Buffer.alloc(4);
     len.writeUInt32LE(header.length);
-    const gz = zlib.gzipSync(Buffer.concat([len, header, ...blobs]));
-    bundleCache.set(kind, gz);
-    return gz;
-  }
-  const json = Buffer.from(JSON.stringify(out));
-  const gz = zlib.gzipSync(json);
+    raw = Buffer.concat([len, header, ...blobs]);
+  } else return null;
+  const gz = zlib.gzipSync(raw);
   bundleCache.set(kind, gz);
   return gz;
+}
+
+// pack.mcmeta of the default pack: the asset index's language list plus pack metadata
+async function defaultPackMeta() {
+  const buf = assetIndex ? await assetIndex.read('pack.mcmeta') : null;
+  const meta = buf ? JSON.parse(buf.toString('utf8')) : {};
+  meta.pack = { pack_format: 1, description: 'The default look and feel of Minecraft' };
+  return Buffer.from(JSON.stringify(meta));
+}
+
+const MIME = { '.png': 'image/png', '.json': 'application/json', '.mcmeta': 'application/json', '.ogg': 'audio/ogg', '.lang': 'text/plain; charset=utf-8', '.txt': 'text/plain; charset=utf-8' };
+
+// One file of the assets/ layout, or null
+async function readAsset(rel) {
+  if (rel === 'pack.mcmeta') return defaultPackMeta();
+  if (rel === 'pack.png') return jar.read('pack.png');
+  if (rel.startsWith('minecraft/')) {
+    // Sounds, sounds.json and translations other than en_US live in the asset index, the rest in the jar
+    const fromJar = jar.read('assets/' + rel);
+    if (fromJar) return fromJar;
+    return assetIndex ? assetIndex.read(rel) : null;
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------
@@ -183,8 +98,16 @@ function buildBundle(kind) {
 // ---------------------------------------------------------------------------
 
 const app = express();
-app.use(express.static(path.join(__dirname, 'client')));
-app.use('/lib/pako', express.static(path.join(__dirname, 'node_modules', 'pako', 'dist')));
+app.use(express.static(CLIENT_DIR));
+
+// Pages on other sites (static hosting, the single-file build) use this proxy for sign in and skins
+app.use(['/auth', '/skin'], (req, res, next) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.set('Access-Control-Allow-Headers', 'content-type');
+  if (req.method === 'OPTIONS') return res.status(204).end();
+  next();
+});
 
 // Microsoft account sign in (device code flow). The browser cannot call these services directly (CORS),
 // so the proxy relays them. Tokens are returned to the client, which stores them; the proxy keeps nothing.
@@ -195,89 +118,22 @@ app.post('/auth/device', express.json(), authRoute(() => msauth.startDeviceCode(
 app.post('/auth/poll', express.json(), authRoute(async (b) => ({ account: await msauth.pollDeviceCode(String(b.deviceCode || '')) })));
 app.post('/auth/refresh', express.json(), authRoute(async (b) => ({ account: await msauth.refresh(String(b.refreshToken || '')) })));
 
-app.get('/mc/status', (req, res) => {
-  res.json({ assets: !!jar, sounds: !!assetIndex });
-});
-
-app.get('/mc/bundle/:kind', (req, res) => {
-  if (!jar) return res.status(503).send('Assets not loaded yet');
-  try {
-    const gz = buildBundle(req.params.kind);
-    res.set('Content-Type', req.params.kind === 'textures' ? 'application/octet-stream' : 'application/json');
-    res.set('Content-Encoding', 'gzip');
-    res.set('Cache-Control', 'public, max-age=3600');
-    res.send(gz);
-  } catch (e) {
-    res.status(500).send(String(e));
-  }
-});
-
-// Any asset file, e.g. /mc/file/textures/gui/widgets.png
-app.get(/^\/mc\/file\/(.+)$/, (req, res) => {
+// assets/ (only reached when client/assets/ was not built)
+app.get(/^\/assets\/(.+)$/, async (req, res) => {
   if (!jar) return res.status(503).send('Assets not loaded yet');
   const rel = req.params[0];
   if (rel.includes('..')) return res.status(400).end();
-  const buf = jar.read('assets/minecraft/' + rel);
-  if (!buf) return res.status(404).end();
-  const ext = path.extname(rel);
-  res.set('Content-Type', ext === '.png' ? 'image/png' : ext === '.json' || ext === '.mcmeta' ? 'application/json' : 'application/octet-stream');
-  res.set('Cache-Control', 'public, max-age=3600');
-  res.send(buf);
-});
-
-// Icon of the built-in "Default" resource pack (pack.png at the root of the game jar)
-app.get('/mc/pack.png', (req, res) => {
-  if (!jar) return res.status(503).send('Assets not loaded yet');
-  const buf = jar.read('pack.png');
-  if (!buf) return res.status(404).end();
-  res.set('Content-Type', 'image/png');
-  res.set('Cache-Control', 'public, max-age=3600');
-  res.send(buf);
-});
-
-// Languages: the list comes from the asset index's pack.mcmeta ("language" section), like vanilla's
-// LanguageManager; en_US.lang is in the jar, every other language is an asset index object.
-app.get('/mc/languages.json', async (req, res) => {
   try {
-    const buf = await readAssetObject('pack.mcmeta');
-    const meta = buf ? JSON.parse(buf.toString('utf8')) : {};
-    res.json(meta.language || { en_US: { name: 'English', region: 'US', bidirectional: false } });
-  } catch (e) { res.status(500).send(String(e.message)); }
-});
-
-app.get('/mc/lang/:code', async (req, res) => {
-  const code = String(req.params.code).replace(/\.lang$/, '');
-  if (!/^[A-Za-z]{2,3}_[A-Za-z]{2}$/.test(code)) return res.status(400).end();
-  try {
-    let buf = code === 'en_US' && jar ? jar.read('assets/minecraft/lang/en_US.lang') : null;
-    if (!buf) buf = await readAssetObject('minecraft/lang/' + code + '.lang');
-    if (!buf) return res.status(404).end();
-    res.set('Content-Type', 'text/plain; charset=utf-8');
+    let body;
+    if (rel.startsWith('bundles/')) {
+      body = buildBundle(rel.slice('bundles/'.length));
+      res.set('Content-Encoding', 'gzip');
+    } else body = await readAsset(rel);
+    if (!body) { res.removeHeader('Content-Encoding'); return res.status(404).end(); }
+    res.set('Content-Type', rel === 'bundles/textures.bin' ? 'application/octet-stream' : MIME[path.extname(rel)] || 'application/octet-stream');
     res.set('Cache-Control', 'public, max-age=3600');
-    res.send(buf);
+    res.send(body);
   } catch (e) { res.status(502).send(String(e.message)); }
-});
-
-// Sound definitions and sound files from the asset index
-app.get('/mc/sounds.json', async (req, res) => {
-  try {
-    const buf = await readAssetObject('minecraft/sounds.json');
-    if (!buf) return res.status(404).end();
-    res.set('Content-Type', 'application/json');
-    res.send(buf);
-  } catch (e) { res.status(500).send(String(e)); }
-});
-
-app.get(/^\/mc\/sound\/(.+)$/, async (req, res) => {
-  const rel = req.params[0];
-  if (rel.includes('..')) return res.status(400).end();
-  try {
-    const buf = await readAssetObject('minecraft/sounds/' + rel);
-    if (!buf) return res.status(404).end();
-    res.set('Content-Type', 'audio/ogg');
-    res.set('Cache-Control', 'public, max-age=86400');
-    res.send(buf);
-  } catch (e) { res.status(500).send(String(e)); }
 });
 
 // Player skins (only from Mojang's texture CDN)
@@ -287,7 +143,7 @@ app.get('/skin', async (req, res) => {
   if (!/^https?:\/\/textures\.minecraft\.net\/texture\/[0-9a-f]+$/i.test(url)) return res.status(400).end();
   try {
     let buf = skinCache.get(url);
-    if (!buf) { buf = await fetchBuffer(url.replace(/^http:/, 'https:')); skinCache.set(url, buf); }
+    if (!buf) { buf = await mcassets.fetchBuffer(url.replace(/^http:/, 'https:')); skinCache.set(url, buf); }
     res.set('Content-Type', 'image/png');
     res.set('Cache-Control', 'public, max-age=86400');
     res.send(buf);
@@ -455,6 +311,12 @@ wss.on('connection', (ws) => {
     let msg;
     try { msg = JSON.parse(data.toString()); } catch (e) { return; }
 
+    // Proxy test from the client's Proxy Servers screen
+    if (msg.type === 'info') {
+      sendJson({ type: 'info', name: 'MinecraftJS proxy', version: PROXY_VERSION, protocol: 47 });
+      return;
+    }
+
     if (msg.type === 'ping') {
       try {
         const st = await pingServer(msg.host || 'localhost', msg.port || 25565);
@@ -564,16 +426,16 @@ wss.on('connection', (ws) => {
 // ---------------------------------------------------------------------------
 
 (async () => {
+  const built = fs.existsSync(path.join(CLIENT_DIR, 'assets', 'pack.mcmeta'));
   try {
-    const jarPath = await locateJar();
-    jar = new ZipFile(jarPath);
-    console.log('Game assets loaded');
+    jar = new ZipFile(await mcassets.locateJar());
+    console.log(built ? 'Game assets: client/assets/' : 'Game assets loaded (served from the game jar)');
   } catch (e) {
     console.error('Could not load game assets:', e.message);
     console.error('Set MC_JAR to the location of the 1.8.9 client if it is installed somewhere unusual.');
   }
   try {
-    await loadAssetIndex();
+    assetIndex = await mcassets.loadAssetIndex();
     console.log('Sound asset index loaded');
   } catch (e) {
     console.error('Could not load sound asset index (sounds disabled):', e.message);

@@ -14,6 +14,7 @@ import { JavaRandom } from '../util/jrandom.js';
 import { decodePng } from '../util/png.js';
 import { decodeBase64 } from '../util/base64.js';
 import { platform } from '../platform/platform.js';
+import { fetchSkin } from '../net/proxies.js';
 import { EntityFire } from './entity-fire.js';
 
 const ARMOR_MATS = ['leather', 'chainmail', 'iron', 'diamond', 'gold'];
@@ -147,7 +148,7 @@ export class EntityRenderer {
         const skin = tj.textures && tj.textures.SKIN;
         if (skin && skin.url) {
           s.slim = !!(skin.metadata && skin.metadata.model === 'slim');
-          platform().fetchBytes('/skin?url=' + encodeURIComponent(skin.url)).then((bytes) => {
+          fetchSkin(skin.url).then((bytes) => {
             const img = decodePng(bytes);
             s.legacy = img.height === 32;
             s.image = img;

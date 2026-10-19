@@ -1,5 +1,7 @@
-// Asset manager: base game assets (served by the proxy) layered under user resource packs.
+// Asset manager: base game assets (an assets/ folder next to the page, or the zip embedded in a single-file build)
+// layered under user resource packs.
 import { platform } from './platform/platform.js';
+import { defaultAssetSource } from './asset-source.js';
 import { decodePng } from './util/png.js';
 import { ZipArchive } from './util/zip.js';
 import { Atlas } from './render/atlas.js';
@@ -48,6 +50,7 @@ export class Assets {
     this.languages = {};       // code -> { name, region, bidirectional }
     this.langUnicode = false;  // language needs the unicode font (LanguageManager.isCurrentLocaleUnicode)
     this.langBidi = false;     // right-to-left language
+    this.source = defaultAssetSource(); // base assets (asset-source.js)
   }
 
   setDevice(device) { this.device = device; }
@@ -85,7 +88,7 @@ export class Assets {
 
   async readBytes(rel) {
     for (const p of this.packs) if (p.has(rel)) return p.read(rel);
-    return platform().fetchBytes('/mc/file/' + rel);
+    return this.source.bytes('minecraft/' + rel);
   }
 
   async readText(rel) { const b = await this.readBytes(rel); return b ? new TextDecoder().decode(b) : null; }
@@ -93,13 +96,13 @@ export class Assets {
 
   async readSound(rel) {
     for (const p of this.packs) if (p.has('sounds/' + rel)) return p.read('sounds/' + rel);
-    return platform().fetchBytes('/mc/sound/' + rel);
+    return this.source.bytes('minecraft/sounds/' + rel);
   }
 
   // sounds.json: packs add events, or replace them when "replace": true
   async loadSoundDefinitions() {
     let defs = {};
-    try { defs = await platform().fetchJson('/mc/sounds.json'); } catch (e) { defs = {}; }
+    try { defs = JSON.parse(new TextDecoder().decode(await this.source.bytes('minecraft/sounds.json'))); } catch (e) { defs = {}; }
     for (const p of [...this.packs].reverse()) {
       if (!p.has('sounds.json')) continue;
       try {
@@ -159,13 +162,13 @@ export class Assets {
 
   async load(progress) {
     const step = (msg, pct) => progress && progress(msg, pct);
-    const P = platform();
     step('Checking assets...', 2);
-    const status = await P.fetchJson('/mc/status');
-    if (!status.assets) throw new Error('The proxy could not load the game assets. See the proxy console for details.');
+    const meta = await this.source.bytes('pack.mcmeta');
+    if (!meta) throw new Error('Game assets not found: put the assets/ folder (built with `npm run assets`) next to index.html');
+    try { this.defaultPackMeta = JSON.parse(new TextDecoder().decode(meta)); } catch (e) { this.defaultPackMeta = {}; }
     step('Loading game data...', 5);
     const names = ['blocks', 'items', 'entities', 'blockCollisionShapes', 'biomes', 'foods', 'effects', 'enchantments', 'windows', 'particles', 'materials', 'recipes'];
-    const datas = await Promise.all(names.map((n) => P.fetchJson(`/data/${n}.json`)));
+    const datas = await Promise.all(names.map((n) => this.source.data(n)));
     names.forEach((n, i) => { this.data[n] = datas[i]; });
     this.itemsById = new Map();
     this.itemsByName = new Map();
@@ -177,7 +180,6 @@ export class Assets {
   // Everything that resource packs can change (called on start and on pack changes)
   async loadResources(progress) {
     const step = (msg, pct) => progress && progress(msg, pct);
-    const P = platform();
     this.version++;
     for (const t of this.textures.values()) this.device.destroyTexture(t);
     this.textures.clear();
@@ -186,7 +188,7 @@ export class Assets {
     const dec = new TextDecoder();
 
     step('Loading block models...', 15);
-    const models = await P.fetchJson('/mc/bundle/models');
+    const models = await this.source.models();
     this.models = models.models;
     this.blockstates = models.blockstates;
     for (const p of packsLowFirst) {
@@ -195,14 +197,7 @@ export class Assets {
     }
 
     step('Loading textures...', 35);
-    const bundle = await P.fetchBytes('/mc/bundle/textures');
-    const dv = new DataView(bundle.buffer, bundle.byteOffset, bundle.byteLength);
-    const hlen = dv.getUint32(0, true);
-    const header = JSON.parse(dec.decode(bundle.subarray(4, 4 + hlen)));
-    const base = 4 + hlen;
-    const files = new Map();
-    for (const [name, off, len] of header.files) files.set(name, () => bundle.subarray(base + off, base + off + len));
-    const mcmeta = header.mcmeta;
+    const { files, mcmeta } = await this.source.blockTextures();
     for (const p of packsLowFirst) {
       for (const dir of ['textures/blocks/', 'textures/items/']) {
         for (const f of p.list(dir)) {
@@ -251,7 +246,10 @@ export class Assets {
   // Pool of mesh workers (one per spare CPU core, up to 6); re-initialised on resource reloads
   startMeshWorker() {
     if (!this.worker) {
-      const url = new URL('./render/mesh-worker.js', import.meta.url).href;
+      // The single-file build inlines the worker bundle (tools/build.js defines __MESH_WORKER_SOURCE__)
+      const url = typeof __MESH_WORKER_SOURCE__ === 'string'
+        ? URL.createObjectURL(new Blob([__MESH_WORKER_SOURCE__], { type: 'text/javascript' }))
+        : new URL('./render/mesh-worker.js', import.meta.url).href;
       const cores = platform().cpuCount || 4;
       this.worker = new MeshPool(url, Math.max(1, Math.min(6, cores - 1)));
     }
@@ -282,8 +280,7 @@ export class Assets {
 
   // All languages: the game's list plus the "language" sections of active resource packs
   async loadLanguageList() {
-    let list = {};
-    try { list = await platform().fetchJson('/mc/languages.json'); } catch (e) { list = {}; }
+    const list = { ...((this.defaultPackMeta && this.defaultPackMeta.language) || {}) };
     if (!list.en_US) list.en_US = { name: 'English', region: 'US', bidirectional: false };
     for (const p of [...this.packs].reverse()) if (p.languages) Object.assign(list, p.languages);
     this.languages = list;
@@ -294,7 +291,6 @@ export class Assets {
   // the selected language and every active pack's .lang files are layered on top.
   async loadLanguage(code) {
     if (!this.languages[code]) code = 'en_US';
-    const P = platform();
     const dec = new TextDecoder();
     const packsLowFirst = [...this.packs].reverse();
     const lang = { ...MINECRAFTJS_EN };
@@ -307,8 +303,8 @@ export class Assets {
       }
     };
     const layer = async (c, into) => {
-      const base = await P.fetchText('/mc/lang/' + c).catch(() => null);
-      if (base) parse(base, into);
+      const base = await this.source.bytes('minecraft/lang/' + c + '.lang').catch(() => null);
+      if (base) parse(dec.decode(base), into);
       for (const p of packsLowFirst) if (p.has('lang/' + c + '.lang')) parse(dec.decode(p.read('lang/' + c + '.lang')), into);
     };
     await layer('en_US', lang);

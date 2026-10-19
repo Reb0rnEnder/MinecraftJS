@@ -1,5 +1,6 @@
 // Game options (vanilla defaults), persisted through the platform settings store.
 import { platform } from '../platform/platform.js';
+import { parseAddress } from '../net/address.js';
 
 export const DEFAULT_KEYS = {
   forward: 'KeyW', left: 'KeyA', back: 'KeyS', right: 'KeyD', jump: 'Space', sneak: 'ShiftLeft', sprint: 'ControlLeft',
@@ -53,13 +54,32 @@ const DEFAULTS = {
   lastServer: { host: 'localhost', port: 25565 },
   username: 'WebPlayer',
   servers: [{ name: 'Local Server', host: 'localhost', port: 25565 }],
+  proxies: null, // [{ name, url }]; null until first use, then filled from config.json (net/proxies.js)
+  proxy: 0,      // selected proxy
 };
 
+// config.json "servers": [{ name, address }] (or { name, host, port }) -> settings entries
+function configServers(list) {
+  const out = [];
+  for (const s of list) {
+    if (!s) continue;
+    const text = s.address || (s.host ? (s.port ? `${s.host}:${s.port}` : s.host) : '');
+    const a = parseAddress(text);
+    if (!a) { console.warn('config.json: bad server address', text); continue; }
+    out.push(a.kind === 'eagler' ? { name: String(s.name || text), host: String(text).trim(), port: 0 } : { name: String(s.name || text), host: a.host, port: a.port });
+  }
+  return out;
+}
+
 export class Settings {
-  constructor() {
+  // config: site configuration (config.json); its servers and proxies are the defaults for new players
+  constructor(config = {}) {
+    this.config = config;
     let saved = {};
     try { saved = JSON.parse((platform().loadSetting('minecraftjs.settings') || platform().loadSetting('minekampf.settings')) || '{}'); } catch (e) { saved = {}; }
-    Object.assign(this, JSON.parse(JSON.stringify(DEFAULTS)), saved);
+    const defaults = JSON.parse(JSON.stringify(DEFAULTS));
+    if (Array.isArray(config.servers)) defaults.servers = configServers(config.servers);
+    Object.assign(this, defaults, saved);
     this.keys = { ...DEFAULT_KEYS, ...(saved.keys || {}) };
     this.soundVolumes = { ...DEFAULTS.soundVolumes, ...(saved.soundVolumes || {}) };
     if (Array.isArray(this.servers)) {

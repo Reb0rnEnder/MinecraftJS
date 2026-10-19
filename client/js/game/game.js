@@ -5,6 +5,7 @@ import { Profiler } from './profiler.js';
 import { celestialAngle } from '../render/sky.js';
 import { tr } from '../gui/i18n.js';
 import { Connection } from '../net/connection.js';
+import { isEaglerAddress } from '../net/address.js';
 import { C } from '../net/packets.js';
 import { Writer } from '../net/buffer.js';
 import { simplify } from '../net/nbt.js';
@@ -427,7 +428,8 @@ export class Game {
     let auth = null;
     if (!username) {
       let acc = this.accounts.active();
-      if (acc.type === 'microsoft') {
+      // Eaglercraft servers log in by name only (no Mojang session check)
+      if (acc.type === 'microsoft' && !isEaglerAddress(host)) {
         try { acc = await this.accounts.ensureFresh(acc); } catch (e) {
           this.screens.open(new DisconnectedScreen(this, tr('disconnect.loginFailed'), e.message));
           return;

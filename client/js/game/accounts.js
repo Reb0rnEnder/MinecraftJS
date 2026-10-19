@@ -1,6 +1,14 @@
 // Account manager: offline names and Microsoft accounts (signed in through the proxy with the OAuth
 // device code flow). Stored through the platform settings store on this device only.
 import { platform } from '../platform/platform.js';
+import { proxyRoute } from '../net/proxies.js';
+
+// Microsoft sign in is relayed by the selected proxy (the Microsoft and Xbox services send no CORS headers)
+function authPost(path, body) {
+  const url = proxyRoute(path);
+  if (!url) return Promise.reject(new Error('Signing in needs a MinecraftJS proxy: add one in Proxy Servers'));
+  return platform().postJson(url, body);
+}
 
 const KEY = 'minecraftjs.accounts';
 const REFRESH_MARGIN = 5 * 60 * 1000;
@@ -57,21 +65,21 @@ export class Accounts {
   async ensureFresh(a) {
     if (a.type !== 'microsoft') return a;
     if (a.accessToken && a.expiresAt - Date.now() > REFRESH_MARGIN) return a;
-    const r = await platform().postJson('/auth/refresh', { refreshToken: a.refreshToken });
+    const r = await authPost('/auth/refresh', { refreshToken: a.refreshToken });
     if (!r.json || !r.json.account) throw new Error((r.json && r.json.error) || 'Could not refresh the Microsoft session');
     return this.addMicrosoft(r.json.account);
   }
 
   // Device code sign in: returns { userCode, verificationUri, deviceCode, interval, expiresIn }
   async startDeviceLogin() {
-    const r = await platform().postJson('/auth/device', {});
+    const r = await authPost('/auth/device', {});
     if (!r.json || !r.json.deviceCode) throw new Error((r.json && r.json.error) || 'Could not reach Microsoft');
     return r.json;
   }
 
   // Resolves to an account once signed in, null while still pending; throws on failure
   async pollDeviceLogin(deviceCode) {
-    const r = await platform().postJson('/auth/poll', { deviceCode });
+    const r = await authPost('/auth/poll', { deviceCode });
     if (r.status !== 200) throw new Error((r.json && r.json.error) || 'Sign in failed');
     return r.json.account ? this.addMicrosoft(r.json.account) : null;
   }

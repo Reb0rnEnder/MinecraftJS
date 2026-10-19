@@ -1,5 +1,5 @@
 // Read-only ZIP archive reader (for resource packs), pure JS.
-import { inflateRaw } from '/lib/pako/pako.esm.mjs';
+import { inflateRaw } from '../lib/pako.esm.mjs';
 
 export class ZipArchive {
   constructor(bytes) {

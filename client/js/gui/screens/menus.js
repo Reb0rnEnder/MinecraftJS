@@ -8,6 +8,9 @@ import { decodeBase64 } from '../../util/base64.js';
 import { decodePng } from '../../util/png.js';
 import { AccountsScreen, drawFace } from './accounts.js';
 import { SlotList } from '../slot-list.js';
+import { ProxiesScreen } from './proxies.js';
+import { parseAddress, formatAddress } from '../../net/address.js';
+import { ensureTested } from '../../net/proxies.js';
 
 export class TitleScreen extends Screen {
   constructor(game, reason) {
@@ -58,6 +61,31 @@ export class TitleScreen extends Screen {
       gui.text(name, acct.x + 20, acct.y + 6, hov ? 0xffffa0 : 0xe0e0e0, true);
     };
     this.buttons.push(acct);
+    // Proxy servers (below the account button), with the selected proxy's ping bars (no proxy: failed bars)
+    const prox = new Button(21, this.width - 104, 28, 100, 20, '', () => g.screens.open(new ProxiesScreen(g, this)));
+    prox.render = (gui, mx, my) => {
+      const p = g.proxies.current();
+      const r = p ? ensureTested(p.url) : { error: 'none' };
+      const hov = prox.hovered(mx, my);
+      gui.button(prox.x, prox.y, prox.w, prox.h, '', hov);
+      gui.textCentered(tr('minecraftjs.proxies.title'), prox.x + (prox.w - 14) / 2 + 2, prox.y + 6, hov ? 0xffffa0 : 0xe0e0e0, true);
+      let k = 0, l, hover;
+      if (r.pending) {
+        k = 1;
+        l = Math.floor(platform().now() / 100) & 7;
+        if (l > 4) l = 8 - l;
+        hover = 'Pinging...';
+      } else if (r.error) {
+        l = 5;
+        hover = p ? '(no connection)' : tr('minecraftjs.proxies.noneShort');
+      } else {
+        l = r.ping < 150 ? 0 : r.ping < 300 ? 1 : r.ping < 600 ? 2 : r.ping < 1000 ? 3 : 4;
+        hover = r.ping + 'ms';
+      }
+      gui.blit('gui/icons.png', prox.x + prox.w - 14, prox.y + 6, k * 10, 176 + l * 8, 10, 8);
+      if (hov) this.hoverText = p ? p.name + ': ' + hover : hover;
+    };
+    this.buttons.push(prox);
   }
 
   render(gui, mx, my, partial) {
@@ -85,7 +113,9 @@ export class TitleScreen extends Screen {
     const legal = tr('minecraftjs.notAffiliated');
     gui.text(legal, this.width - gui.textWidth(legal) - 2, this.height - 10, 0xffffff, true);
     if (this.reason) gui.textCentered(this.reason, this.width / 2, this.height / 4 + 30, 0xff5555, true);
+    this.hoverText = null;
     for (const b of this.buttons) b.render(gui, mx, my);
+    if (this.hoverText) gui.tooltip([this.hoverText], mx, my);
   }
 
   key(e) { return false; }
@@ -239,6 +269,10 @@ class ServerList extends SlotList {
       ms = st.ping;
       if (st.version && st.version.protocol !== 47) version = st.version;
       if (st.favicon && srv._iconSrc !== st.favicon) srv._iconSrc = st.favicon;
+      if (st.iconPixels && srv._iconPx !== st.iconPixels) {
+        srv._iconPx = st.iconPixels;
+        srv._icon = g.assets.makeTexture('favicon:' + key, 64, 64, st.iconPixels, { filter: 'linear' });
+      }
     } else if (pr && pr.error) {
       motd = '§4' + tr('minecraftjs.multiplayer.cantConnect');
       ms = -1;
@@ -264,7 +298,7 @@ class ServerList extends SlotList {
     }
     gui.blit('gui/icons.png', x + lw - 15, y, k * 10, 176 + l * 8, 10, 8);
     // server icon (favicon, decoded once per change)
-    if (srv._iconSrc && srv._iconFor !== srv._iconSrc) {
+    if (srv._iconSrc && srv._iconFor !== srv._iconSrc && !srv._iconPx) {
       srv._iconFor = srv._iconSrc;
       try {
         const img = decodePng(decodeBase64(srv._iconSrc.replace(/^data:image\/png;base64,/, '')));
@@ -351,20 +385,19 @@ export class ServerEditScreen extends Screen {
       this.nameField = new TextField(cx - 100, 66, 200, 20, { text: srv ? srv.name : tr('selectServer.defaultName'), maxLength: 32, focused: true });
       this.fields.push(this.nameField);
     }
-    const addr = srv ? (srv.port === 25565 ? srv.host : `${srv.host}:${srv.port}`) : (this.direct ? (last.port === 25565 ? last.host : `${last.host}:${last.port}`) : '');
-    this.addrField = new TextField(cx - 100, this.direct ? 116 : 106, 200, 20, { text: addr, maxLength: 128, focused: this.direct, onEnter: () => this.done() });
+    const addr = srv ? formatAddress(srv.host, srv.port) : (this.direct && last ? formatAddress(last.host, last.port) : '');
+    this.addrField = new TextField(cx - 100, this.direct ? 116 : 106, 200, 20, { text: addr, maxLength: 256, focused: this.direct, onEnter: () => this.done() });
     this.fields.push(this.addrField);
     this.doneBtn = new Button(0, cx - 100, this.height / 4 + 96 + 18, 200, 20, this.direct ? tr('selectServer.select') : tr('addServer.add'), () => this.done());
     this.buttons.push(this.doneBtn);
     this.buttons.push(new Button(1, cx - 100, this.height / 4 + 120 + 18, 200, 20, tr('gui.cancel'), () => g.screens.open(this.parent)));
   }
 
+  // Vanilla "host[:port]", or an Eaglercraft ws:// / wss:// address (stored as typed, port 0)
   parse() {
-    const t = this.addrField.text.trim();
-    if (!t) return null;
-    const m = t.match(/^\[?([^\]]+?)\]?(?::(\d+))?$/);
-    if (!m) return null;
-    return { host: m[1], port: m[2] ? parseInt(m[2], 10) : 25565 };
+    const a = parseAddress(this.addrField.text);
+    if (!a) return null;
+    return a.kind === 'eagler' ? { host: this.addrField.text.trim(), port: 0 } : { host: a.host, port: a.port };
   }
 
   done() {
@@ -389,6 +422,8 @@ export class ServerEditScreen extends Screen {
     gui.textCentered(this.direct ? tr('selectServer.direct') : tr('addServer.title'), this.width / 2, 17, 0xffffff);
     if (!this.direct) gui.text(tr('addServer.enterName'), this.width / 2 - 100, 53, 0xa0a0a0);
     gui.text(tr('addServer.enterIp'), this.width / 2 - 100, this.direct ? 100 : 94, 0xa0a0a0);
+    const a = parseAddress(this.addrField.text);
+    if (a && a.kind === 'eagler') gui.text('§8' + gui.font.trimToWidth(tr('minecraftjs.multiplayer.eagler') + ' ' + a.url, 200), this.width / 2 - 100, (this.direct ? 116 : 106) + 24, 0x808080, false);
   }
 
   close() { this.game.screens.open(this.parent); }

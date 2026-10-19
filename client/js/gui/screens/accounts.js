@@ -3,6 +3,7 @@ import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
 import { Button, TextField } from '../widgets.js';
 import { platform } from '../../platform/platform.js';
+import { fetchSkin } from '../../net/proxies.js';
 import { decodePng } from '../../util/png.js';
 
 const ROW_H = 36;
@@ -17,7 +18,7 @@ export function accountFace(game, acc) {
   if (cur) return cur.tex || fallback;
   const entry = { tex: null };
   faces.set(key, entry);
-  platform().fetchBytes('/skin?url=' + encodeURIComponent(acc.skinUrl)).then((bytes) => {
+  fetchSkin(acc.skinUrl).then((bytes) => {
     if (!bytes) return;
     const img = decodePng(bytes);
     entry.tex = game.assets.makeTexture('accountskin:' + acc.skinUrl, img.width, img.height, img.data);

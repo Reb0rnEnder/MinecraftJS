@@ -86,7 +86,7 @@ export class ResourcePacksScreen extends Screen {
     const k = 'default@' + A.version;
     if (!this.icons.has(k)) {
       this.icons.set(k, null);
-      platform().fetchBytes('/mc/pack.png').then((bytes) => {
+      A.source.bytes('pack.png').then((bytes) => {
         if (!bytes) return;
         const img = decodePng(bytes);
         this.icons.set(k, A.makeTexture('packicon:default', img.width, img.height, img.data, { filter: 'linear' }));
