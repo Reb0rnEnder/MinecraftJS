@@ -792,8 +792,9 @@ export class Game {
   on_game_state_change(p) {
     switch (p.reason) {
       case 0: this.hud.addChat(this.assets.translate('tile.bed.notValid')); break;
-      case 1: this.world.raining = true; this.world.rainStrength = 0; break;
-      case 2: this.world.raining = false; this.world.rainStrength = 1; break;
+      // World.setRainStrength sets the previous and current strength
+      case 1: this.world.raining = true; this.world.rainStrength = this.world.prevRain = 0; break;
+      case 2: this.world.raining = false; this.world.rainStrength = this.world.prevRain = 1; break;
       case 3: { const gm = Math.floor(p.value + 0.5); if (gm !== this.gameMode) this.previousGameMode = this.gameMode; this.gameMode = gm; this.applyGameMode(); break; }
       case 4: import('../gui/screens/credits.js').then((m) => this.screens.open(new m.CreditsScreen(this))); break; // GuiWinGame
       case 6: this.sound.playAtPlayer('random.successful_hit', 0.18, 0.45); break;
@@ -1139,10 +1140,8 @@ export class Game {
     const pl = this.player;
     const world = this.world;
 
-    // Weather fade (World.updateWeather client side)
-    world.prevRain = world.rainStrength;
-    if (world.raining) world.rainStrength = Math.min(1, world.rainStrength + 0.01);
-    else world.rainStrength = Math.max(0, world.rainStrength - 0.01);
+    // No client-side weather fade: World.updateWeather only moves the strengths on the server, which sends each
+    // change (game state 7 / 8). "Begin raining" alone stays at strength 0, so nothing is visible.
     if (world.doDaylightCycle) world.timeOfDay++;
     world.worldAge++;
 

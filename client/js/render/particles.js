@@ -653,7 +653,8 @@ export class Particles {
     } else if (n === 'end_portal_frame' || n === 'dragon_egg') {
       // no-op
     } else if (n === 'leaves' || n === 'leaves2') {
-      if (this.game.world.raining && rand() < 0.07 && blocks[this.game.world.getState(x, y - 1, z) >> 4]?.id === 0) this.drip(x + rand(), y - 0.05, z + rand(), false);
+      // World.isRaining (canLightningStrike): rain strength above 0.2, not the "begin raining" flag
+      if (this.game.world.rainStrength > 0.2 && rand() < 0.07 && blocks[this.game.world.getState(x, y - 1, z) >> 4]?.id === 0) this.drip(x + rand(), y - 0.05, z + rand(), false);
     }
     // Liquids dripping through ceilings
     const below = blocks[this.game.world.getState(x, y - 1, z) >> 4];
