@@ -1,5 +1,6 @@
-// Proxy Servers: the MinecraftJS proxies used to reach vanilla servers (and to relay Microsoft sign in and skins).
-// Laid out like the multiplayer screen: a list with ping bars and move arrows, and add / edit / delete buttons.
+// Proxy Servers: what reaches vanilla servers - MinecraftJS proxies (which also relay Microsoft sign in and skins),
+// Eaglercraft 26.2 Java relays and Wisp servers. Laid out like the multiplayer screen: a list with ping bars and
+// move arrows, and add / edit / delete buttons; the edit screen switches an entry's type.
 import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
 import { Button, TextField } from '../widgets.js';
@@ -7,14 +8,14 @@ import { platform } from '../../platform/platform.js';
 import { SlotList } from '../slot-list.js';
 import { ConfirmScreen } from './menus.js';
 import { parseProxyUrl } from '../../net/address.js';
-import { proxyTests, ensureTested } from '../../net/proxies.js';
+import { proxyTests, ensureTested, forgetTest, proxyType, PROXY_TYPES } from '../../net/proxies.js';
 
 export class ProxiesScreen extends Screen {
   constructor(game, parent) {
     super(game);
     this.parent = parent;
     this.background = 'dirt';
-    this.tests = proxyTests; // url -> { pending } | { ping, info } | { error }
+    this.tests = proxyTests; // type + url -> { pending } | { ping, info } | { error }
     this.selected = game.proxies.index;
     this.hoverText = null;
   }
@@ -37,14 +38,14 @@ export class ProxiesScreen extends Screen {
     this.buttons.push(this.delBtn);
     this.testBtn = new Button(8, cx + 4, this.height - 28, 70, 20, tr('minecraftjs.proxies.test'), () => {
       const p = this.items[this.selected];
-      if (p) this.tests.delete(p.url);
+      if (p) forgetTest(p);
     });
     this.buttons.push(this.testBtn);
     this.buttons.push(new Button(0, cx + 80, this.height - 28, 75, 20, tr('gui.done'), () => this.close()));
   }
 
   testAll() {
-    for (const p of this.items) ensureTested(p.url);
+    for (const p of this.items) ensureTested(p);
   }
 
   select(i) { this.selected = i; }
@@ -132,10 +133,11 @@ class ProxyList extends SlotList {
 
   drawSlot(gui, i, x, y, h, mx, my) {
     const s = this.screen, p = s.items[i], lw = this.listWidth;
-    const r = s.tests.get(p.url);
+    const r = ensureTested(p);
     const active = i === s.proxies.index;
     gui.text(p.name + (active ? ' §a' + tr('minecraftjs.accounts.inUse') : ''), x + 32 + 3, y + 1, 0xffffff, false);
-    gui.text(gui.font.trimToWidth(p.url, lw - 32 - 6), x + 32 + 3, y + 12, 0x808080, false);
+    const type = tr('minecraftjs.proxies.type.' + proxyType(p));
+    gui.text(gui.font.trimToWidth('§8' + type + ' §7' + p.url, lw - 32 - 6), x + 32 + 3, y + 12, 0x808080, false);
     let status, k = 0, l, hover;
     if (!r || r.pending) {
       status = '§8' + tr('minecraftjs.multiplayer.pinging');
@@ -147,7 +149,7 @@ class ProxyList extends SlotList {
       status = '§4' + tr('minecraftjs.proxies.unreachable') + ' §8(' + r.error + ')';
       l = 5; hover = '(no connection)';
     } else {
-      status = '§7' + (r.info ? (r.info.name || 'MinecraftJS proxy') + (r.info.version ? ' ' + r.info.version : '') : tr('minecraftjs.proxies.reachable'));
+      status = '§7' + (r.info ? (r.info.name || 'MinecraftJS proxy') + (r.info.version ? ' ' + r.info.version : '') + (r.info.public === false ? ' (private)' : '') : tr('minecraftjs.proxies.reachable'));
       l = r.ping < 150 ? 0 : r.ping < 300 ? 1 : r.ping < 600 ? 2 : r.ping < 1000 ? 3 : 4;
       hover = r.ping + 'ms';
     }
@@ -197,23 +199,29 @@ export class ProxyEditScreen extends Screen {
     this.fields.push(this.nameField);
     this.urlField = new TextField(cx - 100, 106, 200, 20, { text: p ? p.url : '', maxLength: 256, onEnter: () => this.done() });
     this.fields.push(this.urlField);
-    this.doneBtn = new Button(0, cx - 100, this.height / 4 + 96 + 18, 200, 20, p ? tr('gui.done') : tr('minecraftjs.proxies.add'), () => this.done());
+    if (this.type === undefined) this.type = proxyType(p);
+    this.buttons.push(new Button(2, cx - 100, 142, 200, 20, () => tr('minecraftjs.proxies.type', tr('minecraftjs.proxies.type.' + this.type)), () => {
+      this.type = PROXY_TYPES[(PROXY_TYPES.indexOf(this.type) + 1) % PROXY_TYPES.length];
+    }));
+    this.doneBtn = new Button(0, cx - 100, Math.max(this.height / 4 + 96 + 18, 180), 200, 20, p ? tr('gui.done') : tr('minecraftjs.proxies.add'), () => this.done());
     this.buttons.push(this.doneBtn);
-    this.buttons.push(new Button(1, cx - 100, this.height / 4 + 120 + 18, 200, 20, tr('gui.cancel'), () => g.screens.open(this.parent)));
+    this.buttons.push(new Button(1, cx - 100, Math.max(this.height / 4 + 120 + 18, 204), 200, 20, tr('gui.cancel'), () => g.screens.open(this.parent)));
   }
 
   done() {
     const url = parseProxyUrl(this.urlField.text);
     if (!url) return;
     const g = this.game;
-    const entry = { name: this.nameField.text || tr('minecraftjs.proxies.defaultName'), url };
+    const old = this.index !== null ? g.proxies.list[this.index] : null;
+    const entry = { name: this.nameField.text || tr('minecraftjs.proxies.defaultName'), url, type: this.type };
+    if (old && old.token && this.type === 'relay') entry.token = old.token; // private relay tokens come from config.json
     if (this.index !== null) g.proxies.list[this.index] = entry;
     else {
       g.proxies.list.push(entry);
       if (g.proxies.list.length === 1) g.settings.proxy = 0;
     }
     g.proxies.save();
-    this.parent.tests.delete(url);
+    forgetTest(entry);
     g.screens.open(this.parent);
   }
 
@@ -224,6 +232,7 @@ export class ProxyEditScreen extends Screen {
     gui.text(tr('minecraftjs.proxies.enterName'), this.width / 2 - 100, 53, 0xa0a0a0);
     gui.text(tr('minecraftjs.proxies.enterUrl'), this.width / 2 - 100, 94, 0xa0a0a0);
     if (url && url !== this.urlField.text.trim()) gui.text('§8' + gui.font.trimToWidth(url, 200), this.width / 2 - 100, 130, 0x808080, false);
+    gui.textCentered('§8' + tr('minecraftjs.proxies.typeInfo.' + this.type), this.width / 2, 166, 0x808080, false);
   }
 
   close() { this.game.screens.open(this.parent); }

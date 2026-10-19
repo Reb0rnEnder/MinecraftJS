@@ -23,6 +23,7 @@
 //   openUrl(url)
 //   fetchBytes(path) / fetchText(path) / fetchJson(path)     assets served next to the client
 //   postJson(url, body) -> Promise<{ status, json }>        requests to the proxy (e.g. account sign in)
+//   probe(url) -> Promise<true>             optional: rejects when an http(s) URL does not answer (reachability only)
 //   openSocket(url) -> Promise<Socket>   WebSocket (proxy or Eaglercraft server). Socket: sendText(s), sendBinary(u8), close(), on('text'|'binary'|'close', fn)
 //   originSocketUrl() -> url | null       optional: proxy hosting the page, the default proxy
 //   embeddedAssets() -> Uint8Array | null optional: asset zip bundled with the client (single-file build)

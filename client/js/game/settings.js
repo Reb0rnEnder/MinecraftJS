@@ -48,6 +48,7 @@ const DEFAULTS = {
   graphicsApi: 'webgl2', // 'webgl2' | 'webgpu'
   resourcePacks: [], // active pack ids, highest priority first
   entityShadows: true,
+  lodChunks: 8, // MinecraftJS: past this many chunks terrain is simplified and mobs re-pose less often (0 = off)
   language: 'en_US',
   forceUnicodeFont: false,
   keys: { ...DEFAULT_KEYS },

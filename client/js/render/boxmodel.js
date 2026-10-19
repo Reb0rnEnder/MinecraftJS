@@ -16,8 +16,10 @@ export function entityMaterial(tex, opts = {}) {
   const params = new EntityParams();
   params.setAlphaTest(opts.alphaTest !== undefined ? opts.alphaTest : 0.1);
   if (opts.noLighting) params.setNoLighting(true);
+  if (opts.guiLighting) params.setGuiLighting(true);
   if (opts.fullBright) params.setFullBright(true);
   const state = { blend: opts.transparent ? (opts.additive ? 'add' : 'alpha') : 'none', depthWrite: opts.depthWrite !== false, cull: !!opts.cull };
+  if (opts.colorWrite === false) state.colorWrite = false;
   const m = material('entity', tex, params, state);
   m.order = opts.transparent ? 2 : 0;
   return m;

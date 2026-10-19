@@ -1,4 +1,5 @@
 // Particle system (port of EffectRenderer + common EntityFX subclasses), batched into one buffer per texture.
+import { POTIONS } from '../game/potionhelper.js';
 import { blocks } from '../world/blocks.js';
 import { resolveState } from '../world/blockstates.js';
 import { FORMAT, litParams } from '../gfx/device.js';
@@ -129,6 +130,7 @@ export class Particles {
     const w = this.game.world;
     for (const b of [this.batchP, this.batchA, this.batchE]) b.begin();
     for (const p of this.list) {
+      if (p.invisible) continue;
       const x = p.prevX + (p.x - p.prevX) * partial;
       const y = p.prevY + (p.y - p.prevY) * partial;
       const z = p.prevZ + (p.z - p.prevZ) * partial;
@@ -148,8 +150,11 @@ export class Particles {
         sky = -1;
       } else {
         batch = this.batchP;
-        const idx = p.texFn ? p.texFn(p) : p.tex || 0;
-        u0 = (idx % 16) / 16; v0 = Math.floor(idx / 16) / 16; u1 = u0 + 1 / 16; v1 = v0 + 1 / 16;
+        if (p.uv) [u0, v0, u1, v1] = p.uv;
+        else {
+          const idx = p.texFn ? p.texFn(p) : p.tex || 0;
+          u0 = (idx % 16) / 16; v0 = Math.floor(idx / 16) / 16; u1 = u0 + 1 / 16; v1 = v0 + 1 / 16;
+        }
       }
       if (p.footprint) {
         // flat on the ground (handled with particles texture fallback)
@@ -376,7 +381,6 @@ export class Particles {
 
   potionSwirl(e, color, ambient) {
     const r = ((color >> 16) & 255) / 255, g = ((color >> 8) & 255) / 255, b = (color & 255) / 255;
-    if (ambient && rand() < 0.8) return;
     this.spell(e.x + (rand() - 0.5) * e.width, e.y + rand() * e.height, e.z + (rand() - 0.5) * e.width, 0, 0, 0, r, g, b);
   }
 
@@ -469,6 +473,146 @@ export class Particles {
     for (let i = 0; i < 16; i++) this.smoke(x + (rand() - 0.5) * radius, y + (rand() - 0.5) * radius, z + (rand() - 0.5) * radius, (rand() - 0.5) * 0.2, rand() * 0.1, (rand() - 0.5) * 0.2, 2.5);
   }
 
+  // EntityExplodeFX (EXPLOSION_NORMAL): the grey puff of mob deaths and the "explode" particle
+  poof(x, y, z, mx = 0, my = 0, mz = 0) {
+    const c = rand() * 0.3 + 0.7;
+    const p = { x, y, z, mx: mx + (Math.random() * 2 - 1) * 0.05, my: my + (Math.random() * 2 - 1) * 0.05, mz: mz + (Math.random() * 2 - 1) * 0.05,
+      r: c, g: c, b: c, scale: rand() * rand() * 6 + 1, maxAge: Math.trunc(16 / (rand() * 0.8 + 0.2)) + 2 };
+    p.texFn = (q) => Math.max(0, 7 - Math.trunc(q.age * 8 / q.maxAge));
+    p.update = (q) => {
+      q.my += 0.004;
+      this.move(q, this.game.world);
+      q.mx *= 0.9; q.my *= 0.9; q.mz *= 0.9;
+      if (q.onGround) { q.mx *= 0.7; q.mz *= 0.7; }
+    };
+    return this.add(p);
+  }
+
+  // EntityLivingBase.onDeathUpdate at deathTime 20: twenty puffs over the body
+  deathPoof(e) {
+    const w = e.width || 0.6, h = e.height || 1.8;
+    for (let i = 0; i < 20; i++) {
+      this.poof(e.x + rand() * w * 2 - w, e.y + rand() * h, e.z + rand() * w * 2 - w, gauss() * 0.02, gauss() * 0.02, gauss() * 0.02);
+    }
+  }
+
+  // EntityFirework.SparkFX (textures 160 - 167, full bright, y accel -0.004, friction 0.91).
+  // opts: { color, fade, trail, twinkle, a }
+  spark(x, y, z, mx, my, mz, opts = {}) {
+    const p = { x, y, z, mx, my, mz, fullBright: true, important: !!opts.important, a: opts.a ?? 1 };
+    p.scale = (rand() * 0.5 + 0.5) * 2 * 0.75;
+    p.maxAge = 48 + Math.floor(rand() * 12);
+    if (opts.color !== undefined) { p.r = ((opts.color >> 16) & 255) / 255; p.g = ((opts.color >> 8) & 255) / 255; p.b = (opts.color & 255) / 255; }
+    if (opts.fade !== undefined) p.fade = [((opts.fade >> 16) & 255) / 255, ((opts.fade >> 8) & 255) / 255, (opts.fade & 255) / 255];
+    p.trail = !!opts.trail; p.twinkle = !!opts.twinkle;
+    p.texFn = (q) => 160 + (8 - 1 - Math.trunc(q.age * 8 / q.maxAge));
+    // twinkling sparks blink out in the last two thirds
+    p.alphaFn = (q) => (q.twinkle && q.age >= Math.trunc(q.maxAge / 3) && Math.trunc((q.age + q.maxAge) / 3) % 2 !== 0 ? 0 : q.a);
+    p.update = (q) => {
+      const half = Math.trunc(q.maxAge / 2);
+      if (q.age > half) {
+        q.a = 1 - (q.age - half) / q.maxAge;
+        if (q.fade) { q.r += (q.fade[0] - q.r) * 0.2; q.g += (q.fade[1] - q.g) * 0.2; q.b += (q.fade[2] - q.b) * 0.2; }
+      }
+      q.my += -0.004;
+      this.move(q, this.game.world);
+      q.mx *= 0.91; q.my *= 0.91; q.mz *= 0.91;
+      if (q.onGround) { q.mx *= 0.7; q.mz *= 0.7; }
+      if (q.trail && q.age < half && (q.age + q.maxAge) % 2 === 0) {
+        const c = this.spark(q.x, q.y, q.z, 0, 0, 0, { a: 0.99, twinkle: q.twinkle });
+        if (c) { c.r = q.r; c.g = q.g; c.b = q.b; c.fade = q.fade; c.age = Math.trunc(c.maxAge / 2); }
+      }
+    };
+    return this.add(p);
+  }
+
+  // EntityFirework.StarterFX (EntityFireworkRocket status 17): one explosion every 2 ticks from tag Fireworks.Explosions,
+  // with the blast sound, then the twinkle sound for flickering ones
+  fireworks(x, y, z, mx, my, mz, fw) {
+    const list = fw && Array.isArray(fw.Explosions) && fw.Explosions.length ? fw.Explosions : null;
+    let maxAge = 8, twinkle = false;
+    if (list) {
+      maxAge = list.length * 2 - 1;
+      if (list.some((ex) => ex.Flicker)) { twinkle = true; maxAge += 15; }
+    }
+    const g = this.game, snd = g.sound;
+    const far = () => { const pl = g.player; return (pl.x - x) ** 2 + (pl.y - y) ** 2 + (pl.z - z) ** 2 >= 256; };
+    let age = 0;
+    const create = (vx, vy, vz, colors, fades, trail, flick) => {
+      const c = colors[Math.floor(rand() * colors.length)];
+      const f = fades && fades.length ? fades[Math.floor(rand() * fades.length)] : undefined;
+      this.spark(x, y, z, vx, vy, vz, { a: 0.99, trail, twinkle: flick, color: c, fade: f, important: true });
+    };
+    const ball = (speed, n, colors, fades, trail, flick) => {
+      for (let i = -n; i <= n; i++) for (let j = -n; j <= n; j++) for (let k = -n; k <= n; k++) {
+        const dx = k + (Math.random() - Math.random()) * 0.5, dy = i + (Math.random() - Math.random()) * 0.5, dz = j + (Math.random() - Math.random()) * 0.5;
+        const d = Math.fround(Math.sqrt(dx * dx + dy * dy + dz * dz)) / speed + gauss() * 0.05;
+        create(dx / d, dy / d, dz / d, colors, fades, trail, flick);
+        if (i !== -n && i !== n && j !== -n && j !== n) k += n * 2 - 1; // only the shell
+      }
+    };
+    const shaped = (speed, pts, colors, fades, trail, flick, creeper) => {
+      let [px, py] = pts[0];
+      create(px * speed, py * speed, 0, colors, fades, trail, flick);
+      const f = Math.fround(rand() * Math.PI), step = creeper ? 0.034 : 0.34;
+      for (let i = 0; i < 3; i++) {
+        const a = f + Math.fround(i * Math.fround(Math.PI)) * step;
+        let ax = px, ay = py;
+        for (let j = 1; j < pts.length; j++) {
+          const [bx, by] = pts[j];
+          for (let t = 0.25; t <= 1; t += 0.25) {
+            let ox = (ax + (bx - ax) * t) * speed;
+            const oy = (ay + (by - ay) * t) * speed;
+            const oz = ox * Math.sin(a);
+            ox *= Math.cos(a);
+            for (let s = -1; s <= 1; s += 2) create(ox * s, oy, oz * s, colors, fades, trail, flick);
+          }
+          ax = bx; ay = by;
+        }
+      }
+    };
+    const burst = (colors, fades, trail, flick) => {
+      const ox = gauss() * 0.05, oz = gauss() * 0.05;
+      for (let i = 0; i < 70; i++) create(mx * 0.5 + gauss() * 0.15 + ox, my * 0.5 + rand() * 0.5, mz * 0.5 + gauss() * 0.15 + oz, colors, fades, trail, flick);
+    };
+    this.add({ x, y, z, invisible: true, important: true, collide: false, maxAge: 1e9, update: () => {
+      if (age === 0 && list) {
+        const large = list.length >= 3 || list.some((ex) => ex.Type === 1);
+        snd.play('fireworks.' + (large ? 'largeBlast' : 'blast') + (far() ? '_far' : ''), x, y, z, 20, 0.95 + rand() * 0.1);
+      }
+      if (age % 2 === 0 && list && age / 2 < list.length) {
+        const ex = list[age / 2];
+        const colors = ex.Colors && ex.Colors.length ? Array.from(ex.Colors) : [1973019]; // ItemDye.DYE_COLORS[0]
+        const fades = ex.FadeColors ? Array.from(ex.FadeColors) : null;
+        const trail = !!ex.Trail, flick = !!ex.Flicker;
+        switch (ex.Type) {
+          case 1: ball(0.5, 4, colors, fades, trail, flick); break;
+          case 2: shaped(0.5, [[0, 1], [0.3455, 0.309], [0.9511, 0.309], [0.3795918367346939, -0.12653061224489795], [0.6122448979591837, -0.8040816326530612], [0, -0.35918367346938773]], colors, fades, trail, flick, false); break;
+          case 3: shaped(0.5, [[0, 0.2], [0.2, 0.2], [0.2, 0.6], [0.6, 0.6], [0.6, 0.2], [0.2, 0.2], [0.2, 0], [0.4, 0], [0.4, -0.6], [0.2, -0.6], [0.2, -0.4], [0, -0.4]], colors, fades, trail, flick, true); break;
+          case 4: burst(colors, fades, trail, flick); break;
+          default: ball(0.25, 2, colors, fades, trail, flick);
+        }
+        // EntityFirework.OverlayFX: a 4-tick flash in the first colour
+        const c = colors[0];
+        this.add({ x, y, z, collide: false, important: true, maxAge: 4, uv: [0.25, 0.125, 0.5, 0.375], update: () => {},
+          r: ((c >> 16) & 255) / 255, g: ((c >> 8) & 255) / 255, b: (c & 255) / 255,
+          sizeFn: (q, pt) => 7.1 * Math.sin((q.age + pt - 1) * 0.25 * Math.PI) * 10,
+          alphaFn: (q, pt) => 0.6 - (q.age + pt - 1) * 0.25 * 0.5 });
+      }
+      age++;
+      if (age > maxAge) {
+        if (twinkle) snd.play('fireworks.twinkle' + (far() ? '_far' : ''), x, y, z, 20, 0.9 + rand() * 0.15);
+        return false;
+      }
+    } });
+  }
+
+  // EntityFireworkRocket (status 17): the explosion from the rocket's item
+  fireworkExplode(e) {
+    const tag = e.item ? this.game.items.nbt(e.item) : null;
+    this.fireworks(e.x, e.y, e.z, e.motionX || 0, e.motionY || 0, e.motionZ || 0, tag && tag.Fireworks);
+  }
+
   largeExplode(x, y, z, scale = 1) {
     this.add({ x, y, z, explosionFrame: 0, maxAge: 6 + Math.floor(rand() * 4), scale: (rand() * 0.6 + 0.4) * 2 * scale, collide: false, update: () => {} });
   }
@@ -492,10 +636,10 @@ export class Particles {
     };
     const id = p.particleId;
     switch (id) {
-      case 0: emit((x, y, z) => this.largeExplode(x, y, z, 0.5)); break;
+      case 0: emit((x, y, z, mx, my, mz) => this.poof(x, y, z, mx, my, mz)); break;
       case 1: emit((x, y, z) => this.largeExplode(x, y, z, 1)); break;
       case 2: emit((x, y, z) => { for (let i = 0; i < 6; i++) this.largeExplode(x + (rand() - rand()) * 4, y + (rand() - rand()) * 4, z + (rand() - rand()) * 4, 1); }); break;
-      case 3: emit((x, y, z, mx, my, mz) => this.simpleRising(x, y, z, 160 + Math.floor(rand() * 8), { mx, my, mz, maxAge: 48, scale: 0.75 })); break;
+      case 3: emit((x, y, z, mx, my, mz) => this.spark(x, y, z, mx, my, mz)); break;
       case 4: emit((x, y, z, mx, my, mz) => this.bubble(x, y, z, mx, my, mz)); break;
       case 5: case 6: case 39: emit((x, y, z, mx, my, mz) => this.splash(x, y, z, mx, my, mz)); break;
       case 7: case 8: emit((x, y, z) => this.add({ x, y, z, tex: 0, scale: rand() * 0.6 + 0.2, r: 0.4, g: 0.4, b: 0.7, maxAge: Math.floor(16 / (rand() * 0.8 + 0.2)), collide: false, update: (q) => { q.x += q.mx; q.y += q.my; q.z += q.mz; q.mx *= 0.99; q.my *= 0.99; q.mz *= 0.99; } })); break;
@@ -571,14 +715,16 @@ export class Particles {
         break;
       }
       case 2002: {
+        // RenderGlobal.playAuxSFX: the potion's liquid colour; SPELL_INSTANT when an effect is instant
         const color = this.game.items.potionColor({ id: 373, damage: p.data, nbt: null });
+        const instant = this.game.items.potionEffects({ id: 373, damage: p.data, nbt: null }).some((e) => POTIONS[e.id].instant);
         const r = ((color >> 16) & 255) / 255, g = ((color >> 8) & 255) / 255, b = (color & 255) / 255;
         const uv = this._itemAtlas(373);
         for (let i = 0; i < 8; i++) if (uv) this._itemCrackAt(uv, x + 0.5, y + 0.5, z + 0.5, gauss() * 0.15, rand() * 0.2, gauss() * 0.15);
         for (let i = 0; i < 100; i++) {
           const d = rand() * 4, a = rand() * Math.PI * 2;
           const mx = Math.cos(a) * d, my = 0.01 + rand() * 0.5, mz = Math.sin(a) * d;
-          const s = this.spell(x + 0.5 + mx * 0.1, y + 0.5 + 0.3, z + 0.5 + mz * 0.1, mx, my, mz, r, g, b, (p.data & 16384) !== 0);
+          const s = this.spell(x + 0.5 + mx * 0.1, y + 0.5 + 0.3, z + 0.5 + mz * 0.1, mx, my, mz, r, g, b, instant);
           if (s) { const f = 0.75 + rand() * 0.25; s.r *= f; s.g *= f; s.b *= f; }
         }
         break;

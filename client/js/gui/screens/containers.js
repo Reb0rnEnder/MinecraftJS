@@ -1,4 +1,10 @@
 // Container GUIs (port of GuiContainer and subclasses, incl. GuiContainerCreative).
+import { FontRenderer } from '../font.js';
+import { JavaRandom } from '../../util/jrandom.js';
+import { mat4, D2R } from '../../gfx/math.js';
+import { Node } from '../../gfx/scene.js';
+import { blockModel } from '../../render/entity-models.js';
+import { entityMaterial } from '../../render/boxmodel.js';
 import { tr } from '../i18n.js';
 import { platform } from '../../platform/platform.js';
 import { Screen } from './manager.js';
@@ -398,32 +404,136 @@ class BrewingScreen extends SimpleScreen {
   }
 }
 
+// EnchantmentNameParts: the clue words (3 - 4), drawn wrapped in the Standard Galactic font
+const NAME_PARTS = 'the elder scrolls klaatu berata niktu xyzzy bless curse light darkness fire air earth water hot dry cold wet ignite snuff embiggen twist shorten stretch fiddle destroy imbue galvanize enchant free limited range of towards inside sphere cube self other ball mental physical grow shrink demon elemental spirit animal creature beast humanoid undead fresh stale phnglui mglwnafh cthulhu rlyeh wgahnagl fhtagnbaguette'.split(' ');
+
+// GuiEnchantment
 class EnchantScreen extends SimpleScreen {
-  constructor(game, win) { super(game, win, 'gui/container/enchanting_table.png', [[0, 15, 47], [1, 35, 47]]); }
+  constructor(game, win) {
+    super(game, win, 'gui/container/enchanting_table.png', [[0, 15, 47], [1, 35, 47]]);
+    this.flip = 0; this.oFlip = 0; this.flipT = 0; this.flipA = 0; this.open = 0; this.oOpen = 0; this.lastItem = null;
+  }
+
+  // GuiEnchantment.tickBook: a new item flips some pages; the book opens while there is something to enchant
+  tick() {
+    super.tick();
+    const it = this.container.get(0);
+    const k = it ? JSON.stringify([it.id, it.damage, it.count, it.nbt || null]) : null;
+    if (k !== this.lastItem) {
+      this.lastItem = k;
+      do { this.flipT += Math.floor(Math.random() * 4) - Math.floor(Math.random() * 4); } while (this.flip <= this.flipT + 1 && this.flip >= this.flipT - 1);
+    }
+    this.oFlip = this.flip; this.oOpen = this.open;
+    const p = this.container.properties;
+    const any = [0, 1, 2].some((i) => (p[i] || 0) !== 0);
+    this.open = Math.min(1, Math.max(0, this.open + (any ? 0.2 : -0.2)));
+    const f1 = Math.min(0.2, Math.max(-0.2, (this.flipT - this.flip) * 0.4));
+    this.flipA += (f1 - this.flipA) * 0.9;
+    this.flip += this.flipA;
+  }
+
+  // GuiEnchantment.drawGuiContainerBackgroundLayer: ModelBook through its own 320 x 240 viewport and
+  // gluPerspective(90, 4 / 3, 9, 80), here folded into one matrix into GUI space
+  _drawBook(gui, partial) {
+    if (!this.book) {
+      const parts = blockModel('book', ['coverRight', 'coverLeft', 'pagesRight', 'pagesLeft', 'flipRight', 'flipLeft', 'spine']);
+      const mat = entityMaterial('entity/enchanting_table_book.png', { alphaTest: 0.1, cull: true, fullBright: true, noLighting: true });
+      const root = new Node();
+      for (const p of Object.values(parts)) { root.add(p.build()); p.setMaterial(mat); }
+      this.book = { parts, root };
+    }
+    const f3 = this.oOpen + (this.open - this.oOpen) * partial;
+    let f4 = this.oFlip + (this.flip - this.oFlip) * partial + 0.25, f5 = this.oFlip + (this.flip - this.oFlip) * partial + 0.75;
+    f4 = Math.min(1, Math.max(0, (f4 - Math.floor(f4)) * 1.6 - 0.3));
+    f5 = Math.min(1, Math.max(0, (f5 - Math.floor(f5)) * 1.6 - 0.3));
+    // ModelBook.setRotationAngles(0, f4, f5, f3)
+    const P = this.book.parts, f = 1.25 * f3;
+    P.coverRight.ry = Math.PI + f; P.coverLeft.ry = -f; P.pagesRight.ry = f; P.pagesLeft.ry = -f;
+    P.flipRight.ry = f - f * 2 * f4; P.flipLeft.ry = f - f * 2 * f5;
+    P.pagesRight.px = P.pagesLeft.px = P.flipRight.px = P.flipLeft.px = Math.sin(f);
+    for (const p of Object.values(P)) p.sync();
+    const W = this.width, H = this.height;
+    const vx = Math.trunc((W - 320) / 2), vy = H - Math.trunc((H - 240) / 2) - 240; // the GL viewport, from the top
+    const m = mat4.create();
+    // NDC -> GUI pixels (depth into the GUI's 3D range, nearer = higher)
+    mat4.translate(m, m, vx + 160, vy + 120, 100);
+    mat4.scale(m, m, 160, -120, -50);
+    mat4.translate(m, m, -0.34, 0.23, 0);
+    mat4.multiply(m, m, mat4.perspective(mat4.create(), 90 * D2R, 4 / 3, 9, 80));
+    mat4.translate(m, m, 0, 3.3, -16);
+    mat4.scale(m, m, 5, 5, 5);
+    mat4.rotateZ(m, m, Math.PI);
+    mat4.rotateX(m, m, 20 * D2R);
+    mat4.translate(m, m, (1 - f3) * 0.2, (1 - f3) * 0.1, (1 - f3) * 0.25);
+    mat4.rotateY(m, m, (-(1 - f3) * 90 - 90) * D2R);
+    mat4.rotateX(m, m, Math.PI);
+    mat4.scale(m, m, 1 / 16, 1 / 16, 1 / 16);
+    gui.drawNode(this.book.root, m);
+  }
+
   drawBackground(gui, mx, my) {
     super.drawBackground(gui);
-    const p = this.container.properties;
+    this._drawBook(gui, this.game.partial || 0);
+    const g = this.game, p = this.container.properties;
     const lapis = this.container.get(1);
     const lapisCount = lapis ? lapis.count : 0;
-    const xp = this.game.xpLevel;
+    const sga = gui.galacticFont || (gui.galacticFont = new FontRenderer(gui, 'font/ascii_sga.png'));
+    // EnchantmentNameParts.reseedRandomGenerator(xpSeed): the same words while the seed holds
+    const rand = new JavaRandom(p[3] || 0);
     for (let l = 0; l < 3; l++) {
       const x = this.guiLeft + 60, y = this.guiTop + 14 + 19 * l;
+      // generateNewRandomName() for every row, before the level is looked at
+      const n = rand.nextInt(2) + 3;
+      const words = [];
+      for (let i = 0; i < n; i++) words.push(NAME_PARTS[rand.nextInt(NAME_PARTS.length)]);
+      const clue = words.join(' ');
+      const w = 86;
       const cost = p[l] || 0;
       if (cost === 0) { gui.blit(this.tex, x, y, 0, 185, 108, 19); continue; }
       const s = '' + cost;
-      const affordable = (lapisCount >= l + 1 && xp >= cost) || this.game.player.creative;
-      const hover = mx >= x && my >= y && mx < x + 108 && my < y + 19;
-      if (!affordable) {
+      let color = 6839882;
+      if (!((lapisCount >= l + 1 && g.xpLevel >= cost) || g.player.creative)) {
         gui.blit(this.tex, x, y, 0, 185, 108, 19);
         gui.blit(this.tex, x + 1, y + 1, 16 * l, 239, 16, 16);
-        gui.text(s, x + 108 - gui.textWidth(s) - 2, y + 9, 0x407f10 >> 1 & 0x7f7f7f, true);
+        this._split(sga, clue, x + 20, y + 2, w, (color & 0xfefefe) >> 1);
+        color = 4226832;
       } else {
-        gui.blit(this.tex, x, y, 0, hover ? 204 : 166, 108, 19);
+        const hover = mx >= x && my >= y && mx < x + 108 && my < y + 19;
+        if (hover) { gui.blit(this.tex, x, y, 0, 204, 108, 19); color = 0xffff80; } else gui.blit(this.tex, x, y, 0, 166, 108, 19);
         gui.blit(this.tex, x + 1, y + 1, 16 * l, 223, 16, 16);
-        gui.text(s, x + 108 - gui.textWidth(s) - 2, y + 9, hover ? 0xffff80 : 0x80ff20, true);
+        this._split(sga, clue, x + 20, y + 2, w, color);
+        color = 8453920;
       }
-      // Clue text (vanilla uses the standard galactic alphabet font)
-      gui.text('§k' + ['the elder scrolls', 'klaatu berata niktu', 'xyzzy'][l].slice(0, 12), x + 20, y + 2, affordable ? 0x685e4a : 0x342f25, false);
+      gui.text(s, x + 20 + 86 - gui.textWidth(s), y + 2 + 7, color, true);
+    }
+  }
+
+  // FontRenderer.drawSplitString: wrapped lines, no shadow
+  _split(font, text, x, y, w, color) {
+    font.wrap(text, w).forEach((line, i) => font.draw(line, x, y + i * 9, color, false));
+  }
+
+  // GuiEnchantment.drawScreen: the clue tooltip (enchantmentIds: id | level << 8) with the lapis / level requirements
+  drawOverlay(gui, mx, my) {
+    const g = this.game, p = this.container.properties;
+    const lapis = this.container.get(1), lapisCount = lapis ? lapis.count : 0;
+    for (let i = 0; i < 3; i++) {
+      const lvl = p[i] || 0, id = p[4 + i] === undefined ? -1 : p[4 + i];
+      const x = this.guiLeft + 60, y = this.guiTop + 14 + 19 * i;
+      if (!(mx >= x - 1 && mx < x + 108 + 1 && my >= y - 1 && my < y + 17 + 1) || lvl <= 0 || id < 0) continue;
+      const lines = [];
+      if (g.items.enchantmentName(id & 255, 1) !== null) lines.push('§f§o' + tr('container.enchant.clue', g.items.enchantmentName(id & 255, (id & 0xff00) >> 8)));
+      if (!g.player.creative) {
+        lines.push('');
+        const k = i + 1;
+        if (g.xpLevel < lvl) lines.push('§cLevel Requirement: ' + lvl);
+        else {
+          lines.push((lapisCount >= k ? '§7' : '§c') + (k === 1 ? tr('container.enchant.lapis.one') : tr('container.enchant.lapis.many', k)));
+          lines.push('§7' + (k === 1 ? tr('container.enchant.level.one') : tr('container.enchant.level.many', k)));
+        }
+      }
+      gui.tooltip(lines, mx, my);
+      break;
     }
   }
   extraMouseDown(mx, my, button) {
@@ -699,54 +809,11 @@ export function openContainerScreen(game, win) {
 const TABS = ['buildingBlocks', 'decorations', 'redstone', 'transportation', 'misc', 'search', 'food', 'tools', 'combat', 'brewing', 'materials', 'inventory'];
 const TAB_ICONS = [{ id: 45 }, { id: 175, damage: 5 }, { id: 331 }, { id: 27 }, { id: 327 }, { id: 345 }, { id: 260 }, { id: 258 }, { id: 283 }, { id: 373 }, { id: 280 }, { id: 54 }];
 
+// CreativeTabs.displayAllReleventItems for every tab, from client/data/creative.json (read from the game with
+// tools/creative-dump; search: GuiContainerCreative.updateCreativeSearch's list)
 function buildCreativeTabs(game) {
   const tabs = {};
-  for (const t of TABS) tabs[t] = [];
-  const items = game.assets.data.items;
-  const deco = /flower|sapling|leaves|grass|fern|bush|web|torch|ladder|fence|wall|pane|bars|carpet|sign|painting|frame|pot|skull|banner|bed|chest|furnace|crafting|table|anvil|jukebox|ender|vine|lily|mushroom|cactus|reeds|snow_layer|cake|monster_egg|head|slime|stand|brewing|cauldron|beacon|spawner|portal|dragon_egg|end_portal_frame|sponge|cobweb|double_plant|tallgrass|deadbush|yellow_flower|red_flower|waterlily|glass_pane|iron_bars|flower_pot|item_frame|armor_stand/;
-  const redstone = /redstone|lever|button|pressure_plate|piston|repeater|comparator|daylight|tnt|dispenser|dropper|hopper|note|lamp|trapdoor|tripwire|door|fence_gate|trapped_chest|observer/;
-  const transport = /rail|minecart|boat|saddle|carrot_on_a_stick/;
-  const food = /apple|bread|porkchop|beef|chicken|fish|cookie|melon|carrot|potato|pie|stew|mutton|rabbit|cake|sugar|rotten_flesh|spider_eye/;
-  const tools = /pickaxe|shovel|axe|hoe|shears|flint_and_steel|compass|clock|fishing_rod|lead|name_tag|bucket|map/;
-  const combat = /sword|^bow$|arrow|helmet|chestplate|leggings|boots|horse_armor/;
-  const brewing = /potion|glass_bottle|ghast_tear|blaze_powder|magma_cream|fermented|speckled|brewing|cauldron|nether_wart/;
-  const exclude = new Set([0, 8, 9, 10, 11, 26, 34, 36, 43, 51, 52, 55, 59, 60, 62, 63, 64, 68, 71, 74, 75, 83, 90, 92, 93, 94, 104, 105, 115, 117, 118, 119, 124, 125, 127, 132, 137, 140, 141, 142, 144, 149, 150, 166, 176, 177, 178, 181, 193, 194, 195, 196, 197, 403, 401, 387, 358, 422]);
-  for (const it of items) {
-    if (exclude.has(it.id)) continue;
-    const name = it.name;
-    const variants = it.variations && it.variations.length ? it.variations.map((v) => v.metadata) : [0];
-    let tab;
-    if (it.id < 256) {
-      if (redstone.test(name)) tab = 'redstone';
-      else if (transport.test(name)) tab = 'transportation';
-      else if (deco.test(name)) tab = 'decorations';
-      else tab = 'buildingBlocks';
-      if (name === 'melon_block' || name === 'pumpkin' || name === 'hay_block') tab = 'buildingBlocks';
-    } else if (/^record/.test(name)) tab = 'misc';
-    else if (transport.test(name)) tab = 'transportation';
-    else if (food.test(name)) tab = 'food';
-    else if (combat.test(name)) tab = 'combat';
-    else if (tools.test(name)) tab = 'tools';
-    else if (brewing.test(name)) tab = 'brewing';
-    else if (redstone.test(name)) tab = 'redstone';
-    else if (/sign|painting|item_frame|flower_pot|skull|banner|bed|armor_stand|cake|reeds|brewing_stand|cauldron/.test(name)) tab = 'decorations';
-    else if (/spawn_egg|experience_bottle|fire_charge|book|writable|written|map|firework|emerald|nether_star|bone|slime|ender_eye|ender_pearl/.test(name)) tab = name.includes('spawn_egg') || name === 'experience_bottle' || name === 'fire_charge' || name === 'writable_book' || name === 'firework' ? 'misc' : 'materials';
-    else tab = 'materials';
-    if (it.id === 383) {
-      for (const id of [50, 51, 52, 54, 55, 56, 57, 58, 59, 60, 61, 62, 65, 66, 67, 68, 90, 91, 92, 93, 94, 95, 96, 98, 100, 101, 120]) tabs.misc.push({ id: 383, count: 1, damage: id });
-      continue;
-    }
-    if (it.id === 373) {
-      for (const d of [0, 16, 8193, 8194, 8195, 8196, 8197, 8198, 8200, 8201, 8202, 8204, 8205, 8206, 8225, 8226, 8228, 8229, 8233, 8235, 8236, 8257, 8258, 8259, 8260, 8262, 8264, 8265, 8266, 8269, 8270,
-        16385, 16386, 16387, 16388, 16389, 16390, 16392, 16393, 16394, 16396, 16397, 16398, 16417, 16418, 16420, 16421, 16425, 16427, 16428]) tabs.brewing.push({ id: 373, count: 1, damage: d });
-      continue;
-    }
-    if (it.id === 351) { for (let d = 0; d < 16; d++) tabs.materials.push({ id: 351, count: 1, damage: d }); continue; }
-    for (const d of variants) tabs[tab].push({ id: it.id, count: 1, damage: d });
-  }
-  const all = [];
-  for (const t of TABS) if (t !== 'search' && t !== 'inventory') all.push(...tabs[t]);
-  tabs.search = all;
+  for (const t of game.assets.data.creative.tabs) tabs[t.label] = t.items.map(([id, damage, tag]) => ({ id, count: 1, damage, nbt: tag ? { t: 10, name: '', v: tag } : null }));
   return tabs;
 }
 
@@ -784,7 +851,8 @@ export class CreativeScreen extends ContainerScreen {
   filter() {
     const q = this.search.text.toLowerCase();
     const all = CreativeScreen.tabs.search;
-    this.list = q ? all.filter((it) => this.game.items.displayName(it).toLowerCase().includes(q)) : all;
+    // updateCreativeSearch: any tooltip line (formatting stripped) containing the text
+    this.list = q ? all.filter((it) => this.game.items.tooltip(it, this.game.settings.advancedItemTooltips).some((l) => l.replace(/§./g, '').toLowerCase().includes(q))) : all;
     this.scroll = 0;
     this._layout();
   }

@@ -2,6 +2,7 @@
 import { simplify } from '../net/nbt.js';
 import { blocks } from '../world/blocks.js';
 import { ItemNames } from './itemnames.js';
+import { POTIONS, getPotionEffects, liquidColor, modifierAmount } from './potionhelper.js';
 
 const ENCH_NAMES = {
   0: 'protect.all', 1: 'protect.fire', 2: 'protect.fall', 3: 'protect.explosion', 4: 'protect.projectile', 5: 'oxygen',
@@ -71,29 +72,48 @@ export class Items {
 
   potionName(item) { return this.names.potion(item); }
 
-  // Approximation of PotionHelper for common damage values
+  // ItemPotion.getEffects: CustomPotionEffects, else PotionHelper.getPotionEffects(damage)
   potionEffects(item) {
     const tag = this.nbt(item);
-    if (tag && tag.CustomPotionEffects) return tag.CustomPotionEffects.map((e) => ({ id: e.Id, amplifier: e.Amplifier || 0, duration: e.Duration || 0 }));
-    const d = item.damage & 15;
-    const map = { 1: 10, 2: 1, 3: 12, 4: 19, 5: 6, 6: 16, 8: 18, 9: 5, 10: 2, 11: 8, 12: 7, 13: 13, 14: 14 };
-    const id = map[d];
-    if (!id) return [];
-    return [{ id, amplifier: item.damage & 32 ? 1 : 0, duration: 0 }];
+    if (tag && Array.isArray(tag.CustomPotionEffects)) {
+      return tag.CustomPotionEffects.filter((e) => POTIONS[e.Id & 255]).map((e) => ({ id: e.Id & 255, amplifier: e.Amplifier | 0, duration: e.Duration | 0, particles: e.ShowParticles === undefined ? true : !!e.ShowParticles }));
+    }
+    return getPotionEffects(item.damage || 0);
   }
 
-  potionColor(item) {
-    const colors = { 1: 0x7cafc6, 2: 0x5a6c81, 3: 0xd9c043, 4: 0x4a4217, 5: 0x932423, 6: 0xf82423, 7: 0x430a09, 8: 0x786297,
-      9: 0x551d4a, 10: 0xcd5cab, 11: 0x99453a, 12: 0xe49a3a, 13: 0x2e5299, 14: 0x7f8392, 15: 0x1f1f23, 16: 0x1f1fa1,
-      17: 0x587653, 18: 0x484d48, 19: 0x4e9331, 20: 0x352a27, 21: 0xf87d23, 22: 0x2552a5, 23: 0xf82423 };
-    const eff = this.potionEffects(item);
-    if (!eff.length) return 0x385dc6;
-    let r = 0, g = 0, b = 0, n = 0;
-    for (const e of eff) {
-      const c = colors[e.id] || 0x385dc6;
-      for (let i = 0; i <= e.amplifier; i++) { r += ((c >> 16) & 255) / 255; g += ((c >> 8) & 255) / 255; b += (c & 255) / 255; n++; }
+  // ItemPotion.getColorFromItemStack: PotionHelper.getLiquidColor(damage) (custom effects do not colour the bottle)
+  potionColor(item) { return liquidColor(getPotionEffects(item.damage || 0)); }
+
+  // ItemPotion.addInformation (water bottles show nothing)
+  potionTooltip(item, lines) {
+    if (!item.damage) return;
+    const t = (k, ...a) => this.assets.translate(k, a).trim();
+    const effects = this.potionEffects(item), mods = [];
+    if (!effects.length) lines.push('§7' + t('potion.empty'));
+    for (const e of effects) {
+      const p = POTIONS[e.id];
+      let s = t(p.name);
+      for (const [attr, amount, op] of p.mods || []) mods.push([attr, modifierAmount(e.id, e.amplifier, amount), op]);
+      if (e.amplifier > 0) s += ' ' + t('potion.potency.' + e.amplifier);
+      if (e.duration > 20) { const sec = Math.floor(e.duration / 20), m = Math.floor(sec / 60), r = sec % 60; s += ' (' + m + ':' + (r < 10 ? '0' : '') + r + ')'; }
+      lines.push((p.bad ? '§c' : '§7') + s);
     }
-    return (((r / n) * 255) << 16) | (((g / n) * 255) << 8) | ((b / n) * 255);
+    if (!mods.length) return;
+    lines.push('');
+    lines.push('§5' + t('potion.effects.whenDrank'));
+    const fmt = (d) => String(Math.round(d * 100) / 100); // ItemStack.DECIMALFORMAT "#.##"
+    for (const [attr, amount, op] of mods) {
+      const d = op === 1 || op === 2 ? amount * 100 : amount;
+      if (amount > 0) lines.push('§9' + t('attribute.modifier.plus.' + op, fmt(d), t('attribute.name.' + attr)));
+      else if (amount < 0) lines.push('§c' + t('attribute.modifier.take.' + op, fmt(-d), t('attribute.name.' + attr)));
+    }
+  }
+
+  // ItemStack.hasEffect (the glint): enchanted items, plus ItemPotion.hasEffect for potions with any effect
+  hasEffect(item) {
+    if (!item) return false;
+    if (item.id === 373 && this.potionEffects(item).length) return true;
+    return this.isEnchanted(item);
   }
 
   enchantments(item) {
@@ -108,6 +128,12 @@ export class Items {
     if (item.id === 403 || item.id === 322 && item.damage === 1) return true;
     if (item.id === 384 || item.id === 399) return true;
     return this.enchantments(item).length > 0;
+  }
+
+  // Enchantment.getTranslatedName (1.8: name and level); null for an unknown enchantment
+  enchantmentName(id, level) {
+    if (!ENCH_NAMES[id]) return null;
+    return this.assets.translate('enchantment.' + ENCH_NAMES[id]) + ' ' + this.assets.translate('enchantment.level.' + level);
   }
 
   enchantLevel(item, id) {
@@ -135,13 +161,7 @@ export class Items {
     }
     lines.push(color + name);
     const t = (k, ...a) => this.assets.translate(k, a);
-    if (item.id === 373) {
-      const effects = this.potionEffects(item);
-      if (!effects.length) lines.push('§7' + t('potion.empty'));
-      for (const e of effects) {
-        const pot = e.amplifier > 0 ? t('potion.potency.' + e.amplifier) : '';
-        lines.push('§9' + this.names.effectName(e.id) + (pot && !pot.startsWith('potion.') ? ' ' + pot : ''));
-      }
+    if (item.id === 373) this.potionTooltip(item, lines);
     }
     if (tag && tag.author && item.id === 387) lines.push('§7' + t('book.byAuthor', tag.author));
     const rec = this.names.recordDescription(item.id);

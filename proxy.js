@@ -12,6 +12,7 @@ const crypto = require('crypto');
 const { ZipFile } = require('./lib/zip');
 const msauth = require('./lib/msauth');
 const mcassets = require('./lib/mcassets');
+const { extractModels } = require('./lib/modelextract');
 
 const PORT = parseInt(process.env.PORT, 10) || 3000;
 const CLIENT_DIR = path.join(__dirname, 'client');
@@ -43,6 +44,11 @@ function buildBundle(kind) {
       if (f.endsWith('.json')) out.models[f.slice((P + 'models/').length, -5)] = jarJson(f);
     }
     raw = Buffer.from(JSON.stringify(out));
+  } else if (kind === 'entity-models.json') {
+    // entity and block entity models: Java code, run from the jar (lib/modelextract.js)
+    const em = extractModels(jar);
+    for (const e of em.errors) console.warn('entity model ' + e);
+    raw = Buffer.from(JSON.stringify(em.models));
   } else if (kind === 'textures.bin') {
     // u32 headerLength, JSON header { files: [[name, offset, length]], mcmeta }, then the PNG bytes
     const files = [], blobs = [], mcmeta = {};
@@ -101,7 +107,7 @@ const app = express();
 app.use(express.static(CLIENT_DIR));
 
 // Pages on other sites (static hosting, the single-file build) use this proxy for sign in and skins
-app.use(['/auth', '/skin'], (req, res, next) => {
+app.use(['/auth', '/skin', '/profile'], (req, res, next) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.set('Access-Control-Allow-Headers', 'content-type');
@@ -117,6 +123,12 @@ const authRoute = (fn) => async (req, res) => {
 app.post('/auth/device', express.json(), authRoute(() => msauth.startDeviceCode()));
 app.post('/auth/poll', express.json(), authRoute(async (b) => ({ account: await msauth.pollDeviceCode(String(b.deviceCode || '')) })));
 app.post('/auth/refresh', express.json(), authRoute(async (b) => ({ account: await msauth.refresh(String(b.refreshToken || '')) })));
+// Session join for online-mode servers reached through a byte relay (Java relay / Wisp): the client does the
+// protocol and encryption itself, but sessionserver.mojang.com sends no CORS headers
+app.post('/auth/join', express.json(), authRoute(async (b) => {
+  await msauth.joinServer(String(b.accessToken || ''), String(b.uuid || ''), String(b.hash || ''));
+  return { ok: true };
+}));
 
 // assets/ (only reached when client/assets/ was not built)
 app.get(/^\/assets\/(.+)$/, async (req, res) => {
@@ -148,6 +160,23 @@ app.get('/skin', async (req, res) => {
     res.set('Cache-Control', 'public, max-age=86400');
     res.send(buf);
   } catch (e) { res.status(502).send(String(e)); }
+});
+
+// A player's Mojang profile (its signed textures property), for the local player's skin and cape when a server sends
+// none (SkinManager.loadProfileTextures falls back to the session's own profile)
+const profileCache = new Map();
+app.get('/profile', async (req, res) => {
+  const uuid = String(req.query.uuid || '').replace(/-/g, '').toLowerCase();
+  if (!/^[0-9a-f]{32}$/.test(uuid)) return res.status(400).end();
+  try {
+    let hit = profileCache.get(uuid);
+    if (!hit || hit.at < Date.now() - 60000) {
+      const buf = await mcassets.fetchBuffer('https://sessionserver.mojang.com/session/minecraft/profile/' + uuid + '?unsigned=false');
+      hit = { at: Date.now(), json: JSON.parse(buf.toString('utf8')) };
+      profileCache.set(uuid, hit);
+    }
+    res.json(hit.json);
+  } catch (e) { res.status(502).json({ error: String(e.message || e) }); }
 });
 
 const server = http.createServer(app);

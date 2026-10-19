@@ -34,6 +34,8 @@ import { EntityManager } from './entities.js';
 import { EntityRenderer } from '../render/entity-renderer.js';
 import { ItemRenderer } from '../render/item-renderer.js';
 import { HandRenderer } from '../render/hand-renderer.js';
+import { Pistons } from './pistons.js';
+import { BoatController } from './vehicle.js';
 import { TileEntityRenderer } from '../render/tile-renderer.js';
 import { Particles } from '../render/particles.js';
 import { Weather } from '../render/weather.js';
@@ -73,6 +75,7 @@ export class Game {
     this.entityRenderer = new EntityRenderer(this);
     this.handRenderer = new HandRenderer(this);
     this.tileRenderer = new TileEntityRenderer(this);
+    this.pistons = new Pistons(this);
     this.particles = new Particles(this);
     this.debugLines = new DebugLines(this);
     this.weather = new Weather(this);
@@ -236,10 +239,6 @@ export class Game {
         if (this.inWorld) this.sendSettings();
         return true;
       case 'KeyH': s.advancedItemTooltips = !s.advancedItemTooltips; s.save(); return true;
-      case 'KeyN': // spectator toggle
-        if (this.gameMode !== 3) this.send(C.chat('/gamemode sp'));
-        else this.send(C.chat('/gamemode ' + (this.previousGameMode !== undefined && this.previousGameMode !== 3 ? this.previousGameMode : 1)));
-        return true;
       case 'KeyP': s.pauseOnLostFocus = s.pauseOnLostFocus === false; s.save(); return true;
       case 'KeyS': case 'KeyT': this.reloadResources().catch((err) => console.error(err)); return true; // refreshResources
       default: return false;
@@ -287,6 +286,7 @@ export class Game {
     this.entityRenderer.reset();
     this.handRenderer.reset();
     this.tileRenderer.clear();
+    this.pistons.clear();
     this.sound.reload();
     this.worker = this.assets.worker;
     this._setupWorker();
@@ -357,7 +357,26 @@ export class Game {
       if (!w.getChunk(cx, cz)) return;
       this.dirty.add(cx + ',' + sy + ',' + cz);
     });
+    // World.getCollidingBoundingBoxes' entity part: boats are solid to every mover (getCollisionBoundingBox), and a
+    // moving boat also collides with every other entity (EntityBoat.getCollisionBox). The mover's vehicle and rider
+    // are skipped.
+    w.entityCollider = (bb, mover) => {
+      const out = [];
+      const self = mover.entity || null; // the boat being simulated, or null for the player
+      const g = [bb[0] - 0.25, bb[1] - 0.25, bb[2] - 0.25, bb[3] + 0.25, bb[4] + 0.25, bb[5] + 0.25];
+      for (const e of this.entities.map.values()) {
+        if (e === self || e.dead) continue;
+        if (self ? e.riding === self.id : e.id === this.ridingEntityId) continue;
+        const hw = (e.width || 0) / 2;
+        const eb = [e.x - hw, e.y, e.z - hw, e.x + hw, e.y + (e.height || 0), e.z + hw];
+        if (!(eb[3] > g[0] && eb[0] < g[3] && eb[4] > g[1] && eb[1] < g[4] && eb[5] > g[2] && eb[2] < g[5])) continue;
+        if (e.kind !== 'boat' && !(self && self.kind === 'boat' && hw > 0)) continue;
+        if (eb[3] > bb[0] && eb[0] < bb[3] && eb[4] > bb[1] && eb[1] < bb[4] && eb[5] > bb[2] && eb[2] < bb[5]) out.push(eb);
+      }
+      return out;
+    };
     w.on('blockChanged', (x, y, z, oldState, newState) => {
+      this.pistons.onBlockChanged(x, y, z);
       this.tileRenderer.onBlockChanged(x, y, z, oldState, newState);
     });
   }
@@ -378,7 +397,28 @@ export class Game {
     }
   }
 
+  // MinecraftJS level of detail: chunks more than settings.lodChunks away (Chebyshev, in chunks) are meshed simplified
+  // (render/mesher.js) and drawn with a mip bias; 0 turns it off
+  _lodFor(cx, cz) {
+    const L = this.settings.lodChunks | 0;
+    if (L <= 0) return false;
+    const pcx = Math.floor(this.player.x / 16), pcz = Math.floor(this.player.z / 16);
+    return Math.max(Math.abs(cx - pcx), Math.abs(cz - pcz)) > L;
+  }
+
+  // Re-mesh sections whose LOD state changed (after crossing a chunk border or changing the setting)
+  _updateLod() {
+    const pcx = Math.floor(this.player.x / 16), pcz = Math.floor(this.player.z / 16);
+    const key = pcx + ',' + pcz + ',' + (this.settings.lodChunks | 0);
+    if (key === this._lodKey) return;
+    this._lodKey = key;
+    for (const s of this.renderer.sections.values()) {
+      if (s.lod !== this._lodFor(s.cx, s.cz)) this.dirty.add(s.cx + ',' + s.sy + ',' + s.cz);
+    }
+  }
+
   _scheduleMeshes() {
+    this._updateLod();
     if (!this.dirty.size || this.inFlight.size >= this.maxInFlight) return;
     const px = this.player.x / 16, py = this.player.y / 16, pz = this.player.z / 16;
     const rd = this.settings.renderDistance + 1;
@@ -411,7 +451,7 @@ export class Game {
       const sec = this.world.getChunk(cx, cz).sections[sy];
       if (!sec || sec.nonAir === 0) { this.inFlight.delete(key); this.renderer.removeSection(key); continue; }
       const slice = buildSlice(this.world, cx, sy, cz, this.tileProps);
-      this.worker.postMessage({ type: 'build', gen: this.meshGen, slice }, [slice.states.buffer, slice.light.buffer, slice.biomes.buffer]);
+      this.worker.postMessage({ type: 'build', gen: this.meshGen, slice, lod: this._lodFor(cx, cz) }, [slice.states.buffer, slice.light.buffer, slice.biomes.buffer]);
     }
     // Recover from lost builds
     for (const [k, t] of this.inFlight) if (platform().now() - t > 10000) this.inFlight.delete(k);
@@ -467,6 +507,7 @@ export class Game {
     this._resetMeshing();
     this.entities.clear();
     this.tileRenderer.clear();
+    this.pistons.clear();
     this.particles.clear();
     this.sound.stopAll();
     this.input.unlock();
@@ -528,6 +569,7 @@ export class Game {
       this._resetMeshing();
       this.entities.clear();
       this.tileRenderer.clear();
+    this.pistons.clear();
     }
     this.entityId = p.entityId;
     if (this.gameMode !== (p.gameMode & 7)) this.previousGameMode = this.gameMode;
@@ -603,6 +645,7 @@ export class Game {
       this._resetMeshing();
       this.entities.clear();
       this.tileRenderer.clear();
+    this.pistons.clear();
       this.doneLoadingTerrain = false;
       this.screens.open(new DownloadingTerrainScreen(this));
     }
@@ -621,17 +664,20 @@ export class Game {
 
   on_position(p) {
     const pl = this.player;
-    let x = p.x, y = p.y, z = p.z, yaw = p.yaw, pitch = p.pitch;
+    // NetHandlerPlayClient.handlePlayerPosLook (relative flags add to the current values, float angles)
+    let x = p.x, y = p.y, z = p.z, yaw = Math.fround(p.yaw), pitch = Math.fround(p.pitch);
     if (p.flags & 1) x += pl.x; else pl.motionX = 0;
     if (p.flags & 2) y += pl.y; else pl.motionY = 0;
     if (p.flags & 4) z += pl.z; else pl.motionZ = 0;
-    if (p.flags & 8) pitch += pl.pitch;
-    if (p.flags & 16) yaw += pl.yaw;
+    if (p.flags & 8) pitch = Math.fround(pitch + pl.pitch);
+    if (p.flags & 16) yaw = Math.fround(yaw + pl.yaw);
+    // Entity.setPositionAndRotation: setRotation keeps angle % 360
     pl.setPosition(x, y, z);
     pl.prevX = x; pl.prevY = y; pl.prevZ = z;
-    pl.yaw = yaw; pl.pitch = pitch; pl.prevYaw = yaw; pl.prevPitch = pitch;
+    pl.prevYaw = yaw; pl.prevPitch = pitch;
+    pl.yaw = Math.fround(yaw % 360); pl.pitch = Math.fround(pitch % 360);
     this.send(C.positionLook(pl.x, pl.y, pl.z, pl.yaw, pl.pitch, false));
-    this.lastReported = { ...this.lastReported, x: pl.x, y: pl.y, z: pl.z, yaw: pl.yaw, pitch: pl.pitch };
+    // the last reported position stays: the next tick reports the new position again (onUpdateWalkingPlayer)
     if (!this.doneLoadingTerrain) {
       this.doneLoadingTerrain = true;
       pl.prevX = pl.x; pl.prevY = pl.y; pl.prevZ = pl.z;
@@ -705,6 +751,7 @@ export class Game {
     if (p.entityId === this.entityId) {
       this.ridingEntityId = p.vehicleId;
       this.player.ridingEntity = p.vehicleId >= 0 ? this.entities.get(p.vehicleId) : null;
+      if (p.vehicleId < 0) this._dropVehicle();
       if (p.vehicleId >= 0) this.hud.setActionBar(this.assets.translate('mount.onboard', [this.settings.keyName(this.settings.keys.sneak)]));
     }
     this.entities.attach(p.entityId, p.vehicleId);
@@ -771,7 +818,13 @@ export class Game {
     this.interaction.onBlockChange(p.location, p.state);
   }
 
-  on_block_action(p) { this.tileRenderer.onBlockAction(p); this.sound.onBlockAction(p); }
+  on_block_action(p) {
+    // BlockPistonBase.eventReceived runs on the client too: the moving blocks start sliding right away
+    const n = blocks[p.blockId] && blocks[p.blockId].name;
+    if (n === 'piston' || n === 'sticky_piston') this.pistons.onBlockEvent(p.location, p.byte1, p.byte2, p.blockId);
+    this.tileRenderer.onBlockAction(p);
+    this.sound.onBlockAction(p);
+  }
 
   on_block_break_animation(p) { this.interaction.setRemoteBreak(p.entityId, p.location, p.destroyStage); }
 
@@ -866,7 +919,11 @@ export class Game {
     if (this.screens.current && this.screens.current.onStats) this.screens.current.onStats(this.stats);
   }
 
-  on_player_info(p) { this.scoreboard.onPlayerInfo(p); }
+  on_player_info(p) {
+    this.scoreboard.onPlayerInfo(p);
+    // skins and capes follow the tab list's textures property (it can arrive after the player is first drawn)
+    for (const d of p.data || []) if (d.uuid && d.properties) this.entityRenderer.skinFor({ uuid: d.uuid });
+  }
 
   on_abilities(p) {
     const pl = this.player;
@@ -1168,19 +1225,32 @@ export class Game {
     if (!this.screens.current && this.input.locked && !this.dead) this.interaction.tick(presses);
     else this.interaction.tickIdle();
 
-    if (this.player.ridingEntity) {
+    // EntityPlayerSP.onUpdate: nothing at all happens (no movement, no packets) while the chunk under the player is
+    // not loaded
+    if (!world.isLoaded(Math.floor(pl.x), Math.floor(pl.z))) {
+      // skip the player update
+    } else if (this.player.ridingEntity) {
       this._tickRiding(inp);
-    } else if (!this.dead) {
-      const res = pl.tick(world, inp);
+    } else {
+      // Dead or sleeping: isMovementBlocked, so the player still falls but takes no input
+      const blocked = this.dead || !!this.sleeping;
+      const res = pl.tick(world, blocked ? {} : inp);
       if (res.abilitiesChanged) this.sendAbilities();
+      this._sendMovement();
     }
-    if (!this.player.ridingEntity) this._sendMovement();
 
     this.entities.tick();
+    // World.updateEntityWithOptionalForce: passengers update after their vehicle, so a server-driven vehicle
+    // (minecart, pig, someone else's boat) has moved before we are put back on it (Entity.updatePassenger)
+    if (this.player.ridingEntity) {
+      const v = this.entities.get(this.ridingEntityId);
+      if (v) this.player.setPosition(...this.entities.riderPos(v, 'player'));
+    }
     this.particles.tick();
     this.weather.tick();
     this.sound.tick();
     this.tileRenderer.tick();
+    this.pistons.tick();
     this.entityRenderer.tick();
     this.handRenderer.tick();
     this.portalTick();
@@ -1221,21 +1291,50 @@ export class Game {
     } else this.portalTime = Math.max(0, this.portalTime - 0.05);
   }
 
-  // EntityPlayerSP.onUpdate while riding: C05 look + C0C steering input; horse jumps charge while space is held
+  // The boat the local player rides runs its own physics on the client (EntityBoat.onUpdate, isBoatEmpty false)
+  _boatController(v) {
+    if (!v || v.kind !== 'boat') { this._dropVehicle(); return null; }
+    if (!this.vehicle || this.vehicle.e !== v) {
+      this._dropVehicle();
+      this.vehicle = new BoatController(this.world, v);
+      v.controlled = true;
+      v.onServerTeleport = (x, y, z, yaw) => this.vehicle && this.vehicle.e === v && this.vehicle.setFromServer(x, y, z, yaw);
+    }
+    return this.vehicle;
+  }
+
+  _dropVehicle() {
+    if (!this.vehicle) return;
+    this.vehicle.e.controlled = false;
+    this.vehicle.e.onServerTeleport = null;
+    this.vehicle = null;
+  }
+
+  // EntityPlayerSP.onUpdate while riding: the vehicle updates first (World.updateEntities), then the rider sends C05 look
+  // + C0C steering input; horse jumps charge while space is held
   _tickRiding(inp) {
     const pl = this.player;
     pl.prevX = pl.x; pl.prevY = pl.y; pl.prevZ = pl.z;
     pl.prevYaw = pl.yaw; pl.prevPitch = pl.pitch;
     const v = this.entities.get(this.ridingEntityId);
-    if (v) {
-      // vehicle.getMountedYOffset() + EntityPlayer.getYOffset() (-0.35)
-      pl.setPosition(v.x, v.y + this.entities.mountedOffset(v) - 0.35, v.z);
+    const ctl = this._boatController(v);
+    if (ctl) {
+      // with last tick's moveStrafing / moveForward (the rider updates after its boat)
+      const [ms, mf] = this._rideMove || [0, 0];
+      ctl.tick(ms, mf, pl.yaw);
+      const b = ctl.body;
+      v.prevX = v.x; v.prevY = v.y; v.prevZ = v.z; v.prevYaw = v.yaw;
+      v.x = b.x; v.y = b.y; v.z = b.z; v.yaw = ctl.yaw;
+      v.motionX = b.motionX; v.motionY = b.motionY; v.motionZ = b.motionZ;
     }
+    if (v) pl.setPosition(...this.entities.riderPos(v, 'player'));
     let forward = 0, strafe = 0;
     if (inp.forward) forward++; if (inp.back) forward--;
     if (inp.left) strafe++; if (inp.right) strafe--;
     if (inp.sneak) { forward *= 0.3; strafe *= 0.3; }
-    forward *= 0.98; strafe *= 0.98;
+    // EntityLivingBase.onLivingUpdate: moveStrafing / moveForward *= 0.98F (the boat reads them next tick)
+    forward = Math.fround(Math.fround(forward) * Math.fround(0.98)); strafe = Math.fround(Math.fround(strafe) * Math.fround(0.98));
+    this._rideMove = [strafe, forward];
     const jump = !!inp.jump;
     if (v && v.kind === 'mob' && v.type === 100) {
       const was = this._rideJump;

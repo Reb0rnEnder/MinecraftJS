@@ -20,8 +20,10 @@ for (let i = 0; i < CHARS.length; i++) if (CHARS[i] !== '\u0000' && !CHAR_INDEX.
 const rgb = (c, a) => [((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255, a];
 
 export class FontRenderer {
-  constructor(gui) {
+  // texPath: font/ascii.png, or font/ascii_sga.png for Minecraft.standardGalacticFontRenderer
+  constructor(gui, texPath = 'font/ascii.png') {
     this.gui = gui;
+    this.texPath = texPath;
     this.assets = gui.assets;
     this.charWidth = new Array(256).fill(0);
     this.FONT_HEIGHT = 9;
@@ -34,7 +36,7 @@ export class FontRenderer {
   get glyphWidth() { return this.assets.glyphSizes || EMPTY; }
 
   _measure() {
-    const img = this.assets.image('font/ascii.png');
+    const img = this.assets.image(this.texPath);
     if (!img) return;
     this.measuredVersion = this.assets.version;
     const cell = img.width / 16;
@@ -108,7 +110,7 @@ export class FontRenderer {
     let color = isShadow ? shadowOf(baseColor) : baseColor;
     let bold = false, italic = false, underline = false, strike = false, obf = false;
     const startX = x;
-    const ascii = this.assets.texture('font/ascii.png');
+    const ascii = this.assets.texture(this.texPath);
     for (let i = 0; i < text.length; i++) {
       let ch = text[i];
       if (ch === '§' && i + 1 < text.length) {

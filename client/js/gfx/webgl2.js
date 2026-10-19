@@ -32,7 +32,7 @@ void main() {
     fs: `
 in vec2 vUv; in vec3 vCol; in vec2 vLight; in float vDepth; out vec4 o;
 void main() {
-  vec4 t = texture(uTex0, vUv);
+  vec4 t = texture(uTex0, vUv, uP[0].z); // uP[0].z: mip bias (far LOD sections sample a smaller mip)
   if (t.a < uP[0].x) discard;
   vec3 c = t.rgb * vCol * lightmap(vLight);
   o = vec4(mix(c, uFogColor, fogFactor(vDepth)), t.a * uP[0].y);
@@ -60,9 +60,13 @@ out vec2 vUv; out vec3 vCol; out float vShade; out float vDepth;
 void main() {
   vUv = aUv * (uP[3].w > 0.0 ? uP[3].w : 1.0) + uP[3].yz; vCol = aCol;
   vec3 n = normalize(mat3(uModel) * aNrm);
-  vec3 l0 = normalize(vec3(0.2, 1.0, -0.7)), l1 = normalize(vec3(-0.2, 1.0, 0.7));
+  // lighting mode uP[2].w: 0 world item lighting, 1 none, 2 GUI item lighting (RenderHelper.enableGUIStandardItemLighting:
+  // the same two lights turned -30 degrees about Y and 165 about X, in the y-down GUI space)
+  bool gui = uP[2].w > 1.5;
+  vec3 l0 = gui ? vec3(-0.237910, -0.634435, 0.735453) : normalize(vec3(0.2, 1.0, -0.7));
+  vec3 l1 = gui ? vec3(0.028667, -0.927375, -0.373034) : normalize(vec3(-0.2, 1.0, 0.7));
   float d = 0.4 + 0.6 * (max(dot(n, l0), 0.0) + max(dot(n, l1), 0.0));
-  vShade = uP[2].w > 0.5 ? 1.0 : min(1.0, d);
+  vShade = (uP[2].w > 0.5 && !gui) ? 1.0 : min(1.0, d);
   vec4 mv = uView * uModel * vec4(aPos, 1.0); vDepth = length(mv.xyz); gl_Position = uProj * mv;
 }`,
     fs: `
@@ -89,6 +93,28 @@ void main() {
   if (t.a < uP[1].x) discard;
   vec3 c = uP[1].y > 0.5 ? mix(t.rgb, uFogColor, fogFactor(vDepth)) : t.rgb;
   o = vec4(c, t.a);
+}`,
+  },
+  // TileEntityEndPortalRenderer (1.8) layer
+  endportal: {
+    vs: `
+layout(location=0) in vec3 aPos; layout(location=1) in vec2 aUv; layout(location=2) in vec4 aCol;
+out vec3 vLocal; out float vDepth;
+void main() { vLocal = aPos; vec4 mv = uView * uModel * vec4(aPos, 1.0); vDepth = length(mv.xyz); gl_Position = uProj * mv; }`,
+    fs: `
+in vec3 vLocal; in float vDepth; out vec4 o;
+void main() {
+  // the camera's ray through this point of the surface, continued `depth` blocks down, in world x / z (negated)
+  float h = uP[2].y - uP[2].w;
+  float k = (h + uP[1].w) / h;
+  vec2 rel = vec2(uP[3].x + vLocal.x - uP[2].x, uP[3].y + vLocal.z - uP[2].z);
+  vec2 q = -(rel * k + uP[2].xz) - 0.5;
+  float c = cos(uP[1].y), sn = sin(uP[1].y);
+  vec2 uv = (vec2(q.x * c - q.y * sn, q.x * sn + q.y * c) + 0.5) * uP[1].x + vec2(0.0, uP[1].z);
+  vec4 t = texture(uTex0, fract(uv));
+  vec3 col = t.rgb * uP[0].rgb;
+  float f = fogFactor(vDepth);
+  o = uP[0].w < 0.5 ? vec4(mix(col, uFogColor, f), t.a) : vec4(col * (1.0 - f), 1.0);
 }`,
   },
 };

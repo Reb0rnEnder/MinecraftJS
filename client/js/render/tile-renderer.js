@@ -1,11 +1,15 @@
 // Tile entity (block entity) rendering: chests, signs, skulls, banners, enchanting book, beacon beam, end portal.
 import { composeBanner, bannerLayers, buildBanner, bannerSwing } from './banner.js';
-import { Part, entityMaterial, entityMesh } from './boxmodel.js';
+import { entityMaterial, entityMesh } from './boxmodel.js';
+import { blockModel } from './entity-models.js';
 import { buildTextMeshes, destroyTextMeshes } from './text-mesh.js';
-import { blocks } from '../world/blocks.js';
+import { blocks, blocksByName } from '../world/blocks.js';
 import { colorParams, FORMAT } from '../gfx/device.js';
 import { D2R, aabbInFrustum } from '../gfx/math.js';
 import { Node, material } from '../gfx/scene.js';
+import { resolveState } from '../world/blockstates.js';
+import { Pistons } from '../game/pistons.js';
+import { JavaRandom } from '../util/jrandom.js';
 const FLOWER_POT = {
   'minecraft:red_flower': ['rose', 'blue_orchid', 'allium', 'houstonia', 'red_tulip', 'orange_tulip', 'white_tulip', 'pink_tulip', 'oxeye_daisy'],
   'minecraft:yellow_flower': ['dandelion'],
@@ -16,6 +20,21 @@ const FLOWER_POT = {
 const FLOWER_POT_IDS = { 38: 'minecraft:red_flower', 37: 'minecraft:yellow_flower', 6: 'minecraft:sapling', 40: 'minecraft:red_mushroom', 39: 'minecraft:brown_mushroom', 32: 'minecraft:deadbush', 31: 'minecraft:tallgrass', 81: 'minecraft:cactus' };
 
 const key = (x, y, z) => x + ',' + y + ',' + z;
+
+// TileEntityEndPortalRenderer (1.8) layers: new Random(31100), three nextFloat()s each; depth 16 - i (sky 65),
+// brightness 1 / (depth + 1) (sky 0.1, grey), texture scale 1/16 (sky 1/8, first portal layer 1/2)
+const END_PORTAL_LAYERS = (() => {
+  const r = new JavaRandom(31100), f32 = Math.fround, out = [];
+  for (let i = 0; i < 16; i++) {
+    let depth = 16 - i, scale = 0.0625, f6 = f32(1 / (depth + 1));
+    if (i === 0) { f6 = f32(0.1); depth = 65; scale = 0.125; }
+    if (i === 1) scale = 0.5;
+    let c = [f32(f32(r.nextFloat() * 0.5 + 0.1) * f6), f32(f32(r.nextFloat() * 0.5 + 0.4) * f6), f32(f32(r.nextFloat() * 0.5 + 0.5) * f6)];
+    if (i === 0) c = [f6, f6, f6];
+    out.push({ color: c, depth, scale, angle: (i * i * 4321 + i * 9) * 2 * D2R });
+  }
+  return out;
+})();
 
 export class TileEntityRenderer {
   constructor(game) {
@@ -294,10 +313,8 @@ export class TileEntityRenderer {
         const large = xPos || zPos;
         const texName = isEnder ? 'entity/chest/ender.png' : id === 146 ? (large ? 'entity/chest/trapped_double.png' : 'entity/chest/trapped.png') : (large ? 'entity/chest/normal_double.png' : 'entity/chest/normal.png');
         mat = entityMaterial(texName, { alphaTest: 0.1 });
-        const W = large ? 30 : 14, tw = large ? 128 : 64;
-        const lid = new Part(tw, 64).tex(0, 0).box(0, -5, -14, W, 5, 14).pivot(1, 7, 15);
-        const knob = new Part(tw, 64).tex(0, 0).box(-1, -2, -15, 2, 4, 1).pivot(large ? 16 : 8, 7, 15);
-        const below = new Part(tw, 64).tex(0, 19).box(0, 0, 0, W, 10, 14).pivot(1, 6, 1);
+        // ModelChest / ModelLargeChest
+        const { lid, below, knob } = blockModel(large ? 'largeChest' : 'chest', ['lid', 'below', 'knob']);
         const model = new Node();
         for (const p of [lid, knob, below]) { model.add(p.build()); p.setMaterial(mat); }
         model.scale.set(1 / 16, 1 / 16, 1 / 16);
@@ -317,8 +334,7 @@ export class TileEntityRenderer {
       }
       case 'sign': {
         mat = entityMaterial('entity/sign.png', { alphaTest: 0.1 });
-        const board = new Part(64, 32).tex(0, 0).box(-12, -14, -1, 24, 12, 2);
-        const stick = new Part(64, 32).tex(0, 14).box(-1, -2, -1, 2, 14, 2);
+        const { board, stick } = blockModel('sign', ['board', 'stick']); // ModelSign
         const standing = (st >> 4) === 63;
         const f = 0.6666667;
         const outer = new Node();
@@ -355,13 +371,9 @@ export class TileEntityRenderer {
       case 'skull': {
         const type = t.data && t.data.SkullType !== undefined ? t.data.SkullType : 0;
         const rotN = t.data && t.data.Rot !== undefined ? t.data.Rot : 0;
-        const tex = ['entity/skeleton/skeleton.png', 'entity/skeleton/wither_skeleton.png', 'entity/zombie/zombie.png', 'entity/steve.png', 'entity/creeper/creeper.png'][type] || 'entity/skeleton/skeleton.png';
+        const tex = ['entity/skeleton/skeleton.png', 'entity/skeleton/wither_skeleton.png', 'entity/zombie/zombie.png', 'entity/steve.png', 'entity/creeper/creeper.png', 'entity/enderdragon/dragon.png'][type] || 'entity/skeleton/skeleton.png';
         mat = entityMaterial(tex, { alphaTest: 0.1 });
-        const th = type === 2 || type === 3 ? 64 : 32;
-        const head = new Part(64, th).tex(0, 0).box(-4, -8, -4, 8, 8, 8);
-        if (type === 3) head.tex(32, 0).box(-4, -8, -4, 8, 8, 8, 0.25);
-        const model = new Node(); model.scale.set(-1 / 16, -1 / 16, 1 / 16);
-        model.add(head.build()); head.setMaterial(mat);
+        const model = skullModel(type, mat);
         const outer = new Node();
         if (meta === 1) { outer.position.set(0.5, 0, 0.5); outer.rotation.y = -(rotN * 360 / 16) * D2R; }
         else {
@@ -383,18 +395,9 @@ export class TileEntityRenderer {
         break;
       }
       case 'book': {
-        mat = entityMaterial('entity/enchanting_table_book.png', { alphaTest: 0.1 });
-        const P = (u, v) => new Part(64, 32).tex(u, v);
-        const parts = {
-          coverRight: P(0, 0).box(-6, -5, 0, 6, 10, 0),
-          coverLeft: P(16, 0).box(0, -5, 0, 6, 10, 0),
-          pagesRight: P(0, 10).box(0, -4, -0.99, 5, 8, 1),
-          pagesLeft: P(12, 10).box(0, -4, -0.01, 5, 8, 1),
-          flipRight: P(24, 10).box(0, -4, 0, 5, 8, 0),
-          flipLeft: P(24, 10).box(0, -4, 0, 5, 8, 0),
-          spine: P(12, 0).box(-1, -5, 0, 2, 10, 0),
-        };
-        parts.coverLeft.pivot(0, 0, -1); parts.coverRight.pivot(0, 0, 1); parts.spine.rot(0, Math.PI / 2, 0);
+        mat = entityMaterial('entity/enchanting_table_book.png', { alphaTest: 0.1, cull: true }); // enableCull: the zero-thickness pages show one side
+        // ModelBook
+        const parts = blockModel('book', ['coverRight', 'coverLeft', 'pagesRight', 'pagesLeft', 'flipRight', 'flipLeft', 'spine']);
         const model = new Node(); model.scale.set(1 / 16, 1 / 16, 1 / 16);
         for (const p of Object.values(parts)) { model.add(p.build()); p.setMaterial(mat); }
         t.bookParts = parts;
@@ -421,12 +424,22 @@ export class TileEntityRenderer {
         break;
       }
       case 'endportal': {
-        const mesh = entityMesh([0, 0.75, 0, 0, 0.75, 1, 1, 0.75, 1, 1, 0.75, 0], [0, 0, 0, 1, 1, 1, 1, 0], [0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0], null, { quads: true });
+        // TileEntityEndPortalRenderer (1.8): the top face at 0.75, 16 layers (the end sky blended, then end_portal.png
+        // added), each a plane further below seen through the surface
+        const v = [];
+        for (const [x, z] of [[0, 0], [0, 1], [1, 1], [1, 0]]) v.push(x, 0.75, z, 0, 0, 1, 1, 1, 1);
+        const mesh = this.device.createMesh(FORMAT.color, new Float32Array(v), { quads: true });
         t.ownMeshes.push(mesh);
-        const pm = entityMaterial(() => this.game.assets.texture('entity/end_portal.png', { wrap: 'repeat' }), { alphaTest: 0, fullBright: true, noLighting: true });
-        pm.params.setTint(0.13, 0.19, 0.25, 1);
-        obj.addDrawable(mesh, pm);
-        t.portalMat = pm;
+        const A = this.game.assets;
+        t.portalLayers = END_PORTAL_LAYERS.map((L, i) => {
+          const params = new Float32Array(16);
+          params.set(L.color, 0); params[3] = i;
+          params[4] = L.scale; params[5] = L.angle; params[7] = L.depth;
+          params[12] = t.x; params[13] = t.z; params[11] = t.y + 0.75;
+          const tex = i === 0 ? () => A.texture('environment/end_sky.png') : () => A.texture('entity/end_portal.png');
+          obj.addDrawable(mesh, material('endportal', tex, params, { blend: i === 0 ? 'alpha' : 'add', depthWrite: true }));
+          return params;
+        });
         break;
       }
       default: break;
@@ -445,8 +458,84 @@ export class TileEntityRenderer {
     return t.texture;
   }
 
+  // TileEntityPistonRenderer: moving blocks drawn at their offset (block model, terrain face shading, world light)
+  _renderMoving(partial) {
+    const g = this.game;
+    const moving = g.pistons ? g.pistons.moving : new Map();
+    this.movingObjs ||= new Map();
+    for (const [k, o] of this.movingObjs) if (!moving.has(k) || moving.get(k) !== o.t) { this.group.remove(o.node); this.movingObjs.delete(k); }
+    for (const [k, t] of moving) {
+      let o = this.movingObjs.get(k);
+      if (!o) {
+        const mat = entityMaterial(() => g.assets.atlasTexture, { alphaTest: 0.1, noLighting: true });
+        o = { t, node: new Node(), mat, key: null };
+        this.group.add(o.node);
+        this.movingObjs.set(k, o);
+      }
+      const f = Pistons.progress(t, partial);
+      if (f >= 1 || (t.state >> 4) === 0) { o.node.visible = false; continue; }
+      o.node.visible = true;
+      // the parts: [state, props override, moves]
+      const parts = [];
+      const n = blocks[t.state >> 4] ? blocks[t.state >> 4].name : '';
+      if (n === 'piston_head' && f <= 0.25) parts.push([t.state, { short: true }, true]);
+      else if (t.head && !t.extending) {
+        // retracting base: the head slides in (short from half way), the base stays put, drawn extended
+        const sticky = n === 'sticky_piston';
+        parts.push([(blocksByName.piston_head.id << 4) | t.facing | (sticky ? 8 : 0), { short: f >= 0.5 }, true]);
+        parts.push([t.state | 8, null, false]);
+      } else parts.push([t.state, null, true]);
+      const mk = parts.map((p) => p[0] + ':' + JSON.stringify(p[1])).join('|');
+      if (o.key !== mk) {
+        for (const c of [...o.node.children]) o.node.remove(c);
+        for (const [st, props, moves] of parts) {
+          const mesh = this._stateMesh(st, props);
+          if (!mesh) continue;
+          const c = new Node().addDrawable(mesh, o.mat);
+          c.moves = moves;
+          o.node.add(c);
+        }
+        o.key = mk;
+      }
+      const d = Pistons.offset(t, partial);
+      for (const c of o.node.children) c.position.set(t.x + 0.5 + (c.moves ? d[0] : 0), t.y + 0.5 + (c.moves ? d[1] : 0), t.z + 0.5 + (c.moves ? d[2] : 0));
+      const w = g.world;
+      o.mat.params.setLight(w.getSkyLight(t.x, t.y, t.z), w.getBlockLight(t.x, t.y, t.z));
+    }
+  }
+
+  // Block model mesh with the terrain's per-face shading baked in (cached per state and property override)
+  _stateMesh(st, props) {
+    this.stateMeshes ||= new Map();
+    const k = st + ':' + JSON.stringify(props);
+    if (this.stateMeshes.has(k)) return this.stateMeshes.get(k);
+    const g = this.game;
+    let mesh = null;
+    const rs = resolveState(st, () => 0, 0, 0, 0);
+    const bm = rs && g.assets.modelStore.bakeVariant(rs.file, props ? { ...rs.props, ...props } : rs.props, props ? null : rs.variant, 0);
+    if (bm && bm.quads.length) {
+      const SHADE = [0.5, 1, 0.8, 0.8, 0.6, 0.6], N = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]];
+      const tint = g.itemRenderer._defaultTint(rs.file);
+      const pos = [], uv = [], nor = [], col = [];
+      for (const q of bm.quads) {
+        const sh = q.shade === false ? 1 : SHADE[q.dir];
+        const c = q.tint >= 0 ? [((tint >> 16) & 255) / 255, ((tint >> 8) & 255) / 255, (tint & 255) / 255] : [1, 1, 1];
+        for (let i = 0; i < 4; i++) {
+          pos.push(q.pos[i * 3] - 0.5, q.pos[i * 3 + 1] - 0.5, q.pos[i * 3 + 2] - 0.5);
+          uv.push(q.uv[i * 2], q.uv[i * 2 + 1]);
+          nor.push(...N[q.dir]);
+          col.push(c[0] * sh, c[1] * sh, c[2] * sh);
+        }
+      }
+      mesh = entityMesh(pos, uv, nor, col, { quads: true });
+    }
+    this.stateMeshes.set(k, mesh);
+    return mesh;
+  }
+
   render(partial) {
     const g = this.game;
+    this._renderMoving(partial);
     const camPos = g.renderer.camPos;
     const maxD = (g.settings.renderDistance * 16) ** 2;
     for (const t of this.tiles.values()) {
@@ -493,13 +582,30 @@ export class TileEntityRenderer {
         t.bannerSwing.rotation.x = bannerSwing(time);
       } else if (t.type === 'beacon' && t.beamNode) {
         this._buildBeam(t, partial);
-      } else if (t.type === 'endportal' && t.portalMat) {
-        const time = this.ticks + partial;
-        t.portalMat.params.setUvTransform(time / 400, time / 300, 0);
+      } else if (t.type === 'endportal' && t.portalLayers) {
+        // the view entity's (feet) position and the texture drift (Minecraft.getSystemTime() % 700000 / 700000)
+        const pl = g.player, time = (performance.now() % 700000) / 700000;
+        const px = pl.prevX + (pl.x - pl.prevX) * partial, py = pl.prevY + (pl.y - pl.prevY) * partial, pz = pl.prevZ + (pl.z - pl.prevZ) * partial;
+        for (const P of t.portalLayers) { P[6] = time; P[8] = px; P[9] = py; P[10] = pz; }
       }
     }
   }
 }
+
+// TileEntitySkullRenderer's models by skull type: ModelSkeletonHead (skeleton, wither, creeper) or ModelHumanoidHead
+// with its overlay (zombie, player). Returns a node in skull space (scale(-1, -1, 1), 1/16 units)
+export function skullModel(type, mat) {
+  const model = new Node();
+  model.scale.set(-1 / 16, -1 / 16, 1 / 16);
+  let parts;
+  if (type === 2 || type === 3) { const h = blockModel('humanoidHead', ['head', 'overlay']); parts = [h.head, h.overlay]; }
+  else parts = [blockModel('skull', ['head']).head];
+  for (const p of parts) { model.add(p.build()); p.setMaterial(mat); }
+  return model;
+}
+
+// EnumDyeColor names by metadata (texture file names)
+export const DYE_NAMES = ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'silver', 'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black'];
 
 // EntitySheep.DYE_TO_RGB (stained glass beam colours), by dye metadata
 const DYE_RGB = [[1, 1, 1], [0.85, 0.5, 0.2], [0.7, 0.3, 0.85], [0.4, 0.6, 0.85], [0.9, 0.9, 0.2], [0.5, 0.8, 0.1], [0.95, 0.5, 0.65], [0.3, 0.3, 0.3],

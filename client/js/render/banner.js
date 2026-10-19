@@ -1,6 +1,6 @@
 // Banners: pattern texture compositing (LayeredColorMaskTexture) and the banner model
 // (ModelBanner / TileEntityBannerRenderer), shared by placed banners and banner items.
-import { Part } from './boxmodel.js';
+import { blockModel } from './entity-models.js';
 import { Node } from '../gfx/scene.js';
 import { D2R } from '../gfx/math.js';
 
@@ -47,9 +47,7 @@ export function composeBanner(assets, layers) {
 // TileEntityBannerRenderer in block space (origin at the block corner). standing: rotation in 1/16 turns;
 // wall banners: facing meta 2..5. Returns { node, swing } (swing = the flag, animated by the caller).
 export function buildBanner(mat, standing, meta) {
-  const slate = new Part(64, 64).tex(0, 0).box(-10, 0, -2, 20, 40, 1);
-  const stand = new Part(64, 64).tex(44, 0).box(-1, -30, -1, 2, 42, 2);
-  const top = new Part(64, 64).tex(0, 42).box(-10, -32, -1, 20, 2, 2);
+  const { slate, stand, top } = blockModel('banner', ['slate', 'stand', 'top']); // ModelBanner
   const f = 0.6666667;
   const outer = new Node();
   let inner = null;

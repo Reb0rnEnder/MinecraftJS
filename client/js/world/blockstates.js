@@ -211,7 +211,8 @@ export function resolveState(state, get, x, y, z) {
     case 'stone_pressure_plate': case 'wooden_pressure_plate': P.powered = !!(m & 1); return R(n);
     case 'light_weighted_pressure_plate': case 'heavy_weighted_pressure_plate': P.power = m; return R(n);
     case 'stone_button': case 'wooden_button':
-      P.facing = FACING6[m & 7] || 'up'; P.powered = !!(m & 8); return R(n);
+      // BlockButton.getStateFromMeta: 0 down, 1 east, 2 west, 3 south, 4 north, 5+ up
+      P.facing = ['down', 'east', 'west', 'south', 'north', 'up', 'up', 'up'][m & 7]; P.powered = !!(m & 8); return R(n);
     case 'snow_layer': P.layers = (m & 7) + 1; return R('snow_layer');
     case 'cactus': case 'reeds': return R(n);
     case 'pumpkin': case 'lit_pumpkin': P.facing = HORIZ[m & 3]; return R(n);

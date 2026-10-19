@@ -6,12 +6,23 @@
 //   node tools/build.js html --no-assets   same, but the page loads assets/ and data/ next to it instead
 //
 // Options: --audio=opus|vorbis|copy (default opus)  --sfx-kbps=N (32)  --music-kbps=N (48)  --no-music (leave out music and records)
-//          --out=path   --config=path (config.json embedded as the defaults of the html build)
+//          --out=path
+//
+// Site configuration (config.json: default proxies and servers for new players), for both tasks:
+//   --config=path                 read a config.json
+//   --proxy=type,url[,name]       add a proxy; type is minecraftjs, relay (Eaglercraft 26.2 Java relay) or wisp,
+//                                 url "origin" means the server hosting the page (repeatable)
+//   --server=address[,name]       add a server (repeatable)
+//   --no-proxies / --no-servers   drop the lists read with --config before adding --proxy / --server entries
+// html embeds the result as the page's defaults; assets writes it to client/config.json. Only written when one of
+// these options is given.
+//   node tools/build.js config [options] [--out=path]   just write the config.json (stdout without --out)
 //
 // Asset layout (folder and embedded zip alike):
 //   pack.mcmeta, pack.png              default pack metadata (language list) and icon
 //   minecraft/...                      textures, models, blockstates, lang, texts, font, sounds.json, sounds/
 //   bundles/models.json, textures.bin  folder only: block models and block/item textures in one request each
+//   bundles/entity-models.json         entity and block entity models run from the jar's model classes
 //   data/*.json                        zip only: the client's game data tables (client/data in the source tree)
 const fs = require('fs');
 const os = require('os');
@@ -21,18 +32,61 @@ const crypto = require('crypto');
 const { execFile } = require('child_process');
 const { ZipFile } = require('../lib/zip');
 const mcassets = require('../lib/mcassets');
+const { extractModels } = require('../lib/modelextract');
 
 const ROOT = path.join(__dirname, '..');
 const CLIENT = path.join(ROOT, 'client');
+
+const REPEATABLE = new Set(['proxy', 'server']);
 
 function parseArgs(argv) {
   const out = { _: [] };
   for (const a of argv) {
     const m = a.match(/^--([^=]+)(?:=(.*))?$/);
-    if (m) out[m[1]] = m[2] === undefined ? true : m[2];
-    else out._.push(a);
+    if (!m) out._.push(a);
+    else if (REPEATABLE.has(m[1])) (out[m[1]] ||= []).push(m[2] === undefined ? '' : m[2]);
+    else out[m[1]] = m[2] === undefined ? true : m[2];
   }
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// config.json from --config and / or --proxy / --server (null when none of them is given)
+// ---------------------------------------------------------------------------
+
+const PROXY_TYPES = ['minecraftjs', 'relay', 'wisp'];
+
+function buildConfig(opts) {
+  if (!opts.config && !opts.proxy && !opts.server) return null;
+  const config = opts.config ? JSON.parse(fs.readFileSync(path.resolve(opts.config), 'utf8')) : {};
+  if (opts['no-proxies']) delete config.proxies;
+  if (opts['no-servers']) delete config.servers;
+  for (const spec of opts.proxy || []) {
+    const [type, url, ...name] = spec.split(',').map((x) => x.trim());
+    if (!PROXY_TYPES.includes(type) || !url) throw new Error(`--proxy=${spec}: expected type,url[,name] with type ${PROXY_TYPES.join(' / ')}`);
+    (config.proxies ||= []).push({ name: name.join(',') || (url === 'origin' ? 'This website' : url), url, type });
+  }
+  for (const spec of opts.server || []) {
+    const [address, ...name] = spec.split(',').map((x) => x.trim());
+    if (!address) throw new Error(`--server=${spec}: expected address[,name]`);
+    (config.servers ||= []).push({ name: name.join(',') || address, address });
+  }
+  for (const p of config.proxies || []) {
+    if (!p || !p.url) throw new Error('config: every proxy needs a url');
+    if (p.type !== undefined && !PROXY_TYPES.includes(p.type)) throw new Error(`config: unknown proxy type "${p.type}" (${PROXY_TYPES.join(' / ')})`);
+  }
+  return config;
+}
+
+function writeConfig(opts, defaultOut) {
+  const config = buildConfig(opts);
+  if (!config) return;
+  const text = JSON.stringify(config, null, 2) + '\n';
+  const out = opts.out ? path.resolve(opts.out) : defaultOut;
+  if (!out) { process.stdout.write(text); return; }
+  fs.mkdirSync(path.dirname(out), { recursive: true });
+  fs.writeFileSync(out, text);
+  console.log(`Wrote ${path.relative(ROOT, out) || out} (${(config.proxies || []).length} proxies, ${(config.servers || []).length} servers)`);
 }
 
 // ---------------------------------------------------------------------------
@@ -120,6 +174,11 @@ async function collectAssets(opts) {
   }
   const icon = jar.read('pack.png');
   if (icon) files.set('pack.png', icon);
+  // Entity / block entity models: Java code in 1.12, run from the jar (lib/modelextract.js)
+  const em = extractModels(jar);
+  for (const e of em.errors) console.warn('  entity model ' + e);
+  files.set('bundles/entity-models.json', Buffer.from(JSON.stringify(em.models)));
+  console.log(`Entity models: ${Object.keys(em.models).length} from the jar`);
 
   const index = await mcassets.loadAssetIndex();
   const meta = await index.read('pack.mcmeta');
@@ -240,9 +299,7 @@ async function buildHtml(opts) {
   console.log('Bundling code...');
   const js = await bundleJs();
   const css = fs.readFileSync(path.join(CLIENT, 'style.css'), 'utf8');
-  let config = null;
-  const configPath = opts.config ? path.resolve(opts.config) : null;
-  if (configPath) config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  const config = buildConfig(opts);
 
   let assetsTag = '';
   if (!opts['no-assets']) {
@@ -283,6 +340,7 @@ async function buildAssets(opts) {
   let total = 0;
   for (const b of files.values()) total += b.length;
   console.log(`Wrote ${path.relative(ROOT, out) || out}/ (${files.size} files, ${(total / 1048576).toFixed(1)} MB)`);
+  writeConfig({ ...opts, out: null }, path.join(CLIENT, 'config.json'));
 }
 
 (async () => {
@@ -290,5 +348,8 @@ async function buildAssets(opts) {
   const task = opts._[0] || 'html';
   if (task === 'assets') await buildAssets(opts);
   else if (task === 'html') await buildHtml(opts);
-  else throw new Error('Unknown task ' + task + ' (expected "assets" or "html")');
+  else if (task === 'config') {
+    if (!buildConfig(opts)) throw new Error('config: give --config=file and / or --proxy / --server options');
+    writeConfig(opts, null);
+  } else throw new Error('Unknown task ' + task + ' (expected "assets", "html" or "config")');
 })().catch((e) => { console.error(e.message); process.exit(1); });

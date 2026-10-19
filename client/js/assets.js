@@ -1,5 +1,6 @@
 // Asset manager: base game assets (an assets/ folder next to the page, or the zip embedded in a single-file build)
 // layered under user resource packs.
+import { setJarModels } from './render/entity-models.js';
 import { platform } from './platform/platform.js';
 import { defaultAssetSource } from './asset-source.js';
 import { decodePng } from './util/png.js';
@@ -168,9 +169,13 @@ export class Assets {
     if (!meta) throw new Error('Game assets not found: put the assets/ folder (built with `npm run assets`) next to index.html');
     try { this.defaultPackMeta = JSON.parse(decodeUtf8(meta)); } catch (e) { this.defaultPackMeta = {}; }
     step('Loading game data...', 5);
-    const names = ['blocks', 'items', 'entities', 'blockCollisionShapes', 'biomes', 'foods', 'effects', 'enchantments', 'windows', 'particles', 'materials', 'recipes'];
+    const names = ['blocks', 'items', 'entities', 'blockCollisionShapes', 'biomes', 'foods', 'effects', 'enchantments', 'windows', 'particles', 'materials', 'recipes', 'creative'];
     const datas = await Promise.all(names.map((n) => this.source.data(n)));
     names.forEach((n, i) => { this.data[n] = datas[i]; });
+    // Entity and block entity models, extracted from the jar when the assets were built
+    const em = await this.source.entityModels();
+    if (!em) throw new Error('The assets have no entity models (bundles/entity-models.json): rebuild them with `npm run assets` / `npm run build`');
+    setJarModels(em);
     this.itemsById = new Map();
     this.itemsByName = new Map();
     for (const b of this.data.blocks) { this.itemsById.set(b.id, b); this.itemsByName.set(b.name, b); }
@@ -232,7 +237,7 @@ export class Assets {
 
     step('Loading interface...', 75);
     await Promise.all([
-      'gui/widgets.png', 'gui/icons.png', 'font/ascii.png', 'gui/options_background.png', 'gui/title/minecraft.png',
+      'gui/widgets.png', 'gui/icons.png', 'font/ascii.png', 'font/ascii_sga.png', 'gui/options_background.png', 'gui/title/minecraft.png',
       'gui/container/inventory.png', 'environment/sun.png', 'environment/moon_phases.png', 'environment/clouds.png',
       'misc/vignette.png', 'particle/particles.png', 'misc/shadow.png',
     ].map((p) => this.imageAsync(p).catch(() => null)));
