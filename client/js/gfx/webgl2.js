@@ -104,7 +104,7 @@ void main() { vLocal = aPos; vec4 mv = uView * uModel * vec4(aPos, 1.0); vDepth 
     fs: `
 in vec3 vLocal; in float vDepth; out vec4 o;
 void main() {
-  // the camera's ray through this point of the surface, continued `depth` blocks down, in world x / z (negated)
+  // the camera's ray through this point of the surface, continued 'depth' blocks down, in world x / z (negated)
   float h = uP[2].y - uP[2].w;
   float k = (h + uP[1].w) / h;
   vec2 rel = vec2(uP[3].x + vLocal.x - uP[2].x, uP[3].y + vLocal.z - uP[2].z);

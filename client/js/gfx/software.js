@@ -483,7 +483,7 @@ function rasterLoop(fb, lvl, ctx, minX, maxX, minY, maxY, e0r, e1r, e2r, e0dx, e
       else if (depthEqual && depthTest) { const dz = depth[row]; if (z - dz > 1e-6 || dz - z > 1e-6) continue; }
       let tu, tv2;
       if (portal) {
-        // TileEntityEndPortalRenderer (1.8): the camera's ray through this point continued `depth` blocks down, in
+        // TileEntityEndPortalRenderer (1.8): the camera's ray through this point continued 'depth' blocks down, in
         // world x / z (negated); see the WebGL 2 endportal shader
         const iw = affine ? 1 : 1 / w;
         const lx = u * iw, lz = v * iw;

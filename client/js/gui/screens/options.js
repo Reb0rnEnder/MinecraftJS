@@ -165,6 +165,7 @@ class VideoScreen extends OptionsBase {
       // MinecraftJS: Super Potato Mode trades quality for speed on any graphics API (lower internal resolution, a
       // single-pass menu panorama); always on with the CPU rasteriser
       { label: () => trOption('minecraftjs.options.superPotato', onOff(!!s.superPotato || g.device.name === 'Software')),
+        enabled: g.device.name !== 'Software', // greyed out while the CPU rasteriser forces it on
         click: () => {
           if (g.device.name === 'Software') return; // forced on
           s.superPotato = !s.superPotato;

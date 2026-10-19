@@ -162,7 +162,6 @@ export class Items {
     lines.push(color + name);
     const t = (k, ...a) => this.assets.translate(k, a);
     if (item.id === 373) this.potionTooltip(item, lines);
-    }
     if (tag && tag.author && item.id === 387) lines.push('§7' + t('book.byAuthor', tag.author));
     const rec = this.names.recordDescription(item.id);
     if (rec) lines.push('§7' + rec);

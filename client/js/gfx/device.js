@@ -33,7 +33,7 @@
 //   lit     : FORMAT.lit      tex0 = any, uses globals.lightmap          params[0] = [alphaTest, -, -, -]   (light.x < 0 => full bright)
 //   entity  : FORMAT.entity   tex0 = any, uses globals.lightmap          params = [tint rgba], [overlay rgba], [sky, block, fullBright, lighting (0 world, 1 none, 2 GUI)], [alphaTest, uOffset, vOffset, uvScale (0 = 1)]
 //   color   : FORMAT.color    tex0 = any (white texture for flat colour) params = [colour rgba], [alphaTest, useFog, -, -]
-//   endportal: FORMAT.color   tex0 = layer texture (1.8 TileEntityEndPortalRenderer: a plane `depth` below the surface,
+//   endportal: FORMAT.color   tex0 = layer texture (1.8 TileEntityEndPortalRenderer: a plane 'depth' below the surface,
 //              seen through it from the camera): params = [colour rgb, layer (0: blended sky, 1+: additive)],
 //              [scale, angle (rad), time offset, depth], [camera x, y (feet), z, surface y], [block x, block z, -, -]
 //
