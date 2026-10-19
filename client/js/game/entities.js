@@ -214,6 +214,9 @@ export class EntityManager {
     e.newX = x; e.newY = y; e.newZ = z;
     e.newYaw = yaw; e.newPitch = pitch;
     e.inc = inc;
+    // EntityBoat.setPositionAndRotationDirect: lerpSteps = 10; EntityMinecart: turnProgress = increments + 2
+    if (e.kind === 'boat') e.inc = 10;
+    else if (e.kind === 'minecart') e.inc = inc + 2;
     if (e.kind === 'item' || e.kind === 'xp' || e.kind === 'arrow' || e.kind === 'projectile' || e.kind === 'falling' || e.kind === 'tnt' || e.kind === 'fishhook') {
       // Non-living entities snap like vanilla's setPositionAndRotation for these
       e.inc = 1;
@@ -309,8 +312,20 @@ export class EntityManager {
       if (m[7] !== undefined) e.boostedId = m[7]; // EntityFireworkRocket.BOOSTED_ENTITY_ID (elytra boost)
     }
     if (e.kind === 'arrow' && m[6] !== undefined) e.critical = !!(m[6] & 1);
-    if (e.kind === 'boat' && m[9] !== undefined) e.boatType = m[9];
+    if (e.kind === 'crystal' && m[7] !== undefined) e.showBottom = !!m[7]; // EntityEnderCrystal.SHOW_BOTTOM
+    if (e.kind === 'boat') {
+      if (m[6] !== undefined) e.timeSinceHit = m[6];
+      if (m[7] !== undefined) e.forwardDirection = m[7];
+      if (m[8] !== undefined) e.damageTaken = m[8];
+      if (m[9] !== undefined) e.boatType = m[9];
+      if (m[10] !== undefined) e.paddleLeft = !!m[10];
+      if (m[11] !== undefined) e.paddleRight = !!m[11];
+    }
     if (e.kind === 'minecart') {
+      // EntityMinecart: rolling amplitude / direction and damage drive the hurt wobble
+      if (m[6] !== undefined) e.rollingAmplitude = m[6];
+      if (m[7] !== undefined) e.rollingDirection = m[7];
+      if (m[8] !== undefined) e.cartDamage = m[8];
       if (m[9] !== undefined) e.displayBlock = m[9];
       if (m[10] !== undefined) e.displayOffset = m[10];
       if (m[11] !== undefined) e.customDisplay = !!m[11];
@@ -319,6 +334,11 @@ export class EntityManager {
       if (m[11] !== undefined) e.leftHanded = !!(m[11] & 2);
       switch (e.entityType) {
         case 65: if (m[12] !== undefined) e.hanging = !!(m[12] & 1); break; // bat
+        case 69: // EntityShulker: attached face, peek tick, colour
+          if (m[12] !== undefined) e.attachFace = m[12];
+          if (m[14] !== undefined) e.peekTick = m[14];
+          if (m[15] !== undefined) e.shulkerColor = m[15];
+          break;
         case 50: if (m[12] !== undefined) e.creeperState = m[12]; if (m[13] !== undefined) e.powered = !!m[13]; break;
         case 51: case 5: case 6: if (m[12] !== undefined) e.armsRaised = !!m[12]; break; // AbstractSkeleton: swinging arms
         case 54: case 23: case 27:
@@ -530,11 +550,52 @@ export class EntityManager {
     if (s.metadata && s.metadata[13] !== undefined) s.skinFlags = s.metadata[13]; else s.skinFlags = g.settings.skinParts;
     s.invisible = g.effects.has(14);
     s.onFire = g.selfMetadata ? !!(g.selfMetadata[0] & 1) : false;
+    // LayerCape's sway from the view bobbing of the local player
+    s.prevCameraYaw = pl.prevCameraYaw; s.cameraYaw = pl.cameraYaw;
+    s.prevDistanceWalked = pl.prevDistanceWalked; s.distanceWalked = pl.distanceWalked;
     this._livingUpdate(s);
+    this._updateCape(s);
+  }
+
+  // EntityPlayer.updateCape: a point trailing the player (snaps when more than 10 blocks behind), for LayerCape
+  _updateCape(e) {
+    if (e.chasingX === undefined) { e.chasingX = e.prevChasingX = e.x; e.chasingY = e.prevChasingY = e.y; e.chasingZ = e.prevChasingZ = e.z; }
+    e.prevChasingX = e.chasingX; e.prevChasingY = e.chasingY; e.prevChasingZ = e.chasingZ;
+    for (const [c, p] of [['chasingX', 'x'], ['chasingY', 'y'], ['chasingZ', 'z']]) {
+      const d = e[p] - e[c];
+      if (d > 10 || d < -10) { e[c] = e[p]; e['prev' + c[0].toUpperCase() + c.slice(1)] = e[c]; }
+    }
+    e.chasingX += (e.x - e.chasingX) * 0.25; e.chasingY += (e.y - e.chasingY) * 0.25; e.chasingZ += (e.z - e.chasingZ) * 0.25;
   }
 
   // EntityDragon.onLivingUpdate (client part): wing animation clock and the 64-tick (yaw, y) ring buffer
   // that drives the neck and tail
+  // EntityBoat.onUpdate: hurt wobble countdown and paddle positions (the steered boat uses our own paddle input)
+  _boatTick(e) {
+    if (e.timeSinceHit > 0) e.timeSinceHit--;
+    if (e.damageTaken > 0) e.damageTaken--;
+    if (!e.paddlePositions) e.paddlePositions = [0, 0];
+    const st = e.controlled && this.game.vehicle && this.game.vehicle.e === e ? this.game.vehicle.paddles : [e.paddleLeft, e.paddleRight];
+    e.paddleState = [!!st[0], !!st[1]];
+    for (let i = 0; i < 2; i++) {
+      if (e.paddleState[i]) {
+        const pp = e.paddlePositions[i];
+        if (pp % (Math.PI * 2) <= Math.PI / 4 && (pp + 0.39269909262657166) % (Math.PI * 2) >= Math.PI / 4) {
+          // EntityBoat.getPaddleSound: water while floating / submerged, land on the ground, none in the air
+          const ctl = this.game.vehicle && this.game.vehicle.e === e ? this.game.vehicle : null;
+          let snd;
+          if (ctl) snd = ctl.status === 'land' ? 'entity.boat.paddle_land' : ctl.status === 'air' ? null : 'entity.boat.paddle_water';
+          else {
+            const b = blocks[this.game.world.getState(Math.floor(e.x), Math.floor(e.y + 0.1), Math.floor(e.z)) >> 4];
+            snd = b && b.isWater ? 'entity.boat.paddle_water' : 'entity.boat.paddle_land';
+          }
+          if (snd) this.game.sound.play(snd, e.x, e.y, e.z, 1, 0.8 + 0.4 * Math.random());
+        }
+        e.paddlePositions[i] = Math.fround(pp + 0.39269909262657166);
+      } else e.paddlePositions[i] = 0;
+    }
+  }
+
   _dragonUpdate(e) {
     if (!e.ring) {
       e.ring = Array.from({ length: 64 }, () => [e.yaw, e.y]);
@@ -630,8 +691,12 @@ export class EntityManager {
     this.updateSelf();
     this._minecartSounds();
     for (const e of [...this.map.values()]) {
-      e.prevX = e.x; e.prevY = e.y; e.prevZ = e.z;
-      e.prevYaw = e.yaw; e.prevPitch = e.pitch;
+      // the vehicle we steer was already moved this tick (Game._tickRiding set its previous position)
+      if (!e.controlled) {
+        e.prevX = e.x; e.prevY = e.y; e.prevZ = e.z;
+        e.prevYaw = e.yaw;
+      }
+      e.prevPitch = e.pitch;
       e.prevHeadYaw = e.headYaw;
       e.prevBodyYaw = e.bodyYaw;
       e.prevLimbSwingAmount = e.limbSwingAmount;
@@ -658,14 +723,9 @@ export class EntityManager {
         }
         continue;
       }
-      // Riding: follow vehicle
-      if (e.riding >= 0) {
-        const v = this.map.get(e.riding);
-        if (v) {
-          // vehicle.getMountedYOffset() + rider.getYOffset() (players: -0.35)
-          e.x = v.x; e.z = v.z; e.y = v.y + this.mountedOffset(v) + (e.kind === 'player' ? -0.35 : 0);
-          e.inc = 0;
-        }
+      // Riding: placed on the vehicle after every vehicle has moved (second pass below)
+      if (e.riding >= 0 && this.map.get(e.riding)) {
+        e.inc = 0;
       } else if (e.inc > 0) {
         e.x += (e.newX - e.x) / e.inc;
         e.y += (e.newY - e.y) / e.inc;
@@ -687,6 +747,19 @@ export class EntityManager {
       }
       if (e.kind === 'mob' && e.type === 63) this._dragonUpdate(e);
       if (e.kind === 'tnt') e.fuse = Math.max(0, (e.fuse || 80) - 1);
+      if (e.kind === 'boat') this._boatTick(e);
+      if (e.kind === 'minecart') { // EntityMinecart.onUpdate: both count down on the client too
+        if (e.rollingAmplitude > 0) e.rollingAmplitude--;
+        if (e.cartDamage > 0) e.cartDamage = Math.max(0, e.cartDamage - 1);
+      }
+      if (e.kind === 'mob' && e.type === 69) {
+        // EntityShulker.onUpdate (client): peek amount follows the peek tick by 0.05, body fixed at 180
+        const f1 = (e.peekTick || 0) * 0.01;
+        e.prevPeek = e.peek || 0;
+        if (e.prevPeek > f1) e.peek = Math.max(f1, Math.min(1, e.prevPeek - 0.05));
+        else if (e.prevPeek < f1) e.peek = Math.max(0, Math.min(f1, e.prevPeek + 0.05));
+        e.bodyYaw = e.prevBodyYaw = 180;
+      }
       if (e.hurtTime > 0) e.hurtTime--;
       if (e.dead) { e.deathTime++; }
       if (e.eatingGrass > 0) e.eatingGrass--;
@@ -697,11 +770,23 @@ export class EntityManager {
       } else e.swingTicks = 0;
       e.swingProgress = e.swingTicks / 6;
       if (e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand') this._livingUpdate(e);
+      if (e.kind === 'player') this._updateCape(e);
       if (e.onFire && Math.random() < 0.3) g.particles.entityFire && g.particles.entityFire(e);
-      // Potion swirl particles
-      if (e.metadata[7] && !e.metadata[8] !== undefined && e.metadata[7] > 0 && Math.random() < 0.25 && !e.invisible) {
-        g.particles.potionSwirl && g.particles.potionSwirl(e, e.metadata[7], !!e.metadata[8]);
+      // EntityLivingBase.updatePotionEffects (1.9+): colour in metadata 8, "ambient" (beacon) in 9
+      const living = e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand';
+      const color = living ? e.metadata[8] | 0 : 0;
+      if (color > 0) {
+        const ambient = !!e.metadata[9];
+        let spawn = e.invisible ? Math.random() < 1 / 15 : Math.random() < 0.5;
+        if (ambient) spawn = spawn && Math.random() < 0.2;
+        if (spawn) g.particles.potionSwirl && g.particles.potionSwirl(e, color, ambient);
       }
+    }
+    // Entity.updatePassenger: riders sit on their vehicle's new position (getMountedYOffset + the rider's getYOffset)
+    for (const e of this.map.values()) {
+      if (e.riding < 0) continue;
+      const v = this.map.get(e.riding);
+      if (v) { e.x = v.x; e.z = v.z; e.y = v.y + this.mountedOffset(v) + (e.kind === 'player' ? -0.35 : 0); }
     }
   }
 
@@ -731,6 +816,8 @@ export class EntityManager {
     const dy = e.kind === 'mob' && (e.type === 65 || e.type === 56 || e.type === 61) ? e.y - e.prevY : 0;
     let f4 = Math.sqrt(d0 * d0 + d1 * d1 + dy * dy) * 4;
     if (f4 > 1) f4 = 1;
+    // riding: Entity.updateRidden moves the rider after its own update, so it sees no movement and the limbs settle
+    if (e.riding >= 0) f4 = 0;
     e.limbSwingAmount += (f4 - e.limbSwingAmount) * 0.4;
     e.limbSwing += e.limbSwingAmount;
     void simplify;

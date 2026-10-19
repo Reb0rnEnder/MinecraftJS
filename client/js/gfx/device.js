@@ -31,7 +31,7 @@
 // Pipelines (fixed shading programs) and their vertex formats / params layout (4 x vec4):
 //   terrain : FORMAT.terrain  tex0 = atlas, uses globals.lightmap        params[0] = [alphaTest, opacity, -, -]
 //   lit     : FORMAT.lit      tex0 = any, uses globals.lightmap          params[0] = [alphaTest, -, -, -]   (light.x < 0 => full bright)
-//   entity  : FORMAT.entity   tex0 = any, uses globals.lightmap          params = [tint rgba], [overlay rgba], [sky, block, fullBright, noLighting], [alphaTest, uOffset, vOffset, uvScale (0 = 1)]
+//   entity  : FORMAT.entity   tex0 = any, uses globals.lightmap          params = [tint rgba], [overlay rgba], [sky, block, fullBright, lighting (0 world, 1 none, 2 GUI)], [alphaTest, uOffset, vOffset, uvScale (0 = 1)]
 //   color   : FORMAT.color    tex0 = any (white texture for flat colour) params = [colour rgba], [alphaTest, useFog, -, -]
 //
 // state: { blend: 'none'|'alpha'|'add'|'invert'|'darken'|'multiply', depthTest: bool, depthWrite: bool, cull: bool, polygonOffset: bool, depthFunc: 'lequal'|'equal', colorWrite: bool }
@@ -69,8 +69,8 @@ export function stateKey(s) {
 
 // Params helpers -----------------------------------------------------------
 
-export function terrainParams(alphaTest = 0, opacity = 1, out = new Float32Array(16)) {
-  out[0] = alphaTest; out[1] = opacity;
+export function terrainParams(alphaTest = 0, opacity = 1, out = new Float32Array(16), mipBias = 0) {
+  out[0] = alphaTest; out[1] = opacity; out[2] = mipBias;
   return out;
 }
 
@@ -97,6 +97,7 @@ export class EntityParams {
   setLight(sky, block) { this.p[8] = sky; this.p[9] = block; return this; }
   setFullBright(v) { this.p[10] = v ? 1 : 0; return this; }
   setNoLighting(v) { this.p[11] = v ? 1 : 0; return this; }
+  setGuiLighting(v) { this.p[11] = v ? 2 : 0; return this; } // RenderHelper.enableGUIStandardItemLighting
   setAlphaTest(v) { this.p[12] = v; return this; }
   setUvTransform(du, dv, scale = 0) { this.p[13] = du; this.p[14] = dv; this.p[15] = scale; return this; }
 }

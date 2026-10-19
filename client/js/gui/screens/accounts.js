@@ -1,6 +1,7 @@
 // Account manager screens: account list, Microsoft sign in (OAuth device code), offline names.
 import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
+import { ListOf } from '../slot-list.js';
 import { Button, TextField } from '../widgets.js';
 import { platform } from '../../platform/platform.js';
 import { fetchSkin } from '../../net/proxies.js';
@@ -40,7 +41,6 @@ export class AccountsScreen extends Screen {
     super(game);
     this.parent = parent;
     this.background = 'dirt';
-    this.scroll = 0;
     const a = game.accounts.active();
     this.selected = Math.max(0, game.accounts.list.indexOf(a));
   }
@@ -56,6 +56,14 @@ export class AccountsScreen extends Screen {
     this.buttons.push(this.removeBtn);
     this.buttons.push(new Button(4, cx - 50, this.height - 28, 100, 20, tr('minecraftjs.accounts.addOffline'), () => g.screens.open(new OfflineAccountScreen(g, this))));
     this.buttons.push(new Button(0, cx + 54, this.height - 28, 100, 20, tr('gui.done'), () => this.close()));
+    const old = this.slots;
+    this.slots = new ListOf(this, 32, this.height - 64, ROW_H, {
+      size: () => this.list.length,
+      selected: (i) => i === this.selected,
+      draw: (gui, i, x, y) => this._row(gui, this.list[i], x, y),
+      click: (i, dbl) => { this.selected = i; if (dbl) this.use(); },
+    });
+    if (old) { this.slots.amountScrolled = old.amountScrolled; this.slots.clamp(); }
   }
 
   close() { this.game.screens.open(this.parent); }
@@ -72,52 +80,29 @@ export class AccountsScreen extends Screen {
     this.selected = Math.min(this.selected, this.list.length - 1);
   }
 
-  renderContent(gui, mx, my) {
+  render(gui, mx, my) {
     const g = this.game;
-    const top = 32, bottom = this.height - 64;
-    const active = g.accounts.active();
-    this.useBtn.enabled = !!this.list[this.selected] && this.list[this.selected] !== active;
+    this.useBtn.enabled = !!this.list[this.selected] && this.list[this.selected] !== g.accounts.active();
     this.removeBtn.enabled = !!this.list[this.selected];
-    gui.rect(0, top, this.width, bottom, 0xa0000000);
+    this.slots.render(gui, mx, my);
     gui.textCentered(tr('minecraftjs.accounts.title'), this.width / 2, 12, 0xffffff);
-    const listX = this.width / 2 - 110;
-    gui.scissor(0, top, this.width, bottom - top);
-    this.list.forEach((a, i) => {
-      const y = top + 4 + i * ROW_H - this.scroll;
-      if (i === this.selected) {
-        gui.rect(listX - 2, y - 2, listX + 220 + 2, y + ROW_H - 2, 0xff808080);
-        gui.rect(listX - 1, y - 1, listX + 220 + 1, y + ROW_H - 3, 0xff000000);
-      }
-      drawFace(gui, g, a, listX, y, 32);
-      gui.text(a.name + (a === active ? ' §a' + tr('minecraftjs.accounts.inUse') : ''), listX + 35, y + 1, 0xffffff);
-      let line;
-      if (a.type === 'microsoft') line = '§7' + tr(a.expiresAt > Date.now() ? 'minecraftjs.accounts.microsoft' : 'minecraftjs.accounts.microsoftRefresh');
-      else line = '§7' + tr('minecraftjs.accounts.offline');
-      gui.text(line, listX + 35, y + 12, 0x808080, false);
-    });
-    gui.clearScissor();
-    void mx; void my;
+    for (const b of this.buttons) b.render(gui, mx, my);
   }
 
-  mouseDown(mx, my, button) {
-    if (super.mouseDown(mx, my, button)) return true;
-    const top = 32, bottom = this.height - 64, listX = this.width / 2 - 110;
-    if (my < top || my >= bottom || mx < listX - 2 || mx > listX + 222) return false;
-    const i = Math.floor((my - top - 4 + this.scroll) / ROW_H);
-    if (i >= 0 && i < this.list.length) {
-      const now = platform().now();
-      if (i === this.selected && now - (this.lastClick || 0) < 300) this.use();
-      this.selected = i;
-      this.lastClick = now;
-      return true;
-    }
-    return false;
+  _row(gui, a, x, y) {
+    const g = this.game, active = g.accounts.active();
+    drawFace(gui, g, a, x, y, 32);
+    gui.text(a.name + (a === active ? ' §a' + tr('minecraftjs.accounts.inUse') : ''), x + 35, y + 1, 0xffffff);
+    let line;
+    if (a.type === 'microsoft') line = '§7' + tr(a.expiresAt > Date.now() ? 'minecraftjs.accounts.microsoft' : 'minecraftjs.accounts.microsoftRefresh');
+    else line = '§7' + tr('minecraftjs.accounts.offline');
+    gui.text(line, x + 35, y + 12, 0x808080, false);
   }
 
-  wheel(d) {
-    const max = Math.max(0, this.list.length * ROW_H + 8 - (this.height - 96));
-    this.scroll = Math.max(0, Math.min(max, this.scroll + d * 18));
-  }
+  mouseDown(mx, my, button, e) { return super.mouseDown(mx, my, button) || this.slots.mouseDown(mx, my, button, e); }
+  mouseUp(mx, my, button) { super.mouseUp(mx, my, button); this.slots.mouseUp(); }
+  mouseMove(mx, my) { this.slots.mouseMove(mx, my); }
+  wheel(d) { this.slots.wheel(d); }
 }
 
 // Microsoft sign in with the OAuth device code flow

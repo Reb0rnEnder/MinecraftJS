@@ -36,6 +36,7 @@ import { EntityManager } from './entities.js';
 import { EntityRenderer } from '../render/entity-renderer.js';
 import { ItemRenderer } from '../render/item-renderer.js';
 import { HandRenderer } from '../render/hand-renderer.js';
+import { Pistons } from './pistons.js';
 import { TileEntityRenderer } from '../render/tile-renderer.js';
 import { Particles } from '../render/particles.js';
 import { Weather } from '../render/weather.js';
@@ -91,6 +92,7 @@ export class Game {
     this.entityRenderer = new EntityRenderer(this);
     this.handRenderer = new HandRenderer(this);
     this.tileRenderer = new TileEntityRenderer(this);
+    this.pistons = new Pistons(this);
     this.particles = new Particles(this);
     this.debugLines = new DebugLines(this);
     this.weather = new Weather(this);
@@ -234,28 +236,58 @@ export class Game {
     return [];
   }
 
-  // F3 + key combinations (Minecraft.runTick). Returns true when the key was used.
+  // Minecraft.debugFeedbackTranslated: a bold yellow "[Debug]:" then the message, as a local chat line
+  debugFeedback(key, ...args) {
+    const t = this.assets.translate;
+    this.hud.addChat('§e§l' + t.call(this.assets, 'debug.prefix') + '§r ' + t.call(this.assets, key, args), null, true);
+  }
+
+  // F3 + key combinations (Minecraft.processKeyF3, 1.12). Returns true when the key was used.
   _debugCombo(e) {
     const s = this.settings;
     switch (e.code) {
-      case 'KeyA': // reload all chunks (RenderGlobal.loadRenderers)
+      case 'KeyA': // RenderGlobal.loadRenderers
         for (const c of this.world.chunks.values()) for (let y = 0; y < 16; y++) if (c.sections[y]) this.dirty.add(c.x + ',' + y + ',' + c.z);
+        this.debugFeedback('debug.reload_chunks.message');
         return true;
-      case 'KeyB': this.showHitboxes = !this.showHitboxes; return true; // RenderManager.setDebugBoundingBox
+      case 'KeyB':
+        this.showHitboxes = !this.showHitboxes; // RenderManager.setDebugBoundingBox
+        this.debugFeedback(this.showHitboxes ? 'debug.show_hitboxes.on' : 'debug.show_hitboxes.off');
+        return true;
       case 'KeyD': this.hud.clearChat(); return true;
       case 'KeyF': // render distance +1 (Shift: -1)
         s.renderDistance = Math.max(2, Math.min(32, s.renderDistance + (e.shift ? -1 : 1)));
         this.renderer.renderDistance = s.renderDistance;
         s.save();
         if (this.inWorld) this.sendSettings();
+        this.debugFeedback('debug.cycle_renderdistance.message', s.renderDistance);
         return true;
-      case 'KeyH': s.advancedItemTooltips = !s.advancedItemTooltips; s.save(); return true;
-      case 'KeyN': // spectator toggle
-        if (this.gameMode !== 3) this.send(C.chat('/gamemode sp'));
-        else this.send(C.chat('/gamemode ' + (this.previousGameMode !== undefined && this.previousGameMode !== 3 ? this.previousGameMode : 1)));
+      case 'KeyG': // DebugRenderer.toggleChunkBorders
+        this.showChunkBorders = !this.showChunkBorders;
+        this.debugFeedback(this.showChunkBorders ? 'debug.chunk_boundaries.on' : 'debug.chunk_boundaries.off');
         return true;
-      case 'KeyP': s.pauseOnLostFocus = s.pauseOnLostFocus === false; s.save(); return true;
-      case 'KeyS': case 'KeyT': this.reloadResources().catch((err) => console.error(err)); return true; // refreshResources
+      case 'KeyH':
+        s.advancedItemTooltips = !s.advancedItemTooltips; s.save();
+        this.debugFeedback(s.advancedItemTooltips ? 'debug.advanced_tooltips.on' : 'debug.advanced_tooltips.off');
+        return true;
+      case 'KeyN': // creative <-> spectator, needs permission level 2
+        if ((this.permissionLevel | 0) < 2) this.debugFeedback('debug.creative_spectator.error');
+        else if (this.gameMode === 1) this.send(C.chat('/gamemode spectator'));
+        else if (this.gameMode === 3) this.send(C.chat('/gamemode creative'));
+        return true;
+      case 'KeyP':
+        s.pauseOnLostFocus = s.pauseOnLostFocus === false; s.save();
+        this.debugFeedback(s.pauseOnLostFocus ? 'debug.pause_focus.on' : 'debug.pause_focus.off');
+        return true;
+      case 'KeyQ':
+        this.debugFeedback('debug.help.message');
+        for (const k of ['reload_chunks', 'show_hitboxes', 'clear_chat', 'cycle_renderdistance', 'chunk_boundaries', 'advanced_tooltips',
+          'creative_spectator', 'pause_focus', 'help', 'reload_resourcepacks']) this.hud.addChat(this.assets.translate('debug.' + k + '.help'), null, true);
+        return true;
+      case 'KeyT':
+        this.debugFeedback('debug.reload_resourcepacks.message');
+        this.reloadResources().catch((err) => console.error(err)); // refreshResources
+        return true;
       default: return false;
     }
   }
@@ -301,6 +333,7 @@ export class Game {
     this.entityRenderer.reset();
     this.handRenderer.reset();
     this.tileRenderer.clear();
+    this.pistons.clear();
     this.sound.reload();
     this.worker = this.assets.worker;
     this._setupWorker();
@@ -371,7 +404,28 @@ export class Game {
       if (!w.getChunk(cx, cz)) return;
       this.dirty.add(cx + ',' + sy + ',' + cz);
     });
+    // World.getCollisionBoxes' entity part (1.12): boats and live shulkers are solid to every mover
+    // (getCollisionBoundingBox); a moving boat also collides with pushable entities (EntityBoat.getCollisionBox).
+    // Passengers of the same vehicle never collide (isRidingSameEntity).
+    w.entityCollider = (bb, mover) => {
+      const out = [];
+      const self = mover.entity || null; // the vehicle being steered, or null for the player
+      const g = [bb[0] - 0.25, bb[1] - 0.25, bb[2] - 0.25, bb[3] + 0.25, bb[4] + 0.25, bb[5] + 0.25];
+      for (const e of this.entities.map.values()) {
+        if (e === self || e.dead) continue;
+        if (self ? e.riding === self.id : e.id === this.ridingEntityId) continue;
+        const hw = (e.width || 0) / 2;
+        const eb = [e.x - hw, e.y, e.z - hw, e.x + hw, e.y + (e.height || 0), e.z + hw];
+        if (!(eb[3] > g[0] && eb[0] < g[3] && eb[4] > g[1] && eb[1] < g[4] && eb[5] > g[2] && eb[2] < g[5])) continue;
+        const solid = e.kind === 'boat' || (e.kind === 'mob' && e.type === 69);
+        const pushable = self && self.kind === 'boat' && (e.kind === 'player' || e.kind === 'mob' || e.kind === 'boat' || e.kind === 'minecart') && e.riding < 0;
+        if (!solid && !pushable) continue;
+        if (eb[3] > bb[0] && eb[0] < bb[3] && eb[4] > bb[1] && eb[1] < bb[4] && eb[5] > bb[2] && eb[2] < bb[5]) out.push(eb);
+      }
+      return out;
+    };
     w.on('blockChanged', (x, y, z, oldState, newState) => {
+      this.pistons.onBlockChanged(x, y, z);
       this.tileRenderer.onBlockChanged(x, y, z, oldState, newState);
     });
   }
@@ -392,7 +446,28 @@ export class Game {
     }
   }
 
+  // MinecraftJS level of detail: chunks more than settings.lodChunks away (Chebyshev, in chunks) are meshed simplified
+  // (render/mesher.js) and drawn with a mip bias; 0 turns it off
+  _lodFor(cx, cz) {
+    const L = this.settings.lodChunks | 0;
+    if (L <= 0) return false;
+    const pcx = Math.floor(this.player.x / 16), pcz = Math.floor(this.player.z / 16);
+    return Math.max(Math.abs(cx - pcx), Math.abs(cz - pcz)) > L;
+  }
+
+  // Re-mesh sections whose LOD state changed (after crossing a chunk border or changing the setting)
+  _updateLod() {
+    const pcx = Math.floor(this.player.x / 16), pcz = Math.floor(this.player.z / 16);
+    const key = pcx + ',' + pcz + ',' + (this.settings.lodChunks | 0);
+    if (key === this._lodKey) return;
+    this._lodKey = key;
+    for (const s of this.renderer.sections.values()) {
+      if (s.lod !== this._lodFor(s.cx, s.cz)) this.dirty.add(s.cx + ',' + s.sy + ',' + s.cz);
+    }
+  }
+
   _scheduleMeshes() {
+    this._updateLod();
     if (!this.dirty.size || this.inFlight.size >= this.maxInFlight) return;
     const px = this.player.x / 16, py = this.player.y / 16, pz = this.player.z / 16;
     const rd = this.settings.renderDistance + 1;
@@ -425,7 +500,7 @@ export class Game {
       const sec = this.world.getChunk(cx, cz).sections[sy];
       if (!sec || sec.nonAir === 0) { this.inFlight.delete(key); this.renderer.removeSection(key); continue; }
       const slice = buildSlice(this.world, cx, sy, cz, this.tileProps);
-      this.worker.postMessage({ type: 'build', gen: this.meshGen, slice }, [slice.states.buffer, slice.light.buffer, slice.biomes.buffer]);
+      this.worker.postMessage({ type: 'build', gen: this.meshGen, slice, lod: this._lodFor(cx, cz) }, [slice.states.buffer, slice.light.buffer, slice.biomes.buffer]);
     }
     // Recover from lost builds
     for (const [k, t] of this.inFlight) if (platform().now() - t > 10000) this.inFlight.delete(k);
@@ -481,6 +556,7 @@ export class Game {
     this._resetMeshing();
     this.entities.clear();
     this.tileRenderer.clear();
+    this.pistons.clear();
     this.particles.clear();
     this.sound.stopAll();
     this.input.unlock();
@@ -543,6 +619,7 @@ export class Game {
       this._resetMeshing();
       this.entities.clear();
       this.tileRenderer.clear();
+    this.pistons.clear();
     }
     this.entityId = p.entityId;
     if (this.gameMode !== (p.gameMode & 7)) this.previousGameMode = this.gameMode;
@@ -617,6 +694,7 @@ export class Game {
       this._resetMeshing();
       this.entities.clear();
       this.tileRenderer.clear();
+    this.pistons.clear();
       this.doneLoadingTerrain = false;
       this.screens.open(new DownloadingTerrainScreen(this));
     }
@@ -635,18 +713,23 @@ export class Game {
 
   on_position(p) {
     const pl = this.player;
-    let x = p.x, y = p.y, z = p.z, yaw = p.yaw, pitch = p.pitch;
+    // NetHandlerPlayClient.handlePlayerPosLook (relative flags add to the current values, float angles)
+    let x = p.x, y = p.y, z = p.z, yaw = Math.fround(p.yaw), pitch = Math.fround(p.pitch);
     if (p.flags & 1) x += pl.x; else pl.motionX = 0;
     if (p.flags & 2) y += pl.y; else pl.motionY = 0;
     if (p.flags & 4) z += pl.z; else pl.motionZ = 0;
-    if (p.flags & 8) pitch += pl.pitch;
-    if (p.flags & 16) yaw += pl.yaw;
+    if (p.flags & 8) pitch = Math.fround(pitch + pl.pitch);
+    if (p.flags & 16) yaw = Math.fround(yaw + pl.yaw);
+    // Entity.setPositionAndRotation: x / z clamped to the world, pitch to +-90, then setRotation keeps angle % 360
+    x = Math.max(-3e7, Math.min(3e7, x)); z = Math.max(-3e7, Math.min(3e7, z));
+    pitch = Math.max(-90, Math.min(90, pitch));
     pl.setPosition(x, y, z);
     pl.prevX = x; pl.prevY = y; pl.prevZ = z;
-    pl.yaw = yaw; pl.pitch = pitch; pl.prevYaw = yaw; pl.prevPitch = pitch;
+    pl.prevYaw = yaw; pl.prevPitch = pitch;
+    pl.yaw = Math.fround(yaw % 360); pl.pitch = Math.fround(pitch % 360);
     this.send(C.teleportConfirm(p.teleportId));
     this.send(C.positionLook(pl.x, pl.y, pl.z, pl.yaw, pl.pitch, false));
-    this.lastReported = { ...this.lastReported, x: pl.x, y: pl.y, z: pl.z, yaw: pl.yaw, pitch: pl.pitch };
+    // the last reported position stays: the next tick reports the new position again (onUpdateWalkingPlayer)
     if (!this.doneLoadingTerrain) {
       this.doneLoadingTerrain = true;
       pl.prevX = pl.x; pl.prevY = pl.y; pl.prevZ = pl.z;
@@ -711,6 +794,7 @@ export class Game {
       else if (p.entityStatus === 9) this.player.usingItem = false; // item use finished
       else if (p.entityStatus === 22) this.reducedDebug = true;
       else if (p.entityStatus === 23) this.reducedDebug = false;
+      else if (p.entityStatus >= 24 && p.entityStatus <= 28) this.permissionLevel = p.entityStatus - 24; // EntityPlayer op level
     }
     this.entities.onStatus(p);
   }
@@ -729,6 +813,7 @@ export class Game {
     if (entityId === this.entityId) {
       this.ridingEntityId = vehicleId;
       this.player.ridingEntity = vehicleId >= 0 ? this.entities.get(vehicleId) : null;
+      this.player.ridingBoat = !!(this.player.ridingEntity && this.player.ridingEntity.kind === 'boat');
       if (vehicleId < 0) this._dropVehicle();
       if (vehicleId >= 0) this.hud.setActionBar(this.assets.translate('mount.onboard', [this.settings.keyName(this.settings.keys.sneak)]));
     }
@@ -809,7 +894,13 @@ export class Game {
     this.interaction.onBlockChange(p.location, p.state);
   }
 
-  on_block_action(p) { this.tileRenderer.onBlockAction(p); this.sound.onBlockAction(p); }
+  on_block_action(p) {
+    // BlockPistonBase.eventReceived runs on the client too: the moving blocks start sliding right away
+    const n = blocks[p.blockId] && blocks[p.blockId].name;
+    if (n === 'piston' || n === 'sticky_piston') this.pistons.onBlockEvent(p.location, p.byte1, p.byte2, p.blockId);
+    this.tileRenderer.onBlockAction(p);
+    this.sound.onBlockAction(p);
+  }
 
   on_block_break_animation(p) { this.interaction.setRemoteBreak(p.entityId, p.location, p.destroyStage); }
 
@@ -924,7 +1015,11 @@ export class Game {
     if (this.screens.current && this.screens.current.onStats) this.screens.current.onStats(this.stats);
   }
 
-  on_player_info(p) { this.scoreboard.onPlayerInfo(p); }
+  on_player_info(p) {
+    this.scoreboard.onPlayerInfo(p);
+    // skins and capes follow the tab list's textures property (it can arrive after the player is first drawn)
+    for (const d of p.data || []) if (d.uuid && d.properties) this.entityRenderer.skinFor({ uuid: d.uuid });
+  }
 
   on_abilities(p) {
     const pl = this.player;
@@ -1247,25 +1342,39 @@ export class Game {
     if (!this.screens.current && this.input.locked && !this.dead) this.interaction.tick(presses);
     else this.interaction.tickIdle();
 
-    if (this.player.ridingEntity) {
+    // EntityPlayerSP.onUpdate: nothing at all happens (no movement, no packets) while the chunk under the player is
+    // not loaded
+    if (!world.isLoaded(Math.floor(pl.x), Math.floor(pl.z))) {
+      // skip the player update
+    } else if (this.player.ridingEntity) {
       this._tickRiding(inp);
-    } else if (!this.dead) {
-      // GameSettings.autoJump; ItemElytra.isUsable on the chest slot
+    } else {
+      // GameSettings.autoJump; ItemElytra.isUsable on the chest slot. Dead or sleeping: isMovementBlocked, so the
+      // player still falls but takes no input
+      const blocked = this.dead || !!this.sleeping;
+      const tin = blocked ? {} : inp;
       const chest = this.inventory.armor[2];
-      inp.autoJump = this.settings.autoJump;
-      inp.elytraUsable = !!(chest && chest.id === 443 && chest.damage < this.items.maxDurability(443) - 1);
+      tin.autoJump = this.settings.autoJump;
+      tin.elytraUsable = !!(chest && chest.id === 443 && chest.damage < this.items.maxDurability(443) - 1);
       pl.sleeping = !!this.sleeping;
-      const res = pl.tick(world, inp);
+      const res = pl.tick(world, tin);
       if (res.abilitiesChanged) this.sendAbilities();
       if (res.startFallFlying) this.send(C.entityAction(this.entityId, 8)); // START_FALL_FLYING
+      this._sendMovement();
     }
-    if (!this.player.ridingEntity) this._sendMovement();
 
     this.entities.tick();
+    // World.updateEntityWithOptionalForce: passengers update after their vehicle, so a server-driven vehicle
+    // (minecart, pig, someone else's boat) has moved before we are put back on it (Entity.updatePassenger)
+    if (this.player.ridingEntity) {
+      const v = this.entities.get(this.ridingEntityId);
+      if (v && !v.controlled) this.player.setPosition(v.x, v.y + this.entities.mountedOffset(v) - 0.35, v.z);
+    }
     this.particles.tick();
     this.weather.tick();
     this.sound.tick();
     this.tileRenderer.tick();
+    this.pistons.tick();
     this.entityRenderer.tick();
     this.handRenderer.tick();
     this.portalTick();
@@ -1562,25 +1671,6 @@ export class Game {
     }
     if (this.thirdPerson === 0 && !this.debugCam) mat4.translate(pre, pre, 0, 0, -0.1);
     const look = this.lookVector(partial);
-    // F3 world direction axes (EntityRenderer.renderWorldDirections): identity modelview + orientCamera (no
-    // bobbing / hurt shake), under the projection renderHand left behind (70 degrees, not the FOV setting)
-    const showAxes = this.showDebug && !this.hideGui && !this.reducedDebug && !this.settings.reducedDebugInfo;
-    if (showAxes) {
-      const view = mat4.create(), D = Math.PI / 180;
-      if (this.thirdPerson === 0) mat4.translate(view, view, 0, 0, -0.1);
-      else {
-        if (this.thirdPerson === 2) { mat4.rotateY(view, view, Math.PI); mat4.rotateX(view, view, -Math.PI); }
-        mat4.translate(view, view, 0, 0, -(this._thirdPersonDist || 4));
-        if (this.thirdPerson === 2) mat4.rotateX(view, view, Math.PI);
-      }
-      mat4.rotateX(view, view, pitch * D);
-      mat4.rotateY(view, view, (yaw + 180) * D);
-      let hf = 70;
-      const eb = blocks[this.world.getState(Math.floor(ex), Math.floor(ey), Math.floor(ez)) >> 4];
-      if (eb && eb.isWater) hf = hf * 60 / 70;
-      const proj = mat4.perspective(mat4.create(), hf * D, platform().width / platform().height, 0.05, 512);
-      this.debugLines.axesCam = { view, proj };
-    } else this.debugLines.axesCam = null;
     if (this.thirdPerson > 0) {
       let dist = 4;
       const dir = this.thirdPerson === 2 ? -1 : 1;

@@ -12,6 +12,11 @@ import { SectionCuller, sectionKey } from './culling.js';
 const P_SOLID = terrainParams(0, 1);
 const P_CUTOUT = terrainParams(0.1, 1);
 const P_TRANSLUCENT = terrainParams(0.004, 1);
+// far (LOD) sections sample the atlas one and a half mip levels smaller
+const LOD_BIAS = 1.5;
+const P_SOLID_LOD = terrainParams(0, 1, undefined, LOD_BIAS);
+const P_CUTOUT_LOD = terrainParams(0.1, 1, undefined, LOD_BIAS);
+const P_TRANSLUCENT_LOD = terrainParams(0.004, 1, undefined, LOD_BIAS);
 const P_WHITE = colorParams(1, 1, 1, 1);
 const P_BREAK = colorParams(1, 1, 1, 1, 0.1);
 
@@ -69,7 +74,7 @@ export class Renderer {
     const key = sectionKey(cx, sy, cz);
     this.removeSection(key);
     if (!data || data.empty) return;
-    const s = { cx, sy, cz, vis: data.vis || null };
+    const s = { cx, sy, cz, vis: data.vis || null, lod: !!data.lod };
     for (const layer of ['solid', 'cutout', 'translucent']) {
       const arr = data[layer];
       if (arr && arr.length) s[layer] = this.device.createMesh(FORMAT.terrain, arr, { quads: true });
@@ -417,9 +422,9 @@ export class Renderer {
     vis.sort((a, b) => a.dist - b.dist);
     this.visibleSections = vis.length;
     const solidState = { blend: 'none', cull: true };
-    for (const s of vis) if (s.solid) d.draw({ mesh: s.solid, pipeline: 'terrain', textures: atlas, params: P_SOLID, model: s.model, state: solidState });
+    for (const s of vis) if (s.solid) d.draw({ mesh: s.solid, pipeline: 'terrain', textures: atlas, params: s.lod ? P_SOLID_LOD : P_SOLID, model: s.model, state: solidState });
     const cutState = { blend: 'none', cull: true };
-    for (const s of vis) if (s.cutout) d.draw({ mesh: s.cutout, pipeline: 'terrain', textures: atlas, params: P_CUTOUT, model: s.model, state: cutState });
+    for (const s of vis) if (s.cutout) d.draw({ mesh: s.cutout, pipeline: 'terrain', textures: atlas, params: s.lod ? P_CUTOUT_LOD : P_CUTOUT, model: s.model, state: cutState });
     // Entities + tile entities
     if (this.drawEntities) this.drawEntities(d, this.camRot);
     else drawTree(d, this.entityRoot, { camRot: this.camRot });
@@ -441,7 +446,7 @@ export class Renderer {
     const transState = { blend: 'alpha', cull: true, depthWrite: true };
     for (let i = vis.length - 1; i >= 0; i--) {
       const s = vis[i];
-      if (s.translucent) d.draw({ mesh: s.translucent, pipeline: 'terrain', textures: atlas, params: P_TRANSLUCENT, model: s.model, state: transState });
+      if (s.translucent) d.draw({ mesh: s.translucent, pipeline: 'terrain', textures: atlas, params: s.lod ? P_TRANSLUCENT_LOD : P_TRANSLUCENT, model: s.model, state: transState });
     }
     // Clouds
     if (this.env.cloudsVisible) {

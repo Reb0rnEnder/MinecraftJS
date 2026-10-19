@@ -392,8 +392,11 @@ export class World {
   }
 
   // All collision boxes intersecting an AABB [minX,minY,minZ,maxX,maxY,maxZ]
-  getCollisions(bb) {
+  // World.getCollisionBoxes: block boxes in bb, plus (with a moving entity) the entity boxes it collides with
+  // (this.entityCollider, set by the game)
+  getCollisions(bb, mover = null) {
     const out = [];
+    if (mover && this.entityCollider) for (const c of this.entityCollider(bb, mover)) out.push(c);
     const x0 = Math.floor(bb[0]), x1 = Math.floor(bb[3] + 1);
     const y0 = Math.floor(bb[1]) - 1, y1 = Math.floor(bb[4] + 1);
     const z0 = Math.floor(bb[2]), z1 = Math.floor(bb[5] + 1);

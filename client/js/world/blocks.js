@@ -83,7 +83,7 @@ export function initBlocks(blocksJson, shapesJson) {
       isWater: name === 'water' || name === 'flowing_water',
       isLava: name === 'lava' || name === 'flowing_lava',
       replaceable: REPLACEABLE.has(name) || (b.material === 'plant' && b.boundingBox === 'empty' && name !== 'reeds' && name !== 'cactus' && name !== 'waterlily' && !/sapling|wheat|carrots|potatoes|stem|wart|flower|mushroom/.test(name)),
-      slipperiness: name === 'ice' || name === 'packed_ice' ? 0.98 : name === 'slime' ? 0.8 : 0.6,
+      slipperiness: name === 'ice' || name === 'packed_ice' || name === 'frosted_ice' ? 0.98 : name === 'slime' ? 0.8 : 0.6,
       shapes: shapesJson ? shapesJson.blocks[name] : null,
       // AO: opaque full cubes darken neighbours
       aoLight: 0,

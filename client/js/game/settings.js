@@ -38,7 +38,9 @@ const DEFAULTS = {
   chatVisibility: 0, // 0 shown, 1 commands only, 2 hidden
   chatColors: true,
   masterVolume: 1,
-  soundVolumes: { music: 0, record: 1, weather: 1, block: 1, hostile: 1, neutral: 1, player: 1, ambient: 1 },
+  soundVolumes: { music: 0, record: 1, weather: 1, block: 1, hostile: 1, neutral: 1, player: 1, ambient: 1, voice: 1 },
+  showSubtitles: false,
+  realmsNotifications: true,
   showDebugInfo: false,
   reducedDebugInfo: false,
   advancedItemTooltips: false,
@@ -50,6 +52,7 @@ const DEFAULTS = {
   graphicsApi: 'webgl2', // 'webgl2' | 'webgpu'
   resourcePacks: [], // active pack ids, highest priority first
   entityShadows: true,
+  lodChunks: 8, // MinecraftJS: past this many chunks terrain is simplified and mobs re-pose less often (0 = off)
   language: 'en_us',
   forceUnicodeFont: false,
   keys: { ...DEFAULT_KEYS },

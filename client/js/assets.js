@@ -1,5 +1,6 @@
 // Asset manager: base game assets (an assets/ folder next to the page, or the zip embedded in a single-file build)
 // layered under user resource packs.
+import { setJarModels } from './render/entity-models.js';
 import { platform } from './platform/platform.js';
 import { defaultAssetSource } from './asset-source.js';
 import { decodePng } from './util/png.js';
@@ -173,6 +174,10 @@ export class Assets {
     names.forEach((n, i) => { this.data[n] = datas[i]; });
     // CraftingManager recipes in id order (id = 11 + index; 0 - 10 are the special recipes)
     this.recipes = await this.source.recipes();
+    // Entity and block entity models, extracted from the jar when the assets were built
+    const em = await this.source.entityModels();
+    if (!em) throw new Error('The assets have no entity models (bundles/entity-models.json): rebuild them with `npm run assets` / `npm run build`');
+    setJarModels(em);
     // SoundEvent registry: id -> event name (sound effect packets carry ids)
     this.soundNames = [];
     for (const s of this.data.sounds) this.soundNames[s.id] = s.name;
@@ -237,7 +242,7 @@ export class Assets {
 
     step('Loading interface...', 75);
     await Promise.all([
-      'gui/widgets.png', 'gui/icons.png', 'font/ascii.png', 'gui/options_background.png', 'gui/title/minecraft.png',
+      'gui/widgets.png', 'gui/icons.png', 'font/ascii.png', 'gui/options_background.png', 'gui/title/minecraft.png', 'gui/title/edition.png',
       'gui/container/inventory.png', 'environment/sun.png', 'environment/moon_phases.png', 'environment/clouds.png',
       'misc/vignette.png', 'particle/particles.png', 'misc/shadow.png',
     ].map((p) => this.imageAsync(p).catch(() => null)));

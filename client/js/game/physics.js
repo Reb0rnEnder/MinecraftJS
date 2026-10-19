@@ -208,11 +208,17 @@ export class LocalPlayer {
   }
 
   handleWaterMovement(world) {
+    // Entity.handleWaterMovement: the box shrunk by 0.4F at top and bottom (grow(0, -0.4F, 0)), then by 0.001;
+    // World.handleMaterialAcceleration walks floor(min) .. ceil(max) exclusive
     const bb0 = this.bb();
-    const bb = [bb0[0] + 0.001, bb0[1] + 0.4 + 0.001, bb0[2] + 0.001, bb0[3] - 0.001, bb0[4] - 0.001, bb0[5] - 0.001];
-    const x0 = Math.floor(bb[0]), x1 = Math.floor(bb[3] + 1);
-    const y0 = Math.floor(bb[1]), y1 = Math.floor(bb[4] + 1);
-    const z0 = Math.floor(bb[2]), z1 = Math.floor(bb[5] + 1);
+    const bb = [bb0[0] + 0.001, bb0[1] + 0.4000000059604645 + 0.001, bb0[2] + 0.001, bb0[3] - 0.001, bb0[4] - 0.4000000059604645 - 0.001, bb0[5] - 0.001];
+    const x0 = Math.floor(bb[0]), x1 = Math.ceil(bb[3]);
+    const y0 = Math.floor(bb[1]), y1 = Math.ceil(bb[4]);
+    const z0 = Math.floor(bb[2]), z1 = Math.ceil(bb[5]);
+    if (this.ridingEntity && this.ridingBoat) { this.inWater = false; return false; }
+    for (let x = x0; x < x1; x++) for (let z = z0; z < z1; z++) {
+      if (!world.isLoaded(x, z)) { this.inWater = false; return false; } // isAreaLoaded
+    }
     let found = false;
     let fx = 0, fy = 0, fz = 0;
     for (let x = x0; x < x1; x++) for (let y = y0; y < y1; y++) for (let z = z0; z < z1; z++) {
@@ -220,8 +226,8 @@ export class LocalPlayer {
       const b = blocks[s >> 4];
       if (!b || !b.isWater) continue;
       const lvl = s & 15;
-      const pct = ((lvl >= 8 ? 0 : lvl) + 1) / 9;
-      if (y1 >= y + 1 - pct) {
+      const pct = f32(((lvl >= 8 ? 0 : lvl) + 1) / 9); // BlockLiquid.getLiquidHeightPercent
+      if (y1 >= f32(f32(y + 1) - pct)) {
         found = true;
         const v = this.flowVector(world, x, y, z, false);
         fx += v[0]; fy += v[1]; fz += v[2];
@@ -283,13 +289,24 @@ export class LocalPlayer {
 
   isOffsetPositionInLiquid(world, dx, dy, dz) {
     const bb = offsetBB(this.bb(), dx, dy, dz);
-    if (world.getCollisions(bb).length) return false;
+    if (world.getCollisions(bb, this).length) return false;
     return !this.isMaterialInBB(world, bb, (b) => b.isLiquid) ? false : true;
   }
 
+  // EntityLivingBase.isOnLadder: ladders, vines, and an open trapdoor right above a ladder facing the same way
   isOnLadder(world) {
-    const b = blocks[world.getState(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z)) >> 4];
-    return !!b && (b.name === 'ladder' || b.name === 'vine') && !this.spectator;
+    if (this.spectator) return false;
+    const x = Math.floor(this.x), y = Math.floor(this.bb()[1]), z = Math.floor(this.z);
+    const st = world.getState(x, y, z), b = blocks[st >> 4];
+    if (!b) return false;
+    if (b.name === 'ladder' || b.name === 'vine') return true;
+    if ((b.name === 'trapdoor' || b.name === 'iron_trapdoor') && (st & 4)) {
+      const below = world.getState(x, y - 1, z);
+      if ((blocks[below >> 4] || {}).name !== 'ladder') return false;
+      // BlockTrapDoor meta & 3: north, south, west, east; BlockLadder meta: 2 north, 3 south, 4 west, 5 east
+      return ['north', 'south', 'west', 'east'][st & 3] === (['down', 'up', 'north', 'south', 'west', 'east'][below & 7] || '');
+    }
+    return false;
   }
 
   // --- Core movement ---
@@ -328,7 +345,7 @@ export class LocalPlayer {
       const d6 = 0.05;
       // 1.9+: probes stepHeight below the box (1.8 probed a whole block)
       const down = -this.stepHeight;
-      const empty = (bx, bz) => world.getCollisions(offsetBB(bb, bx, down, bz)).length === 0;
+      const empty = (bx, bz) => world.getCollisions(offsetBB(bb, bx, down, bz), this).length === 0;
       while (x !== 0 && empty(x, 0)) {
         if (x < d6 && x >= -d6) x = 0; else if (x > 0) x -= d6; else x += d6;
       }
@@ -341,7 +358,7 @@ export class LocalPlayer {
       }
     }
     const dx0 = x, dz0 = z; // after sneak clamp (vanilla reassigns d3/d5 inside loops)
-    const list1 = world.getCollisions(addCoord(bb, x, y, z));
+    const list1 = world.getCollisions(addCoord(bb, x, y, z), this);
     const bbOrig = bb;
     for (const c of list1) y = calcYOffset(c, bb, y);
     bb = offsetBB(bb, 0, y, 0);
@@ -356,7 +373,7 @@ export class LocalPlayer {
       const bb3 = bb;
       bb = bbOrig;
       y = this.stepHeight;
-      const list = world.getCollisions(addCoord(bb, dx0, y, dz0));
+      const list = world.getCollisions(addCoord(bb, dx0, y, dz0), this);
       let bb4 = bb;
       const bb5 = addCoord(bb4, dx0, 0, dz0);
       let d9 = y;
@@ -393,38 +410,41 @@ export class LocalPlayer {
     this.collidedV = d4 !== y;
     this.onGround = this.collidedV && d4 < 0;
 
-    // Fall state
-    // Entity.updateFallState -> Block.onFallenUpon -> EntityPlayer.fall (slime: no damage unless sneaking, hay: 20%)
+    // Entity.move: the block landed on / walked on, floor(y - 0.2), or the fence / wall / gate below an air block
+    let lbx = Math.floor(this.x), lby = Math.floor(this.y - 0.20000000298023224), lbz = Math.floor(this.z);
+    let lst = world.getState(lbx, lby, lbz), lb = blocks[lst >> 4];
+    if (!lb || lb.id === 0) {
+      const b2 = blocks[world.getState(lbx, lby - 1, lbz) >> 4];
+      if (b2 && (b2.isFence || b2.isWall || b2.isFenceGate)) { lby--; lst = world.getState(lbx, lby, lbz); lb = b2; }
+    }
+
+    // Entity.updateFallState -> Block.onFallenUpon -> EntityPlayer.fall (slime: no damage unless sneaking, hay: 20%,
+    // bed: half)
     if (this.onGround) {
       if (this.fallDistance > 0 && this.onFall && !this.allowFlying) {
-        const bx = Math.floor(this.x), by = Math.floor(this.y - 0.20000000298023224), bz = Math.floor(this.z);
-        const st = world.getState(bx, by, bz), lb = blocks[st >> 4];
+        // EntityLivingBase.fall(distance, multiplier): ceil((distance - 3 - jump boost) * multiplier); beds halve the distance
         const mult = lb && lb.name === 'slime' && !this.sneaking ? 0 : lb && lb.name === 'hay_block' ? 0.2 : 1;
-        const dmg = Math.ceil((this.fallDistance - 3 - (this.jumpBoost >= 0 ? this.jumpBoost + 1 : 0)) * mult);
-        if (dmg > 0) this.onFall(dmg, st);
+        const dist = lb && lb.name === 'bed' ? this.fallDistance * 0.5 : this.fallDistance;
+        const dmg = Math.ceil((dist - 3 - (this.jumpBoost >= 0 ? this.jumpBoost + 1 : 0)) * mult);
+        if (dmg > 0) this.onFall(dmg, lst);
       }
       this.fallDistance = 0;
-    } else if (y < 0) this.fallDistance -= y;
+    } else if (y < 0) this.fallDistance = f32(this.fallDistance - y);
 
     if (dx0 !== x) this.motionX = 0;
     if (dz0 !== z) this.motionZ = 0;
+    // Block.onLanded: slime bounces back fully, beds (1.12) at 66%, unless sneaking; everything else stops
     if (d4 !== y) {
-      const below = blocks[world.getState(Math.floor(this.x), Math.floor(this.y - 0.2), Math.floor(this.z)) >> 4];
-      if (below && below.name === 'slime' && !this.sneaking && this.motionY < 0) this.motionY = -this.motionY;
-      else this.motionY = 0;
+      const bouncy = lb && (lb.name === 'slime' || lb.name === 'bed');
+      if (!bouncy || this.sneaking) this.motionY = 0;
+      else if (this.motionY < 0) this.motionY = lb.name === 'slime' ? -this.motionY : -this.motionY * f32(0.66);
     }
 
     // Entity.moveEntity: walked distance (view bobbing) and step distance (sounds). Counted in the air too,
     // so the first step after landing plays; not while sneaking on the ground or riding.
     const x0 = (bbOrig[0] + bbOrig[3]) / 2, y0 = bbOrig[1], z0 = (bbOrig[2] + bbOrig[5]) / 2;
     if (!(this.onGround && this.sneaking) && !this.ridingEntity) {
-      let bx = Math.floor(this.x), by = Math.floor(this.y - 0.20000000298023224), bz = Math.floor(this.z);
-      let st = world.getState(bx, by, bz), blk = blocks[st >> 4];
-      if (!blk || blk.id === 0) {
-        // standing on top of a fence / wall / fence gate (collision box 1.5 high)
-        const b2 = blocks[world.getState(bx, by - 1, bz) >> 4];
-        if (b2 && (b2.isFence || b2.isWall || b2.isFenceGate)) { by--; st = world.getState(bx, by, bz); blk = b2; }
-      }
+      const bx = lbx, by = lby, bz = lbz, st = lst, blk = lb;
       const ddx = this.x - x0, ddz = this.z - z0;
       const ddy = blk && (blk.name === 'ladder') ? this.y - y0 : 0;
       this.distanceWalked += Math.sqrt(ddx * ddx + ddz * ddz) * 0.6;
@@ -489,7 +509,7 @@ export class LocalPlayer {
     const hits = (c, a, b) => c[3] > Math.min(a[0], b[0]) && c[0] < Math.max(a[0], b[0]) && c[4] > Math.min(a[1], b[1]) && c[1] < Math.max(a[1], b[1]) && c[5] > Math.min(a[2], b[2]) && c[2] < Math.max(a[2], b[2]);
     let f11 = -Infinity;
     outer:
-    for (const c of world.getCollisions(area)) {
+    for (const c of world.getCollisions(area, this)) {
       if (!(hits(c, v7, v8) || hits(c, v9, v10))) continue;
       f11 = f32(c[4]);
       const center = [Math.floor((c[0] + c[3]) / 2), Math.floor((c[1] + c[4]) / 2), Math.floor((c[2] + c[5]) / 2)];
@@ -654,6 +674,11 @@ export class LocalPlayer {
     this.prevCameraYaw = this.cameraYaw; this.prevCameraPitch = this.cameraPitch;
     const result = { abilitiesChanged: false };
 
+    // Entity.onEntityUpdate (before EntityPlayerSP.onLivingUpdate): water pushes and the in-water / in-lava state
+    this.ticksExisted++;
+    this.handleWaterMovement(world);
+    this.inLava = this.isInLava(world);
+
     if (this.sprintToggleTimer > 0) this.sprintToggleTimer--;
     if (this.flyToggleTimer > 0) this.flyToggleTimer--;
 
@@ -701,34 +726,32 @@ export class LocalPlayer {
         if (this.flyToggleTimer === 0) this.flyToggleTimer = 7;
         else { this.flying = !this.flying; result.abilitiesChanged = true; this.flyToggleTimer = 0; }
       }
-    } else if (this.flying) {
-      this.flying = false;
     }
     // ItemElytra: jumping in mid air while falling asks the server to start gliding
     if (jump && !this.prevJump && !this.onGround && this.motionY < 0 && !this.elytraFlying && !this.flying && input.elytraUsable) {
       result.startFallFlying = true;
     }
     if (this.flying) {
-      if (sneakKey) this.motionY -= this.flySpeed * 3;
-      if (jump) this.motionY += this.flySpeed * 3;
+      // EntityPlayerSP: sneaking while flying only descends, the 0.3 slowdown is divided back out
+      if (sneakKey) {
+        moveStrafe = f32(moveStrafe / 0.3); moveForward = f32(moveForward / 0.3);
+        this.motionY -= f32(this.flySpeed * 3);
+      }
+      if (jump) this.motionY += f32(this.flySpeed * 3);
     }
     this.prevJump = jump;
-    this.prevForwardHeld = moveForward >= f;
+    this.prevForwardHeld = moveForward >= f; // movementInput.moveForward as the next tick starts
     this.prevSneak = sneakKey;
 
     // EntityLivingBase.onLivingUpdate
     if (this.jumpTicks > 0) this.jumpTicks--;
-    if (Math.abs(this.motionX) < 0.005) this.motionX = 0;
-    if (Math.abs(this.motionY) < 0.005) this.motionY = 0;
-    if (Math.abs(this.motionZ) < 0.005) this.motionZ = 0;
+    // 1.9+: motion below 0.003 is dropped (1.8: 0.005)
+    if (Math.abs(this.motionX) < 0.003) this.motionX = 0;
+    if (Math.abs(this.motionY) < 0.003) this.motionY = 0;
+    if (Math.abs(this.motionZ) < 0.003) this.motionZ = 0;
 
-    this.ticksExisted++;
-    // Entity.onEntityUpdate -> water handling (before movement)
-    this.handleWaterMovement(world);
-    this.inLava = this.isInLava(world);
-
-    if (jump && !this.flying) {
-      if (this.inWater || this.inLava) this.motionY += 0.04;
+    if (jump) {
+      if (this.inWater || this.isInLava(world)) this.motionY += 0.03999999910593033; // handleJumpWater / Lava: 0.04F
       else if (this.onGround && this.jumpTicks === 0) { this.jump(); this.jumpTicks = 10; }
     } else {
       this.jumpTicks = 0;

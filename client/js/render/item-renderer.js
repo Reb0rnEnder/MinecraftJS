@@ -1,5 +1,7 @@
 // Item rendering: GUI icons (2D sprites + 3D block icons), counts/durability/glint,
 // and 3D meshes for held/dropped items (port of ItemModelGenerator extrusion).
+import { bedPiece, shulkerBox, skullModel, DYE_NAMES } from './tile-renderer.js';
+import { blockModel } from './entity-models.js';
 import { composeBanner, bannerLayers, buildBanner, bannerSwing } from './banner.js';
 import { itemModelName } from '../world/blockstates.js';
 import { blocks } from '../world/blocks.js';
@@ -304,14 +306,12 @@ export class ItemRenderer {
   _builtinObject(item, m, gui = false) {
     const name = m.name;
     const root = new Node();
-    const mat = (tex) => entityMaterial(tex, { alphaTest: 0.1, fullBright: gui, noLighting: false });
+    const mat = (tex) => entityMaterial(tex, { alphaTest: 0.1, fullBright: gui, guiLighting: gui });
     if (name === 'chest' || name === 'trapped_chest' || name === 'ender_chest') {
       const tex = name === 'ender_chest' ? 'entity/chest/ender.png' : name === 'trapped_chest' ? 'entity/chest/trapped.png' : 'entity/chest/normal.png';
-      const lid = new Part(64, 64).tex(0, 0).box(0, -5, -14, 14, 5, 14).pivot(1, 7, 15);
-      const knob = new Part(64, 64).tex(0, 0).box(-1, -2, -15, 2, 4, 1).pivot(8, 7, 15);
-      const bottom = new Part(64, 64).tex(0, 19).box(0, 0, 0, 14, 10, 14).pivot(1, 6, 1);
+      const { lid, below, knob } = blockModel('chest', ['lid', 'below', 'knob']); // ModelChest
       const g = new Node();
-      for (const p of [lid, knob, bottom]) g.add(p.build());
+      for (const p of [lid, knob, below]) g.add(p.build());
       g.setMaterial(mat(tex));
       // ModelChest is in a y-down space scaled by 1/16 with rotate 180 X
       g.scale.set(1 / 16, -1 / 16, -1 / 16);
@@ -319,17 +319,30 @@ export class ItemRenderer {
       root.add(g);
       return root;
     }
+    // TileEntityItemStackRenderer: shulker boxes facing up, beds as head + foot (foot one block towards -z)
+    if (name.endsWith('_shulker_box')) {
+      const color = name.slice(0, -'_shulker_box'.length);
+      root.add(shulkerBox(mat('entity/shulker/shulker_' + color + '.png'), 1).node);
+      return root;
+    }
+    if (name === 'bed') {
+      const m2 = mat('entity/bed/' + (DYE_NAMES[item.damage & 15] || 'red') + '.png');
+      root.add(bedPiece(m2, true, 0));
+      const foot = new Node(); foot.position.set(0, 0, -1); foot.add(bedPiece(m2, false, 0));
+      root.add(foot);
+      return root;
+    }
     if (name.startsWith('skull_')) {
-      // TileEntityItemStackRenderer: translate(-0.5, 0, -0.5), scale(2), then renderSkull(0, 0, 0, UP): a head 1 block tall
+      // TileEntityItemStackRenderer (1.12): renderSkull(0, 0, 0, UP, 180): the skull at its block size, half a block tall
       const which = name.slice(6);
       const texPath = { skeleton: 'entity/skeleton/skeleton.png', wither: 'entity/skeleton/wither_skeleton.png', zombie: 'entity/zombie/zombie.png',
-        char: 'entity/steve.png', creeper: 'entity/creeper/creeper.png' }[which];
-      const th = which === 'zombie' || which === 'char' ? 64 : 32;
-      const head = new Part(64, th).tex(0, 0).box(-4, -8, -4, 8, 8, 8);
+        char: 'entity/steve.png', creeper: 'entity/creeper/creeper.png', dragon: 'entity/enderdragon/dragon.png' }[which];
+      const type = { skeleton: 0, wither: 1, zombie: 2, char: 3, creeper: 4, dragon: 5 }[which];
+      // the skull node is in scale(-1, -1, 1) 1/16 units; this item space flips z instead of x
       const g = new Node();
-      g.add(head.build());
-      g.setMaterial(mat(texPath));
-      g.scale.set(2 / 16, -2 / 16, -2 / 16);
+      const sk = skullModel(type, mat(texPath));
+      sk.scale.set(1, 1, 1); g.add(sk);
+      g.scale.set(1 / 16, -1 / 16, -1 / 16);
       g.position.set(0.5, 0, 0.5);
       root.add(g);
       return root;
@@ -343,7 +356,7 @@ export class ItemRenderer {
       if (!img) return null;
       const key = 'banneritem:' + base + ':' + JSON.stringify((bet && bet.Patterns) || []);
       const tex = this.assets.textures.get(key) || this.assets.makeTexture(key, img.width, img.height, img.data);
-      const b = buildBanner(entityMaterial(tex, { alphaTest: 0.1, fullBright: gui }), true, 0);
+      const b = buildBanner(entityMaterial(tex, { alphaTest: 0.1, fullBright: gui, guiLighting: gui }), true, 0);
       b.swing.rotation.x = bannerSwing(0);
       return b.node;
     }

@@ -376,7 +376,6 @@ export class Particles {
 
   potionSwirl(e, color, ambient) {
     const r = ((color >> 16) & 255) / 255, g = ((color >> 8) & 255) / 255, b = (color & 255) / 255;
-    if (ambient && rand() < 0.8) return;
     this.spell(e.x + (rand() - 0.5) * e.width, e.y + rand() * e.height, e.z + (rand() - 0.5) * e.width, 0, 0, 0, r, g, b);
   }
 

@@ -250,9 +250,11 @@ export class RecipeBookGui {
   }
 
   // keys go to the search field while it is focused
+  // GuiRecipeBook.keyPressed: a focused search field takes every key but Escape (so 'E' doesn't close the screen)
   key(e) {
     if (!this.visible || !this.search.focused) return false;
-    return this.search.key(e);
+    if (this.search.key(e)) return true;
+    return e.code !== 'Escape';
   }
   char(c) {
     if (!this.visible || !this.search.focused) return false;

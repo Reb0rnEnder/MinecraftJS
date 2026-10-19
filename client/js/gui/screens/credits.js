@@ -94,6 +94,7 @@ export class CreditsScreen extends Screen {
     const logo = 'gui/title/minecraft.png';
     gui.blit(logo, x, k, 0, 0, 155, 44);
     gui.blit(logo, x + 155, k, 0, 45, 155, 44);
+    gui.blit('gui/title/edition.png', x + 88, k + 37, 0, 0, 98, 14, 128, 16);
     let l = k + 200;
     for (let i = 0; i < this.lines.length; i++) {
       if (i === this.lines.length - 1) {

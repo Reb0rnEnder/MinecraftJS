@@ -1,7 +1,7 @@
 // Where the base game assets come from: an assets/ folder next to the page (built by `npm run assets`),
 // or a zip embedded in the page (the single-file build). Both use the layout written by tools/build.js:
 //   pack.mcmeta, pack.png, minecraft/<textures|models|blockstates|lang|sounds|...>, data/*.json (zip only),
-//   bundles/models.json + bundles/textures.bin (folder only).
+//   bundles/models.json + bundles/textures.bin (folder only), bundles/entity-models.json, bundles/recipes.json.
 import { platform } from './platform/platform.js';
 import { ZipArchive } from './util/zip.js';
 import { decodeUtf8 } from './util/utf8.js';
@@ -12,6 +12,7 @@ export class FolderSource {
   data(name) { return platform().fetchJson(`data/${name}.json`); }
   models() { return platform().fetchJson(this.base + 'bundles/models.json'); }
   recipes() { return platform().fetchJson(this.base + 'bundles/recipes.json').catch(() => []); }
+  entityModels() { return platform().fetchJson(this.base + 'bundles/entity-models.json').catch(() => null); }
 
   // { files: Map<name, () => png bytes>, mcmeta } for textures/blocks and textures/items
   async blockTextures() {
@@ -37,6 +38,7 @@ export class ZipSource {
   }
 
   async recipes() { const t = this.zip.readText('bundles/recipes.json'); return t ? JSON.parse(t) : []; }
+  async entityModels() { const t = this.zip.readText('bundles/entity-models.json'); return t ? JSON.parse(t) : null; }
 
   async models() {
     const out = { blockstates: {}, models: {} };

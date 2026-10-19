@@ -295,29 +295,46 @@ export class Interaction {
   }
 
   // Block.getPlayerRelativeBlockHardness
+  // Block.getPlayerRelativeBlockHardness + EntityPlayer.getDigSpeed, in float like vanilla (the break progress sums
+  // these floats, so the tick a block breaks on matches)
   relativeHardness(b) {
-    const g = this.game;
-    const hardness = b.hardness;
+    const g = this.game, f32 = Math.fround;
+    const hardness = f32(b.hardness);
     if (hardness < 0) return 0;
-    if (hardness === 0) return 1;
+    if (hardness === 0) return Infinity;
     const held = g.inventory.held();
-    let f = g.items.strVsBlock(held, b);
+    let f = f32(g.items.strVsBlock(held, b));
     if (f > 1) {
       const eff = g.items.enchantLevel(held, 32);
-      if (eff > 0 && held) f += eff * eff + 1;
+      if (eff > 0 && held) f = f32(f + (eff * eff + 1));
     }
     const haste = g.effects.get(3);
-    if (haste) f *= 1 + (haste.amplifier + 1) * 0.2;
+    if (haste) f = f32(f * f32(1 + f32((haste.amplifier + 1) * f32(0.2))));
     const fatigue = g.effects.get(4);
-    if (fatigue) f *= [0.3, 0.09, 0.0027][fatigue.amplifier] ?? 8.1e-4;
-    const eyeBlock = blocks[g.world.getState(Math.floor(this.player.x), Math.floor(this.player.y + 1.62), Math.floor(this.player.z)) >> 4];
-    if (eyeBlock && eyeBlock.isWater) {
-      const helmet = g.inventory.armor[3];
-      if (!(helmet && g.items.enchantLevel(helmet, 6) > 0)) f /= 5;
-    }
-    if (!this.player.onGround) f /= 5;
+    if (fatigue) f = f32(f * f32([0.3, 0.09, 0.0027][fatigue.amplifier] ?? 8.1e-4));
+    if (this._eyesInWater() && !this._aquaAffinity()) f = f32(f / 5);
+    if (!this.player.onGround) f = f32(f / 5);
     const canHarvest = g.items.canHarvest(held, b);
-    return canHarvest ? f / hardness / 30 : f / hardness / 100;
+    return f32(f32(f / hardness) / (canHarvest ? 30 : 100));
+  }
+
+  // Entity.isInsideOfMaterial(WATER): the eyes below the water surface (not while in a boat)
+  _eyesInWater() {
+    const g = this.game, pl = this.player;
+    if (pl.ridingEntity && pl.ridingBoat) return false;
+    const d = pl.y + pl.eyeHeight();
+    const x = Math.floor(pl.x), y = Math.floor(d), z = Math.floor(pl.z);
+    const st = g.world.getState(x, y, z), b = blocks[st >> 4];
+    if (!b || !b.isWater) return false;
+    const lvl = st & 15;
+    const f = Math.fround(Math.fround(((lvl >= 8 ? 0 : lvl) + 1) / 9) - Math.fround(0.11111111));
+    return d < Math.fround(Math.fround(y + 1) - f);
+  }
+
+  // EnchantmentHelper.getAquaAffinityModifier: Aqua Affinity on any armour piece
+  _aquaAffinity() {
+    const g = this.game;
+    return g.inventory.armor.some((it) => it && g.items.enchantLevel(it, 6) > 0);
   }
 
   // Minecraft.sendClickBlockToController (leftClickCounter is decremented once per tick before the clicks)
@@ -352,7 +369,7 @@ export class Interaction {
       const b = blocks[state >> 4];
       if (!b || b.id === 0) { this.isHitting = false; return false; }
       this.prevDamage = this.curDamage;
-      this.curDamage += this.relativeHardness(b);
+      this.curDamage = Math.fround(this.curDamage + this.relativeHardness(b)); // curBlockDamageMP is a float
       if (this.stepSoundCounter % 4 === 0) g.sound.playBlockHit(pos.x, pos.y, pos.z, state);
       this.stepSoundCounter++;
       if (this.curDamage >= 1) {

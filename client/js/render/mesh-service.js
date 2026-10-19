@@ -38,7 +38,7 @@ export class MeshService {
         const sl = msg.slice;
         let res = null;
         const t0 = Date.now();
-        try { res = this.mesher.buildSection(new SliceWorld(sl), sl.x, sl.y, sl.z); } catch (err) { console.error('mesh error', err); }
+        try { res = this.mesher.buildSection(new SliceWorld(sl), sl.x, sl.y, sl.z, !!msg.lod); } catch (err) { console.error('mesh error', err); }
         const ms = Date.now() - t0;
         const head = { type: 'built', x: sl.x, y: sl.y, z: sl.z, gen: msg.gen, ms };
         if (!res) { this.post({ ...head, empty: true }); break; }

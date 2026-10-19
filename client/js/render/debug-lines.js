@@ -1,5 +1,5 @@
-// Debug line overlays: F3+B entity hitboxes (RenderManager.renderDebugBoundingBox) and the F3 world
-// direction axes that replace the crosshair (EntityRenderer.renderWorldDirections).
+// Debug line overlays: F3+B entity hitboxes (RenderManager.renderDebugBoundingBox) and F3+G chunk borders
+// (DebugRendererChunkBorder). The F3 direction axes at the crosshair are drawn by the HUD (GuiIngame, 1.12).
 import { FORMAT, colorParams } from '../gfx/device.js';
 
 const P_WHITE = colorParams(1, 1, 1, 1);
@@ -42,26 +42,14 @@ export class DebugLines {
   constructor(game) {
     this.game = game;
     this.boxes = new LineBatch(game.device);
-    this.axes = new LineBatch(game.device);
-    this.axesAt = null; // [x, y, z] in world space, or null
     const draw = (d) => this.boxes.draw(d, { blend: 'alpha', depthWrite: false, cull: false });
     draw.order = 20;
     game.renderer.extraDraws.push(draw);
-    // EntityRenderer.renderWorldDirections: after the hand, with the hand's projection and an unbobbed camera
-    this.axesCam = null; // { view, proj } set by the game each frame, or null
-    const axes = (d) => {
-      d.setGlobals({ view: this.axesCam.view, proj: this.axesCam.proj, fogMode: 2 });
-      this.axes.draw(d, { blend: 'alpha', depthWrite: false, cull: false });
-    };
-    axes.active = () => !!this.axesCam;
-    game.renderer.afterHand.push(axes);
   }
 
-  // Called once per frame after the entity renderer posed everything
   update(partial) {
     const g = this.game;
     this.boxes.begin();
-    this.axes.begin();
     if (g.showHitboxes) {
       const er = g.entityRenderer;
       const list = [...g.entities.all()];
@@ -85,13 +73,28 @@ export class DebugLines {
         }
       }
     }
-    if (this.axesCam) {
-      // AxisAlignedBB(0,0,0, 0.005,1e-4,1e-4) red / (.., 0.0033, ..) green / (.., .., 0.005) blue, at the eye
-      const x = 0, y = 0, z = 0;
-      this.axes.box(x, y, z, x + 0.005, y + 1e-4, z + 1e-4, 1, 0, 0, 1);
-      this.axes.box(x, y, z, x + 1e-4, y + 1e-4, z + 0.005, 0, 0, 1, 1);
-      this.axes.box(x, y, z, x + 1e-4, y + 0.0033, z + 1e-4, 0, 1, 0, 1);
+    if (g.showChunkBorders) this._chunkBorders(partial);
+  }
+
+  // DebugRendererChunkBorder: red lines at the neighbouring chunks' corners, yellow every 2 blocks along this chunk's
+  // edges and every 2 blocks up, blue at its corners and every 16 blocks up (lines from y 0 to 256)
+  _chunkBorders() {
+    const g = this.game, B = this.boxes;
+    const cx = Math.floor(g.player.x / 16) * 16, cz = Math.floor(g.player.z / 16) * 16;
+    for (let n = -16; n <= 32; n += 16) for (let m = -16; m <= 32; m += 16) B.line(cx + n, 0, cz + m, cx + n, 256, cz + m, 1, 0, 0, 1);
+    const Y = [1, 1, 0, 1];
+    for (let n = 2; n < 16; n += 2) {
+      B.line(cx + n, 0, cz, cx + n, 256, cz, ...Y); B.line(cx + n, 0, cz + 16, cx + n, 256, cz + 16, ...Y);
+      B.line(cx, 0, cz + n, cx, 256, cz + n, ...Y); B.line(cx + 16, 0, cz + n, cx + 16, 256, cz + n, ...Y);
     }
+    const ring = (y, c) => {
+      B.line(cx, y, cz, cx, y, cz + 16, ...c); B.line(cx, y, cz + 16, cx + 16, y, cz + 16, ...c);
+      B.line(cx + 16, y, cz + 16, cx + 16, y, cz, ...c); B.line(cx + 16, y, cz, cx, y, cz, ...c);
+    };
+    for (let y = 0; y <= 256; y += 2) if (y % 16) ring(y, Y);
+    const Bl = [0.25, 0.25, 1, 1];
+    for (const n of [0, 16]) for (const m of [0, 16]) B.line(cx + n, 0, cz + m, cx + n, 256, cz + m, ...Bl);
+    for (let y = 0; y <= 256; y += 16) ring(y, Bl);
   }
 }
 

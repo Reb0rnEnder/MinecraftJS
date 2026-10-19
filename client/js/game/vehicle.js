@@ -21,6 +21,7 @@ export class BoatController {
     this.world = world;
     this.e = e;
     const b = this.body = new LocalPlayer();
+    b.entity = e; // collisions skip this vehicle and its passengers
     b.width = f32(1.375); b.height = f32(0.5625); b.stepHeight = 0;
     b.setPosition(e.x, e.y, e.z);
     this.yaw = e.yaw;
@@ -190,6 +191,7 @@ export class HorseController {
     this.world = world;
     this.e = e;
     const b = this.body = new LocalPlayer();
+    b.entity = e; // collisions skip this vehicle and its passengers
     b.width = f32(e.width || 1.3964844); b.height = f32(e.height || 1.6); b.stepHeight = 1;
     b.setPosition(e.x, e.y, e.z);
     b.yaw = e.yaw;

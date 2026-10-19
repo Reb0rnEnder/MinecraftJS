@@ -15,8 +15,11 @@ export class SlotList {
     this.showSelectionBox = opts.selectionBox !== false;
     this.listWidth = opts.listWidth || 220;
     this.scrollBarOffset = opts.scrollBarOffset || 0;
+    if (opts.left !== undefined) { this.left = opts.left; this.right = opts.left + opts.width; }
+    if (opts.scrollBarRight) this.scrollBarX = () => this.right - 6; // GuiResourcePackList
     this.amountScrolled = 0;
-    this.dragging = false;
+    this.initialClickY = -1; // GuiSlot: -1 idle, -2 press outside the list, else the last mouse y of a drag
+    this.scrollMultiplier = 1;
     this.lastClicked = -1;
     this.lastClickTime = 0;
   }
@@ -32,7 +35,7 @@ export class SlotList {
 
   contentHeight() { return this.size() * this.slotHeight + this.headerPadding; }
   maxScroll() { return Math.max(0, this.contentHeight() - (this.bottom - this.top - 4)); }
-  scrollBarX() { return this.width / 2 + 124 + this.scrollBarOffset; }
+  scrollBarX() { return this.left + this.width / 2 + 124 + this.scrollBarOffset; }
   slotLeft() { return this.left + this.width / 2 - this.listWidth / 2 + 2; }
   slotTop(i) { return this.top + 4 - Math.floor(this.amountScrolled) + i * this.slotHeight + this.headerPadding; }
   clamp() { this.amountScrolled = Math.max(0, Math.min(this.maxScroll(), this.amountScrolled)); }
@@ -87,42 +90,69 @@ export class SlotList {
     this.decorations(gui, mx, my);
   }
 
-  inside(my) { return my >= this.top && my <= this.bottom; }
+  // GuiSlot.isMouseYWithinSlotBounds (also checks x against the list's left / right)
+  inside(my, mx) { return my >= this.top && my <= this.bottom && (mx === undefined || (mx >= this.left && mx <= this.right)); }
 
+  // GuiSlot.handleMouseInput (press): click a slot or the header, then start a drag. Dragging the list moves the
+  // content with the mouse; dragging the scrollbar moves the thumb with it (scrollMultiplier < 0).
   mouseDown(mx, my, button, e) {
-    if (button !== 0 || !this.inside(my)) return false;
-    const sb = this.scrollBarX();
-    if (mx >= sb && mx <= sb + 6) {
-      this.dragging = true;
-      this._dragTo(my);
-      return true;
-    }
+    if (button !== 0) return false;
+    if (!this.inside(my, mx)) { this.initialClickY = -2; return false; }
+    const i0 = this.left + this.width / 2 - this.listWidth / 2, i1 = this.left + this.width / 2 + this.listWidth / 2;
+    const k = my - this.top - this.headerPadding + Math.floor(this.amountScrolled) - 4;
+    let handled = false, drag = true;
     const i = this.slotAt(mx, my);
     if (i >= 0) {
       const now = platform().now();
       const dbl = i === this.lastClicked && now - this.lastClickTime < 250;
       this.lastClicked = i;
       this.lastClickTime = now;
-      this.clicked(i, dbl, mx, my, mx - this.slotLeft(), my - this.slotTop(i), e);
-      return true;
+      // GuiListExtended: an entry that takes the click (a button) disables dragging until release
+      if (this.clicked(i, dbl, mx, my, mx - this.slotLeft(), my - this.slotTop(i), e) === true) drag = false;
+      handled = true;
+    } else if (mx >= i0 && mx <= i1 && k < 0) {
+      if (this.headerPadding) this.headerClicked(mx - i0, my - this.top + Math.floor(this.amountScrolled) - 4);
+      drag = false;
+      handled = true;
     }
-    const i0 = this.left + this.width / 2 - this.listWidth / 2, i1 = this.left + this.width / 2 + this.listWidth / 2;
-    if (this.headerPadding && mx >= i0 && mx <= i1) {
-      const k = my - this.top - this.headerPadding + Math.floor(this.amountScrolled) - 4;
-      if (k < 0) { this.headerClicked(mx - i0, my - this.top + Math.floor(this.amountScrolled) - 4); return true; }
-    }
-    return false;
+    const sb = this.scrollBarX();
+    if (mx >= sb && mx <= sb + 6) {
+      const max = Math.max(1, this.maxScroll()), h = this.bottom - this.top;
+      const thumb = Math.max(32, Math.min(h - 8, Math.floor(h * h / Math.max(1, this.contentHeight()))));
+      this.scrollMultiplier = -1 / ((h - thumb) / max);
+      handled = true;
+    } else this.scrollMultiplier = 1;
+    this.initialClickY = drag ? my : -2;
+    return handled || this.maxScroll() > 0;
   }
 
-  _dragTo(my) {
-    const max = this.maxScroll();
-    const h = this.bottom - this.top;
-    const k1 = Math.max(32, Math.min(h - 8, Math.floor(h * h / Math.max(1, this.contentHeight()))));
-    this.amountScrolled = (my - this.top - k1 / 2) / Math.max(1, h - k1) * max;
+  // GuiSlot.drawScreen while the button is held
+  mouseMove(mx, my) {
+    if (this.initialClickY < 0) return;
+    this.amountScrolled -= (my - this.initialClickY) * this.scrollMultiplier;
+    this.initialClickY = my;
     this.clamp();
   }
-
-  mouseMove(mx, my) { if (this.dragging) this._dragTo(my); }
-  mouseUp() { this.dragging = false; }
+  mouseUp() { this.initialClickY = -1; }
+  get dragging() { return this.initialClickY >= 0; }
   wheel(d) { this.amountScrolled += d * this.slotHeight / 2; this.clamp(); }
+}
+
+// A SlotList driven by callbacks (GuiListExtended-style screens):
+// { size(), draw(gui, i, x, y, h, mx, my), click(i, dbl, mx, my, rx, ry, e), selected(i), header(gui, x, y), headerClick(rx, ry) }
+export class ListOf extends SlotList {
+  constructor(screen, top, bottom, slotHeight, fns, opts = {}) {
+    super(screen, top, bottom, slotHeight, opts);
+    this.fns = fns;
+  }
+  size() { return this.fns.size(); }
+  isSelected(i) { return this.fns.selected ? this.fns.selected(i) : false; }
+  drawSlot(gui, i, x, y, h, mx, my) {
+    // the mouse only counts inside the list (GuiListExtended passes it through, buttons under the dirt bars stay idle)
+    const inList = this.inside(my, mx);
+    this.fns.draw(gui, i, x, y, h, inList ? mx : -9999, inList ? my : -9999, mx, my);
+  }
+  clicked(i, dbl, mx, my, rx, ry, e) { return this.fns.click ? this.fns.click(i, dbl, mx, my, rx, ry, e) : false; }
+  drawHeader(gui, x, y) { if (this.fns.header) this.fns.header(gui, x, y); }
+  headerClicked(rx, ry) { if (this.fns.headerClick) this.fns.headerClick(rx, ry); }
 }

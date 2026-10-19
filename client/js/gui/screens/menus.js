@@ -66,7 +66,7 @@ export class TitleScreen extends Screen {
     const prox = new Button(21, this.width - 104, 28, 100, 20, '', () => g.screens.open(new ProxiesScreen(g, this)));
     prox.render = (gui, mx, my) => {
       const p = g.proxies.current();
-      const r = p ? ensureTested(p.url) : { error: 'none' };
+      const r = p ? ensureTested(p) : { error: 'none' };
       const hov = prox.hovered(mx, my);
       gui.button(prox.x, prox.y, prox.w, prox.h, '', hov);
       gui.textCentered(tr('minecraftjs.proxies.title'), prox.x + 14 + (prox.w - 14) / 2 - 2, prox.y + 6, hov ? 0xffffa0 : 0xe0e0e0, true);
@@ -99,6 +99,8 @@ export class TitleScreen extends Screen {
       gui.blit(logo, lx, ly, 0, 0, 155, 44);
       gui.blit(logo, lx + 155, ly, 0, 45, 155, 44);
     }
+    // 1.12 GuiMainMenu: the "Java Edition" banner under the logo (98x14 of a 128x16 texture)
+    gui.blit('gui/title/edition.png', lx + 88, 67, 0, 0, 98, 14, 128, 16);
     if (this.splash) {
       gui.pushMatrix();
       gui.translate(this.width / 2 + 90, 70);

@@ -1,3 +1,4 @@
+import { tr } from '../gui/i18n.js';
 // Sound engine: vanilla sounds.json (+ resource packs), played through the platform audio interface.
 import { blocks } from '../world/blocks.js';
 import { platform } from '../platform/platform.js';
@@ -105,6 +106,16 @@ export class SoundManager {
     this.game.assets.loadSoundDefinitions().then((d) => { this.defs = d; }).catch(() => { this.defs = {}; });
   }
 
+  // SoundHandler.playSound -> GuiSubtitleOverlay: events with a "subtitle" in sounds.json (global sounds at the player)
+  _subtitle(name, x, y, z, opts) {
+    const g = this.game;
+    const d = this.defs && this.defs[name];
+    if (!d || !d.subtitle || !g.settings.showSubtitles || !g.inWorld || !g.hud.addSubtitle) return;
+    const p = g.player;
+    if (opts.global || x === undefined) g.hud.addSubtitle(tr(d.subtitle), p.x, p.y, p.z);
+    else g.hud.addSubtitle(tr(d.subtitle), x, y, z);
+  }
+
   volumeFor(cat) {
     const s = this.game.settings;
     const v = cat === 'master' ? 1 : (s.soundVolumes[cat] !== undefined ? s.soundVolumes[cat] : 1);
@@ -138,6 +149,7 @@ export class SoundManager {
     if (!this.audio) return null;
     const def = this._pick(name);
     if (!def) return null;
+    this._subtitle(name, x, y, z, opts);
     const cat = typeof opts.category === 'number' ? CATEGORIES[opts.category] || 'master' : opts.category || CATEGORY_OF(name);
     const catVol = this.volumeFor(cat);
     if (catVol <= 0) return null;

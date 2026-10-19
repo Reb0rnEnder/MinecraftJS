@@ -50,6 +50,9 @@ const AO_AXES = [
   [[0, 0, 1], [0, 1, 0]], // east
 ];
 
+// Small plants left out of far (LOD) sections
+const LOD_SKIP = new Set(['tallgrass', 'double_plant', 'yellow_flower', 'red_flower', 'deadbush', 'brown_mushroom', 'red_mushroom', 'waterlily', 'web']);
+
 export class Mesher {
   constructor(world, store) {
     this.world = world; // { getState(x,y,z), getLight(x,y,z) -> sky<<4|block, getBiome(x,z) }
@@ -236,7 +239,13 @@ export class Mesher {
   }
 
   // world: a SliceWorld around the section
-  buildSection(world, cx, sy, cz) {
+  // lod (MinecraftJS level of detail, far sections): flat lighting, fast leaves, no small plants
+  buildSection(world, cx, sy, cz, lod = false) {
+    if (lod) {
+      const saved = this.options;
+      this.options = { ...saved, fancy: false, smooth: 0, lod: true };
+      try { return this.buildSection(world, cx, sy, cz, false); } finally { this.options = saved; }
+    }
     this.world = world;
     const solid = new VBuf(), cutout = new VBuf(), trans = new VBuf();
     const w = world;
@@ -253,6 +262,7 @@ export class Mesher {
       if (!b) continue;
       if (b.isLiquid) { this.renderFluid(state, b, x, y, z, trans, lx, ly, lz); continue; }
       if (!b.hasModel) continue;
+      if (this.options.lod && LOD_SKIP.has(b.name)) continue;
       const model = this.getModel(state, x, y, z);
       if (!model || !model.quads.length) continue;
       // Block.getOffsetType: flowers are nudged randomly in XZ, tall grass in XYZ (BlockModelRenderer)
@@ -321,7 +331,7 @@ export class Mesher {
         }
       }
     }
-    return { solid: solid.result(), cutout: cutout.result(), translucent: trans.result(), vis: computeVisibility(blocksArr, this.options.fancy) };
+    return { solid: solid.result(), cutout: cutout.result(), translucent: trans.result(), vis: computeVisibility(blocksArr, this.options.fancy), lod: !!this.options.lod };
   }
 
   // ---- Fluids (port of BlockFluidRenderer) ----

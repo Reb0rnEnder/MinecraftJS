@@ -1,8 +1,9 @@
 // Entity rendering (RenderManager + Render* classes) on the gfx scene graph.
+import { DYE_NAMES } from './tile-renderer.js';
 import * as M from './entity-models.js';
 
 const M_dragon = () => M.dragonParts();
-import { entityMaterial, entityMesh, modelDevice, Part } from './boxmodel.js';
+import { entityMaterial, entityMesh, modelDevice } from './boxmodel.js';
 import { applyTransform } from './item-renderer.js';
 import { buildTextMeshes, destroyTextMeshes } from './text-mesh.js';
 import { blocks } from '../world/blocks.js';
@@ -14,7 +15,7 @@ import { JavaRandom } from '../util/jrandom.js';
 import { decodePng } from '../util/png.js';
 import { decodeBase64 } from '../util/base64.js';
 import { platform } from '../platform/platform.js';
-import { fetchSkin } from '../net/proxies.js';
+import { fetchSkin, proxyRoute } from '../net/proxies.js';
 import { EntityFire } from './entity-fire.js';
 import { decodeUtf8 } from '../util/utf8.js';
 
@@ -135,32 +136,67 @@ export class EntityRenderer {
 
   // ---------------------------------------------------------------- skins
 
-  skinFor(e) {
-    let s = this.skins.get(e.uuid);
-    if (s) return s;
-    const slim = (uuidHash(e.uuid) & 1) === 1;
-    s = { path: slim ? 'entity/alex.png' : 'entity/steve.png', slim, texture: null };
-    // Custom skin from the player_info textures property (fetched through the proxy)
-    const info = this.game.scoreboard.players && this.game.scoreboard.players.get(e.uuid);
+  // The player's textures property from the tab list (null until the server sends one)
+  _texturesProp(uuid) {
+    const info = this.game.scoreboard.players && this.game.scoreboard.players.get(uuid);
     const prop = info && info.properties && info.properties.find((p) => p.name === 'textures');
-    if (prop) {
-      try {
-        const tj = JSON.parse(decodeUtf8(decodeBase64(prop.value)));
-        const skin = tj.textures && tj.textures.SKIN;
-        if (skin && skin.url) {
-          s.slim = !!(skin.metadata && skin.metadata.model === 'slim');
-          fetchSkin(skin.url).then((bytes) => {
-            const img = decodePng(bytes);
-            s.legacy = img.height === 32;
-            s.image = img;
-            s.texture = this.game.assets.makeTexture('skin:' + e.uuid, img.width, img.height, img.data);
-            this._rebuild(e.uuid);
-          }).catch(() => {});
-        }
-      } catch (err) { /* ignore */ }
-    }
+    return prop ? prop.value : null;
+  }
+
+  // NetworkPlayerInfo / SkinManager.loadProfileTextures: skin and cape from the player's textures property. The record
+  // is redone when the property arrives or changes (the model may be drawn before the tab list entry). With no textures
+  // from the server, the local player falls back to its own Mojang profile when the server's UUID is the account's.
+  skinFor(e) {
+    const value = this._texturesProp(e.uuid);
+    let s = this.skins.get(e.uuid);
+    if (s && (s.propValue === value || (value === null && s.propValue !== undefined && s.fromSession))) return s;
+    const slim = (uuidHash(e.uuid) & 1) === 1;
+    const fresh = { path: slim ? 'entity/alex.png' : 'entity/steve.png', slim, texture: null, propValue: value };
+    if (s) this._rebuild(e.uuid);
+    s = fresh;
     this.skins.set(e.uuid, s);
+    if (value) this._loadTextures(s, e.uuid, value);
+    else if (e.uuid && e.uuid === this.game.playerUuid) this._sessionTextures(s, e.uuid);
     return s;
+  }
+
+  _sessionTextures(s, uuid) {
+    const acc = this.game.accounts && this.game.accounts.active();
+    if (!acc || acc.type !== 'microsoft' || !acc.uuid || acc.uuid.replace(/-/g, '') !== uuid.replace(/-/g, '')) return;
+    const route = proxyRoute('/profile?uuid=' + uuid.replace(/-/g, ''));
+    if (!route) return;
+    s.fromSession = true;
+    platform().fetchJson(route).then((j) => {
+      const prop = (j.properties || []).find((p) => p.name === 'textures');
+      if (prop && this.skins.get(uuid) === s) this._loadTextures(s, uuid, prop.value);
+    }).catch(() => {});
+  }
+
+  _loadTextures(s, uuid, value) {
+    try {
+      const tj = JSON.parse(decodeUtf8(decodeBase64(value)));
+      const skin = tj.textures && tj.textures.SKIN;
+      if (skin && skin.url) {
+        s.slim = !!(skin.metadata && skin.metadata.model === 'slim');
+        fetchSkin(skin.url).then((bytes) => {
+          // ImageBufferDownload.parseUserSkin: 64x64 layout, opaque base layer
+          const img = parseUserSkin(decodePng(bytes));
+          s.legacy = false;
+          s.image = img;
+          s.texture = this.game.assets.makeTexture('skin:' + uuid, img.width, img.height, img.data);
+          this._rebuild(uuid);
+        }).catch(() => {});
+      }
+      // Mojang capes (LayerCape), used as downloaded
+      const cape = tj.textures && tj.textures.CAPE;
+      if (cape && cape.url) {
+        fetchSkin(cape.url).then((bytes) => {
+          const img = decodePng(bytes);
+          s.cape = this.game.assets.makeTexture('cape:' + uuid, img.width, img.height, img.data);
+          this._rebuild(uuid);
+        }).catch(() => {});
+      }
+    } catch (err) { /* bad property */ }
   }
 
   // Texture reference for a skin (falls back to the default skin until loaded)
@@ -203,6 +239,8 @@ export class EntityRenderer {
       case 66: return 'entity/witch.png';
       case 67: return 'entity/endermite.png';
       case 68: return e.elder ? 'entity/guardian_elder.png' : 'entity/guardian.png';
+      // RenderShulker: colour 16 (none) is the purple shulker
+      case 69: return 'entity/shulker/shulker_' + (DYE_NAMES[e.shulkerColor] || 'purple') + '.png';
       case 90: return 'entity/pig/pig.png';
       case 91: return 'entity/sheep/sheep.png';
       case 92: return 'entity/cow/cow.png';
@@ -230,7 +268,7 @@ export class EntityRenderer {
   _modelFor(e) {
     if (e.kind === 'player') {
       const s = this.skinFor(e);
-      return M.playerModel(s.slim, 64, s.legacy ? 32 : 64);
+      return M.playerModel(s.slim, 64, 64);
     }
     if (e.kind === 'armorstand') return M.armorStand();
     switch (e.type) {
@@ -250,6 +288,7 @@ export class EntityRenderer {
       case 66: return M.villager(64, 128, true);
       case 67: return M.endermite();
       case 68: return M.guardian();
+      case 69: return M.shulker();
       case 90: return M.pig();
       case 91: return M.sheep(false);
       case 92: case 96: return M.cow();
@@ -365,6 +404,19 @@ export class EntityRenderer {
       eobj.position.z = 2;
       v.modelGroup.add(eobj);
       v.elytra = { model: em, obj: eobj };
+    }
+    if (e.kind === 'player') {
+      // LayerCape: ModelPlayer.bipedCape, translate(0, 0, 0.125) then the sway rotations (set each frame)
+      const sk = this.skinFor(e);
+      if (sk.cape && model.parts.cape) {
+        const cmat = this._mat(v, () => sk.cape, { alphaTest: 0.1, cull: false });
+        const holder = new Node();
+        holder.position.z = 2;
+        holder.add(model.parts.cape.build());
+        model.parts.cape.setMaterial(cmat);
+        v.modelGroup.add(holder);
+        v.cape = { holder, part: model.parts.cape };
+      }
     }
     v.atlasMat = this._mat(v, this.atlasTex, { alphaTest: 0.1, transparent: true }); // RenderItem blends
     // Held item holders (LayerHeldItem: one per arm)
@@ -607,7 +659,7 @@ export class EntityRenderer {
         } else if (e.type === 66) {
           // wither skull
           const mat = this._mat(v, 'entity/wither/wither.png');
-          const head = M.biped(64, 64).parts.head;
+          const { head } = M.blockModel('witherSkull', ['head']); // RenderWitherSkull's ModelSkeletonHead
           const g = new Node(); g.add(head.build()); head.setMaterial(mat);
           g.scale.set(-1 / 16, -1 / 16, 1 / 16);
           v.root.add(g);
@@ -635,8 +687,17 @@ export class EntityRenderer {
         const mat = this._mat(v, e.kind === 'boat' ? 'entity/boat/boat_' + (['oak', 'spruce', 'birch', 'jungle', 'acacia', 'darkoak'][e.boatType || 0] || 'oak') + '.png' : 'entity/minecart.png');
         v.inner = new Node();
         const mg = new Node();
-        mg.add(this._makeModelObject(model, mat));
         mg.scale.set(-1 / 16, -1 / 16, 1 / 16);
+        if (e.kind === 'boat') {
+          // ModelBoat.render: rotate(90, Y) inside the scaled space; renderMultipass draws noWater depth only
+          const r = new Node();
+          r.rotation.set(0, Math.PI / 2, 0);
+          r.add(this._makeModelObject(model, mat));
+          const mask = this._mat(v, mat.tex, { colorWrite: false });
+          r.add(this._makeModelObject({ roots: [model.noWater] }, mask));
+          mg.add(r);
+          v.boatModel = model;
+        } else mg.add(this._makeModelObject(model, mat));
         v.inner.add(mg);
         v.root.add(v.inner);
         if (e.kind === 'minecart') {
@@ -677,15 +738,15 @@ export class EntityRenderer {
       case 'crystal': {
         v = { root: new Node(), kind: 'crystal', materials: [] };
         const mat = this._mat(v, 'entity/endercrystal/endercrystal.png', { fullBright: true });
-        // ModelEnderCrystal base (RenderEnderCrystal builds it with the base): scale 2, translate -0.5
-        const base = new Part(64, 32).tex(0, 16).box(-6, 0, -6, 12, 4, 12);
-        const bg = new Node(); bg.add(base.build()); base.setMaterial(mat);
-        bg.scale.set(2 / 16, 2 / 16, 2 / 16); bg.position.set(0, -1, 0);
-        v.root.add(bg);
+        // ModelEnderCrystal (RenderEnderCrystal builds it with the base): base scaled 2, then glass, glass and cube
+        const cm = M.blockModel(e.showBottom === false ? 'enderCrystalNoBase' : 'enderCrystal', ['cube', 'glass', 'base']);
+        if (cm.base) {
+          const bg = new Node(); bg.add(cm.base.build()); cm.base.setMaterial(mat);
+          bg.scale.set(2 / 16, 2 / 16, 2 / 16); bg.position.set(0, -1, 0);
+          v.root.add(bg);
+        }
         v.cubes = [];
-        for (const [u, vv, s] of [[0, 0, 8], [32, 0, 8], [32, 0, 6]]) {
-          const pp = M.biped(64, 32).parts.head;
-          pp.boxes = []; pp.tex(u, vv).box(-s / 2, -s / 2, -s / 2, s, s, s);
+        for (const pp of [cm.glass, M.blockModel('enderCrystal', ['cube', 'glass']).glass, cm.cube]) {
           const o = pp.build(); pp.setMaterial(mat);
           const g = new Node(); g.add(o); v.cubes.push(g); v.root.add(g);
         }
@@ -714,7 +775,7 @@ export class EntityRenderer {
       case 'leash': {
         v = { root: new Node(), kind: 'leash', materials: [] };
         const mat = this._mat(v, 'entity/lead_knot.png');
-        const p = M.biped(32, 32).parts.head; p.boxes = []; p.tex(0, 0).box(-3, -8, -3, 6, 8, 6);
+        const p = M.blockModel('leash', ['knot']).knot; // ModelLeashKnot
         const g = new Node(); g.add(p.build()); p.setMaterial(mat); g.scale.set(-1 / 16, -1 / 16, 1 / 16); g.position.y = 0.5;
         v.root.add(g);
         break;
@@ -774,8 +835,10 @@ export class EntityRenderer {
         this._updateNameTag(e, v, p);
         continue;
       }
-      // LOD: far living entities re-pose less often (every 2nd frame past 32 blocks, every 4th past 64)
-      v.lodSkip = d2 > 4096 ? (this.frame + e.id) % 4 !== 0 : d2 > 1024 ? (this.frame + e.id) % 2 !== 0 : false;
+      // LOD (MinecraftJS, settings.lodChunks, 0 off): far living entities re-pose less often, every 2nd frame past
+      // the distance and every 4th past twice it
+      const lod = (this.game.settings.lodChunks | 0) * 16;
+      v.lodSkip = lod <= 0 ? false : d2 > 4 * lod * lod ? (this.frame + e.id) % 4 !== 0 : d2 > lod * lod ? (this.frame + e.id) % 2 !== 0 : false;
       if (v.lodSkip) this.stats.lod++;
       v.root.position.set(p.x, p.y, p.z);
       if (e.onFire) burning.push({ e, p });
@@ -841,13 +904,27 @@ export class EntityRenderer {
   _renderLiving(e, v, p, partial) {
     const g = this.game;
     const lerpAngle = (a, b) => { let d = b - a; while (d < -180) d += 360; while (d >= 180) d -= 360; return a + d * partial; };
-    const body = lerpAngle(e.prevBodyYaw, e.bodyYaw);
+    let body = e.kind === 'mob' && e.type === 69 ? 180 : lerpAngle(e.prevBodyYaw, e.bodyYaw); // EntityShulker keeps its body at 180
     const head = lerpAngle(e.prevHeadYaw, e.headYaw);
+    // RenderLivingBase.doRender: riding a living mount, the body follows the mount (head within 85 degrees of it)
+    const mount = e.riding >= 0 ? g.entities.get(e.riding) : null;
+    if (mount && (mount.kind === 'mob' || mount.kind === 'player')) {
+      body = lerpAngle(mount.prevBodyYaw, mount.bodyYaw);
+      let d = head - body;
+      d = ((d % 360) + 540) % 360 - 180;
+      d = Math.max(-85, Math.min(85, d));
+      body = head - d;
+      if (d * d > 2500) body += d * 0.2;
+    }
     const pitch = e.prevPitch + (e.pitch - e.prevPitch) * partial;
     const age = e.ticks + partial;
-    const ls = e.limbSwing - e.limbSwingAmount * (1 - partial);
-    let lsa = e.prevLimbSwingAmount + (e.limbSwingAmount - e.prevLimbSwingAmount) * partial;
-    if (lsa > 1) lsa = 1;
+    // riders get no limb swing; children swing three times as fast
+    let ls = 0, lsa = 0;
+    if (e.riding < 0) {
+      lsa = Math.min(1, e.prevLimbSwingAmount + (e.limbSwingAmount - e.prevLimbSwingAmount) * partial);
+      ls = e.limbSwing - e.limbSwingAmount * (1 - partial);
+      if (e.child) ls *= 3;
+    }
     let sd = e.swingProgress - e.prevSwingProgress;
     if (sd < 0) sd += 1; // getSwingProgress
     const swing = e.prevSwingProgress + sd * partial;
@@ -862,6 +939,21 @@ export class EntityRenderer {
     v.yawGroup.rotation.set(0, (180 - body) * D2R, 0);
     v.yawGroup.position.set(0, 0, 0);
     v.yawGroup.matrix = null;
+    if (e.kind === 'mob' && e.type === 69 && e.attachFace) {
+      // RenderShulker.applyRotations: turn the body onto the face it is attached to
+      const m = mat4.create();
+      mat4.rotateY(m, m, (180 - body) * D2R);
+      const R = (a, x, y, z) => mat4.rotate(m, m, a * D2R, x, y, z);
+      switch (e.attachFace) {
+        case 5: mat4.translate(m, m, 0.5, 0.5, 0); R(90, 1, 0, 0); R(90, 0, 0, 1); break;
+        case 4: mat4.translate(m, m, -0.5, 0.5, 0); R(90, 1, 0, 0); R(-90, 0, 0, 1); break;
+        case 2: mat4.translate(m, m, 0, 0.5, -0.5); R(90, 1, 0, 0); break;
+        case 3: mat4.translate(m, m, 0, 0.5, 0.5); R(90, 1, 0, 0); R(180, 0, 0, 1); break;
+        case 1: mat4.translate(m, m, 0, 1, 0); R(180, 1, 0, 0); break;
+        default: break;
+      }
+      v.yawGroup.matrix = m;
+    }
     if (e.kind === 'player' && e.elytraFlying) {
       // RenderPlayer.applyRotations: pitch into the glide, then turn towards the direction of travel
       const m = mat4.create();
@@ -914,6 +1006,7 @@ export class EntityRenderer {
         case 66: sx = sy = sz = 0.9375; break;
         case 120: sx = sy = sz = 0.9375; break;
         case 68: if (e.elder) sx = sy = sz = 2.35; break;
+        case 69: sx = sy = sz = 0.999; break;
         case 100: if (e.horseType === 1 || e.horseType === 2) { sx = sz = sy = e.horseType === 1 ? 0.87 : 0.92; } break;
         default: break;
       }
@@ -948,6 +1041,7 @@ export class EntityRenderer {
       tailRotation: e.tamed ? (0.55 - (20 - (e.wolfHealth || 20)) * 0.02) * Math.PI : Math.PI / 5,
       witchDrinking: e.kind === 'mob' && e.type === 66 && e.usingItem,
       squish: 0,
+      peek: e.type === 69 ? (e.prevPeek || 0) + ((e.peek || 0) - (e.prevPeek || 0)) * partial : 0,
     };
     if (e.kind === 'armorstand') {
       const m = e.metadata;
@@ -992,6 +1086,7 @@ export class EntityRenderer {
         for (const r of v.elytra.model.roots) r.sync();
       }
     }
+    if (v.cape) this._poseCape(e, v, partial);
     for (const L of v.layers) {
       L.model.animate(L.model, args);
       copyPose(model, L.model);
@@ -1287,9 +1382,78 @@ export class EntityRenderer {
 
   _renderVehicle(e, v, p, partial) {
     const yaw = e.prevYaw + (e.yaw - e.prevYaw) * partial;
-    v.inner.rotation.set(0, (180 - yaw) * D2R, 0);
-    v.inner.position.set(0, e.kind === 'boat' ? 0.25 : 0.375, 0);
-    void p;
+    v.inner.position.set(0, 0.375, 0);
+    if (e.kind === 'boat') {
+      // RenderBoat.setupRotation: hurt wobble around X, then ModelBoat paddles from EntityBoat.getRowingTime
+      const f = (e.timeSinceHit || 0) - partial;
+      const f1 = Math.max(0, (e.damageTaken || 0) - partial);
+      const wob = f > 0 ? Math.sin(f) * f * f1 / 10 * (e.forwardDirection || 1) : 0;
+      v.inner.rotation.set(wob * D2R, (180 - yaw) * D2R, 0, 'YXZ');
+      if (v.boatModel) {
+        const pos = e.paddlePositions || [0, 0], st = e.paddleState || [false, false];
+        const rt = (i) => (st[i] ? pos[i] - 0.39269909262657166 + 0.39269909262657166 * Math.min(1, Math.max(0, partial)) : 0);
+        v.boatModel.animate(v.boatModel, { rowing: [rt(0), rt(1)] });
+        for (const r of v.boatModel.roots) r.sync();
+      }
+    } else this._renderMinecart(e, v, p, partial, yaw);
+  }
+
+  // LayerCape.doRenderLayer: hidden with an elytra, while invisible or with the cape skin part off; swings back with
+  // the distance to the trailing chasing point, sideways with turning, and bobs while walking
+  _poseCape(e, v, partial) {
+    const chest = e.equipment[3];
+    const flags = e.skinFlags !== undefined ? e.skinFlags : 0x7f;
+    const show = !e.invisible && !!(flags & 1) && !(chest && chest.id === 443);
+    v.cape.holder.visible = show;
+    if (!show) return;
+    const L = (a, b) => a + (b - a) * partial;
+    const d0 = L(e.prevChasingX, e.chasingX) - L(e.prevX, e.x);
+    const d1 = L(e.prevChasingY, e.chasingY) - L(e.prevY, e.y);
+    const d2 = L(e.prevChasingZ, e.chasingZ) - L(e.prevZ, e.z);
+    const f = L(e.prevBodyYaw, e.bodyYaw) * D2R;
+    const d3 = Math.sin(f), d4 = -Math.cos(f);
+    let f1 = Math.max(-6, Math.min(32, d1 * 10));
+    const f2 = Math.max(0, (d0 * d3 + d2 * d4) * 100);
+    const f3 = (d0 * d4 - d2 * d3) * 100;
+    const f4 = L(e.prevCameraYaw || 0, e.cameraYaw || 0);
+    f1 += Math.sin(L(e.prevDistanceWalked || 0, e.distanceWalked || 0) * 6) * 32 * f4;
+    if (e.sneaking) f1 += 25;
+    // rotate(6 + f2 / 2 + f1, X), rotate(f3 / 2, Z), rotate(-f3 / 2, Y), rotate(180, Y)
+    v.cape.holder.rotation.set((6 + f2 / 2 + f1) * D2R, (180 - f3 / 2) * D2R, f3 / 2 * D2R, 'XZY');
+    v.cape.part.py = e.sneaking ? 2 : 0; // ModelPlayer.setRotationAngles
+    v.cape.part.sync();
+  }
+
+  // RenderMinecart: snapped onto the rail (EntityMinecart.getPos / getPosOffset 0.3 blocks ahead and behind), yaw and
+  // pitch from the track, a tiny per-cart offset, and the hurt wobble
+  _renderMinecart(e, v, p, partial, yaw) {
+    const w = this.game.world;
+    let pitch = e.prevPitch + (e.pitch - e.prevPitch) * partial;
+    let ox = 0, oy = 0, oz = 0;
+    const pos = railPos(w, p.x, p.y, p.z);
+    if (pos) {
+      const a = railPosOffset(w, p.x, p.y, p.z, 0.3) || pos, b = railPosOffset(w, p.x, p.y, p.z, -0.3) || pos;
+      ox = pos[0] - p.x; oy = (a[1] + b[1]) / 2 - p.y; oz = pos[2] - p.z;
+      const dx = b[0] - a[0], dy = b[1] - a[1], dz = b[2] - a[2];
+      const len = Math.hypot(dx, dy, dz);
+      if (len !== 0) {
+        yaw = Math.atan2(dz / len, dx / len) * 180 / Math.PI;
+        pitch = Math.atan(dy / len) * 73;
+      }
+    }
+    // long i = id * 493286711L; i = i * i * 4392167121L + i * 98761L
+    if (v.jitter === undefined) {
+      let i = BigInt.asIntN(64, BigInt(e.id) * 493286711n);
+      i = BigInt.asIntN(64, i * i * 4392167121n + i * 98761n);
+      const f = (sh) => ((Number((i >> BigInt(sh)) & 7n) + 0.5) / 8 - 0.5) * 0.004;
+      v.jitter = [f(16), f(20), f(24)];
+    }
+    v.inner.position.set(ox + v.jitter[0], oy + 0.375 + v.jitter[1], oz + v.jitter[2]);
+    const f5 = (e.rollingAmplitude || 0) - partial;
+    const f6 = Math.max(0, (e.cartDamage || 0) - partial);
+    const roll = f5 > 0 ? Math.sin(f5) * f5 * f6 / 10 * (e.rollingDirection || 1) : 0;
+    // rotate(180 - yaw, Y), rotate(-pitch, Z), rotate(roll, X)
+    v.inner.rotation.set(roll * D2R, (180 - yaw) * D2R, -pitch * D2R, 'YZX');
   }
 
   _renderPainting(e, v) {
@@ -1497,7 +1661,7 @@ export class EntityRenderer {
     const g = this.game;
     if (!this._guiModel) {
       const s = this.skinFor({ uuid: g.playerUuid || '00000000-0000-0000-0000-000000000000' });
-      this._guiModel = M.playerModel(s.slim, 64, s.legacy ? 32 : 64);
+      this._guiModel = M.playerModel(s.slim, 64, 64);
       this._guiMat = entityMaterial(this.skinTex(s), { alphaTest: 0.1, fullBright: true });
       const root = new Node();
       for (const r of this._guiModel.roots) root.add(r.build());
@@ -1558,3 +1722,90 @@ function arrowMesh() {
 }
 
 export { uuidHash, modelDevice, toDraw };
+
+// EntityMinecart.MATRIX: the two exits of each rail shape (BlockRailBase.EnumRailDirection metadata)
+const RAIL_EXITS = [[[0, 0, -1], [0, 0, 1]], [[-1, 0, 0], [1, 0, 0]], [[-1, -1, 0], [1, 0, 0]], [[-1, 0, 0], [1, -1, 0]], [[0, 0, -1], [0, -1, 1]],
+  [[0, -1, -1], [0, 0, 1]], [[0, 0, 1], [1, 0, 0]], [[0, 0, 1], [-1, 0, 0]], [[0, 0, -1], [-1, 0, 0]], [[0, 0, -1], [1, 0, 0]]];
+const RAILS = new Set(['rail', 'golden_rail', 'detector_rail', 'activator_rail']);
+// rail shape at x, y, z (or null): plain rails use the whole metadata, the others only the low 3 bits
+function railShape(w, x, y, z) {
+  const st = w.getState(x, y, z), b = blocks[st >> 4];
+  if (!b || !RAILS.has(b.name)) return null;
+  return b.name === 'rail' ? (st & 15) % 10 : (st & 7) % 6;
+}
+
+// EntityMinecart.getPos: the point on the rail nearest to the position
+function railPos(w, x, y, z) {
+  const i = Math.floor(x), k = Math.floor(z);
+  let j = Math.floor(y);
+  if (railShape(w, i, j - 1, k) !== null) j--;
+  const dir = railShape(w, i, j, k);
+  if (dir === null) return null;
+  const a = RAIL_EXITS[dir];
+  const d0 = i + 0.5 + a[0][0] * 0.5, d1 = j + 0.0625 + a[0][1] * 0.5, d2 = k + 0.5 + a[0][2] * 0.5;
+  const d3 = i + 0.5 + a[1][0] * 0.5, d4 = j + 0.0625 + a[1][1] * 0.5, d5 = k + 0.5 + a[1][2] * 0.5;
+  const d6 = d3 - d0, d7 = (d4 - d1) * 2, d8 = d5 - d2;
+  let d9;
+  if (d6 === 0) d9 = z - k;
+  else if (d8 === 0) d9 = x - i;
+  else d9 = ((x - d0) * d6 + (z - d2) * d8) * 2;
+  let ry = d1 + d7 * d9;
+  if (d7 < 0) ry += 1;
+  if (d7 > 0) ry += 0.5;
+  return [d0 + d6 * d9, ry, d2 + d8 * d9];
+}
+
+// EntityMinecart.getPosOffset: getPos `offset` blocks along the rail
+function railPosOffset(w, x, y, z, offset) {
+  const i = Math.floor(x), k = Math.floor(z);
+  let j = Math.floor(y);
+  if (railShape(w, i, j - 1, k) !== null) j--;
+  const dir = railShape(w, i, j, k);
+  if (dir === null) return null;
+  y = j;
+  if (dir >= 2 && dir <= 5) y = j + 1; // ascending shapes
+  const a = RAIL_EXITS[dir];
+  let d0 = a[1][0] - a[0][0], d1 = a[1][2] - a[0][2];
+  const d2 = Math.sqrt(d0 * d0 + d1 * d1);
+  d0 /= d2; d1 /= d2;
+  x += d0 * offset; z += d1 * offset;
+  if (a[0][1] !== 0 && Math.floor(x) - i === a[0][0] && Math.floor(z) - k === a[0][2]) y += a[0][1];
+  else if (a[1][1] !== 0 && Math.floor(x) - i === a[1][0] && Math.floor(z) - k === a[1][2]) y += a[1][1];
+  return railPos(w, x, y, z);
+}
+
+// ImageBufferDownload.parseUserSkin (1.8+): skins become 64x64 (times the HD factor). Legacy 64x32 skins get their
+// limbs copied (mirrored) into the separate left-limb areas. The base layer is made opaque everywhere, and the hat layer
+// cleared unless it already has transparency (old skins painted it solid).
+export function parseUserSkin(img) {
+  let W = 64, H = 64, k = 1;
+  while (W < img.width || H < img.height) { W *= 2; H *= 2; k *= 2; }
+  const d = new Uint8Array(W * H * 4);
+  for (let y = 0; y < Math.min(img.height, H); y++) d.set(img.data.subarray(y * img.width * 4, y * img.width * 4 + Math.min(img.width, W) * 4), y * W * 4);
+  if (img.height === 32 * k) {
+    // Graphics.drawImage(src, dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2): dx1 > dx2 mirrors horizontally
+    const draw = (dx1, dy1, dx2, dy2, sx1, sy1, sx2, sy2) => {
+      const w = Math.abs(dx2 - dx1), h = dy2 - dy1, flip = dx1 > dx2, x0 = Math.min(dx1, dx2);
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+        const sx = sx1 + (flip ? w - 1 - x : x), sy = sy1 + y;
+        const si = (sy * W + sx) * 4, di = ((dy1 + y) * W + x0 + x) * 4;
+        d[di] = d[si]; d[di + 1] = d[si + 1]; d[di + 2] = d[si + 2]; d[di + 3] = d[si + 3];
+      }
+    };
+    for (const r of [[24, 48, 20, 52, 4, 16, 8, 20], [28, 48, 24, 52, 8, 16, 12, 20], [20, 52, 16, 64, 8, 20, 12, 32], [24, 52, 20, 64, 4, 20, 8, 32],
+      [28, 52, 24, 64, 0, 20, 4, 32], [32, 52, 28, 64, 12, 20, 16, 32], [40, 48, 36, 52, 44, 16, 48, 20], [44, 48, 40, 52, 48, 16, 52, 20],
+      [36, 52, 32, 64, 48, 20, 52, 32], [40, 52, 36, 64, 44, 20, 48, 32], [44, 52, 40, 64, 40, 20, 44, 32], [48, 52, 44, 64, 52, 20, 56, 32]]) {
+      draw(...r.map((v) => v * k));
+    }
+  }
+  const opaque = (x1, y1, x2, y2) => { for (let y = y1; y < y2; y++) for (let x = x1; x < x2; x++) d[(y * W + x) * 4 + 3] = 255; };
+  const transparent = (x1, y1, x2, y2) => {
+    for (let y = y1; y < y2; y++) for (let x = x1; x < x2; x++) if (d[(y * W + x) * 4 + 3] < 128) return;
+    for (let y = y1; y < y2; y++) for (let x = x1; x < x2; x++) d[(y * W + x) * 4 + 3] = 0;
+  };
+  opaque(0, 0, 32 * k, 16 * k);
+  transparent(32 * k, 0, 64 * k, 32 * k);
+  opaque(0, 16 * k, 64 * k, 32 * k);
+  opaque(16 * k, 48 * k, 48 * k, 64 * k);
+  return { width: W, height: H, data: d };
+}

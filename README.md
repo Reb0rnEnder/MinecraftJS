@@ -4,7 +4,10 @@ A Minecraft 1.12.2 client that runs in the browser (WebGL 2 or WebGPU). It joins
 small Node proxy, and Eaglercraft servers directly over WebSockets.
 
 MinecraftJS is not affiliated with Mojang or Microsoft. The repository contains no Mojang files: the game assets
-are taken from your own copy of Minecraft 1.12.2, or downloaded from Mojang's servers on first use.
+are taken from your own copy of Minecraft 1.12.2, or downloaded from Mojang's servers on first use. That includes the
+entity and block entity models (mobs, boats, chests, signs, skulls, beds, ...): in 1.12 they are Java code, so the
+build runs the model constructors from the client jar in a small bytecode interpreter (`lib/jvm.js`,
+`lib/modelextract.js`) and stores the boxes in `bundles/entity-models.json`.
 
 ## Requirements
 
@@ -51,6 +54,9 @@ Options (after `npm run build --` or with `node tools/build.js html`):
 | `--no-music` | leave out music and music discs (a much smaller file) |
 | `--no-assets` | embed only the code: the page loads `assets/` and `data/` next to it |
 | `--config=file.json` | embed a `config.json` as the page's defaults |
+| `--proxy=type,url[,name]` | add a proxy to the embedded config (repeatable, see [config.json](#configjson)) |
+| `--server=address[,name]` | add a server to the embedded config (repeatable) |
+| `--no-proxies`, `--no-servers` | ignore that list from `--config` before adding `--proxy` / `--server` entries |
 | `--out=path` | output file |
 | `--audio=opus\|vorbis\|copy` | sound codec (`copy` keeps the original files) |
 | `--sfx-kbps=N`, `--music-kbps=N` | bitrates (32 and 48) |
@@ -71,12 +77,14 @@ Don't publish the built files (`dist/`, `client/assets/`) anywhere you are not a
 
 ## config.json
 
-A `config.json` next to `index.html` (or embedded with `--config`) sets the defaults for new players:
+A `config.json` next to `index.html` (or embedded in the single-file build) sets the defaults for new players:
 
 ```json
 {
   "proxies": [
-    { "name": "My Proxy", "url": "wss://proxy.example.com/" }
+    { "name": "This website", "url": "origin", "type": "minecraftjs" },
+    { "name": "Eaglercraft Relay", "url": "wss://relay.eaglercraft.net", "type": "relay" },
+    { "name": "Public Java Relay", "url": "wss://eagler-minecraft-relay.u2471966200.workers.dev", "type": "relay" }
   ],
   "servers": [
     { "name": "My Server", "address": "mc.example.com" },
@@ -85,14 +93,39 @@ A `config.json` next to `index.html` (or embedded with `--config`) sets the defa
 }
 ```
 
-Without `proxies`, the server hosting the page is used as the proxy. Players can change both lists in the game;
-their own lists are kept in the browser.
+(this is `client/config.example.json`). The `url` `origin` is the server hosting the page (left out when the page
+is opened from disk). Without `proxies`, the server hosting the page is used as the proxy. Players can change both
+lists in the game; their own lists are kept in the browser.
+
+The build can read a config file, build one from options, or both:
+
+```sh
+# embed a file
+npm run build -- --config=client/config.example.json
+# or construct it on the command line
+npm run build -- --proxy=minecraftjs,origin --proxy="relay,wss://relay.eaglercraft.net,Eaglercraft Relay" --server="mc.example.com,My Server"
+# the same options with the assets task write client/config.json
+npm run assets -- --config=client/config.example.json
+# or just write a config.json
+node tools/build.js config --config=client/config.example.json --proxy=wisp,wss://wisp.example.com/ --out=client/config.json
+```
 
 ## Proxy servers
 
-The **Proxy Servers** button on the title screen (below the account button) manages the proxies used for vanilla
-servers: add, edit, delete, test, reorder and pick one. Any machine running `npm start` is a proxy; addresses look
-like `wss://proxy.example.com/` (or `localhost:3000`).
+Vanilla servers are reached through a proxy, picked with the **Proxy Servers** button on the title screen (below
+the account button): add, edit, delete, test, reorder and select. The edit screen switches an entry between three
+types:
+
+| Type | What it is | Who speaks the Minecraft protocol |
+| --- | --- | --- |
+| MinecraftJS Proxy | `npm start` on any machine (`wss://proxy.example.com/`, `localhost:3000`) | the proxy |
+| Java Relay | an [Eaglercraft 26.2 relay](https://radicle.network/nodes/radicle.jarg.io/rad%3Az3rCaaQD1cNmPDTjyinYWmPpcMgNX) (`wss://relay.eaglercraft.net`) | the client |
+| Wisp | a [Wisp](https://github.com/MercuryWorkshop/wisp-protocol) server (v1 protocol, which v2 servers also speak) | the client |
+
+Java relays and Wisp servers only carry the TCP stream; the client does the handshake, login, compression and
+encryption itself. Public relays usually refuse local or private addresses. Microsoft accounts still need a MinecraftJS
+proxy somewhere in the list: it signs accounts in, joins online-mode sessions (Mojang's session server blocks
+browsers) and downloads skins.
 
 ## Eaglercraft servers
 
@@ -109,7 +142,7 @@ ender:password@wss://play.example.com:8081/server
 | Path | Contents |
 | --- | --- |
 | `proxy.js` | the proxy (HTTP, WebSocket bridge, asset serving) |
-| `lib/` | asset discovery (`mcassets.js`), zip reading, Microsoft sign in |
+| `lib/` | asset discovery (`mcassets.js`), zip and class file reading, the model extractor, Microsoft sign in |
 | `tools/build.js` | `npm run build` and `npm run assets` |
 | `client/index.html`, `client/js/main.js` | the client's entry point |
 | `client/js/platform/` | the only code that talks to the browser (`platform.js` describes the contract) |

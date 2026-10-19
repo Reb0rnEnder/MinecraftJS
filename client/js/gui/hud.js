@@ -6,6 +6,8 @@ import { resolveState } from '../world/blockstates.js';
 import { biomeInfo } from '../world/biomes.js';
 import { stripCodes } from './font.js';
 import { chatToLegacy } from './chat.js';
+import { FORMAT, colorParams } from '../gfx/device.js';
+import { mat4 } from '../gfx/math.js';
 
 const ICONS = 'gui/icons.png';
 const WIDGETS = 'gui/widgets.png';
@@ -294,7 +296,9 @@ export class Hud {
     else this.renderHotbar(gui, partial);
 
     const debugAxes = g.showDebug && !g.reducedDebug && !g.settings.reducedDebugInfo;
-    this._crosshair(g.thirdPerson === 0 && !g.screens.current && !debugAxes && !(g.gameMode === 3 && !g.interaction.target));
+    const showCross = g.thirdPerson === 0 && !g.screens.current && !(g.gameMode === 3 && !g.interaction.target);
+    if (showCross && debugAxes) this._debugAxes(gui, partial);
+    else this._crosshair(showCross);
 
     this.renderBossBar(gui);
     if (survival) this.renderStats(gui);
@@ -345,6 +349,7 @@ export class Hud {
         gui.popMatrix();
       }
     }
+    this.renderSubtitles(gui);
     this.renderSidebar(gui);
     this.renderChat(gui);
     this.renderToast(gui);
@@ -358,6 +363,42 @@ export class Hud {
   }
 
   // Crosshair, drawn with vanilla's inverting blend (ONE_MINUS_DST_COLOR, ONE_MINUS_SRC_COLOR)
+  // GuiIngame.renderAttackIndicator with the debug screen open (1.12): instead of the crosshair, 10 pixel X / Y / Z
+  // axes at the screen centre turned with the camera (rotate pitch about -X, yaw about Y, scale -1), drawn as
+  // OpenGlHelper.renderDirections does: 4 pixel black lines, then 2 pixel red / green / light blue ones
+  _debugAxes(gui, partial) {
+    const g = this.game, pl = g.player;
+    const S = gui.scale;
+    if (!this._axesMesh || this._axesScale !== S) {
+      if (this._axesMesh) g.device.destroyMesh(this._axesMesh);
+      const v = [];
+      const box = (axis, h, r, gg, b) => {
+        const lo = [-h, -h, -h], hi = [h, h, h];
+        hi[axis] = 10;
+        lo[axis] = 0;
+        const P = (x, y, z) => v.push(x ? hi[0] : lo[0], y ? hi[1] : lo[1], z ? hi[2] : lo[2], 0, 0, r, gg, b, 1);
+        // six faces of the bar
+        for (const [a, b2, c, d] of [[[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]], [[0, 0, 1], [0, 1, 1], [1, 1, 1], [1, 0, 1]], [[0, 0, 0], [0, 1, 0], [0, 1, 1], [0, 0, 1]],
+          [[1, 0, 0], [1, 0, 1], [1, 1, 1], [1, 1, 0]], [[0, 0, 0], [0, 0, 1], [1, 0, 1], [1, 0, 0]], [[0, 1, 0], [1, 1, 0], [1, 1, 1], [0, 1, 1]]]) {
+          P(...a); P(...b2); P(...c); P(...d);
+        }
+      };
+      for (let axis = 0; axis < 3; axis++) box(axis, 2 / S, 0, 0, 0);
+      box(0, 1 / S, 1, 0, 0); box(1, 1 / S, 0, 1, 0); box(2, 1 / S, 127 / 255, 127 / 255, 1);
+      this._axesMesh = g.device.createMesh(FORMAT.color, new Float32Array(v), { quads: true });
+      this._axesScale = S;
+    }
+    const pitch = (pl.prevPitch + (pl.pitch - pl.prevPitch) * partial) * Math.PI / 180;
+    const yaw = (pl.prevYaw + (pl.yaw - pl.prevYaw) * partial) * Math.PI / 180;
+    const m = mat4.create();
+    mat4.translate(m, m, Math.floor(gui.width / 2), Math.floor(gui.height / 2), 0);
+    mat4.rotateX(m, m, -pitch);
+    mat4.rotateY(m, m, yaw);
+    mat4.scale(m, m, -1, -1, -1);
+    this._axesParams ||= colorParams(1, 1, 1, 1);
+    gui.drawMesh({ mesh: this._axesMesh, pipeline: 'color', textures: [gui.white], params: this._axesParams, state: { blend: 'none', depthTest: false, depthWrite: false, cull: false } }, m);
+  }
+
   _crosshair(show) {
     if (!show) return;
     const gui = this.gui;
@@ -573,6 +614,61 @@ export class Hud {
   }
 
   // GuiBossOverlay.renderBossHealth: gui/bars.png, colour rows of 10 px (+5 filled), notch overlays from y 80
+  // GuiSubtitleOverlay.soundPlay: one line per subtitle text, refreshed (time + position) when it plays again
+  addSubtitle(text, x, y, z) {
+    if (!this.subtitles) this.subtitles = [];
+    const now = platform().now();
+    const cur = this.subtitles.find((t) => t.text === text);
+    if (cur) { cur.start = now; cur.pos = [x, y, z]; return; }
+    this.subtitles.push({ text, start: now, pos: [x, y, z] });
+  }
+
+  // GuiSubtitleOverlay.renderSubtitles: bottom right, fading over 3 s, arrows towards sounds to the side
+  renderSubtitles(gui) {
+    const g = this.game;
+    if (!g.settings.showSubtitles || !this.subtitles || !this.subtitles.length) return;
+    const now = platform().now();
+    this.subtitles = this.subtitles.filter((t) => t.start + 3000 > now);
+    if (!this.subtitles.length) return;
+    const pl = g.player;
+    const eye = [pl.x, pl.y + pl.eyeHeight(), pl.z];
+    const rp = -pl.pitch * Math.PI / 180, ry = -pl.yaw * Math.PI / 180;
+    // Vec3d.rotatePitch then rotateYaw
+    const rot = (v) => {
+      let [x, y, z] = v;
+      const cp = Math.cos(rp), sp = Math.sin(rp);
+      [y, z] = [y * cp + z * sp, z * cp - y * sp];
+      const cy = Math.cos(ry), sy = Math.sin(ry);
+      [x, z] = [x * cy + z * sy, z * cy - x * sy];
+      return [x, y, z];
+    };
+    const look = rot([0, 0, -1]), up = rot([0, 1, 0]);
+    const side = [look[1] * up[2] - look[2] * up[1], look[2] * up[0] - look[0] * up[2], look[0] * up[1] - look[1] * up[0]];
+    let j = 0;
+    for (const t of this.subtitles) j = Math.max(j, gui.textWidth(t.text));
+    j += gui.textWidth('<') + gui.textWidth(' ') + gui.textWidth('>') + gui.textWidth(' ');
+    const l = Math.floor(j / 2), j1 = 4;
+    this.subtitles.forEach((t, i) => {
+      let d = [t.pos[0] - eye[0], t.pos[1] - eye[1], t.pos[2] - eye[2]];
+      const len = Math.hypot(d[0], d[1], d[2]);
+      d = len < 1e-4 ? [0, 0, 0] : d.map((v) => v / len);
+      const d0 = -(side[0] * d[0] + side[1] * d[1] + side[2] * d[2]);
+      const d1 = -(look[0] * d[0] + look[1] * d[1] + look[2] * d[2]);
+      const f = Math.min(1, Math.max(0, (now - t.start) / 3000));
+      const c = Math.floor(255 + (75 - 255) * f);
+      const col = (c << 16) | (c << 8) | c;
+      gui.pushMatrix();
+      gui.translate(this.game.gui.width - l - 2, this.game.gui.height - 30 - i * 10);
+      gui.rect(-l - 1, -j1 - 1, l + 1, j1 + 1, 0xcc000000);
+      if (!(d1 > 0.5)) {
+        if (d0 > 0) gui.text('>', l - gui.textWidth('>'), -j1, col, false);
+        else if (d0 < 0) gui.text('<', -l, -j1, col, false);
+      }
+      gui.text(t.text, -Math.floor(gui.textWidth(t.text) / 2), -j1, col, false);
+      gui.popMatrix();
+    });
+  }
+
   renderBossBar(gui) {
     if (!this.bossBars || !this.bossBars.size) return;
     const W = gui.width;

@@ -283,6 +283,8 @@ export class BrowserPlatform extends Emitter {
     try { json = await r.json(); } catch (e) { json = null; }
     return { status: r.status, json };
   }
+  // Whether an HTTP(S) URL answers at all (no CORS needed: the opaque response is enough)
+  async probe(url) { await fetch(url, { mode: 'no-cors', cache: 'no-store' }); return true; }
   async fetchJson(path) { const r = await fetch(path); if (!r.ok) throw new Error(`Failed to load ${path} (${r.status})`); return r.json(); }
 
   // WebSocket (a MinecraftJS proxy, or an Eaglercraft server)
@@ -297,7 +299,7 @@ export class BrowserPlatform extends Emitter {
       sock.close = () => ws.close();
       ws.onopen = () => resolve(sock);
       ws.onerror = () => reject(new Error('Could not connect to ' + url));
-      ws.onclose = () => sock.emit('close');
+      ws.onclose = (e) => sock.emit('close', { code: e.code, reason: e.reason });
       ws.onmessage = (e) => {
         if (typeof e.data === 'string') sock.emit('text', e.data);
         else sock.emit('binary', new Uint8Array(e.data));
