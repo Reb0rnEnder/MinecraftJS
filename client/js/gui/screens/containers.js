@@ -360,13 +360,14 @@ class SimpleScreen extends ContainerScreen {
     this.ySize = opts.ySize || 166;
     this.xSize = opts.xSize || 176;
     this.titleX = opts.titleX;
+    this.titleY = opts.titleY !== undefined ? opts.titleY : 6;
     this.slotPos = [...slots, ...playerInvSlots(win.size, opts.invX || 8, opts.invY || 84, opts.hotbarY || 142)];
   }
   drawBackground(gui) { gui.blit(this.tex, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize); }
   drawForeground(gui) {
     const t = this.container.title;
     const x = this.titleX !== undefined ? this.titleX : this.xSize / 2 - gui.textWidth(t) / 2;
-    this.title(gui, t, x, 6);
+    this.title(gui, t, x, this.titleY);
     this.title(gui, this.game.assets.translate('container.inventory'), 8, this.ySize - 96 + 2);
   }
 }
@@ -410,7 +411,8 @@ const NAME_PARTS = 'the elder scrolls klaatu berata niktu xyzzy bless curse ligh
 // GuiEnchantment
 class EnchantScreen extends SimpleScreen {
   constructor(game, win) {
-    super(game, win, 'gui/container/enchanting_table.png', [[0, 15, 47], [1, 35, 47]]);
+    // GuiEnchantment.drawGuiContainerForegroundLayer: the name at (12, 5)
+    super(game, win, 'gui/container/enchanting_table.png', [[0, 15, 47], [1, 35, 47]], { titleX: 12, titleY: 5 });
     this.flip = 0; this.oFlip = 0; this.flipT = 0; this.flipA = 0; this.open = 0; this.oOpen = 0; this.lastItem = null;
   }
 
@@ -542,7 +544,12 @@ class EnchantScreen extends SimpleScreen {
     for (let l = 0; l < 3; l++) {
       const x = this.guiLeft + 60, y = this.guiTop + 14 + 19 * l;
       if (mx >= x && my >= y && mx < x + 108 && my < y + 19) {
-        this.game.send(C.enchantItem(this.container.windowId, l));
+        // ContainerEnchantment.enchantItem on the client: an item, l + 1 lapis and enough levels (creative: neither)
+        const g = this.game, p = this.container.properties, cost = p[l] || 0;
+        const item = this.container.get(0), lapis = this.container.get(1), creative = g.player.creative, k = l + 1;
+        if (!creative && (!lapis || lapis.count < k)) return true;
+        if (!(cost > 0 && item && (creative || (g.xpLevel >= k && g.xpLevel >= cost)))) return true;
+        g.send(C.enchantItem(this.container.windowId, l));
         return true;
       }
     }
