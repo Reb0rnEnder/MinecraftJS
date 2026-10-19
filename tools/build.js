@@ -148,6 +148,18 @@ async function collectAssets(opts) {
   return files;
 }
 
+// CraftingManager recipe ids (1.12): 11 built-in recipes, then the jar's recipes/*.json in the order the zip
+// filesystem walks them: the reverse of the jar's entry order (checked against servers on Java 8 and Java 25,
+// all 432 recipes). The list keeps that order: id = 11 + index.
+function recipeBundle(files) {
+  const list = [];
+  for (const [name, buf] of files) {
+    const m = name.match(/^minecraft\/recipes\/(.+)\.json$/);
+    if (m) list.push({ name: m[1], ...JSON.parse(buf.toString('utf8')) });
+  }
+  return Buffer.from(JSON.stringify(list.reverse()));
+}
+
 // Block models + blockstates in one JSON, block/item textures in one binary container
 // (u32 headerLength, JSON header { files: [[name, offset, length]], mcmeta }, then the PNG bytes)
 function buildBundles(files) {
@@ -168,6 +180,7 @@ function buildBundles(files) {
   const len = Buffer.alloc(4);
   len.writeUInt32LE(header.length);
   return {
+    'bundles/recipes.json': recipeBundle(files),
     'bundles/models.json': Buffer.from(JSON.stringify(models)),
     'bundles/textures.bin': Buffer.concat([len, header, ...blobs]),
   };
@@ -247,6 +260,7 @@ async function buildHtml(opts) {
   let assetsTag = '';
   if (!opts['no-assets']) {
     const files = await collectAssets(opts);
+    files.set('bundles/recipes.json', recipeBundle(files));
     for (const f of fs.readdirSync(path.join(CLIENT, 'data'))) {
       if (f.endsWith('.json')) files.set('data/' + f, fs.readFileSync(path.join(CLIENT, 'data', f)));
     }

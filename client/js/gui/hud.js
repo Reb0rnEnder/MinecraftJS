@@ -9,6 +9,7 @@ import { chatToLegacy } from './chat.js';
 
 const ICONS = 'gui/icons.png';
 const WIDGETS = 'gui/widgets.png';
+const performanceNow = () => platform().now();
 
 // Java Random-ish deterministic RNG for heart jiggle
 function seeded(seed) {
@@ -111,7 +112,8 @@ export class Hud {
     this.title = ''; this.subtitle = ''; this.titleTimer = 0;
     this.titleFadeIn = 10; this.titleStay = 70; this.titleFadeOut = 20;
     this.highlightTicks = 0; this.highlightItem = null;
-    this.toast = null;
+    this.toasts = []; this.toastQueue = [];
+    this.bossBars = new Map();
   }
 
   // SPacketTitle: 0 title, 1 subtitle, 2 action bar, 3 times, 4 hide, 5 reset
@@ -127,45 +129,80 @@ export class Hud {
     }
   }
 
-  // GuiAchievement toast for our own achievements
-  checkAchievement(raw) {
-    let obj;
-    try { obj = typeof raw === 'string' ? JSON.parse(raw) : raw; } catch (e) { return; }
-    if (!obj || obj.translate !== 'chat.type.achievement' || !obj.with || obj.with.length < 2) return;
-    const who = typeof obj.with[0] === 'string' ? obj.with[0] : (obj.with[0].text || (obj.with[0].extra && obj.with[0].extra.map((x) => x.text || '').join('')) || '');
-    if (who !== this.game.username) return;
-    const ach = obj.with[1];
-    const id = ach && ach.hoverEvent && ach.hoverEvent.value ? String(ach.hoverEvent.value) : '';
-    const name = chatToLegacy(ach).replace(/§./g, '').replace(/[[\]]/g, '');
-    const icons = {
-      openInventory: [340], mineWood: [17], buildWorkBench: [58], buildPickaxe: [270], buildFurnace: [61], acquireIron: [265], buildHoe: [290],
-      makeBread: [297], bakeCake: [354], buildBetterPickaxe: [274], cookFish: [350], onARail: [66], buildSword: [268], killEnemy: [352],
-      killCow: [334], flyPig: [329], snipeSkeleton: [261], diamonds: [264], diamondsToYou: [264], portal: [49], ghast: [370], blazeRod: [369],
-      potion: [373], theEnd: [381], theEnd2: [122], enchantments: [116], overkill: [276], bookcase: [47], exploreAllBiomes: [313],
-      spawnWither: [397, 1], killWither: [399], fullBeacon: [138], breedCow: [296], overpowered: [322, 1],
-    };
-    const key = id.replace('achievement.', '');
-    const ic = icons[key] || [340];
-    this.toast = { title: tr('achievement.get'), name: name.trim(), icon: { id: ic[0], damage: ic[1] || 0, count: 1 }, start: platform().now() };
+  // GuiToast (1.12): up to 5 toasts at the top right, sliding in and out over 600 ms
+  addToast(toast) {
+    this.toasts = this.toasts || [];
+    this.toastQueue = this.toastQueue || [];
+    this.toastQueue.push(toast);
   }
 
   renderToast(gui) {
-    const t = this.toast;
-    if (!t) return;
-    const age = (platform().now() - t.start) / 3000;
-    if (age > 1) { this.toast = null; return; }
-    let d = age * 2;
-    if (d > 1) d = 2 - d;
-    d *= 4;
-    d = 1 - d;
-    if (d < 0) d = 0;
-    d *= d; d *= d;
-    const x = gui.width - 160;
-    const y = -d * 36;
-    gui.blit('gui/achievement/achievement_background.png', x, y, 96, 202, 160, 32);
-    gui.text(t.title, x + 30, y + 7, 0xffff00, false);
-    gui.text(t.name, x + 30, y + 18, 0xffffff, false);
-    this.game.itemRenderer.drawItem(gui, t.icon, x + 8, y + 8, false);
+    const toasts = this.toasts || (this.toasts = []);
+    const queue = this.toastQueue || (this.toastQueue = []);
+    const now = platform().now();
+    for (let slot = 0; slot < 5; slot++) if (!toasts[slot] && queue.length) toasts[slot] = { toast: queue.shift(), animationTime: -1, visibleTime: -1, visibility: 'show' };
+    for (let slot = 0; slot < toasts.length; slot++) {
+      const t = toasts[slot];
+      if (!t) continue;
+      if (t.animationTime < 0) { t.animationTime = now; this.game.sound.playUi('ui.toast.in'); }
+      if (t.visibility === 'show' && now - t.animationTime <= 600) t.visibleTime = now;
+      const vis = () => { let f = Math.max(0, Math.min(1, (now - t.animationTime) / 600)); f *= f; return t.visibility === 'hide' ? 1 - f : f; };
+      gui.pushMatrix();
+      gui.translate(gui.width - 160 * vis(), slot * 32, 500 + slot);
+      const v = this._drawToast(gui, t.toast, now - t.visibleTime);
+      gui.popMatrix();
+      if (v !== t.visibility) {
+        t.animationTime = now - Math.floor((1 - vis()) * 600);
+        t.visibility = v;
+        this.game.sound.playUi(v === 'show' ? 'ui.toast.in' : 'ui.toast.out');
+      }
+      if (t.visibility === 'hide' && now - t.animationTime > 600) toasts[slot] = null;
+    }
+  }
+
+  // RecipeToast.addOrUpdate: new recipes join a recipe toast that is still showing
+  addRecipeToast(recipes) {
+    const all = [...(this.toasts || []).filter(Boolean).map((t) => t.toast), ...(this.toastQueue || [])];
+    const t = all.find((x) => x.type === 'recipe');
+    if (t) { t.recipes.push(...recipes); t.hasNew = true; } else this.addToast({ type: 'recipe', recipes: [...recipes], hasNew: true });
+  }
+
+  // RecipeToast.draw: crafting table icon behind the recipe outputs, cycling through them
+  _drawRecipeToast(gui, toast, delta) {
+    if (toast.hasNew) { toast.firstDraw = delta; toast.hasNew = false; }
+    gui.blit('gui/toasts.png', 0, 0, 0, 32, 160, 32);
+    gui.text(tr('recipe.toast.title'), 30, 7, 0x500050, false);
+    gui.text(tr('recipe.toast.description'), 30, 18, 0x000000, false);
+    const r = toast.recipes[Math.floor(delta / (5000 / toast.recipes.length)) % toast.recipes.length];
+    gui.pushMatrix(); gui.scaleBy(0.6, 0.6); this.game.itemRenderer.drawItem(gui, { id: 58, damage: 0, count: 1 }, 3, 3, false); gui.popMatrix();
+    this.game.itemRenderer.drawItem(gui, { id: r.result.id, damage: r.result.data === 32767 ? 0 : r.result.data, count: 1 }, 8, 8, false);
+    return delta - (toast.firstDraw || 0) >= 5000 ? 'hide' : 'show';
+  }
+
+  // AdvancementToast.draw: frame label then title, the item icon; challenges play their sound
+  _drawToast(gui, toast, delta) {
+    if (toast.type === 'recipe') return this._drawRecipeToast(gui, toast, delta);
+    gui.blit('gui/toasts.png', 0, 0, 0, 0, 160, 32);
+    const d = toast.advancement.display;
+    const list = gui.font.wrap(d.title, 125);
+    const color = d.frame === 1 ? 0xff88ff : 0xffff00;
+    const label = tr('advancements.toast.' + ['task', 'challenge', 'goal'][d.frame || 0]);
+    if (list.length === 1) {
+      gui.text(label, 30, 7, color, false);
+      gui.text(list[0], 30, 18, 0xffffff, false);
+    } else if (delta < 1500) {
+      const a = Math.floor(Math.max(0, Math.min(1, (1500 - delta) / 300)) * 255);
+      gui.setAlpha(a / 255); gui.text(label, 30, 11, color, false); gui.resetColor();
+    } else {
+      const a = Math.floor(Math.max(0, Math.min(1, (delta - 1500) / 300)) * 252);
+      let y = 16 - list.length * 9 / 2;
+      gui.setAlpha(a / 255);
+      for (const line of list) { gui.text(line, 30, y, 0xffffff, false); y += 9; }
+      gui.resetColor();
+    }
+    if (!toast.played && delta > 0) { toast.played = true; if (d.frame === 1) this.game.sound.play('ui.toast.challenge_complete', 0, 0, 0, 1, 1, { global: true, category: 'record' }); }
+    if (d.icon) this.game.itemRenderer.drawItem(gui, d.icon, 8, 8, false);
+    return delta >= 5000 ? 'hide' : 'show';
   }
 
   // Returns the chat component under the mouse (when chat is open)
@@ -506,16 +543,54 @@ export class Hud {
     }
   }
 
+  // SPacketUpdateBossInfo (BossInfoClient): 0 add, 1 remove, 2 health, 3 title, 4 style, 5 flags
+  onBossBar(p) {
+    const bars = this.bossBars || (this.bossBars = new Map());
+    if (p.action === 1) { bars.delete(p.uuid); return; }
+    let b = bars.get(p.uuid);
+    if (p.action === 0) {
+      b = { name: chatText(p.title), raw: p.health, percent: p.health, setTime: performanceNow(), color: p.color, overlay: p.dividers, flags: p.flags };
+      bars.set(p.uuid, b);
+      return;
+    }
+    if (!b) return;
+    if (p.action === 2) { b.raw = this._bossPercent(b); b.percent = p.health; b.setTime = performanceNow(); }
+    else if (p.action === 3) b.name = chatText(p.title);
+    else if (p.action === 4) { b.color = p.color; b.overlay = p.dividers; }
+    else if (p.action === 5) b.flags = p.flags;
+  }
+
+  // BossInfoClient.getPercent: eases to the new value over 100 ms
+  _bossPercent(b) {
+    const f = Math.max(0, Math.min(1, (performanceNow() - b.setTime) / 100));
+    return b.raw + (b.percent - b.raw) * f;
+  }
+
+  // GuiBossOverlay.shouldPlayEndBossMusic / shouldDarkenSky / shouldCreateFog
+  bossFlag(bit) {
+    for (const b of (this.bossBars || new Map()).values()) if (b.flags & bit) return true;
+    return false;
+  }
+
+  // GuiBossOverlay.renderBossHealth: gui/bars.png, colour rows of 10 px (+5 filled), notch overlays from y 80
   renderBossBar(gui) {
-    const boss = this.game.entities.boss && this.game.entities.boss();
-    if (!boss) return;
+    if (!this.bossBars || !this.bossBars.size) return;
     const W = gui.width;
-    const x = W / 2 - 91;
-    const fill = Math.floor(boss.healthScale * 183);
-    gui.blit(ICONS, x, 12, 0, 74, 182, 5);
-    gui.blit(ICONS, x, 12, 0, 74, 182, 5);
-    if (fill > 0) gui.blit(ICONS, x, 12, 0, 79, fill, 5);
-    gui.textCentered(boss.name, W / 2, 2, 0xffffff, true);
+    let y = 12;
+    const BARS = 'gui/bars.png';
+    for (const b of this.bossBars.values()) {
+      const x = Math.floor(W / 2) - 91;
+      gui.blit(BARS, x, y, 0, b.color * 10, 182, 5);
+      if (b.overlay > 0) gui.blit(BARS, x, y, 0, 80 + (b.overlay - 1) * 10, 182, 5);
+      const fill = Math.floor(this._bossPercent(b) * 183);
+      if (fill > 0) {
+        gui.blit(BARS, x, y, 0, b.color * 10 + 5, fill, 5);
+        if (b.overlay > 0) gui.blit(BARS, x, y, 0, 80 + (b.overlay - 1) * 10 + 5, fill, 5);
+      }
+      gui.text(b.name, Math.floor(W / 2) - Math.floor(gui.textWidth(b.name) / 2), y - 9, 0xffffff, true);
+      y += 10 + 9;
+      if (y >= gui.height / 3) break;
+    }
   }
 
   renderVignette(gui) {

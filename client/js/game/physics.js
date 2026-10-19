@@ -37,7 +37,7 @@ function lookVec(pitch, yaw) {
   return [f32(f1 * f2), f3, f32(f * f2)];
 }
 
-function calcYOffset(box, bb, off) {
+export function calcYOffset(box, bb, off) {
   if (bb[3] > box[0] && bb[0] < box[3] && bb[5] > box[2] && bb[2] < box[5]) {
     if (off > 0) {
       if (bb[4] <= box[1]) { const d = box[1] - bb[4]; if (d < off) off = d; }
@@ -67,7 +67,7 @@ function calcZOffset(box, bb, off) {
   }
   return off;
 }
-const offsetBB = (bb, x, y, z) => [bb[0] + x, bb[1] + y, bb[2] + z, bb[3] + x, bb[4] + y, bb[5] + z];
+export const offsetBB = (bb, x, y, z) => [bb[0] + x, bb[1] + y, bb[2] + z, bb[3] + x, bb[4] + y, bb[5] + z];
 function addCoord(bb, x, y, z) {
   const r = bb.slice();
   if (x < 0) r[0] += x; else r[3] += x;

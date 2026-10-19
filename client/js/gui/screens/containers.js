@@ -7,6 +7,7 @@ import { C } from '../../net/packets.js';
 import { Writer } from '../../net/buffer.js';
 import { copy, stackable } from '../../game/container.js';
 import { blocks } from '../../world/blocks.js';
+import { RecipeBookGui } from '../recipebook.js';
 
 const quickcraft = (stage, mode) => (stage & 3) | ((mode & 3) << 2);
 
@@ -58,7 +59,7 @@ export class ContainerScreen extends Screen {
   drawForeground() {}
 
   render(gui, mx, my, partial) {
-    gui.worldBackground();
+    if (!this.noWorldBackground) gui.worldBackground();
     this.drawBackground(gui, mx, my, partial);
     gui.pushMatrix();
     gui.translate(this.guiLeft, this.guiTop);
@@ -263,32 +264,93 @@ export class ContainerScreen extends Screen {
 }
 
 
+// ---------------------------------------------------------------- recipe book (1.12)
+
+// GuiInventory / GuiCrafting: recipe book button and panel. opts: slots [result, ...grid], gridW, gridH,
+// button [x from guiLeft, y from the screen middle, u, v, texture]
+function withRecipeBook(screen, opts) {
+  const rb = screen.recipeBook = new RecipeBookGui(screen, { ...opts, windowId: () => (screen.container.windowId !== undefined ? screen.container.windowId : screen.container.id) || 0 });
+  const base = {
+    init: screen.init.bind(screen), render: screen.render.bind(screen), mouseDown: screen.mouseDown.bind(screen),
+    isOutside: screen.isOutside.bind(screen), key: screen.key.bind(screen), char: screen.char.bind(screen),
+    tick: screen.tick.bind(screen), handleClick: screen.handleClick.bind(screen),
+  };
+  const [bx, by, u, v, tex] = opts.button;
+  screen.init = () => {
+    base.init();
+    rb.layout();
+    screen.guiLeft = rb.screenLeft(screen.xSize);
+    const b = new Button(10, screen.guiLeft + bx, Math.floor(screen.height / 2) + by, 20, 18, '', () => {
+      rb.toggle();
+      screen.guiLeft = rb.screenLeft(screen.xSize);
+      b.x = screen.guiLeft + bx;
+      rb.layout();
+    });
+    // GuiButtonImage: hovered one row (19 px) down
+    b.render = (gui, mx, my) => gui.blit(tex, b.x, b.y, u, v + (b.hovered(mx, my) ? 19 : 0), 20, 18);
+    screen.buttons.push(b);
+  };
+  screen.render = (gui, mx, my, partial) => {
+    gui.worldBackground();
+    screen.noWorldBackground = true;
+    if (rb.visible && rb.narrow) {
+      // the book covers the container
+      screen.drawBackground(gui, mx, my, partial);
+      rb.render(gui, mx, my, partial);
+      for (const b of screen.buttons) b.render(gui, mx, my);
+    } else {
+      rb.render(gui, mx, my, partial);
+      base.render(gui, mx, my, partial);
+      rb.renderGhost(gui, screen.guiLeft, screen.guiTop);
+    }
+    rb.renderTooltip(gui, mx, my);
+  };
+  screen.mouseDown = (mx, my, button, e) => {
+    if (rb.mouseDown(mx, my, button, e)) return true;
+    if (rb.visible && rb.narrow) {
+      for (const b of screen.buttons) if (button === 0 && b.mouseDown(mx, my, screen.game)) return true;
+      return true;
+    }
+    return base.mouseDown(mx, my, button, e);
+  };
+  screen.isOutside = (mx, my) => !rb.contains(mx, my) && base.isOutside(mx, my);
+  screen.key = (e) => rb.key(e) || base.key(e);
+  screen.char = (c) => rb.char(c) || base.char(c);
+  screen.tick = () => { base.tick(); rb.tick(); };
+  screen.handleClick = (slot, slotId, button, mode) => { rb.slotClicked(slotId); base.handleClick(slot, slotId, button, mode); };
+  screen.recipesUpdated = () => rb.recipesUpdated();
+  return screen;
+}
+
 // ---------------------------------------------------------------- player inventory
+
+// Slot.getSlotTexture for the armor slots and (1.9+) the off hand
+function drawPlayerEmptySlot(game, gui, i, x, y) {
+  const name = i >= 5 && i <= 8 ? ['empty_armor_slot_helmet', 'empty_armor_slot_chestplate', 'empty_armor_slot_leggings', 'empty_armor_slot_boots'][i - 5]
+    : i === 45 ? 'empty_armor_slot_shield' : null;
+  if (name && game.assets.atlas.entries.get('items/' + name)) game.itemRenderer.drawSprite(gui, 'items/' + name, x, y);
+}
 
 export class InventoryScreen extends ContainerScreen {
   constructor(game) {
     super(game, game.inventory);
-    const s = [[0, 144, 36]];
-    for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) s.push([1 + j + i * 2, 88 + j * 18, 26 + i * 18]);
+    // ContainerPlayer (1.9+): result 154,28, crafting grid from 98,18
+    const s = [[0, 154, 28]];
+    for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) s.push([1 + j + i * 2, 98 + j * 18, 18 + i * 18]);
     for (let k = 0; k < 4; k++) s.push([5 + k, 8, 8 + k * 18]);
     s.push(...playerInvSlots(9, 8, 84, 142));
     s.push([45, 77, 62]); // ContainerPlayer off hand
     this.slotPos = s;
+    withRecipeBook(this, { slots: [0, 1, 2, 3, 4], gridW: 2, gridH: 2, button: [104, -22, 178, 0, 'gui/container/inventory.png'] });
   }
 
   init() {
     super.init();
-    this.effectsShift = this.game.effects.size > 0;
+    this.effectsShift = this.game.effects.size > 0 && !this.game.recipeBook.open;
     if (this.effectsShift) this.guiLeft = Math.floor(160 + (this.width - this.xSize - 200) / 2);
   }
 
-  drawEmptySlot(gui, i, x, y) {
-    if (i >= 5 && i <= 8) {
-      const names = ['empty_armor_slot_helmet', 'empty_armor_slot_chestplate', 'empty_armor_slot_leggings', 'empty_armor_slot_boots'];
-      const e = this.game.assets.atlas.entries.get('items/' + names[i - 5]);
-      if (e) this.game.itemRenderer.drawSprite(gui, 'items/' + names[i - 5], x, y);
-    }
-  }
+  drawEmptySlot(gui, i, x, y) { drawPlayerEmptySlot(this.game, gui, i, x, y); }
 
   drawBackground(gui, mx, my) {
     gui.blit('gui/container/inventory.png', this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
@@ -296,7 +358,7 @@ export class InventoryScreen extends ContainerScreen {
     if (this.effectsShift) drawEffects(this.game, gui, this.guiLeft - 124, this.guiTop);
   }
 
-  drawForeground(gui) { this.title(gui, this.game.assets.translate('container.crafting'), 86, 16); }
+  drawForeground(gui) { this.title(gui, this.game.assets.translate('container.crafting'), 97, 8); }
 }
 
 const POTION_ICON = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 8: 10, 9: 11, 10: 7, 11: 14, 12: 15, 13: 16, 14: 8, 15: 13, 16: 12, 17: 9, 18: 5, 19: 6, 20: 17, 21: 23, 22: 18 };
@@ -667,6 +729,7 @@ export function openContainerScreen(game, win) {
       const slots = [[0, 124, 35]];
       for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) slots.push([1 + j + i * 3, 30 + j * 18, 17 + i * 18]);
       s = new SimpleScreen(game, win, 'gui/container/crafting_table.png', slots, { titleX: 28 });
+      withRecipeBook(s, { slots: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], gridW: 3, gridH: 3, button: [5, -49, 0, 168, 'gui/container/crafting_table.png'] });
       if (!win.title || win.title === 'container.crafting') win.title = game.assets.translate('container.crafting');
       break;
     }
@@ -751,6 +814,20 @@ function buildCreativeTabs(game) {
   return tabs;
 }
 
+// Creative tab of an item id (first tab that lists it), e.g. for the recipe book's categories
+let tabOfId = null;
+export function creativeTabOf(game, id) {
+  if (!tabOfId) {
+    if (!CreativeScreen.tabs) CreativeScreen.tabs = buildCreativeTabs(game);
+    tabOfId = new Map();
+    for (const t of TABS) {
+      if (t === 'search' || t === 'inventory') continue;
+      for (const it of CreativeScreen.tabs[t]) if (!tabOfId.has(it.id)) tabOfId.set(it.id, t);
+    }
+  }
+  return tabOfId.get(id) || 'misc';
+}
+
 export class CreativeScreen extends ContainerScreen {
   constructor(game) {
     super(game, game.inventory);
@@ -794,8 +871,9 @@ export class CreativeScreen extends ContainerScreen {
     const inv = TABS[this.tab] === 'inventory';
     this.slotPos = [];
     if (inv) {
-      // Survival layout inside the creative GUI
-      for (let k = 0; k < 4; k++) this.slotPos.push([5 + k, 9 + Math.floor(k / 2) * 54, 6 + (k % 2) * 27]);
+      // GuiContainerCreative survival tab (1.9+): armor 2x2 around the player, off hand at 35,20
+      for (let k = 0; k < 4; k++) this.slotPos.push([5 + k, 54 + Math.floor(k / 2) * 54, 6 + (k % 2) * 27]);
+      this.slotPos.push([45, 35, 20]);
       for (let i = 0; i < 3; i++) for (let j = 0; j < 9; j++) this.slotPos.push([9 + j + i * 9, 9 + j * 18, 54 + i * 18]);
       for (let j = 0; j < 9; j++) this.slotPos.push([36 + j, 9 + j * 18, 112]);
     } else {
@@ -841,7 +919,7 @@ export class CreativeScreen extends ContainerScreen {
         if (mx >= x - 1 && my >= y - 1 && mx < x + 17 && my < y + 17) { gui.rect(x, y, x + 16, y + 16, 0x80ffffff); hoverGrid = it; }
       }
     } else {
-      this.game.entityRenderer.drawPlayerInGui && this.game.entityRenderer.drawPlayerInGui(gui, L + 43, T + 45, 20, L + 43 - mx, T + 45 - 30 - my);
+      this.game.entityRenderer.drawPlayerInGui && this.game.entityRenderer.drawPlayerInGui(gui, L + 88, T + 45, 20, L + 88 - mx, T + 45 - 30 - my);
     }
     // Player slots (hotbar / survival inv)
     gui.pushMatrix();
@@ -850,6 +928,7 @@ export class CreativeScreen extends ContainerScreen {
     for (const [i, x, y] of this.slotPos) {
       const it = this.container.get(i);
       if (it) this.game.itemRenderer.drawItem(gui, it, x, y);
+      else if (TABS[this.tab] === 'inventory') drawPlayerEmptySlot(this.game, gui, i, x, y);
       if (mx >= L + x - 1 && mx < L + x + 17 && my >= T + y - 1 && my < T + y + 17) { this.hovered = i; gui.rect(x, y, x + 16, y + 16, 0x80ffffff); }
     }
     if (TABS[this.tab] === 'inventory') {

@@ -331,7 +331,7 @@ export class SoundManager {
     if (scr && scr.isCredits) return ['music.credits', 2147483647, 2147483647];
     if (!g.inWorld) return ['music.menu', 20, 600];
     if (g.dimension === -1) return ['music.nether', 1200, 3600];
-    if (g.dimension === 1) return g.entities.boss && g.entities.boss() ? ['music.dragon', 0, 0] : ['music.end', 6000, 24000];
+    if (g.dimension === 1) return g.hud.bossFlag(2) ? ['music.dragon', 0, 0] : ['music.end', 6000, 24000]; // GuiBossOverlay.shouldPlayEndBossMusic
     if (g.player.creative && g.player.allowFlying) return ['music.creative', 1200, 3600];
     return ['music.game', 12000, 24000];
   }

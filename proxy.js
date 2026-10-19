@@ -43,6 +43,13 @@ function buildBundle(kind) {
       if (f.endsWith('.json')) out.models[f.slice((P + 'models/').length, -5)] = jarJson(f);
     }
     raw = Buffer.from(JSON.stringify(out));
+  } else if (kind === 'recipes.json') {
+    // recipe ids: the reverse of the jar's entry order (see tools/build.js)
+    const list = [];
+    for (const f of jar.list(P + 'recipes/')) {
+      if (f.endsWith('.json')) list.push({ name: f.slice((P + 'recipes/').length, -5), ...jarJson(f) });
+    }
+    raw = Buffer.from(JSON.stringify(list.reverse()));
   } else if (kind === 'textures.bin') {
     // u32 headerLength, JSON header { files: [[name, offset, length]], mcmeta }, then the PNG bytes
     const files = [], blobs = [], mcmeta = {};

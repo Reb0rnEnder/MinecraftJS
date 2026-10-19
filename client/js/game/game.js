@@ -14,6 +14,9 @@ import { blocks } from '../world/blocks.js';
 import { resolveState } from '../world/blockstates.js';
 import { biomeInfo } from '../world/biomes.js';
 import { LocalPlayer } from './physics.js';
+import { BoatController, HorseController } from './vehicle.js';
+import { Advancements } from './advancements.js';
+import { RecipeBook } from './recipebook.js';
 import { Input } from './input.js';
 import { Renderer } from '../render/renderer.js';
 import { Gui } from '../gui/gui.js';
@@ -105,6 +108,8 @@ export class Game {
     this.player.onSwim = (vol) => this.sound.playAtPlayer('entity.player.swim', vol, 1 + (Math.random() - Math.random()) * 0.4);
     this.entities = new EntityManager(this);
     this.scoreboard = new Scoreboard(this);
+    this.advancements = new Advancements(this);
+    this.recipeBook = new RecipeBook(this);
     this.inventory = new Inventory(this);
     this.interaction = new Interaction(this);
     this.conn = null;
@@ -481,6 +486,7 @@ export class Game {
     this.input.unlock();
     // Per-server state: tab list, teams, objectives/sidebar, header/footer, titles, action bar
     this.scoreboard.reset();
+    if (this.advancements) this.advancements.clear();
     this.hud.resetServerState();
     this.statValues = null; this.stats = null;
   }
@@ -570,7 +576,6 @@ export class Game {
   }
 
   on_chat(p) {
-    this.hud.checkAchievement(p.message);
     const text = chatToLegacy(p.message);
     if (p.position === 2) this.hud.setActionBar(text);
     else this.hud.addChat(text, p.message);
@@ -724,6 +729,7 @@ export class Game {
     if (entityId === this.entityId) {
       this.ridingEntityId = vehicleId;
       this.player.ridingEntity = vehicleId >= 0 ? this.entities.get(vehicleId) : null;
+      if (vehicleId < 0) this._dropVehicle();
       if (vehicleId >= 0) this.hud.setActionBar(this.assets.translate('mount.onboard', [this.settings.keyName(this.settings.keys.sneak)]));
     }
     this.entities.attach(entityId, vehicleId);
@@ -980,6 +986,25 @@ export class Game {
 
   on_title(p) { this.hud.onTitle(p); }
 
+  on_boss_bar(p) { this.hud.onBossBar(p); }
+
+  on_advancements(p) { this.advancements.onPacket(p); }
+
+  on_unlock_recipes(p) { this.recipeBook.onPacket(p); }
+
+  // SPacketPlaceGhostRecipe: the server could not fill the grid; show what the recipe needs
+  on_craft_recipe_response(p) {
+    const s = this.screens.current;
+    const win = s && s.container;
+    const id = win ? (win.windowId !== undefined ? win.windowId : win.id) : -1;
+    if (s && s.recipeBook && id === p.windowId) s.recipeBook.setupGhost(p.recipe);
+  }
+  on_select_advancement_tab(p) { this.advancements.onSelectTab(p.id); }
+
+  openAdvancements(parent = null) {
+    import('../gui/screens/advancements.js').then((m) => this.screens.open(new m.AdvancementsScreen(this, parent)));
+  }
+
   on_set_compression() { /* handled by the proxy */ }
 
   on_playerlist_header(p) { this.scoreboard.header = chatToLegacy(p.header); this.scoreboard.footer = chatToLegacy(p.footer); }
@@ -1111,6 +1136,7 @@ export class Game {
     if (e.code === k.perspective) { this.thirdPerson = (this.thirdPerson + 1) % 3; return; }
     if (e.code === k.screenshot) { this.takeScreenshot(); return; }
     if (e.code === k.drop) { this.interaction.dropItem(e.ctrl); return; }
+    if (e.code === k.advancements) { this.openAdvancements(); return; } // GuiScreenAdvancements
     // Minecraft.processKeyBinds: swap hands (CPacketPlayerDigging SWAP_HELD_ITEMS); not in spectator mode
     if (e.code === k.swapHands && this.gameMode !== 3) { this.send(C.blockDig(6, 0, 0, 0, 0)); return; }
     if (e.code === k.fullscreen) { platform().toggleFullscreen(); return; }
@@ -1280,29 +1306,50 @@ export class Game {
     } else this.portalTime = Math.max(0, this.portalTime - 0.05);
   }
 
-  // EntityPlayerSP.onUpdate while riding: C05 look + C0C steering input; horse jumps charge while space is held
+  // The vehicle the local player steers itself (1.9+: boats, saddled horses), or null
+  _vehicleController(v) {
+    const passengers = this.entities.passengersOf(v.id);
+    const first = passengers.length ? passengers[0] : this.entityId;
+    if (first !== this.entityId) return null; // only the first passenger steers
+    const horse = v.kind === 'mob' && v.type === 100 && !!((v.horseFlags || 0) & 4);
+    if (v.kind !== 'boat' && !horse) return null;
+    if (!this.vehicle || this.vehicle.e !== v) {
+      if (this.vehicle) this.vehicle.e.controlled = false;
+      this.vehicle = v.kind === 'boat' ? new BoatController(this.world, v) : new HorseController(this.world, v);
+      v.controlled = true;
+    }
+    return this.vehicle;
+  }
+
+  _dropVehicle() { if (this.vehicle) { this.vehicle.e.controlled = false; this.vehicle = null; } }
+
+  // SPacketMoveVehicle: the server's correction of the vehicle we steer
+  on_vehicle_move(p) { if (this.vehicle) this.vehicle.setFromServer(p.x, p.y, p.z, p.yaw); }
+
+  // EntityPlayerSP while riding: the vehicle moves first (boats send their paddles), then the rider sends rotation,
+  // input and, when steering, the vehicle's position. Horse jumps charge while space is held.
   _tickRiding(inp) {
     const pl = this.player;
     pl.prevX = pl.x; pl.prevY = pl.y; pl.prevZ = pl.z;
     pl.prevYaw = pl.yaw; pl.prevPitch = pl.pitch;
     const v = this.entities.get(this.ridingEntityId);
-    if (v) {
-      // vehicle.getMountedYOffset() + EntityPlayer.getYOffset() (-0.35)
-      pl.setPosition(v.x, v.y + this.entities.mountedOffset(v) - 0.35, v.z);
-    }
     let forward = 0, strafe = 0;
     if (inp.forward) forward++; if (inp.back) forward--;
     if (inp.left) strafe++; if (inp.right) strafe--;
     if (inp.sneak) { forward *= 0.3; strafe *= 0.3; }
-    forward *= 0.98; strafe *= 0.98;
+    forward = Math.fround(forward * 0.98); strafe = Math.fround(strafe * 0.98);
     const jump = !!inp.jump;
+    const ctl = v ? this._vehicleController(v) : null;
+    if (!ctl) this._dropVehicle();
     if (v && v.kind === 'mob' && v.type === 100) {
       const was = this._rideJump;
       if (this.horseJumpCounter < 0) { this.horseJumpCounter++; if (this.horseJumpCounter === 0) this.horseJump = 0; }
       if (was && !jump) {
         this.horseJumpCounter = -10;
+        const power = Math.floor(this.horseJump * 100);
+        if (ctl && ctl.setJumpPower) ctl.setJumpPower(power);
         // start + stop horse jump (1.9+)
-        this.send(C.entityAction(this.entityId, 5, Math.floor(this.horseJump * 100)));
+        this.send(C.entityAction(this.entityId, 5, power));
         this.send(C.entityAction(this.entityId, 6));
       } else if (!was && jump) { this.horseJumpCounter = 0; this.horseJump = 0; }
       else if (was) {
@@ -1311,8 +1358,30 @@ export class Game {
       }
     } else this.horseJump = undefined;
     this._rideJump = jump;
+    if (ctl) {
+      if (ctl instanceof BoatController) {
+        const r = ctl.tick(inp);
+        this.send(C.steerBoat(r.paddles[0], r.paddles[1]));
+        ctl.applyToRider(pl);
+      } else {
+        const a = v.attributes || {};
+        const val = (k, d) => (a[k] ? attributeValue(a[k]) : d);
+        const jb = this.effects.get(8);
+        ctl.tick(pl, strafe, forward, { speed: val('generic.movementSpeed', 0.225), jumpStrength: val('horse.jumpStrength', 0.7), jumpBoost: jb ? jb.amplifier : -1 });
+      }
+      // the vehicle entity follows the simulation
+      const b = ctl.body;
+      v.prevX = v.x; v.prevY = v.y; v.prevZ = v.z; v.prevYaw = v.yaw;
+      v.x = v.newX = b.x; v.y = v.newY = b.y; v.z = v.newZ = b.z; v.inc = 0;
+      v.yaw = v.newYaw = ctl instanceof BoatController ? ctl.yaw : b.yaw;
+    }
+    if (v) {
+      // vehicle.getMountedYOffset() + EntityPlayer.getYOffset() (-0.35)
+      pl.setPosition(v.x, v.y + this.entities.mountedOffset(v) - 0.35, v.z);
+    }
     this.send(C.look(pl.yaw, pl.pitch, pl.onGround));
     this.send(C.steerVehicle(strafe, forward, (jump ? 1 : 0) | (inp.sneak ? 2 : 0)));
+    if (ctl) this.send(C.vehicleMove(v.x, v.y, v.z, v.yaw, ctl.body.pitch || 0));
   }
 
   sendAbilities() {

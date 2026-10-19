@@ -25,7 +25,7 @@ const MOB_FAMILY = {
   31: [100, { horseType: 1 }], 32: [100, { horseType: 2 }], 100: [100, { horseType: 0 }],
 };
 const OBJECT_SIZES = {
-  1: [1.5, 0.6], 2: [0.25, 0.25], 10: [0.98, 0.7], 50: [0.98, 0.98], 51: [2, 2], 60: [0.5, 0.5], 61: [0.25, 0.25], 62: [0.25, 0.25],
+  1: [1.375, 0.5625], 2: [0.25, 0.25], // EntityBoat 1.9+ 10: [0.98, 0.7], 50: [0.98, 0.98], 51: [2, 2], 60: [0.5, 0.5], 61: [0.25, 0.25], 62: [0.25, 0.25],
   63: [1, 1], 64: [0.3125, 0.3125], 65: [0.25, 0.25], 66: [0.3125, 0.3125], 70: [0.98, 0.98], 71: [0.5, 0.5], 72: [0.25, 0.25],
   73: [0.25, 0.25], 75: [0.25, 0.25], 76: [0.25, 0.25], 77: [0.375, 0.5], 78: [0.5, 1.975], 90: [0.25, 0.25],
 };
@@ -70,7 +70,8 @@ export class EntityManager {
   _base(id, x, y, z, yaw = 0, pitch = 0) {
     return {
       id, x, y, z, prevX: x, prevY: y, prevZ: z, lastTickX: x, lastTickY: y, lastTickZ: z,
-      serverX: Math.round(x * 32), serverY: Math.round(y * 32), serverZ: Math.round(z * 32),
+      // EntityTracker server position, in 1/4096 block (1.9+)
+      serverX: Math.round(x * 4096), serverY: Math.round(y * 4096), serverZ: Math.round(z * 4096),
       newX: x, newY: y, newZ: z, newYaw: yaw, newPitch: pitch, inc: 0,
       yaw, pitch, prevYaw: yaw, prevPitch: pitch, headYaw: yaw, prevHeadYaw: yaw, bodyYaw: yaw, prevBodyYaw: yaw,
       limbSwing: 0, limbSwingAmount: 0, prevLimbSwingAmount: 0, swingProgress: 0, prevSwingProgress: 0, swingTicks: 0, swinging: false,
@@ -222,18 +223,19 @@ export class EntityManager {
   relMove(p, move, look) {
     const e = this.map.get(p.entityId);
     if (!e) return;
-    e.serverX += Math.round(p.dX * 32);
-    e.serverY += Math.round(p.dY * 32);
-    e.serverZ += Math.round(p.dZ * 32);
+    e.serverX += Math.round(p.dX * 4096);
+    e.serverY += Math.round(p.dY * 4096);
+    e.serverZ += Math.round(p.dZ * 4096);
+    if (e.controlled) return; // NetHandlerPlayClient: !entity.canPassengerSteer()
     const yaw = look ? p.yaw : (e.inc > 0 ? e.newYaw : e.yaw);
     const pitch = look ? p.pitch : (e.inc > 0 ? e.newPitch : e.pitch);
-    this._setTarget(e, e.serverX / 32, e.serverY / 32, e.serverZ / 32, yaw, pitch);
+    this._setTarget(e, e.serverX / 4096, e.serverY / 4096, e.serverZ / 4096, yaw, pitch);
     e.onGround = p.onGround;
   }
 
   look(p) {
     const e = this.map.get(p.entityId);
-    if (!e) return;
+    if (!e || e.controlled) return;
     this._setTarget(e, e.inc > 0 ? e.newX : e.x, e.inc > 0 ? e.newY : e.y, e.inc > 0 ? e.newZ : e.z, p.yaw, p.pitch);
     e.onGround = p.onGround;
   }
@@ -241,11 +243,11 @@ export class EntityManager {
   teleport(p) {
     const e = this.map.get(p.entityId);
     if (!e) return;
-    e.serverX = Math.round(p.x * 32); e.serverY = Math.round(p.y * 32); e.serverZ = Math.round(p.z * 32);
-    let y = p.y;
-    // vanilla: if close enough to current, keep current y to avoid jitter on ground
-    if (Math.abs(e.x - p.x) < 0.03125 && Math.abs(e.y - p.y) < 0.015625 && Math.abs(e.z - p.z) < 0.03125) y = e.y;
-    this._setTarget(e, p.x, y, p.z, p.yaw, p.pitch);
+    e.serverX = Math.round(p.x * 4096); e.serverY = Math.round(p.y * 4096); e.serverZ = Math.round(p.z * 4096);
+    if (e.controlled) return;
+    // handleEntityTeleport (1.9+): close to the current position only the rotation changes
+    if (Math.abs(e.x - p.x) < 0.03125 && Math.abs(e.y - p.y) < 0.015625 && Math.abs(e.z - p.z) < 0.03125) this._setTarget(e, e.x, e.y, e.z, p.yaw, p.pitch);
+    else this._setTarget(e, p.x, p.y, p.z, p.yaw, p.pitch);
     e.onGround = p.onGround;
   }
 
@@ -365,7 +367,11 @@ export class EntityManager {
   setAttributes(p) {
     const e = this.map.get(p.entityId);
     if (!e) return;
-    for (const prop of p.properties) if (prop.key === 'generic.maxHealth') e.maxHealth = prop.value;
+    e.attributes = e.attributes || {};
+    for (const prop of p.properties) {
+      if (prop.key === 'generic.maxHealth') e.maxHealth = prop.value;
+      e.attributes[prop.key] = prop; // movement speed and jump strength drive a ridden horse
+    }
   }
 
   addEffect(p) {
@@ -458,8 +464,8 @@ export class EntityManager {
 
   // Height offsets for riding (Entity.getMountedYOffset / getYOffset)
   mountedOffset(v) {
-    if (v.kind === 'boat') return -0.3 + 0.6 * 0.5;
-    if (v.kind === 'minecart') return 0.0 + 0.7 * 0.5 - 0.1;
+    if (v.kind === 'boat') return -0.1;     // EntityBoat.getMountedYOffset (1.9+)
+    if (v.kind === 'minecart') return 0;    // EntityMinecart.getMountedYOffset (1.9+)
     if (v.kind === 'mob') {
       if (v.type === 90) return 0.9 * 0.75 - 0.3;
       if (v.type === 100) return v.height * 0.75 - 0.25;
@@ -490,17 +496,6 @@ export class EntityManager {
       y: e.prevY + (e.y - e.prevY) * partial,
       z: e.prevZ + (e.z - e.prevZ) * partial,
     };
-  }
-
-  boss() {
-    for (const e of this.map.values()) {
-      if (e.kind === 'mob' && (e.type === 63 || e.type === 64)) {
-        const max = e.type === 63 ? 200 : 300;
-        const name = e.customName || (e.type === 63 ? 'Ender Dragon' : 'Wither');
-        return { healthScale: Math.max(0, Math.min(1, (e.health || 0) / (e.maxHealth || max))), name };
-      }
-    }
-    return null;
   }
 
   // Pseudo-entity mirroring the local player (rendered in third person)

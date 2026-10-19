@@ -171,6 +171,8 @@ export class Assets {
     const names = ['blocks', 'items', 'entities', 'blockCollisionShapes', 'biomes', 'foods', 'effects', 'enchantments', 'windows', 'particles', 'materials', 'recipes', 'sounds'];
     const datas = await Promise.all(names.map((n) => this.source.data(n)));
     names.forEach((n, i) => { this.data[n] = datas[i]; });
+    // CraftingManager recipes in id order (id = 11 + index; 0 - 10 are the special recipes)
+    this.recipes = await this.source.recipes();
     // SoundEvent registry: id -> event name (sound effect packets carry ids)
     this.soundNames = [];
     for (const s of this.data.sounds) this.soundNames[s.id] = s.name;

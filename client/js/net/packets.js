@@ -260,7 +260,35 @@ const decoders = {
     name: 'entity_teleport', entityId: r.varint(), x: r.f64(), y: r.f64(), z: r.f64(),
     yaw: r.angle(), pitch: r.angle(), onGround: r.bool(),
   }),
-  0x4d: (r) => ({ name: 'advancements', reset: r.bool() }), // the rest is not read yet
+  // SPacketAdvancementInfo: advancements to add, ids to remove, progress per advancement
+  0x4d: (r) => {
+    const p = { name: 'advancements', reset: r.bool(), added: [], removed: [], progress: [] };
+    const n = r.varint();
+    for (let i = 0; i < n; i++) {
+      const a = { id: r.string(), parent: r.bool() ? r.string() : null, display: null, criteria: [], requirements: [] };
+      if (r.bool()) {
+        const d = a.display = { title: r.string(), description: r.string(), icon: r.slot(), frame: r.varint(), flags: r.i32() };
+        d.background = d.flags & 1 ? r.string() : null;
+        d.showToast = !!(d.flags & 2);
+        d.hidden = !!(d.flags & 4);
+        d.x = r.f32(); d.y = r.f32();
+      }
+      a.criteria = strings(r);
+      const rn = r.varint();
+      for (let j = 0; j < rn; j++) a.requirements.push(strings(r));
+      p.added.push(a);
+    }
+    p.removed = strings(r);
+    const m = r.varint();
+    for (let i = 0; i < m; i++) {
+      const id = r.string();
+      const crit = {};
+      const c = r.varint();
+      for (let j = 0; j < c; j++) { const k = r.string(); crit[k] = r.bool() ? Number(r.i64()) : null; }
+      p.progress.push({ id, criteria: crit });
+    }
+    return p;
+  },
   0x4e: (r) => {
     const entityId = r.varint();
     const n = r.i32();
@@ -291,7 +319,7 @@ export function decodePacket(bytes) {
   if (!dec) return { name: 'unknown', id };
   const p = dec(r);
   p.id = id;
-  if (r.remaining() > 0 && p.name !== 'custom_payload' && p.name !== 'advancements') {
+  if (r.remaining() > 0 && p.name !== 'custom_payload') {
     p._extra = r.remaining();
   }
   return p;
@@ -345,6 +373,13 @@ export const C = {
   entityAction: (eid, action, jumpBoost = 0) => pkt(0x15).varint(eid).varint(action).varint(jumpBoost).build(),
   steerVehicle: (sideways, forward, flags) => pkt(0x16).f32(sideways).f32(forward).u8(flags).build(),
   resourcePackStatus: (result) => pkt(0x18).varint(result).build(),
+  // CPacketPlaceRecipe: fill the crafting grid with a recipe (all: as many times as possible)
+  placeRecipe: (windowId, recipe, all) => pkt(0x12).i8(windowId).varint(recipe).bool(all).build(),
+  // CPacketRecipeInfo: a new recipe was seen / the book's open and filtering flags
+  recipeInfoShown: (recipe) => pkt(0x17).varint(0).i32(recipe).build(),
+  recipeInfoSettings: (open, filtering) => pkt(0x17).varint(1).bool(open).bool(filtering).build(),
+  // CPacketSeenAdvancements: opened a tab (id) / closed the screen (null)
+  seenAdvancements: (tab) => (tab ? pkt(0x19).varint(0).string(tab).build() : pkt(0x19).varint(1).build()),
   heldItemSlot: (slot) => pkt(0x1a).i16(slot).build(),
   creativeSlot: (slot, item) => pkt(0x1b).i16(slot).slot(item).build(),
   // plain text lines (1.9+)

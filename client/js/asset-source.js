@@ -11,6 +11,7 @@ export class FolderSource {
   bytes(rel) { return platform().fetchBytes(this.base + rel).catch(() => null); }
   data(name) { return platform().fetchJson(`data/${name}.json`); }
   models() { return platform().fetchJson(this.base + 'bundles/models.json'); }
+  recipes() { return platform().fetchJson(this.base + 'bundles/recipes.json').catch(() => []); }
 
   // { files: Map<name, () => png bytes>, mcmeta } for textures/blocks and textures/items
   async blockTextures() {
@@ -34,6 +35,8 @@ export class ZipSource {
     if (t === null) throw new Error(`Missing data/${name}.json`);
     return JSON.parse(t);
   }
+
+  async recipes() { const t = this.zip.readText('bundles/recipes.json'); return t ? JSON.parse(t) : []; }
 
   async models() {
     const out = { blockstates: {}, models: {} };
