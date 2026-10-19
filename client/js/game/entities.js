@@ -1,6 +1,7 @@
 // Client-side entity tracking (positions, interpolation, metadata, animation state).
 import { simplify } from '../net/nbt.js';
 import { blocks } from '../world/blocks.js';
+import { mcSin, mcCos } from './physics.js';
 
 const MOB_SIZES = {
   50: [0.6, 1.8, 1.62], 51: [0.6, 1.95, 1.74], 52: [1.4, 0.9, 0.65], 53: [3.6, 10.8, 10.44], 54: [0.6, 1.95, 1.74], 55: [0.51, 0.51, 0.31],
@@ -301,8 +302,12 @@ export class EntityManager {
       const small = !!(m[11] & 1), marker = !!(m[11] & 16);
       if (marker) { e.width = 0; e.height = 0; } else if (small) { e.width = 0.25; e.height = 0.9875; } else { e.width = 0.5; e.height = 1.975; }
     }
-    if (e.kind === 'projectile' && e.type === 76 && m[6]) e.item = m[6];
+    if (e.kind === 'projectile' && e.type === 76) {
+      if (m[6]) e.item = m[6];
+      if (m[7] !== undefined) e.boostedId = m[7]; // EntityFireworkRocket.BOOSTED_ENTITY_ID (elytra boost)
+    }
     if (e.kind === 'arrow' && m[6] !== undefined) e.critical = !!(m[6] & 1);
+    if (e.kind === 'boat' && m[9] !== undefined) e.boatType = m[9];
     if (e.kind === 'minecart') {
       if (m[9] !== undefined) e.displayBlock = m[9];
       if (m[10] !== undefined) e.displayOffset = m[10];
@@ -313,7 +318,7 @@ export class EntityManager {
       switch (e.entityType) {
         case 65: if (m[12] !== undefined) e.hanging = !!(m[12] & 1); break; // bat
         case 50: if (m[12] !== undefined) e.creeperState = m[12]; if (m[13] !== undefined) e.powered = !!m[13]; break;
-        case 51: case 5: case 6: break; // skeletons: 12 = arms raised
+        case 51: case 5: case 6: if (m[12] !== undefined) e.armsRaised = !!m[12]; break; // AbstractSkeleton: swinging arms
         case 54: case 23: case 27:
           if (m[12] !== undefined) e.child = !!m[12];
           if (e.entityType === 27 && m[16] !== undefined) e.villagerProfession = m[16];
@@ -374,7 +379,9 @@ export class EntityManager {
     if (p.entityId === g.entityId) { if (p.animation === 0) g.interaction.swing && (g.interaction.swinging = true, g.interaction.swingTicks = -1); return; }
     if (!e) return;
     switch (p.animation) {
-      case 0: if (!e.swinging || e.swingTicks >= 3 || e.swingTicks < 0) { e.swingTicks = -1; e.swinging = true; } break;
+      case 0: case 3: // swing main hand / off hand
+        if (!e.swinging || e.swingTicks >= 3 || e.swingTicks < 0) { e.swingTicks = -1; e.swinging = true; e.swingHand = p.animation === 3 ? 1 : 0; }
+        break;
       case 1: e.hurtTime = 10; break;
       case 2: e.sleeping = false; break;
       case 4: g.particles.crit(e); break;
@@ -518,9 +525,14 @@ export class EntityManager {
     const it = g.interaction;
     s.prevSwingProgress = it.prevSwingProgress; s.swingProgress = it.swingProgress;
     s.equipment = [g.inventory.held(), g.inventory.armor[0], g.inventory.armor[1], g.inventory.armor[2], g.inventory.armor[3]];
+    s.offhand = g.inventory.offhand;
+    s.activeHand = it.activeHand || 0; s.swingHand = it.swingHand || 0;
+    s.mainHand = g.settings.mainHand === 'left' ? 0 : 1;
+    s.elytraFlying = !!pl.elytraFlying;
+    s.motionX = pl.motionX; s.motionY = pl.motionY; s.motionZ = pl.motionZ;
     s.hurtTime = g.hurtTime; s.deathTime = g.dead ? Math.min(20, (s.deathTime || 0) + 1) : 0;
     s.metadata = g.selfMetadata || s.metadata;
-    if (s.metadata && s.metadata[10] !== undefined) s.skinFlags = s.metadata[10]; else s.skinFlags = g.settings.skinParts;
+    if (s.metadata && s.metadata[13] !== undefined) s.skinFlags = s.metadata[13]; else s.skinFlags = g.settings.skinParts;
     s.invisible = g.effects.has(14);
     s.onFire = g.selfMetadata ? !!(g.selfMetadata[0] & 1) : false;
     this._livingUpdate(s);
@@ -589,19 +601,33 @@ export class EntityManager {
       const f = Math.hypot(e.x - e.prevX, e.z - e.prevZ);
       if (!e.rollSound && !e.rollSoundPending) {
         e.rollSoundPending = true;
-        g.sound.playLoop('minecart.base', e.x, e.y, e.z).then((h) => { e.rollSound = h; if (!this.map.has(e.id) && h) h.stop(); });
+        g.sound.playLoop('entity.minecart.riding', e.x, e.y, e.z, { category: 'neutral' }).then((h) => { e.rollSound = h; if (!this.map.has(e.id) && h) h.stop(); });
       }
       if (e.rollSound) { e.rollSound.setPosition([e.x, e.y, e.z]); e.rollSound.setVolume(f >= 0.01 ? Math.min(f, 0.5) * 0.7 : 0); }
       const riding = g.ridingEntityId === e.id;
       if (riding && !e.insideSound && !e.insideSoundPending) {
         e.insideSoundPending = true;
-        g.sound.playLoop('minecart.inside', 0, 0, 0, { global: true }).then((h) => { e.insideSound = h; });
+        g.sound.playLoop('entity.minecart.inside', 0, 0, 0, { global: true, category: 'neutral' }).then((h) => { e.insideSound = h; });
       }
       if (e.insideSound) {
         if (!riding) { e.insideSound.stop(); e.insideSound = null; e.insideSoundPending = false; }
         else e.insideSound.setVolume(f >= 0.01 ? Math.min(f, 1) * 0.75 : 0);
       }
     }
+  }
+
+  // EntityFireworkRocket.onUpdate, client side: a rocket attached to the gliding local player pushes it along its look
+  _fireworkBoost(e) {
+    const pl = this.game.player;
+    if (!pl.elytraFlying) return;
+    const yaw = pl.yaw, pitch = pl.pitch;
+    const fr = Math.fround, f = fr(0.017453292), PI = fr(Math.PI);
+    const c1 = mcCos(fr(fr(-yaw * f) - PI)), s1 = mcSin(fr(fr(-yaw * f) - PI));
+    const c2 = -mcCos(fr(-pitch * f)), s2 = mcSin(fr(-pitch * f));
+    const lx = s1 * c2, ly = s2, lz = c1 * c2;
+    pl.motionX += lx * 0.1 + (lx * 1.5 - pl.motionX) * 0.5;
+    pl.motionY += ly * 0.1 + (ly * 1.5 - pl.motionY) * 0.5;
+    pl.motionZ += lz * 0.1 + (lz * 1.5 - pl.motionZ) * 0.5;
   }
 
   tick() {
@@ -616,6 +642,7 @@ export class EntityManager {
       e.prevLimbSwingAmount = e.limbSwingAmount;
       e.prevSwingProgress = e.swingProgress;
       e.ticks++;
+      if (e.boostedId && e.boostedId === g.entityId) this._fireworkBoost(e);
       if (e.pickup) {
         e.pickup.tick++;
         if (e.pickup.tick >= 3) { this.game.entityRenderer.remove(e); this.map.delete(e.id); continue; }
@@ -685,6 +712,7 @@ export class EntityManager {
 
   // EntityLivingBase.onUpdate: body yaw + limb swing
   _livingUpdate(e) {
+    e.elytraTicks = e.elytraFlying ? (e.elytraTicks || 0) + 1 : 0; // EntityLivingBase.ticksElytraFlying
     const d0 = e.x - e.prevX, d1 = e.z - e.prevZ;
     const f = d0 * d0 + d1 * d1;
     let f1 = e.bodyYaw;

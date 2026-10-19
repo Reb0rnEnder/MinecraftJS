@@ -18,7 +18,7 @@ class PageButton {
     gui.blit('gui/book.png', this.x, this.y, u, this.next ? 192 : 205, 23, 13);
   }
   mouseDown(mx, my, game) {
-    if (this.visible && this.hovered(mx, my)) { game.sound.playUi('gui.button.press', 1); this.onClick(); return true; }
+    if (this.visible && this.hovered(mx, my)) { game.sound.playUi('ui.button.click', 1); this.onClick(); return true; }
     return false;
   }
 }

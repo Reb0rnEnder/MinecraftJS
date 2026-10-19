@@ -230,7 +230,7 @@ class CraftingList extends SlotList {
       }
       return a.item.id - b.item.id;
     });
-    s.game.sound.playUi('gui.button.press', 1);
+    s.game.sound.playUi('ui.button.click', 1);
   }
   mouseUp() { super.mouseUp(); this.mouseHeld = false; }
 

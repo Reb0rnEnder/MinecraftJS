@@ -14,7 +14,7 @@ export class CreditsScreen extends Screen {
     this.time = 0; // field_146581_h, ticks
     this.lines = null;
     this.totalHeight = 0;
-    this.isCredits = true; // MusicTicker plays music.game.end.credits while this is open
+    this.isCredits = true; // MusicTicker plays music.credits while this is open
     this._load();
   }
 

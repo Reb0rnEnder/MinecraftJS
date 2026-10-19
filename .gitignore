@@ -12,3 +12,6 @@ client/assets/
 # 1.12.2 work in progress (kept out of the 1.8.9 branch)
 1.12.2-wip/
 *.claudechats.json
+1.12.2/
+server1222/
+server189/

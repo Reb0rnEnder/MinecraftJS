@@ -36,7 +36,34 @@ export class Interaction {
     this.swinging = false;
     this.equipProgress = 0;
     this.prevEquipProgress = 0;
+    this.equipProgressOff = 0;
+    this.prevEquipProgressOff = 0;
+    this.swingHand = 0;  // EntityLivingBase.swingingHand
+    this.activeHand = 0; // hand of the item in use
+    this.ticksSinceLastSwing = 0;
     this.lastHeld = null;
+  }
+
+  // ---------------------------------------------------------------- attack cooldown (1.9+)
+
+  // EntityPlayer.getCooldownPeriod: ticks for a full-strength attack (20 / attack speed)
+  cooldownPeriod() { return 20 / (this.player.attackSpeed || 4); }
+  // EntityPlayer.getCooledAttackStrength
+  cooledAttackStrength(adjust) { return Math.max(0, Math.min(1, (this.ticksSinceLastSwing + adjust) / this.cooldownPeriod())); }
+  resetCooldown() { this.ticksSinceLastSwing = 0; }
+
+  // EntityPlayer.onUpdate: count up, and a different main hand item (ignoring durability) restarts the cooldown
+  _tickCooldown() {
+    this.ticksSinceLastSwing++;
+    const held = this.game.inventory.held();
+    const prev = this._cooldownItem;
+    const same = (!prev && !held) || (prev && held && prev.id === held.id && prev.damage === held.damage && prev.count === held.count);
+    if (!same) {
+      // ItemStack.areItemsEqualIgnoreDurability: damage only counts for items without durability
+      const sameItem = (!prev && !held) || (prev && held && prev.id === held.id && (this.game.items.maxDurability(held.id) > 0 || prev.damage === held.damage));
+      if (!sameItem) this.resetCooldown();
+      this._cooldownItem = held ? { id: held.id, damage: held.damage, count: held.count } : null;
+    }
   }
 
   get player() { return this.game.player; }
@@ -83,8 +110,10 @@ export class Interaction {
     this.player.usingItem = false;
   }
 
-  swing() {
-    this.game.send(C.armAnimation());
+  // EntityPlayerSP.swingArm
+  swing(hand = 0) {
+    this.game.send(C.armAnimation(hand));
+    this.swingHand = hand;
     // EntityLivingBase.swingItem: restart only past half of getArmSwingAnimationEnd()
     if (!this.swinging || this.swingTicks >= Math.floor((this.swingLength || 6) / 2) || this.swingTicks < 0) {
       this.swingTicks = -1;
@@ -108,7 +137,7 @@ export class Interaction {
     if (this.player.usingItem) {
       this.useTicks++;
       if (!useDown) this.stopUsingItem();
-      const held = g.inventory.held();
+      const held = g.inventory.getHand(this.activeHand);
       const dur = g.items.useDuration(held);
       if (held && dur > 0 && dur < 72000 && this.useTicks >= dur) {
         // Server finishes eating; stop locally
@@ -116,8 +145,8 @@ export class Interaction {
         this.useTicks = 0;
       }
       if (held && (g.items.useAction(held) === 'eat' || g.items.useAction(held) === 'drink') && this.useTicks > 4 && this.useTicks % 4 === 0) {
-        if (g.items.useAction(held) === 'eat') g.sound.playAtPlayer('random.eat', 0.5 + 0.5 * Math.round(Math.random()), (Math.random() - Math.random()) * 0.2 + 1);
-        else g.sound.playAtPlayer('random.drink', 0.5, Math.random() * 0.1 + 0.9);
+        if (g.items.useAction(held) === 'eat') g.sound.playAtPlayer('entity.generic.eat', 0.5 + 0.5 * Math.round(Math.random()), (Math.random() - Math.random()) * 0.2 + 1);
+        else g.sound.playAtPlayer('entity.generic.drink', 0.5, Math.random() * 0.1 + 0.9);
         g.particles.itemCrack(held, this.player, 5);
       }
     } else {
@@ -132,10 +161,12 @@ export class Interaction {
     this.lastHeld = g.inventory.held();
     // EntityPlayer.updateArmSwingProgress runs in the player update, after this tick's clicks
     this.updateSwing();
+    this._tickCooldown();
   }
 
   tickIdle() {
     this.updateSwing();
+    this._tickCooldown();
     this.updateEquip();
     if (this.isHitting) this.resetBreaking();
     if (this.player.usingItem && !this.game.screens.current?.allowsMovement) this.stopUsingItem();
@@ -153,39 +184,38 @@ export class Interaction {
     this.swingLength = len;
   }
 
+  // ItemRenderer.updateEquippedItem (1.9+): the main hand follows the attack cooldown (strength cubed); a changed
+  // stack lowers the hand, which comes back up with the new one
   updateEquip() {
-    // ItemRenderer.updateEquippedItem
     this.prevEquipProgress = this.equipProgress;
-    const held = this.game.inventory.held();
-    const same = (a, b) => (!a && !b) || (a && b && a.id === b.id && a.damage === b.damage);
-    const flag = same(this._equipped, held);
-    if (!this._equipped && !held) { /* nothing */ }
-    const f1 = 0.4;
-    const f2 = flag ? 1 : 0;
-    let f3 = f2 - this.equipProgress;
-    if (f3 < -f1) f3 = -f1;
-    if (f3 > f1) f3 = f1;
-    this.equipProgress += f3;
-    if (this.equipProgress < 0.1) this._equipped = held ? copy(held) : null;
-    if (flag && held) this._equipped = held;
+    this.prevEquipProgressOff = this.equipProgressOff;
+    const inv = this.game.inventory;
+    const main = inv.held(), off = inv.offhand;
+    const f = this.cooledAttackStrength(1);
+    const clamp = (v) => Math.max(-0.4, Math.min(0.4, v));
+    this.equipProgress += clamp((this._equipped === main ? f * f * f : 0) - this.equipProgress);
+    this.equipProgressOff += clamp((this._equippedOff === off ? 1 : 0) - this.equipProgressOff);
+    if (this.equipProgress < 0.1) this._equipped = main;
+    if (this.equipProgressOff < 0.1) this._equippedOff = off;
   }
 
-  // Minecraft.clickMouse
+  // Minecraft.clickMouse (1.9+)
   clickMouse() {
     const g = this.game;
     if (this.leftClickCounter > 0) return;
-    this.swing();
+    if (g.player.ridingEntity && g.player.ridingEntity.kind === 'boat') return; // isRowingBoat
     const t = this.target;
-    if (!t) {
-      if (g.gameMode !== 1) this.leftClickCounter = 10;
-      return;
-    }
-    if (t.type === 'entity') {
-      this.attackEntity(t.entity);
-    } else if (t.type === 'block') {
+    let miss = !t;
+    if (t && t.type === 'entity') this.attackEntity(t.entity);
+    else if (t && t.type === 'block') {
       const b = blocks[t.state >> 4];
-      if (b && b.id !== 0) this.clickBlock(t, t.face);
+      if (b && b.id !== 0) this.clickBlock(t, t.face); else miss = true;
     }
+    if (miss) {
+      if (g.gameMode !== 1) this.leftClickCounter = 10;
+      this.resetCooldown();
+    }
+    this.swing(0);
   }
 
   // PlayerControllerMP.attackEntity + client-side EntityPlayer.attackTargetEntityWithCurrentItem. On the client
@@ -195,13 +225,25 @@ export class Interaction {
     const g = this.game, pl = this.player;
     g.send(C.useEntity(e.id, 1));
     if (g.gameMode === 3) return;
-    if (e.kind === 'item' || e.kind === 'xp' || e.kind === 'arrow') return; // canAttackWithItem() is false
-    if (e.kind !== 'player') return;
+    this._attackTargetEntity(e);
+    this.resetCooldown();
+  }
+
+  // EntityPlayer.attackTargetEntityWithCurrentItem (1.9+), client side: damage scales with the cooled strength;
+  // knockback / sprint stop and crit particles only show when the target accepts the hit locally (other players)
+  _attackTargetEntity(e) {
+    const g = this.game, pl = this.player;
+    if (e.kind === 'item' || e.kind === 'xp' || e.kind === 'arrow') return; // canBeAttackedWithItem() is false
     const held = g.inventory.held();
+    const f2 = this.cooledAttackStrength(0.5);
+    const f1 = g.items.enchantLevel(held, 16) * 1.25 * f2; // sharpness (EnumCreatureAttribute.UNDEFINED)
+    this.resetCooldown();
+    const strong = f2 > 0.9;
     let i = g.items.enchantLevel(held, 19); // knockback
-    if (pl.sprinting) i++;
-    const f1 = g.items.enchantLevel(held, 16) * 1.25; // sharpness vs EnumCreatureAttribute.UNDEFINED
-    const crit = pl.fallDistance > 0 && !pl.onGround && !pl.isOnLadder(g.world) && !pl.inWater && !g.effects.has(15) && !pl.ridingEntity;
+    if (pl.sprinting && strong) i++;
+    const crit = strong && pl.fallDistance > 0 && !pl.onGround && !pl.isOnLadder(g.world) && !pl.inWater && !g.effects.has(15) &&
+      !pl.ridingEntity && (e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand') && !pl.sprinting;
+    if (e.kind !== 'player') return; // attackEntityFrom is false on the client for everything else
     if (i > 0) {
       pl.motionX *= 0.6;
       pl.motionZ *= 0.6;
@@ -357,7 +399,7 @@ export class Interaction {
       held.damage++;
       if (held.damage > g.items.maxDurability(held.id)) {
         g.inventory.setHeld(null);
-        g.sound.playAtPlayer('random.break', 0.8, 0.8 + Math.random() * 0.4);
+        g.sound.playAtPlayer('entity.item.break', 0.8, 0.8 + Math.random() * 0.4);
       }
     }
     // vanilla moves currentBlock below the world instead of clearing it; isHitting may still be true here (an
@@ -379,58 +421,59 @@ export class Interaction {
     return true;
   }
 
-  // ItemRenderer.resetEquippedProgress(2): the held item dips and comes back up
-  resetEquipped() { this.equipProgress = 0; }
-
-  // Minecraft.rightClickMouse
+  // Minecraft.rightClickMouse (1.9+): main hand, then off hand, until one of them does something
   rightClickMouse() {
     const g = this.game;
     if (this.isHitting) return;
     this.rightClickDelay = 4;
-    let useItem = true;
-    const held = g.inventory.held();
+    if (g.player.ridingEntity && g.player.ridingEntity.kind === 'boat') return; // isRowingBoat
     const t = this.target;
-    if (t && t.type === 'entity') {
-      const e = t.entity;
-      const p = g.entities.interp(e, 1);
-      // isPlayerRightClickingOnEntity: INTERACT_AT; armor stands (not markers) accept it client-side
-      g.send(C.useEntity(e.id, 2, t.hit[0] - p.x, t.hit[1] - p.y, t.hit[2] - p.z));
-      const armorStandTakes = e.kind === 'armorstand' && !((e.armorFlags || 0) & 16);
-      if (armorStandTakes) useItem = false;
-      else {
-        g.send(C.useEntity(e.id, 0)); // interactWithEntitySendPacket
-        if (g.entities.isInteractive(e, held)) useItem = false;
+    for (let hand = 0; hand < 2; hand++) {
+      const stack = g.inventory.getHand(hand);
+      if (t && t.type === 'entity') {
+        const e = t.entity;
+        const p = g.entities.interp(e, 1);
+        // interactWithEntity (INTERACT_AT): armor stands (not markers) take it client-side
+        g.send(C.useEntity(e.id, 2, t.hit[0] - p.x, t.hit[1] - p.y, t.hit[2] - p.z, hand));
+        if (e.kind === 'armorstand' && !((e.armorFlags || 0) & 16)) return;
+        g.send(C.useEntity(e.id, 0, 0, 0, 0, hand)); // interactWithEntity (INTERACT)
+        if (g.entities.isInteractive(e, stack)) return;
+      } else if (t && t.type === 'block') {
+        const b = blocks[g.world.getState(t.x, t.y, t.z) >> 4];
+        if (b && b.id !== 0) {
+          const before = stack ? stack.count : 0;
+          if (this.onPlayerRightClick(t, hand)) {
+            this.swing(hand);
+            if (stack) {
+              if (stack.count <= 0) g.inventory.setHand(hand, null);
+              if (stack.count !== before || g.gameMode === 1) this.resetEquipped(hand);
+            }
+            return;
+          }
+        }
       }
-    } else if (t && t.type === 'block') {
-      const b = blocks[g.world.getState(t.x, t.y, t.z) >> 4];
-      if (b && b.id !== 0) {
-        const before = held ? held.count : 0;
-        if (this.onPlayerRightClick(t)) { useItem = false; this.swing(); }
-        if (!held) return;
-        if (held.count <= 0) g.inventory.setHeld(null);
-        else if (held.count !== before || g.gameMode === 1) this.resetEquipped();
-      }
-    }
-    if (useItem) {
-      const h = g.inventory.held();
-      if (h && this.sendUseItem(h)) this.resetEquipped();
+      if (stack && this.sendUseItem(stack, hand)) { this.resetEquipped(hand); return; }
     }
   }
 
-  // PlayerControllerMP.onPlayerRightClick
-  onPlayerRightClick(t) {
+  // ItemRenderer.resetEquippedProgress
+  resetEquipped(hand = 0) { if (hand === 1) this.equipProgressOff = 0; else this.equipProgress = 0; }
+
+  // PlayerControllerMP.processRightClickBlock: true for EnumActionResult.SUCCESS
+  onPlayerRightClick(t, hand = 0) {
     const g = this.game;
-    const held = g.inventory.held();
+    const held = g.inventory.getHand(hand);
     const fx = t.hit[0] - t.x, fy = t.hit[1] - t.y, fz = t.hit[2] - t.z;
     const b = blocks[g.world.getState(t.x, t.y, t.z) >> 4];
     let activated = false;
     if (g.gameMode !== 3) {
-      if ((!this.player.sneaking || !held) && b && INTERACTIVE.has(b.name) && b.name !== 'iron_door' && b.name !== 'iron_trapdoor') activated = true;
+      const mainAndOffEmpty = !g.inventory.held() && !g.inventory.offhand;
+      if ((!this.player.sneaking || mainAndOffEmpty) && b && INTERACTIVE.has(b.name) && b.name !== 'iron_door' && b.name !== 'iron_trapdoor') activated = true;
       // ItemBlock.canPlaceBlockOnSide: no packet at all when the block could not go there
       if (!activated && held && this._itemBlock(held) && !this._canPlaceBlockOnSide(t, held)) return false;
     }
-    // CPacketPlayerTryUseItemOnBlock (main hand, cursor position on the face)
-    g.send(C.blockPlace(t.x, t.y, t.z, t.face, 0, fx, fy, fz));
+    // CPacketPlayerTryUseItemOnBlock (cursor position on the face)
+    g.send(C.blockPlace(t.x, t.y, t.z, t.face, hand, fx, fy, fz));
     if (activated) {
       if (b.isDoor || b.name === 'trapdoor' || b.isFenceGate) this.predictToggle(t, b);
       return true;
@@ -567,41 +610,50 @@ export class Interaction {
     if (b.isDoor && ((st & 15) & 8)) { y -= 1; st = g.world.getState(x, y, z); }
     const meta = (st & 15) ^ 4;
     g.world.setState(x, y, z, ((st >> 4) << 4) | meta);
+    // BlockDoor / BlockTrapDoor / BlockFenceGate.onBlockActivated: World.playEvent for the player's own client
     const opening = !!(meta & 4);
-    const sound = opening ? 'random.door_open' : 'random.door_close';
-    g.sound.play(sound, x + 0.5, y + 0.5, z + 0.5, 1, Math.random() * 0.1 + 0.9);
+    const iron = b.name === 'iron_trapdoor';
+    const ev = b.isDoor ? (opening ? 1006 : 1012) : b.isFenceGate ? (opening ? 1008 : 1014) : iron ? (opening ? 1037 : 1036) : (opening ? 1007 : 1013);
+    g.sound.onWorldEvent({ effectId: ev, location: { x, y, z }, data: 0 });
   }
 
-  // PlayerControllerMP.sendUseItem: true when Item.onItemRightClick changed the stack (the item then dips)
-  sendUseItem(held) {
+  // PlayerControllerMP.processRightClick: true for EnumActionResult.SUCCESS (Item.onItemRightClick did something)
+  sendUseItem(held, hand = 0) {
     const g = this.game;
     if (g.gameMode === 3) return false;
     if (held.id === 386) {
       // ItemWritableBook opens the editor client-side
       import('../gui/screens/book.js').then((m) => g.screens.open(new m.BookScreen(g, held, true)));
     }
-    g.send(C.useItem(0)); // CPacketPlayerTryUseItem
+    g.send(C.useItem(hand)); // CPacketPlayerTryUseItem
+    if (g.cooldownFraction(held.id, 0) > 0) return false; // CooldownTracker: still cooling down
     const action = g.items.useAction(held);
     if (action !== 'none') {
-      const food = action === 'eat' && held.id !== 322 && g.food >= 20 && g.gameMode !== 1;
+      const food = action === 'eat' && held.id !== 322 && held.id !== 432 && g.food >= 20 && g.gameMode !== 1;
       if (!food) {
         this.player.usingItem = true;
+        this.activeHand = hand;
         this.useTicks = 0;
+        return true;
       }
+      return false;
     }
-    if (held.id === 346) this.swing(); // ItemFishingRod swings the arm itself
+    if (held.id === 346) { this.swing(hand); return true; } // ItemFishingRod swings the arm itself
     const survival = g.gameMode !== 1;
     const t = this.target;
     const lookingAtFrame = t && t.type === 'block' && blocks[t.state >> 4] && blocks[t.state >> 4].name === 'end_portal_frame';
-    const thrown = [332, 344, 368, 384].includes(held.id) || (held.id === 373 && (held.damage & 16384)) || (held.id === 381 && !lookingAtFrame);
-    if (thrown && survival) {
-      held.count--;
-      if (held.count <= 0) g.inventory.setHeld(null);
+    // thrown items: snowball, egg, ender pearl, experience bottle, splash / lingering potion, eye of ender
+    const thrown = [332, 344, 368, 384, 438, 441].includes(held.id) || (held.id === 381 && !lookingAtFrame);
+    if (thrown) {
+      if (survival) {
+        held.count--;
+        if (held.count <= 0) g.inventory.setHand(hand, null);
+      }
       return true;
     }
-    // armour equips itself when that slot is empty
-    if (held.id >= 298 && held.id <= 317) {
-      const slot = 3 - ((held.id - 298) % 4);
+    // armour and elytra equip themselves when that slot is empty
+    if ((held.id >= 298 && held.id <= 317) || held.id === 443) {
+      const slot = held.id === 443 ? 2 : 3 - ((held.id - 298) % 4);
       if (!g.inventory.armor[slot]) return true;
     }
     return false;

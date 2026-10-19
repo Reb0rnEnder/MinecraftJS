@@ -185,9 +185,11 @@ export class EntityRenderer {
     const t = e.type;
     switch (t) {
       case 50: return 'entity/creeper/creeper.png';
-      case 51: return e.wither ? 'entity/skeleton/wither_skeleton.png' : 'entity/skeleton/skeleton.png';
+      case 51: return e.wither ? 'entity/skeleton/wither_skeleton.png' : e.stray ? 'entity/skeleton/stray.png' : 'entity/skeleton/skeleton.png';
       case 52: return 'entity/spider/spider.png';
-      case 53: case 54: return e.villagerZombie ? 'entity/zombie/zombie_villager.png' : 'entity/zombie/zombie.png';
+      // RenderZombieVillager (1.11+): textures by profession; RenderHusk
+      case 53: case 54: return e.villagerZombie ? 'entity/zombie_villager/zombie_' + (['farmer', 'librarian', 'priest', 'smith', 'butcher'][e.villagerProfession] || 'villager') + '.png'
+        : e.husk ? 'entity/zombie/husk.png' : 'entity/zombie/zombie.png';
       case 55: return 'entity/slime/slime.png';
       case 56: return 'entity/ghast/ghast.png';
       case 57: return 'entity/zombie_pigman.png';
@@ -354,15 +356,30 @@ export class EntityRenderer {
       if (e.type === 51 || e.type === 53 || e.type === 54 || e.type === 57) this._addArmorLayers(v, e);
       if (e.type === 96) v.mushroomLayer = true;
     }
-    if (e.kind === 'player' || e.kind === 'armorstand') this._addArmorLayers(v, e);
+    if (e.kind === 'player' || e.kind === 'armorstand') {
+      this._addArmorLayers(v, e);
+      // LayerElytra: translate(0, 0, 0.125) in model space
+      const em = M.elytra();
+      const emat = this._mat(v, 'entity/elytra.png', { alphaTest: 0.1, cull: false });
+      const eobj = this._makeModelObject(em, emat);
+      eobj.position.z = 2;
+      v.modelGroup.add(eobj);
+      v.elytra = { model: em, obj: eobj };
+    }
     v.atlasMat = this._mat(v, this.atlasTex, { alphaTest: 0.1, transparent: true }); // RenderItem blends
-    // Held item holder (attached to right arm if present)
-    v.itemHolder = null;
+    // Held item holders (LayerHeldItem: one per arm)
+    v.itemHolder = null; v.leftHolder = null;
     if (model.parts && model.parts.rightArm && model.parts.rightArm.obj) {
       const h = new Node();
       h.scale.set(16, 16, 16);
       model.parts.rightArm.obj.add(h);
       v.itemHolder = h;
+    }
+    if (model.parts && model.parts.leftArm && model.parts.leftArm.obj) {
+      const h = new Node();
+      h.scale.set(16, 16, 16);
+      model.parts.leftArm.obj.add(h);
+      v.leftHolder = h;
     }
     if (model.parts && model.parts.head && model.parts.head.obj && (e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand')) {
       const h = new Node();
@@ -614,7 +631,8 @@ export class EntityRenderer {
       case 'boat': case 'minecart': {
         v = atlasOnly(e.kind);
         const model = e.kind === 'boat' ? M.boat() : M.minecart();
-        const mat = this._mat(v, e.kind === 'boat' ? 'entity/boat.png' : 'entity/minecart.png');
+        // EntityBoat.Type (1.9): one texture per wood
+        const mat = this._mat(v, e.kind === 'boat' ? 'entity/boat/boat_' + (['oak', 'spruce', 'birch', 'jungle', 'acacia', 'darkoak'][e.boatType || 0] || 'oak') + '.png' : 'entity/minecart.png');
         v.inner = new Node();
         const mg = new Node();
         mg.add(this._makeModelObject(model, mat));
@@ -843,6 +861,27 @@ export class EntityRenderer {
     }
     v.yawGroup.rotation.set(0, (180 - body) * D2R, 0);
     v.yawGroup.position.set(0, 0, 0);
+    v.yawGroup.matrix = null;
+    if (e.kind === 'player' && e.elytraFlying) {
+      // RenderPlayer.applyRotations: pitch into the glide, then turn towards the direction of travel
+      const m = mat4.create();
+      mat4.rotateY(m, m, (180 - body) * D2R);
+      const ft = (e.elytraTicks || 0) + partial;
+      const f1 = Math.max(0, Math.min(1, ft * ft / 100));
+      mat4.rotateX(m, m, f1 * (-90 - pitch) * D2R);
+      // EntityLivingBase.getLook: getVectorForRotation(pitch, head yaw)
+      const ly = (e.prevHeadYaw + (e.headYaw - e.prevHeadYaw) * partial) * D2R, lp = pitch * D2R;
+      const f2 = -Math.cos(-lp);
+      const lx = Math.sin(-ly - Math.PI) * f2, lz = Math.cos(-ly - Math.PI) * f2;
+      const mx = e.motionX || 0, mz = e.motionZ || 0;
+      const d0 = mx * mx + mz * mz, d1 = lx * lx + lz * lz;
+      if (d0 > 0 && d1 > 0) {
+        const d2 = Math.max(-1, Math.min(1, (mx * lx + mz * lz) / (Math.sqrt(d0) * Math.sqrt(d1))));
+        const d3 = mx * lz - mz * lx;
+        mat4.rotateY(m, m, Math.sign(d3) * Math.acos(d2));
+      }
+      v.yawGroup.matrix = m;
+    }
     let yOffset = 0;
     if (e.kind === 'player' && e.sneaking) yOffset = -0.125;
     v.root.position.y += yOffset;
@@ -885,10 +924,25 @@ export class EntityRenderer {
     if (e.child) v.scaleGroup.scale.multiplyScalar(0.5);
     // Animate
     const held = e.equipment[0];
+    // RenderPlayer.setModelVisibilities / RenderBiped: arm poses from both hands (main hand on the primary side)
+    const primaryRight = e.kind === 'player' ? e.mainHand !== 0 : !e.leftHanded;
+    const poseOf = (stack, hand) => {
+      if (!stack) return 'empty';
+      if (e.usingItem && (e.activeHand || 0) === hand) {
+        if (stack.id === 442) return 'block';
+        if (stack.id === 261) return 'bow';
+      }
+      return 'item';
+    };
+    const mainPose = poseOf(held, 0), offPose = poseOf(e.offhand, 1);
+    const skeletonAim = (e.kind === 'mob' && e.type === 51 && e.armsRaised && held && held.id === 261);
+    const speedSq = (e.motionX || 0) ** 2 + (e.motionY || 0) ** 2 + (e.motionZ || 0) ** 2;
     const args = {
       ls, lsa, age, yaw: head - body, pitch, swing: swing > 0 ? swing : -9999, partial,
-      sneak: !!e.sneaking, riding: e.riding >= 0, heldRight: held ? (e.usingItem && held && [267, 268, 272, 276, 283].includes(held.id) ? 3 : 1) : 0,
-      aimedBow: e.kind === 'mob' && e.type === 51 ? !!(held && held.id === 261) : !!(e.usingItem && held && held.id === 261),
+      sneak: !!e.sneaking, riding: e.riding >= 0,
+      rightPose: skeletonAim ? 'bow' : primaryRight ? mainPose : offPose, leftPose: primaryRight ? offPose : mainPose,
+      swingSide: ((e.swingHand || 0) === 0) === primaryRight ? 1 : -1,
+      elytra: (e.elytraTicks || 0) > 4, speedSq,
       onGround: e.onGround, eatingGrass: e.eatingGrass || 0, sitting: e.sitting, angry: e.angry, hanging: e.hanging,
       carrying: !!e.carried, screaming: e.screaming, horseType: e.horseType, saddled: !!(e.horseFlags & 4) || e.saddled,
       tailRotation: e.tamed ? (0.55 - (20 - (e.wolfHealth || 20)) * 0.02) * Math.PI : Math.PI / 5,
@@ -898,9 +952,9 @@ export class EntityRenderer {
     if (e.kind === 'armorstand') {
       const m = e.metadata;
       const r = (i) => (m[i] ? [m[i].pitch, m[i].yaw, m[i].roll] : null);
-      args.poses = { head: r(11), body: r(12), leftArm: r(13), rightArm: r(14), leftLeg: r(15), rightLeg: r(16) };
-      args.showArms = !!(m[10] & 4); args.noBasePlate = !!(m[10] & 8);
-      if (m[10] & 1) v.scaleGroup.scale.multiplyScalar(0.5);
+      args.poses = { head: r(12), body: r(13), leftArm: r(14), rightArm: r(15), leftLeg: r(16), rightLeg: r(17) };
+      args.showArms = !!(m[11] & 4); args.noBasePlate = !!(m[11] & 8);
+      if (m[11] & 1) v.scaleGroup.scale.multiplyScalar(0.5);
     }
     if (v.lodSkip && v.posed) {
       // Keep the previous pose; only the transforms above were updated
@@ -923,6 +977,21 @@ export class EntityRenderer {
       if (pp.rightLegwear) pp.rightLegwear.obj.visible = !!(flags & 0x20);
     }
     // Layers follow the main pose
+    if (v.elytra) {
+      const chest = e.equipment[3];
+      const show = !!chest && chest.id === 443 && !e.invisible;
+      v.elytra.obj.visible = show;
+      if (show) {
+        const t = M.elytraAngles(!!e.elytraFlying, !!e.sneaking, [e.motionX || 0, e.motionY || 0, e.motionZ || 0]);
+        // AbstractClientPlayer.rotateElytraX/Y/Z ease 10% towards the target each render; armor stands snap
+        if (e.kind === 'player') {
+          const r = e.rotElytra || (e.rotElytra = [t[0], t[1], t[2]]);
+          r[0] += (t[0] - r[0]) * 0.1; r[1] += (t[1] - r[1]) * 0.1; r[2] += (t[2] - r[2]) * 0.1;
+          v.elytra.model.animate(v.elytra.model, { rot: r, py: t[3] });
+        } else v.elytra.model.animate(v.elytra.model, { rot: [t[0], t[1], t[2]], py: t[3] });
+        for (const r of v.elytra.model.roots) r.sync();
+      }
+    }
     for (const L of v.layers) {
       L.model.animate(L.model, args);
       copyPose(model, L.model);
@@ -991,35 +1060,44 @@ export class EntityRenderer {
     }
   }
 
+  // LayerHeldItem (1.9+): main hand item in the primary arm, off hand item in the other
   _updateHeld(e, v, held, args) {
-    if (!v.itemHolder) return;
-    const key = held ? held.id + ':' + held.damage + ':' + (this.game.items.isEnchanted(held) ? 1 : 0) : null;
-    if (key !== v.heldKey) {
-      v.heldKey = key;
-      v.itemHolder.clear();
-      v.heldT1 = null;
-      if (held) {
-        const io = this._itemObject(held, v.atlasMat);
+    const primaryRight = e.kind === 'player' ? e.mainHand !== 0 : !e.leftHanded;
+    const right = primaryRight ? held : e.offhand, left = primaryRight ? e.offhand : held;
+    this._heldIn(v, 'r', v.itemHolder, right, false, args);
+    this._heldIn(v, 'l', v.leftHolder, left, true, args);
+  }
+
+  // renderHeldItem: (sneaking: +0.2 y) arm transform, rotate -90 X and 180 Y, translate (+-1/16, 0.125, -0.625),
+  // then the THIRD_PERSON_RIGHT_HAND / LEFT_HAND transform (mirrored for the left hand)
+  _heldIn(v, k, holder, stack, leftHand, args) {
+    if (!holder) return;
+    const key = stack ? stack.id + ':' + stack.damage + ':' + this.game.itemRenderer.iconKey(stack) : null;
+    const st = v['held' + k] || (v['held' + k] = { key: undefined, root: null, glint: null });
+    if (key !== st.key) {
+      st.key = key;
+      holder.clear();
+      st.root = null; st.glint = null;
+      if (stack) {
+        const io = this._itemObject(stack, v.atlasMat);
         if (io) {
-          const t1 = new Node();
-          t1.position.set(-0.0625, 0.4375, 0.0625);
-          // ItemRenderer.renderItem: x2 (3D) / preTransform x2 (flat), display transform, then renderItem x0.5
-          const s2 = new Node();
-          s2.scale.setScalar(2);
-          const t2 = new Node();
-          applyTransform(t2, io.model.display && io.model.display.thirdperson);
-          const t3 = new Node();
-          t3.scale.setScalar(0.5);
-          t3.add(io.obj);
-          t2.add(t3); s2.add(t2); t1.add(s2);
-          v.itemHolder.add(t1);
-          v.heldT1 = t1;
-          v.heldGlint = io.obj.userData.glint ? io.obj : null;
-        } else v.heldKey = undefined;
+          const root = new Node();
+          const turn = new Node();
+          turn.rotation.set(-Math.PI / 2, Math.PI, 0, 'XYZ');
+          const off = new Node();
+          off.position.set((leftHand ? -1 : 1) / 16, 0.125, -0.625);
+          const t = new Node();
+          const d = io.model.display || {};
+          applyTransform(t, leftHand ? d.thirdperson_lefthand || d.thirdperson_righthand : d.thirdperson_righthand, leftHand);
+          t.add(io.obj); off.add(t); turn.add(off); root.add(turn);
+          holder.add(root);
+          st.root = root;
+          st.glint = io.obj.userData.glint ? io.obj : null;
+        } else st.key = undefined;
       }
     }
-    if (v.heldT1) v.heldT1.position.y = 0.4375 + (args.sneak ? 0.203125 : 0);
-    if (v.heldGlint) this.glints.push(v.heldGlint);
+    if (st.root) st.root.position.y = args.sneak ? 0.2 : 0;
+    if (st.glint) this.glints.push(st.glint);
   }
 
   _updateHeadItem(e, v) {
@@ -1034,7 +1112,8 @@ export class EntityRenderer {
       t.position.set(0, -0.34375, 0);
       t.rotation.y = Math.PI;
       t.scale.set(0.625, -0.625, -0.625);
-      t.add(io.obj);
+      const h = new Node(); applyTransform(h, (io.model.display || {}).head); // renderItem(HEAD)
+      h.add(io.obj); t.add(h);
       v.headHolder.add(t);
       return;
     }
@@ -1052,7 +1131,8 @@ export class EntityRenderer {
     t.position.set(0, -0.25, 0);
     t.rotation.y = Math.PI;
     t.scale.set(0.625, -0.625, -0.625);
-    t.add(io.obj);
+    const h = new Node(); applyTransform(h, (io.model.display || {}).head); // renderItem(HEAD)
+    h.add(io.obj); t.add(h);
     v.headHolder.add(t);
   }
 
@@ -1142,19 +1222,24 @@ export class EntityRenderer {
       if (it) {
         const io = this._itemObject(it, v.atlasMat);
         if (io) {
-          const copies = it.count > 40 ? 5 : it.count > 20 ? 4 : it.count > 5 ? 3 : it.count > 1 ? 2 : 1;
+          // RenderEntityItem.getModelCount / doRender (1.9+): each copy gets the GROUND transform; 3D items jitter,
+          // flat ones stack along z
+          const copies = it.count > 48 ? 5 : it.count > 32 ? 4 : it.count > 16 ? 3 : it.count > 1 ? 2 : 1;
+          const ground = (io.model.display || {}).ground;
+          const gs = (ground && ground.scale) || [1, 1, 1];
+          v.groundScaleY = gs[1];
           v.inner = new Node();
+          let z = 0;
           for (let i = 0; i < copies; i++) {
             const c = i === 0 ? io.obj : io.obj.clone();
             const holder = new Node();
-            if (io.gui3d) {
-              holder.scale.setScalar(0.25);
-              if (i > 0) holder.position.set((Math.random() * 2 - 1) * 0.15 * 0.5, (Math.random() * 2 - 1) * 0.15 * 0.5, (Math.random() * 2 - 1) * 0.15 * 0.5);
-            } else {
-              holder.scale.setScalar(0.5);
-              holder.position.z = i * 0.046875 * 0.5;
-            }
-            holder.add(c);
+            const j = io.gui3d ? 0.15 : 0.15 * 0.5;
+            if (i > 0) holder.position.set((Math.random() * 2 - 1) * j, (Math.random() * 2 - 1) * j, (Math.random() * 2 - 1) * j);
+            if (!io.gui3d) { holder.position.z += z; z += 0.09375 * gs[2]; }
+            const t = new Node();
+            applyTransform(t, ground);
+            t.add(c);
+            holder.add(t);
             v.inner.add(holder);
           }
           v.gui3d = io.gui3d;
@@ -1166,7 +1251,7 @@ export class EntityRenderer {
     if (!v.inner) return;
     const age = e.ticks + partial;
     const bob = Math.sin(age / 10 + e.hoverStart) * 0.1 + 0.1;
-    v.inner.position.set(0, bob + 0.25 * 0.5, 0);
+    v.inner.position.set(0, bob + 0.25 * (v.groundScaleY || 1), 0);
     v.inner.rotation.set(0, (age / 20 + e.hoverStart), 0);
     if (v.glintNode) this.glints.push(v.glintNode);
     void p;
@@ -1263,15 +1348,13 @@ export class EntityRenderer {
       } else if (e.item) {
         const io = this._itemObject(e.item, v.atlasMat);
         if (io) {
+          // RenderItemFrame.renderItem (1.9+): translate 0.4375, rotate(rotation * 45, Z), scale 0.5, FIXED transform
           const h = new Node();
           h.position.set(0, 0, 0.4375);
-          const s = io.gui3d ? 0.5 * 0.5 : 0.5;
-          h.scale.setScalar(s);
-          // RenderItemFrame: rotate(rotation * 45, Z), then flat items and skulls turn 180 around Y
-          const isSkull = e.item.id === 397;
+          h.scale.setScalar(0.5);
           h.rotation.set(0, 0, (e.rotation || 0) * Math.PI / 4);
           const inner = new Node();
-          inner.rotation.set(0, !io.gui3d || isSkull ? Math.PI : 0, 0);
+          applyTransform(inner, (io.model.display || {}).fixed);
           inner.add(io.obj);
           h.add(inner);
           v.itemGroup.add(h);

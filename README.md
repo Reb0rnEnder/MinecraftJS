@@ -1,10 +1,10 @@
 # MinecraftJS
 
-A Minecraft 1.8.9 client that runs in the browser (WebGL 2 or WebGPU). It joins vanilla 1.8.x servers through a
+A Minecraft 1.12.2 client that runs in the browser (WebGL 2 or WebGPU). It joins vanilla 1.12.2 servers through a
 small Node proxy, and Eaglercraft servers directly over WebSockets.
 
 MinecraftJS is not affiliated with Mojang or Microsoft. The repository contains no Mojang files: the game assets
-are taken from your own copy of Minecraft 1.8.9, or downloaded from Mojang's servers on first use.
+are taken from your own copy of Minecraft 1.12.2, or downloaded from Mojang's servers on first use.
 
 ## Requirements
 
@@ -24,13 +24,13 @@ relays Microsoft account sign in and serves player skins.
 Game assets are found automatically, in this order:
 
 1. `client/assets/` if you have built it (see below)
-2. the 1.8.9 jar from `./1.8.9/`, `MC_JAR`, `MC_DIR`, or your launcher's `.minecraft` folder
+2. the 1.12.2 jar from `./1.12.2/`, `MC_JAR`, `MC_DIR`, or your launcher's `.minecraft` folder
 3. otherwise a download from Mojang into `cache/`
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `PORT` | `3000` | HTTP and WebSocket port |
-| `MC_JAR` | | path to a `1.8.9.jar` |
+| `MC_JAR` | | path to a `1.12.2.jar` |
 | `MC_DIR` | | a `.minecraft` folder to look in |
 
 ## Building

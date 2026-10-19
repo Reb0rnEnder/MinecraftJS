@@ -141,7 +141,7 @@ async function collectAssets(opts) {
       after += buf.length;
       if (++done % 100 === 0) process.stdout.write(`  ${done}/${sounds.length}\r`);
     }
-    if (name === 'minecraft/lang/en_US.lang' && files.has(name)) return; // the jar's copy is authoritative
+    if (name === 'minecraft/lang/en_us.lang' && files.has(name)) return; // the jar's copy is authoritative
     files.set(name, buf);
   });
   console.log(`  audio ${(before / 1048576).toFixed(1)} MB -> ${(after / 1048576).toFixed(1)} MB`);

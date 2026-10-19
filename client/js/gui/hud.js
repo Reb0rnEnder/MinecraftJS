@@ -326,6 +326,17 @@ export class Hud {
     const gui = this.gui;
     gui.setBlend('invert');
     gui.blit(ICONS, Math.floor(gui.width / 2 - 7), Math.floor(gui.height / 2 - 7), 0, 0, 16, 16);
+    // attack indicator (attackIndicator 1 = crosshair): ready-to-hit mark on a living target, else the charging bar
+    const g = this.game, it = g.interaction;
+    if (g.settings.attackIndicator === 1 && it) {
+      const f = it.cooledAttackStrength(0);
+      const t = it.target;
+      const living = t && t.type === 'entity' && (t.entity.kind === 'mob' || t.entity.kind === 'player' || t.entity.kind === 'armorstand') && !t.entity.dead;
+      const ready = living && f >= 1 && it.cooldownPeriod() > 5;
+      const y = Math.floor(gui.height / 2) - 7 + 16, x = Math.floor(gui.width / 2) - 8;
+      if (ready) gui.blit(ICONS, x, y, 68, 94, 16, 16);
+      else if (f < 1) { gui.blit(ICONS, x, y, 36, 94, 16, 4); gui.blit(ICONS, x, y, 52, 94, Math.floor(f * 17), 4); }
+    }
     gui.setBlend('alpha');
   }
 
@@ -334,11 +345,30 @@ export class Hud {
     const W = gui.width, H = gui.height;
     gui.blit(WIDGETS, W / 2 - 91, H - 22, 0, 0, 182, 22);
     gui.blit(WIDGETS, W / 2 - 91 - 1 + g.heldSlot * 20, H - 22 - 1, 0, 22, 24, 22);
+    // off hand slot on the side away from the main hand
+    const off = g.inventory.offhand;
+    const offLeft = g.settings.mainHand !== 'left';
+    if (off) {
+      if (offLeft) gui.blit(WIDGETS, W / 2 - 91 - 29, H - 23, 24, 22, 29, 24);
+      else gui.blit(WIDGETS, W / 2 + 91, H - 23, 53, 22, 29, 24);
+    }
     for (let i = 0; i < 9; i++) {
       const it = g.inventory.main[i];
       if (!it) continue;
       const x = W / 2 - 90 + i * 20 + 2, y = H - 16 - 3;
       g.itemRenderer.drawItem(gui, it, x, y, true, it.popTime ? it.popTime - partial : 0);
+    }
+    if (off) g.itemRenderer.drawItem(gui, off, offLeft ? W / 2 - 91 - 26 : W / 2 + 91 + 10, H - 16 - 3, true, off.popTime ? off.popTime - partial : 0);
+    // attackIndicator 2 = hotbar: a filling sword icon beside the hotbar while the attack charges
+    const it = g.interaction;
+    if (g.settings.attackIndicator === 2 && it) {
+      const f = it.cooledAttackStrength(0);
+      if (f < 1) {
+        const y = H - 20, x = offLeft ? W / 2 + 91 + 6 : W / 2 - 91 - 22;
+        const k = Math.floor(f * 19);
+        gui.blit(ICONS, x, y, 0, 94, 18, 18);
+        gui.blit(ICONS, x, y + 18 - k, 18, 112 - k, 18, k);
+      }
     }
   }
 

@@ -11,7 +11,10 @@ export const blocksByName = {};
 
 const STAIRS = new Set(['oak_stairs', 'stone_stairs', 'brick_stairs', 'stone_brick_stairs', 'nether_brick_stairs',
   'sandstone_stairs', 'spruce_stairs', 'birch_stairs', 'jungle_stairs', 'quartz_stairs', 'acacia_stairs',
-  'dark_oak_stairs', 'red_sandstone_stairs']);
+  'dark_oak_stairs', 'red_sandstone_stairs', 'purpur_stairs']);
+
+const SHULKER_BOXES = ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'silver', 'cyan', 'purple',
+  'blue', 'brown', 'green', 'red', 'black'].map((c) => c + '_shulker_box');
 
 // Blocks with a full "block" bounding box that are NOT opaque cubes in vanilla
 const NOT_OPAQUE = new Set([
@@ -26,15 +29,19 @@ const NOT_OPAQUE = new Set([
   'dragon_egg', 'cocoa', 'unpowered_repeater', 'powered_repeater', 'unpowered_comparator', 'powered_comparator',
   'waterlily', 'web', 'end_portal', 'portal', 'tripwire', 'tripwire_hook', 'vine', 'redstone_wire',
   'piston', 'sticky_piston',
+  // 1.9 - 1.12
+  'purpur_slab', 'end_rod', 'chorus_plant', 'chorus_flower', 'grass_path', 'frosted_ice', 'structure_void', 'end_gateway',
+  ...SHULKER_BOXES,
   ...STAIRS,
 ]);
 
-const TRANSLUCENT = new Set(['water', 'flowing_water', 'ice', 'stained_glass', 'stained_glass_pane', 'slime', 'portal']);
+const TRANSLUCENT = new Set(['water', 'flowing_water', 'ice', 'frosted_ice', 'stained_glass', 'stained_glass_pane', 'slime', 'portal']);
 
 // Blocks without a block model (rendered by special renderers or invisible)
 const NO_MODEL = new Set([
   'air', 'water', 'flowing_water', 'lava', 'flowing_lava', 'chest', 'trapped_chest', 'ender_chest',
   'standing_sign', 'wall_sign', 'skull', 'standing_banner', 'wall_banner', 'piston_extension', 'barrier', 'end_portal',
+  'bed', 'structure_void', 'end_gateway', ...SHULKER_BOXES,
 ]);
 
 const FENCES = new Set(['fence', 'nether_brick_fence', 'spruce_fence', 'birch_fence', 'jungle_fence', 'dark_oak_fence', 'acacia_fence']);

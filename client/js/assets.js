@@ -46,7 +46,7 @@ export class Assets {
     this.packs = [];           // active packs, highest priority first
     this.device = null;
     this.version = 0;          // bumps on every (re)load so caches elsewhere can invalidate
-    this.language = 'en_US';   // selected language code (vanilla .lang naming)
+    this.language = 'en_us';   // selected language code (lowercase since 1.11, as the .lang files)
     this.mipmapLevels = 4;     // terrain atlas mipmap levels (video setting)
     this.languages = {};       // code -> { name, region, bidirectional }
     this.langUnicode = false;  // language needs the unicode font (LanguageManager.isCurrentLocaleUnicode)
@@ -286,16 +286,17 @@ export class Assets {
   // All languages: the game's list plus the "language" sections of active resource packs
   async loadLanguageList() {
     const list = { ...((this.defaultPackMeta && this.defaultPackMeta.language) || {}) };
-    if (!list.en_US) list.en_US = { name: 'English', region: 'US', bidirectional: false };
+    if (!list.en_us) list.en_us = { name: 'English', region: 'US', bidirectional: false };
     for (const p of [...this.packs].reverse()) if (p.languages) Object.assign(list, p.languages);
     this.languages = list;
     return list;
   }
 
-  // en_US is always loaded first so untranslated keys fall back to English (vanilla Locale behaviour);
+  // en_us is always loaded first so untranslated keys fall back to English (vanilla Locale behaviour);
   // the selected language and every active pack's .lang files are layered on top.
   async loadLanguage(code) {
-    if (!this.languages[code]) code = 'en_US';
+    code = String(code || 'en_us').toLowerCase();
+    if (!this.languages[code]) code = 'en_us';
     const packsLowFirst = [...this.packs].reverse();
     const lang = { ...MINECRAFTJS_EN };
     const own = {};
@@ -311,9 +312,9 @@ export class Assets {
       if (base) parse(decodeUtf8(base), into);
       for (const p of packsLowFirst) if (p.has('lang/' + c + '.lang')) parse(decodeUtf8(p.read('lang/' + c + '.lang')), into);
     };
-    await layer('en_US', lang);
+    await layer('en_us', lang);
     this.langEn = { ...lang }; // English table, used to map English data names to keys
-    if (code !== 'en_US') { await layer(code, own); Object.assign(lang, own); }
+    if (code !== 'en_us') { await layer(code, own); Object.assign(lang, own); }
     this.lang = lang;
     this.language = code;
     // Locale.checkUnicode: more than 10% of the characters are outside Latin-1

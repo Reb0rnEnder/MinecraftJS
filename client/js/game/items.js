@@ -12,7 +12,8 @@ const ENCH_NAMES = {
 
 const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
 
-const FOOD_IDS = new Set([260, 282, 297, 319, 320, 322, 349, 350, 357, 360, 363, 364, 365, 366, 367, 375, 391, 392, 393, 394, 396, 400, 411, 412, 413, 423, 424]);
+const FOOD_IDS = new Set([260, 282, 297, 319, 320, 322, 349, 350, 357, 360, 363, 364, 365, 366, 367, 375, 391, 392, 393, 394, 396, 400, 411, 412, 413, 423, 424,
+  432, 434, 436]); // + chorus fruit, beetroot, beetroot soup (1.9)
 const SWORDS = new Set([267, 268, 272, 276, 283]);
 const RARITY_UNCOMMON = new Set([384, 399, 2256, 2257, 2258, 2259, 2260, 2261, 2262, 2263, 2264, 2265, 2266, 2267, 397, 138, 116, 322]);
 
@@ -175,10 +176,10 @@ export class Items {
   // Use action: 'none' | 'eat' | 'drink' | 'block' | 'bow'
   useAction(item) {
     if (!item) return 'none';
-    if (item.id === 373 && !(item.damage & 16384)) return 'drink';
-    if (item.id === 335) return 'drink';
+    // 1.9+: potions are always drinkable (splash / lingering are separate items), swords no longer block, shields do
+    if (item.id === 373 || item.id === 335) return 'drink';
     if (FOOD_IDS.has(item.id)) return 'eat';
-    if (SWORDS.has(item.id)) return 'block';
+    if (item.id === 442) return 'block';
     if (item.id === 261) return 'bow';
     return 'none';
   }

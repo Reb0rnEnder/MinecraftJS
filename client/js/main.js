@@ -25,7 +25,7 @@ async function boot() {
       settings.save();
     }
     assets.setDevice(device);
-    assets.language = settings.language || 'en_US';
+    assets.language = settings.language || 'en_us';
     try { await assets.activatePacks(settings.resourcePacks || []); } catch (e) { console.warn('Resource packs unavailable', e); }
     // Vanilla startup splash (Mojang logo on white) while everything loads
     const splash = new Splash(device);

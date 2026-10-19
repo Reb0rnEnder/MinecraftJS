@@ -611,10 +611,10 @@ export class Particles {
       const px = x + 0.5 + f[0] + (f[0] ? 0 : rand() * 0.6 - 0.3), py = y + rand() * 6 / 16, pz = z + 0.5 + f[1] + (f[1] ? 0 : rand() * 0.6 - 0.3);
       this.smoke(px, py, pz, 0, 0, 0); this.flame(px, py, pz);
     } else if (n === 'fire') {
-      if (rand() * 24 < 1) this.game.sound.play('fire.fire', x + 0.5, y + 0.5, z + 0.5, 1 + rand(), rand() * 0.7 + 0.3);
+      if (rand() * 24 < 1) this.game.sound.play('block.fire.ambient', x + 0.5, y + 0.5, z + 0.5, 1 + rand(), rand() * 0.7 + 0.3);
       for (let i = 0; i < 3; i++) this.smoke(x + rand(), y + rand() * 0.5 + 0.5, z + rand(), 0, 0, 0, 2.5);
     } else if (n === 'portal') {
-      if (rand() * 100 < 1) this.game.sound.play('portal.portal', x + 0.5, y + 0.5, z + 0.5, 0.5, rand() * 0.4 + 0.8);
+      if (rand() * 100 < 1) this.game.sound.play('block.portal.ambient', x + 0.5, y + 0.5, z + 0.5, 0.5, rand() * 0.4 + 0.8);
       for (let i = 0; i < 4; i++) {
         let px = x + rand(), py = y + rand(), pz = z + rand();
         const j = rand() < 0.5 ? -1 : 1;
@@ -639,16 +639,16 @@ export class Particles {
       }
     } else if (n === 'water' || n === 'flowing_water') {
       // BlockLiquid.randomDisplayTick (water): flowing water gurgles now and then
-      if (m > 0 && m < 8 && rand() * 64 < 1) this.game.sound.play('liquid.water', x + 0.5, y + 0.5, z + 0.5, rand() * 0.25 + 0.75, rand() + 0.5);
+      if (m > 0 && m < 8 && rand() * 64 < 1) this.game.sound.play('block.water.ambient', x + 0.5, y + 0.5, z + 0.5, rand() * 0.25 + 0.75, rand() + 0.5);
     } else if (n === 'lava' || n === 'flowing_lava') {
       // BlockLiquid.randomDisplayTick (lava): pops with a particle, and a rarer ambient sound
       if (this.game.world.getBlockId(x, y + 1, z) === 0) {
         if (rand() * 100 < 1) {
           const px = x + rand(), pz = z + rand();
           this.lava(px, y + 1, pz);
-          this.game.sound.play('liquid.lavapop', px, y + 1, pz, 0.2 + rand() * 0.2, 0.9 + rand() * 0.15);
+          this.game.sound.play('block.lava.pop', px, y + 1, pz, 0.2 + rand() * 0.2, 0.9 + rand() * 0.15);
         }
-        if (rand() * 200 < 1) this.game.sound.play('liquid.lava', x, y, z, 0.2 + rand() * 0.2, 0.9 + rand() * 0.15);
+        if (rand() * 200 < 1) this.game.sound.play('block.lava.ambient', x, y, z, 0.2 + rand() * 0.2, 0.9 + rand() * 0.15);
       }
     } else if (n === 'end_portal_frame' || n === 'dragon_egg') {
       // no-op

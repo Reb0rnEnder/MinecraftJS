@@ -1,4 +1,4 @@
-// Port of vanilla 1.8.9 player movement physics (EntityPlayerSP / EntityLivingBase / Entity).
+// Port of vanilla 1.12.2 player movement physics (EntityPlayerSP / EntityPlayer / EntityLivingBase / Entity).
 import { blocks } from '../world/blocks.js';
 
 const SPRINT_UUID = '662a6b8d-da3e-4c1c-8813-96ea6097278d';
@@ -18,6 +18,24 @@ const F = {
 };
 
 const f32 = Math.fround;
+
+// MathHelper.fastInvSqrt (double bit trick + one Newton step)
+const _fis = new DataView(new ArrayBuffer(8));
+function fastInvSqrt(n) {
+  const d0 = 0.5 * n;
+  _fis.setFloat64(0, n);
+  _fis.setBigInt64(0, 6910469410427058090n - (_fis.getBigInt64(0) >> 1n));
+  let v = _fis.getFloat64(0);
+  v = v * (1.5 - d0 * v * v);
+  return v;
+}
+
+// Entity.getVectorForRotation (float maths)
+function lookVec(pitch, yaw) {
+  const f = mcCos(f32(f32(-yaw * F.deg) - F_PI)), f1 = mcSin(f32(f32(-yaw * F.deg) - F_PI));
+  const f2 = -mcCos(f32(-pitch * F.deg)), f3 = mcSin(f32(-pitch * F.deg));
+  return [f32(f1 * f2), f3, f32(f * f2)];
+}
 
 function calcYOffset(box, bb, off) {
   if (bb[3] > box[0] && bb[0] < box[3] && bb[5] > box[2] && bb[2] < box[5]) {
@@ -96,7 +114,37 @@ export class LocalPlayer {
     this.ticksExisted = 0;
     this.swimDistance = 0; this.nextSwimDistance = 1;
     this.ridingEntity = null;
+    this.elytraFlying = false; // entity flag 7, set by the server
+    this.ticksElytraFlying = 0;
+    this.levitation = -1;      // levitation amplifier (-1: none)
+    this.autoJump = false;     // GameSettings.autoJump (EntityPlayerSP.autoJumpEnabled)
+    this.autoJumpTime = 0;
+    this.sleeping = false;
+    this.attackSpeed = 4;
     this._bb = null;
+  }
+
+  // EntityPlayer.getEyeHeight (1.12)
+  eyeHeight() {
+    if (this.sleeping) return f32(0.2);
+    if (!this.sneaking && this.height !== f32(1.65)) return this.elytraFlying || this.height === f32(0.6) ? f32(0.4) : f32(1.62);
+    return f32(f32(1.62) - f32(0.08));
+  }
+
+  // EntityPlayer.updateSize: 0.6 x 0.6 gliding, 0.6 x 1.65 sneaking, if the new box fits
+  updateSize(world) {
+    let w = f32(0.6), h = f32(1.8);
+    if (this.elytraFlying) h = f32(0.6);
+    else if (this.sleeping) { w = f32(0.2); h = f32(0.2); }
+    else if (this.sneaking) h = f32(1.65);
+    if (w === this.width && h === this.height) return;
+    const bb = this.bb();
+    const nb = [bb[0], bb[1], bb[2], bb[0] + w, bb[1] + h, bb[2] + w];
+    if (world.getCollisions(nb).length) return; // World.collidesWithAnyBlock
+    // Entity.setSize: keep minX/minZ, then recentre (setPosition of the new box)
+    this.width = w; this.height = h;
+    this._bb = [nb[0], nb[1], nb[2], nb[0] + w, nb[1] + h, nb[2] + w];
+    this.x = (this._bb[0] + this._bb[3]) / 2; this.z = (this._bb[2] + this._bb[5]) / 2;
   }
 
   bb() {
@@ -246,7 +294,7 @@ export class LocalPlayer {
 
   // --- Core movement ---
 
-  // Entity.moveFlying (all float maths, added to the double motion)
+  // Entity.moveRelative (1.12; all float maths, added to the double motion; yaw * 0.017453292F)
   moveFlying(strafe, forward, friction) {
     const fr = Math.fround;
     strafe = fr(strafe); forward = fr(forward); friction = fr(friction);
@@ -256,7 +304,7 @@ export class LocalPlayer {
       if (f < 1) f = 1;
       f = fr(friction / f);
       strafe = fr(strafe * f); forward = fr(forward * f);
-      const a = fr(fr(fr(this.yaw) * F_PI) / 180);
+      const a = fr(fr(this.yaw) * F.deg);
       const s = mcSin(a), c = mcCos(a);
       this.motionX += fr(fr(strafe * c) - fr(forward * s));
       this.motionZ += fr(fr(forward * c) + fr(strafe * s));
@@ -278,7 +326,9 @@ export class LocalPlayer {
     const sneakEdge = this.onGround && this.sneaking;
     if (sneakEdge) {
       const d6 = 0.05;
-      const empty = (bx, bz) => world.getCollisions(offsetBB(bb, bx, -1, bz)).length === 0;
+      // 1.9+: probes stepHeight below the box (1.8 probed a whole block)
+      const down = -this.stepHeight;
+      const empty = (bx, bz) => world.getCollisions(offsetBB(bb, bx, down, bz)).length === 0;
       while (x !== 0 && empty(x, 0)) {
         if (x < d6 && x >= -d6) x = 0; else if (x > 0) x -= d6; else x += d6;
       }
@@ -381,15 +431,86 @@ export class LocalPlayer {
       this.stepDistance = (this.stepDistance || 0) + Math.sqrt(ddx * ddx + ddy * ddy + ddz * ddz) * 0.6;
       if (this.stepDistance > this.nextStepDistance && blk && blk.id !== 0) {
         this.nextStepDistance = Math.floor(this.stepDistance) + 1;
+        // 1.9+: the swim sound in water, else the step sound
         if (this.inWater) {
-          if (this.onSwim) this.onSwim(Math.min(1, Math.sqrt(this.motionX * this.motionX * 0.2 + this.motionY * this.motionY + this.motionZ * this.motionZ * 0.2) * 0.35));
-        }
-        if (this.onStep) this.onStep(bx, by, bz, st); // Block.playStepSound skips liquids
+          if (this.onSwim) this.onSwim(Math.min(1, Math.sqrt(this.motionX * this.motionX * 0.20000000298023224 + this.motionY * this.motionY + this.motionZ * this.motionZ * 0.20000000298023224) * 0.35));
+        } else if (this.onStep) this.onStep(bx, by, bz, st);
       }
     }
     this._lastX = this.x; this._lastY = this.y; this._lastZ = this.z;
 
     this.doBlockCollisions(world);
+    // EntityPlayerSP.move: auto-jump check with this move's horizontal distance
+    this.updateAutoJump(world, f32(this.x - x0), f32(this.z - z0));
+  }
+
+  // EntityPlayerSP.updateAutoJump (1.11+)
+  updateAutoJump(world, dx, dz) {
+    if (!this.autoJump || this.autoJumpTime > 0 || !this.onGround || this.sneaking || this.ridingEntity || !this._moveVec) return;
+    const [mvx, mvy] = this._moveVec;
+    if (mvx === 0 && mvy === 0) return;
+    const bb = this.bb();
+    const p0 = [this.x, bb[1], this.z];
+    const p1 = [this.x + dx, bb[1], this.z + dz];
+    let v2 = [dx, 0, dz];
+    const f = this.landMovementFactor;
+    let f1 = f32(v2[0] * v2[0] + v2[2] * v2[2]);
+    if (f1 <= f32(0.001)) {
+      const f2 = f32(f * mvx), f3 = f32(f * mvy);
+      const f4 = mcSin(f32(this.yaw * F.deg)), f5 = mcCos(f32(this.yaw * F.deg));
+      v2 = [f32(f32(f2 * f5) - f32(f3 * f4)), 0, f32(f32(f3 * f5) + f32(f2 * f4))];
+      f1 = f32(v2[0] * v2[0] + v2[2] * v2[2]);
+      if (f1 <= f32(0.001)) return;
+    }
+    const f12 = f32(fastInvSqrt(f1));
+    const v12 = [v2[0] * f12, v2[1] * f12, v2[2] * f12];
+    const fw = lookVec(this.pitch, this.yaw); // getForward
+    const f13 = f32(fw[0] * v12[0] + fw[2] * v12[2]);
+    if (f13 < f32(-0.15)) return;
+    const boxesAt = (x, y, z) => { const out = []; world.collisionBoxes(x, y, z, out); return out; };
+    let bp = [Math.floor(this.x), Math.floor(bb[4]), Math.floor(this.z)];
+    if (boxesAt(...bp).length) return;
+    bp = [bp[0], bp[1] + 1, bp[2]];
+    if (boxesAt(...bp).length) return;
+    let f7 = f32(1.2);
+    if (this.jumpBoost >= 0) f7 = f32(f7 + f32((this.jumpBoost + 1) * f32(0.75)));
+    const f8 = Math.max(f32(f * 7), f32(1 / f12));
+    const p4 = [p1[0] + v12[0] * f8, p1[1] + v12[1] * f8, p1[2] + v12[2] * f8];
+    const w = this.width, h = this.height;
+    const area = [Math.min(p0[0], p4[0]) - w, Math.min(p0[1], p4[1] + h), Math.min(p0[2], p4[2]) - w,
+      Math.max(p0[0], p4[0]) + w, Math.max(p0[1], p4[1] + h), Math.max(p0[2], p4[2]) + w];
+    const a19 = [p0[0], p0[1] + 0.5099999904632568, p0[2]];
+    const b4 = [p4[0], p4[1] + 0.5099999904632568, p4[2]];
+    const cross = [-v12[2], 0, v12[0]]; // v12 x (0, 1, 0)
+    const half = f32(w * 0.5);
+    const v6 = [cross[0] * half, 0, cross[2] * half];
+    const sub = (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]], add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+    const v7 = sub(a19, v6), v8 = sub(b4, v6), v9 = add(a19, v6), v10 = add(b4, v6);
+    const hits = (c, a, b) => c[3] > Math.min(a[0], b[0]) && c[0] < Math.max(a[0], b[0]) && c[4] > Math.min(a[1], b[1]) && c[1] < Math.max(a[1], b[1]) && c[5] > Math.min(a[2], b[2]) && c[2] < Math.max(a[2], b[2]);
+    let f11 = -Infinity;
+    outer:
+    for (const c of world.getCollisions(area)) {
+      if (!(hits(c, v7, v8) || hits(c, v9, v10))) continue;
+      f11 = f32(c[4]);
+      const center = [Math.floor((c[0] + c[3]) / 2), Math.floor((c[1] + c[4]) / 2), Math.floor((c[2] + c[5]) / 2)];
+      for (let i = 1; i < f7; i++) {
+        const up = [center[0], center[1] + i, center[2]];
+        const ub = boxesAt(...up);
+        if (ub.length) {
+          f11 = f32(f32(Math.max(...ub.map((u) => u[4] - up[1]))) + up[1]);
+          if (f11 - bb[1] > f7) return;
+        }
+        if (i > 1) {
+          bp = [bp[0], bp[1] + 1, bp[2]];
+          if (boxesAt(...bp).length) return;
+        }
+      }
+      break outer;
+    }
+    if (f11 !== -Infinity) {
+      const f14 = f32(f11 - bb[1]);
+      if (f14 > f32(0.5) && f14 <= f7) this.autoJumpTime = 1;
+    }
   }
 
   doBlockCollisions(world) {
@@ -434,6 +555,39 @@ export class LocalPlayer {
   }
 
   _moveWithHeading(world, strafe, forward, jumpMovementFactor) {
+    if (this.elytraFlying && !this.inWater && !this.inLava && !this.flying) {
+      // EntityLivingBase.travel, elytra flying
+      if (this.motionY > -0.5) this.fallDistance = 1;
+      const look = lookVec(this.pitch, this.yaw);
+      const f = f32(this.pitch * F.deg);
+      const d6 = Math.sqrt(look[0] * look[0] + look[2] * look[2]);
+      const d8 = Math.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);
+      const d1 = Math.sqrt(look[0] * look[0] + look[1] * look[1] + look[2] * look[2]);
+      let f4 = mcCos(f);
+      f4 = f32(f4 * f4 * Math.min(1, d1 / 0.4));
+      this.motionY += -0.08 + f4 * 0.06;
+      if (this.motionY < 0 && d6 > 0) {
+        const d2 = this.motionY * -0.1 * f4;
+        this.motionY += d2;
+        this.motionX += look[0] * d2 / d6;
+        this.motionZ += look[2] * d2 / d6;
+      }
+      if (f < 0) {
+        const d10 = d8 * -mcSin(f) * 0.04;
+        this.motionY += d10 * 3.2;
+        this.motionX -= look[0] * d10 / d6;
+        this.motionZ -= look[2] * d10 / d6;
+      }
+      if (d6 > 0) {
+        this.motionX += (look[0] / d6 * d8 - this.motionX) * 0.1;
+        this.motionZ += (look[2] / d6 * d8 - this.motionZ) * 0.1;
+      }
+      this.motionX *= 0.9900000095367432;
+      this.motionY *= 0.9800000190734863;
+      this.motionZ *= 0.9900000095367432;
+      this.moveEntity(world, this.motionX, this.motionY, this.motionZ);
+      return;
+    }
     if (this.inWater && !this.flying) {
       const d0 = this.y;
       let f1 = F.p08, f2 = F.p02;
@@ -478,7 +632,9 @@ export class LocalPlayer {
       }
       this.moveEntity(world, this.motionX, this.motionY, this.motionZ);
       if (this.collidedH && ladder) this.motionY = 0.2;
-      if (!world.isLoaded(Math.floor(this.x), Math.floor(this.z))) {
+      if (this.levitation >= 0) {
+        this.motionY += (0.05 * (this.levitation + 1) - this.motionY) * 0.2;
+      } else if (!world.isLoaded(Math.floor(this.x), Math.floor(this.z))) {
         this.motionY = this.y > 0 ? -0.1 : 0;
       } else {
         this.motionY -= 0.08;
@@ -507,10 +663,13 @@ export class LocalPlayer {
     if (input.back) moveForward--;
     if (input.left) moveStrafe++;
     if (input.right) moveStrafe--;
-    const jump = !!input.jump;
+    let jump = !!input.jump;
     const sneakKey = !!input.sneak;
     if (sneakKey) { moveStrafe = f32(moveStrafe * 0.3); moveForward = f32(moveForward * 0.3); }
     if (this.usingItem && !this.ridingEntity) { moveStrafe = f32(moveStrafe * F.p02b); moveForward = f32(moveForward * F.p02b); this.sprintToggleTimer = 0; }
+    this._moveVec = [moveStrafe, moveForward]; // MovementInput.getMoveVector
+    this.autoJump = !!input.autoJump;
+    if (this.autoJumpTime > 0) { this.autoJumpTime--; jump = true; }
     // vanilla: isSneaking() follows the key, even while flying
     this.sneaking = sneakKey;
 
@@ -544,6 +703,10 @@ export class LocalPlayer {
       }
     } else if (this.flying) {
       this.flying = false;
+    }
+    // ItemElytra: jumping in mid air while falling asks the server to start gliding
+    if (jump && !this.prevJump && !this.onGround && this.motionY < 0 && !this.elytraFlying && !this.flying && input.elytraUsable) {
+      result.startFallFlying = true;
     }
     if (this.flying) {
       if (sneakKey) this.motionY -= this.flySpeed * 3;
@@ -581,6 +744,7 @@ export class LocalPlayer {
       result.abilitiesChanged = true;
     }
 
+    this.ticksElytraFlying = this.elytraFlying ? this.ticksElytraFlying + 1 : 0;
     // EntityPlayer.onLivingUpdate after super: jumpMovementFactor and setAIMoveSpeed for the *next* tick
     this.jumpMovementFactor = this.sprinting ? f32(F.p02 + F.p02 * 0.3) : F.p02;
     this.landMovementFactor = this.aiMoveSpeed();
@@ -594,6 +758,8 @@ export class LocalPlayer {
     if (this.onGround || this.health <= 0) f2 = 0;
     this.cameraYaw += (f1 - this.cameraYaw) * 0.4;
     this.cameraPitch += (f2 - this.cameraPitch) * 0.8;
+    // EntityPlayer.onUpdate (end): size for the next tick
+    this.updateSize(world);
     return result;
   }
 }

@@ -2,20 +2,12 @@
 import { blocks } from '../world/blocks.js';
 import { platform } from '../platform/platform.js';
 
-// Block.SoundType equivalents: [stepName, breakName, placeName, volume, pitch]
+// SoundType (1.9+): [step, break, place, volume, pitch, hit, fall]
+const T = (k, vol = 1, pitch = 1) => [`block.${k}.step`, `block.${k}.break`, `block.${k}.place`, vol, pitch, `block.${k}.hit`, `block.${k}.fall`];
 const SOUND_TYPES = {
-  stone: ['step.stone', 'dig.stone', 'dig.stone', 1, 1],
-  wood: ['step.wood', 'dig.wood', 'dig.wood', 1, 1],
-  gravel: ['step.gravel', 'dig.gravel', 'dig.gravel', 1, 1],
-  grass: ['step.grass', 'dig.grass', 'dig.grass', 1, 1],
-  metal: ['step.stone', 'dig.stone', 'dig.stone', 1, 1.5],
-  glass: ['step.stone', 'dig.glass', 'dig.stone', 1, 1],
-  cloth: ['step.cloth', 'dig.cloth', 'dig.cloth', 1, 1],
-  sand: ['step.sand', 'dig.sand', 'dig.sand', 1, 1],
-  snow: ['step.snow', 'dig.snow', 'dig.snow', 1, 1],
-  ladder: ['step.ladder', 'dig.wood', 'dig.wood', 1, 1],
-  anvil: ['step.stone', 'dig.stone', 'random.anvil_land', 0.3, 1],
-  slime: ['mob.slime.small', 'mob.slime.big', 'mob.slime.big', 1, 1],
+  stone: T('stone'), wood: T('wood'), gravel: T('gravel'), grass: T('grass'), metal: T('metal', 1, 1.5), glass: T('glass'),
+  cloth: T('cloth'), sand: T('sand'), snow: T('snow'), ladder: T('ladder'), slime: T('slime'),
+  anvil: ['block.anvil.step', 'block.anvil.break', 'block.anvil.place', 0.3, 1, 'block.anvil.hit', 'block.anvil.fall'],
 };
 
 function soundTypeOf(b) {
@@ -24,44 +16,75 @@ function soundTypeOf(b) {
   if (n === 'slime') return SOUND_TYPES.slime;
   if (n === 'anvil') return SOUND_TYPES.anvil;
   if (n === 'ladder') return SOUND_TYPES.ladder;
-  if (/glass|^ice$|packed_ice|glowstone|beacon|sea_lantern|redstone_lamp|portal/.test(n)) return SOUND_TYPES.glass;
+  if (/glass|^ice$|frosted_ice|packed_ice|glowstone|beacon|sea_lantern|redstone_lamp|portal|end_gateway/.test(n)) return SOUND_TYPES.glass;
   if (/wool|carpet|cactus|cake/.test(n)) return SOUND_TYPES.cloth;
-  if (/^sand$|soul_sand/.test(n)) return SOUND_TYPES.sand;
+  if (/^sand$|soul_sand|concrete_powder/.test(n)) return SOUND_TYPES.sand;
   if (/snow/.test(n)) return SOUND_TYPES.snow;
-  if (/gravel|^dirt$|farmland|^clay$/.test(n)) return SOUND_TYPES.gravel;
-  if (/^grass$|mycelium|leaves|sapling|tallgrass|deadbush|flower|vine|reeds|waterlily|hay_block|^tnt$|sponge|double_plant|wheat|carrots|potatoes|nether_wart|stem|mushroom$|cocoa|redstone_wire|tripwire$/.test(n)) return SOUND_TYPES.grass;
-  if (/iron|gold_block|diamond_block|emerald_block|lapis_block|redstone_block|rail|hopper|cauldron|piston/.test(n) && !/ore$/.test(n)) return SOUND_TYPES.metal;
-  if (b.material === 'wood' || /pumpkin|melon_block|bookshelf|chest|crafting|jukebox|noteblock|sign|_door|fence|trapdoor|log|planks/.test(n)) return SOUND_TYPES.wood;
+  if (/gravel|^dirt$|farmland|^clay$|grass_path/.test(n)) return SOUND_TYPES.gravel;
+  if (/^grass$|mycelium|leaves|sapling|tallgrass|deadbush|flower|vine|reeds|waterlily|hay_block|^tnt$|sponge|double_plant|wheat|carrots|potatoes|beetroots|nether_wart$|stem|mushroom$|cocoa/.test(n)) return SOUND_TYPES.grass;
+  if (/iron|gold_block|diamond_block|emerald_block|lapis_block|redstone_block|rail|hopper|cauldron|brewing_stand|command_block|structure_block/.test(n) && !/ore$/.test(n)) return SOUND_TYPES.metal;
+  if (b.material === 'wood' || /pumpkin|melon_block|bookshelf|chest|crafting|jukebox|noteblock|sign|_door|fence|trapdoor|log|planks|chorus/.test(n)) return SOUND_TYPES.wood;
   if (b.material === 'plant' || b.material === 'leaves') return SOUND_TYPES.grass;
   if (b.material === 'dirt') return SOUND_TYPES.gravel;
   if (b.material === 'wool') return SOUND_TYPES.cloth;
   return SOUND_TYPES.stone;
 }
 
+// EntityLivingBase.getHurtSound / getDeathSound by entity registry id (1.12 sound event names)
+const E = (k) => [`entity.${k}.hurt`, `entity.${k}.death`];
 const MOB_SOUNDS = {
-  50: ['mob.creeper.say', 'mob.creeper.death'], 51: ['mob.skeleton.hurt', 'mob.skeleton.death'], 52: ['mob.spider.say', 'mob.spider.death'],
-  54: ['mob.zombie.hurt', 'mob.zombie.death'], 55: ['mob.slime.small', 'mob.slime.small'], 56: ['mob.ghast.scream', 'mob.ghast.death'],
-  57: ['mob.zombiepig.zpighurt', 'mob.zombiepig.zpigdeath'], 58: ['mob.endermen.hit', 'mob.endermen.death'], 59: ['mob.spider.say', 'mob.spider.death'],
-  60: ['mob.silverfish.hit', 'mob.silverfish.kill'], 61: ['mob.blaze.hit', 'mob.blaze.death'], 62: ['mob.slime.small', 'mob.slime.small'],
-  64: ['mob.wither.hurt', 'mob.wither.death'], 65: ['mob.bat.hurt', 'mob.bat.death'], 66: ['mob.witch.hurt', 'mob.witch.death'],
-  67: ['mob.silverfish.hit', 'mob.silverfish.kill'], 68: ['mob.guardian.hit', 'mob.guardian.death'], 90: ['mob.pig.say', 'mob.pig.death'],
-  91: ['mob.sheep.say', 'mob.sheep.say'], 92: ['mob.cow.hurt', 'mob.cow.hurt'], 93: ['mob.chicken.hurt', 'mob.chicken.hurt'],
-  94: [null, null], 95: ['mob.wolf.hurt', 'mob.wolf.death'], 96: ['mob.cow.hurt', 'mob.cow.hurt'], 98: ['mob.cat.hitt', 'mob.cat.hitt'],
-  99: ['mob.irongolem.hit', 'mob.irongolem.death'], 100: ['mob.horse.hit', 'mob.horse.death'], 101: ['mob.rabbit.hurt', 'mob.rabbit.death'],
-  120: ['mob.villager.hit', 'mob.villager.death'],
+  4: E('elder_guardian'), 5: E('wither_skeleton'), 6: E('stray'), 23: E('husk'), 27: E('zombie_villager'),
+  28: E('skeleton_horse'), 29: E('zombie_horse'), 31: E('donkey'), 32: E('mule'), 34: E('evocation_illager'), 35: E('vex'),
+  36: E('vindication_illager'), 37: E('illusion_illager'), 50: E('creeper'), 51: E('skeleton'), 52: E('spider'), 53: E('hostile'),
+  54: E('zombie'), 56: E('ghast'), 57: E('zombie_pig'), 58: E('endermen'), 59: E('spider'), 60: E('silverfish'), 61: E('blaze'),
+  63: E('enderdragon'), 64: E('wither'), 65: E('bat'), 66: E('witch'), 67: E('endermite'), 68: E('guardian'), 69: E('shulker'),
+  90: E('pig'), 91: E('sheep'), 92: E('cow'), 93: E('chicken'), 94: E('squid'), 95: E('wolf'), 96: E('cow'), 97: E('snowman'),
+  98: E('cat'), 99: E('irongolem'), 100: E('horse'), 101: E('rabbit'), 102: E('polar_bear'), 103: E('llama'), 105: E('parrot'),
+  120: E('villager'),
 };
+const HOSTILE_TYPES = new Set([4, 5, 6, 23, 27, 34, 35, 36, 37, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 66, 67, 68, 69]);
 
+// SPacketSoundEffect category ids
+const CATEGORIES = ['master', 'music', 'record', 'weather', 'block', 'hostile', 'neutral', 'player', 'ambient', 'voice'];
+
+// Category for client-played sounds without one: by the event name
 const CATEGORY_OF = (name) => {
   if (name.startsWith('music.')) return 'music';
-  if (name.startsWith('records.')) return 'record';
-  if (name.startsWith('ambient.weather')) return 'weather';
-  if (name.startsWith('step.') || name.startsWith('dig.') || name.startsWith('tile.') || name.startsWith('random.door') || name.startsWith('random.chest') || name.startsWith('note.') || name.startsWith('fire.') || name.startsWith('liquid.')) return 'block';
-  if (/^mob\.(zombie|skeleton|spider|creeper|blaze|ghast|endermen|slime|magmacube|silverfish|witch|wither|enderdragon|guardian|zombiepig)/.test(name)) return 'hostile';
-  if (name.startsWith('mob.')) return 'neutral';
-  if (name.startsWith('game.player') || name.startsWith('random.')) return 'player';
+  if (name.startsWith('record.')) return 'record';
+  if (name.startsWith('weather.')) return 'weather';
+  if (name.startsWith('block.')) return 'block';
+  if (name.startsWith('entity.player.')) return 'player';
+  if (/^entity\.(zombie|husk|skeleton|stray|wither|spider|creeper|blaze|ghast|endermen|endermite|slime|small_slime|magmacube|small_magmacube|silverfish|witch|enderdragon|guardian|elder_guardian|shulker|vex|evocation|vindication|illusion|zombie_pig|zombie_villager|hostile)/.test(name)) return 'hostile';
+  if (name.startsWith('entity.')) return 'neutral';
   if (name.startsWith('ambient.')) return 'ambient';
   return 'master';
 };
+
+// RenderGlobal.playEvent sounds: id -> [event, volume, pitch(rand)]
+const r = Math.random;
+const EVENT_SOUNDS = {
+  1000: ['block.dispenser.dispense', 1, () => 1], 1001: ['block.dispenser.fail', 1, () => 1.2],
+  1002: ['block.dispenser.launch', 1, () => 1.2], 1003: ['entity.endereye.launch', 1, () => 1.2],
+  1004: ['entity.firework.shoot', 1, () => 1.2],
+  1005: ['block.iron_door.open', 1, () => r() * 0.1 + 0.9], 1006: ['block.wooden_door.open', 1, () => r() * 0.1 + 0.9],
+  1007: ['block.wooden_trapdoor.open', 1, () => r() * 0.1 + 0.9], 1008: ['block.fence_gate.open', 1, () => r() * 0.1 + 0.9],
+  1009: ['block.fire.extinguish', 0.5, () => 2.6 + (r() - r()) * 0.8],
+  1011: ['block.iron_door.close', 1, () => r() * 0.1 + 0.9], 1012: ['block.wooden_door.close', 1, () => r() * 0.1 + 0.9],
+  1013: ['block.wooden_trapdoor.close', 1, () => r() * 0.1 + 0.9], 1014: ['block.fence_gate.close', 1, () => r() * 0.1 + 0.9],
+  1015: ['entity.ghast.warn', 10, () => (r() - r()) * 0.2 + 1], 1016: ['entity.ghast.shoot', 10, () => (r() - r()) * 0.2 + 1],
+  1017: ['entity.enderdragon.shoot', 10, () => (r() - r()) * 0.2 + 1], 1018: ['entity.blaze.shoot', 2, () => (r() - r()) * 0.2 + 1],
+  1019: ['entity.zombie.attack_door_wood', 2, () => (r() - r()) * 0.2 + 1], 1020: ['entity.zombie.attack_iron_door', 2, () => (r() - r()) * 0.2 + 1],
+  1021: ['entity.zombie.break_door_wood', 2, () => (r() - r()) * 0.2 + 1], 1022: ['entity.wither.break_block', 2, () => (r() - r()) * 0.2 + 1],
+  1024: ['entity.wither.shoot', 2, () => (r() - r()) * 0.2 + 1], 1025: ['entity.bat.takeoff', 0.05, () => (r() - r()) * 0.2 + 1],
+  1026: ['entity.zombie.infect', 2, () => (r() - r()) * 0.2 + 1], 1027: ['entity.zombie_villager.converted', 2, () => (r() - r()) * 0.2 + 1],
+  1029: ['block.anvil.destroy', 1, () => r() * 0.1 + 0.9], 1030: ['block.anvil.use', 1, () => r() * 0.1 + 0.9],
+  1031: ['block.anvil.land', 0.3, () => r() * 0.1 + 0.9], 1033: ['block.chorus_flower.grow', 1, () => 1],
+  1034: ['block.chorus_flower.death', 1, () => 1], 1035: ['block.brewing_stand.brew', 1, () => 1],
+  1036: ['block.iron_trapdoor.close', 1, () => r() * 0.1 + 0.9], 1037: ['block.iron_trapdoor.open', 1, () => r() * 0.1 + 0.9],
+  2002: ['entity.splash_potion.break', 1, () => r() * 0.1 + 0.9], 2007: ['entity.splash_potion.break', 1, () => r() * 0.1 + 0.9],
+};
+// RenderGlobal.broadcastSound (heard from anywhere)
+const GLOBAL_EVENTS = { 1023: 'entity.wither.spawn', 1028: 'entity.enderdragon.death', 1038: 'block.end_portal.spawn' };
 
 export class SoundManager {
   constructor(game) {
@@ -99,7 +122,7 @@ export class SoundManager {
     let pick = entries[0];
     for (const e of entries) { r -= e.weight || 1; if (r < 0) { pick = e; break; } }
     if (pick.type === 'event') return this._pick(pick.name);
-    return { file: pick.name, volume: pick.volume !== undefined ? pick.volume : 1, pitch: pick.pitch !== undefined ? pick.pitch : 1, stream: !!pick.stream, category: d.category };
+    return { file: pick.name, volume: pick.volume !== undefined ? pick.volume : 1, pitch: pick.pitch !== undefined ? pick.pitch : 1, stream: !!pick.stream };
   }
 
   async _buffer(file) {
@@ -110,12 +133,12 @@ export class SoundManager {
     return b;
   }
 
-  // Positional sound at world coordinates
+  // Positional sound at world coordinates. opts: { global, category (name or SPacketSoundEffect id) }
   async play(name, x, y, z, volume = 1, pitch = 1, opts = {}) {
     if (!this.audio) return null;
     const def = this._pick(name);
     if (!def) return null;
-    const cat = def.category || CATEGORY_OF(name);
+    const cat = typeof opts.category === 'number' ? CATEGORIES[opts.category] || 'master' : opts.category || CATEGORY_OF(name);
     const catVol = this.volumeFor(cat);
     if (catVol <= 0) return null;
     const buf = await this._buffer(def.file);
@@ -138,7 +161,7 @@ export class SoundManager {
     return this.play(name, 0, 0, 0, volume, pitch, { global: true });
   }
 
-  playUi(name, pitch = 1) { return this.play(name, 0, 0, 0, 0.25, pitch, { global: true }); }
+  playUi(name, pitch = 1) { return this.play(name, 0, 0, 0, 0.25, pitch, { global: true, category: 'master' }); }
 
   stopAll() {
     for (const h of this.playing) h.voice.stop();
@@ -155,16 +178,19 @@ export class SoundManager {
     if (!b || b.id === 0 || b.isLiquid) return;
     const st = soundTypeOf(b);
     const p = at || [x + 0.5, y + 0.5, z + 0.5];
-    this.play(st[0], p[0], p[1], p[2], st[3] * 0.15, st[4]);
+    this.play(st[0], p[0], p[1], p[2], st[3] * 0.15, st[4], { category: this._entityCategory() });
   }
 
-  // EntityLivingBase.fall (client side for the local player): fall thud, then the landing block's step sound
+  // Entity.getSoundCategory of the local player
+  _entityCategory() { return 'player'; }
+
+  // EntityLivingBase.fall (client side for the local player): fall thud, then the landing block's fall sound
   playFall(damage, x, y, z, state) {
-    this.play(damage > 4 ? 'game.player.hurt.fall.big' : 'game.player.hurt.fall.small', x, y, z, 1, 1);
+    this.play(damage > 4 ? 'entity.player.big_fall' : 'entity.player.small_fall', x, y, z, 1, 1, { category: 'player' });
     const b = blocks[state >> 4];
     if (b && b.id !== 0) {
       const st = soundTypeOf(b);
-      this.play(st[0], x, y, z, st[3] * 0.5, st[4] * 0.75);
+      this.play(st[6], x, y, z, st[3] * 0.5, st[4] * 0.75, { category: 'player' });
     }
   }
 
@@ -173,7 +199,7 @@ export class SoundManager {
     if (!this.audio) return null;
     const def = this._pick(name);
     if (!def) return null;
-    const cat = def.category || CATEGORY_OF(name);
+    const cat = opts.category || CATEGORY_OF(name);
     const buf = await this._buffer(def.file);
     if (!buf) return null;
     const base = def.volume * this.volumeFor(cat);
@@ -184,48 +210,49 @@ export class SoundManager {
     return handle;
   }
 
+  // PlayerControllerMP.onPlayerDamageBlock: the hit sound, NEUTRAL
   playBlockHit(x, y, z, state) {
     const st = soundTypeOf(blocks[state >> 4]);
-    this.play(st[0], x + 0.5, y + 0.5, z + 0.5, (st[3] + 1) / 8, st[4] * 0.5);
+    this.play(st[5], x + 0.5, y + 0.5, z + 0.5, (st[3] + 1) / 8, st[4] * 0.5, { category: 'neutral' });
   }
 
   playBlockBreak(x, y, z, state) {
     const st = soundTypeOf(blocks[state >> 4]);
-    this.play(st[1], x + 0.5, y + 0.5, z + 0.5, (st[3] + 1) / 2, st[4] * 0.8);
+    this.play(st[1], x + 0.5, y + 0.5, z + 0.5, (st[3] + 1) / 2, st[4] * 0.8, { category: 'block' });
   }
 
   playBlockPlace(x, y, z, state) {
     const st = soundTypeOf(blocks[state >> 4]);
-    this.play(st[2], x + 0.5, y + 0.5, z + 0.5, (st[3] + 1) / 2, st[4] * 0.8);
+    this.play(st[2], x + 0.5, y + 0.5, z + 0.5, (st[3] + 1) / 2, st[4] * 0.8, { category: 'block' });
   }
 
   // EntityLiving.getHurtSound / getDeathSound (handleStatusUpdate 2 / 3)
   _mobSounds(e) {
-    const t = e.type;
-    if (t === 55 || t === 62) { const big = (e.size || 1) > 1 ? 'big' : 'small'; return ['mob.slime.' + big, 'mob.slime.' + big]; }
-    if (t === 100) {
-      const ht = (e.metadata && e.metadata[19]) || 0; // 0 horse, 1 donkey, 2 mule, 3 zombie, 4 skeleton
-      const k = ht === 3 ? 'zombie.' : ht === 4 ? 'skeleton.' : ht === 1 || ht === 2 ? 'donkey.' : '';
-      return ['mob.horse.' + k + 'hit', 'mob.horse.' + k + 'death'];
+    const t = e.entityType !== undefined ? e.entityType : e.type;
+    if (t === 55 || t === 62) {
+      const big = (e.size || 1) > 1;
+      return E(t === 55 ? (big ? 'slime' : 'small_slime') : (big ? 'magmacube' : 'small_magmacube'));
     }
-    if (t === 68 && e.elder) return ['mob.guardian.elder.hit', 'mob.guardian.elder.death'];
-    if (t === 63) return ['mob.enderdragon.hit', 'mob.enderdragon.end'];
     const s = MOB_SOUNDS[t];
     if (s) return s;
-    const hostile = [53, 63, 64].includes(t) || (t >= 50 && t <= 68);
-    return hostile ? ['game.hostile.hurt', 'game.hostile.die'] : ['game.neutral.hurt', 'game.neutral.die'];
+    return HOSTILE_TYPES.has(t) ? E('hostile') : E('generic');
+  }
+
+  _mobCategory(e) {
+    if (e.kind === 'player') return 'player';
+    return HOSTILE_TYPES.has(e.entityType !== undefined ? e.entityType : e.type) ? 'hostile' : 'neutral';
   }
 
   playEntityHurt(e) {
-    if (e.kind === 'player') { this.play('game.player.hurt', e.x, e.y, e.z, 1, (Math.random() - Math.random()) * 0.2 + 1); return; }
+    if (e.kind === 'player') { this.play('entity.player.hurt', e.x, e.y, e.z, 1, (Math.random() - Math.random()) * 0.2 + 1, { category: 'player' }); return; }
     const s = this._mobSounds(e);
-    if (s && s[0]) this.play(s[0], e.x, e.y, e.z, 1, (Math.random() - Math.random()) * 0.2 + (e.child ? 1.5 : 1));
+    if (s && s[0]) this.play(s[0], e.x, e.y, e.z, 1, (Math.random() - Math.random()) * 0.2 + (e.child ? 1.5 : 1), { category: this._mobCategory(e) });
   }
 
   playEntityDeath(e) {
-    if (e.kind === 'player') { this.play('game.player.die', e.x, e.y, e.z, 1, (Math.random() - Math.random()) * 0.2 + 1); return; }
+    if (e.kind === 'player') { this.play('entity.player.death', e.x, e.y, e.z, 1, (Math.random() - Math.random()) * 0.2 + 1, { category: 'player' }); return; }
     const s = this._mobSounds(e);
-    if (s && s[1]) this.play(s[1], e.x, e.y, e.z, 1, (Math.random() - Math.random()) * 0.2 + (e.child ? 1.5 : 1));
+    if (s && s[1]) this.play(s[1], e.x, e.y, e.z, 1, (Math.random() - Math.random()) * 0.2 + (e.child ? 1.5 : 1), { category: this._mobCategory(e) });
   }
 
   // WorldClient.playMoodSoundAndCheckLight: now and then a cave sound in a dark, sky-less air block nearby
@@ -248,7 +275,7 @@ export class SoundManager {
       if (light <= Math.floor(Math.random() * 8) && w.getSkyLight(x, y, z) <= 0) {
         const dx = g.player.x - x - 0.5, dy = g.player.y - y - 0.5, dz = g.player.z - z - 0.5;
         if (dx * dx + dy * dy + dz * dz > 4) {
-          this.play('ambient.cave.cave', x + 0.5, y + 0.5, z + 0.5, 0.7, 0.8 + Math.random() * 0.2);
+          this.play('ambient.cave', x + 0.5, y + 0.5, z + 0.5, 0.7, 0.8 + Math.random() * 0.2, { category: 'ambient' });
           this.ambientCountdown = Math.floor(Math.random() * 12000) + 6000;
           return;
         }
@@ -261,50 +288,31 @@ export class SoundManager {
     if (!b) return;
     const { x, y, z } = p.location;
     if (b.name === 'noteblock') {
-      const inst = ['harp', 'bd', 'snare', 'hat', 'bassattack'][p.byte1] || 'harp';
+      // BlockNote.INSTRUMENTS (1.12)
+      const inst = ['harp', 'basedrum', 'snare', 'hat', 'bass', 'flute', 'bell', 'guitar', 'chime', 'xylophone'][p.byte1] || 'harp';
       const pitch = Math.pow(2, (p.byte2 - 12) / 12);
-      this.play('note.' + inst, x + 0.5, y + 0.5, z + 0.5, 3, pitch);
+      this.play('block.note.' + inst, x + 0.5, y + 0.5, z + 0.5, 3, pitch, { category: 'record' });
       this.game.particles.note && this.game.particles.note(x, y, z, p.byte2);
     } else if (b.name === 'piston' || b.name === 'sticky_piston') {
-      this.play(p.byte1 === 0 ? 'tile.piston.out' : 'tile.piston.in', x + 0.5, y + 0.5, z + 0.5, 0.5, Math.random() * 0.25 + 0.6);
+      this.play(p.byte1 === 0 ? 'block.piston.extend' : 'block.piston.contract', x + 0.5, y + 0.5, z + 0.5, 0.5, Math.random() * 0.25 + 0.6, { category: 'block' });
     }
   }
 
+  // RenderGlobal.playEvent / broadcastSound (1.12 event ids)
   onWorldEvent(p) {
     const { x, y, z } = p.location;
     const cx = x + 0.5, cy = y + 0.5, cz = z + 0.5;
-    const r = () => Math.random();
-    switch (p.effectId) {
-      case 1000: this.play('random.click', cx, cy, cz, 1, 1); break;
-      case 1001: this.play('random.click', cx, cy, cz, 1, 1.2); break;
-      case 1002: this.play('random.bow', cx, cy, cz, 1, 1.2); break;
-      case 1003: this.play('random.door_open', cx, cy, cz, 1, r() * 0.1 + 0.9); break;
-      case 1004: this.play('random.fizz', cx, cy, cz, 0.5, 2.6 + (r() - r()) * 0.8); break;
-      case 1005: this.playRecord(p.data, cx, cy, cz); break;
-      case 1006: this.play('random.door_close', cx, cy, cz, 1, r() * 0.1 + 0.9); break;
-      case 1007: this.play('mob.ghast.charge', cx, cy, cz, 10, (r() - r()) * 0.2 + 1); break;
-      case 1008: this.play('mob.ghast.fireball', cx, cy, cz, 10, (r() - r()) * 0.2 + 1); break;
-      case 1009: this.play('mob.ghast.fireball', cx, cy, cz, 2, (r() - r()) * 0.2 + 1); break;
-      case 1010: this.play('mob.zombie.wood', cx, cy, cz, 2, (r() - r()) * 0.2 + 1); break;
-      case 1011: this.play('mob.zombie.metal', cx, cy, cz, 2, (r() - r()) * 0.2 + 1); break;
-      case 1012: this.play('mob.zombie.woodbreak', cx, cy, cz, 2, (r() - r()) * 0.2 + 1); break;
-      case 1013: this.play('mob.wither.spawn', cx, cy, cz, 1, 1, { global: true }); break;
-      case 1014: this.play('mob.wither.shoot', cx, cy, cz, 2, (r() - r()) * 0.2 + 1); break;
-      case 1015: this.play('mob.bat.takeoff', cx, cy, cz, 0.05, (r() - r()) * 0.2 + 1); break;
-      case 1016: this.play('mob.zombie.infect', cx, cy, cz, 2, (r() - r()) * 0.2 + 1); break;
-      case 1017: this.play('mob.zombie.unfect', cx, cy, cz, 2, (r() - r()) * 0.2 + 1); break;
-      case 1018: this.play('mob.enderdragon.end', cx, cy, cz, 5, 1, { global: true }); break;
-      case 1020: this.play('random.anvil_break', cx, cy, cz, 1, r() * 0.1 + 0.9); break;
-      case 1021: this.play('random.anvil_use', cx, cy, cz, 1, r() * 0.1 + 0.9); break;
-      case 1022: this.play('random.anvil_land', cx, cy, cz, 0.3, r() * 0.1 + 0.9); break;
-      case 2001: {
-        const id = p.data & 4095, meta = (p.data >> 12) & 15;
-        this.playBlockBreak(x, y, z, (id << 4) | meta);
-        break;
-      }
-      case 2002: this.play('game.potion.smash', cx, cy, cz, 1, r() * 0.1 + 0.9); break;
-      default: break;
+    if (p.effectId === 1010) { this.playRecord(p.data, cx, cy, cz); return; }
+    if (p.effectId === 1032) { this.play('block.portal.travel', 0, 0, 0, 0.25, Math.random() * 0.4 + 0.8, { global: true, category: 'master' }); return; }
+    if (p.effectId === 2001) {
+      const id = p.data & 4095, meta = (p.data >> 12) & 15;
+      this.playBlockBreak(x, y, z, (id << 4) | meta);
+      return;
     }
+    const gl = GLOBAL_EVENTS[p.effectId];
+    if (gl) { this.play(gl, cx, cy, cz, p.effectId === 1028 ? 5 : 1, 1, { global: true }); return; }
+    const e = EVENT_SOUNDS[p.effectId];
+    if (e) this.play(e[0], cx, cy, cz, e[1], e[2]());
   }
 
   async playRecord(itemId, x, y, z) {
@@ -314,17 +322,17 @@ export class SoundManager {
     const n = names[itemId];
     if (!n) return;
     this.game.hud.setActionBar('§dNow playing: C418 - ' + n);
-    this.record = await this.play('records.' + n, x, y, z, 4, 1);
+    this.record = await this.play('record.' + n, x, y, z, 4, 1, { category: 'record' });
   }
 
   // Minecraft.getAmbientMusicType: [event, minDelay, maxDelay]
   _musicType() {
     const g = this.game, scr = g.screens.current;
-    if (scr && scr.isCredits) return ['music.game.end.credits', 2147483647, 2147483647];
+    if (scr && scr.isCredits) return ['music.credits', 2147483647, 2147483647];
     if (!g.inWorld) return ['music.menu', 20, 600];
     if (g.dimension === -1) return ['music.nether', 1200, 3600];
-    if (g.dimension === 1) return g.entities.boss && g.entities.boss() ? ['music.game.end.dragon', 0, 0] : ['music.game.end', 6000, 24000];
-    if (g.player.creative && g.player.allowFlying) return ['music.game.creative', 1200, 3600];
+    if (g.dimension === 1) return g.entities.boss && g.entities.boss() ? ['music.dragon', 0, 0] : ['music.end', 6000, 24000];
+    if (g.player.creative && g.player.allowFlying) return ['music.creative', 1200, 3600];
     return ['music.game', 12000, 24000];
   }
 

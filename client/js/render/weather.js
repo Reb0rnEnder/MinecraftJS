@@ -86,8 +86,8 @@ export class Weather {
     }
     if (count > 0 && Math.floor(Math.random() * 3) < this.rainSoundCounter++) {
       this.rainSoundCounter = 0;
-      if (sy > g.player.y + 1 && this.precipHeight(px, pz) > py) g.sound.play('ambient.weather.rain', sx, sy, sz, 0.1, 0.5);
-      else g.sound.play('ambient.weather.rain', sx, sy, sz, 0.2, 1);
+      if (sy > g.player.y + 1 && this.precipHeight(px, pz) > py) g.sound.play('weather.rain.above', sx, sy, sz, 0.1, 0.5);
+      else g.sound.play('weather.rain', sx, sy, sz, 0.2, 1);
     }
   }
 

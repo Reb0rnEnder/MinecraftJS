@@ -166,7 +166,7 @@ export class ResourcePacksScreen extends Screen {
         else if (ry < 16 && idx > 0) { this.selected.splice(idx, 1); this.selected.splice(idx - 1, 0, pack); }
         else if (ry >= 16 && idx < this.selected.length - 1) { this.selected.splice(idx, 1); this.selected.splice(idx + 1, 0, pack); }
       }
-      this.game.sound.playUi('gui.button.press', 1);
+      this.game.sound.playUi('ui.button.click', 1);
       return true;
     }
     return false;

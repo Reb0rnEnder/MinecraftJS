@@ -563,7 +563,7 @@ class BeaconScreen extends ContainerScreen {
     for (const b of this.beaconButtons) {
       if (!(mx >= b.x && my >= b.y && mx < b.x + 22 && my < b.y + 22)) continue;
       if (!b.enabled) return true;
-      this.game.sound.playUi('gui.button.press', 1);
+      this.game.sound.playUi('ui.button.click', 1);
       if (b.cancel) { this.close(); return true; }
       if (b.confirm) {
         const w = new Writer().i32(this.field(1)).i32(this.field(2)).build();
@@ -906,7 +906,7 @@ export class CreativeScreen extends ContainerScreen {
   mouseDown(mx, my, button, e) {
     for (const f of this.fields) f.mouseDown(mx, my, this.gui);
     const t = this._tabAt(mx, my);
-    if (t >= 0 && button === 0) { if (t !== this.tab) { this.setTab(t); this.game.sound.playUi('gui.button.press', 1); } return true; }
+    if (t >= 0 && button === 0) { if (t !== this.tab) { this.setTab(t); this.game.sound.playUi('ui.button.click', 1); } return true; }
     const L = this.guiLeft, T = this.guiTop;
     if (TABS[this.tab] !== 'inventory' && mx >= L + 175 && mx < L + 187 && my >= T + 18 && my < T + 130) { this.isScrolling = true; this._scrollTo(my); return true; }
     const g = this.game;

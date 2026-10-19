@@ -45,6 +45,16 @@ import { buildSlice } from '../world/slice.js';
 import { setModelDevice } from '../render/boxmodel.js';
 import { encodePng } from '../util/png.js';
 
+// IAttributeInstance.getAttributeValue: base, + op 0 amounts, x (1 + sum of op 1), x (1 + each op 2)
+function attributeValue(prop) {
+  let v = prop.value;
+  for (const m of prop.modifiers) if (m.operation === 0) v += m.amount;
+  let base = v;
+  for (const m of prop.modifiers) if (m.operation === 1) v += base * m.amount;
+  for (const m of prop.modifiers) if (m.operation === 2) v *= 1 + m.amount;
+  return v;
+}
+
 // SPacketUpdateTileEntity action per block entity id (signs are handled by applyBlockEntity)
 const BLOCK_ENTITY_ACTIONS = {
   mob_spawner: 1, command_block: 2, beacon: 3, skull: 4, flower_pot: 5, banner: 6, structure_block: 7, end_gateway: 8,
@@ -92,7 +102,7 @@ export class Game {
     this.player.onStep = (x, y, z, state) => this.sound.playStep(x, y, z, state, [this.player.x, this.player.y, this.player.z]);
     this.player.onFall = (dmg, state) => this.sound.playFall(dmg, this.player.x, this.player.y, this.player.z, state);
     this.player.onWaterEnter = () => this._waterSplash();
-    this.player.onSwim = (vol) => this.sound.playAtPlayer('game.player.swim', vol, 1 + (Math.random() - Math.random()) * 0.4);
+    this.player.onSwim = (vol) => this.sound.playAtPlayer('entity.player.swim', vol, 1 + (Math.random() - Math.random()) * 0.4);
     this.entities = new EntityManager(this);
     this.scoreboard = new Scoreboard(this);
     this.inventory = new Inventory(this);
@@ -183,46 +193,40 @@ export class Game {
 
   // TextureCompass.updateCompass / TextureClock.updateAnimation: needle and dial follow the world, with
   // vanilla's damped swing. Returns the atlas entries that changed.
+  // ItemCompass "angle" / ItemClock "time" item model predicates (1.9+ picks compass_NN / clock_NN models by these);
+  // both wobble towards their target like vanilla's held compass and clock
   _updateCompassClock() {
-    const atlas = this.assets.atlas, out = [];
     const surface = this.dimension === 0;
     const cs = this._compass || (this._compass = { angle: 0, delta: 0, clock: 0, clockDelta: 0 });
-    const n = atlas.frameCount('items/compass');
-    if (n) {
-      let d0 = 0;
-      if (this.inWorld) {
-        if (surface) {
-          const sp = this.spawnPos || { x: 0, z: 0 };
-          const d1 = sp.x - this.player.x, d2 = sp.z - this.player.z;
-          const yaw = ((this.player.yaw % 360) + 360) % 360;
-          d0 = -((yaw - 90) * Math.PI / 180 - Math.atan2(d2, d1));
-        } else d0 = Math.random() * Math.PI * 2;
-      }
-      let d3 = d0 - cs.angle;
-      while (d3 < -Math.PI) d3 += Math.PI * 2;
-      while (d3 >= Math.PI) d3 -= Math.PI * 2;
-      d3 = Math.max(-1, Math.min(1, d3));
-      cs.delta += d3 * 0.1;
-      cs.delta *= 0.8;
-      cs.angle += cs.delta;
-      const e = atlas.setFrame('items/compass', Math.floor((cs.angle / (Math.PI * 2) + 1) * n) % n);
-      if (e) out.push(e);
+    let d0 = 0;
+    if (this.inWorld) {
+      if (surface) {
+        const sp = this.spawnPos || { x: 0, z: 0 };
+        const d1 = sp.x - this.player.x, d2 = sp.z - this.player.z;
+        const yaw = ((this.player.yaw % 360) + 360) % 360;
+        d0 = -((yaw - 90) * Math.PI / 180 - Math.atan2(d2, d1));
+      } else d0 = Math.random() * Math.PI * 2;
     }
-    const m = atlas.frameCount('items/clock');
-    if (m) {
-      let d0 = 0;
-      if (this.inWorld) d0 = surface ? celestialAngle(this.world.timeOfDay, 1) : Math.random();
-      let d1 = d0 - cs.clock;
-      while (d1 < -0.5) d1 += 1;
-      while (d1 >= 0.5) d1 -= 1;
-      d1 = Math.max(-1, Math.min(1, d1));
-      cs.clockDelta += d1 * 0.1;
-      cs.clockDelta *= 0.8;
-      cs.clock += cs.clockDelta;
-      const e = atlas.setFrame('items/clock', Math.floor((cs.clock + 1) * m) % m);
-      if (e) out.push(e);
-    }
-    return out;
+    let d3 = d0 - cs.angle;
+    while (d3 < -Math.PI) d3 += Math.PI * 2;
+    while (d3 >= Math.PI) d3 -= Math.PI * 2;
+    d3 = Math.max(-1, Math.min(1, d3));
+    cs.delta += d3 * 0.1;
+    cs.delta *= 0.8;
+    cs.angle += cs.delta;
+    const mod1 = (v) => ((v % 1) + 1) % 1;
+    this.compassAngle = mod1(cs.angle / (Math.PI * 2) - 0.5); // compass model (frame 16) points at the target
+    let t0 = 0;
+    if (this.inWorld) t0 = surface ? celestialAngle(this.world.timeOfDay, 1) : Math.random();
+    let t1 = t0 - cs.clock;
+    while (t1 < -0.5) t1 += 1;
+    while (t1 >= 0.5) t1 -= 1;
+    t1 = Math.max(-1, Math.min(1, t1));
+    cs.clockDelta += t1 * 0.1;
+    cs.clockDelta *= 0.8;
+    cs.clock += cs.clockDelta;
+    this.clockTime = mod1(cs.clock);
+    return [];
   }
 
   // F3 + key combinations (Minecraft.runTick). Returns true when the key was used.
@@ -552,7 +556,7 @@ export class Game {
 
   sendSettings() {
     const s = this.settings;
-    this.send(C.settings(this.assets.language || 'en_US', s.renderDistance, s.chatVisibility, s.chatColors, s.skinParts, s.mainHand === 'left' ? 0 : 1));
+    this.send(C.settings(this.assets.language || 'en_us', s.renderDistance, s.chatVisibility, s.chatColors, s.skinParts, s.mainHand === 'left' ? 0 : 1));
   }
 
   applyGameMode() {
@@ -698,7 +702,7 @@ export class Game {
 
   on_entity_status(p) {
     if (p.entityId === this.entityId) {
-      if (p.entityStatus === 2) { this.hurtTime = 10; this.sound.playAtPlayer('game.player.hurt', 1, 1); }
+      if (p.entityStatus === 2) { this.hurtTime = 10; this.sound.playAtPlayer('entity.player.hurt', 1, 1); }
       else if (p.entityStatus === 9) this.player.usingItem = false; // item use finished
       else if (p.entityStatus === 22) this.reducedDebug = true;
       else if (p.entityStatus === 23) this.reducedDebug = false;
@@ -726,7 +730,10 @@ export class Game {
   }
 
   on_entity_metadata(p) {
-    if (p.entityId === this.entityId) this.selfMetadata = Object.assign(this.selfMetadata || {}, p.metadata);
+    if (p.entityId === this.entityId) {
+      this.selfMetadata = Object.assign(this.selfMetadata || {}, p.metadata);
+      if (p.metadata[0] !== undefined) this.player.elytraFlying = !!(p.metadata[0] & 0x80); // flag 7: elytra flying
+    }
     this.entities.setMetadata(p.entityId, p.metadata);
   }
 
@@ -746,6 +753,8 @@ export class Game {
     const jb = this.effects.get(8);
     this.player.jumpBoost = jb ? jb.amplifier : -1;
     this.player.blind = this.effects.has(15);
+    const lev = this.effects.get(25);
+    this.player.levitation = lev ? lev.amplifier : -1;
   }
 
   on_experience(p) { this.xpBar = p.experienceBar; this.xpLevel = p.level; this.xpTotal = p.totalExperience; }
@@ -755,6 +764,7 @@ export class Game {
       for (const prop of p.properties) {
         if (prop.key === 'generic.movementSpeed') this.player.speedAttr = { base: prop.value, modifiers: prop.modifiers };
         if (prop.key === 'generic.maxHealth') this.maxHealth = prop.value;
+        if (prop.key === 'generic.attackSpeed') this.player.attackSpeed = attributeValue(prop);
       }
     }
     this.entities.setAttributes(p);
@@ -807,12 +817,12 @@ export class Game {
 
   on_world_event(p) { this.sound.onWorldEvent(p); this.particles.onWorldEvent(p); }
 
-  on_named_sound_effect(p) { this.sound.play(p.soundName.replace(/^minecraft:/, ''), p.x, p.y, p.z, p.volume, p.pitch); }
+  on_named_sound_effect(p) { this.sound.play(p.soundName.replace(/^minecraft:/, ''), p.x, p.y, p.z, p.volume, p.pitch, { category: p.soundCategory }); }
 
   // SoundEvent registry id (data/sounds.json)
   on_sound_effect(p) {
     const name = this.assets.soundNames[p.soundId];
-    if (name) this.sound.play(name, p.x, p.y, p.z, p.volume, p.pitch);
+    if (name) this.sound.play(name, p.x, p.y, p.z, p.volume, p.pitch, { category: p.soundCategory });
   }
 
   on_world_particles(p) { this.particles.onPacket(p); }
@@ -825,10 +835,10 @@ export class Game {
       case 2: this.world.raining = false; this.world.rainStrength = this.world.prevRain = 1; break;
       case 3: { const gm = Math.floor(p.value + 0.5); if (gm !== this.gameMode) this.previousGameMode = this.gameMode; this.gameMode = gm; this.applyGameMode(); break; }
       case 4: import('../gui/screens/credits.js').then((m) => this.screens.open(new m.CreditsScreen(this))); break; // GuiWinGame
-      case 6: this.sound.playAtPlayer('random.successful_hit', 0.18, 0.45); break;
+      case 6: this.sound.playAtPlayer('entity.arrow.hit_player', 0.18, 0.45); break;
       case 7: this.world.rainStrength = p.value; this.world.prevRain = p.value; break;
       case 8: this.world.thunderStrength = p.value; break;
-      case 10: this.sound.playAtPlayer('mob.guardian.curse', 1, 1); this.hud.elderGuardianTime = 60; break;
+      case 10: this.sound.playAtPlayer('entity.elder_guardian.curse', 1, 1); this.hud.elderGuardianTime = 60; break;
       default: break;
     }
   }
@@ -878,6 +888,22 @@ export class Game {
   }
 
   on_map(p) { this.items.updateMap(p); }
+
+  // CooldownTracker (ender pearls, chorus fruit, shields disabled by an axe)
+  on_set_cooldown(p) {
+    if (!this.cooldowns) this.cooldowns = new Map();
+    if (p.cooldownTicks > 0) this.cooldowns.set(p.itemId, { start: this.ticks, end: this.ticks + p.cooldownTicks });
+    else this.cooldowns.delete(p.itemId);
+  }
+
+  // CooldownTracker.getCooldown: fraction of the cooldown left (0 = ready)
+  cooldownFraction(itemId, partial) {
+    const c = this.cooldowns && this.cooldowns.get(itemId);
+    if (!c) return 0;
+    const t = this.ticks + partial;
+    if (t >= c.end) { this.cooldowns.delete(itemId); return 0; }
+    return Math.max(0, Math.min(1, (c.end - t) / (c.end - c.start)));
+  }
 
   on_tile_entity_data(p) { if (p.nbtData) this.applyBlockEntity(p.nbtData, p.action === 9 ? undefined : p.action); }
 
@@ -971,7 +997,7 @@ export class Game {
   _waterSplash() {
     const pl = this.player;
     const f = Math.min(1, Math.sqrt(pl.motionX * pl.motionX * 0.2 + pl.motionY * pl.motionY + pl.motionZ * pl.motionZ * 0.2) * 0.2);
-    this.sound.playAtPlayer('game.player.swim.splash', f, 1 + (Math.random() - Math.random()) * 0.4);
+    this.sound.playAtPlayer('entity.player.splash', f, 1 + (Math.random() - Math.random()) * 0.4);
     const y = Math.floor(pl.y) + 1, w = 0.6, n = 1 + w * 20;
     // RenderGlobal.spawnEntityFX: "decreased" drops a third of particles, "minimal" drops them all
     const show = () => { const s = this.settings.particles || 0; return s === 0 || (s === 1 && Math.random() * 3 >= 1); };
@@ -1085,6 +1111,8 @@ export class Game {
     if (e.code === k.perspective) { this.thirdPerson = (this.thirdPerson + 1) % 3; return; }
     if (e.code === k.screenshot) { this.takeScreenshot(); return; }
     if (e.code === k.drop) { this.interaction.dropItem(e.ctrl); return; }
+    // Minecraft.processKeyBinds: swap hands (CPacketPlayerDigging SWAP_HELD_ITEMS); not in spectator mode
+    if (e.code === k.swapHands && this.gameMode !== 3) { this.send(C.blockDig(6, 0, 0, 0, 0)); return; }
     if (e.code === k.fullscreen) { platform().toggleFullscreen(); return; }
     for (let i = 1; i <= 9; i++) {
       if (e.code === k['hotbar' + i]) {
@@ -1196,8 +1224,14 @@ export class Game {
     if (this.player.ridingEntity) {
       this._tickRiding(inp);
     } else if (!this.dead) {
+      // GameSettings.autoJump; ItemElytra.isUsable on the chest slot
+      const chest = this.inventory.armor[2];
+      inp.autoJump = this.settings.autoJump;
+      inp.elytraUsable = !!(chest && chest.id === 443 && chest.damage < this.items.maxDurability(443) - 1);
+      pl.sleeping = !!this.sleeping;
       const res = pl.tick(world, inp);
       if (res.abilitiesChanged) this.sendAbilities();
+      if (res.startFallFlying) this.send(C.entityAction(this.entityId, 8)); // START_FALL_FLYING
     }
     if (!this.player.ridingEntity) this._sendMovement();
 
@@ -1241,7 +1275,7 @@ export class Game {
     const inPortal = blocks[s >> 4] && blocks[s >> 4].name === 'portal';
     this.prevPortalTime = this.portalTime;
     if (inPortal) {
-      if (this.portalTime === 0) this.sound.playAtPlayer('portal.trigger', 1, Math.random() * 0.4 + 0.8);
+      if (this.portalTime === 0) this.sound.playAtPlayer('block.portal.trigger', 1, Math.random() * 0.4 + 0.8);
       this.portalTime = Math.min(1, this.portalTime + 0.0125);
     } else this.portalTime = Math.max(0, this.portalTime - 0.05);
   }
@@ -1306,20 +1340,19 @@ export class Game {
     }
     void sneak;
     if (this.cameraEntity !== null && this.cameraEntity !== undefined) return;
+    // 1.9+: counted before the check, and with nothing else to send only an on-ground change is reported
     const d0 = pl.x - lr.x, d1 = pl.y - lr.y, d2 = pl.z - lr.z;
     const d3 = pl.yaw - lr.yaw, d4 = pl.pitch - lr.pitch;
-    let moved = d0 * d0 + d1 * d1 + d2 * d2 > 9.0e-4 || this.positionUpdateTicks >= 20;
+    this.positionUpdateTicks++;
+    const moved = d0 * d0 + d1 * d1 + d2 * d2 > 9.0e-4 || this.positionUpdateTicks >= 20;
     const rotated = d3 !== 0 || d4 !== 0;
-    if (pl.ridingEntity) {
-      this.send(C.positionLook(pl.motionX, -999, pl.motionZ, pl.yaw, pl.pitch, pl.onGround));
-      moved = false;
-    } else if (moved && rotated) this.send(C.positionLook(pl.x, pl.y, pl.z, pl.yaw, pl.pitch, pl.onGround));
+    if (moved && rotated) this.send(C.positionLook(pl.x, pl.y, pl.z, pl.yaw, pl.pitch, pl.onGround));
     else if (moved) this.send(C.position(pl.x, pl.y, pl.z, pl.onGround));
     else if (rotated) this.send(C.look(pl.yaw, pl.pitch, pl.onGround));
-    else this.send(C.flying(pl.onGround));
-    this.positionUpdateTicks++;
+    else if (lr.onGround !== pl.onGround) this.send(C.flying(pl.onGround));
     if (moved) { lr.x = pl.x; lr.y = pl.y; lr.z = pl.z; this.positionUpdateTicks = 0; }
     if (rotated) { lr.yaw = pl.yaw; lr.pitch = pl.pitch; }
+    lr.onGround = pl.onGround; // prevOnGround
   }
 
   // ---------------------------------------------------------------- Frame
@@ -1405,10 +1438,7 @@ export class Game {
       const e = this.entities.get(this.cameraEntity);
       if (e) { const ip = this.entities.interp(e, partial); x = ip.x; y = ip.y; z = ip.z; return [x, y + e.eyeHeight, z]; }
     }
-    let eye = 1.62;
-    if (pl.sneaking) eye -= 0.08; // EntityPlayer.getEyeHeight (also while flying)
-    if (this.sleeping) eye = 0.2;
-    return [x, y + eye, z];
+    return [x, y + pl.eyeHeight(), z]; // EntityPlayer.getEyeHeight
   }
 
   lookVector(partial = this.partial) {

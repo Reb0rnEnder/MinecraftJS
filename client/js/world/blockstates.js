@@ -1,4 +1,4 @@
-// Maps (block id, metadata, neighbourhood) -> vanilla 1.8.9 blockstate file + property map.
+// Maps (block id, metadata, neighbourhood) -> vanilla 1.12.2 blockstate file + property map.
 // This re-implements each block's getStateFromMeta + getActualState + state mapper naming.
 import { blocks, blocksByName } from './blocks.js';
 
@@ -157,7 +157,7 @@ export function resolveState(state, get, x, y, z) {
     case 'dispenser': case 'dropper': P.facing = FACING6[m & 7] || 'north'; P.triggered = !!(m & 8); return R(n);
     case 'sandstone': return R(['sandstone', 'chiseled_sandstone', 'smooth_sandstone'][m] || 'sandstone');
     case 'red_sandstone': return R(['red_sandstone', 'chiseled_red_sandstone', 'smooth_red_sandstone'][m] || 'red_sandstone');
-    case 'bed': P.facing = HORIZ[m & 3]; P.part = m & 8 ? 'head' : 'foot'; P.occupied = !!(m & 4); return R('bed');
+    case 'bed': return null; // TileEntityBedRenderer (1.12 beds are coloured block entities)
     case 'golden_rail': case 'detector_rail': case 'activator_rail':
       P.shape = RAIL_SHAPES[m & 7] || 'north_south'; P.powered = !!(m & 8); return R(n);
     case 'rail': P.shape = RAIL_SHAPES[m] || 'north_south'; return R('rail');
@@ -282,7 +282,30 @@ export function resolveState(state, get, x, y, z) {
       return R(DOUBLE_PLANTS[lowerMeta & 7] || 'double_grass');
     }
     case 'end_portal': return null;
-    case 'command_block': case 'beacon': case 'mob_spawner': case 'dragon_egg': return R(n);
+    case 'command_block': case 'repeating_command_block': case 'chain_command_block':
+      P.facing = FACING6[m & 7] || 'down'; P.conditional = !!(m & 8); return R(n);
+    case 'beacon': case 'mob_spawner': case 'dragon_egg': return R(n);
+    // 1.9 - 1.12 blocks
+    case 'concrete': return R(COLORS[m] + '_concrete');
+    case 'concrete_powder': return R(COLORS[m] + '_concrete_powder');
+    case 'bone_block': case 'purpur_pillar': P.axis = ['y', 'x', 'z', 'y'][(m >> 2) & 3]; return R(n);
+    case 'purpur_slab': P.half = m & 8 ? 'top' : 'bottom'; P.variant = 'default'; return R(n);
+    case 'purpur_double_slab': P.variant = 'default'; return R(n);
+    case 'end_rod': P.facing = FACING6[m & 7] || 'up'; return R(n);
+    case 'observer': P.facing = FACING6[m & 7] || 'down'; P.powered = !!(m & 8); return R(n);
+    case 'chorus_flower': P.age = m & 7; return R(n);
+    case 'chorus_plant': {
+      // BlockChorusPlant.getActualState: connects to chorus plants / flowers, and end stone below
+      const c = (s) => { const nn = bName(s); return nn === 'chorus_plant' || nn === 'chorus_flower'; };
+      Object.assign(P, connections(get, x, y, z, c));
+      P.up = c(get(x, y + 1, z));
+      const below = get(x, y - 1, z);
+      P.down = c(below) || bName(below) === 'end_stone';
+      return R(n);
+    }
+    case 'beetroots': case 'frosted_ice': P.age = m & 3; return R(n);
+    case 'structure_block': P.mode = ['save', 'load', 'corner', 'data'][m & 3]; return R(n);
+    case 'structure_void': case 'end_gateway': return null;
     default: break;
   }
 
@@ -305,6 +328,9 @@ export function resolveState(state, get, x, y, z) {
     Object.assign(P, doorProps(get, x, y, z, m));
     return R(n);
   }
+  // model files call light gray "silver" (the registry name is light_gray_glazed_terracotta)
+  if (n.endsWith('_glazed_terracotta')) { P.facing = HORIZ[m & 3]; return R(n.replace(/^light_gray_/, 'silver_')); }
+  if (n.endsWith('_shulker_box')) return null; // TileEntityShulkerBoxRenderer
   // Simple blocks whose blockstate file has the registry name
   return R(n);
 }
@@ -331,7 +357,7 @@ const ITEM_VARIANTS = {
   stained_hardened_clay: COLORS.map((c) => c + '_stained_hardened_clay'),
   red_flower: FLOWERS_RED,
   yellow_flower: ['dandelion'],
-  stone_slab: ['stone_slab', 'sandstone_slab', 'old_wood_slab', 'cobblestone_slab', 'brick_slab', 'stone_brick_slab', 'nether_brick_slab', 'quartz_slab'],
+  stone_slab: ['stone_slab', 'sandstone_slab', 'oak_slab', 'cobblestone_slab', 'brick_slab', 'stone_brick_slab', 'nether_brick_slab', 'quartz_slab'],
   stone_slab2: ['red_sandstone_slab'],
   wooden_slab: WOODS.map((w) => w + '_slab'),
   monster_egg: ['stone_monster_egg', 'cobblestone_monster_egg', 'stone_brick_monster_egg', 'mossy_brick_monster_egg', 'cracked_brick_monster_egg', 'chiseled_brick_monster_egg'],
@@ -347,6 +373,8 @@ const ITEM_VARIANTS = {
   golden_apple: ['golden_apple', 'golden_apple'],
   fish: ['cod', 'salmon', 'clownfish', 'pufferfish'],
   cooked_fish: ['cooked_cod', 'cooked_salmon'],
+  concrete: COLORS.map((c) => c + '_concrete'),
+  concrete_powder: COLORS.map((c) => c + '_concrete_powder'),
   skull: ['skull_skeleton', 'skull_wither', 'skull_zombie', 'skull_char', 'skull_creeper'],
 };
 
@@ -360,6 +388,8 @@ const ITEM_RENAME = {
   cooked_porkchop: 'cooked_porkchop', mob_spawner: 'mob_spawner', red_mushroom_block: 'red_mushroom_block',
   brown_mushroom_block: 'brown_mushroom_block', end_portal_frame: 'end_portal_frame', trapdoor: 'trapdoor',
   daylight_detector: 'daylight_detector', hardened_clay: 'hardened_clay', slime: 'slime', lit_pumpkin: 'lit_pumpkin',
+  boat: 'oak_boat', splash_potion: 'bottle_splash', lingering_potion: 'bottle_lingering', totem_of_undying: 'totem',
+  light_gray_shulker_box: 'silver_shulker_box', light_gray_glazed_terracotta: 'silver_glazed_terracotta',
 };
 
 export function itemModelName(itemName, damage) {

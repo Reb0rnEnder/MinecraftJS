@@ -1,4 +1,5 @@
-// Tile entity (block entity) rendering: chests, signs, skulls, banners, enchanting book, beacon beam, end portal.
+// Tile entity (block entity) rendering: chests, signs, skulls, banners, enchanting book, beacon beam, end portal,
+// beds and shulker boxes.
 import { composeBanner, bannerLayers, buildBanner, bannerSwing } from './banner.js';
 import { Part, entityMaterial, entityMesh } from './boxmodel.js';
 import { buildTextMeshes, destroyTextMeshes } from './text-mesh.js';
@@ -79,6 +80,8 @@ export class TileEntityRenderer {
     else if (n === 'enchanting_table') type = 'book';
     else if (n === 'beacon') type = 'beacon';
     else if (n === 'end_portal') type = 'endportal';
+    else if (n === 'bed') type = 'bed';
+    else if (n.endsWith('_shulker_box')) type = 'shulker';
     if (!type) return null;
     t = { x, y, z, type, state, data: null, lid: 0, prevLid: 0, open: 0 };
     this.tiles.set(k, t);
@@ -92,7 +95,8 @@ export class TileEntityRenderer {
       if (!s) continue;
       for (let i = 0; i < 4096; i++) {
         const id = s.blocks[i] >> 4;
-        if (id === 54 || id === 146 || id === 130 || id === 63 || id === 68 || id === 144 || id === 176 || id === 177 || id === 116 || id === 138 || id === 119) {
+        if (id === 54 || id === 146 || id === 130 || id === 63 || id === 68 || id === 144 || id === 176 || id === 177 || id === 116 || id === 138 || id === 119 ||
+          id === 26 || (id >= 219 && id <= 234)) { // + beds, shulker boxes (1.12 block entities)
           const x = c.x * 16 + (i & 15), y = sy * 16 + (i >> 8), z = c.z * 16 + ((i >> 4) & 15);
           this._ensure(x, y, z, s.blocks[i]);
         }
@@ -132,7 +136,7 @@ export class TileEntityRenderer {
   onBlockAction(p) {
     const b = blocks[p.blockId];
     if (!b) return;
-    if (b.name === 'chest' || b.name === 'trapped_chest' || b.name === 'ender_chest') {
+    if (b.name === 'chest' || b.name === 'trapped_chest' || b.name === 'ender_chest' || b.name.endsWith('_shulker_box')) {
       const t = this._ensure(p.location.x, p.location.y, p.location.z, this.game.world.getState(p.location.x, p.location.y, p.location.z));
       if (t && p.byte1 === 1) t.open = p.byte2;
     }
@@ -144,7 +148,7 @@ export class TileEntityRenderer {
     const beaconUpdate = (Number(g.world.worldAge) || this.ticks) % 80 === 0;
     for (const t of this.tiles.values()) {
       if (t.type === 'beacon' && beaconUpdate) this._updateBeacon(t);
-      if (t.type === 'chest') {
+      if (t.type === 'chest' || t.type === 'shulker') { // shulker: TileEntityShulkerBox.updateAnimation, 0.1 per tick
         t.prevLid = t.lid;
         if ((t.open === 0 && t.lid > 0) || (t.open > 0 && t.lid < 1)) {
           const before = t.lid;
@@ -313,6 +317,50 @@ export class TileEntityRenderer {
         const d = new Node(); d.position.set(-0.5, -0.5, -0.5);
         d.add(model); c.add(d); b2.add(c); a.add(b2); obj.add(a);
         t.lidParts = [lid, knob];
+        break;
+      }
+      case 'bed': {
+        // TileEntityBedRenderer + ModelBed (1.12): colour from the block entity (red by default)
+        const color = t.data && t.data.color !== undefined ? t.data.color : 14;
+        mat = entityMaterial('entity/bed/' + (DYE_NAMES[color & 15] || 'red') + '.png', { alphaTest: 0.1 });
+        const head = !!(meta & 8);
+        const P = (u, v) => new Part(64, 64).tex(u, v);
+        const parts = head
+          ? [P(0, 0).box(0, 0, 0, 16, 16, 6), P(50, 6).box(0, 6, 0, 3, 3, 3).rot(Math.PI / 2, 0, Math.PI / 2), P(50, 18).box(-16, 6, 0, 3, 3, 3).rot(Math.PI / 2, 0, Math.PI)]
+          : [P(0, 22).box(0, 0, 0, 16, 16, 6), P(50, 0).box(0, 6, -16, 3, 3, 3).rot(Math.PI / 2, 0, 0), P(50, 12).box(-16, 6, -16, 3, 3, 3).rot(Math.PI / 2, 0, Math.PI * 3 / 2)];
+        const model = new Node();
+        for (const p of parts) { model.add(p.build()); p.setMaterial(mat); }
+        model.scale.set(1 / 16, 1 / 16, 1 / 16);
+        // renderPiece: translate(f1, 0.5625, f2), rotate(90, X), rotate(f, Z) by facing (0 south, 1 west, 2 north, 3 east)
+        const [f, f1, f2] = [[180, 1, 1], [-90, 0, 1], [0, 0, 0], [90, 1, 0]][meta & 3];
+        const a = new Node();
+        a.position.set(f1, 0.5625, f2);
+        a.rotation.set(Math.PI / 2, 0, f * D2R, 'XYZ');
+        a.add(model); obj.add(a);
+        break;
+      }
+      case 'shulker': {
+        // TileEntityShulkerBoxRenderer + ModelShulker: base and lid, the lid rises and turns as it opens
+        const id = st >> 4;
+        mat = entityMaterial('entity/shulker/shulker_' + DYE_NAMES[(id - 219) & 15] + '.png', { alphaTest: 0.1 });
+        const base = new Part(64, 64).tex(0, 28).box(-8, -8, -8, 16, 8, 16).pivot(0, 24, 0);
+        const lid = new Part(64, 64).tex(0, 0).box(-8, -16, -8, 16, 12, 16).pivot(0, 24, 0);
+        const baseN = new Node(); baseN.add(base.build()); base.setMaterial(mat);
+        const lidN = new Node(); lidN.add(lid.build()); lid.setMaterial(mat);
+        const s16 = new Node(); s16.scale.set(1 / 16, 1 / 16, 1 / 16); s16.add(baseN); s16.add(lidN);
+        // translate(0.5, 1.5, 0.5), scale(1, -1, -1), translate(0, 1, 0), scale 0.9995, translate(0, -1, 0), then the facing
+        const a = new Node(); a.position.set(0.5, 1.5, 0.5); a.scale.set(1, -1, -1);
+        const b2 = new Node(); b2.position.set(0, 1, 0); b2.scale.setScalar(0.9995);
+        const c = new Node(); c.position.set(0, -1, 0);
+        const facing = ['down', 'up', 'north', 'south', 'west', 'east'][meta % 6];
+        const d = new Node();
+        if (facing === 'down') { d.position.set(0, 2, 0); d.rotation.set(Math.PI, 0, 0, 'XYZ'); }
+        else if (facing === 'north') { d.position.set(0, 1, 1); d.rotation.set(Math.PI / 2, 0, Math.PI, 'XYZ'); }
+        else if (facing === 'south') { d.position.set(0, 1, -1); d.rotation.set(Math.PI / 2, 0, 0, 'XYZ'); }
+        else if (facing === 'west') { d.position.set(-1, 1, 0); d.rotation.set(Math.PI / 2, 0, -Math.PI / 2, 'XYZ'); }
+        else if (facing === 'east') { d.position.set(1, 1, 0); d.rotation.set(Math.PI / 2, 0, Math.PI / 2, 'XYZ'); }
+        d.add(s16); c.add(d); b2.add(c); a.add(b2); obj.add(a);
+        t.shulkerLid = lidN;
         break;
       }
       case 'sign': {
@@ -488,6 +536,11 @@ export class TileEntityRenderer {
         P.flipRight.ry = f - f * 2 * f3; P.flipLeft.ry = f - f * 2 * f4;
         P.pagesRight.px = Math.sin(f); P.pagesLeft.px = Math.sin(f); P.flipRight.px = Math.sin(f); P.flipLeft.px = Math.sin(f);
         for (const p of Object.values(P)) p.sync();
+      } else if (t.type === 'shulker' && t.shulkerLid) {
+        // TileEntityShulkerBox.getProgress: lid lifts by half a block and turns 270 degrees
+        const f = t.prevLid + (t.lid - t.prevLid) * partial;
+        t.shulkerLid.position.set(0, -f * 0.5 * 16, 0);
+        t.shulkerLid.rotation.set(0, 270 * f * D2R, 0);
       } else if (t.type === 'banner' && t.bannerSwing) {
         const time = this.ticks + partial + t.x * 7 + t.y * 9 + t.z * 13;
         t.bannerSwing.rotation.x = bannerSwing(time);
@@ -500,6 +553,9 @@ export class TileEntityRenderer {
     }
   }
 }
+
+// EnumDyeColor names by metadata (1.12 texture file names)
+const DYE_NAMES = ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'silver', 'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black'];
 
 // EntitySheep.DYE_TO_RGB (stained glass beam colours), by dye metadata
 const DYE_RGB = [[1, 1, 1], [0.85, 0.5, 0.2], [0.7, 0.3, 0.85], [0.4, 0.6, 0.85], [0.9, 0.9, 0.2], [0.5, 0.8, 0.1], [0.95, 0.5, 0.65], [0.3, 0.3, 0.3],

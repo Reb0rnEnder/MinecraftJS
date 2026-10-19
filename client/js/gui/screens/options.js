@@ -123,7 +123,7 @@ class LanguageScreen extends OptionsBase {
     const code = this.codes[Math.floor((my - top - 4 + this.scroll) / 18)];
     if (!code || code === this.game.assets.language) return false;
     this.busy = true;
-    this.game.sound.playUi('gui.button.press', 1);
+    this.game.sound.playUi('ui.button.click', 1);
     this.game.setLanguage(code).finally(() => {
       this.busy = false;
       this.buttons = []; this.fields = []; this.init(); // labels in the new language
@@ -133,7 +133,7 @@ class LanguageScreen extends OptionsBase {
   wheel(d) { this.scroll = Math.max(0, Math.min(this._maxScroll(), this.scroll + d * 18)); }
 }
 
-// GuiVideoSettings: GuiOptionsRowList (two columns, scrolling) with GameSettings.Options in 1.8.9 order
+// GuiVideoSettings: GuiOptionsRowList (two columns, scrolling) with GameSettings.Options in 1.12.2 order
 class VideoScreen extends OptionsBase {
   constructor(game, parent) { super(game, parent, 'options.videoTitle'); this.scroll = 0; }
   init() {
@@ -147,13 +147,13 @@ class VideoScreen extends OptionsBase {
       { label: () => trOption('options.anaglyph', onOff(false)), click: () => {} },
       { label: () => trOption('options.viewBobbing', onOff(s.viewBobbing)), click: () => { s.viewBobbing = !s.viewBobbing; } },
       { label: () => trOption('options.guiScale', tr('options.guiScale.' + ['auto', 'small', 'normal', 'large'][s.guiScale])), click: () => { s.guiScale = (s.guiScale + 1) % 4; g.gui.guiScaleSetting = s.guiScale; g.gui.resize(); } },
+      { label: () => trOption('options.attackIndicator', tr(['options.off', 'options.attack.crosshair', 'options.attack.hotbar'][s.attackIndicator | 0])), click: () => { s.attackIndicator = ((s.attackIndicator | 0) + 1) % 3; } },
       { slider: true, label: (v) => trOption('options.gamma', v === 0 ? tr('options.gamma.min') : v === 1 ? tr('options.gamma.max') : '+' + Math.round(v * 100) + '%'), value: () => s.gamma, set: (v) => { s.gamma = v; g.renderer.gamma = v; } },
       { label: () => trOption('options.renderClouds', s.clouds === 0 ? tr('options.off') : tr(s.clouds === 1 ? 'options.graphics.fast' : 'options.graphics.fancy')), click: () => { s.clouds = ((s.clouds | 0) + 2) % 3; } },
       { label: () => trOption('options.particles', tr('options.particles.' + ['all', 'decreased', 'minimal'][s.particles])), click: () => { s.particles = (s.particles + 1) % 3; } },
       { label: () => trOption('options.fullscreen', onOff(platform().isFullscreen())), click: () => platform().toggleFullscreen() },
       { label: () => trOption('options.vsync', onOff(s.enableVsync)), click: () => { s.enableVsync = !s.enableVsync; platform().vsync = s.enableVsync; } },
       { slider: true, label: (v) => { const n = Math.round(v * 4); return trOption('options.mipmapLevels', n === 0 ? tr('options.off') : n); }, value: () => s.mipmapLevels / 4, set: (v) => { s.mipmapLevels = Math.round(v * 4); } },
-      { label: () => trOption('options.blockAlternatives', onOff(s.blockAlternatives)), click: () => { s.blockAlternatives = !s.blockAlternatives; } },
       { label: () => trOption('options.vbo', onOff(s.useVbo)), click: () => { s.useVbo = !s.useVbo; } },
       { label: () => trOption('options.entityShadows', onOff(s.entityShadows)), click: () => { s.entityShadows = !s.entityShadows; } },
       // MinecraftJS: which graphics API the renderer uses
@@ -253,7 +253,10 @@ class SkinScreen extends OptionsBase {
   init() {
     const s = this.s;
     const parts = [['cape', 0x01], ['jacket', 0x02], ['left_sleeve', 0x04], ['right_sleeve', 0x08], ['left_pants_leg', 0x10], ['right_pants_leg', 0x20], ['hat', 0x40]];
-    this.grid(parts.map(([n, bit]) => ({ label: () => trOption('options.modelPart.' + n, onOff(s.skinParts & bit)), click: () => { s.skinParts ^= bit; } })));
+    const items = parts.map(([n, bit]) => ({ label: () => trOption('options.modelPart.' + n, onOff(s.skinParts & bit)), click: () => { s.skinParts ^= bit; } }));
+    // 1.9+: main hand
+    items.push({ label: () => trOption('options.mainHand', tr(s.mainHand === 'left' ? 'options.mainHand.left' : 'options.mainHand.right')), click: () => { s.mainHand = s.mainHand === 'left' ? 'right' : 'left'; } });
+    this.grid(items);
     this.doneButton();
   }
   done() { if (this.game.inWorld) this.game.sendSettings(); super.done(); }
@@ -270,8 +273,8 @@ const KEY_BINDINGS = {
   pickItem: ['key.pickItem', 'key.categories.gameplay'], command: ['key.command', 'key.categories.multiplayer'],
   screenshot: ['key.screenshot', 'key.categories.misc'], perspective: ['key.togglePerspective', 'key.categories.misc'],
   smoothCamera: ['key.smoothCamera', 'key.categories.misc'],
-  streamStartStop: ['key.streamStartStop', 'key.categories.stream'], streamPauseUnpause: ['key.streamPauseUnpause', 'key.categories.stream'],
-  streamCommercial: ['key.streamCommercial', 'key.categories.stream'], streamToggleMic: ['key.streamToggleMic', 'key.categories.stream'],
+  swapHands: ['key.swapHands', 'key.categories.inventory'], advancements: ['key.advancements', 'key.categories.misc'],
+  saveToolbarActivator: ['key.saveToolbarActivator', 'key.categories.creative'], loadToolbarActivator: ['key.loadToolbarActivator', 'key.categories.creative'],
   fullscreen: ['key.fullscreen', 'key.categories.misc'], spectatorOutlines: ['key.spectatorOutlines', 'key.categories.misc'],
 };
 for (let i = 1; i <= 9; i++) KEY_BINDINGS['hotbar' + i] = ['key.hotbar.' + i, 'key.categories.inventory'];
@@ -286,6 +289,7 @@ class ControlsScreen extends OptionsBase {
       { label: () => trOption('options.invertMouse', onOff(s.invertMouse)), click: () => { s.invertMouse = !s.invertMouse; } },
       { slider: true, label: (v) => trOption('options.sensitivity', v === 0 ? tr('options.sensitivity.min') : v === 1 ? tr('options.sensitivity.max') : Math.round(v * 200) + '%'), value: () => s.sensitivity, set: (v) => { s.sensitivity = v; } },
       { label: () => trOption('options.touchscreen', onOff(s.touchscreen)), click: () => { s.touchscreen = !s.touchscreen; } },
+      { label: () => trOption('options.autoJump', onOff(s.autoJump)), click: () => { s.autoJump = !s.autoJump; } },
     ], 18);
     this.buttons.push(new Button(201, cx - 155, this.height - 29, 150, 20, tr('controls.resetAll'), () => { s.keys = { ...DEFAULT_KEYS }; }));
     this.buttons.push(new Button(200, cx - 155 + 160, this.height - 29, 150, 20, tr('gui.done'), () => this.done()));
@@ -339,8 +343,8 @@ class ControlsScreen extends OptionsBase {
     if (my < 63 || my >= this.height - 32) return false;
     for (const r of this.rows || []) {
       if (my < r.y || my >= r.y + 20) continue;
-      if (mx >= r.kx && mx < r.kx + 75) { this.binding = r.k; this.game.sound.playUi('gui.button.press', 1); return true; }
-      if (mx >= r.rx && mx < r.rx + 50 && this.s.keys[r.k] !== DEFAULT_KEYS[r.k]) { this.s.keys[r.k] = DEFAULT_KEYS[r.k]; this.game.sound.playUi('gui.button.press', 1); return true; }
+      if (mx >= r.kx && mx < r.kx + 75) { this.binding = r.k; this.game.sound.playUi('ui.button.click', 1); return true; }
+      if (mx >= r.rx && mx < r.rx + 50 && this.s.keys[r.k] !== DEFAULT_KEYS[r.k]) { this.s.keys[r.k] = DEFAULT_KEYS[r.k]; this.game.sound.playUi('ui.button.click', 1); return true; }
     }
     return false;
   }

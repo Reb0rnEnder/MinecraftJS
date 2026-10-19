@@ -69,7 +69,9 @@ export class ModelStore {
       while (t && t.startsWith('#') && g++ < 16) t = textures[t.slice(1)];
       return t || null;
     };
-    const res = { name, textures, elements, ao, display, builtin, resolveTex };
+    // item model overrides (1.9+) belong to the model file itself, not its parents
+    const overrides = chain.length && !chain[0].builtin ? chain[0].overrides || null : null;
+    const res = { name, textures, elements, ao, display, builtin, resolveTex, overrides };
     this.resolved.set(name, res);
     return res;
   }
@@ -211,18 +213,64 @@ export class ModelStore {
 
   // Returns baked model for a blockstate (file, props); `rand` picks among weighted variants
   bakeVariant(file, props, exactKey, rand = 0) {
-    let v = this.findVariant(file, props, exactKey);
+    const bs = this.blockstates[file];
+    if (bs && bs.multipart) return this.bakeMultipart(file, bs.multipart, props, rand);
+    const v = pickWeighted(this.findVariant(file, props, exactKey), rand);
     if (!v) return null;
-    if (Array.isArray(v)) {
-      let total = 0;
-      for (const e of v) total += e.weight || 1;
-      let r = Math.abs(rand) % total;
-      let pick = v[0];
-      for (const e of v) { r -= e.weight || 1; if (r < 0) { pick = e; break; } }
-      v = pick;
-    }
     return this.bakeModel('block/' + v.model, v.x || 0, v.y || 0, !!v.uvlock);
   }
+
+  // 1.9+ multipart blockstate (MultipartBakedModel): every part whose "when" matches adds its model
+  bakeMultipart(file, parts, props, rand) {
+    const picks = [];
+    for (let i = 0; i < parts.length; i++) {
+      const part = parts[i];
+      if (part.when && !matchWhen(part.when, props)) continue;
+      const v = pickWeighted(part.apply, rand);
+      if (v) picks.push(i + ':' + (Array.isArray(part.apply) ? part.apply.indexOf(v) : 0));
+    }
+    const key = 'mp|' + file + '|' + picks.join(',');
+    let b = this.baked.get(key);
+    if (b) return b;
+    const quads = [];
+    let bounds = null, first = null;
+    for (const p of picks) {
+      const [i, k] = p.split(':').map(Number);
+      const apply = parts[i].apply;
+      const v = Array.isArray(apply) ? apply[k] : apply;
+      const m = this.bakeModel('block/' + v.model, v.x || 0, v.y || 0, !!v.uvlock);
+      if (!first) first = m;
+      for (const q of m.quads) quads.push(q);
+      if (m.bounds) {
+        if (!bounds) bounds = m.bounds.slice();
+        else for (let j = 0; j < 3; j++) { bounds[j] = Math.min(bounds[j], m.bounds[j]); bounds[j + 3] = Math.max(bounds[j + 3], m.bounds[j + 3]); }
+      }
+    }
+    b = { quads, ao: first ? first.ao : true, bounds, particle: first ? first.particle : null, builtin: null, display: first ? first.display : {} };
+    this.baked.set(key, b);
+    return b;
+  }
+}
+
+// Weighted variant list -> one entry (rand is a per-position hash)
+function pickWeighted(v, rand) {
+  if (!Array.isArray(v)) return v || null;
+  let total = 0;
+  for (const e of v) total += e.weight || 1;
+  let r = Math.abs(rand) % total;
+  for (const e of v) { r -= e.weight || 1; if (r < 0) return e; }
+  return v[0];
+}
+
+// Multipart condition: { prop: "a|b", ... } (all must match) or { OR: [conditions] }
+function matchWhen(when, props) {
+  if (when.OR) return when.OR.some((w) => matchWhen(w, props));
+  for (const [k, val] of Object.entries(when)) {
+    const p = props[k];
+    // values are strings ("a|b") or plain JSON booleans / numbers
+    if (!String(val).split('|').includes(String(p === undefined ? false : p))) return false;
+  }
+  return true;
 }
 
 function applyElementRotation(pos, r) {

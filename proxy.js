@@ -1,5 +1,5 @@
 // MinecraftJS proxy: serves the web client, bridges WebSocket <-> Minecraft TCP,
-// and serves the game's 1.8.9 assets.
+// and serves the game's 1.12.2 assets.
 const net = require('net');
 const http = require('http');
 const fs = require('fs');
@@ -19,7 +19,7 @@ const PROXY_VERSION = require('./package.json').version || '';
 
 // ---------------------------------------------------------------------------
 // Game assets. A built client/assets/ folder (npm run assets) is served as is; without one the proxy serves the
-// same layout straight from the 1.8.9 jar and asset index (see tools/build.js for the layout).
+// same layout straight from the 1.12.2 jar and asset index (see tools/build.js for the layout).
 // ---------------------------------------------------------------------------
 
 let jar = null;
@@ -85,7 +85,7 @@ async function readAsset(rel) {
   if (rel === 'pack.mcmeta') return defaultPackMeta();
   if (rel === 'pack.png') return jar.read('pack.png');
   if (rel.startsWith('minecraft/')) {
-    // Sounds, sounds.json and translations other than en_US live in the asset index, the rest in the jar
+    // Sounds, sounds.json and translations other than en_us live in the asset index, the rest in the jar
     const fromJar = jar.read('assets/' + rel);
     if (fromJar) return fromJar;
     return assetIndex ? assetIndex.read(rel) : null;
@@ -434,7 +434,7 @@ wss.on('connection', (ws) => {
     console.log(built ? 'Game assets: client/assets/' : 'Game assets loaded (served from the game jar)');
   } catch (e) {
     console.error('Could not load game assets:', e.message);
-    console.error('Set MC_JAR to the location of the 1.8.9 client if it is installed somewhere unusual.');
+    console.error('Set MC_JAR to the location of the 1.12.2 client if it is installed somewhere unusual.');
   }
   try {
     assetIndex = await mcassets.loadAssetIndex();

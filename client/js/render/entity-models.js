@@ -18,40 +18,50 @@ export function biped(tw = 64, th = 32, inflate = 0, yOff = 0) {
   return { parts: p, roots: [p.head, p.headwear, p.body, p.rightArm, p.leftArm, p.rightLeg, p.leftLeg], animate: animateBiped };
 }
 
+// ModelBiped.setRotationAngles (1.12). Arm poses: a.rightPose / a.leftPose = 'empty' | 'item' | 'block' | 'bow'
+// (a.heldRight: legacy 0 / 1 = empty / item); a.swingSide: arm that swings (1 right, -1 left);
+// a.elytra: elytra flying for more than 4 ticks, a.speedSq: squared motion (slows the limb swing)
 export function animateBiped(m, a) {
   const p = m.parts;
   const { ls, lsa, age, yaw, pitch, swing } = a;
-  p.head.ry = yaw * PI / 180; p.head.rx = pitch * PI / 180;
-  p.rightArm.rx = cos(ls * 0.6662 + PI) * 2 * lsa * 0.5;
-  p.leftArm.rx = cos(ls * 0.6662) * 2 * lsa * 0.5;
+  p.head.ry = yaw * PI / 180;
+  p.head.rx = a.elytra ? -PI / 4 : pitch * PI / 180;
+  let f = 1;
+  if (a.elytra) { f = (a.speedSq || 0) / 0.2; f = f * f * f; }
+  if (f < 1) f = 1;
+  p.rightArm.rx = cos(ls * 0.6662 + PI) * 2 * lsa * 0.5 / f;
+  p.leftArm.rx = cos(ls * 0.6662) * 2 * lsa * 0.5 / f;
   p.rightArm.rz = 0; p.leftArm.rz = 0;
-  p.rightLeg.rx = cos(ls * 0.6662) * 1.4 * lsa;
-  p.leftLeg.rx = cos(ls * 0.6662 + PI) * 1.4 * lsa;
+  p.rightLeg.rx = cos(ls * 0.6662) * 1.4 * lsa / f;
+  p.leftLeg.rx = cos(ls * 0.6662 + PI) * 1.4 * lsa / f;
   p.rightLeg.ry = 0; p.leftLeg.ry = 0;
   if (a.riding) {
     p.rightArm.rx += -PI / 5; p.leftArm.rx += -PI / 5;
     p.rightLeg.rx = -PI * 2 / 5; p.leftLeg.rx = -PI * 2 / 5;
     p.rightLeg.ry = PI / 10; p.leftLeg.ry = -PI / 10;
   }
-  if (a.heldLeft) p.leftArm.rx = p.leftArm.rx * 0.5 - PI / 10 * a.heldLeft;
+  const rp = a.rightPose || (a.heldRight ? 'item' : 'empty'), lp = a.leftPose || 'empty';
   p.rightArm.ry = 0; p.leftArm.ry = 0;
-  const hr = a.heldRight || 0;
-  if (hr === 1) p.rightArm.rx = p.rightArm.rx * 0.5 - PI / 10 * hr;
-  else if (hr === 3) { p.rightArm.rx = p.rightArm.rx * 0.5 - PI / 10 * hr; p.rightArm.ry = -0.5235988; }
+  if (lp === 'block') { p.leftArm.rx = p.leftArm.rx * 0.5 - 0.9424779; p.leftArm.ry = 0.5235988; }
+  else if (lp === 'item') p.leftArm.rx = p.leftArm.rx * 0.5 - PI / 10;
+  if (rp === 'block') { p.rightArm.rx = p.rightArm.rx * 0.5 - 0.9424779; p.rightArm.ry = -0.5235988; }
+  else if (rp === 'item') p.rightArm.rx = p.rightArm.rx * 0.5 - PI / 10;
   p.body.ry = 0;
   p.rightArm.pz = 0; p.rightArm.px = -5; p.leftArm.pz = 0; p.leftArm.px = 5;
   if (swing > -9990) {
-    let f = swing;
-    p.body.ry = sin(sqrt(f) * PI * 2) * 0.2;
+    const side = a.swingSide || 1;
+    const arm = side > 0 ? p.rightArm : p.leftArm;
+    let f1 = swing;
+    p.body.ry = sin(sqrt(f1) * PI * 2) * 0.2 * side;
     p.rightArm.pz = sin(p.body.ry) * 5; p.rightArm.px = -cos(p.body.ry) * 5;
     p.leftArm.pz = -sin(p.body.ry) * 5; p.leftArm.px = cos(p.body.ry) * 5;
     p.rightArm.ry += p.body.ry; p.leftArm.ry += p.body.ry; p.leftArm.rx += p.body.ry;
-    f = 1 - swing; f *= f; f *= f; f = 1 - f;
-    const f1 = sin(f * PI);
-    const f2 = sin(swing * PI) * -(p.head.rx - 0.7) * 0.75;
-    p.rightArm.rx = p.rightArm.rx - (f1 * 1.2 + f2);
-    p.rightArm.ry += p.body.ry * 2;
-    p.rightArm.rz += sin(swing * PI) * -0.4;
+    f1 = 1 - swing; f1 *= f1; f1 *= f1; f1 = 1 - f1;
+    const f2 = sin(f1 * PI);
+    const f3 = sin(swing * PI) * -(p.head.rx - 0.7) * 0.75;
+    arm.rx = arm.rx - (f2 * 1.2 + f3);
+    arm.ry += p.body.ry * 2;
+    arm.rz += sin(swing * PI) * -0.4;
   }
   const yOff = m.yOff || 0;
   if (a.sneak) {
@@ -70,12 +80,12 @@ export function animateBiped(m, a) {
   p.leftArm.rz -= cos(age * 0.09) * 0.05 + 0.05;
   p.rightArm.rx += sin(age * 0.067) * 0.05;
   p.leftArm.rx -= sin(age * 0.067) * 0.05;
-  if (a.aimedBow) {
-    p.rightArm.rz = 0; p.leftArm.rz = 0;
+  if (rp === 'bow' || (a.aimedBow && lp !== 'bow')) {
     p.rightArm.ry = -0.1 + p.head.ry; p.leftArm.ry = 0.1 + p.head.ry + 0.4;
     p.rightArm.rx = -PI / 2 + p.head.rx; p.leftArm.rx = -PI / 2 + p.head.rx;
-    p.rightArm.rz += cos(age * 0.09) * 0.05 + 0.05; p.leftArm.rz -= cos(age * 0.09) * 0.05 + 0.05;
-    p.rightArm.rx += sin(age * 0.067) * 0.05; p.leftArm.rx -= sin(age * 0.067) * 0.05;
+  } else if (lp === 'bow') {
+    p.rightArm.ry = -0.1 + p.head.ry - 0.4; p.leftArm.ry = 0.1 + p.head.ry;
+    p.rightArm.rx = -PI / 2 + p.head.rx; p.leftArm.rx = -PI / 2 + p.head.rx;
   }
   p.headwear.copyAngles(p.head);
 }
@@ -886,6 +896,40 @@ export function armorStand() {
 }
 
 // ---------------------------------------------------------------- Vehicles
+
+// ModelElytra (1.9): two wings; angles come from elytraAngles()
+export function elytra() {
+  const leftWing = new Part(64, 32).tex(22, 0).box(-10, 0, 0, 10, 20, 2, 1);
+  const rightWing = new Part(64, 32).tex(22, 0);
+  rightWing.mirror = true;
+  rightWing.box(0, 0, 0, 10, 20, 2, 1);
+  return {
+    parts: { leftWing, rightWing }, roots: [leftWing, rightWing],
+    // a.rot: [x, y, z] of the left wing, a.py: rotation point y
+    animate(m, a) {
+      const [rx, ry, rz] = a.rot;
+      leftWing.px = 5; leftWing.py = a.py; leftWing.rx = rx; leftWing.ry = ry; leftWing.rz = rz;
+      rightWing.px = -5; rightWing.py = a.py; rightWing.rx = rx; rightWing.ry = -ry; rightWing.rz = -rz;
+    },
+  };
+}
+
+// ModelElytra.setRotationAngles targets: [x, y, z, rotationPointY]
+export function elytraAngles(flying, sneaking, motion) {
+  let f = 0.2617994, f1 = -0.2617994, f2 = 0, f3 = 0;
+  if (flying) {
+    let f4 = 1;
+    if (motion[1] < 0) {
+      const l = Math.hypot(motion[0], motion[1], motion[2]) || 1;
+      f4 = 1 - Math.pow(-motion[1] / l, 1.5);
+    }
+    f = f4 * 0.34906584 + (1 - f4) * f;
+    f1 = f4 * -(PI / 2) + (1 - f4) * f1;
+  } else if (sneaking) {
+    f = PI * 2 / 9; f1 = -(PI / 4); f2 = 3; f3 = 0.08726646;
+  }
+  return [f, f3, f1, f2];
+}
 
 export function boat() {
   const T = (u, v) => new Part(64, 32).tex(u, v);

@@ -1,6 +1,6 @@
 // Translation helper. Vanilla keys come from the game's .lang files (and resource packs); strings that only
 // exist in MinecraftJS's own screens live in MINECRAFTJS_EN below and are always available in English, so any
-// language without them falls back to English (just like vanilla falls back to en_US for missing keys).
+// language without them falls back to English (just like vanilla falls back to en_us for missing keys).
 let translateFn = (key) => key;
 
 export function setTranslator(fn) { translateFn = fn; }

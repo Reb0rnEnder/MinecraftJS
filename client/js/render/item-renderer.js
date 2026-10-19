@@ -52,15 +52,22 @@ export class ItemRenderer {
 
   // ---------------------------------------------------------------- Model resolution
 
-  modelFor(item) {
+  // holder: the entity holding the item (null: the local player, or no holder for GUI / dropped items)
+  modelFor(item, holder = null) {
     const g = this.game;
     const name = g.items.name(item.id);
     let mname = itemModelName(name, item.damage);
-    if (item.id === 261 && g.interaction && g.player.usingItem && g.inventory.held() === item) {
-      const t = g.interaction.useTicks;
-      if (t >= 18) mname = 'bow_pulling_2'; else if (t > 13) mname = 'bow_pulling_1'; else if (t > 0) mname = 'bow_pulling_0';
+    // ItemOverrideList.applyOverride: the last override whose predicates all reach their values wins
+    const ov = this.store.resolveModel('item/' + mname).overrides;
+    if (ov && ov.length) {
+      const pv = this._predicates(item, holder);
+      for (let i = ov.length - 1; i >= 0; i--) {
+        const o = ov[i];
+        let ok = true;
+        for (const k in o.predicate) if (!((pv[k] || 0) >= o.predicate[k])) { ok = false; break; }
+        if (ok) { mname = o.model.replace(/^item\//, ''); break; }
+      }
     }
-    if (item.id === 346 && g.entities && g.entities.fishingCast && g.inventory.held() === item) mname = 'fishing_rod_cast';
     const key = mname;
     let m = this.models.get(key);
     if (m) return m;
@@ -87,6 +94,29 @@ export class ItemRenderer {
     }
     this.models.set(key, m);
     return m;
+  }
+
+  // Item.addPropertyOverride values (IItemPropertyGetter) for this stack
+  _predicates(item, holder) {
+    const g = this.game, it = g.interaction;
+    const local = !holder || holder.id === g.entityId;
+    const pv = {};
+    const max = g.items.maxDurability(item.id);
+    if (max > 0) { pv.damaged = item.damage > 0 ? 1 : 0; pv.damage = Math.min(1, Math.max(0, item.damage / max)); }
+    const using = local ? g.player.usingItem && (g.inventory.held() === item || g.inventory.offhand === item) : holder && holder.usingItem;
+    switch (item.id) {
+      case 261: // bow
+        if (using) { pv.pulling = 1; pv.pull = local && it ? Math.min(1, it.useTicks / 20) : 0; }
+        break;
+      case 442: if (using) pv.blocking = 1; break; // shield
+      case 346: if (local && g.entities && g.entities.fishingCast && g.inventory.held() === item) pv.cast = 1; break;
+      case 443: pv.broken = item.damage >= max - 1 ? 1 : 0; break; // ItemElytra.isUsable
+      case 345: pv.angle = g.compassAngle || 0; break;
+      case 347: pv.time = g.clockTime || 0; break;
+      default: break;
+    }
+    if (local && g.cooldowns) pv.cooldown = g.cooldownFraction(item.id, 0);
+    return pv;
   }
 
   layerTint(item, layer) {
@@ -117,7 +147,7 @@ export class ItemRenderer {
       const tag = this.game.items.nbt(item);
       k += ':' + JSON.stringify(tag && (tag.display || tag.Explosion) || null);
     }
-    if (item.id === 261 || item.id === 346) k += ':' + this.modelFor(item).name;
+    k += ':' + this.modelFor(item).name; // overrides (bow pulling, clock, compass, ...)
     if (item.id === 425) {
       const tag = this.game.items.nbt(item);
       k += ':' + JSON.stringify((tag && tag.BlockEntityTag) || null);
@@ -193,36 +223,31 @@ export class ItemRenderer {
     gui.setBlend('alpha');
   }
 
+  // RenderItem.renderItemOverlayIntoGUI (1.9+): count, durability bar (hue from green to red), item cooldown
   drawOverlay(gui, item, x, y, countText) {
     const g = this.game;
     const s = countText !== null && countText !== undefined ? countText : (item.count !== 1 ? String(item.count) : null);
-    if (g.items.isDamageable(item) && item.damage > 0) {
-      const max = g.items.maxDurability(item.id);
-      const health = item.damage / max;
-      const j = Math.round(13 - health * 13);
-      const i = Math.round(255 - health * 255);
-      gui.rect(x + 2, y + 13, x + 15, y + 15, 0xff000000);
-      gui.rect(x + 2, y + 13, x + 14, y + 14, (0xff000000 | (Math.floor((255 - i) / 4) << 16) | (64 << 8)) >>> 0);
-      gui.rect(x + 2, y + 13, x + 2 + j, y + 14, (0xff000000 | ((255 - i) << 16) | (i << 8)) >>> 0);
-    }
     if (s) {
-      const color = item.count <= 0 ? 0xff5555 : 0xffffff;
+      const color = item.count < 1 ? 0xff5555 : 0xffffff;
       gui.text(s, x + 19 - 2 - gui.textWidth(s), y + 6 + 3, color, true);
     }
+    if (g.items.isDamageable(item) && item.damage > 0) {
+      const max = g.items.maxDurability(item.id);
+      const f2 = Math.max(0, (max - item.damage) / max);
+      const i = Math.round(13 - item.damage * 13 / max);
+      gui.rect(x + 2, y + 13, x + 15, y + 15, 0xff000000);
+      gui.rect(x + 2, y + 13, x + 2 + i, y + 14, (0xff000000 | hsvToRgb(f2 / 3, 1, 1)) >>> 0);
+    }
+    const cd = g.cooldownFraction ? g.cooldownFraction(item.id, g.partial || 0) : 0;
+    if (cd > 0) gui.rect(x, y + Math.floor(16 * (1 - cd)), x + 16, y + Math.floor(16 * (1 - cd)) + Math.ceil(16 * cd), 0x7fffffff);
   }
 
-  // RenderItem.setupGuiTransform (gui3d) + the model's gui transform + renderItem's scale/offset
-  // RenderItem.setupGuiTransform (3D) + GUI camera transform + renderItem (builtin renderers turn 180 around Y)
-  _iconMatrix(x, y, z, display, builtin = false) {
+  // RenderItem.setupGuiTransform + the model's gui transform + renderItem's translate(-0.5) (1.9+)
+  _iconMatrix(x, y, z, display) {
     const m = mat4.create();
     mat4.translate(m, m, x + 8, y + 8, z);
-    mat4.scale(m, m, 1, 1, -1);
-    mat4.scale(m, m, 20, 20, 20);
-    mat4.rotateX(m, m, 210 * D2R);
-    mat4.rotateY(m, m, -135 * D2R);
+    mat4.scale(m, m, 16, -16, 16);
     transformMatrix(m, display && display.gui);
-    mat4.scale(m, m, 0.5, 0.5, 0.5);
-    if (builtin) mat4.rotateY(m, m, Math.PI);
     mat4.translate(m, m, -0.5, -0.5, -0.5);
     return m;
   }
@@ -243,7 +268,7 @@ export class ItemRenderer {
     }
     let node = this.iconMeshes.get(key);
     if (node === undefined) { node = this._builtinObject(item, m, true); if (node) this.iconMeshes.set(key, node); }
-    if (node) gui.drawNode(node, this._iconMatrix(x, y, z, m.display, true));
+    if (node) gui.drawNode(node, this._iconMatrix(x, y, z, m.display));
   }
 
   // GUI icon mesh (FORMAT.color) with vanilla GUI face shading baked into the vertex colours
@@ -347,9 +372,9 @@ export class ItemRenderer {
     const res = this.meshFor(item);
     if (res.builtin) {
       const o = res.builtin.clone();
+      // RenderItem.renderItem: translate(-0.5) for built-in renderers too (1.9+ has no extra turn)
       o.position.set(o.position.x - 0.5, o.position.y - 0.5, o.position.z - 0.5);
-      // RenderItem.renderItem: isBuiltInRenderer -> rotate(180, Y) before translate(-0.5)
-      const g = new Node(); g.rotation.set(0, Math.PI, 0); g.add(o);
+      const g = new Node(); g.add(o);
       return { obj: g, gui3d: true, model: res.model };
     }
     if (!res.mesh) return null;
@@ -422,31 +447,43 @@ export class ItemRenderer {
 
 const WHITE = [1, 1, 1, 1];
 
-// ItemTransformVec3f.apply on a node: translate, rotate Y, X, Z, scale
-export function applyTransform(obj, t) {
+// ItemCameraTransforms.applyTransformSide (1.9+): translate (mirrored in x for the left hand), rotate as
+// makeQuaternion(x, y, z) = R(x) R(y) R(z) with y and z negated for the left hand, then scale. Model json
+// translations are in pixels (x 1/16, clamped to +-5 blocks); scales are clamped to +-4.
+export function applyTransform(obj, t, leftHanded = false) {
   obj.position.set(0, 0, 0);
-  obj.rotation.set(0, 0, 0, 'YXZ');
+  obj.rotation.set(0, 0, 0, 'XYZ');
   obj.scale.set(1, 1, 1);
   if (!t) return;
   const tr = t.translation || [0, 0, 0];
   const ro = t.rotation || [0, 0, 0];
   const sc = t.scale || [1, 1, 1];
-  obj.position.set(clamp(tr[0], -24, 24) / 16, clamp(tr[1], -24, 24) / 16, clamp(tr[2], -24, 24) / 16);
-  obj.rotation.set(ro[0] * D2R, ro[1] * D2R, ro[2] * D2R, 'YXZ');
+  const k = leftHanded ? -1 : 1;
+  obj.position.set(k * clamp(tr[0] / 16, -5, 5), clamp(tr[1] / 16, -5, 5), clamp(tr[2] / 16, -5, 5));
+  obj.rotation.set(ro[0] * D2R, k * ro[1] * D2R, k * ro[2] * D2R, 'XYZ');
   obj.scale.set(clamp(sc[0], -4, 4), clamp(sc[1], -4, 4), clamp(sc[2], -4, 4));
 }
 
 // Same transform applied to a matrix
-export function transformMatrix(m, t) {
+export function transformMatrix(m, t, leftHanded = false) {
   if (!t) return m;
   const tr = t.translation || [0, 0, 0];
   const ro = t.rotation || [0, 0, 0];
   const sc = t.scale || [1, 1, 1];
-  mat4.translate(m, m, clamp(tr[0], -24, 24) / 16, clamp(tr[1], -24, 24) / 16, clamp(tr[2], -24, 24) / 16);
-  mat4.rotateY(m, m, ro[1] * D2R);
+  const k = leftHanded ? -1 : 1;
+  mat4.translate(m, m, k * clamp(tr[0] / 16, -5, 5), clamp(tr[1] / 16, -5, 5), clamp(tr[2] / 16, -5, 5));
   mat4.rotateX(m, m, ro[0] * D2R);
-  mat4.rotateZ(m, m, ro[2] * D2R);
+  mat4.rotateY(m, m, k * ro[1] * D2R);
+  mat4.rotateZ(m, m, k * ro[2] * D2R);
   mat4.scale(m, m, clamp(sc[0], -4, 4), clamp(sc[1], -4, 4), clamp(sc[2], -4, 4));
   return m;
 }
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+// MathHelper.hsvToRGB -> 0xRRGGBB
+function hsvToRgb(h, s, v) {
+  const i = Math.floor(h * 6) % 6, f = h * 6 - Math.floor(h * 6);
+  const p = v * (1 - s), q = v * (1 - f * s), t = v * (1 - (1 - f) * s);
+  const [r, g, b] = [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v], [v, p, q]][i];
+  return (Math.floor(r * 255) << 16) | (Math.floor(g * 255) << 8) | Math.floor(b * 255);
+}

@@ -16,7 +16,7 @@ export class Button {
   }
   mouseDown(mx, my, game) {
     if (this.visible && this.enabled && this.hovered(mx, my)) {
-      game.sound.playUi('gui.button.press', 1);
+      game.sound.playUi('ui.button.click', 1);
       if (this.onClick) this.onClick(this);
       return true;
     }
@@ -48,7 +48,7 @@ export class Slider extends Button {
     if (this.visible && this.enabled && this.hovered(mx, my)) {
       this.dragging = true;
       this._set(mx);
-      game.sound.playUi('gui.button.press', 1);
+      game.sound.playUi('ui.button.click', 1);
       return true;
     }
     return false;

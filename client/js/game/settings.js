@@ -8,7 +8,7 @@ export const DEFAULT_KEYS = {
   attack: 'mouse0', use: 'mouse2', perspective: 'F5', smoothCamera: '', screenshot: 'F2', hideGui: 'F1',
   hotbar1: 'Digit1', hotbar2: 'Digit2', hotbar3: 'Digit3', hotbar4: 'Digit4', hotbar5: 'Digit5',
   hotbar6: 'Digit6', hotbar7: 'Digit7', hotbar8: 'Digit8', hotbar9: 'Digit9', fullscreen: 'F11', spectatorOutlines: '',
-  streamStartStop: 'F6', streamPauseUnpause: 'F7', streamCommercial: '', streamToggleMic: '',
+  swapHands: 'KeyF', advancements: 'KeyL', saveToolbarActivator: 'KeyC', loadToolbarActivator: 'KeyX', // 1.9 - 1.12
 };
 
 const DEFAULTS = {
@@ -44,11 +44,13 @@ const DEFAULTS = {
   advancedItemTooltips: false,
   skinParts: 0x7f,
   mainHand: 'right',
+  attackIndicator: 1, // 0 off, 1 crosshair, 2 hotbar (1.9)
+  autoJump: true,     // GameSettings.autoJump (1.11+)
   maxFps: 0,
   graphicsApi: 'webgl2', // 'webgl2' | 'webgpu'
   resourcePacks: [], // active pack ids, highest priority first
   entityShadows: true,
-  language: 'en_US',
+  language: 'en_us',
   forceUnicodeFont: false,
   keys: { ...DEFAULT_KEYS },
   lastServer: { host: 'localhost', port: 25565 },
@@ -85,6 +87,8 @@ export class Settings {
     if (Array.isArray(this.servers)) {
       for (const s of this.servers) delete s._icon;
     }
+    // language codes are lowercase since 1.11 (older saves: en_US)
+    if (typeof this.language === 'string') this.language = this.language.toLowerCase();
     // older saves stored these as booleans
     if (typeof this.clouds === 'boolean') this.clouds = this.clouds ? 2 : 0;
     if (typeof this.smoothLighting === 'boolean') this.smoothLighting = this.smoothLighting ? 2 : 0;

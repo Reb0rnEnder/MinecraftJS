@@ -379,6 +379,9 @@ export class Inventory extends ContainerBase {
 
   held() { return this.main[this.game.heldSlot]; }
   setHeld(item) { this.main[this.game.heldSlot] = item; }
+  // hand: 0 main, 1 off
+  getHand(hand) { return hand === 1 ? this.offhand : this.held(); }
+  setHand(hand, item) { if (hand === 1) this.offhand = item; else this.setHeld(item); }
 
   firstEmpty() {
     for (let i = 0; i < 36; i++) if (!this.main[i]) return i;
