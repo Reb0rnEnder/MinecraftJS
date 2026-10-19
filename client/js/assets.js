@@ -246,12 +246,14 @@ export class Assets {
   // Pool of mesh workers (one per spare CPU core, up to 6); re-initialised on resource reloads
   startMeshWorker() {
     if (!this.worker) {
-      // The single-file build inlines the worker bundle (tools/build.js defines __MESH_WORKER_SOURCE__)
-      const url = typeof __MESH_WORKER_SOURCE__ === 'string'
-        ? URL.createObjectURL(new Blob([__MESH_WORKER_SOURCE__], { type: 'text/javascript' }))
+      // The single-file build inlines the worker bundle (tools/build.js defines __MESH_WORKER_SOURCE__) as a classic
+      // script in a data: URL: a file:// page has an opaque origin, and Chrome refuses blob: workers there
+      const inlined = typeof __MESH_WORKER_SOURCE__ === 'string';
+      const url = inlined
+        ? 'data:text/javascript;charset=utf-8,' + encodeURIComponent(__MESH_WORKER_SOURCE__)
         : new URL('./render/mesh-worker.js', import.meta.url).href;
       const cores = platform().cpuCount || 4;
-      this.worker = new MeshPool(url, Math.max(1, Math.min(6, cores - 1)));
+      this.worker = new MeshPool(url, Math.max(1, Math.min(6, cores - 1)), { classic: inlined });
     }
     return this.worker.init({
       type: 'init',

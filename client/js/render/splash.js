@@ -1,4 +1,5 @@
-// Startup splash (Minecraft.drawSplashScreen): the Mojang logo, 256x256 GUI units, centred on white.
+// Startup splash (Minecraft.drawSplashScreen): the Mojang logo (256x256 texture) centred on white, pixel-sharp at a
+// fixed whole-number scale (about 512 CSS pixels, smaller only when the window cannot fit it).
 import { FORMAT, colorParams } from '../gfx/device.js';
 import { mat4 } from '../gfx/math.js';
 import { platform } from '../platform/platform.js';
@@ -22,7 +23,7 @@ export class Splash {
     if (!bytes) return;
     try {
       const img = decodePng(bytes);
-      this.tex = this.device.createTexture({ width: img.width, height: img.height, data: img.data, filter: 'linear' });
+      this.tex = this.device.createTexture({ width: img.width, height: img.height, data: img.data, filter: 'nearest' });
     } catch (e) { /* draw plain white */ }
   }
 
@@ -42,9 +43,8 @@ export class Splash {
     const d = this.device;
     const P = platform();
     const w = P.width, h = P.height;
-    // ScaledResolution (auto GUI scale)
-    let scale = 1;
-    while (w / (scale + 1) >= 320 && h / (scale + 1) >= 240) scale++;
+    let scale = Math.max(1, Math.round(2 * (P.dpr || 1)));
+    while (scale > 1 && 256 * scale > Math.min(w, h)) scale--;
     const sw = w / scale, sh = h / scale;
     d.beginFrame([1, 1, 1]);
     if (this.tex) {

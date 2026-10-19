@@ -33,7 +33,7 @@
 //   createGraphicsDevice(preference: 'auto'|'webgl2'|'webgpu') -> Promise<Device>   (see gfx/device.js)
 //   createAudio() -> Audio | null    Audio: decode(bytes) -> Promise<buffer>, play(buffer, opts { loop, ... }) -> voice { stop(), setVolume(v), setPosition([x,y,z]) },
 //                                   setListener(pos, forward, up), resume()
-//   createWorker(modulePath) -> Worker-like { postMessage(msg, transfer), onmessage } | null
+//   createWorker(path, { classic }) -> Worker-like { postMessage(msg, transfer), onmessage } | null   (module script unless classic)
 //   setLoading(message, percent) / hideLoading()
 //   setTitle(title)
 //   launchParams() -> { [key]: string }   optional startup options (connect, user)

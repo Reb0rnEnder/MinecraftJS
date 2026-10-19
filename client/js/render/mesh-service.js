@@ -74,7 +74,8 @@ export class LocalMeshWorker {
 // Several mesh workers behind one Worker-like interface. Builds go to the least busy worker;
 // other messages (init, options) are broadcast. onmessage receives results from all of them.
 export class MeshPool {
-  constructor(url, count) {
+  // opts.classic: the worker script is a classic (non-module) script
+  constructor(url, count, opts = {}) {
     this.onmessage = null;
     this.workers = [];
     const hook = (w) => {
@@ -86,7 +87,7 @@ export class MeshPool {
       this.workers.push(w);
     };
     for (let i = 0; i < count; i++) {
-      const w = platform().createWorker(url);
+      const w = platform().createWorker(url, opts);
       if (!w) break;
       hook(w);
     }

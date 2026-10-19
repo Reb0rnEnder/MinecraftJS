@@ -407,9 +407,9 @@ export class BrowserPlatform extends Emitter {
     return this.audio;
   }
 
-  createWorker(modulePath) {
+  createWorker(path, opts = {}) {
     if (typeof Worker === 'undefined') return null;
-    try { return new Worker(modulePath, { type: 'module' }); } catch (e) { return null; }
+    try { return new Worker(path, opts.classic ? {} : { type: 'module' }); } catch (e) { return null; }
   }
 
   setLoading(message, percent) {
