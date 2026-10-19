@@ -21,6 +21,8 @@ const FLOWER_POT = {
 const FLOWER_POT_IDS = { 38: 'minecraft:red_flower', 37: 'minecraft:yellow_flower', 6: 'minecraft:sapling', 40: 'minecraft:red_mushroom', 39: 'minecraft:brown_mushroom', 32: 'minecraft:deadbush', 31: 'minecraft:tallgrass', 81: 'minecraft:cactus' };
 
 const key = (x, y, z) => x + ',' + y + ',' + z;
+// EnumFacing order: down, up, north, south, west, east
+const SHULKER_FACING = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]];
 
 // TileEntityEndPortalRenderer's layer colours: new Random(31100), three nextFloat()s per layer, times 0.15 for the sky
 // layer and 2 / (18 - i) for portal layer i
@@ -77,6 +79,38 @@ export class TileEntityRenderer {
       const n = this._get(x + dx, y, z + dz);
       if (n && n.type === 'chest') { this._dispose(n); this.tiles.delete(key(x + dx, y, z + dz)); this._ensure(x + dx, y, z + dz, this.game.world.getState(x + dx, y, z + dz)); }
     }
+  }
+
+  // TileEntityShulkerBox.getBoundingBox: the full block grown towards its facing by half the lid's progress
+  shulkerBounds(x, y, z, facing, progress) {
+    const d = SHULKER_FACING[facing] || SHULKER_FACING[1], e = 0.5 * progress;
+    const b = [x, y, z, x + 1, y + 1, z + 1];
+    for (let k = 0; k < 3; k++) { if (d[k] > 0) b[k + 3] += d[k] * e; else if (d[k] < 0) b[k] += d[k] * e; }
+    return b;
+  }
+
+  // Collision box of a shulker box block (world.collisionBoxes asks through world.shulkerCollider)
+  shulkerCollision(x, y, z, state, out) {
+    const t = this.tiles.get(key(x, y, z));
+    out.push(this.shulkerBounds(x, y, z, (state & 15) % 6, t && t.type === 'shulker' ? t.lid : 0));
+  }
+
+  // TileEntityShulkerBox.moveCollidedEntities: the part the lid occupies (getTopBoundingBox) pushes the local player
+  // out along the facing, by the overlap plus 0.01
+  _shulkerPush(t) {
+    const g = this.game, pl = g.player;
+    if (!pl || pl.spectator || !g.inWorld) return;
+    const facing = (t.state & 15) % 6, d = SHULKER_FACING[facing];
+    const b = this.shulkerBounds(t.x, t.y, t.z, facing, t.lid);
+    for (let k = 0; k < 3; k++) { if (d[k] > 0) b[k] += 1; else if (d[k] < 0) b[k + 3] -= 1; } // contract away from the base
+    const e = pl.bb();
+    if (!(b[3] > e[0] && b[0] < e[3] && b[4] > e[1] && b[1] < e[4] && b[5] > e[2] && b[2] < e[5])) return;
+    const m = [0, 0, 0];
+    for (let k = 0; k < 3; k++) {
+      if (d[k] > 0) m[k] = b[k + 3] - e[k] + 0.01;
+      else if (d[k] < 0) m[k] = -(e[k + 3] - b[k] + 0.01);
+    }
+    pl.moveEntity(g.world, m[0], m[1], m[2]);
   }
 
   // Create tile visuals for blocks that need them (chests don't always get TE packets)
@@ -153,7 +187,12 @@ export class TileEntityRenderer {
     if (!b) return;
     if (b.name === 'chest' || b.name === 'trapped_chest' || b.name === 'ender_chest' || b.name.endsWith('_shulker_box')) {
       const t = this._ensure(p.location.x, p.location.y, p.location.z, this.game.world.getState(p.location.x, p.location.y, p.location.z));
-      if (t && p.byte1 === 1) t.open = p.byte2;
+      if (t && p.byte1 === 1) {
+        const n = (p.byte2 << 24) >> 24; // the event parameter is a signed byte (closing twice sends -1)
+        t.open = n;
+        // TileEntityShulkerBox.receiveClientEvent: only exactly 1 opens and 0 closes
+        if (t.type === 'shulker') { if (n === 1) t.status = 'opening'; else if (n === 0) t.status = 'closing'; }
+      }
     }
   }
 
@@ -163,7 +202,16 @@ export class TileEntityRenderer {
     const beaconUpdate = (Number(g.world.worldAge) || this.ticks) % 80 === 0;
     for (const t of this.tiles.values()) {
       if (t.type === 'beacon' && beaconUpdate) this._updateBeacon(t);
-      if (t.type === 'chest' || t.type === 'shulker') { // shulker: TileEntityShulkerBox.updateAnimation, 0.1 per tick
+      if (t.type === 'shulker') {
+        // TileEntityShulkerBox.update: closed / opening / opened / closing, 0.1 per tick; while it moves, entities in
+        // the lid's way are pushed out (the local player here)
+        t.prevLid = t.lid;
+        const st = t.status || 'closed';
+        if (st === 'opening') { t.lid += 0.1; if (t.lid >= 1) { this._shulkerPush(t); t.status = 'opened'; t.lid = 1; } }
+        else if (st === 'closing') { t.lid -= 0.1; if (t.lid <= 0) { t.status = 'closed'; t.lid = 0; } }
+        else t.lid = st === 'opened' ? 1 : 0;
+        if (t.status === 'opening' || t.status === 'closing') this._shulkerPush(t);
+      } else if (t.type === 'chest') {
         t.prevLid = t.lid;
         if ((t.open === 0 && t.lid > 0) || (t.open > 0 && t.lid < 1)) {
           const before = t.lid;

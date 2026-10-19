@@ -409,6 +409,7 @@ export class Game {
     // (getCollisionBoundingBox); a moving boat also collides with pushable entities (EntityBoat.getCollisionBox).
     // Passengers of the same vehicle never collide (isRidingSameEntity).
     w.movingCollider = (bb, out) => this.pistons.collision(bb, out);
+    w.shulkerCollider = (x, y, z, state, out) => this.tileRenderer.shulkerCollision(x, y, z, state, out);
     w.entityCollider = (bb, mover) => {
       const out = [];
       const self = mover.entity || null; // the vehicle being steered, or null for the player

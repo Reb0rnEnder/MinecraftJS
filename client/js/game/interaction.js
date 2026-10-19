@@ -9,7 +9,10 @@ const INTERACTIVE = new Set(['chest', 'trapped_chest', 'ender_chest', 'crafting_
   'acacia_door', 'dark_oak_door', 'trapdoor', 'fence_gate', 'spruce_fence_gate', 'birch_fence_gate', 'jungle_fence_gate',
   'dark_oak_fence_gate', 'acacia_fence_gate', 'lever', 'stone_button', 'wooden_button', 'bed', 'noteblock', 'jukebox',
   'unpowered_repeater', 'powered_repeater', 'unpowered_comparator', 'powered_comparator', 'cake', 'cauldron', 'flower_pot',
-  'daylight_detector', 'daylight_detector_inverted', 'command_block', 'dragon_egg', 'standing_sign', 'wall_sign']);
+  'daylight_detector', 'daylight_detector_inverted', 'command_block', 'dragon_egg', 'standing_sign', 'wall_sign',
+  // 1.9+: their onBlockActivated succeeds too, so the off hand must not click again
+  'repeating_command_block', 'chain_command_block', 'structure_block',
+  ...['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'silver', 'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black'].map((c) => c + '_shulker_box')]);
 
 // Items whose onItemUse places/acts on the clicked block (returns true in vanilla)
 

@@ -295,6 +295,8 @@ export class World {
     // BlockPistonMoving: its box is wherever the piston has moved the carried block, which may be the
     // neighbouring cell; getCollisions asks the moving blocks directly (movingCollider)
     if (b.name === 'piston_extension') return;
+    // TileEntityShulkerBox: the box grows with the opening lid
+    if (this.shulkerCollider && b.name.endsWith('_shulker_box')) { this.shulkerCollider(x, y, z, state, out); return; }
     const m = state & 15;
     const add = (a, bb, c, d, e, f) => out.push([x + a, y + bb, z + c, x + d, y + e, z + f]);
     if (b.isFence || b.isPane || b.isWall) {
@@ -400,9 +402,10 @@ export class World {
   getCollisions(bb, mover = null) {
     const out = [];
     if (mover && this.entityCollider) for (const c of this.entityCollider(bb, mover)) out.push(c);
-    const x0 = Math.floor(bb[0]), x1 = Math.floor(bb[3] + 1);
+    // one cell of margin like World.getCollisionBoxes: shulker boxes and other boxes can reach into the next cell
+    const x0 = Math.floor(bb[0]) - 1, x1 = Math.floor(bb[3] + 1) + 1;
     const y0 = Math.floor(bb[1]) - 1, y1 = Math.floor(bb[4] + 1);
-    const z0 = Math.floor(bb[2]), z1 = Math.floor(bb[5] + 1);
+    const z0 = Math.floor(bb[2]) - 1, z1 = Math.floor(bb[5] + 1) + 1;
     const tmp = [];
     for (let x = x0; x < x1; x++) {
       for (let z = z0; z < z1; z++) {
