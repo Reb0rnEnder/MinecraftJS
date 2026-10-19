@@ -159,14 +159,25 @@ class VideoScreen extends OptionsBase {
         value: () => ((s.lodChunks | 0) <= 0 ? 1 : Math.min(30, Math.max(0, (s.lodChunks | 0) - 2)) / 31),
         set: (v) => { const k = Math.round(v * 31); s.lodChunks = k >= 31 ? 0 : 2 + k; } },
       // MinecraftJS: which graphics API the renderer uses
-      { label: () => trOption('minecraftjs.options.graphicsApi', (s.graphicsApi === 'webgpu' ? 'WebGPU' : 'WebGL 2') + ((s.graphicsApi === 'webgpu') !== (g.device.name === 'WebGPU') ? ' ' + tr('minecraftjs.options.restart') : '')),
-        click: () => { s.graphicsApi = s.graphicsApi === 'webgpu' ? 'webgl2' : 'webgpu'; } },
+      { label: () => {
+          const names = { webgl2: 'WebGL 2', webgpu: 'WebGPU', software: tr('minecraftjs.options.graphicsApi.software') };
+          const cur = g.device.name === 'WebGPU' ? 'webgpu' : g.device.name === 'Software' ? 'software' : 'webgl2';
+          return trOption('minecraftjs.options.graphicsApi', (names[s.graphicsApi] || 'WebGL 2') + (s.graphicsApi !== cur ? ' ' + tr('minecraftjs.options.restart') : ''));
+        },
+        click: () => { const order = ['webgl2', 'webgpu', 'software']; s.graphicsApi = order[(order.indexOf(s.graphicsApi) + 1) % order.length]; } },
+      // MinecraftJS: the software rasteriser trades quality for speed (lower internal resolution, a single-pass
+      // menu panorama); no effect on WebGL 2 / WebGPU
+      { label: () => trOption('minecraftjs.options.superPotato', onOff(!!s.superPotato)),
+        click: () => { s.superPotato = !s.superPotato; if (g.device.setPotato) g.device.setPotato(s.superPotato); platform().refreshSize && platform().refreshSize(); } },
     ];
     // GuiOptionsRowList: GuiListExtended(32, height - 32, 25), list width 400, scrollbar 32 further right
     this.rows = [];
+    let col = 0;
     items.forEach((it, i) => {
-      const b = makeOption(i, this.width / 2 - 155 + (i % 2) * 160, 0, it);
-      if (i % 2 === 0) this.rows.push([b]); else this.rows[this.rows.length - 1].push(b);
+      if (it.wide && col === 1) col = 0; // a wide option starts its own row
+      const b = makeOption(i, this.width / 2 - 155 + col * 160, 0, it);
+      if (col === 0) this.rows.push([b]); else this.rows[this.rows.length - 1].push(b);
+      col = it.wide ? 0 : 1 - col;
     });
     this.buttons.push(new Button(200, this.width / 2 - 100, this.height - 27, 200, 20, tr('gui.done'), () => this.done()));
     const old = this.list;

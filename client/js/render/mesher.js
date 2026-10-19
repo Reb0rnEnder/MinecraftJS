@@ -10,11 +10,11 @@ export const BYTES_PER_VERTEX = 20;
 // Block.EnumOffsetType: 1 = XZ (BlockFlower), 2 = XYZ (BlockTallGrass)
 const OFFSET_TYPES = { yellow_flower: 1, red_flower: 1, tallgrass: 2 };
 
-// MathHelper.getPositionRandom (64-bit Java long arithmetic)
+// MathHelper.getPositionRandom, low 32 bits (every caller only uses bits 16 - 31, and the low half of a long product
+// depends only on the low halves, so int maths gives the same bits as the 64-bit original)
 function positionRandom(x, y, z) {
-  let i = BigInt.asIntN(64, BigInt(Math.imul(x, 3129871)) ^ (BigInt(z) * 116129781n) ^ BigInt(y));
-  i = BigInt.asIntN(64, i * i * 42317861n + i * 11n);
-  return i;
+  const i = Math.imul(x, 3129871) ^ Math.imul(z, 116129781) ^ y;
+  return (Math.imul(Math.imul(i, i), 42317861) + Math.imul(i, 11)) | 0;
 }
 const FACE_SHADE = [0.5, 1.0, 0.8, 0.8, 0.6, 0.6];
 
@@ -38,6 +38,7 @@ class VBuf {
     this.n++;
   }
   result() { return this.u8.slice(0, this.n * BYTES_PER_VERTEX); }
+  reset() { this.n = 0; return this; }
 }
 
 // Tangent axes per face direction for AO sampling: [e1, e2]
@@ -51,6 +52,25 @@ const AO_AXES = [
 ];
 
 // Small plants left out of far (LOD) sections
+// Per block id flags for the hot face test (computed once): 1 leaves, 2 hides faces against the same state
+// (glass, ice, slime, portal), 4 stained glass
+let FACE_FLAGS = null;
+function faceFlags() {
+  if (FACE_FLAGS && FACE_FLAGS.length === blocks.length) return FACE_FLAGS;
+  FACE_FLAGS = new Uint8Array(blocks.length);
+  for (let i = 0; i < blocks.length; i++) {
+    const b = blocks[i];
+    if (!b) continue;
+    const n = b.name;
+    let f = 0;
+    if (n === 'leaves' || n === 'leaves2') f |= 1;
+    if (n === 'glass' || n === 'stained_glass' || n === 'ice' || n === 'slime' || n === 'portal') f |= 2;
+    if (n === 'stained_glass') f |= 4;
+    FACE_FLAGS[i] = f;
+  }
+  return FACE_FLAGS;
+}
+
 const LOD_SKIP = new Set(['tallgrass', 'double_plant', 'yellow_flower', 'red_flower', 'deadbush', 'brown_mushroom', 'red_mushroom', 'waterlily', 'web']);
 
 export class Mesher {
@@ -73,6 +93,7 @@ export class Mesher {
     this._corners = [];
     for (let i = 0; i < 12; i++) this._corners.push([new Float32Array(3), new Float32Array(3), new Float32Array(3), new Float32Array(3)]);
     this._cornerValid = new Uint8Array(12);
+    this._tintCache = [];
   }
 
   isLeaves(b) { return b.name === 'leaves' || b.name === 'leaves2'; }
@@ -114,7 +135,7 @@ export class Mesher {
       if (this.options.alt === false) return m.multi[0]; // Alternate Blocks: OFF
       // WeightedBakedModel: Math.abs((int) MathHelper.getPositionRandom(pos) >> 16) % totalWeight
       const total = m.weights.reduce((a, b) => a + b, 0);
-      let r = Math.abs(Number(BigInt.asIntN(32, positionRandom(x, y, z))) >> 16) % total;
+      let r = Math.abs(positionRandom(x, y, z) >> 16) % total;
       for (let i = 0; i < m.multi.length; i++) { r -= m.weights[i]; if (r < 0) return m.multi[i]; }
       return m.multi[0];
     }
@@ -196,10 +217,20 @@ export class Mesher {
 
   // Compute per-corner light+AO for a face whose plane is at block (px,py,pz) looking in dir.
   // Returns array of 4 corners [(-,-),(+,-),(+,+),(-,+)] each [ao, sky, block] in tangent space.
+  // lightAt with the block state already read
+  _lightOf(state, x, y, z) {
+    const b = blocks[state >> 4];
+    if (b && b.opaque) return null;
+    if (b && b.useNeighborBrightness) return this.lightAt(x, y, z);
+    return this.world.getLight(x, y, z);
+  }
+
   faceCorners(px, py, pz, dir, out) {
     const [e1, e2] = AO_AXES[dir];
-    const center = this.lightAt(px, py, pz);
-    const cAO = this.aoValue(px, py, pz);
+    const w = this.world;
+    const sP = w.getState(px, py, pz), bP = blocks[sP >> 4];
+    const center = this._lightOf(sP, px, py, pz);
+    const cAO = bP ? bP.aoLight : 1;
     const cSky = center === null ? 0 : center >> 4, cBlk = center === null ? 0 : center & 15;
     for (let k = 0; k < 4; k++) {
       const s1 = k === 0 || k === 3 ? -1 : 1; // along e1
@@ -207,14 +238,16 @@ export class Mesher {
       const ax = px + e1[0] * s1, ay = py + e1[1] * s1, az = pz + e1[2] * s1;
       const bx = px + e2[0] * s2, by = py + e2[1] * s2, bz = pz + e2[2] * s2;
       const cx = ax + e2[0] * s2, cy = ay + e2[1] * s2, cz = az + e2[2] * s2;
-      const aoA = this.aoValue(ax, ay, az);
-      const aoB = this.aoValue(bx, by, bz);
-      const tA = this.isTranslucentForAO(ax, ay, az);
-      const tB = this.isTranslucentForAO(bx, by, bz);
+      const sA = w.getState(ax, ay, az), sB = w.getState(bx, by, bz);
+      const bA = blocks[sA >> 4], bB = blocks[sB >> 4];
+      const aoA = bA ? bA.aoLight : 1;
+      const aoB = bB ? bB.aoLight : 1;
+      const tA = !bA || !bA.opaque;
+      const tB = !bB || !bB.opaque;
+      const lA = this._lightOf(sA, ax, ay, az);
+      const lB = this._lightOf(sB, bx, by, bz);
       let aoC, lC;
-      if (tA || tB) { aoC = this.aoValue(cx, cy, cz); lC = this.lightAt(cx, cy, cz); } else { aoC = aoA; lC = this.lightAt(ax, ay, az); }
-      const lA = this.lightAt(ax, ay, az);
-      const lB = this.lightAt(bx, by, bz);
+      if (tA || tB) { const sC = w.getState(cx, cy, cz), bC = blocks[sC >> 4]; aoC = bC ? bC.aoLight : 1; lC = this._lightOf(sC, cx, cy, cz); } else { aoC = aoA; lC = lA; }
       const ao = (aoA + aoB + aoC + cAO) * 0.25;
       // vanilla getAoBrightness: zero entries replaced by centre
       const sky = ((lA === null || lA === 0 ? cSky : lA >> 4) + (lB === null || lB === 0 ? cSky : lB >> 4) + (lC === null || lC === 0 ? cSky : lC >> 4) + cSky) / 4;
@@ -226,15 +259,17 @@ export class Mesher {
   }
 
   shouldRenderFace(state, nState, dir) {
-    const nb = blocks[nState >> 4];
+    const nid = nState >> 4;
+    const nb = blocks[nid];
     if (!nb || nb.id === 0) return true;
     if (nb.opaque) return false;
-    const b = blocks[state >> 4];
+    const F = this._flags;
     // Fast graphics: leaves are opaque cubes
-    if (!this.options.fancy && this.isLeaves(nb)) return false;
+    if (!this.options.fancy && (F[nid] & 1)) return false;
     // Glass/ice/stained glass don't render faces between same blocks
-    if (nState === state && (b.name === 'glass' || b.name === 'stained_glass' || b.name === 'ice' || b.name === 'slime' || b.name === 'portal')) return false;
-    if ((b.name === 'stained_glass' && nb.name === 'stained_glass') && (state & 15) === (nState & 15)) return false;
+    const f = F[state >> 4];
+    if (nState === state && (f & 2)) return false;
+    if ((f & 4) && (F[nid] & 4) && (state & 15) === (nState & 15)) return false;
     return true;
   }
 
@@ -247,7 +282,10 @@ export class Mesher {
       try { return this.buildSection(world, cx, sy, cz, false); } finally { this.options = saved; }
     }
     this.world = world;
-    const solid = new VBuf(), cutout = new VBuf(), trans = new VBuf();
+    this._flags = faceFlags();
+    // the buffers stay allocated between builds (result() copies the used part out)
+    const bufs = this._bufs || (this._bufs = [new VBuf(), new VBuf(), new VBuf()]);
+    const solid = bufs[0].reset(), cutout = bufs[1].reset(), trans = bufs[2].reset();
     const w = world;
     const bx0 = cx * 16, by0 = sy * 16, bz0 = cz * 16;
     const blocksArr = w.getSectionBlocks();
@@ -270,9 +308,9 @@ export class Mesher {
       const offType = OFFSET_TYPES[b.name];
       if (offType) {
         const r = positionRandom(x, y, z);
-        ox = (Number((r >> 16n) & 15n) / 15 - 0.5) * 0.5;
-        oz = (Number((r >> 24n) & 15n) / 15 - 0.5) * 0.5;
-        if (offType === 2) oy = (Number((r >> 20n) & 15n) / 15 - 1) * 0.2;
+        ox = (((r >>> 16) & 15) / 15 - 0.5) * 0.5;
+        oz = (((r >>> 24) & 15) / 15 - 0.5) * 0.5;
+        if (offType === 2) oy = (((r >>> 20) & 15) / 15 - 1) * 0.2;
       }
       const useAO = this.options.smooth && model.ao && b.emitLight === 0;
       const fastLeaves = !this.options.fancy && this.isLeaves(b);
@@ -283,11 +321,13 @@ export class Mesher {
       }
       this._cornerValid.fill(0);
       const ownLight = this.lightAt(x, y, z);
+      const tintCache = this._tintCache; tintCache.length = 0; // tint per tint index for this block
       for (const q of model.quads) {
         if (q.cull >= 0 && !visible[q.cull]) continue;
         let buf;
         if (b.translucent) buf = trans; else if (q.alpha && !fastLeaves) buf = cutout; else buf = solid;
-        const tint = this.tintFor(state, q.tint, x, y, z);
+        let tint = q.tint < 0 ? 0xffffff : tintCache[q.tint];
+        if (tint === undefined) tint = tintCache[q.tint] = this.tintFor(state, q.tint, x, y, z);
         const tr = ((tint >> 16) & 255) / 255, tg = ((tint >> 8) & 255) / 255, tb = (tint & 255) / 255;
         const shade = q.shade ? FACE_SHADE[q.dir] : 1;
         const p = q.pos, uv = q.uv;

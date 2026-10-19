@@ -49,7 +49,8 @@ const DEFAULTS = {
   attackIndicator: 1, // 0 off, 1 crosshair, 2 hotbar (1.9)
   autoJump: true,     // GameSettings.autoJump (1.11+)
   maxFps: 0,
-  graphicsApi: 'webgl2', // 'webgl2' | 'webgpu'
+  graphicsApi: 'webgl2', // 'webgl2' | 'webgpu' | 'software'
+  superPotato: false, // software rasteriser: lower internal resolution, single-pass menu panorama
   resourcePacks: [], // active pack ids, highest priority first
   entityShadows: true,
   lodChunks: 8, // MinecraftJS: past this many chunks terrain is simplified and mobs re-pose less often (0 = off)

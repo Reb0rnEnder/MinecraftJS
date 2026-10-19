@@ -1,6 +1,7 @@
 // Browser implementation of the platform contract (platform.js).
 import { WebGL2Device } from '../gfx/webgl2.js';
 import { WebGPUDevice } from '../gfx/webgpu.js';
+import { SoftwareDevice } from '../gfx/software.js';
 
 class Emitter {
   constructor() { this.handlers = {}; }
@@ -175,6 +176,9 @@ export class BrowserPlatform extends Emitter {
   get width() { return this.canvas.width; }
   get height() { return this.canvas.height; }
 
+  // re-apply the surface size (e.g. after the software device's quality setting changed)
+  refreshSize() { this._resize(); this.emit('resize'); }
+
   _resize() {
     // Backing store in device pixels so the pixel art maps 1:1 to screen pixels (a CSS-pixel canvas gets
     // stretched by non-integer factors on scaled displays, doubling random pixel rows/columns)
@@ -185,6 +189,8 @@ export class BrowserPlatform extends Emitter {
     this.canvas.style.width = (w / dpr) + 'px';
     this.canvas.style.height = (h / dpr) + 'px';
     if (this.device) this.device.resize(w, h); else { this.canvas.width = w; this.canvas.height = h; }
+    // canvas pixels per CSS pixel for mouse positions (the software device renders below device resolution)
+    this.pxScale = this.canvas.width / cw;
   }
 
   _bindInput() {
@@ -192,9 +198,9 @@ export class BrowserPlatform extends Emitter {
       this.locked = document.pointerLockElement === this.canvas;
       this.emit('pointerlock', this.locked);
     });
-    window.addEventListener('mousemove', (e) => this.emit('mousemove', { x: e.clientX * this.dpr, y: e.clientY * this.dpr, dx: e.movementX || 0, dy: e.movementY || 0 }));
-    window.addEventListener('mousedown', (e) => { this._userGesture(); this.emit('mousedown', { button: e.button, x: e.clientX * this.dpr, y: e.clientY * this.dpr, shift: e.shiftKey }); });
-    window.addEventListener('mouseup', (e) => this.emit('mouseup', { button: e.button, x: e.clientX * this.dpr, y: e.clientY * this.dpr, shift: e.shiftKey }));
+    window.addEventListener('mousemove', (e) => this.emit('mousemove', { x: e.clientX * (this.pxScale || this.dpr), y: e.clientY * (this.pxScale || this.dpr), dx: e.movementX || 0, dy: e.movementY || 0 }));
+    window.addEventListener('mousedown', (e) => { this._userGesture(); this.emit('mousedown', { button: e.button, x: e.clientX * (this.pxScale || this.dpr), y: e.clientY * (this.pxScale || this.dpr), shift: e.shiftKey }); });
+    window.addEventListener('mouseup', (e) => this.emit('mouseup', { button: e.button, x: e.clientX * (this.pxScale || this.dpr), y: e.clientY * (this.pxScale || this.dpr), shift: e.shiftKey }));
     window.addEventListener('wheel', (e) => {
       e.preventDefault();
       if (e.deltaY) this.emit('wheel', Math.sign(e.deltaY));
@@ -358,37 +364,25 @@ export class BrowserPlatform extends Emitter {
     requestAnimationFrame(fn);
   }
 
+  // preference: 'webgl2' (default), 'webgpu' or 'software'; every failure falls through to the next API, and the CPU
+  // software rasteriser is the last resort
   async createGraphicsDevice(preference = 'auto') {
-    if (preference === 'webgpu') {
+    const order = preference === 'webgpu' ? ['webgpu', 'webgl2', 'software'] : preference === 'software' ? ['software'] : ['webgl2', 'webgpu', 'software'];
+    const errors = [];
+    for (const [k, api] of order.entries()) {
+      if (k > 0) this.replaceSurface();
       try {
-        this.device = await WebGPUDevice.create(this.canvas);
+        if (api === 'webgpu') this.device = await WebGPUDevice.create(this.canvas);
+        else if (api === 'webgl2') this.device = new WebGL2Device(this.canvas);
+        else this.device = new SoftwareDevice(this.canvas);
+        this._resize();
         return this.device;
       } catch (e) {
-        console.warn('WebGPU unavailable, falling back to WebGL 2:', e.message);
-        this.replaceSurface();
-        try {
-          this.device = new WebGL2Device(this.canvas);
-          return this.device;
-        } catch (e2) {
-          throw new Error(`Neither WebGPU nor WebGL 2 could be initialized (${e.message}; ${e2.message})`);
-        }
+        console.warn(api + ' unavailable:', e.message);
+        errors.push(api + ': ' + e.message);
       }
     }
-
-    // Default ('webgl2') or 'auto'
-    try {
-      this.device = new WebGL2Device(this.canvas);
-      return this.device;
-    } catch (e) {
-      console.warn('WebGL 2 unavailable, falling back to WebGPU:', e.message);
-      this.replaceSurface();
-      try {
-        this.device = await WebGPUDevice.create(this.canvas);
-        return this.device;
-      } catch (e2) {
-        throw new Error(`Neither WebGL 2 nor WebGPU could be initialized (${e.message}; ${e2.message})`);
-      }
-    }
+    throw new Error('No graphics API could be initialized (' + errors.join('; ') + ')');
   }
 
   // Changing graphics API needs a fresh canvas (a canvas can only ever have one context type)

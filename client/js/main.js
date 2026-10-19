@@ -20,10 +20,9 @@ async function boot() {
   try {
     const assets = new Assets();
     const device = await P.createGraphicsDevice(settings.graphicsApi);
-    if ((device.name === 'WebGPU') !== (settings.graphicsApi === 'webgpu')) {
-      settings.graphicsApi = device.name === 'WebGPU' ? 'webgpu' : 'webgl2';
-      settings.save();
-    }
+    const api = device.name === 'WebGPU' ? 'webgpu' : device.name === 'Software' ? 'software' : 'webgl2';
+    if (api !== settings.graphicsApi) { settings.graphicsApi = api; settings.save(); }
+    if (device.setPotato) { device.setPotato(!!settings.superPotato); P.refreshSize && P.refreshSize(); }
     assets.setDevice(device);
     assets.language = settings.language || 'en_us';
     try { await assets.activatePacks(settings.resourcePacks || []); } catch (e) { console.warn('Resource packs unavailable', e); }
