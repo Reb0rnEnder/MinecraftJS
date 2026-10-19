@@ -1,4 +1,5 @@
 // MinecraftJS boot: pick the platform + graphics device, load assets, then start at the title screen.
+import { buildCrashReport, showCrashScreen } from './crash.js';
 import { setPlatform, platform } from './platform/platform.js';
 import { BrowserPlatform } from './platform/browser.js';
 import { Assets } from './assets.js';
@@ -49,6 +50,7 @@ async function boot() {
   } catch (e) {
     console.error(e);
     P.setLoadingError('Failed to load: ' + e.message);
+    showCrashScreen(buildCrashReport(e, 'Starting the game', globalThis.game || null));
   }
 }
 

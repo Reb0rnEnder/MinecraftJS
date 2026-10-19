@@ -1,4 +1,5 @@
 // MinecraftJS game core: networking, world sync, ticking, input, camera.
+import { buildCrashReport, showCrashScreen } from '../crash.js';
 import { mat4 } from '../gfx/math.js';
 import { DebugLines } from '../render/debug-lines.js';
 import { Profiler } from './profiler.js';
@@ -1539,7 +1540,24 @@ export class Game {
 
   // ---------------------------------------------------------------- Frame
 
+  // One frame of the game loop; an exception in it is a crash (crash.js), like vanilla's Minecraft.run catching
+  // everything thrown by runGameLoop
   frame(t) {
+    if (this.crashed) return;
+    try { this._frame(t); } catch (e) { this.crash(e, 'Running the game loop'); }
+  }
+
+  crash(error, description) {
+    if (this.crashed) return;
+    this.crashed = true;
+    let report;
+    try { report = buildCrashReport(error, description, this); } catch (e) { report = String(error && error.stack || error); }
+    try { if (this.conn) this.conn.close(); } catch (e) { /* already gone */ }
+    try { this.sound.stopAll(); } catch (e) { /* no audio */ }
+    showCrashScreen(report);
+  }
+
+  _frame(t) {
     platform().requestFrame((tt) => this.frame(tt));
     const now = platform().now();
     const P = this.profiler;
