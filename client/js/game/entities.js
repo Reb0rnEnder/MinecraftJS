@@ -102,6 +102,8 @@ export class EntityManager {
     const s = MOB_SIZES[p.type] || [0.6, 1.8, 1.62];
     e.width = s[0]; e.height = s[1]; e.eyeHeight = s[2];
     e.motionX = p.velocity.x / 8000; e.motionY = p.velocity.y / 8000; e.motionZ = p.velocity.z / 8000;
+    // EntityList id 30: handleSpawnMob creates a real armor stand (ViaRewind sends hologram stands this way)
+    if (p.type === 30) { e.kind = 'armorstand'; e.typeName = 'ArmorStand'; e.width = 0.5; e.height = 1.975; e.eyeHeight = 1.975 * 0.85; }
     e.metadata = p.metadata;
     this._applyMeta(e);
     this.add(e);

@@ -20,7 +20,7 @@ export class Interaction {
   constructor(game) {
     this.game = game;
     this.isHitting = false;
-    this.curBlock = null;
+    this.curBlock = { x: -1, y: -1, z: -1 }; // PlayerControllerMP.currentBlock
     this.curDamage = 0;
     this.prevDamage = 0;
     this.stepSoundCounter = 0;
@@ -360,7 +360,9 @@ export class Interaction {
         g.sound.playAtPlayer('random.break', 0.8, 0.8 + Math.random() * 0.4);
       }
     }
-    this.curBlock = null;
+    // vanilla moves currentBlock below the world instead of clearing it; isHitting may still be true here (an
+    // insta-broken block while another was being hit), and the next click aborts that position
+    this.curBlock = { x: this.curBlock.x, y: -1, z: this.curBlock.z };
     return true;
   }
 
@@ -691,7 +693,7 @@ export class Interaction {
       const b = t.box;
       r.setOutline([t.x + b[0], t.y + b[1], t.z + b[2], t.x + b[3], t.y + b[4], t.z + b[5]]);
     } else r.setOutline(null);
-    if (this.isHitting && this.curBlock) {
+    if (this.isHitting && this.curBlock.y >= 0) {
       const dmg = this.prevDamage + (this.curDamage - this.prevDamage) * partial;
       const stage = Math.floor(dmg * 10) - 1;
       const st = g.world.getState(this.curBlock.x, this.curBlock.y, this.curBlock.z);
