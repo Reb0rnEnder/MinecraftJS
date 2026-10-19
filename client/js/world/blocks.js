@@ -1,4 +1,4 @@
-// Block registry for 1.8.9: physical/visual properties per block id.
+// Block registry for 1.12.2: physical/visual properties per block id.
 // Worker-safe (no DOM). Call initBlocks(blocksJson, shapesJson) once.
 
 export const DIR = { DOWN: 0, UP: 1, NORTH: 2, SOUTH: 3, WEST: 4, EAST: 5 };
@@ -48,23 +48,7 @@ const REPLACEABLE = new Set(['air', 'water', 'flowing_water', 'lava', 'flowing_l
 
 let shapesData = null;
 
-// minecraft-data's shape table has a few post-1.8 values; restore the 1.8.9 collision boxes
-function patchShapes(s) {
-  if (!s || s._patched18) return;
-  s._patched18 = true;
-  const add = (boxes) => { const id = 'mk' + Object.keys(s.shapes).length; s.shapes[id] = boxes; return id; };
-  const f = 0.125;
-  // BlockLadder: 0.125 thick (meta 2 north, 3 south, 4 west, 5 east)
-  const n = add([[0, 0, 1 - f, 1, 1, 1]]), so = add([[0, 0, 0, 1, 1, f]]), w = add([[1 - f, 0, 0, 1, 1, 1]]), e = add([[0, 0, 0, f, 1, 1]]);
-  s.blocks.ladder = [n, n, n, so, w, e, n, n, n, so, w, e, n, n, n, so];
-  // BlockFarmland.getCollisionBoundingBox is a full cube in 1.8
-  s.blocks.farmland = add([[0, 0, 0, 1, 1, 1]]);
-  // BlockLilyPad: full width, 1/64 tall
-  s.blocks.waterlily = add([[0, 0, 0, 1, 0.015625, 1]]);
-}
-
 export function initBlocks(blocksJson, shapesJson) {
-  patchShapes(shapesJson);
   shapesData = shapesJson;
   for (const b of blocksJson) {
     const name = b.name;

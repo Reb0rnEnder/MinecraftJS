@@ -1,7 +1,7 @@
 // Socket link to the game server. Vanilla servers go through the selected MinecraftJS proxy (platform().openSocket);
 // Eaglercraft servers (ws:// / wss:// addresses) are reached directly over their own WebSocket (eagler.js). Both
 // sockets look the same: binary frames carry raw play packets (varint id + body), text frames JSON control messages.
-import { decodePacket } from './packets.js';
+import { decodePacket, PROTOCOL_VERSION } from './packets.js';
 import { platform } from '../platform/platform.js';
 import { parseAddress } from './address.js';
 import { openEaglerSocket, pingEagler } from './eagler.js';
@@ -64,7 +64,7 @@ export class Connection {
     const eagler = a && a.kind === 'eagler' ? a : null;
     await this.open(eagler);
     this.state = 'login';
-    this.ws.sendText(JSON.stringify({ type: 'connect', host, port, username, auth: eagler ? null : auth }));
+    this.ws.sendText(JSON.stringify({ type: 'connect', host, port, username, auth: eagler ? null : auth, protocol: PROTOCOL_VERSION }));
   }
 
   async ping(host, port) {
@@ -81,7 +81,7 @@ export class Connection {
       const timer = setTimeout(() => finish({ error: 'Timed out' }), 6000);
       sock.on('text', (t) => { try { const m = JSON.parse(t); if (m.type === 'ping_result') finish(m); } catch (err) { finish({ error: 'Bad response' }); } });
       sock.on('close', () => finish({ error: 'Proxy closed the connection' }));
-      sock.sendText(JSON.stringify({ type: 'ping', host, port, id: 1 }));
+      sock.sendText(JSON.stringify({ type: 'ping', host, port, id: 1, protocol: PROTOCOL_VERSION }));
     });
   }
 

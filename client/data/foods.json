@@ -15,9 +15,9 @@
     "name": "carrots",
     "stackSize": 64,
     "foodPoints": 3,
-    "saturation": 4.8,
-    "effectiveQuality": 7.8,
-    "saturationRatio": 1.5999999999999999
+    "saturation": 3.6,
+    "effectiveQuality": 6.6,
+    "saturationRatio": 1.2
   },
   {
     "id": 142,
@@ -120,6 +120,14 @@
       {
         "metadata": 3,
         "displayName": "Pufferfish"
+      },
+      {
+        "metadata": 4,
+        "displayName": "Cooked Fish"
+      },
+      {
+        "metadata": 5,
+        "displayName": "Cooked Salmon"
       }
     ],
     "foodPoints": 2,
@@ -132,6 +140,32 @@
     "displayName": "Cooked Fish",
     "stackSize": 64,
     "name": "cooked_fish",
+    "variations": [
+      {
+        "metadata": 0,
+        "displayName": "Raw Fish"
+      },
+      {
+        "metadata": 1,
+        "displayName": "Raw Salmon"
+      },
+      {
+        "metadata": 2,
+        "displayName": "Clownfish"
+      },
+      {
+        "metadata": 3,
+        "displayName": "Pufferfish"
+      },
+      {
+        "metadata": 4,
+        "displayName": "Cooked Fish"
+      },
+      {
+        "metadata": 5,
+        "displayName": "Cooked Salmon"
+      }
+    ],
     "foodPoints": 5,
     "saturation": 6,
     "effectiveQuality": 11,
@@ -223,9 +257,9 @@
     "stackSize": 64,
     "name": "baked_potato",
     "foodPoints": 5,
-    "saturation": 7.2,
-    "effectiveQuality": 12.2,
-    "saturationRatio": 1.44
+    "saturation": 6,
+    "effectiveQuality": 11,
+    "saturationRatio": 1.2
   },
   {
     "id": 394,
@@ -306,5 +340,35 @@
     "saturation": 9.6,
     "effectiveQuality": 15.6,
     "saturationRatio": 1.5999999999999999
+  },
+  {
+    "id": 432,
+    "displayName": "Chorus Fruit",
+    "stackSize": 64,
+    "name": "chorus_fruit",
+    "foodPoints": 4,
+    "saturation": 2.4,
+    "effectiveQuality": 6.4,
+    "saturationRatio": 0.6
+  },
+  {
+    "id": 434,
+    "displayName": "Beetroot",
+    "stackSize": 64,
+    "name": "beetroot",
+    "foodPoints": 1,
+    "saturation": 1.2,
+    "effectiveQuality": 2.2,
+    "saturationRatio": 1.2
+  },
+  {
+    "id": 436,
+    "displayName": "Beetroot Soup",
+    "stackSize": 1,
+    "name": "beetroot_soup",
+    "foodPoints": 6,
+    "saturation": 7.2,
+    "effectiveQuality": 13.2,
+    "saturationRatio": 1.2
   }
 ]

@@ -168,9 +168,12 @@ export class Assets {
     if (!meta) throw new Error('Game assets not found: put the assets/ folder (built with `npm run assets`) next to index.html');
     try { this.defaultPackMeta = JSON.parse(decodeUtf8(meta)); } catch (e) { this.defaultPackMeta = {}; }
     step('Loading game data...', 5);
-    const names = ['blocks', 'items', 'entities', 'blockCollisionShapes', 'biomes', 'foods', 'effects', 'enchantments', 'windows', 'particles', 'materials', 'recipes'];
+    const names = ['blocks', 'items', 'entities', 'blockCollisionShapes', 'biomes', 'foods', 'effects', 'enchantments', 'windows', 'particles', 'materials', 'recipes', 'sounds'];
     const datas = await Promise.all(names.map((n) => this.source.data(n)));
     names.forEach((n, i) => { this.data[n] = datas[i]; });
+    // SoundEvent registry: id -> event name (sound effect packets carry ids)
+    this.soundNames = [];
+    for (const s of this.data.sounds) this.soundNames[s.id] = s.name;
     this.itemsById = new Map();
     this.itemsByName = new Map();
     for (const b of this.data.blocks) { this.itemsById.set(b.id, b); this.itemsByName.set(b.name, b); }

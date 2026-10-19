@@ -367,7 +367,7 @@ class SnooperScreen extends OptionsBase {
     this.buttons.push(new Button(2, cx + 2, this.height - 30, 150, 20, tr('gui.done'), () => this.done()));
     const P = platform();
     this.data = [
-      ['version', '1.8.9'], ['client_brand', 'vanilla'], ['display_type', P.isFullscreen() ? 'fullscreen' : 'windowed'],
+      ['version', '1.12.2'], ['client_brand', 'vanilla'], ['display_type', P.isFullscreen() ? 'fullscreen' : 'windowed'],
       ['display_frequency', '-'], ['gl_version', this.game.device.name], ['cpu_cores', String(P.cpuCount || '?')],
       ['opengl_version', this.game.device.name], ['render_distance', String(s.renderDistance)],
     ];

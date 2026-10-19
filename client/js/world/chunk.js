@@ -1,4 +1,4 @@
-// Chunk storage in the 1.8 format: 16 sections of 16^3 block states (id << 4 | meta),
+// Chunk storage: 16 sections of 16^3 block states (id << 4 | meta, as in the 1.12 block registry),
 // nibble arrays for block light and sky light, and a 16x16 biome array.
 
 export class Section {
@@ -100,47 +100,58 @@ export class Chunk {
     s.setBlockLight(((y & 15) << 8) | (z << 4) | x, v);
   }
 
-  // Parse the 1.8 chunk data format. Returns the number of bytes consumed.
+  // Parse 1.9+ chunk data (ChunkSection / BlockStateContainer): per section in bitMap a palette, the packed block
+  // states (entries may span two longs), block light and sky light (if the dimension has sky); then the biomes
+  // for a full chunk. Returns the number of bytes consumed.
   load(data, offset, bitMap, groundUp, skyLight) {
-    const view = data;
     let o = offset;
-    const present = [];
+    const varint = () => {
+      let v = 0, shift = 0, b;
+      do { b = data[o++]; v |= (b & 0x7f) << shift; shift += 7; } while (b & 0x80);
+      return v;
+    };
     for (let s = 0; s < 16; s++) {
-      if (bitMap & (1 << s)) {
-        let sec = this.sections[s];
-        if (!sec) sec = this.sections[s] = new Section(this.hasSky);
-        const b = sec.blocks;
-        for (let i = 0; i < 4096; i++) {
-          b[i] = view[o] | (view[o + 1] << 8);
-          o += 2;
-        }
-        sec.recount();
-        present.push(sec);
-      } else if (groundUp) {
-        this.sections[s] = null;
+      if (!(bitMap & (1 << s))) {
+        if (groundUp) this.sections[s] = null;
+        continue;
       }
-    }
-    for (const sec of present) {
-      sec.blockLight.set(view.subarray(o, o + 2048));
+      let sec = this.sections[s];
+      if (!sec) sec = this.sections[s] = new Section(this.hasSky);
+      let bits = data[o++];
+      const plen = varint();
+      let palette = null;
+      if (plen) { palette = new Int32Array(plen); for (let i = 0; i < plen; i++) palette[i] = varint(); }
+      if (bits < 4) bits = 4;
+      if (bits > 8) palette = null; // registry ids (13 bits: id << 4 | meta)
+      const nLongs = varint();
+      // big-endian longs -> (lo, hi) 32-bit words
+      const words = new Uint32Array(nLongs * 2);
+      for (let i = 0; i < nLongs; i++, o += 8) {
+        words[i * 2 + 1] = ((data[o] << 24) | (data[o + 1] << 16) | (data[o + 2] << 8) | data[o + 3]) >>> 0;
+        words[i * 2] = ((data[o + 4] << 24) | (data[o + 5] << 16) | (data[o + 6] << 8) | data[o + 7]) >>> 0;
+      }
+      const mask = bits >= 32 ? 0xffffffff : (1 << bits) - 1;
+      const b = sec.blocks;
+      for (let i = 0; i < 4096; i++) {
+        const bit = i * bits;
+        const w = bit >>> 5, sh = bit & 31; // 32-bit word index (lo word first) and offset
+        let v = words[w] >>> sh;
+        if (sh + bits > 32) v |= words[w + 1] << (32 - sh);
+        v &= mask;
+        b[i] = palette ? palette[v] || 0 : v;
+      }
+      sec.recount();
+      sec.blockLight.set(data.subarray(o, o + 2048));
       o += 2048;
-    }
-    if (skyLight) {
-      for (const sec of present) {
-        sec.skyLight.set(view.subarray(o, o + 2048));
+      if (skyLight) {
+        sec.skyLight.set(data.subarray(o, o + 2048));
         o += 2048;
       }
     }
     if (groundUp) {
-      this.biomes.set(view.subarray(o, o + 256));
+      this.biomes.set(data.subarray(o, o + 256));
       o += 256;
     }
-    // Drop sections that are entirely air (keeps light though if sky)
     return o - offset;
-  }
-
-  static sizeOf(bitMap, groundUp, skyLight) {
-    let n = 0;
-    for (let s = 0; s < 16; s++) if (bitMap & (1 << s)) n++;
-    return n * (8192 + 2048 + (skyLight ? 2048 : 0)) + (groundUp ? 256 : 0);
   }
 }

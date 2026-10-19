@@ -56,15 +56,9 @@ export class World {
   }
 
   loadChunk(x, z, groundUp, bitMap, data, offset, skyLight) {
+    // A full chunk without sections is an empty chunk (unloading has its own packet since 1.9)
     let c = this.getChunk(x, z);
-    if (groundUp && bitMap === 0) {
-      if (c) { this.chunks.delete(x + ',' + z); this._gen++; this.emit('chunkUnloaded', c); }
-      return 0;
-    }
     if (!c) {
-      if (!groundUp) {
-        // Partial update for a chunk we don't have; create it anyway
-      }
       c = new Chunk(x, z, this.hasSky);
       this.chunks.set(x + ',' + z, c);
       this._gen++;

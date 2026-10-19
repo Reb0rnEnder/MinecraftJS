@@ -145,15 +145,15 @@
   },
   {
     "id": 36,
-    "name": "iconcrack_"
+    "name": "iconcrack"
   },
   {
     "id": 37,
-    "name": "blockcrack_"
+    "name": "blockcrack"
   },
   {
     "id": 38,
-    "name": "blockdust_"
+    "name": "blockdust"
   },
   {
     "id": 39,
@@ -166,5 +166,33 @@
   {
     "id": 41,
     "name": "mobappearance"
+  },
+  {
+    "id": 42,
+    "name": "dragonbreath"
+  },
+  {
+    "id": 43,
+    "name": "endRod"
+  },
+  {
+    "id": 44,
+    "name": "damageIndicator"
+  },
+  {
+    "id": 45,
+    "name": "sweepAttack"
+  },
+  {
+    "id": 46,
+    "name": "fallingdust"
+  },
+  {
+    "id": 47,
+    "name": "totem"
+  },
+  {
+    "id": 48,
+    "name": "spit"
   }
 ]

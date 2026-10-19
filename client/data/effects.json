@@ -136,5 +136,29 @@
     "name": "Saturation",
     "displayName": "Saturation",
     "type": "good"
+  },
+  {
+    "id": 24,
+    "name": "Glowing",
+    "displayName": "Glowing",
+    "type": "bad"
+  },
+  {
+    "id": 25,
+    "name": "Levitation",
+    "displayName": "Levitation",
+    "type": "bad"
+  },
+  {
+    "id": 26,
+    "name": "Luck",
+    "displayName": "Luck",
+    "type": "good"
+  },
+  {
+    "id": 27,
+    "name": "BadLuck",
+    "displayName": "Bad Luck",
+    "type": "bad"
   }
 ]

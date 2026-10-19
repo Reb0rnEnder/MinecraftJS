@@ -213,10 +213,11 @@ function resolveServer(host, port) {
   });
 }
 
-function handshake(host, port, nextState) {
+// protocol: the client's game protocol (47 = 1.8, 340 = 1.12.2); login and status are the same in both
+function handshake(host, port, nextState, protocol = 47) {
   return Buffer.concat([
     writeVarInt(0x00),
-    writeVarInt(47),
+    writeVarInt(protocol),
     mcString(host),
     Buffer.from([(port >> 8) & 0xff, port & 0xff]),
     writeVarInt(nextState),
@@ -254,7 +255,7 @@ class PacketSplitter {
 // Server list ping (status)
 // ---------------------------------------------------------------------------
 
-async function pingServer(host, port) {
+async function pingServer(host, port, protocol) {
   const target = await resolveServer(host, port);
   return new Promise((resolve, reject) => {
     const sock = net.createConnection({ host: target.host, port: target.port });
@@ -263,7 +264,7 @@ async function pingServer(host, port) {
     let status = null;
     const timer = setTimeout(() => { sock.destroy(); reject(new Error('Timed out')); }, 5000);
     sock.on('connect', () => {
-      sock.write(frame(handshake(target.host, target.port, 1), -1));
+      sock.write(frame(handshake(target.host, target.port, 1, protocol), -1));
       sock.write(frame(writeVarInt(0x00), -1));
     });
     sock.on('data', (chunk) => {
@@ -313,13 +314,13 @@ wss.on('connection', (ws) => {
 
     // Proxy test from the client's Proxy Servers screen
     if (msg.type === 'info') {
-      sendJson({ type: 'info', name: 'MinecraftJS proxy', version: PROXY_VERSION, protocol: 47 });
+      sendJson({ type: 'info', name: 'MinecraftJS proxy', version: PROXY_VERSION, protocols: [47, 340] });
       return;
     }
 
     if (msg.type === 'ping') {
       try {
-        const st = await pingServer(msg.host || 'localhost', msg.port || 25565);
+        const st = await pingServer(msg.host || 'localhost', msg.port || 25565, msg.protocol | 0 || 47);
         sendJson({ type: 'ping_result', id: msg.id, status: st });
       } catch (e) {
         sendJson({ type: 'ping_result', id: msg.id, error: e.message });
@@ -332,6 +333,7 @@ wss.on('connection', (ws) => {
       const port = msg.port || 25565;
       const auth = msg.auth && msg.auth.accessToken && msg.auth.uuid ? msg.auth : null;
       const username = (msg.username || 'WebPlayer').slice(0, 16);
+      const protocol = msg.protocol | 0 || 47;
       console.log(`[ws] connecting to ${host}:${port} as ${username}${auth ? ' (Microsoft account)' : ''}`);
       sendJson({ type: 'status', key: 'connect.connecting', message: `Connecting to ${host}:${port}...` });
 
@@ -339,7 +341,7 @@ wss.on('connection', (ws) => {
       mc = net.createConnection({ host: target.host, port: target.port }, () => {
         mc.setNoDelay(true);
         sendJson({ type: 'status', key: 'connect.authorizing', message: 'Logging in...' });
-        writeMc(frame(handshake(target.host, target.port, 2), -1));
+        writeMc(frame(handshake(target.host, target.port, 2, protocol), -1));
         writeMc(frame(Buffer.concat([writeVarInt(0x00), mcString(username)]), -1));
         state = 'login';
       });

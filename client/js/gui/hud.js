@@ -114,13 +114,15 @@ export class Hud {
     this.toast = null;
   }
 
+  // SPacketTitle: 0 title, 1 subtitle, 2 action bar, 3 times, 4 hide, 5 reset
   onTitle(p) {
     switch (p.action) {
       case 0: this.title = chatText(p.text); this.titleTimer = this.titleFadeIn + this.titleStay + this.titleFadeOut; break;
       case 1: this.subtitle = chatText(p.text); break;
-      case 2: this.titleFadeIn = p.fadeIn; this.titleStay = p.stay; this.titleFadeOut = p.fadeOut; break;
-      case 3: this.title = ''; this.subtitle = ''; this.titleTimer = 0; break;
-      case 4: this.title = ''; this.subtitle = ''; this.titleTimer = 0; this.titleFadeIn = 10; this.titleStay = 70; this.titleFadeOut = 20; break;
+      case 2: this.setActionBar(chatText(p.text)); break;
+      case 3: this.titleFadeIn = p.fadeIn; this.titleStay = p.stay; this.titleFadeOut = p.fadeOut; break;
+      case 4: this.title = ''; this.subtitle = ''; this.titleTimer = 0; break;
+      case 5: this.title = ''; this.subtitle = ''; this.titleTimer = 0; this.titleFadeIn = 10; this.titleStay = 70; this.titleFadeOut = 20; break;
       default: break;
     }
   }
@@ -694,7 +696,7 @@ export class Hud {
     const pool = g.assets.worker && g.assets.worker.workers;
     const workers = pool ? pool.filter((w) => !w.busy).length : 1; // available builders
     const lines = [
-      'MinecraftJS 1.8.9 (1.8.9/vanilla)',
+      'MinecraftJS 1.12.2 (1.12.2/vanilla)',
       fpsLine,
       `C: ${r.visibleSections || 0}/${r.sections.size} (s) D: ${s.renderDistance}, pC: ${String(g.dirty.size).padStart(3, '0')}, pU: ${g.inFlight.size}, aB: ${workers}`,
       `E: ${rendered}/${er.total}, B: ${er.culled}, I: ${Math.max(0, er.total - er.culled - rendered)}`,

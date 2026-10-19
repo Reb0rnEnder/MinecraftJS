@@ -326,7 +326,7 @@ class ContainerBase {
   setAll(items) { for (let i = 0; i < items.length && i < this.slots.length; i++) this.slots[i].item = items[i]; this.onSlotChanged(1); }
 }
 
-// Player inventory: window 0 (45 slots) + the underlying 36-slot main inventory + 4 armor
+// Player inventory: window 0 (46 slots) + the underlying 36-slot main inventory, 4 armor and the off hand (slot 45)
 export class Inventory extends ContainerBase {
   constructor(game) {
     super(game);
@@ -337,6 +337,7 @@ export class Inventory extends ContainerBase {
   reset() {
     this.main = new Array(36).fill(null); // 0-8 hotbar, 9-35 main
     this.armor = new Array(4).fill(null); // boots, legs, chest, helmet (vanilla order)
+    this.offhand = null;
     this.craft = new Array(4).fill(null);
     this.craftResult = null;
     this.cursor = null;
@@ -360,6 +361,7 @@ export class Inventory extends ContainerBase {
     }
     for (let i = 9; i < 36; i++) s.push({ get item() { return self.main[i]; }, set item(v) { self.main[i] = v; }, playerIndex: i });
     for (let i = 0; i < 9; i++) s.push({ get item() { return self.main[i]; }, set item(v) { self.main[i] = v; }, playerIndex: i });
+    s.push({ get item() { return self.offhand; }, set item(v) { self.offhand = v; }, playerIndex: 40 });
     this.slots = s;
   }
 
@@ -370,7 +372,7 @@ export class Inventory extends ContainerBase {
     this.onSlotChanged(i);
   }
 
-  setAll(items) { for (let i = 0; i < items.length && i < 45; i++) this.slots[i].item = items[i]; this.updateCraftResult(); }
+  setAll(items) { for (let i = 0; i < items.length && i < this.slots.length; i++) this.slots[i].item = items[i]; this.updateCraftResult(); }
 
   // windowId -2 in 1.8 isn't used, kept for safety (index into main inventory)
   setPlayerSlotByInventoryIndex(i, item) { if (i >= 0 && i < 36) this.main[i] = item; }

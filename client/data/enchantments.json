@@ -207,6 +207,50 @@
     "discoverable": true
   },
   {
+    "id": 9,
+    "name": "frost_walker",
+    "displayName": "Frost Walker",
+    "maxLevel": 2,
+    "minCost": {
+      "a": 10,
+      "b": 0
+    },
+    "maxCost": {
+      "a": 10,
+      "b": 15
+    },
+    "exclude": [
+      "depth_strider"
+    ],
+    "category": "armor_feet",
+    "weight": 2,
+    "treasureOnly": true,
+    "curse": false,
+    "tradeable": true,
+    "discoverable": true
+  },
+  {
+    "id": 10,
+    "name": "binding_curse",
+    "displayName": "Curse of Binding",
+    "maxLevel": 1,
+    "minCost": {
+      "a": 0,
+      "b": 25
+    },
+    "maxCost": {
+      "a": 0,
+      "b": 50
+    },
+    "exclude": [],
+    "category": "wearable",
+    "weight": 1,
+    "treasureOnly": true,
+    "curse": true,
+    "tradeable": true,
+    "discoverable": true
+  },
+  {
     "id": 16,
     "name": "sharpness",
     "displayName": "Sharpness",
@@ -332,6 +376,27 @@
     "maxCost": {
       "a": 10,
       "b": 51
+    },
+    "exclude": [],
+    "category": "weapon",
+    "weight": 2,
+    "treasureOnly": false,
+    "curse": false,
+    "tradeable": true,
+    "discoverable": true
+  },
+  {
+    "id": 22,
+    "name": "sweeping",
+    "displayName": "Sweeping Edge",
+    "maxLevel": 3,
+    "minCost": {
+      "a": 9,
+      "b": -4
+    },
+    "maxCost": {
+      "a": 9,
+      "b": 11
     },
     "exclude": [],
     "category": "weapon",
@@ -554,6 +619,50 @@
     "weight": 2,
     "treasureOnly": false,
     "curse": false,
+    "tradeable": true,
+    "discoverable": true
+  },
+  {
+    "id": 70,
+    "name": "mending",
+    "displayName": "Mending",
+    "maxLevel": 1,
+    "minCost": {
+      "a": 25,
+      "b": 0
+    },
+    "maxCost": {
+      "a": 25,
+      "b": 50
+    },
+    "exclude": [
+      "infinity"
+    ],
+    "category": "breakable",
+    "weight": 2,
+    "treasureOnly": true,
+    "curse": false,
+    "tradeable": true,
+    "discoverable": true
+  },
+  {
+    "id": 71,
+    "name": "vanishing_curse",
+    "displayName": "Curse of Vanishing",
+    "maxLevel": 1,
+    "minCost": {
+      "a": 0,
+      "b": 25
+    },
+    "maxCost": {
+      "a": 0,
+      "b": 50
+    },
+    "exclude": [],
+    "category": "vanishable",
+    "weight": 1,
+    "treasureOnly": true,
+    "curse": true,
     "tradeable": true,
     "discoverable": true
   }

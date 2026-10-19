@@ -272,6 +272,7 @@ export class InventoryScreen extends ContainerScreen {
     for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) s.push([1 + j + i * 2, 88 + j * 18, 26 + i * 18]);
     for (let k = 0; k < 4; k++) s.push([5 + k, 8, 8 + k * 18]);
     s.push(...playerInvSlots(9, 8, 84, 142));
+    s.push([45, 77, 62]); // ContainerPlayer off hand
     this.slotPos = s;
   }
 

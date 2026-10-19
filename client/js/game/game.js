@@ -10,7 +10,6 @@ import { C } from '../net/packets.js';
 import { Writer } from '../net/buffer.js';
 import { simplify } from '../net/nbt.js';
 import { World } from '../world/world.js';
-import { Chunk } from '../world/chunk.js';
 import { blocks } from '../world/blocks.js';
 import { resolveState } from '../world/blockstates.js';
 import { biomeInfo } from '../world/biomes.js';
@@ -45,6 +44,12 @@ import { platform } from '../platform/platform.js';
 import { buildSlice } from '../world/slice.js';
 import { setModelDevice } from '../render/boxmodel.js';
 import { encodePng } from '../util/png.js';
+
+// SPacketUpdateTileEntity action per block entity id (signs are handled by applyBlockEntity)
+const BLOCK_ENTITY_ACTIONS = {
+  mob_spawner: 1, command_block: 2, beacon: 3, skull: 4, flower_pot: 5, banner: 6, structure_block: 7, end_gateway: 8,
+  shulker_box: 10, bed: 11,
+};
 
 const TICK_MS = 50;
 
@@ -547,7 +552,7 @@ export class Game {
 
   sendSettings() {
     const s = this.settings;
-    this.send(C.settings(this.assets.language || 'en_US', s.renderDistance, s.chatVisibility, s.chatColors, s.skinParts));
+    this.send(C.settings(this.assets.language || 'en_US', s.renderDistance, s.chatVisibility, s.chatColors, s.skinParts, s.mainHand === 'left' ? 0 : 1));
   }
 
   applyGameMode() {
@@ -630,6 +635,7 @@ export class Game {
     pl.setPosition(x, y, z);
     pl.prevX = x; pl.prevY = y; pl.prevZ = z;
     pl.yaw = yaw; pl.pitch = pitch; pl.prevYaw = yaw; pl.prevPitch = pitch;
+    this.send(C.teleportConfirm(p.teleportId));
     this.send(C.positionLook(pl.x, pl.y, pl.z, pl.yaw, pl.pitch, false));
     this.lastReported = { ...this.lastReported, x: pl.x, y: pl.y, z: pl.z, yaw: pl.yaw, pitch: pl.pitch };
     if (!this.doneLoadingTerrain) {
@@ -700,14 +706,23 @@ export class Game {
     this.entities.onStatus(p);
   }
 
-  on_attach_entity(p) {
-    if (p.leash) { this.entities.setLeash(p.entityId, p.vehicleId); return; }
-    if (p.entityId === this.entityId) {
-      this.ridingEntityId = p.vehicleId;
-      this.player.ridingEntity = p.vehicleId >= 0 ? this.entities.get(p.vehicleId) : null;
-      if (p.vehicleId >= 0) this.hud.setActionBar(this.assets.translate('mount.onboard', [this.settings.keyName(this.settings.keys.sneak)]));
+  // leash (riding is set_passengers since 1.9)
+  on_attach_entity(p) { this.entities.setLeash(p.entityId, p.vehicleId); }
+
+  // SPacketSetPassengers: the full passenger list of a vehicle
+  on_set_passengers(p) {
+    const before = this.entities.passengersOf(p.entityId);
+    for (const id of before) if (!p.passengers.includes(id)) this._ride(id, -1);
+    for (const id of p.passengers) if (!before.includes(id)) this._ride(id, p.entityId);
+  }
+
+  _ride(entityId, vehicleId) {
+    if (entityId === this.entityId) {
+      this.ridingEntityId = vehicleId;
+      this.player.ridingEntity = vehicleId >= 0 ? this.entities.get(vehicleId) : null;
+      if (vehicleId >= 0) this.hud.setActionBar(this.assets.translate('mount.onboard', [this.settings.keyName(this.settings.keys.sneak)]));
     }
-    this.entities.attach(p.entityId, p.vehicleId);
+    this.entities.attach(entityId, vehicleId);
   }
 
   on_entity_metadata(p) {
@@ -746,18 +761,25 @@ export class Game {
   }
 
   on_map_chunk(p) {
-    if (p.groundUp && p.bitMap === 0) { this.world.unloadChunk(p.x, p.z); return; }
-    const sky = this.world.hasSky;
-    this.world.loadChunk(p.x, p.z, p.groundUp, p.bitMap, p.chunkData, 0, sky);
+    this.world.loadChunk(p.x, p.z, p.groundUp, p.bitMap, p.chunkData, 0, this.world.hasSky);
+    for (const nbt of p.blockEntities) this.applyBlockEntity(nbt);
   }
 
-  on_map_chunk_bulk(p) {
-    let off = 0;
-    for (const m of p.meta) {
-      const size = Chunk.sizeOf(m.bitMap, true, p.skyLightSent);
-      this.world.loadChunk(m.x, m.z, true, m.bitMap, p.data, off, p.skyLightSent);
-      off += size;
+  on_unload_chunk(p) { this.world.unloadChunk(p.chunkX, p.chunkZ); }
+
+  // Block entity NBT (from chunk data or the update packet): signs carry their text, the rest goes to the renderer
+  // with the update action vanilla uses for that block entity
+  applyBlockEntity(nbt, action) {
+    const data = simplify(nbt);
+    if (!data || data.x === undefined) return;
+    const pos = { x: data.x, y: data.y, z: data.z };
+    const id = String(data.id || '').replace(/^minecraft:/, '');
+    if (id === 'sign') {
+      this.tileRenderer.setSign(pos, [data.Text1, data.Text2, data.Text3, data.Text4].map((l) => chatToLegacy(l || '')));
+      return;
     }
+    if (action === undefined) action = BLOCK_ENTITY_ACTIONS[id];
+    if (action !== undefined) this.tileRenderer.setTileEntity(pos, action, data, nbt);
   }
 
   on_multi_block_change(p) {
@@ -785,7 +807,13 @@ export class Game {
 
   on_world_event(p) { this.sound.onWorldEvent(p); this.particles.onWorldEvent(p); }
 
-  on_named_sound_effect(p) { this.sound.play(p.soundName, p.x, p.y, p.z, p.volume, p.pitch); }
+  on_named_sound_effect(p) { this.sound.play(p.soundName.replace(/^minecraft:/, ''), p.x, p.y, p.z, p.volume, p.pitch); }
+
+  // SoundEvent registry id (data/sounds.json)
+  on_sound_effect(p) {
+    const name = this.assets.soundNames[p.soundId];
+    if (name) this.sound.play(name, p.x, p.y, p.z, p.volume, p.pitch);
+  }
 
   on_world_particles(p) { this.particles.onPacket(p); }
 
@@ -849,11 +877,9 @@ export class Game {
     if (!p.accepted) this.send(C.transaction(p.windowId, p.action, true));
   }
 
-  on_update_sign(p) { this.tileRenderer.setSign(p.location, p.lines.map((l) => chatToLegacy(l))); }
-
   on_map(p) { this.items.updateMap(p); }
 
-  on_tile_entity_data(p) { this.tileRenderer.setTileEntity(p.location, p.action, simplify(p.nbtData), p.nbtData); }
+  on_tile_entity_data(p) { if (p.nbtData) this.applyBlockEntity(p.nbtData, p.action === 9 ? undefined : p.action); }
 
   on_open_sign_entity(p) { this.screens.open(new SignEditScreen(this, p.location)); }
 
@@ -934,7 +960,7 @@ export class Game {
 
   on_resource_pack_send(p) {
     // Server resource packs aren't supported; report "declined"
-    this.send(C.resourcePackStatus(p.hash, 1));
+    this.send(C.resourcePackStatus(1));
   }
 
   on_update_entity_nbt() { /* unused by vanilla client */ }
@@ -1083,10 +1109,9 @@ export class Game {
   openInventory() {
     if (this.gameMode === 3) return;
     if (this.player.ridingEntity && this.entities.isHorse(this.ridingEntityId)) {
-      this.send(C.entityAction(this.entityId, 6));
+      this.send(C.entityAction(this.entityId, 7));
       return;
     }
-    this.send(C.clientCommand(2)); // "open inventory" achievement
     if (this.gameMode === 1) this.screens.open(new CreativeScreen(this));
     else this.screens.open(new InventoryScreen(this));
   }
@@ -1242,7 +1267,9 @@ export class Game {
       if (this.horseJumpCounter < 0) { this.horseJumpCounter++; if (this.horseJumpCounter === 0) this.horseJump = 0; }
       if (was && !jump) {
         this.horseJumpCounter = -10;
+        // start + stop horse jump (1.9+)
         this.send(C.entityAction(this.entityId, 5, Math.floor(this.horseJump * 100)));
+        this.send(C.entityAction(this.entityId, 6));
       } else if (!was && jump) { this.horseJumpCounter = 0; this.horseJump = 0; }
       else if (was) {
         this.horseJumpCounter++;

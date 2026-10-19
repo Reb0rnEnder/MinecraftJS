@@ -11,6 +11,7 @@ import { SlotList } from '../slot-list.js';
 import { ProxiesScreen } from './proxies.js';
 import { parseAddress, formatAddress } from '../../net/address.js';
 import { ensureTested } from '../../net/proxies.js';
+import { PROTOCOL_VERSION } from '../../net/packets.js';
 
 export class TitleScreen extends Screen {
   constructor(game, reason) {
@@ -267,7 +268,7 @@ class ServerList extends SlotList {
       population = st.players ? `§7${st.players.online}§8/§7${st.players.max}` : '';
       if (st.players && st.players.sample && st.players.sample.length) playerList = st.players.sample.map((p) => p.name).join('\n');
       ms = st.ping;
-      if (st.version && st.version.protocol !== 47) version = st.version;
+      if (st.version && st.version.protocol !== PROTOCOL_VERSION) version = st.version;
       if (st.favicon && srv._iconSrc !== st.favicon) srv._iconSrc = st.favicon;
       if (st.iconPixels && srv._iconPx !== st.iconPixels) {
         srv._iconPx = st.iconPixels;
@@ -285,7 +286,7 @@ class ServerList extends SlotList {
     gui.text(right, x + lw - rw - 15 - 2, y + 1, 0x808080, false);
     let k = 0, l, hover, hoverPlayers = null;
     if (version) {
-      l = 5; hover = version.protocol > 47 ? 'Client out of date!' : 'Server out of date!'; hoverPlayers = playerList;
+      l = 5; hover = version.protocol > PROTOCOL_VERSION ? 'Client out of date!' : 'Server out of date!'; hoverPlayers = playerList;
     } else if (pr && !pr.pending && ms !== -2) {
       l = ms < 0 ? 5 : ms < 150 ? 0 : ms < 300 ? 1 : ms < 600 ? 2 : ms < 1000 ? 3 : 4;
       if (ms < 0) hover = '(no connection)';

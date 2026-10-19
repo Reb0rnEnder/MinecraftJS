@@ -16,6 +16,13 @@ const MOB_NAMES = {
   67: 'Endermite', 68: 'Guardian', 90: 'Pig', 91: 'Sheep', 92: 'Cow', 93: 'Chicken', 94: 'Squid', 95: 'Wolf', 96: 'MushroomCow',
   97: 'SnowMan', 98: 'Ozelot', 99: 'VillagerGolem', 100: 'EntityHorse', 101: 'Rabbit', 120: 'Villager',
 };
+// 1.11 split some mobs into their own types: the family our models draw, plus the variant
+// (horse kind: 0 horse, 1 donkey, 2 mule, 3 zombie, 4 skeleton)
+const MOB_FAMILY = {
+  4: [68, { elder: true }], 5: [51, { wither: true }], 6: [51, { stray: true }], 23: [54, { husk: true }],
+  27: [54, { villagerZombie: true }], 28: [100, { horseType: 4 }], 29: [100, { horseType: 3 }],
+  31: [100, { horseType: 1 }], 32: [100, { horseType: 2 }], 100: [100, { horseType: 0 }],
+};
 const OBJECT_SIZES = {
   1: [1.5, 0.6], 2: [0.25, 0.25], 10: [0.98, 0.7], 50: [0.98, 0.98], 51: [2, 2], 60: [0.5, 0.5], 61: [0.25, 0.25], 62: [0.25, 0.25],
   63: [1, 1], 64: [0.3125, 0.3125], 65: [0.25, 0.25], 66: [0.3125, 0.3125], 70: [0.98, 0.98], 71: [0.5, 0.5], 72: [0.25, 0.25],
@@ -85,8 +92,7 @@ export class EntityManager {
     e.uuid = p.playerUUID;
     const info = this.game.scoreboard.players ? this.game.scoreboard.players.get(p.playerUUID) : null;
     e.name = info ? info.name : '';
-    e.currentItem = p.currentItem;
-    if (p.currentItem > 0) e.equipment[0] = { id: p.currentItem, count: 1, damage: 0 };
+    // the held item arrives as entity equipment (1.9+)
     e.width = 0.6; e.height = 1.8; e.eyeHeight = 1.62;
     e.metadata = p.metadata;
     this._applyMeta(e);
@@ -96,14 +102,18 @@ export class EntityManager {
   spawnMob(p) {
     const e = this._base(p.entityId, p.x, p.y, p.z, p.yaw, p.pitch);
     e.kind = 'mob';
-    e.type = p.type;
-    e.typeName = MOB_NAMES[p.type] || 'Mob';
-    e.headYaw = e.prevHeadYaw = p.headPitch; // packet's "headPitch" is actually head yaw in 1.8
-    const s = MOB_SIZES[p.type] || [0.6, 1.8, 1.62];
+    e.entityType = p.type; // registry id
+    const fam = MOB_FAMILY[p.type];
+    e.type = fam ? fam[0] : p.type;
+    if (fam) Object.assign(e, fam[1]);
+    e.typeName = MOB_NAMES[e.type] || 'Mob';
+    e.headYaw = e.prevHeadYaw = p.headPitch; // packet's "headPitch" is the head yaw
+    const s = MOB_SIZES[e.type] || [0.6, 1.8, 1.62];
     e.width = s[0]; e.height = s[1]; e.eyeHeight = s[2];
     e.motionX = p.velocity.x / 8000; e.motionY = p.velocity.y / 8000; e.motionZ = p.velocity.z / 8000;
     // EntityList id 30: handleSpawnMob creates a real armor stand (ViaRewind sends hologram stands this way)
     if (p.type === 30) { e.kind = 'armorstand'; e.typeName = 'ArmorStand'; e.width = 0.5; e.height = 1.975; e.eyeHeight = 1.975 * 0.85; }
+    if (e.elder) { e.width = e.height = 1.9975; }
     e.metadata = p.metadata;
     this._applyMeta(e);
     this.add(e);
@@ -116,7 +126,8 @@ export class EntityManager {
     e.objectData = p.objectData;
     const s = OBJECT_SIZES[p.type] || [0.5, 0.5];
     e.width = s[0]; e.height = s[1]; e.eyeHeight = s[1] * 0.85;
-    if (p.velocity) { e.motionX = p.velocity.x / 8000; e.motionY = p.velocity.y / 8000; e.motionZ = p.velocity.z / 8000; }
+    // handleSpawnObject: the velocity applies only when the object data is positive
+    if (p.velocity && p.objectData > 0) { e.motionX = p.velocity.x / 8000; e.motionY = p.velocity.y / 8000; e.motionZ = p.velocity.z / 8000; }
     switch (p.type) {
       case 1: e.kind = 'boat'; e.typeName = 'Boat'; break;
       case 2: e.kind = 'item'; e.typeName = 'Item'; e.pickable = false; e.hoverStart = Math.random() * Math.PI * 2; break;
@@ -242,9 +253,13 @@ export class EntityManager {
     if (e) e.headYaw = p.headYaw;
   }
 
+  // slot: 0 main hand, 1 off hand, 2 feet, 3 legs, 4 chest, 5 head; equipment[] is [held, feet, legs, chest, head]
   setEquipment(id, slot, item) {
     const e = this.map.get(id);
-    if (e && slot >= 0 && slot < 5) e.equipment[slot] = item;
+    if (!e) return;
+    if (slot === 0) e.equipment[0] = item;
+    else if (slot === 1) e.offhand = item;
+    else if (slot >= 2 && slot <= 5) e.equipment[slot - 1] = item;
   }
 
   setMetadata(id, meta) {
@@ -254,62 +269,92 @@ export class EntityManager {
     this._applyMeta(e);
   }
 
+  // 1.12 entity metadata indices (Entity 0-5, EntityLivingBase 6-10, EntityLiving 11, then per class)
   _applyMeta(e) {
     const m = e.metadata;
     if (m[0] !== undefined) {
       e.onFire = !!(m[0] & 1);
       e.sneaking = !!(m[0] & 2);
       e.sprinting = !!(m[0] & 8);
-      e.usingItem = !!(m[0] & 16);
       e.invisible = !!(m[0] & 32);
+      e.glowing = !!(m[0] & 64);
+      e.elytraFlying = !!(m[0] & 128);
     }
     if (m[2] !== undefined) e.customName = m[2];
     if (m[3] !== undefined) e.nameVisible = !!m[3];
-    if (m[6] !== undefined && (e.kind === 'mob' || e.kind === 'player')) {
-      const prev = e.health;
-      e.health = m[6];
-      if (e.health <= 0 && prev > 0) e.dead = true;
+    if (m[4] !== undefined) e.silent = !!m[4];
+    if (m[5] !== undefined) e.noGravity = !!m[5];
+    const living = e.kind === 'mob' || e.kind === 'player' || e.kind === 'armorstand';
+    if (living) {
+      if (m[6] !== undefined) { e.usingItem = !!(m[6] & 1); e.activeHand = m[6] & 2 ? 1 : 0; }
+      if (m[7] !== undefined && e.kind !== 'armorstand') {
+        const prev = e.health;
+        e.health = m[7];
+        if (e.health <= 0 && prev > 0) e.dead = true;
+      }
     }
-    if (e.kind === 'item' && m[10]) e.item = m[10];
-    if (e.kind === 'itemframe') { e.item = m[8] || null; e.rotation = m[9] || 0; }
-    if (e.kind === 'armorstand' && m[10] !== undefined) {
+    if (e.kind === 'item' && m[6]) e.item = m[6];
+    if (e.kind === 'itemframe') { e.item = m[6] || null; e.rotation = m[7] || 0; }
+    if (e.kind === 'armorstand' && m[11] !== undefined) {
       // EntityArmorStand.setSize: small = half size, marker = no box (name tag sits right at its feet + 0.5)
-      e.armorFlags = m[10];
-      const small = !!(m[10] & 1), marker = !!(m[10] & 16);
+      e.armorFlags = m[11];
+      const small = !!(m[11] & 1), marker = !!(m[11] & 16);
       if (marker) { e.width = 0; e.height = 0; } else if (small) { e.width = 0.25; e.height = 0.9875; } else { e.width = 0.5; e.height = 1.975; }
     }
-    if (e.kind === 'projectile' && e.type === 76 && m[8]) e.item = m[8];
-    if (e.kind === 'arrow' && m[16] !== undefined) e.critical = !!(m[16] & 1);
+    if (e.kind === 'projectile' && e.type === 76 && m[6]) e.item = m[6];
+    if (e.kind === 'arrow' && m[6] !== undefined) e.critical = !!(m[6] & 1);
     if (e.kind === 'minecart') {
-      if (m[20] !== undefined) e.displayBlock = m[20];
-      if (m[21] !== undefined) e.displayOffset = m[21];
-      if (m[22] !== undefined) e.customDisplay = !!m[22];
+      if (m[9] !== undefined) e.displayBlock = m[9];
+      if (m[10] !== undefined) e.displayOffset = m[10];
+      if (m[11] !== undefined) e.customDisplay = !!m[11];
     }
     if (e.kind === 'mob') {
-      if (m[12] !== undefined) e.child = m[12] < 0;
-      switch (e.type) {
-        case 51: if (m[13] !== undefined) e.wither = m[13] === 1; break;
-        case 54: case 57: if (m[13] !== undefined) e.villagerZombie = !!m[13]; if (m[12] !== undefined) e.child = m[12] === 1; break;
-        case 55: case 62: if (m[16] !== undefined) { e.size = m[16]; e.width = e.height = 0.51000005 * e.size; } break;
-        case 50: if (m[16] !== undefined) e.creeperState = m[16]; if (m[17] !== undefined) e.powered = !!m[17]; break;
-        case 91: if (m[16] !== undefined) { e.fleece = m[16] & 15; e.sheared = !!(m[16] & 16); } break;
-        case 90: if (m[16] !== undefined) e.saddled = !!m[16]; break;
-        case 95: if (m[16] !== undefined) { e.sitting = !!(m[16] & 1); e.angry = !!(m[16] & 2); e.tamed = !!(m[16] & 4); }
-          if (m[18] !== undefined) e.wolfHealth = m[18]; if (m[20] !== undefined) e.collar = m[20]; break;
-        case 98: if (m[16] !== undefined) { e.sitting = !!(m[16] & 1); e.tamed = !!(m[16] & 4); } if (m[18] !== undefined) e.catType = m[18]; break;
-        case 120: if (m[16] !== undefined) e.profession = m[16]; break;
-        case 58: if (m[16] !== undefined) e.carried = m[16]; if (m[17] !== undefined) e.carriedMeta = m[17]; if (m[18] !== undefined) e.screaming = !!m[18]; break;
-        case 65: if (m[16] !== undefined) e.hanging = !!(m[16] & 1); break;
-        case 100: if (m[16] !== undefined) e.horseFlags = m[16]; if (m[19] !== undefined) e.horseType = m[19]; if (m[20] !== undefined) e.horseVariant = m[20]; if (m[22] !== undefined) e.horseArmor = m[22]; break;
-        case 101: if (m[18] !== undefined) e.rabbitType = m[18]; break;
-        case 68: if (m[16] !== undefined) { e.elder = !!(m[16] & 4); if (e.elder) { e.width = e.height = 1.9975; } } break;
-        case 64: if (m[20] !== undefined) e.invulTime = m[20]; break;
-        case 61: if (m[16] !== undefined) e.blazeOnFire = !!m[16]; break;
-        case 66: if (m[21] !== undefined) e.witchAggressive = !!m[21]; break;
+      if (m[11] !== undefined) e.leftHanded = !!(m[11] & 2);
+      switch (e.entityType) {
+        case 65: if (m[12] !== undefined) e.hanging = !!(m[12] & 1); break; // bat
+        case 50: if (m[12] !== undefined) e.creeperState = m[12]; if (m[13] !== undefined) e.powered = !!m[13]; break;
+        case 51: case 5: case 6: break; // skeletons: 12 = arms raised
+        case 54: case 23: case 27:
+          if (m[12] !== undefined) e.child = !!m[12];
+          if (e.entityType === 27 && m[16] !== undefined) e.villagerProfession = m[16];
+          break;
+        case 55: case 62: if (m[12] !== undefined) { e.size = m[12]; e.width = e.height = 0.51000005 * e.size; } break;
+        case 58: if (m[12] !== undefined) { e.carried = m[12] >> 4; e.carriedMeta = m[12] & 15; } if (m[13] !== undefined) e.screaming = !!m[13]; break;
+        case 61: if (m[12] !== undefined) e.blazeOnFire = !!(m[12] & 1); break;
+        case 64: if (m[15] !== undefined) e.invulTime = m[15]; break;
+        case 66: if (m[12] !== undefined) e.witchAggressive = !!m[12]; break;
+        default:
+          // EntityAgeable (animals, villagers): 12 = baby
+          if (m[12] !== undefined && typeof m[12] === 'boolean') e.child = m[12];
+          break;
+      }
+      switch (e.entityType) {
+        case 90: if (m[13] !== undefined) e.saddled = !!m[13]; break;
+        case 91: if (m[13] !== undefined) { e.fleece = m[13] & 15; e.sheared = !!(m[13] & 16); } break;
+        case 95:
+          if (m[13] !== undefined) { e.sitting = !!(m[13] & 1); e.angry = !!(m[13] & 2); e.tamed = !!(m[13] & 4); }
+          if (m[15] !== undefined) e.wolfHealth = m[15];
+          if (m[17] !== undefined) e.collar = m[17]; // dye damage
+          break;
+        case 98: if (m[13] !== undefined) { e.sitting = !!(m[13] & 1); e.tamed = !!(m[13] & 4); } if (m[15] !== undefined) e.catType = m[15]; break;
+        case 101: if (m[13] !== undefined) e.rabbitType = m[13]; break;
+        case 120: if (m[13] !== undefined) e.profession = m[13]; break;
+        case 100: case 28: case 29: case 31: case 32:
+          // AbstractHorse flags: 2 tame, 4 saddled, 8 bred, 16 eating, 32 rearing, 64 mouth open
+          if (m[13] !== undefined) {
+            const f = m[13];
+            e.horseFlags = (f & 2) | (f & 4) | (e.horseChest ? 8 : 0) | (f & 16 ? 32 : 0) | (f & 32 ? 64 : 0) | (f & 64 ? 128 : 0);
+          }
+          if (e.entityType === 100) { if (m[15] !== undefined) e.horseVariant = m[15]; if (m[16] !== undefined) e.horseArmor = m[16]; }
+          if ((e.entityType === 31 || e.entityType === 32) && m[15] !== undefined) { e.horseChest = !!m[15]; e.horseFlags = ((e.horseFlags || 0) & ~8) | (e.horseChest ? 8 : 0); }
+          break;
         default: break;
       }
     }
-    if (e.kind === 'player' && m[10] !== undefined) e.skinFlags = m[10];
+    if (e.kind === 'player') {
+      if (m[13] !== undefined) e.skinFlags = m[13];
+      if (m[14] !== undefined) e.mainHand = m[14];
+    }
   }
 
   setAttributes(p) {
@@ -387,6 +432,13 @@ export class EntityManager {
     if (id === this.game.entityId && vehicleId < 0) {
       // Dismounted: vanilla keeps position; nothing else to do
     }
+  }
+
+  passengersOf(vehicleId) {
+    const out = [];
+    for (const e of this.map.values()) if (e.riding === vehicleId) out.push(e.id);
+    if (this.game.ridingEntityId === vehicleId && !out.includes(this.game.entityId)) out.push(this.game.entityId);
+    return out;
   }
 
   setLeash(id, holder) {

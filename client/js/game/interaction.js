@@ -429,7 +429,8 @@ export class Interaction {
       // ItemBlock.canPlaceBlockOnSide: no packet at all when the block could not go there
       if (!activated && held && this._itemBlock(held) && !this._canPlaceBlockOnSide(t, held)) return false;
     }
-    g.send(C.blockPlace(t.x, t.y, t.z, t.face, held, Math.floor(fx * 16), Math.floor(fy * 16), Math.floor(fz * 16)));
+    // CPacketPlayerTryUseItemOnBlock (main hand, cursor position on the face)
+    g.send(C.blockPlace(t.x, t.y, t.z, t.face, 0, fx, fy, fz));
     if (activated) {
       if (b.isDoor || b.name === 'trapdoor' || b.isFenceGate) this.predictToggle(t, b);
       return true;
@@ -579,7 +580,7 @@ export class Interaction {
       // ItemWritableBook opens the editor client-side
       import('../gui/screens/book.js').then((m) => g.screens.open(new m.BookScreen(g, held, true)));
     }
-    g.send(C.blockPlace(-1, -1, -1, 255, held, 0, 0, 0));
+    g.send(C.useItem(0)); // CPacketPlayerTryUseItem
     const action = g.items.useAction(held);
     if (action !== 'none') {
       const food = action === 'eat' && held.id !== 322 && g.food >= 20 && g.gameMode !== 1;

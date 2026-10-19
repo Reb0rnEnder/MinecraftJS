@@ -1,4 +1,4 @@
-// Binary reader/writer for the Minecraft 1.8 protocol.
+// Binary reader/writer for the Minecraft 1.12.2 protocol.
 import { readNbtRoot, writeNbtRoot } from './nbt.js';
 import { decodeUtf8, encodeUtf8 } from '../util/utf8.js';
 
@@ -111,22 +111,27 @@ export class Reader {
     return readNbtRoot(this);
   }
 
+  // 1.9+ entity metadata: (index u8, type varint, value) until index 0xff -> { index: value }
   metadata() {
     const meta = {};
     for (;;) {
-      const item = this.u8();
-      if (item === 0x7f) break;
-      const index = item & 0x1f;
-      const type = item >> 5;
+      const index = this.u8();
+      if (index === 0xff) break;
+      const type = this.varint();
       switch (type) {
         case 0: meta[index] = this.i8(); break;
-        case 1: meta[index] = this.i16(); break;
-        case 2: meta[index] = this.i32(); break;
-        case 3: meta[index] = this.f32(); break;
-        case 4: meta[index] = this.string(); break;
+        case 1: meta[index] = this.varint(); break;
+        case 2: meta[index] = this.f32(); break;
+        case 3: case 4: meta[index] = this.string(); break; // string, chat component
         case 5: meta[index] = this.slot(); break;
-        case 6: meta[index] = { x: this.i32(), y: this.i32(), z: this.i32() }; break;
+        case 6: meta[index] = this.bool(); break;
         case 7: meta[index] = { pitch: this.f32(), yaw: this.f32(), roll: this.f32() }; break;
+        case 8: meta[index] = this.position(); break;
+        case 9: meta[index] = this.bool() ? this.position() : null; break;
+        case 10: meta[index] = this.varint(); break; // direction
+        case 11: meta[index] = this.bool() ? this.uuid() : null; break;
+        case 12: meta[index] = this.varint(); break; // optional block state (0 = none)
+        case 13: meta[index] = readNbtRoot(this); break;
         default: throw new Error('Unknown metadata type ' + type);
       }
     }

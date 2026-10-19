@@ -5,7 +5,7 @@ import { decodeUtf8, encodeUtf8 } from '../util/utf8.js';
 
 export const TAG = {
   END: 0, BYTE: 1, SHORT: 2, INT: 3, LONG: 4, FLOAT: 5, DOUBLE: 6,
-  BYTE_ARRAY: 7, STRING: 8, LIST: 9, COMPOUND: 10, INT_ARRAY: 11,
+  BYTE_ARRAY: 7, STRING: 8, LIST: 9, COMPOUND: 10, INT_ARRAY: 11, LONG_ARRAY: 12,
 };
 
 function readPayload(r, t, depth) {
@@ -40,6 +40,12 @@ function readPayload(r, t, depth) {
       const n = r.i32();
       const a = new Int32Array(n);
       for (let i = 0; i < n; i++) a[i] = r.i32();
+      return a;
+    }
+    case TAG.LONG_ARRAY: { // added in 1.12
+      const n = r.i32();
+      const a = new BigInt64Array(n);
+      for (let i = 0; i < n; i++) a[i] = r.i64();
       return a;
     }
     default: throw new Error('Unknown NBT tag ' + t);
@@ -91,6 +97,7 @@ function writePayload(w, t, v) {
       w.u8(0);
       break;
     case TAG.INT_ARRAY: w.i32(v.length); for (const x of v) w.i32(x); break;
+    case TAG.LONG_ARRAY: w.i32(v.length); for (const x of v) w.i64(x); break;
     default: throw new Error('Unknown NBT tag ' + t);
   }
 }

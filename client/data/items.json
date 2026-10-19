@@ -1215,7 +1215,7 @@
   },
   {
     "id": 159,
-    "displayName": "Stained Clay",
+    "displayName": "Stained Terracotta",
     "name": "stained_hardened_clay",
     "stackSize": 64,
     "variations": [
@@ -1525,7 +1525,7 @@
   },
   {
     "id": 172,
-    "displayName": "Hardened Clay",
+    "displayName": "Terracotta",
     "name": "hardened_clay",
     "stackSize": 64
   },
@@ -1663,6 +1663,318 @@
     "id": 192,
     "displayName": "Acacia Fence",
     "name": "acacia_fence",
+    "stackSize": 64
+  },
+  {
+    "id": 198,
+    "displayName": "End Rod",
+    "name": "end_rod",
+    "stackSize": 64
+  },
+  {
+    "id": 199,
+    "displayName": "Chorus Plant",
+    "name": "chorus_plant",
+    "stackSize": 64
+  },
+  {
+    "id": 200,
+    "displayName": "Chorus Flower",
+    "name": "chorus_flower",
+    "stackSize": 64
+  },
+  {
+    "id": 201,
+    "displayName": "Purpur Block",
+    "name": "purpur_block",
+    "stackSize": 64
+  },
+  {
+    "id": 202,
+    "displayName": "Purpur Pillar",
+    "name": "purpur_pillar",
+    "stackSize": 64
+  },
+  {
+    "id": 203,
+    "displayName": "Purpur Stairs",
+    "name": "purpur_stairs",
+    "stackSize": 64
+  },
+  {
+    "id": 205,
+    "displayName": "Purpur Slab",
+    "name": "purpur_slab",
+    "stackSize": 64
+  },
+  {
+    "id": 206,
+    "displayName": "End Stone Bricks",
+    "name": "end_bricks",
+    "stackSize": 64
+  },
+  {
+    "id": 208,
+    "displayName": "Grass Path",
+    "name": "grass_path",
+    "stackSize": 64
+  },
+  {
+    "id": 210,
+    "displayName": "Repeating Command Block",
+    "name": "repeating_command_block",
+    "stackSize": 64
+  },
+  {
+    "id": 211,
+    "displayName": "Chain Command Block",
+    "name": "chain_command_block",
+    "stackSize": 64
+  },
+  {
+    "id": 213,
+    "displayName": "Magma Block",
+    "name": "magma",
+    "stackSize": 64
+  },
+  {
+    "id": 214,
+    "displayName": "Nether Wart Block",
+    "name": "nether_wart_block",
+    "stackSize": 64
+  },
+  {
+    "id": 215,
+    "displayName": "Red Nether Brick",
+    "name": "red_nether_brick",
+    "stackSize": 64
+  },
+  {
+    "id": 216,
+    "displayName": "Bone Block",
+    "name": "bone_block",
+    "stackSize": 64
+  },
+  {
+    "id": 217,
+    "displayName": "Structure Void",
+    "name": "structure_void",
+    "stackSize": 64
+  },
+  {
+    "id": 218,
+    "displayName": "Observer",
+    "name": "observer",
+    "stackSize": 64
+  },
+  {
+    "id": 219,
+    "displayName": "White Shulker Box",
+    "name": "white_shulker_box",
+    "stackSize": 1
+  },
+  {
+    "id": 220,
+    "displayName": "Orange Shulker Box",
+    "name": "orange_shulker_box",
+    "stackSize": 1
+  },
+  {
+    "id": 221,
+    "displayName": "Magenta Shulker Box",
+    "name": "magenta_shulker_box",
+    "stackSize": 1
+  },
+  {
+    "id": 222,
+    "displayName": "Light Blue Shulker Box",
+    "name": "light_blue_shulker_box",
+    "stackSize": 1
+  },
+  {
+    "id": 223,
+    "displayName": "Yellow Shulker Box",
+    "name": "yellow_shulker_box",
+    "stackSize": 1
+  },
+  {
+    "id": 224,
+    "displayName": "Lime Shulker Box",
+    "name": "lime_shulker_box",
+    "stackSize": 1
+  },
+  {
+    "id": 225,
+    "displayName": "Pink Shulker Box",
+    "name": "pink_shulker_box",
+    "stackSize": 1
+  },
+  {
+    "id": 226,
+    "displayName": "Gray Shulker Box",
+    "name": "gray_shulker_box",
+    "stackSize": 1
+  },
+  {
+    "id": 227,
+    "displayName": "Light Gray Shulker Box",
+    "name": "silver_shulker_box",
+    "stackSize": 1
+  },
+  {
+    "id": 228,
+    "displayName": "Cyan Shulker Box",
+    "name": "cyan_shulker_box",
+    "stackSize": 1
+  },
+  {
+    "id": 229,
+    "displayName": "Purple Shulker Box",
+    "name": "purple_shulker_box",
+    "stackSize": 1
+  },
+  {
+    "id": 230,
+    "displayName": "Blue Shulker Box",
+    "name": "blue_shulker_box",
+    "stackSize": 1
+  },
+  {
+    "id": 231,
+    "displayName": "Brown Shulker Box",
+    "name": "brown_shulker_box",
+    "stackSize": 1
+  },
+  {
+    "id": 232,
+    "displayName": "Green Shulker Box",
+    "name": "green_shulker_box",
+    "stackSize": 1
+  },
+  {
+    "id": 233,
+    "displayName": "Red Shulker Box",
+    "name": "red_shulker_box",
+    "stackSize": 1
+  },
+  {
+    "id": 234,
+    "displayName": "Black Shulker Box",
+    "name": "black_shulker_box",
+    "stackSize": 1
+  },
+  {
+    "id": 235,
+    "displayName": "White Glazed Terracotta",
+    "name": "white_glazed_terracotta",
+    "stackSize": 64
+  },
+  {
+    "id": 236,
+    "displayName": "Orange Glazed Terracotta",
+    "name": "orange_glazed_terracotta",
+    "stackSize": 64
+  },
+  {
+    "id": 237,
+    "displayName": "Magenta Glazed Terracotta",
+    "name": "magenta_glazed_terracotta",
+    "stackSize": 64
+  },
+  {
+    "id": 238,
+    "displayName": "Light Blue Glazed Terracotta",
+    "name": "light_blue_glazed_terracotta",
+    "stackSize": 64
+  },
+  {
+    "id": 239,
+    "displayName": "Yellow Glazed Terracotta",
+    "name": "yellow_glazed_terracotta",
+    "stackSize": 64
+  },
+  {
+    "id": 240,
+    "displayName": "Lime Glazed Terracotta",
+    "name": "lime_glazed_terracotta",
+    "stackSize": 64
+  },
+  {
+    "id": 241,
+    "displayName": "Pink Glazed Terracotta",
+    "name": "pink_glazed_terracotta",
+    "stackSize": 64
+  },
+  {
+    "id": 242,
+    "displayName": "Gray Glazed Terracotta",
+    "name": "gray_glazed_terracotta",
+    "stackSize": 64
+  },
+  {
+    "id": 243,
+    "displayName": "Silver Glazed Terracotta",
+    "name": "silver_glazed_terracotta",
+    "stackSize": 64
+  },
+  {
+    "id": 244,
+    "displayName": "Cyan Glazed Terracotta",
+    "name": "cyan_glazed_terracotta",
+    "stackSize": 64
+  },
+  {
+    "id": 245,
+    "displayName": "Purple Glazed Terracotta",
+    "name": "purple_glazed_terracotta",
+    "stackSize": 64
+  },
+  {
+    "id": 246,
+    "displayName": "Blue Glazed Terracotta",
+    "name": "blue_glazed_terracotta",
+    "stackSize": 64
+  },
+  {
+    "id": 247,
+    "displayName": "Brown Glazed Terracotta",
+    "name": "brown_glazed_terracotta",
+    "stackSize": 64
+  },
+  {
+    "id": 248,
+    "displayName": "Green Glazed Terracotta",
+    "name": "green_glazed_terracotta",
+    "stackSize": 64
+  },
+  {
+    "id": 249,
+    "displayName": "Red Glazed Terracotta",
+    "name": "red_glazed_terracotta",
+    "stackSize": 64
+  },
+  {
+    "id": 250,
+    "displayName": "Black Glazed Terracotta",
+    "name": "black_glazed_terracotta",
+    "stackSize": 64
+  },
+  {
+    "id": 251,
+    "displayName": "Concrete",
+    "name": "concrete",
+    "stackSize": 64
+  },
+  {
+    "id": 252,
+    "displayName": "Concrete Powder",
+    "name": "concrete_powder",
+    "stackSize": 64
+  },
+  {
+    "id": 255,
+    "displayName": "Structure Block",
+    "name": "structure_block",
     "stackSize": 64
   },
   {
@@ -3323,7 +3635,65 @@
     "id": 390,
     "displayName": "Flower Pot",
     "name": "flower_pot",
-    "stackSize": 64
+    "stackSize": 64,
+    "variations": [
+      {
+        "metadata": 0,
+        "displayName": "Empty Flower Pot"
+      },
+      {
+        "metadata": 1,
+        "displayName": "Poppy Flower Pot"
+      },
+      {
+        "metadata": 2,
+        "displayName": "Dandelion Flower Pot"
+      },
+      {
+        "metadata": 3,
+        "displayName": "Oak sapling Flower Pot"
+      },
+      {
+        "metadata": 4,
+        "displayName": "Spruce sapling Flower Pot"
+      },
+      {
+        "metadata": 5,
+        "displayName": "Birch sapling Flower Pot"
+      },
+      {
+        "metadata": 6,
+        "displayName": "Jungle sapling Flower Pot"
+      },
+      {
+        "metadata": 7,
+        "displayName": "Red mushroom Flower Pot"
+      },
+      {
+        "metadata": 8,
+        "displayName": "Brown mushroom Flower Pot"
+      },
+      {
+        "metadata": 9,
+        "displayName": "Cactus Flower Pot"
+      },
+      {
+        "metadata": 10,
+        "displayName": "Dead bush Flower Pot"
+      },
+      {
+        "metadata": 11,
+        "displayName": "Fern Flower Pot"
+      },
+      {
+        "metadata": 12,
+        "displayName": "Acacia sapling Flower Pot"
+      },
+      {
+        "metadata": 13,
+        "displayName": "Dark oak sapling Flower Pot"
+      }
+    ]
   },
   {
     "id": 391,
@@ -3629,6 +3999,12 @@
     ]
   },
   {
+    "id": 426,
+    "displayName": "End Crystal",
+    "name": "end_crystal",
+    "stackSize": 64
+  },
+  {
     "id": 427,
     "displayName": "Spruce Door",
     "name": "spruce_door",
@@ -3659,10 +4035,160 @@
     "stackSize": 64
   },
   {
+    "id": 432,
+    "displayName": "Chorus Fruit",
+    "name": "chorus_fruit",
+    "stackSize": 64
+  },
+  {
+    "id": 433,
+    "displayName": "Popped Chorus Fruit",
+    "name": "chorus_fruit_popped",
+    "stackSize": 64
+  },
+  {
+    "id": 434,
+    "displayName": "Beetroot",
+    "name": "beetroot",
+    "stackSize": 64
+  },
+  {
+    "id": 435,
+    "displayName": "Beetroot Seeds",
+    "name": "beetroot_seeds",
+    "stackSize": 64
+  },
+  {
+    "id": 436,
+    "displayName": "Beetroot Soup",
+    "name": "beetroot_soup",
+    "stackSize": 1
+  },
+  {
+    "id": 437,
+    "displayName": "Dragon's Breath",
+    "name": "dragon_breath",
+    "stackSize": 64
+  },
+  {
+    "id": 438,
+    "displayName": "Splash Potion",
+    "name": "splash_potion",
+    "stackSize": 1
+  },
+  {
+    "id": 439,
+    "displayName": "Spectral Arrow",
+    "name": "spectral_arrow",
+    "stackSize": 64
+  },
+  {
+    "id": 440,
+    "displayName": "Tipped Arrow",
+    "name": "tipped_arrow",
+    "stackSize": 64
+  },
+  {
+    "id": 441,
+    "displayName": "Lingering Potion",
+    "name": "lingering_potion",
+    "stackSize": 1
+  },
+  {
+    "id": 442,
+    "displayName": "Shield",
+    "name": "shield",
+    "stackSize": 1,
+    "maxDurability": 336,
+    "enchantCategories": [
+      "breakable",
+      "vanishable"
+    ],
+    "repairWith": [
+      "oak_planks",
+      "spruce_planks",
+      "birch_planks",
+      "jungle_planks",
+      "acacia_planks",
+      "dark_oak_planks",
+      "crimson_planks",
+      "warped_planks"
+    ]
+  },
+  {
+    "id": 443,
+    "displayName": "Elytra",
+    "name": "elytra",
+    "stackSize": 1,
+    "maxDurability": 432,
+    "enchantCategories": [
+      "breakable",
+      "wearable",
+      "vanishable"
+    ],
+    "repairWith": [
+      "phantom_membrane"
+    ]
+  },
+  {
+    "id": 444,
+    "displayName": "Spruce Boat",
+    "name": "spruce_boat",
+    "stackSize": 1
+  },
+  {
+    "id": 445,
+    "displayName": "Birch Boat",
+    "name": "birch_boat",
+    "stackSize": 1
+  },
+  {
+    "id": 446,
+    "displayName": "Jungle Boat",
+    "name": "jungle_boat",
+    "stackSize": 1
+  },
+  {
+    "id": 447,
+    "displayName": "Acacia Boat",
+    "name": "acacia_boat",
+    "stackSize": 1
+  },
+  {
+    "id": 448,
+    "displayName": "Dark Oak Boat",
+    "name": "dark_oak_boat",
+    "stackSize": 1
+  },
+  {
+    "id": 449,
+    "displayName": "Totem of Undying",
+    "name": "totem_of_undying",
+    "stackSize": 1
+  },
+  {
+    "id": 450,
+    "displayName": "Shulker Shell",
+    "name": "shulker_shell",
+    "stackSize": 64
+  },
+  {
+    "id": 452,
+    "displayName": "Iron Nugget",
+    "name": "iron_nugget",
+    "stackSize": 64
+  },
+  {
+    "id": 453,
+    "displayName": "Knowledge Book",
+    "name": "knowledge_book",
+    "stackSize": 64
+  },
+  {
     "id": 2256,
     "displayName": "13 Disc",
     "name": "record_13",
-    "stackSize": 1
+    "stackSize": 64
   },
   {
     "id": 2257,
