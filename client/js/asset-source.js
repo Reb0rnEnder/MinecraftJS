@@ -4,6 +4,7 @@
 //   bundles/models.json + bundles/textures.bin (folder only).
 import { platform } from './platform/platform.js';
 import { ZipArchive } from './util/zip.js';
+import { decodeUtf8 } from './util/utf8.js';
 
 export class FolderSource {
   constructor(base = 'assets/') { this.base = base; this.kind = 'folder'; }
@@ -17,7 +18,7 @@ export class FolderSource {
     if (!bundle) throw new Error('Missing ' + this.base + 'bundles/textures.bin');
     const dv = new DataView(bundle.buffer, bundle.byteOffset, bundle.byteLength);
     const hlen = dv.getUint32(0, true);
-    const header = JSON.parse(new TextDecoder().decode(bundle.subarray(4, 4 + hlen)));
+    const header = JSON.parse(decodeUtf8(bundle.subarray(4, 4 + hlen)));
     const base = 4 + hlen;
     const files = new Map();
     for (const [name, off, len] of header.files) files.set(name, () => bundle.subarray(base + off, base + off + len));

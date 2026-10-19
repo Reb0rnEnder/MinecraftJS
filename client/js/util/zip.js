@@ -1,5 +1,6 @@
 // Read-only ZIP archive reader (for resource packs), pure JS.
 import { inflateRaw } from '../lib/pako.esm.mjs';
+import { decodeUtf8 } from './utf8.js';
 
 export class ZipArchive {
   constructor(bytes) {
@@ -18,7 +19,6 @@ export class ZipArchive {
     if (eocd < 0) throw new Error('Not a zip file');
     const count = dv.getUint16(eocd + 10, true);
     let off = dv.getUint32(eocd + 16, true);
-    const dec = new TextDecoder();
     for (let i = 0; i < count; i++) {
       if (dv.getUint32(off, true) !== 0x02014b50) break;
       const method = dv.getUint16(off + 10, true);
@@ -27,7 +27,7 @@ export class ZipArchive {
       const extraLen = dv.getUint16(off + 30, true);
       const commentLen = dv.getUint16(off + 32, true);
       const localOff = dv.getUint32(off + 42, true);
-      const name = dec.decode(b.subarray(off + 46, off + 46 + nameLen)).replace(/\\/g, '/');
+      const name = decodeUtf8(b.subarray(off + 46, off + 46 + nameLen)).replace(/\\/g, '/');
       if (!name.endsWith('/')) this.entries.set(name, { method, compSize, localOff });
       off += 46 + nameLen + extraLen + commentLen;
     }
@@ -64,5 +64,5 @@ export class ZipArchive {
     throw new Error('Unsupported zip compression ' + e.method);
   }
 
-  readText(name) { const b = this.read(name); return b ? new TextDecoder().decode(b) : null; }
+  readText(name) { const b = this.read(name); return b ? decodeUtf8(b) : null; }
 }

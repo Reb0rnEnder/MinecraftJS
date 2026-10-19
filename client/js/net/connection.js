@@ -29,7 +29,7 @@ export class Connection {
     else {
       const url = currentProxyUrl();
       if (!url) throw new Error(NO_PROXY);
-      sock = await platform().openSocket(url);
+      try { sock = await platform().openSocket(url); } catch (e) { throw new Error('Could not reach the MinecraftJS proxy'); }
     }
     this.ws = sock;
     sock.on('close', () => {

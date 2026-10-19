@@ -10,6 +10,7 @@ import { initBiomes } from './world/biomes.js';
 import { ModelStore } from './render/models.js';
 import { MeshPool } from './render/mesh-service.js';
 import { MINECRAFTJS_EN } from './gui/i18n.js';
+import { decodeUtf8 } from './util/utf8.js';
 
 const MC = 'assets/minecraft/';
 const PACK_PREFIX = 'packs/';
@@ -91,7 +92,7 @@ export class Assets {
     return this.source.bytes('minecraft/' + rel);
   }
 
-  async readText(rel) { const b = await this.readBytes(rel); return b ? new TextDecoder().decode(b) : null; }
+  async readText(rel) { const b = await this.readBytes(rel); return b ? decodeUtf8(b) : null; }
   async readJson(rel) { const t = await this.readText(rel); return t ? JSON.parse(t) : null; }
 
   async readSound(rel) {
@@ -102,11 +103,11 @@ export class Assets {
   // sounds.json: packs add events, or replace them when "replace": true
   async loadSoundDefinitions() {
     let defs = {};
-    try { defs = JSON.parse(new TextDecoder().decode(await this.source.bytes('minecraft/sounds.json'))); } catch (e) { defs = {}; }
+    try { defs = JSON.parse(decodeUtf8(await this.source.bytes('minecraft/sounds.json'))); } catch (e) { defs = {}; }
     for (const p of [...this.packs].reverse()) {
       if (!p.has('sounds.json')) continue;
       try {
-        const add = JSON.parse(new TextDecoder().decode(p.read('sounds.json')));
+        const add = JSON.parse(decodeUtf8(p.read('sounds.json')));
         for (const [ev, d] of Object.entries(add)) {
           if (d.replace || !defs[ev]) defs[ev] = { ...d };
           else defs[ev] = { ...defs[ev], sounds: [...(defs[ev].sounds || []), ...(d.sounds || [])] };
@@ -165,7 +166,7 @@ export class Assets {
     step('Checking assets...', 2);
     const meta = await this.source.bytes('pack.mcmeta');
     if (!meta) throw new Error('Game assets not found: put the assets/ folder (built with `npm run assets`) next to index.html');
-    try { this.defaultPackMeta = JSON.parse(new TextDecoder().decode(meta)); } catch (e) { this.defaultPackMeta = {}; }
+    try { this.defaultPackMeta = JSON.parse(decodeUtf8(meta)); } catch (e) { this.defaultPackMeta = {}; }
     step('Loading game data...', 5);
     const names = ['blocks', 'items', 'entities', 'blockCollisionShapes', 'biomes', 'foods', 'effects', 'enchantments', 'windows', 'particles', 'materials', 'recipes'];
     const datas = await Promise.all(names.map((n) => this.source.data(n)));
@@ -185,15 +186,14 @@ export class Assets {
     this.textures.clear();
     this.images.clear();
     const packsLowFirst = [...this.packs].reverse();
-    const dec = new TextDecoder();
 
     step('Loading block models...', 15);
     const models = await this.source.models();
     this.models = models.models;
     this.blockstates = models.blockstates;
     for (const p of packsLowFirst) {
-      for (const f of p.list('models/')) if (f.endsWith('.json')) { try { this.models[f.slice(7, -5)] = JSON.parse(dec.decode(p.read(f))); } catch (e) { /* skip bad json */ } }
-      for (const f of p.list('blockstates/')) if (f.endsWith('.json')) { try { this.blockstates[f.slice(12, -5)] = JSON.parse(dec.decode(p.read(f))); } catch (e) { /* skip */ } }
+      for (const f of p.list('models/')) if (f.endsWith('.json')) { try { this.models[f.slice(7, -5)] = JSON.parse(decodeUtf8(p.read(f))); } catch (e) { /* skip bad json */ } }
+      for (const f of p.list('blockstates/')) if (f.endsWith('.json')) { try { this.blockstates[f.slice(12, -5)] = JSON.parse(decodeUtf8(p.read(f))); } catch (e) { /* skip */ } }
     }
 
     step('Loading textures...', 35);
@@ -203,7 +203,7 @@ export class Assets {
         for (const f of p.list(dir)) {
           const rel = f.slice('textures/'.length);
           if (f.endsWith('.png')) files.set(rel.slice(0, -4), () => p.read(f));
-          else if (f.endsWith('.png.mcmeta')) { try { mcmeta[rel.slice(0, -11)] = JSON.parse(dec.decode(p.read(f))); } catch (e) { /* skip */ } }
+          else if (f.endsWith('.png.mcmeta')) { try { mcmeta[rel.slice(0, -11)] = JSON.parse(decodeUtf8(p.read(f))); } catch (e) { /* skip */ } }
         }
       }
     }
@@ -293,7 +293,6 @@ export class Assets {
   // the selected language and every active pack's .lang files are layered on top.
   async loadLanguage(code) {
     if (!this.languages[code]) code = 'en_US';
-    const dec = new TextDecoder();
     const packsLowFirst = [...this.packs].reverse();
     const lang = { ...MINECRAFTJS_EN };
     const own = {};
@@ -306,8 +305,8 @@ export class Assets {
     };
     const layer = async (c, into) => {
       const base = await this.source.bytes('minecraft/lang/' + c + '.lang').catch(() => null);
-      if (base) parse(dec.decode(base), into);
-      for (const p of packsLowFirst) if (p.has('lang/' + c + '.lang')) parse(dec.decode(p.read('lang/' + c + '.lang')), into);
+      if (base) parse(decodeUtf8(base), into);
+      for (const p of packsLowFirst) if (p.has('lang/' + c + '.lang')) parse(decodeUtf8(p.read('lang/' + c + '.lang')), into);
     };
     await layer('en_US', lang);
     this.langEn = { ...lang }; // English table, used to map English data names to keys

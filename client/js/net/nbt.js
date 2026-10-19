@@ -1,6 +1,7 @@
 // Uncompressed big-endian NBT as used inside 1.8 packets.
 // Tags are kept typed ({ t, v }) so they can be written back verbatim;
 // use simplify() for convenient plain-JS access.
+import { decodeUtf8, encodeUtf8 } from '../util/utf8.js';
 
 export const TAG = {
   END: 0, BYTE: 1, SHORT: 2, INT: 3, LONG: 4, FLOAT: 5, DOUBLE: 6,
@@ -49,7 +50,7 @@ function readUtf(r) {
   const len = r.u16();
   const b = r.bytesN(len);
   // Java "modified UTF-8" is close enough to UTF-8 for display purposes
-  return new TextDecoder().decode(b);
+  return decodeUtf8(b);
 }
 
 // Reads a named root tag. Returns { t, name, v }.
@@ -61,7 +62,7 @@ export function readNbtRoot(r) {
 }
 
 function writeUtf(w, s) {
-  const b = new TextEncoder().encode(s);
+  const b = encodeUtf8(s);
   w.u16(b.length);
   w.raw(b);
 }

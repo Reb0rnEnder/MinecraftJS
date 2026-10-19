@@ -1,8 +1,7 @@
 // Binary reader/writer for the Minecraft 1.8 protocol.
 import { readNbtRoot, writeNbtRoot } from './nbt.js';
+import { decodeUtf8, encodeUtf8 } from '../util/utf8.js';
 
-const textDecoder = new TextDecoder();
-const textEncoder = new TextEncoder();
 
 export class Reader {
   constructor(bytes, offset = 0) {
@@ -55,7 +54,7 @@ export class Reader {
   string() {
     const len = this.varint();
     this._check(len);
-    const s = textDecoder.decode(this.bytes.subarray(this.offset, this.offset + len));
+    const s = decodeUtf8(this.bytes.subarray(this.offset, this.offset + len));
     this.offset += len;
     return s;
   }
@@ -174,7 +173,7 @@ export class Writer {
   }
 
   string(s) {
-    const b = textEncoder.encode(s);
+    const b = encodeUtf8(s);
     this.varint(b.length);
     return this.raw(b);
   }

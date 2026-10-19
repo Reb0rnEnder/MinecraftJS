@@ -16,6 +16,7 @@ import { decodeBase64 } from '../util/base64.js';
 import { platform } from '../platform/platform.js';
 import { fetchSkin } from '../net/proxies.js';
 import { EntityFire } from './entity-fire.js';
+import { decodeUtf8 } from '../util/utf8.js';
 
 const ARMOR_MATS = ['leather', 'chainmail', 'iron', 'diamond', 'gold'];
 
@@ -144,7 +145,7 @@ export class EntityRenderer {
     const prop = info && info.properties && info.properties.find((p) => p.name === 'textures');
     if (prop) {
       try {
-        const tj = JSON.parse(new TextDecoder().decode(decodeBase64(prop.value)));
+        const tj = JSON.parse(decodeUtf8(decodeBase64(prop.value)));
         const skin = tj.textures && tj.textures.SKIN;
         if (skin && skin.url) {
           s.slim = !!(skin.metadata && skin.metadata.model === 'slim');

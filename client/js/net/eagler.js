@@ -13,6 +13,9 @@
 // EaglerSocket has the socket interface of the proxy link (platform().openSocket), so Connection drives it the same
 // way: a { type: 'connect' } text message starts the login, and progress comes back as proxy-style control messages.
 
+import { platform } from '../platform/platform.js';
+import { decodeUtf8, encodeUtf8 } from '../util/utf8.js';
+
 const BRAND = 'MinecraftJS';
 const VERSION = '1.8.9';
 const GAME_PROTOCOL = 47;
@@ -30,8 +33,8 @@ class Writer {
   short(v) { this.b.push((v >> 8) & 0xff, v & 0xff); return this; }
   int(v) { return this.short(v >>> 16).short(v & 0xffff); }
   bytes(a) { for (const v of a) this.b.push(v); return this; }
-  str8(s) { const a = new TextEncoder().encode(s); return this.byte(a.length).bytes(a); }
-  str16(s) { const a = new TextEncoder().encode(s); return this.short(a.length).bytes(a); }
+  str8(s) { const a = encodeUtf8(s); return this.byte(a.length).bytes(a); }
+  str16(s) { const a = encodeUtf8(s); return this.short(a.length).bytes(a); }
   done() { return new Uint8Array(this.b); }
 }
 
@@ -41,14 +44,15 @@ class Reader {
   byte() { if (this.o >= this.b.length) throw new Error('Truncated handshake packet'); return this.b[this.o++]; }
   short() { return (this.byte() << 8) | this.byte(); }
   bytes(n) { if (this.o + n > this.b.length) throw new Error('Truncated handshake packet'); const r = this.b.subarray(this.o, this.o + n); this.o += n; return r; }
-  str8() { return new TextDecoder().decode(this.bytes(this.byte())); }
-  str16() { return new TextDecoder().decode(this.bytes(this.short())); }
+  str8() { return decodeUtf8(this.bytes(this.byte())); }
+  str16() { return decodeUtf8(this.bytes(this.short())); }
 }
 
 const hex = (b) => Array.from(b, (v) => v.toString(16).padStart(2, '0')).join('');
 const uuidString = (b) => { const h = hex(b); return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20)}`; };
 
-// 0xFF server error. v2+: byte code, short length, UTF-16 chars; v1 proxies: byte code, varint length, UTF-8.
+// 0xFF server error -> its message, which is often a JSON chat component (EaglerXBungee kicks).
+// byte code, then short length + UTF-8 (EaglerXBungee), short length + UTF-16 chars, or varint length + UTF-8 (v1).
 function readError(b) {
   if (b.length < 2) return 'Server error';
   const body = b.subarray(2);
@@ -59,11 +63,11 @@ function readError(b) {
       for (let i = 0; i < n; i++) s += String.fromCharCode((body[2 + i * 2] << 8) | body[3 + i * 2]);
       return s;
     }
-    if (body.length === 2 + n) return new TextDecoder().decode(body.subarray(2));
+    if (body.length === 2 + n) return decodeUtf8(body, 2);
   }
   let len = 0, shift = 0, o = 0;
   while (o < body.length) { const v = body[o++]; len |= (v & 0x7f) << shift; shift += 7; if (!(v & 0x80)) break; }
-  return new TextDecoder().decode(body.subarray(o, o + len));
+  return decodeUtf8(body, o, Math.min(body.length, o + len));
 }
 
 const chatJson = (text) => JSON.stringify({ text });
@@ -73,27 +77,18 @@ export class EaglerSocket extends Emitter {
     super();
     this.address = address; // parseAddress() result with kind 'eagler'
     this.state = 'idle';    // idle -> version -> login -> profile -> finish -> play | closed
-    this.ws = null;
+    this.sock = null;
   }
 
-  // Resolves once the WebSocket is open
-  open() {
-    return new Promise((resolve, reject) => {
-      let ws;
-      try { ws = new WebSocket(this.address.url); } catch (e) { reject(new Error('Bad server address')); return; }
-      ws.binaryType = 'arraybuffer';
-      this.ws = ws;
-      let opened = false;
-      ws.onopen = () => { opened = true; resolve(this); };
-      ws.onerror = () => { if (!opened) reject(new Error('Could not connect to ' + this.address.url)); };
-      ws.onclose = () => { this.state = 'closed'; clearTimeout(this.timer); this.emit('close'); };
-      ws.onmessage = (e) => {
-        if (typeof e.data === 'string') return; // only the MOTD query answers with text
-        const b = new Uint8Array(e.data);
-        if (this.state === 'play') this.emit('binary', b);
-        else this._handshake(b);
-      };
-    });
+  // Resolves once the socket is open (platform().openSocket: plain WebSocket messages)
+  async open() {
+    let sock;
+    try { sock = await platform().openSocket(this.address.url); } catch (e) { throw new Error('Could not connect to ' + this.address.url); }
+    this.sock = sock;
+    sock.on('close', () => { this.state = 'closed'; clearTimeout(this.timer); this.emit('close'); });
+    sock.on('binary', (b) => { if (this.state === 'play') this.emit('binary', b); else this._handshake(b); });
+    // text messages only answer MOTD queries
+    return this;
   }
 
   // ---------------------------------------------------------------- proxy-link socket interface
@@ -103,15 +98,17 @@ export class EaglerSocket extends Emitter {
     try { msg = JSON.parse(text); } catch (e) { return; }
     if (msg.type === 'connect' && this.state === 'idle') this._start(msg.username || 'Player');
   }
-  sendBinary(b) { if (this.state === 'play' && this.ws.readyState === 1) this.ws.send(b); }
-  close() { if (this.ws) this.ws.close(); }
+  sendBinary(b) { if (this.state === 'play') this.sock.sendBinary(b); }
+  close() { if (this.sock) this.sock.close(); }
 
   _control(obj) { this.emit('text', JSON.stringify(obj)); }
 
-  _fail(message) {
-    this._control({ type: 'kicked', reason: chatJson(message) });
+  // reason: chat component JSON, or plain text (shown as is)
+  _kick(reason) {
+    this._control({ type: 'kicked', reason });
     this.close();
   }
+  _fail(message) { this._kick(chatJson(message)); }
 
   // ---------------------------------------------------------------- handshake
 
@@ -122,7 +119,7 @@ export class EaglerSocket extends Emitter {
     this._control({ type: 'status', key: 'connect.authorizing', message: 'Logging in...' });
     this.state = 'version';
     this.timer = setTimeout(() => { if (this.state !== 'play') this._fail('Timed out during the Eaglercraft handshake'); }, 15000);
-    this.ws.send(new Writer()
+    this.sock.sendBinary(new Writer()
       .byte(0x01).byte(0x02)                        // client version, handshake format 2
       .short(2).short(2).short(3)                   // eagler protocols
       .short(1).short(GAME_PROTOCOL)                // game protocols
@@ -134,7 +131,7 @@ export class EaglerSocket extends Emitter {
 
   _handshake(b) {
     try {
-      if (b[0] === 0xff) { this._fail(readError(b)); return; }
+      if (b[0] === 0xff) { this._kick(readError(b)); return; }
       const r = new Reader(b);
       const id = r.byte();
       if (this.state === 'version') {
@@ -158,18 +155,18 @@ export class EaglerSocket extends Emitter {
         if (auth !== AUTH_NONE) {
           if (this.password === null) { this._fail('This server needs a password: add it to the address as name:password@wss://...'); return; }
           if (auth !== AUTH_PLAINTEXT) { this._fail('This server uses an Eaglercraft password method MinecraftJS does not support yet'); return; }
-          pass = new TextEncoder().encode(this.password);
+          pass = encodeUtf8(this.password);
         }
         this.state = 'login';
-        this.ws.send(new Writer().byte(0x04).str8(this.username).str8('default').byte(pass.length).bytes(pass).done());
+        this.sock.sendBinary(new Writer().byte(0x04).str8(this.username).str8('default').byte(pass.length).bytes(pass).done());
       } else if (this.state === 'login') {
-        if (id === 0x06) { this._control({ type: 'kicked', reason: r.str16() }); this.close(); return; }
+        if (id === 0x06) { this._kick(r.str16()); return; }
         if (id !== 0x05) throw new Error('Unexpected packet 0x' + id.toString(16));
         this.username = r.str8();
         this.uuid = uuidString(r.bytes(16));
         // Profile: built-in skin preset 0 (default), then finish
-        this.ws.send(new Writer().byte(0x07).str8('skin_v1').short(5).byte(0x01).int(0).done());
-        this.ws.send(new Uint8Array([0x08]));
+        this.sock.sendBinary(new Writer().byte(0x07).str8('skin_v1').short(5).byte(0x01).int(0).done());
+        this.sock.sendBinary(new Uint8Array([0x08]));
         this.state = 'finish';
       } else if (this.state === 'finish') {
         if (id !== 0x09) throw new Error('Unexpected packet 0x' + id.toString(16));
@@ -189,49 +186,49 @@ export async function openEaglerSocket(address) {
 
 // Server list ping: "Accept: MOTD" answers with a JSON description and, when the server has one, a 64x64 icon as
 // raw pixels in a following binary message. Returns a vanilla-style status object (with iconPixels).
-export function pingEagler(address, timeout = 6000) {
+export async function pingEagler(address, timeout = 6000) {
+  const P = platform();
+  let sock;
+  try { sock = await P.openSocket(address.url); } catch (e) { return { error: 'Could not connect' }; }
   return new Promise((resolve) => {
-    let ws, done = false, status = null, sent = 0, iconTimer = null;
+    let done = false, status = null, iconTimer = null;
     const finish = (r) => {
       if (done) return;
       done = true;
       clearTimeout(timer); clearTimeout(iconTimer);
-      try { ws.close(); } catch (e) { /* closed */ }
+      sock.close();
       resolve(r);
     };
     const timer = setTimeout(() => finish(status ? { status } : { error: 'Timed out' }), timeout);
-    try { ws = new WebSocket(address.url); } catch (e) { finish({ error: 'Bad address' }); return; }
-    ws.binaryType = 'arraybuffer';
-    ws.onopen = () => { sent = performance.now(); ws.send('Accept: MOTD'); };
-    ws.onerror = () => finish({ error: 'Could not connect' });
-    ws.onclose = () => finish(status ? { status } : { error: 'Connection closed' });
-    ws.onmessage = (e) => {
-      if (typeof e.data === 'string') {
-        let j;
-        try { j = JSON.parse(e.data); } catch (err) { finish({ error: 'Bad response' }); return; }
-        const d = (j && j.data) || {};
-        const motd = Array.isArray(d.motd) ? d.motd.join('\n') : String(d.motd || '');
-        status = {
-          description: motd,
-          players: { online: d.online | 0, max: d.max | 0, sample: (Array.isArray(d.players) ? d.players : []).map((name) => ({ name: String(name) })) },
-          version: { name: j.vers || j.brand || 'Eaglercraft', protocol: GAME_PROTOCOL },
-          ping: Math.round(performance.now() - sent),
-        };
-        if (d.icon) iconTimer = setTimeout(() => finish({ status }), 1000);
-        else finish({ status });
-      } else if (status) {
-        const b = new Uint8Array(e.data);
-        if (b.length === 64 * 64 * 4 || b.length === 64 * 64 * 3) {
-          const px = new Uint8Array(64 * 64 * 4);
-          const n = b.length / (64 * 64);
-          for (let i = 0; i < 64 * 64; i++) {
-            px[i * 4] = b[i * n]; px[i * 4 + 1] = b[i * n + 1]; px[i * 4 + 2] = b[i * n + 2];
-            px[i * 4 + 3] = n === 4 ? b[i * 4 + 3] : 255;
-          }
-          status.iconPixels = px;
+    sock.on('close', () => finish(status ? { status } : { error: 'Connection closed' }));
+    sock.on('text', (text) => {
+      let j;
+      try { j = JSON.parse(text); } catch (err) { finish({ error: 'Bad response' }); return; }
+      const d = (j && j.data) || {};
+      const motd = Array.isArray(d.motd) ? d.motd.join('\n') : String(d.motd || '');
+      status = {
+        description: motd,
+        players: { online: d.online | 0, max: d.max | 0, sample: (Array.isArray(d.players) ? d.players : []).map((name) => ({ name: String(name) })) },
+        version: { name: j.vers || j.brand || 'Eaglercraft', protocol: GAME_PROTOCOL },
+        ping: Math.round(P.now() - sent),
+      };
+      if (d.icon) iconTimer = setTimeout(() => finish({ status }), 1000);
+      else finish({ status });
+    });
+    sock.on('binary', (b) => {
+      if (!status) return;
+      if (b.length === 64 * 64 * 4 || b.length === 64 * 64 * 3) {
+        const px = new Uint8Array(64 * 64 * 4);
+        const n = b.length / (64 * 64);
+        for (let i = 0; i < 64 * 64; i++) {
+          px[i * 4] = b[i * n]; px[i * 4 + 1] = b[i * n + 1]; px[i * 4 + 2] = b[i * n + 2];
+          px[i * 4 + 3] = n === 4 ? b[i * 4 + 3] : 255;
         }
-        finish({ status });
+        status.iconPixels = px;
       }
-    };
+      finish({ status });
+    });
+    const sent = P.now();
+    sock.sendText('Accept: MOTD');
   });
 }

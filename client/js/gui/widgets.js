@@ -1,4 +1,5 @@
 // GUI widgets: Button, TextField, Slider (vanilla look & behaviour)
+import { platform } from '../platform/platform.js';
 
 export class Button {
   constructor(id, x, y, w, h, label, onClick) {
@@ -123,8 +124,8 @@ export class TextField {
     const shift = e.shift;
     const move = (pos) => { this.cursor = pos; if (!shift) this.selEnd = pos; };
     if (e.ctrl && e.code === 'KeyA') { this.cursor = this.text.length; this.selEnd = 0; return true; }
-    if (e.ctrl && e.code === 'KeyC') { const [a, b] = this.selection(); navigator.clipboard?.writeText(this.text.slice(a, b)).catch(() => {}); return true; }
-    if (e.ctrl && e.code === 'KeyX') { const [a, b] = this.selection(); navigator.clipboard?.writeText(this.text.slice(a, b)).catch(() => {}); this.insert(''); return true; }
+    if (e.ctrl && e.code === 'KeyC') { const [a, b] = this.selection(); platform().setClipboard(this.text.slice(a, b)); return true; }
+    if (e.ctrl && e.code === 'KeyX') { const [a, b] = this.selection(); platform().setClipboard(this.text.slice(a, b)); this.insert(''); return true; }
     if (e.ctrl && e.code === 'KeyV') { return true; } // handled by paste event -> char
     switch (e.code) {
       case 'Backspace': if (e.ctrl) this.deleteChars(this.wordBoundary(-1) - this.cursor); else this.deleteChars(-1); return true;

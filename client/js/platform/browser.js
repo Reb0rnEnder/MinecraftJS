@@ -285,18 +285,18 @@ export class BrowserPlatform extends Emitter {
   }
   async fetchJson(path) { const r = await fetch(path); if (!r.ok) throw new Error(`Failed to load ${path} (${r.status})`); return r.json(); }
 
-  // WebSocket to a MinecraftJS proxy
+  // WebSocket (a MinecraftJS proxy, or an Eaglercraft server)
   openSocket(url) {
     return new Promise((resolve, reject) => {
       let ws;
-      try { ws = new WebSocket(url); } catch (e) { reject(new Error('Bad proxy address ' + url)); return; }
+      try { ws = new WebSocket(url); } catch (e) { reject(new Error('Bad address ' + url)); return; }
       ws.binaryType = 'arraybuffer';
       const sock = new Emitter();
       sock.sendText = (s) => { if (ws.readyState === 1) ws.send(s); };
       sock.sendBinary = (b) => { if (ws.readyState === 1) ws.send(b); };
       sock.close = () => ws.close();
       ws.onopen = () => resolve(sock);
-      ws.onerror = () => reject(new Error('Could not reach the MinecraftJS proxy'));
+      ws.onerror = () => reject(new Error('Could not connect to ' + url));
       ws.onclose = () => sock.emit('close');
       ws.onmessage = (e) => {
         if (typeof e.data === 'string') sock.emit('text', e.data);
