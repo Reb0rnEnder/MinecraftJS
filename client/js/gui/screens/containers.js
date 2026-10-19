@@ -455,9 +455,10 @@ class EnchantScreen extends SimpleScreen {
     const W = this.width, H = this.height;
     const vx = Math.trunc((W - 320) / 2), vy = H - Math.trunc((H - 240) / 2) - 240; // the GL viewport, from the top
     const m = mat4.create();
-    // NDC -> GUI pixels (depth into the GUI's 3D range, nearer = higher)
+    // NDC -> GUI pixels; depth spread over +-20000 GUI units (nearer = higher) so the closed book's covers stay in
+    // front of the pages 0.01 inside them (the GUI depth range is +-400000)
     mat4.translate(m, m, vx + 160, vy + 120, 100);
-    mat4.scale(m, m, 160, -120, -50);
+    mat4.scale(m, m, 160, -120, -20000);
     mat4.translate(m, m, -0.34, 0.23, 0);
     mat4.multiply(m, m, mat4.perspective(mat4.create(), 90 * D2R, 4 / 3, 9, 80));
     mat4.translate(m, m, 0, 3.3, -16);
