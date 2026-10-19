@@ -39,8 +39,12 @@ export function entityVertices(pos, uv, nor, col) {
   return out;
 }
 
+// Entity meshes keep their vertices on the CPU too (scene.js batches small model parts into one draw)
 export function entityMesh(pos, uv, nor, col, opts = {}) {
-  return device.createMesh(FORMAT.entity, entityVertices(pos, uv, nor, col), opts);
+  const v = entityVertices(pos, uv, nor, col);
+  const m = device.createMesh(FORMAT.entity, v, opts);
+  m.cpu = v;
+  return m;
 }
 
 // ModelRenderer
@@ -105,7 +109,9 @@ export function boxesMesh(boxes, texW, texH) {
   if (m) return m;
   const pos = [], uv = [], nor = [];
   for (const b of boxes) addBox(pos, uv, nor, b, texW, texH);
-  m = device.createMesh(FORMAT.entity, entityVertices(pos, uv, nor, null), { quads: true });
+  const v = entityVertices(pos, uv, nor, null);
+  m = device.createMesh(FORMAT.entity, v, { quads: true });
+  m.cpu = v;
   boxCache.set(key, m);
   return m;
 }

@@ -114,8 +114,10 @@ export class Atlas {
 
   frameCount(name) { const an = this.animations.find((a) => a.name === name); return an ? an.frames.length : 0; }
 
-  // RGBA pixels of a sub rectangle (for partial texture uploads)
+  // RGBA pixels of a sub rectangle (for partial texture uploads): an animation's current frame without copying
+  // when it has one, else read out of the atlas
   region(e) {
+    if (e.upload) return e.upload;
     const out = new Uint8Array(e.w * e.h * 4);
     for (let y = 0; y < e.h; y++) {
       const s = ((e.y + y) * this.size + e.x) * 4;
@@ -124,31 +126,26 @@ export class Atlas {
     return out;
   }
 
+  // Put an animation's frame into the atlas pixels. Plain frames are contiguous in the source strip, so rows are
+  // block copies and the upload can use the strip directly (entry.upload); interpolated frames are blended into a
+  // reusable buffer once and copied from it.
   _writeFrame(an) {
     const e = an.entry;
-    const w = e.w, h = e.h;
+    const w = e.w, h = e.h, row = w * 4;
     const src = an.full.data;
     const f = an.frames[an.frame];
     const srcOff = f.index * w * h * 4;
-    let mix = 0, nextOff = 0;
-    if (an.interpolate) {
+    let frame;
+    if (an.interpolate && an.ticks > 0) {
       const next = an.frames[(an.frame + 1) % an.frames.length];
-      mix = an.ticks / f.time;
-      nextOff = next.index * w * h * 4;
-    }
-    const dst = this.data;
-    for (let yy = 0; yy < h; yy++) {
-      for (let xx = 0; xx < w; xx++) {
-        const si = srcOff + (yy * w + xx) * 4;
-        const di = ((e.y + yy) * this.size + e.x + xx) * 4;
-        if (mix > 0) {
-          const ni = nextOff + (yy * w + xx) * 4;
-          for (let k = 0; k < 4; k++) dst[di + k] = src[si + k] * (1 - mix) + src[ni + k] * mix;
-        } else {
-          dst[di] = src[si]; dst[di + 1] = src[si + 1]; dst[di + 2] = src[si + 2]; dst[di + 3] = src[si + 3];
-        }
-      }
-    }
+      const mix = an.ticks / f.time, inv = 1 - mix;
+      const nextOff = next.index * w * h * 4;
+      frame = an.blend || (an.blend = new Uint8Array(w * h * 4));
+      for (let i = 0, n = w * h * 4; i < n; i++) frame[i] = src[srcOff + i] * inv + src[nextOff + i] * mix;
+    } else frame = src.subarray(srcOff, srcOff + w * h * 4);
+    const dst = this.data, size4 = this.size * 4;
+    for (let yy = 0; yy < h; yy++) dst.set(frame.subarray(yy * row, yy * row + row), (e.y + yy) * size4 + e.x * 4);
+    e.upload = frame;
   }
 
   // Serializable lookup for the mesher
