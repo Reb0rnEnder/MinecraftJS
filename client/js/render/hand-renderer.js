@@ -20,6 +20,7 @@ export class HandRenderer {
     this.atlasMat = entityMaterial(() => game.assets.atlasTexture, { alphaTest: 0.1, transparent: true });
     this.renderArmPitch = 0; this.prevRenderArmPitch = 0;
     this.renderArmYaw = 0; this.prevRenderArmYaw = 0;
+    this.skinDirty = false;
     this.content = new Node();
     this.root.add(this.content);
   }
@@ -81,8 +82,12 @@ export class HandRenderer {
     return n;
   }
 
+  // Skin changes can be reported while prepare() is building the hand tree; defer the destructive reset.
+  invalidateSkin() { this.skinDirty = true; }
+
   // Drop cached objects (skin / resource changes)
   reset() {
+    this.skinDirty = false;
     this._armObj = null; this._armsObj = null; this._armNodes = null; this.armMat = null;
     this.hands = null; this.content.clear();
   }
@@ -91,6 +96,7 @@ export class HandRenderer {
   prepare(partial) {
     const g = this.game, pl = g.player, it = g.interaction;
     if (g.sleeping) return null;
+    if (this.skinDirty) this.reset();
     // the hand renders with a fixed 70-degree FOV independent of the game FOV
     mat4.perspective(this.proj, 70 * D2R, platform().width / platform().height, 0.05, 10);
     if (!this.hands) {
