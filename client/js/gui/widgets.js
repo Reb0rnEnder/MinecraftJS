@@ -16,7 +16,7 @@ export class Button {
   }
   mouseDown(mx, my, game) {
     if (this.visible && this.enabled && this.hovered(mx, my)) {
-      game.sound.playUi('gui.button.press', 1);
+      if (this.pressSound) this.pressSound(game); else game.sound.playUi('gui.button.press', 1);
       if (this.onClick) this.onClick(this);
       return true;
     }

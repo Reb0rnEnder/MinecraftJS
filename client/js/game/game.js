@@ -39,7 +39,7 @@ import { HandRenderer } from '../render/hand-renderer.js';
 import { Pistons } from './pistons.js';
 import { ServerPacks } from './serverpacks.js';
 import { BoatController } from './vehicle.js';
-import { PostEffects, entityShaderName } from '../render/post.js';
+import { PostEffects, entityShaderName, SUPER_SECRET, SUPER_SECRET_SUPPORTED } from '../render/post.js';
 import { TileEntityRenderer } from '../render/tile-renderer.js';
 import { Particles } from '../render/particles.js';
 import { Weather } from '../render/weather.js';
@@ -252,20 +252,17 @@ export class Game {
     }
   }
 
-  // "Super Secret Settings...": vanilla cycles post-processing shaders (and back to none). The renderer has no
-  // post-processing chain, so these are the full-screen colour effects that can be done with blending.
+  // "Super Secret Settings..." (EntityRenderer.activateNextShader): the next of shaderResourceLocations, then none.
+  // Only while viewing as a player; the shaders this client cannot run (post.js) are skipped.
   cycleSuperSecret() {
-    this.superSecret = ((this.superSecret || 0) + 1) % 4;
-  }
-
-  _drawSuperSecret(gui) {
-    const m = this.superSecret || 0;
-    if (!m || this.superSecretOff) return;
-    const W = gui.width, H = gui.height;
-    if (m === 1) { gui.setBlend('invert'); gui.rect(0, 0, W, H, 0xffffffff); }          // invert
-    else if (m === 2) { gui.setBlend('multiply'); gui.rect(0, 0, W, H, 0xff70ff70); }   // green
-    else if (m === 3) { gui.rect(0, 0, W, H, 0x80808080); }                             // desaturate-ish wash
-    gui.setBlend('alpha');
+    if (!this.inWorld) return;
+    if (this.cameraEntity != null) { const e = this.entities.get(this.cameraEntity); if (!e || e.kind !== 'player') return; }
+    const n = SUPER_SECRET.length;
+    let i = this.superSecretIndex ?? n;
+    do { i = (i + 1) % (n + 1); } while (i !== n && !SUPER_SECRET_SUPPORTED.includes(SUPER_SECRET[i]));
+    this.superSecretIndex = i;
+    this.superSecret = i === n ? null : SUPER_SECRET[i];
+    this.shadersOff = false; // loadShader: useShader = true
   }
 
   // Font flags for the current language (LanguageManager.isCurrentLocaleUnicode / isCurrentLanguageBidirectional)
@@ -528,6 +525,7 @@ export class Game {
   }
 
   leaveWorld() {
+    this.superSecret = null; // the next world's setRenderViewEntity drops the shader group
     this.commandBlocks.clear();
     this.inWorld = false;
     this.connected = false;
@@ -1003,6 +1001,7 @@ export class Game {
 
   on_camera(p) {
     this.cameraEntity = p.cameraId === this.entityId ? null : p.cameraId;
+    this.superSecret = null; // setRenderViewEntity: loadEntityShader replaces the group
   }
 
   on_world_border(p) {
@@ -1145,10 +1144,10 @@ export class Game {
       return;
     }
     if (this.showDebug && this.showProfiler && /^Digit[0-9]$/.test(e.code)) this.profiler.navigate(+e.code.slice(5));
-    if (e.code === 'F4') { if (this.superSecret) this.superSecretOff = !this.superSecretOff; return; } // switchUseShader
+    if (e.code === 'F4') { this.shadersOff = !this.shadersOff; return; } // EntityRenderer.switchUseShader
     if (e.code === 'F1') { this.hideGui = !this.hideGui; return; } // not rebindable in 1.8.9
     if (e.code === k.smoothCamera) { this.smoothCamera = !this.smoothCamera; return; }
-    if (e.code === k.perspective) { this.thirdPerson = (this.thirdPerson + 1) % 3; return; }
+    if (e.code === k.perspective) { this.thirdPerson = (this.thirdPerson + 1) % 3; this.superSecret = null; return; } // loadEntityShader replaces the group
     if (e.code === k.screenshot) { this.takeScreenshot(); return; }
     if (e.code === k.drop) { this.interaction.dropItem(e.ctrl); return; }
     if (e.code === k.fullscreen) { platform().toggleFullscreen(); return; }
@@ -1662,12 +1661,13 @@ export class Game {
     this.profiler.endStart('level');
     // EntityRenderer.loadEntityShader: spectating a creeper, spider or enderman in first person
     const viewed = this.cameraEntity != null && this.thirdPerson === 0 ? this.entities.get(this.cameraEntity) : null;
-    const post = viewed && this.device.createRenderTarget ? this.postEffects.get(entityShaderName(viewed)) : null;
+    // (theShaderGroup: the entity's shader or a Super Secret Settings one; F4 turns it off)
+    const shader = viewed ? entityShaderName(viewed) : this.superSecret;
+    const post = shader && !this.shadersOff && this.device.createRenderTarget ? this.postEffects.get(shader) : null;
     r.render(hand, post);
     if (post) post.render(r.lightmap, ((this.ticks + partial) % 20) / 20);
     this.profiler.endStart('gui');
     gui.begin();
-    this._drawSuperSecret(gui);
     if (!this.hideGui || this.screens.current) {
       this.hud.render(gui, partial, { underwater, inLava, portal });
     }

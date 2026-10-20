@@ -138,6 +138,12 @@ export class SoundManager {
     return this.play(name, 0, 0, 0, volume, pitch, { global: true });
   }
 
+  // SoundHandler.getRandomSoundFromCategories: any sound event of those categories
+  randomEvent(categories) {
+    const names = Object.keys(this.defs || {}).filter((n) => categories.includes(this.defs[n].category));
+    return names.length ? names[Math.floor(Math.random() * names.length)] : null;
+  }
+
   playUi(name, pitch = 1) { return this.play(name, 0, 0, 0, 0.25, pitch, { global: true }); }
 
   stopAll() {

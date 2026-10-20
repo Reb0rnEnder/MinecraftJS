@@ -63,7 +63,12 @@ export class OptionsScreen extends OptionsBase {
     const btn = (id, col, row, key, fn) => this.buttons.push(new Button(id, cx + (col ? 5 : -155), h6 + 48 - 6 + 24 * row, 150, 20, typeof key === 'function' ? key : tr(key), fn));
     const open = (Cls) => () => g.screens.open(new Cls(g, this));
     btn(110, 0, 0, 'options.skinCustomisation', open(SkinScreen));
-    btn(8675309, 1, 0, 'Super Secret Settings...', () => g.cycleSuperSecret && g.cycleSuperSecret());
+    btn(8675309, 1, 0, 'Super Secret Settings...', () => g.cycleSuperSecret());
+    // its playPressSound: a random animal, block, mob, player or weather sound at pitch 0.5
+    this.buttons[this.buttons.length - 1].pressSound = (game) => {
+      const name = game.sound.randomEvent(['neutral', 'block', 'hostile', 'player', 'weather']);
+      if (name) game.sound.playUi(name, 0.5);
+    };
     btn(106, 0, 1, 'options.sounds', open(SoundScreen));
     btn(107, 1, 1, 'options.stream', open(StreamUnavailableScreen));
     btn(101, 0, 2, 'options.video', open(VideoScreen));
