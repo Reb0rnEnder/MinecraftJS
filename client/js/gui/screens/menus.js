@@ -391,6 +391,14 @@ export class ServerEditScreen extends Screen {
     const addr = srv ? formatAddress(srv.host, srv.port) : (this.direct && last ? formatAddress(last.host, last.port) : '');
     this.addrField = new TextField(cx - 100, this.direct ? 116 : 106, 200, 20, { text: addr, maxLength: 256, focused: this.direct, onEnter: () => this.done() });
     this.fields.push(this.addrField);
+    // GuiScreenAddServer: "Server Resource Packs: Enabled / Disabled / Prompt" (ServerData.ServerResourceMode order)
+    if (!this.direct) {
+      if (!this.resourceMode) this.resourceMode = (srv && srv.resourceMode) || 'prompt';
+      this.buttons.push(new Button(2, cx - 100, this.height / 4 + 72, 200, 20, () => tr('addServer.resourcePack') + ': ' + tr('addServer.resourcePack.' + this.resourceMode), () => {
+        const modes = ['enabled', 'disabled', 'prompt'];
+        this.resourceMode = modes[(modes.indexOf(this.resourceMode) + 1) % modes.length];
+      }));
+    }
     this.doneBtn = new Button(0, cx - 100, this.height / 4 + 96 + 18, 200, 20, this.direct ? tr('selectServer.select') : tr('addServer.add'), () => this.done());
     this.buttons.push(this.doneBtn);
     this.buttons.push(new Button(1, cx - 100, this.height / 4 + 120 + 18, 200, 20, tr('gui.cancel'), () => g.screens.open(this.parent)));
@@ -413,7 +421,7 @@ export class ServerEditScreen extends Screen {
       g.connect(a.host, a.port);
       return;
     }
-    const entry = { name: this.nameField.text || tr('selectServer.defaultName'), host: a.host, port: a.port };
+    const entry = { name: this.nameField.text || tr('selectServer.defaultName'), host: a.host, port: a.port, resourceMode: this.resourceMode };
     if (this.index !== null) g.settings.servers[this.index] = entry; else g.settings.servers.push(entry);
     g.settings.save();
     this.parent.pings.clear();

@@ -38,6 +38,7 @@ import { EntityRenderer } from '../render/entity-renderer.js';
 import { ItemRenderer } from '../render/item-renderer.js';
 import { HandRenderer } from '../render/hand-renderer.js';
 import { Pistons } from './pistons.js';
+import { ServerPacks } from './serverpacks.js';
 import { TileEntityRenderer } from '../render/tile-renderer.js';
 import { Particles } from '../render/particles.js';
 import { Weather } from '../render/weather.js';
@@ -94,6 +95,7 @@ export class Game {
     this.handRenderer = new HandRenderer(this);
     this.tileRenderer = new TileEntityRenderer(this);
     this.pistons = new Pistons(this);
+    this.serverPacks = new ServerPacks(this);
     this.particles = new Particles(this);
     this.debugLines = new DebugLines(this);
     this.weather = new Weather(this);
@@ -568,6 +570,7 @@ export class Game {
     if (this.advancements) this.advancements.clear();
     this.hud.resetServerState();
     this.statValues = null; this.stats = null;
+    if (this.serverPacks) this.serverPacks.clear();
   }
 
   onControl(m, conn) {
@@ -1110,8 +1113,8 @@ export class Game {
   on_playerlist_header(p) { this.scoreboard.header = chatToLegacy(p.header); this.scoreboard.footer = chatToLegacy(p.footer); }
 
   on_resource_pack_send(p) {
-    // Server resource packs aren't supported; report "declined"
-    this.send(C.resourcePackStatus(1));
+    const conn = this.conn;
+    this.serverPacks.handle(p.url, p.hash, (status) => { if (this.conn === conn) this.send(C.resourcePackStatus(status)); });
   }
 
   on_update_entity_nbt() { /* unused by vanilla client */ }

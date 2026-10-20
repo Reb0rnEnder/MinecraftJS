@@ -45,6 +45,7 @@ export class Assets {
     this.textures = new Map(); // rel -> device texture
     this.data = {};
     this.packs = [];           // active packs, highest priority first
+    this.serverPack = null;    // the current server's resource pack (serverpacks.js), first in packs while set
     this.device = null;
     this.version = 0;          // bumps on every (re)load so caches elsewhere can invalidate
     this.language = 'en_us';   // selected language code (lowercase since 1.11, as the .lang files)
@@ -84,6 +85,7 @@ export class Assets {
   async activatePacks(ids) {
     const all = await this.listPacks();
     this.packs = ids.map((id) => all.find((p) => p.id === id)).filter(Boolean);
+    if (this.serverPack) this.packs.unshift(this.serverPack); // a server's pack stays on top while connected
   }
 
   // ---------------------------------------------------------------- file access (pack-aware)
