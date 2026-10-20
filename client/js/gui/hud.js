@@ -374,7 +374,6 @@ export class Hud {
     this.renderSubtitles(gui);
     this.renderSidebar(gui);
     this.renderChat(gui);
-    this.renderToast(gui);
     if (g.input.isDown('playerlist') && !g.screens.current && (!g.scoreboard.singlePlayer)) this.renderTabList(gui);
     else if (g.input.isDown('playerlist') && !g.screens.current) this.renderTabList(gui);
   }

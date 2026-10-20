@@ -1718,6 +1718,7 @@ export class Game {
       else r.renderBlank();
       gui.begin();
       this.screens.render(gui, partial);
+      if (!this.hideGui) this.hud.renderToast(gui); // GuiToast.drawToast: on top of every screen
       gui.end();
       this.device.endFrame();
       return;
@@ -1807,6 +1808,7 @@ export class Game {
       this.hud.render(gui, partial, { underwater, inLava, portal });
     }
     this.screens.render(gui, partial);
+    if (!this.hideGui) this.hud.renderToast(gui); // GuiToast.drawToast: on top of every screen
     gui.end();
     this.profiler.end();
     this.device.endFrame();
