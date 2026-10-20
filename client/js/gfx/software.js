@@ -205,11 +205,76 @@ export class SoftwareDevice {
 
   capture() { return new Promise((res) => this.captureWaiters.push(res)); }
 
+  // The post pipeline (see device.js) over the whole target, per pixel like the fragment shader. Textures are stored
+  // top-down; texCoord is vanilla's (origin bottom left).
+  _post(d) {
+    const P = d.params || DEFAULT_PARAMS.post;
+    const src = (d.textures && d.textures[0]) || this.white, aux = this.globals.lightmap || this.white;
+    const out = this.cur, W = out.width, H = out.height, dst = out.color;
+    const sw = src.width, sh = src.height, sp = src.u32, aw = aux.width, ah = aux.height, ap = aux.u32;
+    const px = [0, 0, 0, 0], bx = [0, 0, 0, 0];
+    const fetch = (o, p, w, h, x, y) => {
+      let i = Math.floor(x * w), j = Math.floor((1 - y) * h);
+      i = i < 0 ? 0 : i >= w ? w - 1 : i; j = j < 0 ? 0 : j >= h ? h - 1 : j;
+      const c = p[j * w + i];
+      o[0] = (c & 255) / 255; o[1] = ((c >>> 8) & 255) / 255; o[2] = ((c >>> 16) & 255) / 255; o[3] = (c >>> 24) / 255;
+      return o;
+    };
+    const fract = (v) => v - Math.floor(v);
+    const mode = Math.round(P[0]);
+    const cs = Math.cos(P[1] * 0.0174532925), sn = Math.sin(P[1] * 0.0174532925);
+    const R = P[6];
+    for (let y = 0; y < H; y++) {
+      const ty = 1 - (y + 0.5) / H;
+      for (let x = 0; x < W; x++) {
+        const tx = (x + 0.5) / W;
+        let r, g, b, a = 1;
+        if (mode === 0) { fetch(px, sp, sw, sh, tx, ty); r = px[0] * P[4]; g = px[1] * P[5]; b = px[2] * P[6]; a = px[3] * P[7]; }
+        else if (mode === 1) { fetch(px, sp, sw, sh, tx, ty); const k = P[1]; r = px[0] + (1 - 2 * px[0]) * k; g = px[1] + (1 - 2 * px[1]) * k; b = px[2] + (1 - 2 * px[2]) * k; }
+        else if (mode === 2) {
+          fetch(px, sp, sw, sh, tx, ty);
+          const cr = px[0] * P[4] + px[1] * P[5] + px[2] * P[6], cg = px[0] * P[8] + px[1] * P[9] + px[2] * P[10], cb = px[0] * P[12] + px[1] * P[13] + px[2] * P[14];
+          const l = cr * 0.3 + cg * 0.59 + cb * 0.11;
+          r = (cr - l) * P[1] + l; g = (cg - l) * P[1] + l; b = (cb - l) * P[1] + l;
+        } else if (mode === 3) {
+          const mx = sw / P[3], my = sh / P[3];
+          fetch(px, sp, sw, sh, tx - fract(tx * mx) / mx, ty - fract(ty * my) / my);
+          const q = P[1];
+          const fr = px[0] - fract(px[0] * q) / q, fg = px[1] - fract(px[1] * q) / q, fb = px[2] - fract(px[2] * q) / q;
+          const l = fr * 0.3 + fg * 0.59 + fb * 0.11;
+          r = l + (fr - l) * P[2]; g = l + (fg - l) * P[2]; b = l + (fb - l) * P[2];
+        } else if (mode === 4) {
+          let ar = 0, ag = 0, ab = 0, ta = 0;
+          for (let k = -R; k <= R; k += 1) {
+            fetch(px, sp, sw, sh, tx + k * P[4] / sw, ty + k * P[5] / sh);
+            ar += px[0]; ag += px[1]; ab += px[2]; ta += px[3];
+          }
+          const n = R * 2 + 1;
+          r = ar / n; g = ag / n; b = ab / n; a = ta;
+        } else {
+          const sx = (tx * cs - ty * sn) * P[4] + P[6], sy = (ty * cs + tx * sn) * P[5] + P[7];
+          fetch(bx, ap, aw, ah, tx, ty);
+          fetch(px, sp, sw, sh, sx, sy);
+          let o0 = px[0], o1 = px[1], o2 = px[2];
+          if (sx < P[8] || sy < P[9] || sx > P[10] || sy > P[11]) { o0 = bx[0]; o1 = bx[1]; o2 = bx[2]; }
+          const mixB = (t) => { o0 = bx[0] + (o0 - bx[0]) * t; o1 = bx[1] + (o1 - bx[1]) * t; o2 = bx[2] + (o2 - bx[2]) * t; };
+          if (sx < P[12]) mixB((P[8] - sx) / (P[8] - P[12]));
+          if (sy < P[13]) mixB((P[9] - sy) / (P[9] - P[13]));
+          if (sx > P[14]) mixB((P[10] - sx) / (P[10] - P[14]));
+          if (sy > P[15]) mixB((P[11] - sy) / (P[11] - P[15]));
+          r = o0; g = o1; b = o2;
+        }
+        dst[y * W + x] = packColor(r, g, b, a);
+      }
+    }
+  }
+
   // ---------------------------------------------------------------- drawing
 
   draw(d) {
     const m = d.mesh;
     if (!m || !m.vertexCount) return;
+    if (d.pipeline === 'post') { this._post(d); return; }
     const pipe = d.pipeline;
     const P = d.params || DEFAULT_PARAMS[pipe] || ZERO16;
     const st = d.state || EMPTY;

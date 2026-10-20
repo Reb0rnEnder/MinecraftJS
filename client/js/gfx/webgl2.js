@@ -116,6 +116,53 @@ void main() {
   o = uP[0].w < 0.5 ? vec4(mix(col, uFogColor, f), t.a) : vec4(col * (1.0 - f), 1.0);
 }`,
   },
+  // Vanilla post-processing programs (see device.js); texCoord is vanilla's (origin bottom left), and render targets are
+  // stored bottom-up here, so it addresses the texels directly
+  post: {
+    vs: `
+layout(location=0) in vec3 aPos; layout(location=1) in vec2 aUv; layout(location=2) in vec4 aCol;
+out vec2 vTc;
+void main() { vTc = vec2(aUv.x, 1.0 - aUv.y); gl_Position = vec4(aPos.xy, 0.0, 1.0); }`,
+    fs: `
+in vec2 vTc; out vec4 o;
+vec4 fetch(sampler2D s, vec2 c) { ivec2 n = textureSize(s, 0); return texelFetch(s, clamp(ivec2(floor(c * vec2(n))), ivec2(0), n - 1), 0); }
+void main() {
+  int m = int(uP[0].x + 0.5);
+  vec2 tc = vTc;
+  vec2 inSize = vec2(textureSize(uTex0, 0));
+  if (m == 0) { o = fetch(uTex0, tc) * uP[1]; }
+  else if (m == 1) { vec4 d = fetch(uTex0, tc); o = vec4(mix(d, 1.0 - d, uP[0].y).rgb, 1.0); }
+  else if (m == 2) {
+    vec3 t = fetch(uTex0, tc).rgb;
+    vec3 c = vec3(dot(t, uP[1].xyz), dot(t, uP[2].xyz), dot(t, uP[3].xyz));
+    float l = dot(c, vec3(0.3, 0.59, 0.11));
+    o = vec4((c - l) * uP[0].y + l, 1.0);
+  } else if (m == 3) {
+    vec2 mis = inSize / uP[0].w;
+    vec4 b = fetch(uTex0, tc - fract(tc * mis) / mis);
+    vec3 f = b.rgb - fract(b.rgb * uP[0].y) / uP[0].y;
+    float l = dot(f, vec3(0.3, 0.59, 0.11));
+    o = vec4(l + (f - l) * uP[0].z, 1.0);
+  } else if (m == 4) {
+    vec2 one = 1.0 / inSize;
+    float R = uP[1].z;
+    vec4 acc = vec4(0.0); float ta = 0.0;
+    for (float r = -R; r <= R; r += 1.0) { vec4 s = fetch(uTex0, tc + one * r * uP[1].xy); ta += s.a; acc += s; }
+    o = vec4(acc.rgb / (R * 2.0 + 1.0), ta);
+  } else {
+    float a = uP[0].y * 0.0174532925; float cs = cos(a), sn = sin(a);
+    vec2 sc = vec2(tc.x * cs - tc.y * sn, tc.y * cs + tc.x * sn) * uP[1].xy + uP[1].zw;
+    vec4 S = uP[2], V = uP[3];
+    vec4 B = fetch(uLightmap, tc), O = fetch(uTex0, sc);
+    if (sc.x < S.x || sc.y < S.y || sc.x > S.z || sc.y > S.w) O = B;
+    if (sc.x < V.x) O = mix(B, O, (S.x - sc.x) / (S.x - V.x));
+    if (sc.y < V.y) O = mix(B, O, (S.y - sc.y) / (S.y - V.y));
+    if (sc.x > V.z) O = mix(B, O, (S.z - sc.x) / (S.z - V.z));
+    if (sc.y > V.w) O = mix(B, O, (S.w - sc.y) / (S.w - V.w));
+    o = vec4(O.rgb, 1.0);
+  }
+}`,
+  },
 };
 
 export class WebGL2Device {
