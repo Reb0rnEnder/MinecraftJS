@@ -204,6 +204,7 @@ export class Hud {
   _drawToast(gui, toast, delta) {
     if (toast.type === 'recipe') return this._drawRecipeToast(gui, toast, delta);
     if (toast.type === 'system') return this._drawSystemToast(gui, toast, delta);
+    if (toast.type === 'tutorial') return toast.draw(gui, delta);
     gui.blit('gui/toasts.png', 0, 0, 0, 0, 160, 32);
     const d = toast.advancement.display;
     const list = gui.font.wrap(d.title, 125);

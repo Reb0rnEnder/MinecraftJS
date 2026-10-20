@@ -43,6 +43,7 @@ const DEFAULTS = {
   realmsNotifications: true,
   showDebugInfo: false,
   reducedDebugInfo: false,
+  tutorialStep: 'movement', // Tutorial step (tutorial.js); 'none' once done
   narrator: 0, // 0 off, 1 all, 2 chat, 3 system (narrator.js)
   advancedItemTooltips: false,
   skinParts: 0x7f,

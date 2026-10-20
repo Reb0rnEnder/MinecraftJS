@@ -24,6 +24,7 @@ import { Gui } from '../gui/gui.js';
 import { chatToLegacy, setTranslator } from '../gui/chat.js';
 import { Hud } from '../gui/hud.js';
 import { Narrator } from '../gui/narrator.js';
+import { Tutorial } from './tutorial.js';
 import { ScreenManager } from '../gui/screens/manager.js';
 import { DownloadingTerrainScreen, DisconnectedScreen, ConnectingScreen } from '../gui/screens/menus.js';
 import { ChatScreen } from '../gui/screens/chat.js';
@@ -95,6 +96,7 @@ export class Game {
     this.screens = new ScreenManager(this);
     this.hud = new Hud(this);
     this.narrator = new Narrator(this);
+    this.tutorial = new Tutorial(this);
     this.itemRenderer = new ItemRenderer(this);
     this.entityRenderer = new EntityRenderer(this);
     this.handRenderer = new HandRenderer(this);
@@ -575,6 +577,7 @@ export class Game {
 
   leaveWorld() {
     this.structureBlocks.clear();
+    if (this.tutorial) this.tutorial.stop();
     this.inWorld = false;
     this.connected = false;
     this.world.clear();
@@ -997,6 +1000,7 @@ export class Game {
   }
 
   on_set_slot(p) {
+    this.tutorial.handleSetSlot(p.item);
     if (p.windowId === -1 && p.slot === -1) { this.inventory.cursor = p.item; return; }
     if (p.windowId === 0 || p.windowId === -2) {
       if (p.windowId === -2) this.inventory.setPlayerSlotByInventoryIndex(p.slot, p.item);
@@ -1312,6 +1316,7 @@ export class Game {
       this.send(C.entityAction(this.entityId, 7));
       return;
     }
+    this.tutorial.openInventory();
     if (this.gameMode === 1) this.screens.open(new CreativeScreen(this));
     else this.screens.open(new InventoryScreen(this));
   }
@@ -1394,6 +1399,10 @@ export class Game {
 
     // Interaction (dig/use/attack) before movement like vanilla runTick
     const presses = this.input.consumePresses();
+    // Minecraft.runTick: Tutorial.update, then (EntityPlayerSP.onLivingUpdate) the movement keys and the hovered block
+    this.tutorial.update();
+    this.tutorial.handleMovement(inp);
+    this.tutorial.onMouseHover(this.interaction.target);
     if (!this.screens.current && this.input.locked && !this.dead) this.interaction.tick(presses);
     else this.interaction.tickIdle();
 
@@ -1630,6 +1639,7 @@ export class Game {
     // Mouse look (applied per frame like vanilla)
     const [mdx, mdy] = this.input.takeMouseDelta();
     if (this.inWorld && this.input.locked && !this.screens.current) {
+      this.tutorial.handleMouse(mdx, mdy);
       const s = this.settings.sensitivity * 0.6 + 0.2;
       const f = s * s * s * 8;
       let dx = mdx * f * 0.15, dy = mdy * f * 0.15 * (this.settings.invertMouse ? -1 : 1);

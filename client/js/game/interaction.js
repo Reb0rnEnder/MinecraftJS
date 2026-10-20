@@ -268,6 +268,7 @@ export class Interaction {
       if (g.gameMode === 3) return;
     }
     if (g.gameMode === 1) {
+      g.tutorial.onHitBlock(g.world.getState(pos.x, pos.y, pos.z), 1);
       g.send(C.blockDig(0, pos.x, pos.y, pos.z, face));
       if (!this._extinguishFire(pos, face)) this.destroyBlockClient(pos);
       this.blockHitDelay = 5;
@@ -275,8 +276,9 @@ export class Interaction {
     }
     if (!this.isHitting || !this._isHittingPos(pos)) {
       if (this.isHitting) g.send(C.blockDig(1, this.curBlock.x, this.curBlock.y, this.curBlock.z, face));
-      g.send(C.blockDig(0, pos.x, pos.y, pos.z, face));
       const state = g.world.getState(pos.x, pos.y, pos.z);
+      g.tutorial.onHitBlock(state, 0);
+      g.send(C.blockDig(0, pos.x, pos.y, pos.z, face));
       const b = blocks[state >> 4];
       const notAir = b && b.id !== 0;
       if (notAir && this.relativeHardness(b) >= 1) {
@@ -365,6 +367,7 @@ export class Interaction {
     if (this.blockHitDelay > 0) { this.blockHitDelay--; return true; }
     if (g.gameMode === 1) {
       this.blockHitDelay = 5;
+      g.tutorial.onHitBlock(g.world.getState(pos.x, pos.y, pos.z), 1);
       g.send(C.blockDig(0, pos.x, pos.y, pos.z, face));
       if (!this._extinguishFire(pos, face)) this.destroyBlockClient(pos);
       return true;
@@ -378,6 +381,7 @@ export class Interaction {
       this.curDamage = Math.fround(this.curDamage + this.relativeHardness(b)); // curBlockDamageMP is a float
       if (this.stepSoundCounter % 4 === 0) g.sound.playBlockHit(pos.x, pos.y, pos.z, state);
       this.stepSoundCounter++;
+      g.tutorial.onHitBlock(state, Math.max(0, Math.min(1, this.curDamage)));
       if (this.curDamage >= 1) {
         this.isHitting = false;
         g.send(C.blockDig(2, pos.x, pos.y, pos.z, face));
@@ -395,6 +399,8 @@ export class Interaction {
 
   resetBreaking() {
     if (this.isHitting && this.curBlock) {
+      const c = this.curBlock;
+      this.game.tutorial.onHitBlock(this.game.world.getState(c.x, c.y, c.z), -1);
       this.game.send(C.blockDig(1, this.curBlock.x, this.curBlock.y, this.curBlock.z, this.curFace || 0));
     }
     this.isHitting = false;
