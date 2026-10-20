@@ -138,6 +138,100 @@ fn fetchAux(c: vec2f) -> vec4f {
     for (var r = -R; r <= R; r += 1.0) { let s = fetchIn(tc + one * r * D.p[1].xy); ta += s.a; acc += s; }
     return vec4f(acc.rgb / (R * 2.0 + 1.0), ta);
   }
+  let one = 1.0 / inSize;
+  if (m == 6) {
+    let c = fetchIn(tc);
+    let t = (c - fetchIn(tc - vec2f(one.x, 0.0))) + (c - fetchIn(tc + vec2f(one.x, 0.0))) + (c - fetchIn(tc - vec2f(0.0, one.y))) + (c - fetchIn(tc + vec2f(0.0, one.y)));
+    return vec4f(clamp(t, vec4f(0.0), vec4f(1.0)).rgb, 1.0);
+  }
+  if (m == 7) {
+    let rx = D.p[3].xyz; let ry = D.p[0].yzw;
+    let cx = tc.x * rx + D.p[1].xyz * one.x - (rx - 1.0) * 0.5;
+    let cy = tc.y * ry + D.p[2].xyz * one.y - (ry - 1.0) * 0.5;
+    return vec4f(fetchIn(vec2f(cx.x, cy.x)).r, fetchIn(vec2f(cx.y, cy.y)).g, fetchIn(vec2f(cx.z, cy.z)).b, 1.0);
+  }
+  if (m == 8) { return vec4f(max(fetchAux(tc).rgb * D.p[1].xyz, fetchIn(tc).rgb), 1.0); }
+  if (m == 9) {
+    let c = fetchIn(tc);
+    let nc = normalize(c);
+    let du = dot(nc, normalize(fetchIn(tc + vec2f(0.0, -one.y)))); let dd = dot(nc, normalize(fetchIn(tc + vec2f(0.0, one.y))));
+    let dl = dot(nc, normalize(fetchIn(tc + vec2f(-one.x, 0.0)))); let dr = dot(nc, normalize(fetchIn(tc + vec2f(one.x, 0.0))));
+    let f = 1.0 + (du * 64.0 - dd * 64.0) + (dr * 64.0 - dl * 64.0);
+    return vec4f((c * clamp(f, 0.5, 2.0)).rgb, 1.0);
+  }
+  if (m == 10) {
+    var ks = array<vec2f, 12>(vec2f(0.0, -1.0), vec2f(0.0, 1.0), vec2f(-1.0, 0.0), vec2f(1.0, 0.0), vec2f(-1.0, -1.0), vec2f(1.0, 1.0),
+      vec2f(-1.0, 1.0), vec2f(1.0, -1.0), vec2f(0.0, -2.0), vec2f(0.0, 2.0), vec2f(-2.0, 0.0), vec2f(2.0, 0.0));
+    var v = fetchIn(tc);
+    for (var i = 0; i < 12; i++) { v = min(v, fetchIn(tc + ks[i] * one)); }
+    return vec4f(v.rgb, 1.0);
+  }
+  if (m == 11) {
+    let R = D.p[0].y;
+    var mx = fetchIn(tc);
+    for (var u = 0.0; u <= R; u += 1.0) {
+      for (var v = 0.0; v <= R; v += 1.0) {
+        let w = select(1.0, 0.0, sqrt(u * u + v * v) / R > 1.0);
+        let t = max(max(fetchIn(tc + vec2f(-u, -v) * one), fetchIn(tc + vec2f(u, v) * one)), max(fetchIn(tc + vec2f(-u, v) * one), fetchIn(tc + vec2f(u, -v) * one)));
+        mx = mix(mx, max(mx, t), w);
+      }
+    }
+    return vec4f(mx.rgb, 1.0);
+  }
+  if (m == 12) {
+    let c = fetchIn(tc);
+    let v1 = mix(c, mix(fetchIn(tc - vec2f(one.x, 0.0)), fetchIn(tc - vec2f(one.x * 2.0, 0.0)), 0.667), 0.75);
+    let v2 = mix(c, mix(fetchIn(tc + vec2f(one.x, 0.0)), fetchIn(tc + vec2f(one.x * 2.0, 0.0)), 0.667), 0.75);
+    let v3 = mix(c, mix(fetchIn(tc - vec2f(0.0, one.y)), fetchIn(tc - vec2f(0.0, one.y * 2.0)), 0.667), 0.75);
+    let v4 = mix(c, mix(fetchIn(tc + vec2f(0.0, one.y)), fetchIn(tc + vec2f(0.0, one.y * 2.0)), 0.667), 0.75);
+    return vec4f(mix(mix(v1, v2, 0.5), mix(v3, v4, 0.5), 0.5).rgb, 1.0);
+  }
+  if (m == 13) {
+    let inT = fetchIn(tc);
+    let pu = tc * 2.0 - 1.0;
+    let r2 = pow(length(pu), 2.0);
+    let sc = tc * (1.0 - 0.02 * 0.2) + 0.02 * 0.1 + pu * 0.02 * r2;
+    if (sc.x < 0.0 || sc.y < 0.0 || sc.x > 1.0 || sc.y > 1.0) { discard; }
+    let bm = sin(sc.y * inSize.y * 0.25 * 3.1415926535);
+    let br = mix(1.0, (bm * bm + 1.0) * 0.5, 0.8);
+    let t = vec3f(0.05) + vec3f(0.95) * (inT.rgb * br);
+    return vec4f(pow(t, vec3f(0.8)), 1.0);
+  }
+  if (m == 14) {
+    let T = D.p[0].y;
+    let off = vec2f(sin(tc.y * D.p[1].x + T * 6.283185307) * D.p[1].z, cos(tc.x * D.p[1].y + T * 6.283185307) * D.p[1].w);
+    let rgb = fetchIn(tc + off).rgb;
+    var hsv = vec3f(0.0, 0.0, max(rgb.r, max(rgb.g, rgb.b)));
+    let c = hsv.z - min(rgb.r, min(rgb.g, rgb.b));
+    if (c != 0.0) {
+      hsv.y = c / hsv.z;
+      var d = (hsv.z - rgb) / c;
+      d = d - d.brg;
+      d = vec3f(d.r + 2.0, d.g + 4.0, d.b);
+      var hx = d.g;
+      if (rgb.r >= hsv.z) { hx = d.b; } else if (rgb.g >= hsv.z) { hx = d.r; }
+      hsv.x = fract(hx / 6.0);
+    }
+    hsv.x = fract(hsv.x + T);
+    let h = clamp(vec3f(abs(hsv.x * 6.0 - 3.0) - 1.0, 2.0 - abs(hsv.x * 6.0 - 2.0), 2.0 - abs(hsv.x * 6.0 - 4.0)), vec3f(0.0), vec3f(1.0));
+    return vec4f(((h - 1.0) * hsv.y + 1.0) * hsv.z, 1.0);
+  }
+  if (m == 15) {
+    let c = fetchIn(tc);
+    var sum = vec4f(0.0);
+    for (var i = 1; i <= 2; i++) {
+      let k = f32(i);
+      sum += abs(c - fetchIn(tc + vec2f(0.0, -one.y) * k)) + abs(c - fetchIn(tc + vec2f(one.x, 0.0) * k))
+        + abs(c - fetchIn(tc + vec2f(-one.x, 0.0) * k)) + abs(c - fetchIn(tc + vec2f(0.0, one.y) * k));
+    }
+    let gray = vec4f(0.3, 0.59, 0.11, 0.0);
+    let sl = 1.0 - dot(clamp(sum, vec4f(0.0), vec4f(1.0)), gray);
+    var L = dot(c + (c - pow(c, vec4f(D.p[0].y))), gray);
+    L = L - fract(L * D.p[0].z) / D.p[0].z;
+    L = L * (D.p[0].z / (D.p[0].z - 1.0)) * sl;
+    return vec4f(L, L, L, 1.0);
+  }
+  if (m == 16) { return fetchIn(vec2f(tc.x, 1.0 - tc.y)) * D.p[1]; }
   let a = D.p[0].y * 0.0174532925; let cs = cos(a); let sn = sin(a);
   let sc = vec2f(tc.x * cs - tc.y * sn, tc.y * cs + tc.x * sn) * D.p[1].xy + D.p[1].zw;
   let S = D.p[2]; let V = D.p[3];

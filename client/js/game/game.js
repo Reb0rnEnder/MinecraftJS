@@ -1807,7 +1807,7 @@ export class Game {
     const viewed = this.cameraEntity != null && this.thirdPerson === 0 ? this.entities.get(this.cameraEntity) : null;
     const post = viewed && this.device.createRenderTarget ? this.postEffects.get(entityShaderName(viewed)) : null;
     r.render(hand, post);
-    if (post) post.render(r.lightmap);
+    if (post) post.render(r.lightmap, ((this.ticks + partial) % 20) / 20);
     this.profiler.endStart('gui');
     gui.begin();
     this._drawSuperSecret(gui);
