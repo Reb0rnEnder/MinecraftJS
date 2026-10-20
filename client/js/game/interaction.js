@@ -155,6 +155,7 @@ export class Interaction {
       }
     } else {
       for (const code of presses) {
+        if (g.gameMode === 3 && code === 'mouse1') continue; // the middle button goes to the spectator menu instead
         if (code === k.attack) this.clickMouse();
         if (code === k.use) this.rightClickMouse();
         if (code === k.pickItem) this.middleClick();

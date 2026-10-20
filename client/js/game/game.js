@@ -1255,7 +1255,7 @@ export class Game {
     for (let i = 1; i <= 9; i++) {
       if (e.code === k['hotbar' + i]) {
         const load = this.input.isDown('loadToolbarActivator'), save = this.input.isDown('saveToolbarActivator');
-        if (this.gameMode === 3) this.hud.spectatorSelect(i - 1);
+        if (this.gameMode === 3) this.hud.spectatorGui.onHotbarSelected(i - 1);
         else if (this.gameMode === 1 && !this.screens.current && (load || save)) handleHotbarSnapshots(this, i - 1, load, save);
         else this.selectSlot(i - 1);
         return;
@@ -1271,7 +1271,10 @@ export class Game {
     }
     if (e.down && this.inWorld && !this.input.locked) {
       this.input.lock();
+      return;
     }
+    // Minecraft.runTickMouse: middle click in spectator mode goes to the spectator menu
+    if (e.down && this.inWorld && this.gameMode === 3 && e.button === 1) this.hud.spectatorGui.onMiddleClick();
   }
 
   openInventory() {
@@ -1344,7 +1347,11 @@ export class Game {
     if (this.input.wheel !== 0 && !this.screens.current) {
       let s = this.heldSlot + this.input.wheel;
       s = ((s % 9) + 9) % 9;
-      if (this.gameMode === 3) this.hud.spectatorScroll(this.input.wheel);
+      if (this.gameMode === 3) {
+        // Minecraft.runTickMouse: the spectator menu, else the flying speed (client side only)
+        if (this.hud.spectatorGui.active) this.hud.spectatorGui.onMouseScroll(Math.sign(this.input.wheel));
+        else this.player.flySpeed = Math.min(0.2, Math.max(0, Math.fround(this.player.flySpeed - Math.sign(this.input.wheel) * Math.fround(0.005))));
+      }
       else this.selectSlot(s);
     }
     this.input.wheel = 0;
