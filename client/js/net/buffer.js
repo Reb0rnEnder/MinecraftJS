@@ -166,6 +166,17 @@ export class Writer {
   f32(v) { this._ensure(4); this.view.setFloat32(this.offset, v); this.offset += 4; return this; }
   f64(v) { this._ensure(8); this.view.setFloat64(this.offset, v); this.offset += 8; return this; }
 
+  varlong(v) {
+    let x = BigInt.asUintN(64, BigInt(v));
+    do {
+      let b = Number(x & 0x7fn);
+      x >>= 7n;
+      if (x !== 0n) b |= 0x80;
+      this.u8(b);
+    } while (x !== 0n);
+    return this;
+  }
+
   varint(v) {
     v >>>= 0;
     do {

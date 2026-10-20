@@ -95,6 +95,7 @@ export class Game {
     this.entityRenderer = new EntityRenderer(this);
     this.handRenderer = new HandRenderer(this);
     this.tileRenderer = new TileEntityRenderer(this);
+    this.structureBlocks = new Map(); // "x,y,z" -> structure block tile entity data
     this.pistons = new Pistons(this);
     this.serverPacks = new ServerPacks(this);
     this.particles = new Particles(this);
@@ -559,6 +560,7 @@ export class Game {
   canUseCommandBlock() { return this.gameMode === 1 && (this.permissionLevel | 0) >= 2; }
 
   leaveWorld() {
+    this.structureBlocks.clear();
     this.inWorld = false;
     this.connected = false;
     this.world.clear();
@@ -891,6 +893,7 @@ export class Game {
       this.tileRenderer.setSign(pos, [data.Text1, data.Text2, data.Text3, data.Text4].map((l) => chatToLegacy(l || '')));
       return;
     }
+    if (id === 'structure_block') this.structureBlocks.set(pos.x + ',' + pos.y + ',' + pos.z, data); // for GuiEditStructure
     // GuiCommandBlock.updateGui once the opened block's data (action 2) arrives
     if (id === 'command_block' && action === 2) {
       const s = this.screens.current;
