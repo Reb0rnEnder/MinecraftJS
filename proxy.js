@@ -107,10 +107,11 @@ const app = express();
 app.use(express.static(CLIENT_DIR));
 
 // Pages on other sites (static hosting, the single-file build) use this proxy for sign in and skins
-app.use(['/auth', '/skin', '/profile'], (req, res, next) => {
+app.use(['/auth', '/skin', '/profile', '/pack'], (req, res, next) => {
   res.set('Access-Control-Allow-Origin', '*');
   res.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.set('Access-Control-Allow-Headers', 'content-type');
+  res.set('Access-Control-Allow-Headers', 'content-type, x-minecraft-username, x-minecraft-uuid, x-minecraft-version');
+  res.set('Access-Control-Expose-Headers', 'content-length');
   if (req.method === 'OPTIONS') return res.status(204).end();
   next();
 });
@@ -160,6 +161,36 @@ app.get('/skin', async (req, res) => {
     res.set('Cache-Control', 'public, max-age=86400');
     res.send(buf);
   } catch (e) { res.status(502).send(String(e)); }
+});
+
+// Server resource packs (ResourcePackRepository.downloadResourcePack): most hosts send no CORS headers, so the proxy
+// streams the zip through, with the X-Minecraft-* headers vanilla sends and its 50 MiB limit. Only http(s) URLs to
+// public hosts are fetched.
+const PACK_LIMIT = 52428800;
+app.get('/pack', async (req, res) => {
+  let url;
+  try { url = new URL(String(req.query.url || '')); } catch (e) { return res.status(400).end(); }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') return res.status(400).end();
+  if (/^(localhost|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|\[?::1\]?$|\[?f[cd])/i.test(url.hostname)) return res.status(403).end();
+  const headers = {};
+  for (const h of ['x-minecraft-username', 'x-minecraft-uuid', 'x-minecraft-version']) if (req.get(h)) headers[h] = String(req.get(h)).slice(0, 64);
+  const abort = new AbortController();
+  req.on('close', () => abort.abort());
+  try {
+    const up = await fetch(url, { headers, redirect: 'follow', signal: abort.signal });
+    if (!up.ok || !up.body) return res.status(502).send('HTTP ' + up.status);
+    const len = Number(up.headers.get('content-length')) || 0;
+    if (len > PACK_LIMIT) return res.status(413).end();
+    res.set('Content-Type', 'application/zip');
+    if (len) res.set('Content-Length', String(len));
+    let got = 0;
+    for await (const chunk of up.body) {
+      got += chunk.length;
+      if (got > PACK_LIMIT) { abort.abort(); return res.destroy(); }
+      if (!res.write(chunk)) await new Promise((r) => res.once('drain', r));
+    }
+    res.end();
+  } catch (e) { if (!res.headersSent) res.status(502).send(String(e.message || e)); else res.destroy(); }
 });
 
 // A player's Mojang profile (its signed textures property), for the local player's skin and cape when a server sends
