@@ -558,6 +558,16 @@ export class Game {
     if (!silent) this.screens.openMainMenu(reason);
   }
 
+  // NetHandlerPlayClient.handleChangeGameState(5): a demo server's welcome screen (0) and control hints (101-103)
+  onDemoMessage(value) {
+    const s = this.settings, key = (k) => s.keyName(s.keys[k]);
+    const say = (k, ...args) => this.hud.addChat(this.assets.translate(k, args), null, true);
+    if (value === 0) import('../gui/screens/demo.js').then((m) => this.screens.open(new m.DemoScreen(this)));
+    else if (value === 101) say('demo.help.movement', key('forward'), key('left'), key('back'), key('right'));
+    else if (value === 102) say('demo.help.jump', key('jump'));
+    else if (value === 103) say('demo.help.inventory', key('inventory'));
+  }
+
   // EntityPlayer.canUseCommandBlock: creative and op level 2
   canUseCommandBlock() { return this.gameMode === 1 && (this.permissionLevel | 0) >= 2; }
 
@@ -954,6 +964,7 @@ export class Game {
       case 2: this.world.raining = false; this.world.rainStrength = this.world.prevRain = 1; break;
       case 3: { const gm = Math.floor(p.value + 0.5); if (gm !== this.gameMode) this.previousGameMode = this.gameMode; this.gameMode = gm; this.applyGameMode(); break; }
       case 4: import('../gui/screens/credits.js').then((m) => this.screens.open(new m.CreditsScreen(this))); break; // GuiWinGame
+      case 5: this.onDemoMessage(p.value); break;
       case 6: this.sound.playAtPlayer('entity.arrow.hit_player', 0.18, 0.45); break;
       case 7: this.world.rainStrength = p.value; this.world.prevRain = p.value; break;
       case 8: this.world.thunderStrength = p.value; break;
