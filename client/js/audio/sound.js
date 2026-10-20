@@ -155,7 +155,7 @@ export class SoundManager {
     if (catVol <= 0) return null;
     const buf = await this._buffer(def.file);
     if (!buf) return null;
-    const handle = { name, onEnd: null };
+    const handle = { name, category: cat, onEnd: null };
     const voice = this.audio.play(buf, {
       volume: Math.min(1, volume) * def.volume * catVol,
       pitch: Math.max(0.5, Math.min(2, pitch * def.pitch)),
@@ -174,6 +174,19 @@ export class SoundManager {
   }
 
   playUi(name, pitch = 1) { return this.play(name, 0, 0, 0, 0.25, pitch, { global: true, category: 'master' }); }
+
+  // SoundHandler.stop (/stopsound): sounds of one category and/or one sound event; neither stops everything
+  stop(sound, category) {
+    if (!category && !sound) { this.stopAll(); return; }
+    const id = (s) => String(s).toLowerCase().replace(/^minecraft:/, '');
+    const want = sound ? id(sound) : null;
+    for (const h of [...this.playing]) {
+      if (category && h.category !== category) continue;
+      if (want && id(h.name) !== want) continue;
+      if (h.stop) h.stop(); else h.voice.stop();
+      this.playing.delete(h);
+    }
+  }
 
   stopAll() {
     for (const h of this.playing) h.voice.stop();
@@ -217,7 +230,7 @@ export class SoundManager {
     const base = def.volume * this.volumeFor(cat);
     const voice = this.audio.play(buf, { volume: 0, pitch: def.pitch, pos: opts.global ? null : [x, y, z], maxDistance: 16, loop: true });
     if (!voice) return null;
-    const handle = { voice, base, stop: () => { voice.stop(); this.playing.delete(handle); }, setVolume: (v) => voice.setVolume && voice.setVolume(Math.min(1, v) * base), setPosition: (p) => voice.setPosition && voice.setPosition(p) };
+    const handle = { name, category: cat, voice, base, stop: () => { voice.stop(); this.playing.delete(handle); }, setVolume: (v) => voice.setVolume && voice.setVolume(Math.min(1, v) * base), setPosition: (p) => voice.setPosition && voice.setPosition(p) };
     this.playing.add(handle);
     return handle;
   }

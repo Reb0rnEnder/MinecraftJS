@@ -8,7 +8,7 @@ import { tr } from '../gui/i18n.js';
 import { Connection } from '../net/connection.js';
 import { isEaglerAddress } from '../net/address.js';
 import { C } from '../net/packets.js';
-import { Writer } from '../net/buffer.js';
+import { Reader, Writer } from '../net/buffer.js';
 import { simplify } from '../net/nbt.js';
 import { World } from '../world/world.js';
 import { blocks } from '../world/blocks.js';
@@ -69,6 +69,8 @@ const BLOCK_ENTITY_ACTIONS = {
 };
 
 const TICK_MS = 50;
+// SoundCategory names (SoundCategory.getByName)
+const SOUND_CATEGORIES = ['master', 'music', 'record', 'weather', 'block', 'hostile', 'neutral', 'player', 'ambient', 'voice'];
 
 export class Game {
   constructor(assets, settings, device) {
@@ -1062,6 +1064,11 @@ export class Game {
     if (p.channel === 'MC|TrList') {
       if (this.screens.current && this.screens.current.onTradeList) this.screens.current.onTradeList(p.data);
       else this.pendingTrades = p.data;
+    } else if (p.channel === 'MC|StopSound') {
+      // category name ("" for all), then the sound event ("" for all)
+      const r = new Reader(p.data);
+      const category = r.string(), sound = r.string();
+      this.sound.stop(sound, SOUND_CATEGORIES.includes(category) ? category : null);
     } else if (p.channel === 'MC|BOpen') {
       const held = this.inventory.held();
       if (held && held.id === 387) this.screens.open(new BookScreen(this, held, false));
