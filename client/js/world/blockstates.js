@@ -1,4 +1,4 @@
-// Maps (block id, metadata, neighbourhood) -> vanilla 1.12.2 blockstate file + property map.
+// Maps (block/state, neighbourhood) -> vanilla 1.13.2 blockstate file + property map.
 // This re-implements each block's getStateFromMeta + getActualState + state mapper naming.
 import { blocks, blocksByName } from './blocks.js';
 

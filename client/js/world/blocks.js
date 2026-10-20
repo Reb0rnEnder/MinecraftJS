@@ -1,4 +1,4 @@
-// Block registry for 1.12.2: physical/visual properties per block id.
+// Block registry for 1.13.2: physical/visual properties per block name/state.
 // Worker-safe (no DOM). Call initBlocks(blocksJson, shapesJson) once.
 
 export const DIR = { DOWN: 0, UP: 1, NORTH: 2, SOUTH: 3, WEST: 4, EAST: 5 };

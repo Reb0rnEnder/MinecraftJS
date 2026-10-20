@@ -1,9 +1,9 @@
-// Chunk storage: 16 sections of 16^3 block states (id << 4 | meta, as in the 1.12 block registry),
+// Chunk storage: 16 sections of 16^3 flattened global block-state ids (1.13+),
 // nibble arrays for block light and sky light, and a 16x16 biome array.
 
 export class Section {
   constructor(hasSky) {
-    this.blocks = new Uint16Array(4096);
+    this.blocks = new Uint32Array(4096);
     this.blockLight = new Uint8Array(2048);
     this.skyLight = new Uint8Array(2048);
     if (hasSky) this.skyLight.fill(0xff);
@@ -17,8 +17,8 @@ export class Section {
   set(x, y, z, state) {
     const i = (y << 8) | (z << 4) | x;
     const old = this.blocks[i];
-    if ((old >> 4) === 0 && (state >> 4) !== 0) this.nonAir++;
-    else if ((old >> 4) !== 0 && (state >> 4) === 0) this.nonAir--;
+    if (old === 0 && state !== 0) this.nonAir++;
+    else if (old !== 0 && state === 0) this.nonAir--;
     this.blocks[i] = state;
   }
 
@@ -39,7 +39,7 @@ export class Section {
 
   recount() {
     let n = 0;
-    for (let i = 0; i < 4096; i++) if (this.blocks[i] >> 4) n++;
+    for (let i = 0; i < 4096; i++) if (this.blocks[i] !== 0) n++;
     this.nonAir = n;
   }
 }
@@ -50,7 +50,7 @@ export class Chunk {
     this.z = z;
     this.hasSky = hasSky;
     this.sections = new Array(16).fill(null);
-    this.biomes = new Uint8Array(256);
+    this.biomes = new Uint32Array(256);
     this.heightMap = new Uint8Array(256); // y of highest light-blocking block + 1
     this.tileEntities = new Map(); // "x,y,z" -> nbt (simplified)
   }
@@ -65,7 +65,7 @@ export class Chunk {
     if (y < 0 || y > 255) return;
     let s = this.sections[y >> 4];
     if (!s) {
-      if ((state >> 4) === 0) return;
+      if (state === 0) return;
       s = this.sections[y >> 4] = new Section(this.hasSky);
     }
     s.set(x, y & 15, z, state);
@@ -122,7 +122,7 @@ export class Chunk {
       let palette = null;
       if (plen) { palette = new Int32Array(plen); for (let i = 0; i < plen; i++) palette[i] = varint(); }
       if (bits < 4) bits = 4;
-      if (bits > 8) palette = null; // registry ids (13 bits: id << 4 | meta)
+      if (bits > 8) palette = null; // flattened global registry state ids
       const nLongs = varint();
       // big-endian longs -> (lo, hi) 32-bit words
       const words = new Uint32Array(nLongs * 2);
@@ -149,8 +149,8 @@ export class Chunk {
       }
     }
     if (groundUp) {
-      this.biomes.set(data.subarray(o, o + 256));
-      o += 256;
+      // 1.13 Chunk Data stores 256 biome registry ids as big-endian i32 values.
+      for (let i = 0; i < 256; i++, o += 4) this.biomes[i] = ((data[o] << 24) | (data[o + 1] << 16) | (data[o + 2] << 8) | data[o + 3]) >>> 0;
     }
     return o - offset;
   }

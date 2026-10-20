@@ -1,10 +1,10 @@
 # MinecraftJS
 
-A Minecraft 1.12.2 client that runs in the browser (WebGL 2 or WebGPU). It joins vanilla 1.12.2 servers through a
+A Minecraft 1.13.2 client that runs in the browser (WebGL 2 or WebGPU). It joins vanilla 1.13.2 servers through a
 small Node proxy, and Eaglercraft servers directly over WebSockets.
 
 MinecraftJS is not affiliated with Mojang or Microsoft. The repository contains no Mojang files: the game assets
-are taken from your own copy of Minecraft 1.12.2, or downloaded from Mojang's servers on first use. That includes the
+are taken from your own copy of Minecraft 1.13.2, or downloaded from Mojang's servers on first use. That includes the
 entity and block entity models (mobs, boats, chests, signs, skulls, beds, ...): in 1.12 they are Java code, so the
 build runs the model constructors from the client jar in a small bytecode interpreter (`lib/jvm.js`,
 `lib/modelextract.js`) and stores the boxes in `bundles/entity-models.json`.
@@ -27,13 +27,13 @@ relays Microsoft account sign in and serves player skins.
 Game assets are found automatically, in this order:
 
 1. `client/assets/` if you have built it (see below)
-2. the 1.12.2 jar from `./1.12.2/`, `MC_JAR`, `MC_DIR`, or your launcher's `.minecraft` folder
+2. the 1.13.2 jar from `./1.13.2/`, `MC_JAR`, `MC_DIR`, or your launcher's `.minecraft` folder
 3. otherwise a download from Mojang into `cache/`
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `PORT` | `3000` | HTTP and WebSocket port |
-| `MC_JAR` | | path to a `1.12.2.jar` |
+| `MC_JAR` | | path to a `1.13.2.jar` |
 | `MC_DIR` | | a `.minecraft` folder to look in |
 
 ## Building

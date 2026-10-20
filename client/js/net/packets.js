@@ -1,8 +1,8 @@
-// Minecraft 1.12.2 (protocol 340) play-state packet codec.
+// Minecraft 1.13.2 (protocol 404) play-state packet codec.
 import { Reader, Writer } from './buffer.js';
 import { readNbtRoot } from './nbt.js';
 
-export const PROTOCOL_VERSION = 340;
+export const PROTOCOL_VERSION = 404;
 
 const vec3i16 = (r) => ({ x: r.i16(), y: r.i16(), z: r.i16() });
 const strings = (r) => { const n = r.varint(); const a = []; for (let i = 0; i < n; i++) a.push(r.string()); return a; };
@@ -312,10 +312,36 @@ const decoders = {
   },
 };
 
+// 1.13.2 inserted command/recipe/tag packets and split the entity movement ids. Keep the
+// mature field decoders above, but expose them under the protocol-404 registration order.
+// Packets without a 1.12 counterpart remain unknown until their feature is ported.
+const decoders404 = {
+  0x00: decoders[0x00], 0x01: decoders[0x01], 0x02: decoders[0x02], 0x03: decoders[0x03],
+  0x04: decoders[0x04], 0x05: decoders[0x05], 0x06: decoders[0x06], 0x07: decoders[0x07],
+  0x08: decoders[0x08], 0x09: decoders[0x09], 0x0a: decoders[0x0a], 0x0b: decoders[0x0b],
+  0x0c: decoders[0x0c], 0x0e: decoders[0x0f], 0x0f: decoders[0x10], 0x10: decoders[0x0e],
+  0x12: decoders[0x11], 0x13: decoders[0x12], 0x14: decoders[0x13], 0x15: decoders[0x14],
+  0x16: decoders[0x15], 0x17: decoders[0x16], 0x18: decoders[0x17], 0x19: decoders[0x18],
+  0x1a: decoders[0x19], 0x1b: decoders[0x1a], 0x1c: decoders[0x1b], 0x1e: decoders[0x1c],
+  0x1f: decoders[0x1d], 0x20: decoders[0x1e], 0x21: decoders[0x1f], 0x22: decoders[0x20],
+  0x23: decoders[0x21], 0x24: decoders[0x22], 0x25: decoders[0x23], 0x26: decoders[0x24],
+  0x27: decoders[0x25], 0x28: decoders[0x26], 0x29: decoders[0x27], 0x2a: decoders[0x28],
+  0x2b: decoders[0x29], 0x2c: decoders[0x2a], 0x2d: decoders[0x2b], 0x2e: decoders[0x2c],
+  0x2f: decoders[0x2d], 0x30: decoders[0x2e], 0x32: decoders[0x2f], 0x33: decoders[0x30],
+  0x34: decoders[0x31], 0x35: decoders[0x32], 0x36: decoders[0x33], 0x37: decoders[0x34],
+  0x38: decoders[0x35], 0x39: decoders[0x36], 0x3a: decoders[0x37], 0x3b: decoders[0x38],
+  0x3c: decoders[0x39], 0x3d: decoders[0x3a], 0x3e: decoders[0x3b], 0x3f: decoders[0x3c],
+  0x40: decoders[0x3d], 0x41: decoders[0x3e], 0x42: decoders[0x3f], 0x43: decoders[0x40],
+  0x44: decoders[0x41], 0x45: decoders[0x42], 0x46: decoders[0x43], 0x47: decoders[0x44],
+  0x48: decoders[0x45], 0x49: decoders[0x46], 0x4a: decoders[0x47], 0x4b: decoders[0x48],
+  0x4d: decoders[0x49], 0x4e: decoders[0x4a], 0x4f: decoders[0x4b], 0x50: decoders[0x4c],
+  0x51: decoders[0x4d], 0x52: decoders[0x4e], 0x53: decoders[0x4f],
+};
+
 export function decodePacket(bytes) {
   const r = new Reader(bytes);
   const id = r.varint();
-  const dec = decoders[id];
+  const dec = decoders404[id];
   if (!dec) return { name: 'unknown', id };
   const p = dec(r);
   p.id = id;
@@ -334,11 +360,7 @@ function pkt(id) { return new Writer().varint(id); }
 
 export const C = {
   teleportConfirm: (teleportId) => pkt(0x00).varint(teleportId).build(),
-  tabComplete: (text, block, assumeCommand = false) => {
-    const w = pkt(0x01).string(text).bool(assumeCommand).bool(!!block);
-    if (block) w.position(block.x, block.y, block.z);
-    return w.build();
-  },
+  tabComplete: (text) => pkt(0x05).varint(0).string(text).build(),
   // CPacketChatMessage: 256 characters since 1.11 (longer kicks the client)
   chat: (msg) => pkt(0x02).string(msg.length > 256 ? msg.slice(0, 256) : msg).build(),
   // 0 perform respawn, 1 request stats
@@ -346,53 +368,53 @@ export const C = {
   // mainHand: 0 left, 1 right
   settings: (locale, viewDistance, chatFlags, chatColors, skinParts, mainHand = 1) =>
     pkt(0x04).string(locale).i8(viewDistance).varint(chatFlags).bool(chatColors).u8(skinParts).varint(mainHand).build(),
-  transaction: (windowId, action, accepted) => pkt(0x05).i8(windowId).i16(action).bool(accepted).build(),
-  enchantItem: (windowId, enchantment) => pkt(0x06).i8(windowId).i8(enchantment).build(),
-  windowClick: (windowId, slot, button, action, mode, item) => pkt(0x07).u8(windowId).i16(slot).i8(button).i16(action).varint(mode).slot(item).build(),
-  closeWindow: (windowId) => pkt(0x08).u8(windowId).build(),
-  customPayload: (channel, data) => pkt(0x09).string(channel).raw(data).build(),
+  transaction: (windowId, action, accepted) => pkt(0x06).i8(windowId).i16(action).bool(accepted).build(),
+  enchantItem: (windowId, enchantment) => pkt(0x07).i8(windowId).i8(enchantment).build(),
+  windowClick: (windowId, slot, button, action, mode, item) => pkt(0x08).u8(windowId).i16(slot).i8(button).i16(action).varint(mode).slot(item).build(),
+  closeWindow: (windowId) => pkt(0x09).u8(windowId).build(),
+  customPayload: (channel, data) => pkt(0x0a).string(channel).raw(data).build(),
   // mouse: 0 interact, 1 attack, 2 interact_at
   useEntity: (target, mouse, x, y, z, hand = 0) => {
-    const w = pkt(0x0a).varint(target).varint(mouse);
+    const w = pkt(0x0d).varint(target).varint(mouse);
     if (mouse === 2) w.f32(x).f32(y).f32(z);
     if (mouse !== 1) w.varint(hand);
     return w.build();
   },
-  keepAlive: (id) => pkt(0x0b).i64(id).build(),
-  flying: (onGround) => pkt(0x0c).bool(onGround).build(),
-  position: (x, y, z, onGround) => pkt(0x0d).f64(x).f64(y).f64(z).bool(onGround).build(),
-  positionLook: (x, y, z, yaw, pitch, onGround) => pkt(0x0e).f64(x).f64(y).f64(z).f32(yaw).f32(pitch).bool(onGround).build(),
-  look: (yaw, pitch, onGround) => pkt(0x0f).f32(yaw).f32(pitch).bool(onGround).build(),
-  vehicleMove: (x, y, z, yaw, pitch) => pkt(0x10).f64(x).f64(y).f64(z).f32(yaw).f32(pitch).build(),
-  steerBoat: (left, right) => pkt(0x11).bool(left).bool(right).build(),
-  abilities: (flags, flySpeed, walkSpeed) => pkt(0x13).i8(flags).f32(flySpeed).f32(walkSpeed).build(),
+  keepAlive: (id) => pkt(0x0e).i64(id).build(),
+  flying: (onGround) => pkt(0x0f).bool(onGround).build(),
+  position: (x, y, z, onGround) => pkt(0x10).f64(x).f64(y).f64(z).bool(onGround).build(),
+  positionLook: (x, y, z, yaw, pitch, onGround) => pkt(0x11).f64(x).f64(y).f64(z).f32(yaw).f32(pitch).bool(onGround).build(),
+  look: (yaw, pitch, onGround) => pkt(0x12).f32(yaw).f32(pitch).bool(onGround).build(),
+  vehicleMove: (x, y, z, yaw, pitch) => pkt(0x13).f64(x).f64(y).f64(z).f32(yaw).f32(pitch).build(),
+  steerBoat: (left, right) => pkt(0x14).bool(left).bool(right).build(),
+  abilities: (flags, flySpeed, walkSpeed) => pkt(0x17).i8(flags).f32(flySpeed).f32(walkSpeed).build(),
   // status: 0 start, 1 cancel, 2 finish, 3 drop stack, 4 drop item, 5 release use item, 6 swap hands
-  blockDig: (status, x, y, z, face) => pkt(0x14).varint(status).position(x, y, z).i8(face).build(),
+  blockDig: (status, x, y, z, face) => pkt(0x18).varint(status).position(x, y, z).i8(face).build(),
   // action: 0 start sneak, 1 stop sneak, 2 leave bed, 3 start sprint, 4 stop sprint, 5 start horse jump,
   // 6 stop horse jump, 7 open horse inventory, 8 start elytra flying
-  entityAction: (eid, action, jumpBoost = 0) => pkt(0x15).varint(eid).varint(action).varint(jumpBoost).build(),
-  steerVehicle: (sideways, forward, flags) => pkt(0x16).f32(sideways).f32(forward).u8(flags).build(),
-  resourcePackStatus: (result) => pkt(0x18).varint(result).build(),
+  entityAction: (eid, action, jumpBoost = 0) => pkt(0x19).varint(eid).varint(action).varint(jumpBoost).build(),
+  steerVehicle: (sideways, forward, flags) => pkt(0x1a).f32(sideways).f32(forward).u8(flags).build(),
+  resourcePackStatus: (result) => pkt(0x1d).varint(result).build(),
   // CPacketPlaceRecipe: fill the crafting grid with a recipe (all: as many times as possible)
-  placeRecipe: (windowId, recipe, all) => pkt(0x12).i8(windowId).varint(recipe).bool(all).build(),
+  placeRecipe: (windowId, recipe, all) => pkt(0x16).i8(windowId).string(String(recipe)).bool(all).build(),
   // CPacketRecipeInfo: a new recipe was seen / the book's open and filtering flags
-  recipeInfoShown: (recipe) => pkt(0x17).varint(0).i32(recipe).build(),
-  recipeInfoSettings: (open, filtering) => pkt(0x17).varint(1).bool(open).bool(filtering).build(),
+  recipeInfoShown: (recipe) => pkt(0x1b).varint(0).string(String(recipe)).build(),
+  recipeInfoSettings: (open, filtering) => pkt(0x1b).varint(1).bool(open).bool(filtering).bool(false).bool(false).build(),
   // CPacketSeenAdvancements: opened a tab (id) / closed the screen (null)
-  seenAdvancements: (tab) => (tab ? pkt(0x19).varint(0).string(tab).build() : pkt(0x19).varint(1).build()),
-  heldItemSlot: (slot) => pkt(0x1a).i16(slot).build(),
-  creativeSlot: (slot, item) => pkt(0x1b).i16(slot).slot(item).build(),
+  seenAdvancements: (tab) => (tab ? pkt(0x1e).varint(0).string(tab).build() : pkt(0x1e).varint(1).build()),
+  heldItemSlot: (slot) => pkt(0x21).i16(slot).build(),
+  creativeSlot: (slot, item) => pkt(0x24).i16(slot).slot(item).build(),
   // plain text lines (1.9+)
   updateSign: (x, y, z, lines) => {
-    const w = pkt(0x1c).position(x, y, z);
+    const w = pkt(0x26).position(x, y, z);
     for (let i = 0; i < 4; i++) w.string(lines[i] || '');
     return w.build();
   },
-  armAnimation: (hand = 0) => pkt(0x1d).varint(hand).build(),
-  spectate: (uuid) => pkt(0x1e).uuid(uuid).build(),
+  armAnimation: (hand = 0) => pkt(0x27).varint(hand).build(),
+  spectate: (uuid) => pkt(0x28).uuid(uuid).build(),
   // cursor position on the face, 0..1
-  blockPlace: (x, y, z, face, hand, cx, cy, cz) => pkt(0x1f).position(x, y, z).varint(face).varint(hand).f32(cx).f32(cy).f32(cz).build(),
-  useItem: (hand = 0) => pkt(0x20).varint(hand).build(),
+  blockPlace: (x, y, z, face, hand, cx, cy, cz) => pkt(0x29).position(x, y, z).varint(face).varint(hand).f32(cx).f32(cy).f32(cz).build(),
+  useItem: (hand = 0) => pkt(0x2a).varint(hand).build(),
 };
 
 export function mcStringBytes(s) {

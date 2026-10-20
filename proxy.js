@@ -1,5 +1,5 @@
 // MinecraftJS proxy: serves the web client, bridges WebSocket <-> Minecraft TCP,
-// and serves the game's 1.12.2 assets.
+// and serves the game's 1.13.2 assets.
 const net = require('net');
 const http = require('http');
 const fs = require('fs');
@@ -20,7 +20,7 @@ const PROXY_VERSION = require('./package.json').version || '';
 
 // ---------------------------------------------------------------------------
 // Game assets. A built client/assets/ folder (npm run assets) is served as is; without one the proxy serves the
-// same layout straight from the 1.12.2 jar and asset index (see tools/build.js for the layout).
+// same layout straight from the 1.13.2 jar and asset index (see tools/build.js for the layout).
 // ---------------------------------------------------------------------------
 
 let jar = null;
@@ -87,7 +87,7 @@ function buildBundle(kind) {
 async function defaultPackMeta() {
   const buf = assetIndex ? await assetIndex.read('pack.mcmeta') : null;
   const meta = buf ? JSON.parse(buf.toString('utf8')) : {};
-  meta.pack = { pack_format: 1, description: 'The default look and feel of Minecraft' };
+  meta.pack = { pack_format: 4, description: 'The default look and feel of Minecraft' };
   return Buffer.from(JSON.stringify(meta));
 }
 
@@ -280,8 +280,8 @@ function resolveServer(host, port) {
   });
 }
 
-// protocol: the client's game protocol (47 = 1.8, 340 = 1.12.2); login and status are the same in both
-function handshake(host, port, nextState, protocol = 47) {
+// protocol: the client's game protocol (404 = 1.13.2); login and status are the same in both
+function handshake(host, port, nextState, protocol = 404) {
   return Buffer.concat([
     writeVarInt(0x00),
     writeVarInt(protocol),
@@ -381,13 +381,13 @@ wss.on('connection', (ws) => {
 
     // Proxy test from the client's Proxy Servers screen
     if (msg.type === 'info') {
-      sendJson({ type: 'info', name: 'MinecraftJS proxy', version: PROXY_VERSION, protocols: [47, 340] });
+      sendJson({ type: 'info', name: 'MinecraftJS proxy', version: PROXY_VERSION, protocols: [404] });
       return;
     }
 
     if (msg.type === 'ping') {
       try {
-        const st = await pingServer(msg.host || 'localhost', msg.port || 25565, msg.protocol | 0 || 47);
+        const st = await pingServer(msg.host || 'localhost', msg.port || 25565, msg.protocol | 0 || 404);
         sendJson({ type: 'ping_result', id: msg.id, status: st });
       } catch (e) {
         sendJson({ type: 'ping_result', id: msg.id, error: e.message });
@@ -501,7 +501,7 @@ wss.on('connection', (ws) => {
     console.log(built ? 'Game assets: client/assets/' : 'Game assets loaded (served from the game jar)');
   } catch (e) {
     console.error('Could not load game assets:', e.message);
-    console.error('Set MC_JAR to the location of the 1.12.2 client if it is installed somewhere unusual.');
+    console.error('Set MC_JAR to the location of the 1.13.2 client if it is installed somewhere unusual.');
   }
   try {
     assetIndex = await mcassets.loadAssetIndex();

@@ -211,7 +211,7 @@ export class Assets {
     step('Loading textures...', 35);
     const { files, mcmeta } = await this.source.blockTextures();
     for (const p of packsLowFirst) {
-      for (const dir of ['textures/blocks/', 'textures/items/']) {
+      for (const dir of ['textures/block/', 'textures/item/']) {
         for (const f of p.list(dir)) {
           const rel = f.slice('textures/'.length);
           if (f.endsWith('.png')) files.set(rel.slice(0, -4), () => p.read(f));

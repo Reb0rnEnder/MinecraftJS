@@ -1,4 +1,4 @@
-// Binary reader/writer for the Minecraft 1.12.2 protocol.
+// Binary reader/writer for the Minecraft 1.13.2 protocol.
 import { readNbtRoot, writeNbtRoot } from './nbt.js';
 import { decodeUtf8, encodeUtf8 } from '../util/utf8.js';
 

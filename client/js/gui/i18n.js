@@ -13,7 +13,7 @@ export function trOption(key, value) { return tr(key) + ': ' + value; }
 export const onOff = (v) => tr(v ? 'options.on' : 'options.off');
 
 export const MINECRAFTJS_EN = {
-  'minecraftjs.version': 'MinecraftJS 1.12.2',
+  'minecraftjs.version': 'MinecraftJS 1.13.2',
   'minecraftjs.notAffiliated': 'Not affiliated with Mojang AB',
   'minecraftjs.accounts.title': 'Accounts',
   'minecraftjs.accounts.use': 'Use Account',

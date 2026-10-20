@@ -14,7 +14,7 @@ export class FolderSource {
   recipes() { return platform().fetchJson(this.base + 'bundles/recipes.json').catch(() => []); }
   entityModels() { return platform().fetchJson(this.base + 'bundles/entity-models.json').catch(() => null); }
 
-  // { files: Map<name, () => png bytes>, mcmeta } for textures/blocks and textures/items
+  // { files: Map<name, () => png bytes>, mcmeta } for textures/block and textures/item
   async blockTextures() {
     const bundle = await platform().fetchBytes(this.base + 'bundles/textures.bin');
     if (!bundle) throw new Error('Missing ' + this.base + 'bundles/textures.bin');
@@ -49,7 +49,7 @@ export class ZipSource {
 
   async blockTextures() {
     const files = new Map(), mcmeta = {};
-    for (const dir of ['minecraft/textures/blocks/', 'minecraft/textures/items/']) {
+    for (const dir of ['minecraft/textures/block/', 'minecraft/textures/item/']) {
       for (const n of this.zip.list(dir)) {
         const rel = n.slice('minecraft/textures/'.length);
         if (n.endsWith('.png')) files.set(rel.slice(0, -4), () => this.zip.read(n));

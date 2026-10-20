@@ -184,7 +184,7 @@ async function collectAssets(opts) {
   const index = await mcassets.loadAssetIndex();
   const meta = await index.read('pack.mcmeta');
   const mcmeta = meta ? JSON.parse(meta.toString('utf8')) : {};
-  mcmeta.pack = { pack_format: 1, description: 'The default look and feel of Minecraft' };
+  mcmeta.pack = { pack_format: 4, description: 'The default look and feel of Minecraft' };
   files.set('pack.mcmeta', Buffer.from(JSON.stringify(mcmeta)));
 
   const names = Object.keys(index.objects).filter((n) => n === 'minecraft/sounds.json' || n.startsWith('minecraft/lang/') || n.startsWith('minecraft/sounds/'))
@@ -230,7 +230,7 @@ function buildBundles(files) {
   for (const [name, buf] of files) {
     if (name.startsWith('minecraft/blockstates/') && name.endsWith('.json')) models.blockstates[name.slice(22, -5)] = dec(buf);
     else if (name.startsWith('minecraft/models/') && name.endsWith('.json')) models.models[name.slice(17, -5)] = dec(buf);
-    else if (/^minecraft\/textures\/(blocks|items)\//.test(name)) {
+    else if (/^minecraft\/textures\/(block|item)\//.test(name)) {
       const rel = name.slice('minecraft/textures/'.length);
       if (name.endsWith('.png')) { tex.push([rel.slice(0, -4), offset, buf.length]); blobs.push(buf); offset += buf.length; }
       else if (name.endsWith('.png.mcmeta')) { try { mcmeta[rel.slice(0, -11)] = dec(buf); } catch (e) { /* skip */ } }

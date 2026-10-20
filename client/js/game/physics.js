@@ -1,4 +1,4 @@
-// Port of vanilla 1.12.2 player movement physics (EntityPlayerSP / EntityPlayer / EntityLivingBase / Entity).
+// Port of vanilla 1.13.2 player movement physics (EntityPlayerSP / EntityPlayer / EntityLivingBase / Entity).
 import { blocks } from '../world/blocks.js';
 
 const SPRINT_UUID = '662a6b8d-da3e-4c1c-8813-96ea6097278d';
