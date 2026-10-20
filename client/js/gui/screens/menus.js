@@ -19,6 +19,7 @@ export class TitleScreen extends Screen {
     this.panorama = true;
     this.splash = null;
     this.reason = reason;
+    this.minceraftRoll = Math.random(); // GuiMainMenu: rolled once per title screen
   }
 
   init() {
@@ -94,7 +95,14 @@ export class TitleScreen extends Screen {
     gui.gradient(0, 0, this.width, this.height, 0x00000000, 0x80000000);
     const logo = 'gui/title/minecraft.png';
     const lx = this.width / 2 - 137, ly = 30;
-    {
+    if (this.minceraftRoll < 1e-4) {
+      // 1 in 10000: "Minceraft" (the "ec" pieces swapped)
+      gui.blit(logo, lx, ly, 0, 0, 99, 44);
+      gui.blit(logo, lx + 99, ly, 129, 0, 27, 44);
+      gui.blit(logo, lx + 99 + 26, ly, 126, 0, 3, 44);
+      gui.blit(logo, lx + 99 + 26 + 3, ly, 99, 0, 26, 44);
+      gui.blit(logo, lx + 155, ly, 0, 45, 155, 44);
+    } else {
       gui.blit(logo, lx, ly, 0, 0, 155, 44);
       gui.blit(logo, lx + 155, ly, 0, 45, 155, 44);
     }
