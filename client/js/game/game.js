@@ -23,6 +23,7 @@ import { Renderer } from '../render/renderer.js';
 import { Gui } from '../gui/gui.js';
 import { chatToLegacy, setTranslator } from '../gui/chat.js';
 import { Hud } from '../gui/hud.js';
+import { Narrator } from '../gui/narrator.js';
 import { ScreenManager } from '../gui/screens/manager.js';
 import { DownloadingTerrainScreen, DisconnectedScreen, ConnectingScreen } from '../gui/screens/menus.js';
 import { ChatScreen } from '../gui/screens/chat.js';
@@ -93,6 +94,7 @@ export class Game {
     this.sound = new SoundManager(this);
     this.screens = new ScreenManager(this);
     this.hud = new Hud(this);
+    this.narrator = new Narrator(this);
     this.itemRenderer = new ItemRenderer(this);
     this.entityRenderer = new EntityRenderer(this);
     this.handRenderer = new HandRenderer(this);
@@ -680,6 +682,7 @@ export class Game {
     const text = chatToLegacy(p.message);
     if (p.position === 2) this.hud.setActionBar(text);
     else this.hud.addChat(text, p.message);
+    this.narrator.onChat(p.position, p.message);
   }
 
   on_update_time(p) {
@@ -1238,6 +1241,11 @@ export class Game {
   }
 
   onKey(e) {
+    // Minecraft.dispatchKeypresses: Ctrl+B cycles the narrator (in 1.12 even while typing: no screen is ever "focused")
+    if (e.down && !e.repeat && e.ctrl && e.code === 'KeyB') {
+      this.narrator.cycle();
+      return;
+    }
     if (this.screens.current) {
       if (e.down) this.screens.onKey(e);
       else this.screens.onKeyUp(e);

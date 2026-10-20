@@ -1,0 +1,59 @@
+// NarratorChatListener with the browser's speech synthesis standing in for Mojang's text2speech. Modes
+// (GameSettings.narrator): 0 off, 1 all, 2 chat, 3 system. Ctrl+B cycles them and shows the narrator toast.
+import { tr } from './i18n.js';
+import { chatToPlain } from './chat.js';
+
+export const NARRATOR_MODES = ['options.narrator.off', 'options.narrator.all', 'options.narrator.chat', 'options.narrator.system'];
+
+export class Narrator {
+  constructor(game) { this.game = game; }
+
+  // Narrator.active(): speech is available
+  get active() { return typeof speechSynthesis !== 'undefined' && typeof SpeechSynthesisUtterance !== 'undefined'; }
+
+  say(text) {
+    if (!this.active || !text) return;
+    try {
+      const u = new SpeechSynthesisUtterance(text);
+      const lang = String(this.game.settings.language || 'en_us').split('_');
+      u.lang = lang[0] + (lang[1] ? '-' + lang[1].toUpperCase() : '');
+      speechSynthesis.speak(u);
+    } catch (e) { /* speech unavailable */ }
+  }
+
+  clear() { try { if (this.active) speechSynthesis.cancel(); } catch (e) { /* speech unavailable */ } }
+
+  // NarratorChatListener.say: chat (position 0) and system (1) messages; "chat.type.text" reads as "<name> says <text>"
+  onChat(position, json) {
+    const n = this.game.settings.narrator | 0;
+    if (n === 0 || !this.active) return;
+    const type = position === 0 ? 'chat' : position === 1 ? 'system' : null;
+    if (!type || !(n === 1 || (n === 2 && type === 'chat') || (n === 3 && type === 'system'))) return;
+    if (json && typeof json === 'object' && json.translate === 'chat.type.text') {
+      const args = (json.with || []).map((a) => chatToPlain(a));
+      this.say(this.game.assets.translate('chat.type.text.narrate', args));
+    } else this.say(chatToPlain(json));
+  }
+
+  // GameSettings.setOptionValue(NARRATOR): next mode (stays off without speech), then announceMode
+  cycle() {
+    const s = this.game.settings;
+    s.narrator = this.active ? ((s.narrator | 0) + 1) % NARRATOR_MODES.length : 0;
+    s.save();
+    this.announceMode(s.narrator);
+  }
+
+  announceMode(n) {
+    this.clear();
+    this.say(tr('options.narrator') + ' : ' + tr(NARRATOR_MODES[n]));
+    const hud = this.game.hud;
+    if (!this.active) hud.systemToast('narrator', tr('narrator.toast.disabled'), tr('options.narrator.notavailable'));
+    else if (n === 0) hud.systemToast('narrator', tr('narrator.toast.disabled'), null);
+    else hud.systemToast('narrator', tr('narrator.toast.enabled'), tr(NARRATOR_MODES[n]));
+  }
+
+  label() {
+    const s = this.game.settings;
+    return tr('options.narrator') + ': ' + (this.active ? tr(NARRATOR_MODES[s.narrator | 0]) : tr('options.narrator.notavailable'));
+  }
+}

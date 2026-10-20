@@ -172,6 +172,22 @@ export class Hud {
     if (t) { t.recipes.push(...recipes); t.hasNew = true; } else this.addToast({ type: 'recipe', recipes: [...recipes], hasNew: true });
   }
 
+  // SystemToast.addOrUpdate: one toast per kind ('narrator', 'tutorial'); a showing one takes the new text
+  systemToast(kind, title, subtitle) {
+    const all = [...(this.toasts || []).filter(Boolean).map((t) => t.toast), ...(this.toastQueue || [])];
+    const t = all.find((x) => x.type === 'system' && x.kind === kind);
+    if (t) { t.title = title; t.subtitle = subtitle; t.hasNew = true; } else this.addToast({ type: 'system', kind, title, subtitle, hasNew: true });
+  }
+
+  // SystemToast.draw: yellow title (and white subtitle) for 5 seconds from the last update
+  _drawSystemToast(gui, toast, delta) {
+    if (toast.hasNew) { toast.firstDraw = delta; toast.hasNew = false; }
+    gui.blit('gui/toasts.png', 0, 0, 0, 64, 160, 32);
+    if (toast.subtitle == null) gui.text(toast.title, 18, 12, 0xffff00, false);
+    else { gui.text(toast.title, 18, 7, 0xffff00, false); gui.text(toast.subtitle, 18, 18, 0xffffff, false); }
+    return delta - (toast.firstDraw || 0) < 5000 ? 'show' : 'hide';
+  }
+
   // RecipeToast.draw: crafting table icon behind the recipe outputs, cycling through them
   _drawRecipeToast(gui, toast, delta) {
     if (toast.hasNew) { toast.firstDraw = delta; toast.hasNew = false; }
@@ -187,6 +203,7 @@ export class Hud {
   // AdvancementToast.draw: frame label then title, the item icon; challenges play their sound
   _drawToast(gui, toast, delta) {
     if (toast.type === 'recipe') return this._drawRecipeToast(gui, toast, delta);
+    if (toast.type === 'system') return this._drawSystemToast(gui, toast, delta);
     gui.blit('gui/toasts.png', 0, 0, 0, 0, 160, 32);
     const d = toast.advancement.display;
     const list = gui.font.wrap(d.title, 125);

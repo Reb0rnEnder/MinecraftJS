@@ -220,7 +220,7 @@ export class BrowserPlatform extends Emitter {
     window.addEventListener('keydown', (e) => {
       this._userGesture();
       const block = ['Tab', 'F1', 'F2', 'F3', 'F5', 'F11', 'Space', 'Slash', 'Quote', 'Backspace', 'Escape', 'ArrowUp', 'ArrowDown'];
-      if (block.includes(e.code) || (e.ctrlKey && ['KeyW', 'KeyS', 'KeyD', 'KeyF', 'Equal', 'Minus', 'NumpadAdd', 'NumpadSubtract', 'Digit0'].includes(e.code))) e.preventDefault();
+      if (block.includes(e.code) || (e.ctrlKey && ['KeyW', 'KeyS', 'KeyD', 'KeyF', 'KeyB', 'Equal', 'Minus', 'NumpadAdd', 'NumpadSubtract', 'Digit0'].includes(e.code))) e.preventDefault();
       this.emit('keydown', { code: e.code, key: e.key, repeat: e.repeat, ctrl: e.ctrlKey || e.metaKey, shift: e.shiftKey, alt: e.altKey });
       if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) this.emit('char', e.key);
     });

@@ -250,8 +250,7 @@ class ChatOptionsScreen extends OptionsBase {
       { slider: true, label: (v) => trOption('options.chat.height.unfocused', px(v, 160, 20)), value: () => s.chatHeightUnfocused, set: (v) => { s.chatHeightUnfocused = v; } },
       { slider: true, label: (v) => trOption('options.chat.width', px(v, 280, 40)), value: () => s.chatWidth, set: (v) => { s.chatWidth = v; } },
       { label: () => trOption('options.reducedDebugInfo', onOff(s.reducedDebugInfo)), click: () => { s.reducedDebugInfo = !s.reducedDebugInfo; } },
-      // NarratorChatListener is not active here, so the button is disabled like vanilla without a narrator
-      { label: () => tr('options.narrator') + ': ' + tr('options.narrator.notavailable'), click: () => {}, enabled: false },
+      { label: () => this.game.narrator.label(), click: () => this.game.narrator.cycle() },
     ]);
     this.doneButton(this.height / 6 + 144);
   }
