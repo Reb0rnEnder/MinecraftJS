@@ -3,6 +3,7 @@ import { C } from '../net/packets.js';
 import { blocks, blocksByName } from '../world/blocks.js';
 import { rayBox } from '../world/world.js';
 import { copy } from './container.js';
+import { COMMAND_BLOCKS, CommandBlockScreen, CommandMinecartScreen } from '../gui/screens/commandblock.js';
 
 const INTERACTIVE = new Set(['chest', 'trapped_chest', 'ender_chest', 'crafting_table', 'furnace', 'lit_furnace', 'dispenser', 'dropper',
   'hopper', 'brewing_stand', 'enchanting_table', 'anvil', 'beacon', 'wooden_door', 'spruce_door', 'birch_door', 'jungle_door',
@@ -457,6 +458,8 @@ export class Interaction {
         g.send(C.useEntity(e.id, 2, t.hit[0] - p.x, t.hit[1] - p.y, t.hit[2] - p.z, hand));
         if (e.kind === 'armorstand' && !((e.armorFlags || 0) & 16)) return;
         g.send(C.useEntity(e.id, 0, 0, 0, 0, hand)); // interactWithEntity (INTERACT)
+        // EntityMinecartCommandBlock.processInitialInteract: GuiEditCommandBlockMinecart (COMMAND 12, LAST_OUTPUT 13)
+        if (e.kind === 'minecart' && e.cartType === 6 && g.canUseCommandBlock()) { g.screens.open(new CommandMinecartScreen(g, e, 12, 13)); return; }
         if (g.entities.isInteractive(e, stack)) return;
       } else if (t && t.type === 'block') {
         const b = blocks[g.world.getState(t.x, t.y, t.z) >> 4];
@@ -489,12 +492,15 @@ export class Interaction {
     if (g.gameMode !== 3) {
       const mainAndOffEmpty = !g.inventory.held() && !g.inventory.offhand;
       if ((!this.player.sneaking || mainAndOffEmpty) && b && INTERACTIVE.has(b.name) && b.name !== 'iron_door' && b.name !== 'iron_trapdoor') activated = true;
+      // BlockCommandBlock.onBlockActivated: only for players who can use command blocks, who get GuiCommandBlock
+      if (activated && COMMAND_BLOCKS.has(b.name) && !g.canUseCommandBlock()) activated = false;
       // ItemBlock.canPlaceBlockOnSide: no packet at all when the block could not go there
       if (!activated && held && this._itemBlock(held) && !this._canPlaceBlockOnSide(t, held)) return false;
     }
     // CPacketPlayerTryUseItemOnBlock (cursor position on the face)
     g.send(C.blockPlace(t.x, t.y, t.z, t.face, hand, fx, fy, fz));
     if (activated) {
+      if (COMMAND_BLOCKS.has(b.name)) g.screens.open(new CommandBlockScreen(g, { x: t.x, y: t.y, z: t.z }));
       if (b.isDoor || b.name === 'trapdoor' || b.isFenceGate) this.predictToggle(t, b);
       return true;
     }

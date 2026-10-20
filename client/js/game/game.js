@@ -31,6 +31,7 @@ import { DeathScreen } from '../gui/screens/death.js';
 import { SignEditScreen } from '../gui/screens/sign.js';
 import { openContainerScreen, InventoryScreen, CreativeScreen, handleHotbarSnapshots } from '../gui/screens/containers.js';
 import { BookScreen, SleepScreen } from '../gui/screens/book.js';
+import { CommandBlockScreen } from '../gui/screens/commandblock.js';
 import { Inventory, ContainerWindow } from './container.js';
 import { Items } from './items.js';
 import { EntityManager, shulkerBox } from './entities.js';
@@ -554,6 +555,9 @@ export class Game {
     if (!silent) this.screens.openMainMenu(reason);
   }
 
+  // EntityPlayer.canUseCommandBlock: creative and op level 2
+  canUseCommandBlock() { return this.gameMode === 1 && (this.permissionLevel | 0) >= 2; }
+
   leaveWorld() {
     this.inWorld = false;
     this.connected = false;
@@ -886,6 +890,11 @@ export class Game {
     if (id === 'sign') {
       this.tileRenderer.setSign(pos, [data.Text1, data.Text2, data.Text3, data.Text4].map((l) => chatToLegacy(l || '')));
       return;
+    }
+    // GuiCommandBlock.updateGui once the opened block's data (action 2) arrives
+    if (id === 'command_block' && action === 2) {
+      const s = this.screens.current;
+      if (s instanceof CommandBlockScreen && s.pos.x === pos.x && s.pos.y === pos.y && s.pos.z === pos.z) s.updateGui(data);
     }
     if (action === undefined) action = BLOCK_ENTITY_ACTIONS[id];
     if (action !== undefined) this.tileRenderer.setTileEntity(pos, action, data, nbt);
