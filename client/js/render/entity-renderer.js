@@ -205,7 +205,10 @@ export class EntityRenderer {
 
   _rebuild(uuid) {
     for (const [id, v] of this.visuals) if (v.uuid === uuid) { const e = this.game.entities.get(id); if (e) this.remove(e); }
-    if (uuid === this.game.playerUuid) { this._guiModel = null; if (this.game.handRenderer) this.game.handRenderer.reset(); }
+    if (uuid === this.game.playerUuid) {
+      this._guiModel = null;
+      if (this.game.handRenderer) this.game.handRenderer.invalidateSkin();
+    }
   }
 
   // Texture (or path) of a player's skin, for GUI drawing (tab list faces)
