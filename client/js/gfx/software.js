@@ -221,7 +221,91 @@ export class SoftwareDevice {
       return o;
     };
     const fract = (v) => v - Math.floor(v);
+    // The programs added for the 1.8 Super Secret Settings (see the WebGL 2 shader); colours as fresh arrays
+    const ox = 1 / sw, oy = 1 / sh;
+    const T = (x, y) => fetch([0, 0, 0, 0], sp, sw, sh, x, y);
+    const len4 = (v) => Math.hypot(v[0], v[1], v[2], v[3]);
+    const ndot = (a, b) => { const la = len4(a), lb = len4(b); return (a[0] * b[0] + a[1] * b[1] + a[2] * b[2] + a[3] * b[3]) / (la * lb); };
+    const progs = (m, tx, ty) => {
+      if (m === 6) {
+        const c = T(tx, ty), l = T(tx - ox, ty), rr = T(tx + ox, ty), u = T(tx, ty - oy), dd = T(tx, ty + oy);
+        return [0, 1, 2].map((i) => Math.min(1, Math.max(0, 4 * c[i] - l[i] - rr[i] - u[i] - dd[i])));
+      }
+      if (m === 7) {
+        const rx = [P[12], P[13], P[14]], ry = [P[1], P[2], P[3]];
+        const cx = (i) => tx * rx[i] + P[4 + i] * ox - (rx[i] - 1) * 0.5, cy = (i) => ty * ry[i] + P[8 + i] * oy - (ry[i] - 1) * 0.5;
+        return [T(cx(0), cy(0))[0], T(cx(1), cy(1))[1], T(cx(2), cy(2))[2]];
+      }
+      if (m === 8) { const prev = fetch([0, 0, 0, 0], ap, aw, ah, tx, ty), cur = T(tx, ty); return [0, 1, 2].map((i) => Math.max(prev[i] * P[4 + i], cur[i])); }
+      if (m === 9) {
+        const c = T(tx, ty);
+        const du = ndot(c, T(tx, ty - oy)), dd = ndot(c, T(tx, ty + oy)), dl = ndot(c, T(tx - ox, ty)), dr = ndot(c, T(tx + ox, ty));
+        const f = Math.min(2, Math.max(0.5, 1 + (du * 64 - dd * 64) + (dr * 64 - dl * 64)));
+        return [c[0] * f, c[1] * f, c[2] * f];
+      }
+      if (m === 10) {
+        const v = T(tx, ty);
+        for (const [kx, ky] of [[0, -1], [0, 1], [-1, 0], [1, 0], [-1, -1], [1, 1], [-1, 1], [1, -1], [0, -2], [0, 2], [-2, 0], [2, 0]]) {
+          const q = T(tx + kx * ox, ty + ky * oy);
+          for (let i = 0; i < 3; i++) if (q[i] < v[i]) v[i] = q[i];
+        }
+        return v;
+      }
+      if (m === 11) {
+        const R = P[1], mx = T(tx, ty);
+        for (let u = 0; u <= R; u += 1) for (let v = 0; v <= R; v += 1) {
+          if (Math.sqrt(u * u + v * v) / R > 1) continue;
+          for (const [a, b2] of [[-u, -v], [u, v], [-u, v], [u, -v]]) { const q = T(tx + a * ox, ty + b2 * oy); for (let i = 0; i < 3; i++) if (q[i] > mx[i]) mx[i] = q[i]; }
+        }
+        return mx;
+      }
+      if (m === 12) {
+        const c = T(tx, ty);
+        const side = (dx, dy) => { const a1 = T(tx + dx, ty + dy), a2 = T(tx + dx * 2, ty + dy * 2); return [0, 1, 2].map((i) => c[i] + ((a1[i] + (a2[i] - a1[i]) * 0.667) - c[i]) * 0.75); };
+        const v1 = side(-ox, 0), v2 = side(ox, 0), v3 = side(0, -oy), v4 = side(0, oy);
+        return [0, 1, 2].map((i) => ((v1[i] + v2[i]) * 0.5 + (v3[i] + v4[i]) * 0.5) * 0.5);
+      }
+      if (m === 13) {
+        const c = T(tx, ty);
+        const px2 = tx * 2 - 1, py2 = ty * 2 - 1, r2 = px2 * px2 + py2 * py2;
+        const sx = tx * (1 - 0.02 * 0.2) + 0.02 * 0.1 + px2 * 0.02 * r2, sy = ty * (1 - 0.02 * 0.2) + 0.02 * 0.1 + py2 * 0.02 * r2;
+        if (sx < 0 || sy < 0 || sx > 1 || sy > 1) return null;
+        const bm = Math.sin(sy * sh * 0.25 * Math.PI), br = 1 + ((bm * bm + 1) * 0.5 - 1) * 0.8;
+        return [0, 1, 2].map((i) => Math.pow(0.05 + 0.95 * c[i] * br, 0.8));
+      }
+      if (m === 14) {
+        const t = P[1];
+        const c = T(tx + Math.sin(ty * P[4] + t * 6.283185307) * P[6], ty + Math.cos(tx * P[5] + t * 6.283185307) * P[7]);
+        const mxv = Math.max(c[0], c[1], c[2]), ch = mxv - Math.min(c[0], c[1], c[2]);
+        let h = 0, sat = 0;
+        if (ch !== 0) {
+          sat = ch / mxv;
+          const d = [(mxv - c[0]) / ch, (mxv - c[1]) / ch, (mxv - c[2]) / ch];
+          const e = [d[0] - d[2] + 2, d[1] - d[0] + 4, d[2] - d[1]];
+          h = fract((c[0] >= mxv ? e[2] : c[1] >= mxv ? e[0] : e[1]) / 6);
+        }
+        h = fract(h + t);
+        const cl = (v) => Math.min(1, Math.max(0, v));
+        const hue = [cl(Math.abs(h * 6 - 3) - 1), cl(2 - Math.abs(h * 6 - 2)), cl(2 - Math.abs(h * 6 - 4))];
+        return hue.map((x) => ((x - 1) * sat + 1) * mxv);
+      }
+      if (m === 15) {
+        const c = T(tx, ty), sum = [0, 0, 0];
+        for (let k = 1; k <= 2; k++) for (const [dx, dy] of [[0, -oy], [ox, 0], [-ox, 0], [0, oy]]) { const q = T(tx + dx * k, ty + dy * k); for (let i = 0; i < 3; i++) sum[i] += Math.abs(c[i] - q[i]); }
+        const gray = [0.3, 0.59, 0.11];
+        let sl = 1;
+        for (let i = 0; i < 3; i++) sl -= Math.min(1, sum[i]) * gray[i];
+        let L = 0;
+        for (let i = 0; i < 3; i++) L += (c[i] + (c[i] - Math.pow(c[i], P[1]))) * gray[i];
+        L = L - fract(L * P[2]) / P[2];
+        L = L * (P[2] / (P[2] - 1)) * sl;
+        return [L, L, L];
+      }
+      const c = T(tx, 1 - ty); // 16: flip (blit with the image upside down)
+      return [c[0] * P[4], c[1] * P[5], c[2] * P[6]];
+    };
     const mode = Math.round(P[0]);
+    const blendAlpha = !!(d.state && d.state.blend === 'alpha');
     const cs = Math.cos(P[1] * 0.0174532925), sn = Math.sin(P[1] * 0.0174532925);
     const R = P[6];
     for (let y = 0; y < H; y++) {
@@ -229,7 +313,13 @@ export class SoftwareDevice {
       for (let x = 0; x < W; x++) {
         const tx = (x + 0.5) / W;
         let r, g, b, a = 1;
-        if (mode === 0) { fetch(px, sp, sw, sh, tx, ty); r = px[0] * P[4]; g = px[1] * P[5]; b = px[2] * P[6]; a = px[3] * P[7]; }
+        if (mode === 0) {
+          fetch(px, sp, sw, sh, tx, ty); r = px[0] * P[4]; g = px[1] * P[5]; b = px[2] * P[6]; a = px[3] * P[7];
+          if (blendAlpha && a < 1) { // srcalpha, 1-srcalpha over what the target holds
+            const o = dst[y * W + x], k = 1 - a;
+            r = r * a + (o & 255) / 255 * k; g = g * a + ((o >>> 8) & 255) / 255 * k; b = b * a + ((o >>> 16) & 255) / 255 * k; a = a + (o >>> 24) / 255 * k;
+          }
+        }
         else if (mode === 1) { fetch(px, sp, sw, sh, tx, ty); const k = P[1]; r = px[0] + (1 - 2 * px[0]) * k; g = px[1] + (1 - 2 * px[1]) * k; b = px[2] + (1 - 2 * px[2]) * k; }
         else if (mode === 2) {
           fetch(px, sp, sw, sh, tx, ty);
@@ -251,6 +341,10 @@ export class SoftwareDevice {
           }
           const n = R * 2 + 1;
           r = ar / n; g = ag / n; b = ab / n; a = ta;
+        } else if (mode >= 6 && mode <= 16) {
+          const c = progs(mode, tx, ty);
+          if (!c) continue; // discarded: the target keeps its clear colour
+          r = c[0]; g = c[1]; b = c[2];
         } else {
           const sx = (tx * cs - ty * sn) * P[4] + P[6], sy = (ty * cs + tx * sn) * P[5] + P[7];
           fetch(bx, ap, aw, ah, tx, ty);

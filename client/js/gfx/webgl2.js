@@ -150,6 +150,97 @@ void main() {
     vec4 acc = vec4(0.0); float ta = 0.0;
     for (float r = -R; r <= R; r += 1.0) { vec4 s = fetch(uTex0, tc + one * r * uP[1].xy); ta += s.a; acc += s; }
     o = vec4(acc.rgb / (R * 2.0 + 1.0), ta);
+  } else if (m == 6) {
+    vec2 one = 1.0 / inSize;
+    vec4 c = fetch(uTex0, tc);
+    vec4 t = (c - fetch(uTex0, tc - vec2(one.x, 0.0))) + (c - fetch(uTex0, tc + vec2(one.x, 0.0))) + (c - fetch(uTex0, tc - vec2(0.0, one.y))) + (c - fetch(uTex0, tc + vec2(0.0, one.y)));
+    o = vec4(clamp(t, 0.0, 1.0).rgb, 1.0);
+  } else if (m == 7) {
+    vec2 one = 1.0 / inSize;
+    vec3 rx = uP[3].xyz, ry = uP[0].yzw;
+    vec3 cx = tc.x * rx + uP[1].xyz * one.x - (rx - 1.0) * 0.5;
+    vec3 cy = tc.y * ry + uP[2].xyz * one.y - (ry - 1.0) * 0.5;
+    o = vec4(fetch(uTex0, vec2(cx.x, cy.x)).r, fetch(uTex0, vec2(cx.y, cy.y)).g, fetch(uTex0, vec2(cx.z, cy.z)).b, 1.0);
+  } else if (m == 8) {
+    o = vec4(max(fetch(uLightmap, tc).rgb * uP[1].xyz, fetch(uTex0, tc).rgb), 1.0);
+  } else if (m == 9) {
+    vec2 one = 1.0 / inSize;
+    vec4 c = fetch(uTex0, tc);
+    vec4 nc = normalize(c);
+    float du = dot(nc, normalize(fetch(uTex0, tc + vec2(0.0, -one.y)))), dd = dot(nc, normalize(fetch(uTex0, tc + vec2(0.0, one.y))));
+    float dl = dot(nc, normalize(fetch(uTex0, tc + vec2(-one.x, 0.0)))), dr = dot(nc, normalize(fetch(uTex0, tc + vec2(one.x, 0.0))));
+    float f = 1.0 + (du * 64.0 - dd * 64.0) + (dr * 64.0 - dl * 64.0);
+    o = vec4((c * clamp(f, 0.5, 2.0)).rgb, 1.0);
+  } else if (m == 10) {
+    vec2 one = 1.0 / inSize;
+    vec4 v = fetch(uTex0, tc);
+    for (int i = 0; i < 12; i++) {
+      vec2 k = i == 0 ? vec2(0, -1) : i == 1 ? vec2(0, 1) : i == 2 ? vec2(-1, 0) : i == 3 ? vec2(1, 0) : i == 4 ? vec2(-1, -1) : i == 5 ? vec2(1, 1)
+        : i == 6 ? vec2(-1, 1) : i == 7 ? vec2(1, -1) : i == 8 ? vec2(0, -2) : i == 9 ? vec2(0, 2) : i == 10 ? vec2(-2, 0) : vec2(2, 0);
+      v = min(v, fetch(uTex0, tc + k * one));
+    }
+    o = vec4(v.rgb, 1.0);
+  } else if (m == 11) {
+    vec2 one = 1.0 / inSize;
+    float R = uP[0].y;
+    vec4 mx = fetch(uTex0, tc);
+    for (float u = 0.0; u <= R; u += 1.0) for (float v = 0.0; v <= R; v += 1.0) {
+      float w = sqrt(u * u + v * v) / R > 1.0 ? 0.0 : 1.0;
+      vec4 t = max(max(fetch(uTex0, tc + vec2(-u, -v) * one), fetch(uTex0, tc + vec2(u, v) * one)), max(fetch(uTex0, tc + vec2(-u, v) * one), fetch(uTex0, tc + vec2(u, -v) * one)));
+      mx = mix(mx, max(mx, t), w);
+    }
+    o = vec4(mx.rgb, 1.0);
+  } else if (m == 12) {
+    vec2 one = 1.0 / inSize;
+    vec4 c = fetch(uTex0, tc);
+    vec4 v1 = mix(c, mix(fetch(uTex0, tc - vec2(one.x, 0.0)), fetch(uTex0, tc - vec2(one.x * 2.0, 0.0)), 0.667), 0.75);
+    vec4 v2 = mix(c, mix(fetch(uTex0, tc + vec2(one.x, 0.0)), fetch(uTex0, tc + vec2(one.x * 2.0, 0.0)), 0.667), 0.75);
+    vec4 v3 = mix(c, mix(fetch(uTex0, tc - vec2(0.0, one.y)), fetch(uTex0, tc - vec2(0.0, one.y * 2.0)), 0.667), 0.75);
+    vec4 v4 = mix(c, mix(fetch(uTex0, tc + vec2(0.0, one.y)), fetch(uTex0, tc + vec2(0.0, one.y * 2.0)), 0.667), 0.75);
+    o = vec4(mix(mix(v1, v2, 0.5), mix(v3, v4, 0.5), 0.5).rgb, 1.0);
+  } else if (m == 13) {
+    vec4 inT = fetch(uTex0, tc);
+    vec2 pu = tc * 2.0 - 1.0;
+    float r2 = pow(length(pu), 2.0);
+    vec2 sc = tc * (1.0 - 0.02 * 0.2) + 0.02 * 0.1 + pu * 0.02 * r2;
+    if (sc.x < 0.0 || sc.y < 0.0 || sc.x > 1.0 || sc.y > 1.0) discard;
+    float bm = sin(sc.y * inSize.y * 0.25 * 3.1415926535);
+    float br = mix(1.0, (bm * bm + 1.0) * 0.5, 0.8);
+    vec3 t = vec3(0.05) + vec3(0.95) * (inT.rgb * br);
+    o = vec4(pow(t, vec3(0.8)), 1.0);
+  } else if (m == 14) {
+    float T = uP[0].y;
+    vec2 off = vec2(sin(tc.y * uP[1].x + T * 6.283185307) * uP[1].z, cos(tc.x * uP[1].y + T * 6.283185307) * uP[1].w);
+    vec3 rgb = fetch(uTex0, tc + off).rgb;
+    vec3 hsv = vec3(0.0, 0.0, max(rgb.r, max(rgb.g, rgb.b)));
+    float c = hsv.z - min(rgb.r, min(rgb.g, rgb.b));
+    if (c != 0.0) {
+      hsv.y = c / hsv.z;
+      vec3 d = (hsv.z - rgb) / c;
+      d -= d.brg;
+      d.rg += vec2(2.0, 4.0);
+      hsv.x = fract((rgb.r >= hsv.z ? d.b : rgb.g >= hsv.z ? d.r : d.g) / 6.0);
+    }
+    hsv.x = fract(hsv.x + T);
+    vec3 h = clamp(vec3(abs(hsv.x * 6.0 - 3.0) - 1.0, 2.0 - abs(hsv.x * 6.0 - 2.0), 2.0 - abs(hsv.x * 6.0 - 4.0)), 0.0, 1.0);
+    o = vec4(((h - 1.0) * hsv.y + 1.0) * hsv.z, 1.0);
+  } else if (m == 15) {
+    vec2 one = 1.0 / inSize;
+    vec4 c = fetch(uTex0, tc);
+    vec4 sum = vec4(0.0);
+    for (int i = 1; i <= 2; i++) {
+      float k = float(i);
+      sum += abs(c - fetch(uTex0, tc + vec2(0.0, -one.y) * k)) + abs(c - fetch(uTex0, tc + vec2(one.x, 0.0) * k))
+        + abs(c - fetch(uTex0, tc + vec2(-one.x, 0.0) * k)) + abs(c - fetch(uTex0, tc + vec2(0.0, one.y) * k));
+    }
+    vec4 gray = vec4(0.3, 0.59, 0.11, 0.0);
+    float sl = 1.0 - dot(clamp(sum, 0.0, 1.0), gray);
+    float L = dot(c + (c - pow(c, vec4(uP[0].y))), gray);
+    L = L - fract(L * uP[0].z) / uP[0].z;
+    L = L * (uP[0].z / (uP[0].z - 1.0)) * sl;
+    o = vec4(L, L, L, 1.0);
+  } else if (m == 16) {
+    o = fetch(uTex0, vec2(tc.x, 1.0 - tc.y)) * uP[1];
   } else {
     float a = uP[0].y * 0.0174532925; float cs = cos(a), sn = sin(a);
     vec2 sc = vec2(tc.x * cs - tc.y * sn, tc.y * cs + tc.x * sn) * uP[1].xy + uP[1].zw;
