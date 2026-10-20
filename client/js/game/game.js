@@ -29,6 +29,7 @@ import { DeathScreen } from '../gui/screens/death.js';
 import { SignEditScreen } from '../gui/screens/sign.js';
 import { openContainerScreen, InventoryScreen, CreativeScreen } from '../gui/screens/containers.js';
 import { BookScreen, SleepScreen } from '../gui/screens/book.js';
+import { CommandBlockScreen } from '../gui/screens/commandblock.js';
 import { Inventory, ContainerWindow } from './container.js';
 import { Items } from './items.js';
 import { EntityManager } from './entities.js';
@@ -77,6 +78,7 @@ export class Game {
     this.entityRenderer = new EntityRenderer(this);
     this.handRenderer = new HandRenderer(this);
     this.tileRenderer = new TileEntityRenderer(this);
+    this.commandBlocks = new Map(); // "x,y,z" -> command block tile entity data
     this.pistons = new Pistons(this);
     this.serverPacks = new ServerPacks(this);
     this.particles = new Particles(this);
@@ -504,7 +506,16 @@ export class Game {
     if (!silent) this.screens.openMainMenu(reason);
   }
 
+  // CommandBlockLogic.tryOpenEditCommandBlock (1.8): any creative player gets the GUI
+  openCommandBlock(target) {
+    if (this.gameMode !== 1) return false;
+    if (target.pos) target.data = this.commandBlocks.get(target.pos.x + ',' + target.pos.y + ',' + target.pos.z) || null;
+    this.screens.open(new CommandBlockScreen(this, target));
+    return true;
+  }
+
   leaveWorld() {
+    this.commandBlocks.clear();
     this.inWorld = false;
     this.connected = false;
     this.world.clear();
@@ -911,7 +922,12 @@ export class Game {
 
   on_map(p) { this.items.updateMap(p); }
 
-  on_tile_entity_data(p) { this.tileRenderer.setTileEntity(p.location, p.action, simplify(p.nbtData), p.nbtData); }
+  on_tile_entity_data(p) {
+    const data = simplify(p.nbtData);
+    // Command block data (action 2) is kept for GuiCommandBlock
+    if (p.action === 2 && data) this.commandBlocks.set(p.location.x + ',' + p.location.y + ',' + p.location.z, data);
+    this.tileRenderer.setTileEntity(p.location, p.action, data, p.nbtData);
+  }
 
   on_open_sign_entity(p) { this.screens.open(new SignEditScreen(this, p.location)); }
 

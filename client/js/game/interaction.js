@@ -418,6 +418,8 @@ export class Interaction {
       else {
         g.send(C.useEntity(e.id, 0)); // interactWithEntitySendPacket
         if (g.entities.isInteractive(e, held)) useItem = false;
+        // EntityMinecartCommandBlock.interactFirst
+        if (e.kind === 'minecart' && e.cartType === 6) g.openCommandBlock({ entity: e });
       }
     } else if (t && t.type === 'block') {
       const b = blocks[g.world.getState(t.x, t.y, t.z) >> 4];
@@ -444,11 +446,14 @@ export class Interaction {
     let activated = false;
     if (g.gameMode !== 3) {
       if ((!this.player.sneaking || !held) && b && INTERACTIVE.has(b.name) && b.name !== 'iron_door' && b.name !== 'iron_trapdoor') activated = true;
+      // BlockCommandBlock.onBlockActivated: tryOpenEditCommandBlock, creative only
+      if (activated && b.name === 'command_block' && g.gameMode !== 1) activated = false;
       // ItemBlock.canPlaceBlockOnSide: no packet at all when the block could not go there
       if (!activated && held && this._itemBlock(held) && !this._canPlaceBlockOnSide(t, held)) return false;
     }
     g.send(C.blockPlace(t.x, t.y, t.z, t.face, held, Math.floor(fx * 16), Math.floor(fy * 16), Math.floor(fz * 16)));
     if (activated) {
+      if (b.name === 'command_block') g.openCommandBlock({ pos: { x: t.x, y: t.y, z: t.z } });
       if (b.isDoor || b.name === 'trapdoor' || b.isFenceGate) this.predictToggle(t, b);
       return true;
     }
