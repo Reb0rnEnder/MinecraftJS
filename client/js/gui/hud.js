@@ -1,5 +1,6 @@
 // In-game overlay (port of GuiIngame / GuiNewChat / GuiPlayerTabOverlay / GuiOverlayDebug).
 import { tr } from './i18n.js';
+import { SpectatorGui } from './spectator.js';
 import { blocks } from '../world/blocks.js';
 import { platform } from '../platform/platform.js';
 import { resolveState } from '../world/blockstates.js';
@@ -32,6 +33,7 @@ export class Hud {
     this.titleFadeIn = 10; this.titleStay = 70; this.titleFadeOut = 20;
     this.highlightTicks = 0;
     this.highlightItem = null;
+    this.spectatorGui = new SpectatorGui(game);
     this.healthFlash = 0;
     this.lastHealth = 20;
     this.displayHealth = 20;
@@ -112,6 +114,7 @@ export class Hud {
     this.titleFadeIn = 10; this.titleStay = 70; this.titleFadeOut = 20;
     this.highlightTicks = 0; this.highlightItem = null;
     this.toast = null;
+    if (this.spectatorGui) this.spectatorGui.onMenuClosed();
   }
 
   onTitle(p) {
@@ -251,7 +254,7 @@ export class Hud {
     }
     if (env.portal > 0 && !g.effects.has(9)) this.renderPortalOverlay(gui, env.portal);
 
-    if (g.gameMode === 3) this.renderSpectatorHotbar(gui);
+    if (g.gameMode === 3) this.spectatorGui.render(gui); // GuiSpectator.renderTooltip (nothing until the menu opens)
     else this.renderHotbar(gui, partial);
 
     const debugAxes = g.showDebug && !g.reducedDebug && !g.settings.reducedDebugInfo;
@@ -266,7 +269,8 @@ export class Hud {
     else if (g.gameMode === 1) { /* no xp bar in creative */ }
 
     // Held item name
-    if (this.highlightTicks > 0 && this.highlightItem && g.gameMode !== 3) {
+    if (g.gameMode === 3) this.spectatorGui.renderSelectedItem(gui);
+    else if (this.highlightTicks > 0 && this.highlightItem) {
       let a = Math.floor(this.highlightTicks * 256 / 10);
       if (a > 255) a = 255;
       if (a > 0) {
@@ -340,13 +344,6 @@ export class Hud {
     }
   }
 
-  renderSpectatorHotbar(gui) {
-    const W = gui.width, H = gui.height;
-    gui.blit('gui/spectator_widgets.png', W / 2 - 91, H - 22, 0, 0, 182, 22);
-  }
-
-  spectatorSelect() {}
-  spectatorScroll() {}
 
   renderStats(gui) {
     const g = this.game;
