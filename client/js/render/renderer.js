@@ -403,10 +403,12 @@ export class Renderer {
     return c.isVisible(x0, y0, z0) || c.isVisible(x1, y1, z1) || c.isVisible((x0 + x1) / 2, (y0 + y1) / 2, (z0 + z1) / 2);
   }
 
-  // Draw the world. hand: { draw(device) } optional, run after clearing depth with its own camera
-  render(hand) {
+  // Draw the world. hand: { draw(device) } optional, run after clearing depth with its own camera. post: a PostChain
+  // (post.js) to draw into instead of the screen; the caller runs it afterwards
+  render(hand, post = null) {
     const d = this.device;
     d.beginFrame(this.fog.color);
+    if (post) post.begin(this.fog.color);
     this._drawSky();
     d.clearDepth();
     this._globals(this.view, this.proj);

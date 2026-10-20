@@ -101,6 +101,57 @@ const SHADERS = {
   if (D.p[0].w < 0.5) { return vec4f(mix(col, G.fogColor.rgb, f), t.a); }
   return vec4f(col * (1.0 - f), 1.0);
 }`,
+  // Vanilla post-processing programs (see device.js and the WebGL 2 shader); render targets are stored top-down here
+  post: `
+@vertex fn vs(@location(0) p: vec3f, @location(1) uv: vec2f, @location(2) col: vec4f) -> VOut {
+  var o: VOut; o.pos = vec4f(p.xy, 0.0, 1.0); o.uv = vec2f(uv.x, 1.0 - uv.y); o.col = col; o.light = vec2f(0.0); o.depth = 0.0; o.shade = 1.0; return o;
+}
+fn fetchIn(c: vec2f) -> vec4f {
+  let n = vec2i(textureDimensions(tex0, 0));
+  return textureLoad(tex0, clamp(vec2i(floor(vec2f(c.x, 1.0 - c.y) * vec2f(n))), vec2i(0), n - 1), 0);
+}
+fn fetchAux(c: vec2f) -> vec4f {
+  let n = vec2i(textureDimensions(lmTex, 0));
+  return textureLoad(lmTex, clamp(vec2i(floor(vec2f(c.x, 1.0 - c.y) * vec2f(n))), vec2i(0), n - 1), 0);
+}
+@fragment fn fs(i: VOut) -> @location(0) vec4f {
+  let m = i32(D.p[0].x + 0.5);
+  let tc = i.uv;
+  let inSize = vec2f(textureDimensions(tex0, 0));
+  if (m == 0) { return fetchIn(tc) * D.p[1]; }
+  if (m == 1) { let d = fetchIn(tc); return vec4f(mix(d, 1.0 - d, D.p[0].y).rgb, 1.0); }
+  if (m == 2) {
+    let t = fetchIn(tc).rgb;
+    let c = vec3f(dot(t, D.p[1].xyz), dot(t, D.p[2].xyz), dot(t, D.p[3].xyz));
+    let l = dot(c, vec3f(0.3, 0.59, 0.11));
+    return vec4f((c - l) * D.p[0].y + l, 1.0);
+  }
+  if (m == 3) {
+    let mis = inSize / D.p[0].w;
+    let b = fetchIn(tc - fract(tc * mis) / mis);
+    let f = b.rgb - fract(b.rgb * D.p[0].y) / D.p[0].y;
+    let l = dot(f, vec3f(0.3, 0.59, 0.11));
+    return vec4f(l + (f - l) * D.p[0].z, 1.0);
+  }
+  if (m == 4) {
+    let one = 1.0 / inSize;
+    let R = D.p[1].z;
+    var acc = vec4f(0.0); var ta = 0.0;
+    for (var r = -R; r <= R; r += 1.0) { let s = fetchIn(tc + one * r * D.p[1].xy); ta += s.a; acc += s; }
+    return vec4f(acc.rgb / (R * 2.0 + 1.0), ta);
+  }
+  let a = D.p[0].y * 0.0174532925; let cs = cos(a); let sn = sin(a);
+  let sc = vec2f(tc.x * cs - tc.y * sn, tc.y * cs + tc.x * sn) * D.p[1].xy + D.p[1].zw;
+  let S = D.p[2]; let V = D.p[3];
+  let B = fetchAux(tc);
+  var O = fetchIn(sc);
+  if (sc.x < S.x || sc.y < S.y || sc.x > S.z || sc.y > S.w) { O = B; }
+  if (sc.x < V.x) { O = mix(B, O, (S.x - sc.x) / (S.x - V.x)); }
+  if (sc.y < V.y) { O = mix(B, O, (S.y - sc.y) / (S.y - V.y)); }
+  if (sc.x > V.z) { O = mix(B, O, (S.z - sc.x) / (S.z - V.z)); }
+  if (sc.y > V.w) { O = mix(B, O, (S.w - sc.y) / (S.w - V.w)); }
+  return vec4f(O.rgb, 1.0);
+}`,
 };
 
 const BLENDS = {

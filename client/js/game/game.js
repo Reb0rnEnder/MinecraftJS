@@ -39,6 +39,7 @@ import { HandRenderer } from '../render/hand-renderer.js';
 import { Pistons } from './pistons.js';
 import { ServerPacks } from './serverpacks.js';
 import { BoatController } from './vehicle.js';
+import { PostEffects, entityShaderName } from '../render/post.js';
 import { TileEntityRenderer } from '../render/tile-renderer.js';
 import { Particles } from '../render/particles.js';
 import { Weather } from '../render/weather.js';
@@ -81,6 +82,7 @@ export class Game {
     this.commandBlocks = new Map(); // "x,y,z" -> command block tile entity data
     this.pistons = new Pistons(this);
     this.serverPacks = new ServerPacks(this);
+    this.postEffects = new PostEffects(this);
     this.particles = new Particles(this);
     this.debugLines = new DebugLines(this);
     this.weather = new Weather(this);
@@ -292,6 +294,7 @@ export class Game {
     this.handRenderer.reset();
     this.tileRenderer.clear();
     this.pistons.clear();
+    this.postEffects.clear();
     this.sound.reload();
     this.worker = this.assets.worker;
     this._setupWorker();
@@ -1657,7 +1660,11 @@ export class Game {
     this.interaction.renderSelection(partial);
     const hand = this.thirdPerson === 0 && !this.hideGui && this.gameMode !== 3 ? this.handRenderer.prepare(partial, fov) : null;
     this.profiler.endStart('level');
-    r.render(hand);
+    // EntityRenderer.loadEntityShader: spectating a creeper, spider or enderman in first person
+    const viewed = this.cameraEntity != null && this.thirdPerson === 0 ? this.entities.get(this.cameraEntity) : null;
+    const post = viewed && this.device.createRenderTarget ? this.postEffects.get(entityShaderName(viewed)) : null;
+    r.render(hand, post);
+    if (post) post.render(r.lightmap);
     this.profiler.endStart('gui');
     gui.begin();
     this._drawSuperSecret(gui);

@@ -36,6 +36,13 @@
 //   endportal: FORMAT.color   tex0 = layer texture (1.8 TileEntityEndPortalRenderer: a plane 'depth' below the surface,
 //              seen through it from the camera): params = [colour rgb, layer (0: blended sky, 1+: additive)],
 //              [scale, angle (rad), time offset, depth], [camera x, y (feet), z, surface y], [block x, block z, -, -]
+//   post    : FORMAT.color  a full-screen pass of a vanilla post-processing program (shaders/program/*), vertices in clip
+//              space with uv (0, 0) at the top left. tex0 = DiffuseSampler, globals.lightmap = BlurSampler (aux); both
+//              read with nearest texel fetches like vanilla's framebuffers. params[0].x = program: 0 blit
+//              [ColorModulate = p1], 1 invert [InverseAmount = p0.y], 2 color_convolve [Saturation = p0.y, Red / Green /
+//              BlueMatrix = p1 / p2 / p3 .xyz], 3 bits [Resolution, Saturation, MosaicSize = p0.yzw], 4 blur [BlurDir =
+//              p1.xy, Radius = p1.z], 5 spider (rotscale + spiderclip) [InRotation = p0.y, InScale = p1.xy, InOffset =
+//              p1.zw, Scissor = p2, Vignette = p3]
 //
 // state: { blend: 'none'|'alpha'|'add'|'invert'|'darken'|'multiply', depthTest: bool, depthWrite: bool, cull: bool, polygonOffset: bool, depthFunc: 'lequal'|'equal', colorWrite: bool }
 
@@ -62,7 +69,7 @@ export function vertexLayout(f) {
 // Packs terrain vertices (see FORMAT.terrain)
 export const TERRAIN_POS_SCALE = 2048;
 
-export const PIPELINE_FORMAT = { terrain: FORMAT.terrain, lit: FORMAT.lit, entity: FORMAT.entity, color: FORMAT.color, endportal: FORMAT.color };
+export const PIPELINE_FORMAT = { terrain: FORMAT.terrain, lit: FORMAT.lit, entity: FORMAT.entity, color: FORMAT.color, endportal: FORMAT.color, post: FORMAT.color };
 
 export const DEFAULT_STATE = { blend: 'none', depthTest: true, depthWrite: true, cull: false, polygonOffset: false };
 
@@ -112,6 +119,7 @@ export const DEFAULT_PARAMS = {
   entity: new EntityParams().setAlphaTest(0).p,
   color: colorParams(1, 1, 1, 1),
   endportal: new Float32Array(16),
+  post: new Float32Array([0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0]),
 };
 
 // Shared helpers ------------------------------------------------------------
