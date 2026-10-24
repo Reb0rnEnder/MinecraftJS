@@ -17,7 +17,7 @@ export class ChatScreen extends Screen {
   }
 
   init() {
-    const f = new TextField(4, this.height - 12, this.width - 4, 12, { text: this.input ? this.input.text : this.initial, maxLength: 100, background: false, focused: true });
+    const f = new TextField(4, this.height - 12, this.width - 4, 12, { text: this.input ? this.input.text : this.initial, maxLength: 100, background: false, focused: true, onChange: () => { if (!this.applyingTab) { this.tabMatches = null; this.waitingTab = false; } } });
     this.input = f;
     this.fields.push(f);
     this.game.hud.chatScroll = 0;
@@ -34,6 +34,7 @@ export class ChatScreen extends Screen {
     const g = this.game;
     if (e.code === 'Tab') { this.tabComplete(); return true; }
     this.tabMatches = null;
+    this.waitingTab = false;
     if (e.code === 'Escape') { this.close(); return true; }
     if (e.code === 'Enter' || e.code === 'NumpadEnter') {
       const msg = this.input.text.trim();
@@ -69,6 +70,7 @@ export class ChatScreen extends Screen {
     const text = this.input.text.slice(0, this.input.cursor);
     this.tabPrefixStart = text.lastIndexOf(' ') + 1;
     this.tabBase = this.input.text;
+    this.tabCursor = this.input.cursor;
     this.waitingTab = true;
     const t = g.interaction.target;
     const block = t && t.type === 'block' ? { x: t.x, y: t.y, z: t.z } : null;
@@ -76,7 +78,7 @@ export class ChatScreen extends Screen {
   }
 
   onTabComplete(matches) {
-    if (!this.waitingTab) return;
+    if (!this.waitingTab || this.input.text !== this.tabBase || this.input.cursor !== this.tabCursor) return;
     this.waitingTab = false;
     if (!matches.length) return;
     if (matches.length > 1) this.game.hud.addChat(matches.join(', '), null, true);
@@ -89,7 +91,10 @@ export class ChatScreen extends Screen {
     const m = this.tabMatches[this.tabIndex];
     const before = this.tabBase.slice(0, this.tabPrefixStart);
     // Matches for the first word of a command come back with the leading slash
-    this.input.setText(before + m);
+    this.applyingTab = true;
+    this.input.setText(before + m + this.tabBase.slice(this.tabCursor));
+    this.input.cursor = this.input.selEnd = Math.min(this.input.text.length, before.length + m.length);
+    this.applyingTab = false;
   }
 
   mouseDown(mx, my, button) {
@@ -107,12 +112,14 @@ export class ChatScreen extends Screen {
         return true;
       }
     }
-    return super.mouseDown(mx, my, button);
+    const cursor = this.input.cursor, handled = super.mouseDown(mx, my, button);
+    if (cursor !== this.input.cursor) { this.waitingTab = false; this.tabMatches = null; }
+    return handled;
   }
 
   wheel(d) { this.game.hud.scrollChat(-d * 1); }
 
-  onClose() { this.game.hud.chatScroll = 0; }
+  onClose() { this.waitingTab = false; this.game.hud.chatScroll = 0; }
 }
 
 // GuiConfirmOpenLink
