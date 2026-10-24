@@ -1,3 +1,4 @@
+import { VANILLA_UI } from '../vanilla-layout.js';
 // GuiOptions and its sub-screens, laid out like 1.8.9 (video, controls, sounds, chat, skin, language,
 // snooper, broadcast).
 // Scrolling lists are GuiSlot / GuiListExtended ports (ListOf): drag the list or its scrollbar, or use the wheel.
@@ -139,22 +140,22 @@ class VideoScreen extends OptionsBase {
     const g = this.game, s = this.s;
     this.mipsBefore = s.mipmapLevels;
     const items = [
-      { label: () => trOption('options.graphics', tr(s.fancyGraphics ? 'options.graphics.fancy' : 'options.graphics.fast')), click: () => { s.fancyGraphics = !s.fancyGraphics; } },
-      { slider: true, label: (v) => trOption('options.renderDistance', Math.round(2 + v * 30) + ' chunks'), value: () => (s.renderDistance - 2) / 30, set: (v) => { s.renderDistance = Math.round(2 + v * 30); } },
-      { label: () => trOption('options.ao', tr('options.ao.' + ['off', 'min', 'max'][s.smoothLighting | 0])), click: () => { s.smoothLighting = ((s.smoothLighting | 0) + 1) % 3; } },
-      { slider: true, label: (v) => { const f = Math.round(10 + v * 250); return trOption('options.framerateLimit', f >= 260 ? tr('options.framerateLimit.max') : f + ' fps'); }, value: () => (s.maxFps ? (s.maxFps - 10) / 250 : 1), set: (v) => { const f = Math.round(10 + v * 250); s.maxFps = f >= 260 ? 0 : f; } },
-      { label: () => trOption('options.anaglyph', onOff(false)), click: () => {} },
-      { label: () => trOption('options.viewBobbing', onOff(s.viewBobbing)), click: () => { s.viewBobbing = !s.viewBobbing; } },
-      { label: () => trOption('options.guiScale', tr('options.guiScale.' + ['auto', 'small', 'normal', 'large'][s.guiScale])), click: () => { s.guiScale = (s.guiScale + 1) % 4; g.gui.guiScaleSetting = s.guiScale; g.gui.resize(); } },
-      { slider: true, label: (v) => trOption('options.gamma', v === 0 ? tr('options.gamma.min') : v === 1 ? tr('options.gamma.max') : '+' + Math.round(v * 100) + '%'), value: () => s.gamma, set: (v) => { s.gamma = v; g.renderer.gamma = v; } },
-      { label: () => trOption('options.renderClouds', s.clouds === 0 ? tr('options.off') : tr(s.clouds === 1 ? 'options.graphics.fast' : 'options.graphics.fancy')), click: () => { s.clouds = ((s.clouds | 0) + 2) % 3; } },
-      { label: () => trOption('options.particles', tr('options.particles.' + ['all', 'decreased', 'minimal'][s.particles])), click: () => { s.particles = (s.particles + 1) % 3; } },
-      { label: () => trOption('options.fullscreen', onOff(platform().isFullscreen())), click: () => platform().toggleFullscreen() },
-      { label: () => trOption('options.vsync', onOff(s.enableVsync)), click: () => { s.enableVsync = !s.enableVsync; platform().vsync = s.enableVsync; } },
-      { slider: true, label: (v) => { const n = Math.round(v * 4); return trOption('options.mipmapLevels', n === 0 ? tr('options.off') : n); }, value: () => s.mipmapLevels / 4, set: (v) => { s.mipmapLevels = Math.round(v * 4); } },
-      { label: () => trOption('options.blockAlternatives', onOff(s.blockAlternatives)), click: () => { s.blockAlternatives = !s.blockAlternatives; } },
-      { label: () => trOption('options.vbo', onOff(s.useVbo)), click: () => { s.useVbo = !s.useVbo; } },
-      { label: () => trOption('options.entityShadows', onOff(s.entityShadows)), click: () => { s.entityShadows = !s.entityShadows; } },
+      { key: 'options.graphics', label: () => trOption('options.graphics', tr(s.fancyGraphics ? 'options.graphics.fancy' : 'options.graphics.fast')), click: () => { s.fancyGraphics = !s.fancyGraphics; } },
+      { key: 'options.renderDistance', slider: true, label: (v) => trOption('options.renderDistance', Math.round(2 + v * 30) + ' chunks'), value: () => (s.renderDistance - 2) / 30, set: (v) => { s.renderDistance = Math.round(2 + v * 30); } },
+      { key: 'options.ao', label: () => trOption('options.ao', tr('options.ao.' + ['off', 'min', 'max'][s.smoothLighting | 0])), click: () => { s.smoothLighting = ((s.smoothLighting | 0) + 1) % 3; } },
+      { key: 'options.framerateLimit', slider: true, label: (v) => { const f = Math.round(10 + v * 250); return trOption('options.framerateLimit', f >= 260 ? tr('options.framerateLimit.max') : f + ' fps'); }, value: () => (s.maxFps ? (s.maxFps - 10) / 250 : 1), set: (v) => { const f = Math.round(10 + v * 250); s.maxFps = f >= 260 ? 0 : f; } },
+      { key: 'options.anaglyph', label: () => trOption('options.anaglyph', onOff(false)), click: () => {} },
+      { key: 'options.viewBobbing', label: () => trOption('options.viewBobbing', onOff(s.viewBobbing)), click: () => { s.viewBobbing = !s.viewBobbing; } },
+      { key: 'options.guiScale', label: () => trOption('options.guiScale', tr('options.guiScale.' + ['auto', 'small', 'normal', 'large'][s.guiScale])), click: () => { s.guiScale = (s.guiScale + 1) % 4; g.gui.guiScaleSetting = s.guiScale; g.gui.resize(); } },
+      { key: 'options.gamma', slider: true, label: (v) => trOption('options.gamma', v === 0 ? tr('options.gamma.min') : v === 1 ? tr('options.gamma.max') : '+' + Math.round(v * 100) + '%'), value: () => s.gamma, set: (v) => { s.gamma = v; g.renderer.gamma = v; } },
+      { key: 'options.renderClouds', label: () => trOption('options.renderClouds', s.clouds === 0 ? tr('options.off') : tr(s.clouds === 1 ? 'options.graphics.fast' : 'options.graphics.fancy')), click: () => { s.clouds = ((s.clouds | 0) + 2) % 3; } },
+      { key: 'options.particles', label: () => trOption('options.particles', tr('options.particles.' + ['all', 'decreased', 'minimal'][s.particles])), click: () => { s.particles = (s.particles + 1) % 3; } },
+      { key: 'options.fullscreen', label: () => trOption('options.fullscreen', onOff(platform().isFullscreen())), click: () => platform().toggleFullscreen() },
+      { key: 'options.vsync', label: () => trOption('options.vsync', onOff(s.enableVsync)), click: () => { s.enableVsync = !s.enableVsync; platform().vsync = s.enableVsync; } },
+      { key: 'options.mipmapLevels', slider: true, label: (v) => { const n = Math.round(v * 4); return trOption('options.mipmapLevels', n === 0 ? tr('options.off') : n); }, value: () => s.mipmapLevels / 4, set: (v) => { s.mipmapLevels = Math.round(v * 4); } },
+      { key: 'options.blockAlternatives', label: () => trOption('options.blockAlternatives', onOff(s.blockAlternatives)), click: () => { s.blockAlternatives = !s.blockAlternatives; } },
+      { key: 'options.vbo', label: () => trOption('options.vbo', onOff(s.useVbo)), click: () => { s.useVbo = !s.useVbo; } },
+      { key: 'options.entityShadows', label: () => trOption('options.entityShadows', onOff(s.entityShadows)), click: () => { s.entityShadows = !s.entityShadows; } },
       // Distance from the camera in world blocks; the slider's maximum disables LOD.
       { slider: true, label: (v) => { const k = Math.round(v * 31); return tr('minecraftjs.options.lodDistance') + ': ' + (k >= 31 ? tr('options.off') : (16 + k * 16) + ' blocks'); },
         value: () => s.lodDistance <= 0 ? 1 : Math.min(30, Math.max(0, (s.lodDistance - 16) / 16)) / 31,
@@ -176,12 +177,19 @@ class VideoScreen extends OptionsBase {
           platform().setPotato && platform().setPotato(s.superPotato);
         } },
     ];
+    const vanillaItems = VANILLA_UI.videoOptions.map(key => {
+      const item = items.find(it => it.key === key);
+      if (!item) throw new Error('Missing video option: ' + key);
+      return item;
+    });
+    const orderedItems = [...vanillaItems, ...items.filter(it => !it.key)];
     // GuiOptionsRowList: GuiListExtended(32, height - 32, 25), list width 400, scrollbar 32 further right
     this.rows = [];
     let col = 0;
-    items.forEach((it, i) => {
+    orderedItems.forEach((it, i) => {
       if (it.wide && col === 1) col = 0; // a wide option starts its own row
       const b = makeOption(i, this.width / 2 - 155 + col * 160, 0, it);
+      b.optionKey = it.key || null;
       if (col === 0) this.rows.push([b]); else this.rows[this.rows.length - 1].push(b);
       col = it.wide ? 0 : 1 - col;
     });
@@ -284,6 +292,9 @@ const KEY_BINDINGS = {
   fullscreen: ['key.fullscreen', 'key.categories.misc'], spectatorOutlines: ['key.spectatorOutlines', 'key.categories.misc'],
 };
 for (let i = 1; i <= 9; i++) KEY_BINDINGS['hotbar' + i] = ['key.hotbar.' + i, 'key.categories.inventory'];
+for (const binding of Object.values(KEY_BINDINGS)) binding[1] = VANILLA_UI.bindingCategories[binding[0]] || binding[1];
+const compareText = (a,b) => a < b ? -1 : a > b ? 1 : 0; // Java String.compareTo, not locale collation.
+
 
 // GuiControls + GuiKeyBindingList (GuiListExtended(width + 45, 63, height - 32, 20)): bindings under category
 // headers, sorted like KeyBinding.compareTo; list width 252, scrollbar 15 further right
@@ -301,8 +312,10 @@ class ControlsScreen extends OptionsBase {
       { label: () => trOption('options.touchscreen', onOff(s.touchscreen)), click: () => { s.touchscreen = !s.touchscreen; } },
     ], 18);
     const keys = Object.keys(KEY_BINDINGS).sort((a, b) => {
-      const c = tr(KEY_BINDINGS[a][1]).localeCompare(tr(KEY_BINDINGS[b][1]));
-      return c || tr(KEY_BINDINGS[a][0]).localeCompare(tr(KEY_BINDINGS[b][0]));
+      const ca=KEY_BINDINGS[a][1], cb=KEY_BINDINGS[b][1];
+      const order=VANILLA_UI.categoryOrder;
+      const c=order.length ? order.indexOf(ca)-order.indexOf(cb) : compareText(tr(ca),tr(cb));
+      return c || compareText(tr(KEY_BINDINGS[a][0]),tr(KEY_BINDINGS[b][0]));
     });
     this.entries = [];
     let cat = null;

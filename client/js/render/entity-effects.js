@@ -112,7 +112,7 @@ export class EntityEffects {
     let v=this.entries.get(key);const g=this.game;
     if(!v){const node=new Node(),mesh=g.device.createMesh(FORMAT.color,new Float32Array(0),{quads:true,dynamic:true});
       const tex=texture?()=>g.assets.texture(texture,{wrap:'repeat'}):null;
-      node.addDrawable(mesh,material('color',tex,colorParams(1,1,1,1,0,0),state),{order});this.root.add(node);v={id,node,mesh};this.entries.set(key,v);}
+      node.addDrawable(mesh,material('color',tex,colorParams(1,1,1,1,texture ? 0.1 : 0,0),state),{order});this.root.add(node);v={id,node,mesh};this.entries.set(key,v);}
     v.node.visible=true;v.used=true;g.device.updateMesh(v.mesh,vertices,{quads:true});
   }
   update(partial) {
