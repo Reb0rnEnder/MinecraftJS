@@ -1,3 +1,4 @@
+import { getFluidState, fluidHeightAt } from './fluids.js';
 // Client world: chunk storage, block access, light propagation, collision and raycasting.
 import { biomeInfo } from './biomes.js';
 import { Chunk, Section } from './chunk.js';
@@ -474,12 +475,14 @@ export class World {
         if (b.isLiquid) {
           if (hitLiquids && Number(getStateProperties(state).level || 0) === 0) box = [0, 0, 0, 1, 0.875, 1];
         } else box = this.selectionBox(state, x, y, z);
-        if (box) {
-          const r = rayBox(ox, oy, oz, dx, dy, dz, x + box[0], y + box[1], z + box[2], x + box[3], y + box[4], z + box[5]);
-          if (r && r.t <= maxDist) {
-            return { x, y, z, face: r.face, hit: [ox + dx * r.t, oy + dy * r.t, oz + dz * r.t], state, dist: r.t, box };
-          }
+        const boxes = box ? [box] : [];
+        if (hitLiquids === 'any' && getFluidState(state)) boxes.push([0,0,0,1,fluidHeightAt(this,x,y,z),1]);
+        let nearest = null, hitBox = null;
+        for (const candidate of boxes) {
+          const r = rayBox(ox, oy, oz, dx, dy, dz, x + candidate[0], y + candidate[1], z + candidate[2], x + candidate[3], y + candidate[4], z + candidate[5]);
+          if (r && r.t <= maxDist && (!nearest || r.t < nearest.t)) { nearest = r; hitBox = candidate; }
         }
+        if (nearest) return { x,y,z,face:nearest.face,hit:[ox+dx*nearest.t,oy+dy*nearest.t,oz+dz*nearest.t],state,dist:nearest.t,box:hitBox };
       }
       if (tMaxX < tMaxY && tMaxX < tMaxZ) {
         if (tMaxX > maxDist) break;

@@ -455,7 +455,7 @@ export class Game {
   applyGraphicsSettings(initial = false) {
     const s = this.settings;
     // Minimum and Maximum smooth lighting render the same in 1.8.9 (only 'ambient occlusion on' is checked)
-    const opts = { fancy: !!s.fancyGraphics, smooth: (s.smoothLighting | 0) > 0 ? 2 : 0, alt: s.blockAlternatives !== false };
+    const opts = { fancy: !!s.fancyGraphics, smooth: (s.smoothLighting | 0) > 0 ? 2 : 0, alt: s.blockAlternatives !== false, biomeBlendRadius: s.biomeBlendRadius ?? 2 };
     this.assets.setMipmapLevels(s.mipmapLevels === undefined ? 4 : s.mipmapLevels);
     platform().vsync = s.enableVsync !== false;
     const key = JSON.stringify(opts);
@@ -521,7 +521,7 @@ export class Game {
       this.meshedChunks.add(cx + ',' + cz);
       const sec = this.world.getChunk(cx, cz).sections[sy];
       if (!sec || sec.nonAir === 0) { this.inFlight.delete(key); this.renderer.removeSection(key); continue; }
-      const slice = buildSlice(this.world, cx, sy, cz, this.tileProps);
+      const slice = buildSlice(this.world, cx, sy, cz, this.tileProps, this.settings.biomeBlendRadius ?? 2);
       this.worker.postMessage({ type: 'build', gen: this.meshGen, slice, lod: this._lodFor(cx, cz, sy) }, [slice.states.buffer, slice.light.buffer, slice.biomes.buffer]);
     }
     // Recover from lost builds

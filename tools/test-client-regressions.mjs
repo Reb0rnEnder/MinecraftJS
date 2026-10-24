@@ -1,3 +1,11 @@
+import { debugTargets } from '../client/js/gui/debug-targets.js';
+import { VANILLA_UI } from '../client/js/gui/vanilla-layout.js';
+import { VideoScreen, ControlsScreen } from '../client/js/gui/screens/options.js';
+import { ResourcePacksScreen } from '../client/js/gui/screens/packs.js';
+import { ConfirmScreen } from '../client/js/gui/screens/menus.js';
+import { setTranslator } from '../client/js/gui/i18n.js';
+import { buildSlice, SliceWorld } from '../client/js/world/slice.js';
+import { Hud } from '../client/js/gui/hud.js';
 import { createHash } from 'node:crypto';
 import { jarSelectionBox, getBlock, findState } from '../client/js/world/blocks.js';
 import { startSleeping, sleepingCamera } from '../client/js/game/bed-sleep.js';
@@ -385,4 +393,86 @@ if(native)test('1.13.2: global chunk palettes have no length header and retain f
   for(const i of [0,1,2,3,4,31,32,63,64,4095])assert.equal(chunk.sections[0].blocks[i],value);
   const rs=resolveState(value,()=>0,0,0,0),baked=assets.modelStore.bakeVariant(rs.file,rs.props);
   assert.equal(baked.bounds[4],1,'persisted state retains the eye geometry');
+});
+
+test(version + ': video and controls match jar option/category order, preserving version-specific options', () => {
+  assert.equal(VANILLA_UI.clientJarSha1,createHash('sha1').update(jar.data).digest('hex'));
+  const g=fixture();g.settings=new Settings();g.gui.width=420;g.gui.height=300;g.gui.textWidth=s=>s.length*6;
+  const video=new VideoScreen(g,null);video.init();
+  assert.deepEqual(video.rows.flat().filter(b=>b.optionKey).map(b=>b.optionKey),VANILLA_UI.videoOptions);
+  assert.ok(video.rows.flat().slice(VANILLA_UI.videoOptions.length).every(b=>b.optionKey===null),'client-only settings follow the vanilla options');
+  const controls=new ControlsScreen(g,null);controls.init();
+  const headers=controls.entries.filter(e=>e.header).map(e=>e.header);
+  if(VANILLA_UI.categoryOrder.length)assert.deepEqual(headers,VANILLA_UI.categoryOrder.filter(c=>headers.includes(c)));
+  let category;for(const e of controls.entries){if(e.header)category=e.header;else if(e.key==='drop')assert.equal(category,version==='1.8.9'?'key.categories.gameplay':'key.categories.inventory');}
+  assert.equal(VANILLA_UI.videoOptions.includes('options.biomeBlendRadius'),native);
+  if(native) {
+    const lang=JSON.parse(jar.read('assets/minecraft/lang/en_us.json'));setTranslator(k=>lang[k]||k);
+    try {for(const [key,label] of [['ShiftLeft','Left Shift'],['ControlLeft','Left Control'],['ShiftRight','Right Shift'],['Space','Space'],['mouse0','Left Button'],['mouse1','Middle Button'],['','Not bound']])assert.equal(g.settings.keyName(key),label);}
+    finally {setTranslator(k=>k);}
+  } else assert.equal(g.settings.keyName('ShiftLeft'),'LSHIFT','older clients retain their native LWJGL key labels');
+});
+
+test(version + ': incompatible resource packs are tinted and require affirmative selection before activation', async () => {
+  const g=fixture();let current=null;g.screens={open:s=>{current=s;}};g.sound.playUi=()=>{};
+  g.assets={...assets,listPacks:async()=>[]};g.settings.resourcePacks=[];
+  const packs=new ResourcePacksScreen(g,null);await packs._load();
+  const old={id:'old',name:'Old pack',format:VANILLA_UI.packFormat-1,description:'Description'},newer={...old,id:'new',format:VANILLA_UI.packFormat+1},compatible={...old,id:'ok',format:VANILLA_UI.packFormat};
+  packs.available=[old,newer,compatible];const L={side:0};
+  packs._click(L,old,0,2,2);assert.ok(current instanceof ConfirmScreen);assert.deepEqual(packs.selected,[]);assert.equal(current.line2,'resourcePack.incompatible.confirm.old');
+  current.callback(false);assert.deepEqual(packs.selected,[]);assert.equal(current,packs);
+  packs._click(L,old,0,2,2);current.callback(true);assert.equal(packs.selected[0],old);assert.equal(current,packs);
+  packs._click(L,newer,0,2,2);assert.equal(current.line2,'resourcePack.incompatible.confirm.new');current.close();assert.equal(packs.available[0],newer);
+  packs._click(L,compatible,1,2,2);assert.equal(packs.selected[0],compatible,'compatible packs move without confirmation');
+  const rects=[],texts=[],gui={rect:(...a)=>rects.push(a),tex:()=>null,textWidth:s=>s.length*6,font:{wrap:s=>[s],trimToWidth:s=>s},text:(s)=>texts.push(s),blit(){}};
+  packs._entry(gui,L,old,0,0,0,80,10);assert.ok(rects.some(r=>r[4]===0xff770000));assert.ok(texts.includes('resourcePack.incompatible'));
+  rects.length=0;texts.length=0;packs._entry(gui,L,compatible,0,0,0,500,500);assert.equal(rects.length,0);assert.ok(texts.includes('Old pack'));
+});
+
+test(version + ': rendered crystal beam retains the jar texture cutouts instead of filling a gradient bar', () => {
+  const original=globalThis.ImageData;globalThis.ImageData=class {constructor(data,width,height){Object.assign(this,{data,width,height});}};
+  try {
+    const soft=new SoftwareDevice({width:256,height:128,getContext:()=>({})}),g=fixture(),textures=new Map();g.device=soft;setModelDevice(soft);
+    g.assets={...assets,texture:(name,options={})=>{if(!textures.has(name))textures.set(name,soft.createTexture({...image(name),...options}));return textures.get(name);}};
+    g.renderer.entityRoot=new Node();g.renderer.extraDraws=[];g.entityRenderer=new EntityRenderer(g);
+    const fx=g.entityRenderer.effects;fx._set('beam',1,crystalBeam([-5,0,0],[5,0,0],34),fx.beamTexture);
+    const entry=fx.entries.get('beam'),params=entry.node.drawables[0].mat.params;
+    assert.ok(params[4]>0,'transparent texels must be discarded in the opaque beam pass');
+    const view=mat4.create(),proj=mat4.create();mat4.translate(view,view,0,0,-12);mat4.perspective(proj,Math.PI/3,2,0.1,200);soft.setGlobals({view,proj});
+    const count=()=>{soft.beginFrame([0,0,0]);g.entityRenderer.draw(soft,mat4.create());return soft.screen.depth.reduce((n,z)=>n+(z<1),0);};
+    const cutout=count();params[4]=0;const filled=count();assert.ok(cutout>10 && cutout<filled*0.8,`beam cutouts visible: ${cutout}/${filled}`);
+    fx.reset();
+  } finally {if(original===undefined)delete globalThis.ImageData;else globalThis.ImageData=original;setModelDevice(device);}
+});
+
+if(native)test('1.13.2: biome blend averages the selected radius with complete biome samples at section edges', () => {
+  const chunks=new Map();for(let cz=-1;cz<=1;cz++)for(let cx=-1;cx<=1;cx++){const c=new Chunk(cx,cz,true);for(let z=0;z<16;z++)for(let x=0;x<16;x++)c.biomes[z*16+x]=(cx*16+x+64)%200;chunks.set(World.key(cx,cz),c);}
+  const w=new World();w.chunks=chunks;const sl=buildSlice(w,0,4,0,null,7),sw=new SliceWorld(sl);
+  assert.equal(sl.biomeSize,30);assert.equal(sl.states.length,20**3,'block/light margin does not grow for biome blending');
+  for(const x of [-7,-1,0,15,22])assert.equal(sw.getBiome(x,0),w.getBiome(x,0));
+  const mesher=new Mesher(sw,assets.modelStore),fn=id=>id*0x010101;
+  for(const radius of [0,1,2,7]){
+    mesher.options.biomeBlendRadius=radius;const actual=mesher.biomeBlend(15,64,0,fn);let sum=0;
+    for(let z=-radius;z<=radius;z++)for(let x=15-radius;x<=15+radius;x++)sum+=w.getBiome(x,z);
+    const c=Math.floor(sum/(radius*2+1)**2);assert.equal(actual,c*0x010101);
+  }
+  const g=fixture();g.settings=new Settings();g.gui.width=420;g.gui.height=300;let rebuilt=0;g.applyGraphicsSettings=()=>rebuilt++;
+  const video=new VideoScreen(g,null);video.init();const slider=video.rows.flat().find(b=>b.optionKey==='options.biomeBlendRadius');
+  assert.equal(g.settings.biomeBlendRadius,2);
+  slider.onChange(1);assert.equal(g.settings.biomeBlendRadius,7);assert.equal(rebuilt,1);
+  slider.onChange(1);assert.equal(rebuilt,1,'unchanged radius does not rebuild terrain');
+  slider.onChange(0);assert.equal(g.settings.biomeBlendRadius,0);assert.equal(rebuilt,2);
+  assert.equal(VANILLA_UI.videoOptions.at(-1),'options.biomeBlendRadius');
+});
+
+if(native)test('1.13.2: F3 traces block and any-fluid targets separately at 20 blocks, including flowing and waterlogged fluid', () => {
+  const g=fixture(),w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);g.world=w;g.eyePosition=()=>[0.5,65.5,0.5];g.lookVector=()=>[0,0,1];
+  c.setState(0,65,8,findState('stone'));c.setState(0,65,3,findState('water',{level:3}));
+  let targets=debugTargets(g);assert.equal(targets.block.z,8);assert.equal(targets.fluid.z,3);assert.ok(targets.block.dist>5,'debug reach is independent of interaction reach');
+  const h=Object.create(Hud.prototype);h.game=g;h.debugTargets=targets;g.interaction.target=null;
+  g.renderer.sections=new Map();g.dirty=new Set();g.inFlight=new Map();g.settings=new Settings();
+  const left=h._debugLeft();assert.ok(left.includes('Biome: minecraft:plains'));assert.ok(left.includes('Looking at block: 0 65 8'));assert.ok(left.includes('Looking at liquid: 0 65 3'));assert.ok(!left.some(s=>s.startsWith('Looking at:')));
+  const right=h._debugRight();assert.ok(right.includes('§nTargeted Block'));assert.ok(right.includes('§nTargeted Fluid'));assert.ok(right.includes('minecraft:flowing_water'));
+  c.setState(0,65,3,findState('oak_slab',{type:'bottom',waterlogged:true}));g.eyePosition=()=>[0.5,65.75,0.5];targets=debugTargets(g);assert.equal(targets.fluid.z,3);
+  h.debugTargets=targets;assert.ok(h._debugRight().includes('minecraft:water'));
 });

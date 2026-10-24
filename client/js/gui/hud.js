@@ -1,3 +1,6 @@
+import { debugTargets } from './debug-targets.js';
+import { getStateProperties } from '../world/blocks.js';
+import { getFluidState } from '../world/fluids.js';
 // In-game overlay (port of GuiIngame / GuiNewChat / GuiPlayerTabOverlay / GuiOverlayDebug).
 import { tr } from './i18n.js';
 import { SpectatorGui } from './spectator.js';
@@ -885,6 +888,7 @@ export class Hud {
   // GuiOverlayDebug.renderDebugInfo
   renderDebug(gui) {
     const g = this.game;
+    this.debugTargets = debugTargets(g);
     const left = this._debugLeft(gui), right = this._debugRight(gui);
     const draw = (lines, alignRight) => {
       for (let i = 0; i < lines.length; i++) {
@@ -937,14 +941,15 @@ export class Hud {
     if (by >= 0 && by < 256 && g.world.getChunk && g.world.getChunk(bx >> 4, bz >> 4)) {
       const biome = biomeInfo(g.world.getBiome(bx, bz));
       const sky = g.world.getSkyLight(bx, by, bz), blk = g.world.getBlockLight(bx, by, bz);
-      lines.push(`Biome: ${biome.displayName || biome.name}`);
+      lines.push(`Biome: minecraft:${biome.name}`);
       lines.push(`Light: ${Math.max(sky, blk)} (${sky} sky, ${blk} block)`);
       const time = g.world.timeOfDay || 0;
       const ld = localDifficulty(g.difficulty, time);
       lines.push(`Local Difficulty: ${f(ld, 2)} // ${f(clampedDifficulty(ld), 2)} (Day ${Math.trunc(time / 24000)})`);
-    } else lines.push('Outside of world...'); // unloaded, or y outside 0 - 255
-    const t = g.interaction.target;
-    if (t && t.type === 'block') lines.push(`Looking at: ${t.x} ${t.y} ${t.z}`);
+    } else lines.push(by < 0 || by >= 256 ? 'Outside of world...' : 'Waiting for chunk...');
+    const targets = this.debugTargets || debugTargets(g);
+    if (targets.block) { const t=targets.block; lines.push(`Looking at block: ${t.x} ${t.y} ${t.z}`); }
+    if (targets.fluid) { const t=targets.fluid; lines.push(`Looking at liquid: ${t.x} ${t.y} ${t.z}`); }
     // GuiOverlayDebug.renderDebugInfoLeft
     lines.push('');
     lines.push(`Debug: Pie [shift]: ${g.showProfiler ? 'visible' : 'hidden'} FPS [alt]: ${g.showLagometer ? 'visible' : 'hidden'}`);
@@ -970,16 +975,20 @@ export class Hud {
       di.renderer,
       di.version,
     ];
-    const t = g.interaction.target;
-    if (t && t.type === 'block' && !g.reducedDebug && !g.settings.reducedDebugInfo) {
-      const b = getBlock(t.state);
-      lines.push('');
-      lines.push(`minecraft:${b ? b.name : 'air'}`);
-      const rs = resolveState(t.state, (a, b2, c) => g.world.getState(a, b2, c), t.x, t.y, t.z);
-      if (rs) for (const [k, v] of Object.entries(rs.props)) {
-        const str = String(v);
-        lines.push(`${k}: ${str === 'true' ? '§atrue' : str === 'false' ? '§cfalse' : str}`);
+    if (!g.reducedDebug && !g.settings.reducedDebugInfo) {
+      const targets=this.debugTargets || debugTargets(g),t=targets.block;
+      const properties = props => { for(const [key,value] of Object.entries(props).sort(([a],[b])=>a<b?-1:a>b?1:0)) {
+        const text=String(value);lines.push(key+': '+(text==='true'?'§atrue':text==='false'?'§cfalse':text));
+      }};
+      if(t){lines.push('','§nTargeted Block','minecraft:'+getBlock(t.state).name);properties(getStateProperties(t.state));}
+      if(targets.fluid) {
+        const fluid=getFluidState(targets.fluid.state);
+        const kind=fluid?.isLava?'lava':'water';
+        lines.push('','§nTargeted Fluid','minecraft:'+(fluid?(fluid.source?kind:'flowing_'+kind):'empty'));
+        if(fluid){properties(fluid.source?{falling:false}:{falling:fluid.level>=8,level:8-(fluid.level>=8?0:fluid.level)});lines.push('#minecraft:'+kind);}
       }
+      const entity=g.interaction.target?.type==='entity'?g.interaction.target.entity:null;
+      if(entity)lines.push('','§nTargeted Entity','minecraft:'+(entity.entityName||entity.typeName||entity.type));
     }
     void gui;
     return lines;

@@ -120,7 +120,7 @@ export class Mesher {
     this.waterFlow = this.atlas.uv('block/water_flow');
     this.lavaStill = this.atlas.uv('block/lava_still');
     this.lavaFlow = this.atlas.uv('block/lava_flow');
-    this.options = { fancy: true, smooth: 2, alt: true };
+    this.options = { fancy: true, smooth: 2, alt: true, biomeBlendRadius: 2 };
     this.stateModels = new Map(); // state -> model, for states whose model ignores neighbours
     this.dynamicStates = new Set(); // states whose resolution reads neighbouring blocks
     this._reads = 0;
@@ -212,13 +212,14 @@ export class Mesher {
 
   biomeBlend(x, y, z, fn) {
     let r = 0, g = 0, b = 0;
-    for (let dz = -1; dz <= 1; dz++) {
-      for (let dx = -1; dx <= 1; dx++) {
+    const radius = Math.max(0, Math.min(7, this.options.biomeBlendRadius ?? 2)), samples = (radius * 2 + 1) ** 2;
+    for (let dz = -radius; dz <= radius; dz++) {
+      for (let dx = -radius; dx <= radius; dx++) {
         const c = fn(this.world.getBiome(x + dx, z + dz), y);
         r += (c >> 16) & 255; g += (c >> 8) & 255; b += c & 255;
       }
     }
-    return (((r / 9) | 0) << 16) | (((g / 9) | 0) << 8) | ((b / 9) | 0);
+    return (((r / samples) | 0) << 16) | (((g / samples) | 0) << 8) | ((b / samples) | 0);
   }
 
   // Combined light used for AO sampling: returns [sky, block] or null if position is opaque

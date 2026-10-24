@@ -1,3 +1,4 @@
+import { keyName } from './key-names.js';
 // Game options (vanilla defaults), persisted through the platform settings store.
 import { platform } from '../platform/platform.js';
 import { parseAddress } from '../net/address.js';
@@ -16,6 +17,7 @@ const DEFAULTS = {
   sensitivity: 0.5,
   invertMouse: false,
   renderDistance: 8,
+  biomeBlendRadius: 2, // 1.13.2: 0=off, 1..7 average a (2r+1)^2 biome area.
   guiScale: 0,
   gamma: 0.5,
   viewBobbing: true,
@@ -91,6 +93,7 @@ export class Settings {
     if (!Object.prototype.hasOwnProperty.call(saved, 'lodDistance') && Number.isFinite(saved.lodChunks)) this.lodDistance = Math.max(0, saved.lodChunks * 16);
     if (!Number.isFinite(this.lodDistance) || this.lodDistance < 0) this.lodDistance = 128;
     delete this.lodChunks;
+    this.biomeBlendRadius = Number.isFinite(this.biomeBlendRadius) ? Math.max(0, Math.min(7, Math.round(this.biomeBlendRadius))) : 2;
     this.keys = { ...DEFAULT_KEYS, ...(saved.keys || {}) };
     this.soundVolumes = { ...DEFAULTS.soundVolumes, ...(saved.soundVolumes || {}) };
     if (Array.isArray(this.servers)) {
@@ -112,14 +115,5 @@ export class Settings {
     platform().saveSetting('minecraftjs.settings', JSON.stringify(out));
   }
 
-  keyName(code) {
-    if (!code) return 'NONE';
-    if (code === 'mouse0') return 'Button 1';
-    if (code === 'mouse1') return 'Button 3';
-    if (code === 'mouse2') return 'Button 2';
-    if (code.startsWith('mouse')) return 'Button ' + (parseInt(code.slice(5), 10) + 1);
-    return code.replace(/^Key/, '').replace(/^Digit/, '').replace('ShiftLeft', 'LSHIFT').replace('ControlLeft', 'LCONTROL')
-      .replace('ShiftRight', 'RSHIFT').replace('ControlRight', 'RCONTROL').replace('AltLeft', 'LMENU').replace('Space', 'SPACE')
-      .replace('Slash', '/').replace('Tab', 'TAB');
-  }
+  keyName(code) { return keyName(code); }
 }
