@@ -1,6 +1,6 @@
 import { tr } from '../gui/i18n.js';
 // Sound engine: vanilla sounds.json (+ resource packs), played through the platform audio interface.
-import { blocks } from '../world/blocks.js';
+import { getBlock, getBlockById } from '../world/blocks.js';
 import { platform } from '../platform/platform.js';
 
 // SoundType (1.9+): [step, break, place, volume, pitch, hit, fall]
@@ -21,32 +21,81 @@ function soundTypeOf(b) {
   if (/wool|carpet|cactus|cake/.test(n)) return SOUND_TYPES.cloth;
   if (/^sand$|soul_sand|concrete_powder/.test(n)) return SOUND_TYPES.sand;
   if (/snow/.test(n)) return SOUND_TYPES.snow;
-  if (/gravel|^dirt$|farmland|^clay$|grass_path/.test(n)) return SOUND_TYPES.gravel;
-  if (/^grass$|mycelium|leaves|sapling|tallgrass|deadbush|flower|vine|reeds|waterlily|hay_block|^tnt$|sponge|double_plant|wheat|carrots|potatoes|beetroots|nether_wart$|stem|mushroom$|cocoa/.test(n)) return SOUND_TYPES.grass;
+  if (/gravel|^dirt$|coarse_dirt|podzol|farmland|^clay$|grass_path/.test(n)) return SOUND_TYPES.gravel;
+  if (/^grass$|^grass_block$|mycelium|leaves|sapling|tallgrass|deadbush|dead_bush|flower|vine|reeds|sugar_cane|waterlily|lily_pad|hay_block|^tnt$|sponge|double_plant|wheat|carrots|potatoes|beetroots|nether_wart$|stem|mushroom$|cocoa/.test(n)) return SOUND_TYPES.grass;
   if (/iron|gold_block|diamond_block|emerald_block|lapis_block|redstone_block|rail|hopper|cauldron|brewing_stand|command_block|structure_block/.test(n) && !/ore$/.test(n)) return SOUND_TYPES.metal;
-  if (b.material === 'wood' || /pumpkin|melon_block|bookshelf|chest|crafting|jukebox|noteblock|sign|_door|fence|trapdoor|log|planks|chorus/.test(n)) return SOUND_TYPES.wood;
+  if (b.material === 'wood' || /pumpkin|melon_block|bookshelf|chest|crafting|jukebox|note_block|noteblock|sign|_door|fence|trapdoor|log|planks|chorus/.test(n)) return SOUND_TYPES.wood;
   if (b.material === 'plant' || b.material === 'leaves') return SOUND_TYPES.grass;
   if (b.material === 'dirt') return SOUND_TYPES.gravel;
   if (b.material === 'wool') return SOUND_TYPES.cloth;
   return SOUND_TYPES.stone;
 }
 
-// EntityLivingBase.getHurtSound / getDeathSound by entity registry id (1.12 sound event names)
+// Canonical identities, not native wire IDs or internal renderer family numbers.
 const E = (k) => [`entity.${k}.hurt`, `entity.${k}.death`];
-const MOB_SOUNDS = {
-  4: E('elder_guardian'), 5: E('wither_skeleton'), 6: E('stray'), 23: E('husk'), 27: E('zombie_villager'),
-  28: E('skeleton_horse'), 29: E('zombie_horse'), 31: E('donkey'), 32: E('mule'), 34: E('evocation_illager'), 35: E('vex'),
-  36: E('vindication_illager'), 37: E('illusion_illager'), 50: E('creeper'), 51: E('skeleton'), 52: E('spider'), 53: E('hostile'),
-  54: E('zombie'), 56: E('ghast'), 57: E('zombie_pig'), 58: E('endermen'), 59: E('spider'), 60: E('silverfish'), 61: E('blaze'),
-  63: E('enderdragon'), 64: E('wither'), 65: E('bat'), 66: E('witch'), 67: E('endermite'), 68: E('guardian'), 69: E('shulker'),
-  90: E('pig'), 91: E('sheep'), 92: E('cow'), 93: E('chicken'), 94: E('squid'), 95: E('wolf'), 96: E('cow'), 97: E('snowman'),
-  98: E('cat'), 99: E('irongolem'), 100: E('horse'), 101: E('rabbit'), 102: E('polar_bear'), 103: E('llama'), 105: E('parrot'),
-  120: E('villager'),
-};
-const HOSTILE_TYPES = new Set([4, 5, 6, 23, 27, 34, 35, 36, 37, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 66, 67, 68, 69]);
+const SOUND_ALIASES = { cave_spider: 'spider', giant: 'hostile', mooshroom: 'cow', ocelot: 'cat', pufferfish: 'puffer_fish' };
+const HOSTILE_TYPES = new Set(('elder_guardian wither_skeleton stray husk zombie_villager evoker vex vindicator illusioner '
+  + 'creeper skeleton spider giant zombie slime ghast zombie_pigman enderman cave_spider silverfish blaze magma_cube '
+  + 'ender_dragon wither witch endermite guardian shulker drowned phantom').split(' '));
 
 // SPacketSoundEffect category ids
 const CATEGORIES = ['master', 'music', 'record', 'weather', 'block', 'hostile', 'neutral', 'player', 'ambient', 'voice'];
+
+// 1.13.2's protocol SoundEvent registry still contains several pre-flattening
+// names, while the resource-pack sounds.json uses the flattened asset names.
+const SOUND_EVENT_PREFIX_ALIASES = [
+  ['block.cloth.', 'block.wool.'],
+  ['block.enderchest.', 'block.ender_chest.'],
+  ['block.metal_pressureplate.', 'block.metal_pressure_plate.'],
+  ['block.note.', 'block.note_block.'],
+  ['block.slime.', 'block.slime_block.'],
+  ['block.stone_pressureplate.', 'block.stone_pressure_plate.'],
+  ['block.waterlily.', 'block.lily_pad.'],
+  ['block.wood_button.', 'block.wooden_button.'],
+  ['block.wood_pressureplate.', 'block.wooden_pressure_plate.'],
+  ['entity.armorstand.', 'entity.armor_stand.'],
+  ['entity.bobber.', 'entity.fishing_bobber.'],
+  ['entity.enderdragon_fireball.', 'entity.dragon_fireball.'],
+  ['entity.enderdragon.', 'entity.ender_dragon.'],
+  ['entity.endereye.', 'entity.ender_eye.'],
+  ['entity.endermen.', 'entity.enderman.'],
+  ['entity.enderpearl.', 'entity.ender_pearl.'],
+  ['entity.evocation_fangs.', 'entity.evoker_fangs.'],
+  ['entity.evocation_illager.', 'entity.evoker.'],
+  ['entity.firework.', 'entity.firework_rocket.'],
+  ['entity.illusion_illager.', 'entity.illusioner.'],
+  ['entity.irongolem.', 'entity.iron_golem.'],
+  ['entity.itemframe.', 'entity.item_frame.'],
+  ['entity.leashknot.', 'entity.leash_knot.'],
+  ['entity.lightning.', 'entity.lightning_bolt.'],
+  ['entity.lingeringpotion.', 'entity.lingering_potion.'],
+  ['entity.magmacube.', 'entity.magma_cube.'],
+  ['entity.parrot.imitate.enderdragon', 'entity.parrot.imitate.ender_dragon'],
+  ['entity.parrot.imitate.evocation_illager', 'entity.parrot.imitate.evoker'],
+  ['entity.parrot.imitate.illusion_illager', 'entity.parrot.imitate.illusioner'],
+  ['entity.parrot.imitate.magmacube', 'entity.parrot.imitate.magma_cube'],
+  ['entity.parrot.imitate.vindication_illager', 'entity.parrot.imitate.vindicator'],
+  ['entity.snowman.', 'entity.snow_golem.'],
+  ['entity.vindication_illager.', 'entity.vindicator.'],
+  ['entity.zombie_pig.', 'entity.zombie_pigman.'],
+  ['record.', 'music_disc.'],
+];
+
+const SOUND_EVENT_ALIASES = new Map([
+  ['entity.polar_bear.baby_ambient', 'entity.polar_bear.ambient_baby'],
+  ['entity.villager.trading', 'entity.villager.trade'],
+  ['entity.zombie.attack_door_wood', 'entity.zombie.attack_wooden_door'],
+  ['entity.zombie.break_door_wood', 'entity.zombie.break_wooden_door'],
+]);
+
+function soundAssetName(name) {
+  let n = String(name || '').replace(/^minecraft:/, '');
+  if (SOUND_EVENT_ALIASES.has(n)) return SOUND_EVENT_ALIASES.get(n);
+  const small = n.match(/^entity\.(small_(?:slime|magmacube))\.(death|hurt|jump|squish)$/);
+  if (small) return `entity.${small[1] === 'small_slime' ? 'slime' : 'magma_cube'}.${small[2]}_small`;
+  for (const [from, to] of SOUND_EVENT_PREFIX_ALIASES) if (n.startsWith(from)) return to + n.slice(from.length);
+  return n;
+}
 
 // Category for client-played sounds without one: by the event name
 const CATEGORY_OF = (name) => {
@@ -55,7 +104,7 @@ const CATEGORY_OF = (name) => {
   if (name.startsWith('weather.')) return 'weather';
   if (name.startsWith('block.')) return 'block';
   if (name.startsWith('entity.player.')) return 'player';
-  if (/^entity\.(zombie|husk|skeleton|stray|wither|spider|creeper|blaze|ghast|endermen|endermite|slime|small_slime|magmacube|small_magmacube|silverfish|witch|enderdragon|guardian|elder_guardian|shulker|vex|evocation|vindication|illusion|zombie_pig|zombie_villager|hostile)/.test(name)) return 'hostile';
+  if (/^entity\.(zombie|husk|skeleton|stray|wither|spider|creeper|blaze|ghast|enderman|endermite|slime|small_slime|magma_cube|small_magma_cube|silverfish|witch|ender_dragon|guardian|elder_guardian|shulker|vex|evoker|vindicator|illusioner|zombie_pigman|zombie_villager|hostile|phantom|drowned)/.test(name)) return 'hostile';
   if (name.startsWith('entity.')) return 'neutral';
   if (name.startsWith('ambient.')) return 'ambient';
   return 'master';
@@ -147,15 +196,16 @@ export class SoundManager {
   // Positional sound at world coordinates. opts: { global, category (name or SPacketSoundEffect id) }
   async play(name, x, y, z, volume = 1, pitch = 1, opts = {}) {
     if (!this.audio) return null;
-    const def = this._pick(name);
+    const assetName = soundAssetName(name);
+    const def = this._pick(assetName);
     if (!def) return null;
-    this._subtitle(name, x, y, z, opts);
-    const cat = typeof opts.category === 'number' ? CATEGORIES[opts.category] || 'master' : opts.category || CATEGORY_OF(name);
+    this._subtitle(assetName, x, y, z, opts);
+    const cat = typeof opts.category === 'number' ? CATEGORIES[opts.category] || 'master' : opts.category || CATEGORY_OF(assetName);
     const catVol = this.volumeFor(cat);
     if (catVol <= 0) return null;
     const buf = await this._buffer(def.file);
     if (!buf) return null;
-    const handle = { name, category: cat, onEnd: null };
+    const handle = { name: assetName, category: cat, onEnd: null };
     const voice = this.audio.play(buf, {
       volume: Math.min(1, volume) * def.volume * catVol,
       pitch: Math.max(0.5, Math.min(2, pitch * def.pitch)),
@@ -179,10 +229,10 @@ export class SoundManager {
   stop(sound, category) {
     if (!category && !sound) { this.stopAll(); return; }
     const id = (s) => String(s).toLowerCase().replace(/^minecraft:/, '');
-    const want = sound ? id(sound) : null;
+    const want = sound ? id(soundAssetName(sound)) : null;
     for (const h of [...this.playing]) {
       if (category && h.category !== category) continue;
-      if (want && id(h.name) !== want) continue;
+      if (want && id(soundAssetName(h.name)) !== want) continue;
       if (h.stop) h.stop(); else h.voice.stop();
       this.playing.delete(h);
     }
@@ -197,8 +247,8 @@ export class SoundManager {
   // Footsteps (Entity.playStepSound)
   // Entity.playStepSound: block below (snow layer on top wins), volume * 0.15, played at the entity's feet
   playStep(x, y, z, state, at = null) {
-    let b = blocks[state >> 4];
-    const above = blocks[this.game.world.getState(x, y + 1, z) >> 4];
+    let b = getBlock(state);
+    const above = getBlock(this.game.world.getState(x, y + 1, z));
     if (above && (above.name === 'snow_layer')) b = above;
     if (!b || b.id === 0 || b.isLiquid) return;
     const st = soundTypeOf(b);
@@ -212,7 +262,7 @@ export class SoundManager {
   // EntityLivingBase.fall (client side for the local player): fall thud, then the landing block's fall sound
   playFall(damage, x, y, z, state) {
     this.play(damage > 4 ? 'entity.player.big_fall' : 'entity.player.small_fall', x, y, z, 1, 1, { category: 'player' });
-    const b = blocks[state >> 4];
+    const b = getBlock(state);
     if (b && b.id !== 0) {
       const st = soundTypeOf(b);
       this.play(st[6], x, y, z, st[3] * 0.5, st[4] * 0.75, { category: 'player' });
@@ -237,44 +287,42 @@ export class SoundManager {
 
   // PlayerControllerMP.onPlayerDamageBlock: the hit sound, NEUTRAL
   playBlockHit(x, y, z, state) {
-    const st = soundTypeOf(blocks[state >> 4]);
+    const st = soundTypeOf(getBlock(state));
     this.play(st[5], x + 0.5, y + 0.5, z + 0.5, (st[3] + 1) / 8, st[4] * 0.5, { category: 'neutral' });
   }
 
   playBlockBreak(x, y, z, state) {
-    const st = soundTypeOf(blocks[state >> 4]);
+    const st = soundTypeOf(getBlock(state));
     this.play(st[1], x + 0.5, y + 0.5, z + 0.5, (st[3] + 1) / 2, st[4] * 0.8, { category: 'block' });
   }
 
   playBlockPlace(x, y, z, state) {
-    const st = soundTypeOf(blocks[state >> 4]);
+    const st = soundTypeOf(getBlock(state));
     this.play(st[2], x + 0.5, y + 0.5, z + 0.5, (st[3] + 1) / 2, st[4] * 0.8, { category: 'block' });
   }
 
   // EntityLiving.getHurtSound / getDeathSound (handleStatusUpdate 2 / 3)
   _mobSounds(e) {
-    const t = e.entityType !== undefined ? e.entityType : e.type;
-    if (t === 55 || t === 62) {
-      const big = (e.size || 1) > 1;
-      return E(t === 55 ? (big ? 'slime' : 'small_slime') : (big ? 'magmacube' : 'small_magmacube'));
-    }
-    const s = MOB_SOUNDS[t];
-    if (s) return s;
-    return HOSTILE_TYPES.has(t) ? E('hostile') : E('generic');
+    const name = e.entityName;
+    if (name === 'armor_stand') return ['entity.armor_stand.hit', 'entity.armor_stand.break'];
+    if (name === 'slime' || name === 'magma_cube') return E(name).map(s => (e.size || 1) > 1 ? s : s + '_small');
+    return E(SOUND_ALIASES[name] || name || 'generic');
   }
 
   _mobCategory(e) {
     if (e.kind === 'player') return 'player';
-    return HOSTILE_TYPES.has(e.entityType !== undefined ? e.entityType : e.type) ? 'hostile' : 'neutral';
+    return HOSTILE_TYPES.has(e.entityName) ? 'hostile' : 'neutral';
   }
 
   playEntityHurt(e) {
+    if (e.silent) return;
     if (e.kind === 'player') { this.play('entity.player.hurt', e.x, e.y, e.z, 1, (Math.random() - Math.random()) * 0.2 + 1, { category: 'player' }); return; }
     const s = this._mobSounds(e);
     if (s && s[0]) this.play(s[0], e.x, e.y, e.z, 1, (Math.random() - Math.random()) * 0.2 + (e.child ? 1.5 : 1), { category: this._mobCategory(e) });
   }
 
   playEntityDeath(e) {
+    if (e.silent) return;
     if (e.kind === 'player') { this.play('entity.player.death', e.x, e.y, e.z, 1, (Math.random() - Math.random()) * 0.2 + 1, { category: 'player' }); return; }
     const s = this._mobSounds(e);
     if (s && s[1]) this.play(s[1], e.x, e.y, e.z, 1, (Math.random() - Math.random()) * 0.2 + (e.child ? 1.5 : 1), { category: this._mobCategory(e) });
@@ -295,7 +343,7 @@ export class SoundManager {
       this.lcg = (Math.imul(this.lcg, 3) + 1013904223) | 0;
       const i = this.lcg >> 2;
       const x = (cx << 4) + (i & 15), z = (cz << 4) + ((i >> 8) & 15), y = (i >> 16) & 255;
-      if (w.getState(x, y, z) >> 4) continue;
+      if (w.getState(x, y, z) !== 0) continue;
       const light = Math.max(w.getSkyLight(x, y, z), w.getBlockLight(x, y, z));
       if (light <= Math.floor(Math.random() * 8) && w.getSkyLight(x, y, z) <= 0) {
         const dx = g.player.x - x - 0.5, dy = g.player.y - y - 0.5, dz = g.player.z - z - 0.5;
@@ -309,14 +357,14 @@ export class SoundManager {
   }
 
   onBlockAction(p) {
-    const b = blocks[p.blockId];
+    const b = getBlockById(p.blockId);
     if (!b) return;
     const { x, y, z } = p.location;
-    if (b.name === 'noteblock') {
+    if (b.name === 'note_block') {
       // BlockNote.INSTRUMENTS (1.12)
       const inst = ['harp', 'basedrum', 'snare', 'hat', 'bass', 'flute', 'bell', 'guitar', 'chime', 'xylophone'][p.byte1] || 'harp';
       const pitch = Math.pow(2, (p.byte2 - 12) / 12);
-      this.play('block.note.' + inst, x + 0.5, y + 0.5, z + 0.5, 3, pitch, { category: 'record' });
+      this.play('block.note_block.' + inst, x + 0.5, y + 0.5, z + 0.5, 3, pitch, { category: 'record' });
       this.game.particles.note && this.game.particles.note(x, y, z, p.byte2);
     } else if (b.name === 'piston' || b.name === 'sticky_piston') {
       this.play(p.byte1 === 0 ? 'block.piston.extend' : 'block.piston.contract', x + 0.5, y + 0.5, z + 0.5, 0.5, Math.random() * 0.25 + 0.6, { category: 'block' });
@@ -330,8 +378,7 @@ export class SoundManager {
     if (p.effectId === 1010) { this.playRecord(p.data, cx, cy, cz); return; }
     if (p.effectId === 1032) { this.play('block.portal.travel', 0, 0, 0, 0.25, Math.random() * 0.4 + 0.8, { global: true, category: 'master' }); return; }
     if (p.effectId === 2001) {
-      const id = p.data & 4095, meta = (p.data >> 12) & 15;
-      this.playBlockBreak(x, y, z, (id << 4) | meta);
+      this.playBlockBreak(x, y, z, p.data);
       return;
     }
     const gl = GLOBAL_EVENTS[p.effectId];
@@ -347,7 +394,7 @@ export class SoundManager {
     const n = names[itemId];
     if (!n) return;
     this.game.hud.setActionBar('§dNow playing: C418 - ' + n);
-    this.record = await this.play('record.' + n, x, y, z, 4, 1, { category: 'record' });
+    this.record = await this.play('music_disc.' + n, x, y, z, 4, 1, { category: 'record' });
   }
 
   // Minecraft.getAmbientMusicType: [event, minDelay, maxDelay]
@@ -399,4 +446,4 @@ export class SoundManager {
   }
 }
 
-export { soundTypeOf };
+export { soundAssetName, soundTypeOf };

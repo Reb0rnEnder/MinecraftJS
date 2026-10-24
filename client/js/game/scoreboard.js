@@ -1,6 +1,9 @@
 // Player list (tab), scoreboard objectives/scores and teams.
 import { chatToLegacy } from '../gui/chat.js';
 
+const TEAM_COLORS = ['black', 'dark_blue', 'dark_green', 'dark_aqua', 'dark_red', 'dark_purple', 'gold', 'gray',
+  'dark_gray', 'blue', 'green', 'aqua', 'red', 'light_purple', 'yellow', 'white'];
+
 export class Scoreboard {
   constructor(game) {
     this.game = game;
@@ -19,7 +22,7 @@ export class Scoreboard {
   onPlayerInfo(p) {
     for (const d of p.data) {
       if (p.action === 0) {
-        this.players.set(d.uuid, { uuid: d.uuid, name: d.name, properties: d.properties, gamemode: d.gamemode, ping: d.ping, displayName: d.displayName ? chatToLegacy(d.displayName) : null });
+        this.players.set(d.uuid, { uuid: d.uuid, name: d.name, properties: d.properties, gamemode: d.gamemode, ping: d.ping, displayName: d.displayName != null ? chatToLegacy(d.displayName) : null });
         // Update name of an already spawned player entity
         for (const e of this.game.entities.all()) if (e.uuid === d.uuid) e.name = d.name;
       } else {
@@ -27,14 +30,14 @@ export class Scoreboard {
         if (!pl) continue;
         if (p.action === 1) pl.gamemode = d.gamemode;
         else if (p.action === 2) pl.ping = d.ping;
-        else if (p.action === 3) pl.displayName = d.displayName ? chatToLegacy(d.displayName) : null;
+        else if (p.action === 3) pl.displayName = d.displayName != null ? chatToLegacy(d.displayName) : null;
         else if (p.action === 4) this.players.delete(d.uuid);
       }
     }
   }
 
   onObjective(p) {
-    if (p.action === 0) this.objectives.set(p.objective, { displayName: p.displayText, type: p.type, scores: new Map() });
+    if (p.action === 0) this.objectives.set(p.objective, { displayName: chatToLegacy(p.displayText), type: p.type, scores: new Map() });
     else if (p.action === 1) {
       this.objectives.delete(p.objective);
       if (this.sidebar === p.objective) this.sidebar = null;
@@ -42,7 +45,7 @@ export class Scoreboard {
       if (this.belowName === p.objective) this.belowName = null;
     } else if (p.action === 2) {
       const o = this.objectives.get(p.objective);
-      if (o) { o.displayName = p.displayText; o.type = p.type; }
+      if (o) { o.displayName = chatToLegacy(p.displayText); o.type = p.type; }
     }
   }
 
@@ -77,7 +80,11 @@ export class Scoreboard {
     }
     if (!t) return;
     if (p.mode === 0 || p.mode === 2) {
-      t.displayName = p.displayName; t.prefix = p.prefix; t.suffix = p.suffix;
+      // 1.13 sends components here. The team color is the parent of the prefix,
+      // profile name and suffix; an explicit prefix style must not color the name.
+      const style = { color: TEAM_COLORS[p.color] };
+      t.displayName = chatToLegacy(p.displayName);
+      t.prefix = chatToLegacy(p.prefix, { style }); t.suffix = chatToLegacy(p.suffix, { style });
       t.friendlyFire = p.friendlyFire; t.nameTagVisibility = p.nameTagVisibility; t.color = p.color;
     }
     if (p.mode === 0 || p.mode === 3) for (const n of p.players) { t.players.add(n); this.playerTeam.set(n, t); }
@@ -90,11 +97,14 @@ export class Scoreboard {
 
   formatName(name) {
     const t = this.playerTeam.get(name);
-    return t ? (t.prefix || '') + name + (t.suffix || '') : name;
+    if (!t) return name;
+    const color = TEAM_COLORS[t.color] ? '§' + t.color.toString(16) : '';
+    // Profile/score-entry names are plain strings, never JSON components.
+    return (t.prefix || '') + '§r' + color + name + '§r' + (t.suffix || '') + '§r';
   }
 
   tabName(p) {
-    if (p.displayName) return p.displayName;
+    if (p.displayName != null) return p.displayName;
     return this.formatName(p.name);
   }
 

@@ -1,5 +1,5 @@
 // Rain/snow rendering, rain splashes + sound, and random block display ticks (ambience).
-import { blocks } from '../world/blocks.js';
+import { getBlock } from '../world/blocks.js';
 import { biomeRainType } from '../world/biomes.js';
 import { FORMAT, litParams } from '../gfx/device.js';
 
@@ -48,7 +48,7 @@ export class Weather {
   precipHeight(x, z) {
     const w = this.game.world;
     for (let y = 255; y >= 0; y--) {
-      const b = blocks[w.getState(x, y, z) >> 4];
+      const b = getBlock(w.getState(x, y, z));
       if (b && b.id !== 0 && (b.boundingBox === 'block' || b.isLiquid) && b.name !== 'leaves_never') return y + 1;
     }
     return 0;
@@ -76,7 +76,7 @@ export class Weather {
       const top = this.precipHeight(x, z);
       if (top > py + 10 || top < py - 10) continue;
       if (biomeRainType(w.getBiome(x, z), top) !== 'rain') continue;
-      const below = blocks[w.getState(x, top - 1, z) >> 4];
+      const below = getBlock(w.getState(x, top - 1, z));
       const rx = Math.random(), rz = Math.random();
       if (below && below.isLava) g.particles.smoke(x + rx, top + 0.1, z + rz, 0, 0, 0);
       else if (below && below.id !== 0) {
@@ -103,7 +103,7 @@ export class Weather {
       const y = py + Math.floor(Math.random() * r) - Math.floor(Math.random() * r);
       const z = pz + Math.floor(Math.random() * r) - Math.floor(Math.random() * r);
       const st = w.getState(x, y, z);
-      if (st >> 4) g.particles.randomDisplayTick(x, y, z, st);
+      if (st !== 0) g.particles.randomDisplayTick(x, y, z, st);
     }
   }
 

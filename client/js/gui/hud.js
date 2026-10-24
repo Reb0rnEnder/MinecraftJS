@@ -1,7 +1,8 @@
 // In-game overlay (port of GuiIngame / GuiNewChat / GuiPlayerTabOverlay / GuiOverlayDebug).
 import { tr } from './i18n.js';
 import { SpectatorGui } from './spectator.js';
-import { blocks } from '../world/blocks.js';
+import { getBlock } from '../world/blocks.js';
+import { isPointInFluid } from '../world/fluids.js';
 import { platform } from '../platform/platform.js';
 import { resolveState } from '../world/blockstates.js';
 import { biomeInfo } from '../world/biomes.js';
@@ -560,9 +561,10 @@ export class Hud {
     }
     // Air
     const eye = g.eyePosition();
-    const eb = blocks[g.world.getState(Math.floor(eye[0]), Math.floor(eye[1]), Math.floor(eye[2])) >> 4];
-    if (eb && eb.isWater) {
-      const air = g.selfMetadata && g.selfMetadata[1] !== undefined ? g.selfMetadata[1] : 300;
+    const air = g.selfMetadata && g.selfMetadata[1] !== undefined ? g.selfMetadata[1] : 300;
+    // Vanilla keeps the bubbles visible while a partially depleted air meter
+    // refills after surfacing; checking only eye-in-water hid that recovery.
+    if (air < 300 || isPointInFluid(g.world, eye[0], eye[1], eye[2])) {
       const full = Math.ceil((air - 2) * 10 / 300);
       const pop = Math.ceil(air * 10 / 300) - full;
       for (let i = 0; i < full + pop; i++) {
@@ -749,7 +751,7 @@ export class Hud {
   renderPortalOverlay(gui, f) {
     if (f < 1) { f *= f; f *= f; f = f * 0.8 + 0.2; }
     const A = this.game.assets;
-    const e = A.atlas.entries.get('blocks/portal');
+    const e = A.atlas.entries.get('block/nether_portal');
     if (!e) return;
     gui.quad(A.atlasTexture, 0, 0, gui.width, gui.height, e.uv[0], e.uv[1], e.uv[2], e.uv[3], [1, 1, 1, f]);
   }
@@ -769,7 +771,7 @@ export class Hud {
   // ItemRenderer.renderFireInFirstPerson (as two screen-space sprites)
   renderFire(gui) {
     const A = this.game.assets;
-    const e = A.atlas.entries.get('blocks/fire_layer_1');
+    const e = A.atlas.entries.get('block/fire_1');
     if (!e) return;
     const W = gui.width, H = gui.height;
     const s = H * 0.5;
@@ -970,7 +972,7 @@ export class Hud {
     ];
     const t = g.interaction.target;
     if (t && t.type === 'block' && !g.reducedDebug && !g.settings.reducedDebugInfo) {
-      const b = blocks[t.state >> 4];
+      const b = getBlock(t.state);
       lines.push('');
       lines.push(`minecraft:${b ? b.name : 'air'}`);
       const rs = resolveState(t.state, (a, b2, c) => g.world.getState(a, b2, c), t.x, t.y, t.z);
@@ -1110,7 +1112,7 @@ function extractComponents(raw) {
     const ck = c.clickEvent || click;
     let hv = hover;
     if (c.hoverEvent && c.hoverEvent.action === 'show_text') {
-      try { hv = chatToLegacy(c.hoverEvent.value); } catch (e) { hv = String(c.hoverEvent.value); }
+      try { hv = chatToLegacy(c.hoverEvent.value, { parsed: true }); } catch (e) { hv = String(c.hoverEvent.value); }
     }
     if (c.text !== undefined) out.push({ text: c.text, click: ck, hoverText: hv });
     else if (c.translate) {

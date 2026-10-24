@@ -1,6 +1,6 @@
 // Maps (block/state, neighbourhood) -> vanilla 1.13.2 blockstate file + property map.
 // This re-implements each block's getStateFromMeta + getActualState + state mapper naming.
-import { blocks, blocksByName } from './blocks.js';
+import { blocks, blocksByName, getBlock, getStateInfo, getStateProperties } from './blocks.js';
 
 const COLORS = ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'silver',
   'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black'];
@@ -20,22 +20,22 @@ const ROT_CCW = { north: 'west', west: 'south', south: 'east', east: 'north' };
 const OPP = { north: 'south', south: 'north', east: 'west', west: 'east', up: 'down', down: 'up' };
 
 const axisOf = (f) => (f === 'north' || f === 'south' ? 'z' : f === 'east' || f === 'west' ? 'x' : 'y');
-const bName = (state) => { const b = blocks[state >> 4]; return b ? b.name : 'air'; };
-const bDef = (state) => blocks[state >> 4] || blocks[0];
+const bName = (state) => getStateInfo(state).name;
+const bDef = (state) => getBlock(state);
 
 function logAxis(m) { return ['y', 'x', 'z', 'none'][(m >> 2) & 3]; }
 
-function stairsFacing(meta) { return ['east', 'west', 'south', 'north'][meta & 3]; }
-function stairsHalf(meta) { return meta & 4 ? 'top' : 'bottom'; }
+function stairsFacing(state) { return getStateProperties(state).facing || 'north'; }
+function stairsHalf(state) { return getStateProperties(state).half || 'bottom'; }
 
 function stairsShape(get, x, y, z, meta) {
   const facing = stairsFacing(meta);
   const half = stairsHalf(meta);
-  const isStairsSameHalf = (s) => bDef(s).isStairs && stairsHalf(s & 15) === half;
+  const isStairsSameHalf = (s) => bDef(s).isStairs && stairsHalf(s) === half;
   const differentStairs = (dir) => {
     const o = OFFS[dir];
     const s = get(x + o[0], y + o[1], z + o[2]);
-    return !bDef(s).isStairs || stairsFacing(s & 15) !== facing || stairsHalf(s & 15) !== half;
+    return !bDef(s).isStairs || stairsFacing(s) !== facing || stairsHalf(s) !== half;
   };
   let o = OFFS[facing];
   const back = get(x + o[0], y, z + o[2]);
@@ -127,6 +127,21 @@ export { doorProps };
 
 // Returns { file, props, variant? } or null if the block has no model
 export function resolveState(state, get, x, y, z) {
+  {
+  const info = getStateInfo(state);
+  const def = getBlock(state);
+  if (!def || !def.hasModel) return null;
+  const P = { ...info.properties };
+  // The 1.13 chunk already contains the complete actual state. In particular,
+  // stairs shape, fence/pane connections, door halves, fire faces, and
+  // redstone connections must not be reconstructed from legacy metadata.
+  if (def.isStairs && !P.shape) P.shape = stairsShape(get, x, y, z, state);
+  return { file: info.name, props: P };
+  }
+
+  /* Legacy 1.12 metadata resolver retained below only as reference while the
+     remaining non-blockstate item mappings are migrated. It is unreachable for
+     1.13.2 world states. */
   const id = state >> 4;
   const m = state & 15;
   const b = blocks[id];

@@ -1,6 +1,6 @@
 // Port of vanilla VisGraph: which faces of a 16^3 section can see each other through non-opaque blocks.
 // Result: Uint8Array(6), bit b of entry a set when face a connects to face b (DIR_OFFSETS order).
-import { blocks } from '../world/blocks.js';
+import { getBlock } from '../world/blocks.js';
 
 const ALL = new Uint8Array([63, 63, 63, 63, 63, 63]);
 const stack = new Int32Array(4096);
@@ -13,8 +13,8 @@ export function computeVisibility(blocksArr, fancyLeaves) {
   seen.fill(0);
   let opaqueCount = 0;
   for (let i = 0; i < 4096; i++) {
-    const b = blocks[blocksArr[i] >> 4];
-    if (b && b.opaque && !(fancyLeaves && (b.name === 'leaves' || b.name === 'leaves2'))) { seen[i] = 1; opaqueCount++; }
+    const b = getBlock(blocksArr[i]);
+    if (b && b.opaque && !(fancyLeaves && b.name.endsWith('_leaves'))) { seen[i] = 1; opaqueCount++; }
   }
   // Vanilla shortcut: nearly empty sections connect everything
   if (opaqueCount < 256) return allVisible();

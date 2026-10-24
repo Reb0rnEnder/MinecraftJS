@@ -1,12 +1,12 @@
 // Entity rendering (RenderManager + Render* classes) on the gfx scene graph.
-import { DYE_NAMES } from './tile-renderer.js';
 import * as M from './entity-models.js';
 
 const M_dragon = () => M.dragonParts();
 import { entityMaterial, entityMesh, modelDevice } from './boxmodel.js';
 import { applyTransform } from './item-renderer.js';
 import { buildTextMeshes, destroyTextMeshes } from './text-mesh.js';
-import { blocks } from '../world/blocks.js';
+import { getBlock, findState, getStateProperties } from '../world/blocks.js';
+import { isPointInFluid } from '../world/fluids.js';
 import { resolveState } from '../world/blockstates.js';
 import { FORMAT, colorParams, EntityParams } from '../gfx/device.js';
 import { mat4, D2R, aabbInFrustum } from '../gfx/math.js';
@@ -19,7 +19,7 @@ import { fetchSkin, proxyRoute } from '../net/proxies.js';
 import { EntityFire } from './entity-fire.js';
 import { decodeUtf8 } from '../util/utf8.js';
 
-const ARMOR_MATS = ['leather', 'chainmail', 'iron', 'diamond', 'gold'];
+const ARMOR_MATS = ['leather', 'chainmail', 'iron', 'diamond', 'gold', 'turtle'];
 
 // Vanilla 1.8.9 MapColor base colors (r, g, b). Index 0 = NONE (transparent).
 const MAP_BASE_COLORS = [
@@ -40,6 +40,14 @@ const VILLAGER_TEX = ['farmer', 'librarian', 'priest', 'smith', 'butcher'];
 const HORSE_COLORS = ['white', 'creamy', 'chestnut', 'brown', 'black', 'gray', 'darkbrown'];
 const RABBIT_TEX = ['brown', 'white', 'black', 'white_splotched', 'gold', 'salt'];
 const CAT_TEX = ['ocelot', 'black', 'red', 'siamese'];
+const ENTITY_DYES = ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'light_gray',
+  'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black'];
+const PARROT_TEX = ['red_blue', 'blue', 'green', 'yellow_blue', 'grey'];
+const LLAMA_TEX = ['creamy', 'white', 'brown', 'gray'];
+const fishShape = e => ((e.fishVariant || 0) & 255) === 1 ? 1 : 0;
+const fishPattern = e => Math.min(5, ((e.fishVariant || 0) >>> 8) & 255) + 1;
+const yawAngle = (e, partial) => e.prevYaw + (e.yaw - e.prevYaw) * partial;
+const pitchAngle = (e, partial) => e.prevPitch + (e.pitch - e.prevPitch) * partial;
 const PAINTINGS = {
   Kebab: [16, 16, 0, 0], Aztec: [16, 16, 16, 0], Alban: [16, 16, 32, 0], Aztec2: [16, 16, 48, 0], Bomb: [16, 16, 64, 0], Plant: [16, 16, 80, 0],
   Wasteland: [16, 16, 96, 0], Pool: [32, 16, 0, 32], Courbet: [32, 16, 32, 32], Sea: [32, 16, 64, 32], Sunset: [32, 16, 96, 32], Creebet: [32, 16, 128, 32],
@@ -48,7 +56,8 @@ const PAINTINGS = {
   BurningSkull: [64, 64, 128, 192], Skeleton: [64, 48, 192, 64], DonkeyKong: [64, 48, 192, 112],
 };
 const STATE_OPAQUE = { blend: 'none' };
-const CULLABLE = new Set(['player', 'mob', 'armorstand', 'item', 'xp', 'arrow', 'projectile', 'falling', 'tnt', 'boat', 'minecart', 'crystal']);
+const CULLABLE = new Set(['player', 'mob', 'armorstand', 'item', 'xp', 'arrow', 'spectral_arrow', 'trident', 'projectile',
+  'llama_spit', 'shulker_bullet', 'dragon_fireball', 'evoker_fangs', 'falling', 'tnt', 'boat', 'minecart', 'crystal']);
 const STATE_ALPHA = { blend: 'alpha', depthWrite: false };
 const GLINT_PARAMS = new EntityParams().setTint(0.5 * 0.75, 0.25 * 0.75, 0.8 * 0.75, 1).setFullBright(true).setNoLighting(true).setAlphaTest(0);
 
@@ -231,7 +240,7 @@ export class EntityRenderer {
       case 53: case 54: return e.villagerZombie ? 'entity/zombie_villager/zombie_' + (['farmer', 'librarian', 'priest', 'smith', 'butcher'][e.villagerProfession] || 'villager') + '.png'
         : e.husk ? 'entity/zombie/husk.png' : 'entity/zombie/zombie.png';
       case 55: return 'entity/slime/slime.png';
-      case 56: return 'entity/ghast/ghast.png';
+      case 56: return e.attacking ? 'entity/ghast/ghast_shooting.png' : 'entity/ghast/ghast.png';
       case 57: return 'entity/zombie_pigman.png';
       case 58: return 'entity/enderman/enderman.png';
       case 59: return 'entity/spider/cave_spider.png';
@@ -243,8 +252,7 @@ export class EntityRenderer {
       case 66: return 'entity/witch.png';
       case 67: return 'entity/endermite.png';
       case 68: return e.elder ? 'entity/guardian_elder.png' : 'entity/guardian.png';
-      // RenderShulker: colour 16 (none) is the purple shulker
-      case 69: return 'entity/shulker/shulker_' + (DYE_NAMES[e.shulkerColor] || 'purple') + '.png';
+      case 69: return 'entity/shulker/shulker' + (ENTITY_DYES[e.shulkerColor] ? '_' + ENTITY_DYES[e.shulkerColor] : '') + '.png';
       case 90: return 'entity/pig/pig.png';
       case 91: return 'entity/sheep/sheep.png';
       case 92: return 'entity/cow/cow.png';
@@ -252,7 +260,7 @@ export class EntityRenderer {
       case 94: return 'entity/squid.png';
       case 95: return e.tamed ? 'entity/wolf/wolf_tame.png' : e.angry ? 'entity/wolf/wolf_angry.png' : 'entity/wolf/wolf.png';
       case 96: return 'entity/cow/mooshroom.png';
-      case 97: return 'entity/snowman.png';
+      case 97: return 'entity/snow_golem.png';
       case 98: return 'entity/cat/' + (CAT_TEX[e.catType || 0] || 'ocelot') + '.png';
       case 99: return 'entity/iron_golem.png';
       case 100: {
@@ -265,7 +273,18 @@ export class EntityRenderer {
       }
       case 101: return 'entity/rabbit/' + (e.rabbitType === 99 ? 'caerbannog' : (RABBIT_TEX[e.rabbitType || 0] || 'brown')) + '.png';
       case 120: return 'entity/villager/' + (VILLAGER_TEX[e.profession] || 'villager') + '.png';
-      default: return 'entity/steve.png';
+      case 'polar_bear': return 'entity/bear/polarbear.png';
+      case 'llama': return 'entity/llama/' + (LLAMA_TEX[e.llamaVariant] || LLAMA_TEX[0]) + '.png';
+      case 'parrot': return 'entity/parrot/parrot_' + (PARROT_TEX[e.parrotVariant] || PARROT_TEX[0]) + '.png';
+      case 'vex': return 'entity/illager/vex' + (e.charging ? '_charging' : '') + '.png';
+      case 'evoker': case 'vindicator': case 'illusioner': return 'entity/illager/' + e.type + '.png';
+      case 'drowned': return 'entity/zombie/drowned.png';
+      case 'cod': case 'salmon': case 'pufferfish': return 'entity/fish/' + e.type + '.png';
+      case 'tropical_fish': return 'entity/fish/tropical_' + (fishShape(e) ? 'b' : 'a') + '.png';
+      case 'dolphin': return 'entity/dolphin.png';
+      case 'turtle': return 'entity/turtle/big_sea_turtle.png';
+      case 'phantom': return 'entity/phantom.png';
+      default: return null;
     }
   }
 
@@ -302,11 +321,41 @@ export class EntityRenderer {
       case 97: return M.snowman();
       case 98: return M.ocelot();
       case 99: return M.ironGolem();
-      case 100: return M.horse();
+      case 100: return M.horse(e.horseType || 0);
       case 101: return M.rabbit();
       case 120: return M.villager(64, 64, false);
-      default: return M.biped();
+      case 'polar_bear': return M.polarBear();
+      case 'llama': return M.llama();
+      case 'parrot': return M.parrot(e.parrotVariant);
+      case 'vex': return M.vex();
+      case 'evoker': case 'vindicator': case 'illusioner': return M.illager(e.type);
+      case 'drowned': return M.drowned();
+      case 'cod': return M.cod();
+      case 'salmon': return M.salmon();
+      case 'pufferfish': return M.pufferfish(e.puffState || 0);
+      case 'tropical_fish': return M.tropicalFish(fishShape(e));
+      case 'dolphin': return M.dolphin();
+      case 'turtle': return M.turtle();
+      case 'phantom': return M.phantom(e.phantomSize || 0);
+      default: return null;
     }
+  }
+
+  // Metadata can change geometry/layers without changing the base texture (puff
+  // size, fish patterns, phantom size, horse markings). Don't leave stale models.
+  _livingKey(e) {
+    return [e.type, this._texFor(e), e.puffState || 0, e.fishVariant || 0, e.phantomSize || 0,
+      e.horseVariant || 0, e.horseType || 0].join('|');
+  }
+
+  _visualKey(e) {
+    if (e.kind === 'mob') return this._livingKey(e);
+    if (e.kind === 'boat') return 'boat:' + (e.boatType || 0);
+    if (e.kind === 'minecart') return ['cart', e.cartType, e.customDisplay, e.displayBlock, e.displayOffset, e.furnacePowered].join(':');
+    if (e.kind === 'crystal') return 'crystal:' + (e.showBottom !== false);
+    if (e.kind === 'projectile') return ['projectile', e.type, e.invulnerable,
+      e.item ? this.game.itemRenderer.iconKey(e.item) : ''].join(':');
+    return e.kind;
   }
 
   _makeModelObject(model, mat) {
@@ -362,10 +411,12 @@ export class EntityRenderer {
   _buildLiving(e) {
     const v = { root: new Node(), materials: [], layers: [], kind: 'living', uuid: e.uuid };
     const texPath = this._texFor(e);
-    const tex = e.kind === 'player' ? this.skinTex(this.skinFor(e)) : (texPath || 'entity/steve.png');
+    const tex = e.kind === 'player' ? this.skinTex(this.skinFor(e)) : texPath;
     v.texPath = texPath;
+    v.modelKey = this._livingKey(e);
     const model = this._modelFor(e);
-    const mat = this._mat(v, tex, { alphaTest: 0.1, cull: !(e.kind === 'player' || e.type === 68) });
+    if (!model || !tex) throw new Error('Unsupported living entity renderer: ' + (e.entityName || e.type));
+    const mat = this._mat(v, tex, { alphaTest: 0.1, cull: !(e.kind === 'player' || e.type === 68), ...model.materialOptions });
     v.mainMat = mat;
     v.model = model;
     // Entity space: rotate Y (180 - bodyYaw), scale(-1,-1,1), translate(0,-1.5078125,0), parts in 1/16 units
@@ -376,7 +427,10 @@ export class EntityRenderer {
     v.root.add(v.yawGroup);
     v.yawGroup.add(v.scaleGroup);
     v.scaleGroup.add(v.modelGroup);
-    v.modelGroup.add(this._makeModelObject(model, mat));
+    const bodyObject = this._makeModelObject(model, mat);
+    v.bodyDrawables = [];
+    bodyObject.traverse(n => v.bodyDrawables.push(...n.drawables));
+    v.modelGroup.add(bodyObject);
     // Overlay layers
     const addLayer = (m, tex2, opts = {}) => {
       const lm = this._mat(v, tex2, { alphaTest: 0.1, ...opts });
@@ -396,7 +450,16 @@ export class EntityRenderer {
         const markings = ['', 'white', 'whitefield', 'whitedots', 'blackdots'][((e.horseVariant || 0) >> 8) & 0xff];
         if (markings && (e.horseType || 0) === 0) addLayer(M.horse(), 'entity/horse/horse_markings_' + markings + '.png');
       }
-      if (e.type === 51 || e.type === 53 || e.type === 54 || e.type === 57) this._addArmorLayers(v, e);
+      if (e.stray) addLayer(M.biped('strayOverlay'), 'entity/skeleton/stray_overlay.png');
+      if (e.type === 'drowned') addLayer(M.drowned(true), 'entity/zombie/drowned_outer_layer.png', { cull: false });
+      if (e.type === 'llama') v.llamaDecor = addLayer(M.llama(true), 'entity/llama/decor/white.png', { cull: false });
+      if (e.type === 'tropical_fish') {
+        v.fishPattern = addLayer(M.tropicalFish(fishShape(e), true),
+          'entity/fish/tropical_' + (fishShape(e) ? 'b' : 'a') + '_pattern_' + fishPattern(e) + '.png', { cull: false });
+      }
+      if (e.type === 'phantom') addLayer(M.phantom(e.phantomSize || 0), 'entity/phantom_eyes.png',
+        { fullBright: true, transparent: true, additive: true, depthWrite: false, eyes: true, cull: false });
+      if (e.type === 51 || e.type === 53 || e.type === 54 || e.type === 57 || e.type === 'drowned') this._addArmorLayers(v, e);
       if (e.type === 96) v.mushroomLayer = true;
     }
     if (e.kind === 'player' || e.kind === 'armorstand') {
@@ -597,6 +660,11 @@ export class EntityRenderer {
 
   _blockObject(state, mat) {
     const g = this.game;
+    const def = getBlock(state);
+    if (def && !def.hasModel) {
+      const item = g.items?.byName.get(def.name);
+      return item ? this._itemObject({ id: item.id, count: 1, damage: 0 }, mat)?.obj || null : null;
+    }
     const rs = resolveState(state, () => 0, 0, 0, 0);
     if (!rs) return null;
     const bm = g.assets.modelStore.bakeVariant(rs.file, rs.props, rs.variant, 0);
@@ -639,21 +707,23 @@ export class EntityRenderer {
         v.root.add(sp);
         break;
       }
-      case 'arrow': {
+      case 'arrow': case 'spectral_arrow': {
         v = { root: new Node(), kind: 'arrow', materials: [] };
-        const mat = this._mat(v, 'entity/arrow.png', { alphaTest: 0.1 });
+        const mat = this._mat(v, 'entity/projectiles/' + (e.kind === 'spectral_arrow' ? 'spectral_arrow' : 'arrow') + '.png', { alphaTest: 0.1 });
         v.inner = new Node();
         v.inner.addDrawable(this._cachedMesh('arrow', arrowMesh), mat);
         v.root.add(v.inner);
         break;
       }
       case 'projectile': {
-        const itemId = { 61: 332, 62: 344, 65: 368, 72: 381, 73: 373, 75: 384, 64: 385, 63: 385, 66: 0, 76: 401 }[e.type];
+        const itemName = { 61: 'snowball', 62: 'egg', 65: 'ender_pearl', 72: 'ender_eye', 73: 'splash_potion',
+          75: 'experience_bottle', 64: 'fire_charge', 63: 'fire_charge', 76: 'firework_rocket' }[e.type];
+        const itemId = this.game.items.byName.get(itemName)?.id;
         v = { root: new Node(), kind: 'projectile', materials: [] };
         if (itemId) {
           const ir = this.game.itemRenderer;
           // EntityPotion carries its ItemStack (splash or lingering potion) in metadata
-          const item = e.type === 73 ? (e.item || { id: 438, damage: 0, count: 1 }) : { id: itemId, damage: 0, count: 1 };
+          const item = e.type === 73 && e.item ? e.item : { id: itemId, damage: 0, count: 1 };
           const m = ir.modelFor(item);
           const layer = m.layers && m.layers[m.layers.length > 1 ? 1 : 0];
           const entry = layer ? this.game.assets.atlas.entries.get(layer) : null;
@@ -677,17 +747,38 @@ export class EntityRenderer {
           }
         } else if (e.type === 66) {
           // wither skull
-          const mat = this._mat(v, 'entity/wither/wither.png');
+          const mat = this._mat(v, e.invulnerable ? 'entity/wither/wither_invulnerable.png' : 'entity/wither/wither.png');
           const { head } = M.blockModel('witherSkull', ['head']); // RenderWitherSkull's ModelSkeletonHead
           const g = new Node(); g.add(head.build()); head.setMaterial(mat);
           g.scale.set(-1 / 16, -1 / 16, 1 / 16);
-          v.root.add(g);
+          v.inner = g; v.root.add(g);
         }
         break;
       }
+      case 'trident': case 'llama_spit': case 'shulker_bullet': case 'evoker_fangs': {
+        const model = { trident: M.trident, llama_spit: M.llamaSpit, shulker_bullet: M.shulkerBullet, evoker_fangs: M.evokerFangs }[e.kind]();
+        v = { root: new Node(), kind: 'jar_projectile', materials: [], model };
+        const mat = this._mat(v, model.texture, { alphaTest: 0.1, ...model.materialOptions, fullBright: e.kind === 'shulker_bullet' });
+        v.inner = new Node();
+        v.inner.add(this._makeModelObject(model, mat));
+        v.root.add(v.inner);
+        break;
+      }
+      case 'dragon_fireball': {
+        v = { root: new Node(), kind: 'dragon_fireball', materials: [] };
+        const sp = new Node(); sp.billboard = true;
+        sp.addDrawable(this._cachedMesh('dragon_fireball', () => spriteMesh(this.device, 0, 0, 1, 1, 2, 2)),
+          material('color', 'entity/enderdragon/dragon_fireball.png', colorParams(1, 1, 1, 1, 0.1, 1), { blend: 'none' }));
+        v.root.add(sp);
+        break;
+      }
+      case 'area_effect_cloud':
+        // The vanilla cloud is particle-only; do not invent a solid entity model.
+        v = { root: new Node(), kind: 'area_effect_cloud', materials: [] };
+        break;
       case 'falling': case 'tnt': {
         v = atlasOnly(e.kind);
-        const st = e.kind === 'tnt' ? (46 << 4) : e.blockState;
+        const st = e.kind === 'tnt' ? findState('tnt', { unstable: false }) : e.blockState;
         const o = this._blockObject(st, v.atlasMat);
         if (o) { v.inner = new Node(); v.inner.add(o); v.root.add(v.inner); }
         if (e.kind === 'tnt') {
@@ -702,8 +793,8 @@ export class EntityRenderer {
       case 'boat': case 'minecart': {
         v = atlasOnly(e.kind);
         const model = e.kind === 'boat' ? M.boat() : M.minecart();
-        // EntityBoat.Type (1.9): one texture per wood
-        const mat = this._mat(v, e.kind === 'boat' ? 'entity/boat/boat_' + (['oak', 'spruce', 'birch', 'jungle', 'acacia', 'darkoak'][e.boatType || 0] || 'oak') + '.png' : 'entity/minecart.png');
+        // EntityBoat.Type: 1.13 uses the wood name directly, including dark_oak.
+        const mat = this._mat(v, e.kind === 'boat' ? 'entity/boat/' + (['oak', 'spruce', 'birch', 'jungle', 'acacia', 'dark_oak'][e.boatType || 0] || 'oak') + '.png' : 'entity/minecart.png');
         v.inner = new Node();
         const mg = new Node();
         mg.scale.set(-1 / 16, -1 / 16, 1 / 16);
@@ -720,7 +811,9 @@ export class EntityRenderer {
         v.inner.add(mg);
         v.root.add(v.inner);
         if (e.kind === 'minecart') {
-          const disp = e.customDisplay && e.displayBlock ? ((e.displayBlock & 0xfff) << 4) | ((e.displayBlock >> 12) & 15) : { 1: 54 << 4, 2: 61 << 4, 3: 46 << 4, 4: 52 << 4, 5: 154 << 4, 6: 137 << 4 }[e.cartType];
+          const displayName = { 1: 'chest', 2: 'furnace', 3: 'tnt', 4: 'spawner', 5: 'hopper', 6: 'command_block' }[e.cartType];
+          const disp = e.customDisplay ? e.displayBlock : displayName ? findState(displayName,
+            displayName === 'furnace' ? { facing: 'north', lit: !!e.furnacePowered } : {}) : 0;
           if (disp) {
             const bo = this._blockObject(disp, v.atlasMat);
             if (bo) { bo.scale.set(0.75, 0.75, 0.75); bo.position.set(0, (e.displayOffset !== undefined ? e.displayOffset : 6) / 16 + 0.375 * 0.75 - 0.375 + 0.0625, 0); v.inner.add(bo); }
@@ -745,7 +838,7 @@ export class EntityRenderer {
       }
       case 'itemframe': {
         v = atlasOnly('itemframe');
-        const bm = this.game.assets.modelStore.bakeVariant('item_frame', {}, 'normal', 0);
+        const bm = this.game.assets.modelStore.bakeVariant('item_frame', { map: 'false' }, null, 0);
         if (bm) {
           const mesh = this.game.itemRenderer.blockMesh({ baked: bm, name: 'item_frame' });
           if (mesh) { v.frame = new Node().addDrawable(mesh, v.atlasMat); v.root.add(v.frame); }
@@ -756,7 +849,7 @@ export class EntityRenderer {
       }
       case 'crystal': {
         v = { root: new Node(), kind: 'crystal', materials: [] };
-        const mat = this._mat(v, 'entity/endercrystal/endercrystal.png', { fullBright: true });
+        const mat = this._mat(v, 'entity/end_crystal/end_crystal.png', { fullBright: true });
         // ModelEnderCrystal (RenderEnderCrystal builds it with the base): base scaled 2, then glass, glass and cube
         const cm = M.blockModel(e.showBottom === false ? 'enderCrystalNoBase' : 'enderCrystal', ['cube', 'glass', 'base']);
         if (cm.base) {
@@ -799,8 +892,9 @@ export class EntityRenderer {
         v.root.add(g);
         break;
       }
-      default: v = { root: new Node(), kind: 'none', materials: [] };
+      default: return null; // Unsupported identities never borrow an unrelated entity model.
     }
+    v.visualKey = this._visualKey(e);
     this.group.add(v.root);
     this.visuals.set(e.id, v);
     return v;
@@ -824,16 +918,17 @@ export class EntityRenderer {
     const burning = [];
     for (const e of list) {
       let v = this.visuals.get(e.id);
-      if (v && v.kind === 'living' && e.kind === 'mob' && this._texFor(e) !== v.texPath) { this.remove(e); v = null; }
+      if (v && this._visualKey(e) !== v.visualKey) { this.remove(e); v = null; }
       const p = g.entities.interp(e, partial);
       const dx = p.x - camPos[0], dy = p.y - camPos[1], dz = p.z - camPos[2];
       const d2 = dx * dx + dy * dy + dz * dz;
       // RenderArmorStand.canRenderName ignores invisibility: invisible stands with a visible custom name are
-      // how servers (Hypixel NPCs, holograms) float text, so keep just their name tag
+      // how servers float text. Equipped items remain visible independently of the body.
       const floatingTag = e.kind === 'armorstand' && e.customName && e.nameVisible;
-      if (dx * dx + dz * dz > far || (e.invisible && e.kind !== 'player' && !floatingTag)) { if (v) v.root.visible = false; continue; }
+      const living = e.kind === 'mob' && e.type !== 63 || e.kind === 'player' || e.kind === 'armorstand';
+      if (dx * dx + dz * dz > far || (e.invisible && !living)) { if (v) v.root.visible = false; continue; }
       // Entity culling: frustum + sections hidden behind terrain (never the camera's own entity)
-      let tagOnly = !!(e.invisible && floatingTag);
+      let tagOnly = false;
       if (CULLABLE.has(e.kind) && e.id !== -1) {
         const hw = (e.width || 0.6) / 2 + 0.5, h = (e.height || 1.8) * (e.type === 56 ? 4.5 : 1) + 0.5;
         const visible = this.r.boxVisible(p.x - hw, p.y - 0.5, p.z - hw, p.x + hw, p.y + h, p.z + hw);
@@ -870,6 +965,9 @@ export class EntityRenderer {
           case 'item': this._renderItem(e, v, p, partial); break;
           case 'xp': this._renderXp(e, v, partial); break;
           case 'arrow': this._renderArrow(e, v, partial); break;
+          case 'jar_projectile': this._renderJarProjectile(e, v, partial); break;
+          case 'projectile': if (v.inner) v.inner.rotation.set(pitchAngle(e, partial) * D2R, yawAngle(e, partial) * D2R, 0); break;
+          case 'area_effect_cloud': this._renderCloud(e, v, p); break;
           case 'falling': if (v.inner) v.inner.position.set(0, 0.5, 0); break;
           case 'tnt': this._renderTnt(e, v, partial); break;
           case 'boat': case 'minecart': this._renderVehicle(e, v, p, partial); break;
@@ -995,13 +1093,33 @@ export class EntityRenderer {
       }
       v.yawGroup.matrix = m;
     }
+    const swimAmount = (e.prevSwimAmount ?? e.swimAmount ?? 0) + ((e.swimAmount ?? (e.swimming ? 1 : 0)) - (e.prevSwimAmount ?? e.swimAmount ?? 0)) * partial;
+    if ((e.kind === 'player' || e.kind === 'mob') && swimAmount > 0.001 && !e.elytraFlying && !e.riptide) {
+      // RenderPlayer.applyRotations: pitch around X, then move the horizontal
+      // body to its swimming hitbox. Retain the last pitch while leaving water.
+      const m = mat4.create();
+      mat4.rotateY(m, m, (180 - body) * D2R);
+      let angle = (-90 - pitch) * swimAmount;
+      if (e.swimming) v.swimRotation = angle;
+      else angle = (v.swimRotation || 0) * (1 - swimAmount);
+      mat4.rotateX(m, m, angle * D2R);
+      if (e.swimming) mat4.translate(m, m, 0, -1, 0.3);
+      v.yawGroup.matrix = m;
+    }
+    if (e.riptide && (e.kind === 'player' || e.kind === 'mob')) {
+      const m = mat4.create();
+      mat4.rotateY(m, m, (180 - body) * D2R);
+      mat4.rotateX(m, m, (-90 - pitch) * D2R);
+      mat4.rotateY(m, m, -75 * ((e.ticks || 0) + partial) * D2R);
+      v.yawGroup.matrix = m;
+    }
     let yOffset = 0;
     if (e.kind === 'player' && e.sneaking) yOffset = -0.125;
     v.root.position.y += yOffset;
     v.scaleGroup.rotation.set(0, 0, -deathRot * D2R * (e.kind === 'mob' && (e.type === 52 || e.type === 59) ? 2 : 1));
     // Pre-render scaling
-    let sx = 1, sy = 1, sz = 1;
     const model = v.model;
+    let sx = model.modelScale || 1, sy = sx, sz = sx;
     v.flash = 0;
     if (e.kind === 'mob') {
       switch (e.type) {
@@ -1034,8 +1152,8 @@ export class EntityRenderer {
     }
     v.scaleGroup.scale.set(-sx, -sy, sz);
     v.scaleGroup.position.set(0, 0, 0);
-    v.modelGroup.position.set(0, -1.5078125, 0);
-    if (e.child) v.scaleGroup.scale.multiplyScalar(0.5);
+    v.modelGroup.position.set(0, -1.5078125 + (model.modelTranslateY || 0), model.modelTranslateZ || 0);
+    if (e.child) v.scaleGroup.scale.multiplyScalar(model.childScale || 0.5);
     // Animate
     const held = e.equipment[0];
     // RenderPlayer.setModelVisibilities / RenderBiped: arm poses from both hands (main hand on the primary side)
@@ -1043,13 +1161,15 @@ export class EntityRenderer {
     const poseOf = (stack, hand) => {
       if (!stack) return 'empty';
       if (e.usingItem && (e.activeHand || 0) === hand) {
-        if (stack.id === 442) return 'block';
-        if (stack.id === 261) return 'bow';
+        const name = g.items.name(stack.id);
+        if (name === 'shield') return 'block';
+        if (name === 'bow') return 'bow';
+        if (name === 'trident') return 'spear';
       }
       return 'item';
     };
     const mainPose = poseOf(held, 0), offPose = poseOf(e.offhand, 1);
-    const skeletonAim = (e.kind === 'mob' && e.type === 51 && e.armsRaised && held && held.id === 261);
+    const skeletonAim = (e.kind === 'mob' && e.type === 51 && e.armsRaised && held && g.items.name(held.id) === 'bow');
     const speedSq = (e.motionX || 0) ** 2 + (e.motionY || 0) ** 2 + (e.motionZ || 0) ** 2;
     const args = {
       ls, lsa, age, yaw: head - body, pitch, swing: swing > 0 ? swing : -9999, partial,
@@ -1063,7 +1183,18 @@ export class EntityRenderer {
       witchDrinking: e.kind === 'mob' && e.type === 66 && e.usingItem,
       squish: 0,
       peek: e.type === 69 ? (e.prevPeek || 0) + ((e.peek || 0) - (e.prevPeek || 0)) * partial : 0,
+      entityId: e.id, child: !!e.child, leftHanded: !!e.leftHanded,
+      inWater: isPointInFluid(g.world, e.x, e.y + e.height / 2, e.z),
+      swimming: !!e.swimming, swimAmount, armsRaised: !!e.armsRaised,
+      rearing: e.type === 'polar_bear' ? (e.standing ? 1 : 0) : (e.horseFlags & 64 ? 1 : 0),
+      grazing: e.horseFlags & 32 ? 1 : 0, mouthOpen: e.horseFlags & 128 ? 1 : 0,
+      chested: !!e.horseChest, hasRider: e.passenger >= 0, tailWag: !!e.tailWag,
+      charging: !!e.charging, attacking: !!e.armsRaised, spellcasting: !!e.spell,
+      aimedBow: e.type === 'illusioner' && !!e.armsRaised,
+      throwing: e.type === 'drowned' && !!e.armsRaised && !!held && g.items.name(held.id) === 'trident',
+      hasEgg: !!e.hasEgg, layingEgg: !!e.layingEgg,
     };
+    if (e.type === 'illusioner' && !e.spell && e.armsRaised) args.pose = 'bow';
     if (e.kind === 'armorstand') {
       const m = e.metadata;
       const r = (i) => (m[i] ? [m[i].pitch, m[i].yaw, m[i].roll] : null);
@@ -1071,15 +1202,20 @@ export class EntityRenderer {
       args.showArms = !!(m[11] & 4); args.noBasePlate = !!(m[11] & 8);
       if (m[11] & 1) v.scaleGroup.scale.multiplyScalar(0.5);
     }
-    if (v.lodSkip && v.posed) {
+    if (v.lodSkip && v.posed && v.wasInvisible === !!e.invisible) {
       // Keep the previous pose; only the transforms above were updated
       this._updateHeld(e, v, held, args);
       this._updateNameTag(e, v, p);
       return;
     }
     v.posed = true;
+    v.wasInvisible = !!e.invisible;
     model.animate(model, args);
+    v.modelGroup.position.set(0, -1.5078125 + (model.modelTranslateY || 0), model.modelTranslateZ || 0);
     for (const r of model.roots) r.sync();
+    // Invisibility hides the body, not equipped armor/items. Keep arm/head nodes
+    // alive for attached equipment, and keep hologram-only stands bodyless.
+    for (const draw of v.bodyDrawables) draw.visible = !e.invisible;
     // Player-specific visibility
     if (e.kind === 'player') {
       const pp = model.parts;
@@ -1094,7 +1230,7 @@ export class EntityRenderer {
     // Layers follow the main pose
     if (v.elytra) {
       const chest = e.equipment[3];
-      const show = !!chest && chest.id === 443 && !e.invisible;
+      const show = !!chest && g.items.name(chest.id) === 'elytra';
       v.elytra.obj.visible = show;
       if (show) {
         const t = M.elytraAngles(!!e.elytraFlying, !!e.sneaking, [e.motionX || 0, e.motionY || 0, e.motionZ || 0]);
@@ -1112,13 +1248,24 @@ export class EntityRenderer {
       L.model.animate(L.model, args);
       copyPose(model, L.model);
       for (const r of L.model.roots) r.sync();
+      L.obj.visible = !e.invisible;
     }
-    if (v.wool) v.wool.obj.visible = !e.sheared;
+    if (v.wool) v.wool.obj.visible = !e.sheared && !e.invisible;
     if (v.wool) { const c = FLEECE[e.fleece || 0]; v.wool.mat.params.setTint(c[0], c[1], c[2], 1); }
-    if (v.saddle) v.saddle.obj.visible = !!e.saddled;
+    if (v.saddle) v.saddle.obj.visible = !!e.saddled && !e.invisible;
+    if (v.llamaDecor) {
+      v.llamaDecor.obj.visible = !e.invisible && e.llamaCarpet >= 0 && e.llamaCarpet < ENTITY_DYES.length;
+      v.llamaDecor.mat.tex = 'entity/llama/decor/' + (ENTITY_DYES[e.llamaCarpet] || 'white') + '.png';
+    }
+    if (v.fishPattern) {
+      const base = FLEECE[((e.fishVariant || 0) >>> 16) & 15];
+      const pattern = FLEECE[((e.fishVariant || 0) >>> 24) & 15];
+      v.mainMat.params.setTint(base[0], base[1], base[2], 1);
+      v.fishPattern.mat.params.setTint(pattern[0], pattern[1], pattern[2], 1);
+    }
     if (v.mushroomBack) { const vis = !e.child && !e.invisible; v.mushroomBack.visible = vis; if (v.mushroomHead) v.mushroomHead.visible = vis; }
     if (v.charge) {
-      v.charge.obj.visible = !!e.powered;
+      v.charge.obj.visible = !!e.powered && !e.invisible;
       if (e.powered) {
         const t = (e.ticks + partial) * 0.01;
         v.charge.mat.params.setUvTransform(t, t, 0);
@@ -1133,11 +1280,12 @@ export class EntityRenderer {
       if (v.flash > 0) m.params.setOverlay(1, 1, 1, v.flash);
       else m.params.setOverlay(1, 0, 0, overlay);
     }
-    v.mainMat.params.p[3] = e.invisible ? 0.15 : 1;
-    v.mainMat.state = e.invisible ? STATE_ALPHA : { ...STATE_OPAQUE, cull: v.mainMat.state.cull };
+    v.mainMat.params.p[3] = 1;
+    v.mainMat.state = { ...STATE_OPAQUE, cull: v.mainMat.state.cull };
     // Held item
     this._updateHeld(e, v, held, args);
     this._updateHeadItem(e, v);
+    if (e.type === 58) this._updateCarriedBlock(e, v);
     // Name tag
     this._updateNameTag(e, v, p);
   }
@@ -1146,7 +1294,7 @@ export class EntityRenderer {
     for (let slot = 1; slot <= 4; slot++) {
       const A = v.armor[slot];
       const item = e.equipment[slot];
-      const idx = item ? armorMaterialIndex(item.id) : -1;
+      const idx = item ? armorMaterialIndex(this.game.items.name(item.id)) : -1;
       const visible = idx >= 0;
       A.obj.visible = visible;
       A.overlay.obj.visible = visible && idx === 0;
@@ -1180,22 +1328,22 @@ export class EntityRenderer {
   _updateHeld(e, v, held, args) {
     const primaryRight = e.kind === 'player' ? e.mainHand !== 0 : !e.leftHanded;
     const right = primaryRight ? held : e.offhand, left = primaryRight ? e.offhand : held;
-    this._heldIn(v, 'r', v.itemHolder, right, false, args);
-    this._heldIn(v, 'l', v.leftHolder, left, true, args);
+    this._heldIn(v, 'r', v.itemHolder, right, false, args, e);
+    this._heldIn(v, 'l', v.leftHolder, left, true, args, e);
   }
 
   // renderHeldItem: (sneaking: +0.2 y) arm transform, rotate -90 X and 180 Y, translate (+-1/16, 0.125, -0.625),
   // then the THIRD_PERSON_RIGHT_HAND / LEFT_HAND transform (mirrored for the left hand)
-  _heldIn(v, k, holder, stack, leftHand, args) {
+  _heldIn(v, k, holder, stack, leftHand, args, entity) {
     if (!holder) return;
-    const key = stack ? stack.id + ':' + stack.damage + ':' + this.game.itemRenderer.iconKey(stack) : null;
+    const key = stack ? stack.id + ':' + stack.damage + ':' + this.game.itemRenderer.iconKey(stack, true, entity) : null;
     const st = v['held' + k] || (v['held' + k] = { key: undefined, root: null, glint: null });
     if (key !== st.key) {
       st.key = key;
       holder.clear();
       st.root = null; st.glint = null;
       if (stack) {
-        const io = this._itemObject(stack, v.atlasMat);
+        const io = this.game.itemRenderer.objectFor(stack, v.atlasMat, true, entity);
         if (io) {
           const root = new Node();
           const turn = new Node();
@@ -1219,9 +1367,10 @@ export class EntityRenderer {
   _updateHeadItem(e, v) {
     if (!v.headHolder) return;
     if (e.kind === 'mob' && e.type === 97) {
+      v.headHolder.visible = e.hasPumpkin !== false && !e.invisible;
       if (v.headKey === 'pumpkin') return;
       v.headKey = 'pumpkin';
-      const io = this._itemObject({ id: 86, damage: 0, count: 1 }, v.atlasMat);
+      const io = this._itemObject({ id: this.game.items.byName.get('carved_pumpkin').id, damage: 0, count: 1 }, v.atlasMat);
       if (!io) return;
       // LayerSnowmanHead: translate(0,-0.34375,0), rotate 180 Y, scale(0.625,-0.625,-0.625)
       const t = new Node();
@@ -1234,8 +1383,8 @@ export class EntityRenderer {
       return;
     }
     const helm = e.equipment[4];
-    const isBlockHead = helm && (helm.id === 86 || helm.id === 91 || helm.id === 397 || (helm.id < 256 && helm.id !== 0 && armorMaterialIndex(helm.id) < 0));
-    const key = isBlockHead ? helm.id + ':' + helm.damage : null;
+    const isBlockHead = helm && this.game.items.isBlockItem(helm.id) && armorMaterialIndex(this.game.items.name(helm.id)) < 0;
+    const key = isBlockHead ? this.game.itemRenderer.iconKey(helm) : null;
     if (key === v.headKey) return;
     v.headKey = key;
     v.headHolder.clear();
@@ -1252,6 +1401,21 @@ export class EntityRenderer {
     v.headHolder.add(t);
   }
 
+  _updateCarriedBlock(e, v) {
+    const state = e.carriedBlockState || 0;
+    if (v.carriedState === state) return;
+    v.carriedState = state;
+    if (v.carriedBlock) v.modelGroup.remove(v.carriedBlock);
+    v.carriedBlock = null;
+    if (!state) return;
+    const block = this._blockObject(state, v.atlasMat);
+    if (!block) return;
+    const holder = new Node(); holder.position.set(0, 11, -12);
+    holder.rotation.set(20 * D2R, 45 * D2R, 0);
+    holder.scale.set(-8, -8, 8); holder.add(block);
+    v.modelGroup.add(holder); v.carriedBlock = holder;
+  }
+
   _updateNameTag(e, v, p) {
     const g = this.game;
     let name = null;
@@ -1260,7 +1424,7 @@ export class EntityRenderer {
       if (e.invisible) name = null;
       else name = g.scoreboard.displayName ? g.scoreboard.displayName(e.uuid, e.name) : e.name;
     } else if (e.kind === 'armorstand') name = e.customName && e.nameVisible ? e.customName : null; // RenderArmorStand
-    else if (e.customName && (e.nameVisible || (g.interaction.target && g.interaction.target.entity === e))) name = e.customName;
+    else if (!e.invisible && e.customName && (e.nameVisible || (g.interaction.target && g.interaction.target.entity === e))) name = e.customName;
     // RendererLivingEntity.canRenderName: never the camera entity (own name in F5), not with F1, not when ridden
     if (e.id === -1 || e.id === g.entityId || g.hideGui || (e.kind !== 'armorstand' && e.passenger !== undefined && e.passenger >= 0)) name = null;
     const cam = this.r.camPos;
@@ -1310,7 +1474,7 @@ export class EntityRenderer {
     let y = Math.floor(p.y);
     let found = false;
     for (let i = 0; i < 4; i++) {
-      const b = blocks[w.getState(Math.floor(p.x), y - 1, Math.floor(p.z)) >> 4];
+          const b = getBlock(w.getState(Math.floor(p.x), y - 1, Math.floor(p.z)));
       if (b && b.boundingBox === 'block' && b.id !== 0) { found = true; break; }
       y--;
     }
@@ -1329,7 +1493,8 @@ export class EntityRenderer {
 
   _renderItem(e, v, p, partial) {
     const it = e.item;
-    const key = it ? it.id + ':' + it.damage + ':' + Math.min(5, it.count) + ':' + (this.game.items.hasEffect(it) ? 1 : 0) : null;
+    const copiesFor = count => count > 48 ? 5 : count > 32 ? 4 : count > 16 ? 3 : count > 1 ? 2 : 1;
+    const key = it ? this.game.itemRenderer.iconKey(it) + ':' + copiesFor(it.count) + ':' + (this.game.items.hasEffect(it) ? 1 : 0) : null;
     if (key !== v.itemKey) {
       v.itemKey = key;
       if (v.inner) v.root.remove(v.inner);
@@ -1387,6 +1552,41 @@ export class EntityRenderer {
     v.inner.scale.setScalar(0.05625);
   }
 
+  _renderJarProjectile(e, v, partial) {
+    const model = v.model, yaw = yawAngle(e, partial), pitch = pitchAngle(e, partial);
+    const progress = (e.prevFangsProgress || 0) + ((e.fangsProgress || 0) - (e.prevFangsProgress || 0)) * partial;
+    model.animate(model, { age: e.ticks + partial, yaw, pitch, progress });
+    for (const part of model.roots) part.sync();
+    const scale = (model.modelScale ?? 1) / 16;
+    v.inner.scale.setScalar(scale);
+    v.inner.position.set(0, 0, 0);
+    if (e.kind === 'trident' || e.kind === 'llama_spit') {
+      v.inner.rotation.set(0, (yaw - 90) * D2R, (pitch + (e.kind === 'trident' ? 90 : 0)) * D2R, 'YZX');
+    } else if (e.kind === 'shulker_bullet') {
+      const age = e.ticks + partial;
+      v.inner.scale.set(-scale, -scale, scale);
+      v.inner.position.y = 0.15;
+      v.inner.rotation.set(Math.cos(age * 0.1) * Math.PI, Math.sin(age * 0.1) * Math.PI, Math.sin(age * 0.15) * Math.PI * 2);
+    } else if (e.kind === 'evoker_fangs') {
+      v.inner.visible = !!e.fangsActive && progress < 1;
+      v.inner.scale.set(-scale, -scale, scale);
+      v.inner.position.y = -(model.modelTranslateY || 0) * (model.modelScale ?? 1);
+      v.inner.rotation.set(0, (90 - yaw) * D2R, 0);
+    }
+  }
+
+  _renderCloud(e, v, p) {
+    if (v.particleTick === e.ticks) return; // Particles follow game ticks, not uncapped FPS.
+    v.particleTick = e.ticks;
+    const radius = Math.max(0, e.radius ?? 3), n = e.singlePoint ? 2 : Math.min(256, Math.ceil(Math.PI * radius * radius));
+    const color = e.cloudColor || 0;
+    for (let i = 0; i < n; i++) {
+      const angle = Math.random() * Math.PI * 2, distance = e.singlePoint ? 0.2 : Math.sqrt(Math.random()) * radius;
+      this.game.particles.spell(p.x + Math.cos(angle) * distance, p.y, p.z + Math.sin(angle) * distance,
+        0, 0, 0, ((color >> 16) & 255) / 255, ((color >> 8) & 255) / 255, (color & 255) / 255);
+    }
+  }
+
   _renderTnt(e, v, partial) {
     if (!v.inner) return;
     const fuse = e.fuse - partial + 1;
@@ -1424,7 +1624,7 @@ export class EntityRenderer {
   _poseCape(e, v, partial) {
     const chest = e.equipment[3];
     const flags = e.skinFlags !== undefined ? e.skinFlags : 0x7f;
-    const show = !e.invisible && !!(flags & 1) && !(chest && chest.id === 443);
+    const show = !e.invisible && !!(flags & 1) && !(chest && this.game.items.name(chest.id) === 'elytra');
     v.cape.holder.visible = show;
     if (!show) return;
     const L = (a, b) => a + (b - a) * partial;
@@ -1504,17 +1704,18 @@ export class EntityRenderer {
     const f = e.facing;
     const bx = Math.floor(e.x), by = Math.floor(e.y), bz = Math.floor(e.z);
     v.root.position.set(bx + 0.5, by + 0.5, bz + 0.5);
-    v.root.rotation.set(0, [Math.PI, Math.PI / 2, 0, -Math.PI / 2][f] || 0, 0);
-    const isMap = e.item && e.item.id === 358;
-    const mapId = isMap ? e.item.damage : -1;
+    // The model's back is at local +Z. Face indices are down/up/north/south/west/east.
+    v.root.rotation.set(f === 0 ? -Math.PI / 2 : f === 1 ? Math.PI / 2 : 0,
+      [0, 0, 0, Math.PI, Math.PI / 2, -Math.PI / 2][f] || 0, 0);
+    const isMap = e.item && this.game.items.name(e.item.id) === 'filled_map';
+    const mapId = isMap ? (this.game.items.nbt(e.item)?.map ?? 0) : -1;
     const mapObj = isMap ? this.game.items.maps.get(mapId) : null;
     const mapVer = mapObj ? mapObj.version : -1;
-    const key = e.item ? e.item.id + ':' + e.item.damage + ':' + (e.rotation || 0) : null;
-    void mapVer;
+    const key = e.item ? this.game.itemRenderer.iconKey(e.item) + ':' + (e.rotation || 0) + ':' + mapId + ':' + mapVer : null;
     // ItemFrame model: the "map" variant has a full-size back so the map covers the whole face
-    const frameModel = isMap ? 'map' : 'normal';
+    const frameModel = isMap ? 'true' : 'false';
     if (v.frameModel !== frameModel && v.frame) {
-      const bm = this.game.assets.modelStore.bakeVariant('item_frame', {}, frameModel, 0);
+      const bm = this.game.assets.modelStore.bakeVariant('item_frame', { map: frameModel }, null, 0);
       const mesh = bm && this.game.itemRenderer.blockMesh({ baked: bm, name: 'item_frame_' + frameModel });
       if (mesh) { v.frame.drawables = []; v.frame.addDrawable(mesh, v.atlasMat); v.frameModel = frameModel; }
     }
@@ -1717,13 +1918,9 @@ function copyPose(from, to) {
   }
 }
 
-function armorMaterialIndex(id) {
-  if (id >= 298 && id <= 301) return 0;
-  if (id >= 302 && id <= 305) return 1;
-  if (id >= 306 && id <= 309) return 2;
-  if (id >= 310 && id <= 313) return 3;
-  if (id >= 314 && id <= 317) return 4;
-  return -1;
+function armorMaterialIndex(name) {
+  const match = /^(leather|chainmail|iron|diamond|golden|turtle)_(helmet|chestplate|leggings|boots)$/.exec(name);
+  return match ? ['leather', 'chainmail', 'iron', 'diamond', 'golden', 'turtle'].indexOf(match[1]) : -1;
 }
 
 // RenderArrow geometry (in arrow pixel units; scaled by 0.05625 and offset -4 on x)
@@ -1744,15 +1941,18 @@ function arrowMesh() {
 
 export { uuidHash, modelDevice, toDraw };
 
-// EntityMinecart.MATRIX: the two exits of each rail shape (BlockRailBase.EnumRailDirection metadata)
+// EntityMinecart.MATRIX: the two exits of each named rail shape.
 const RAIL_EXITS = [[[0, 0, -1], [0, 0, 1]], [[-1, 0, 0], [1, 0, 0]], [[-1, -1, 0], [1, 0, 0]], [[-1, 0, 0], [1, -1, 0]], [[0, 0, -1], [0, -1, 1]],
   [[0, -1, -1], [0, 0, 1]], [[0, 0, 1], [1, 0, 0]], [[0, 0, 1], [-1, 0, 0]], [[0, 0, -1], [-1, 0, 0]], [[0, 0, -1], [1, 0, 0]]];
-const RAILS = new Set(['rail', 'golden_rail', 'detector_rail', 'activator_rail']);
-// rail shape at x, y, z (or null): plain rails use the whole metadata, the others only the low 3 bits
+const RAILS = new Set(['rail', 'powered_rail', 'detector_rail', 'activator_rail']);
+const RAIL_SHAPES = ['north_south', 'east_west', 'ascending_east', 'ascending_west', 'ascending_north', 'ascending_south',
+  'south_east', 'south_west', 'north_west', 'north_east'];
+// Flattened state IDs do not contain a rail-shape metadata nibble.
 function railShape(w, x, y, z) {
-  const st = w.getState(x, y, z), b = blocks[st >> 4];
+  const st = w.getState(x, y, z), b = getBlock(st);
   if (!b || !RAILS.has(b.name)) return null;
-  return b.name === 'rail' ? (st & 15) % 10 : (st & 7) % 6;
+  const shape = RAIL_SHAPES.indexOf(getStateProperties(st).shape);
+  return shape < 0 ? null : shape;
 }
 
 // EntityMinecart.getPos: the point on the rail nearest to the position

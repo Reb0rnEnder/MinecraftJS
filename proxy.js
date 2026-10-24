@@ -12,7 +12,7 @@ const crypto = require('crypto');
 const { ZipFile } = require('./lib/zip');
 const msauth = require('./lib/msauth');
 const mcassets = require('./lib/mcassets');
-const { extractModels } = require('./lib/modelextract');
+const { extractModels, assertCompleteModels } = require('./lib/modelextract');
 
 const PORT = parseInt(process.env.PORT, 10) || 3000;
 const CLIENT_DIR = path.join(__dirname, 'client');
@@ -45,10 +45,9 @@ function buildBundle(kind) {
     }
     raw = Buffer.from(JSON.stringify(out));
   } else if (kind === 'entity-models.json') {
-    // entity and block entity models: Java code in 1.12, run from the jar (lib/modelextract.js)
-    const em = extractModels(jar);
-    for (const e of em.errors) console.warn('entity model ' + e);
-    raw = Buffer.from(JSON.stringify(em.models));
+    // Never cache/serve a partial bundle that will crash later in the render loop.
+    const models = assertCompleteModels(extractModels(jar));
+    raw = Buffer.from(JSON.stringify(models));
   } else if (kind === 'recipes.json') {
     // recipe ids: the reverse of the jar's entry order (see tools/build.js)
     const list = [];
@@ -60,7 +59,7 @@ function buildBundle(kind) {
     // u32 headerLength, JSON header { files: [[name, offset, length]], mcmeta }, then the PNG bytes
     const files = [], blobs = [], mcmeta = {};
     let offset = 0;
-    for (const dir of ['blocks', 'items']) {
+    for (const dir of ['block', 'item']) {
       for (const f of jar.list(P + 'textures/' + dir + '/')) {
         const rel = f.slice((P + 'textures/').length);
         if (f.endsWith('.png')) {

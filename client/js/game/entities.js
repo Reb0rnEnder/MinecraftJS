@@ -1,28 +1,17 @@
 // Client-side entity tracking (positions, interpolation, metadata, animation state).
 import { simplify } from '../net/nbt.js';
-import { blocks } from '../world/blocks.js';
+import { getBlock } from '../world/blocks.js';
+import { isPointInFluid } from '../world/fluids.js';
 import { mcSin, mcCos } from './physics.js';
+import { chatToLegacy } from '../gui/chat.js';
+import { ENTITY_TYPES, ENTITIES_BY_NAME, MOB_FAMILIES, OBJECT_TYPES, MINECART_NAMES, PAINTINGS,
+  ANIMALS, AGEABLE, HORSES, ZOMBIES, FISH, ARROWS, FIREBALLS } from './entity-types.js';
 
-// EntityAnimal subclasses by entity type id (pig, sheep, cow, chicken, wolf, mooshroom, ocelot, horses, rabbit, polar
-// bear, llamas, parrot)
 // Random.nextGaussian (Box-Muller)
 function gauss() { let u = 0; while (u === 0) u = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * Math.PI * Math.random()); }
 
-const ANIMALS = new Set([90, 91, 92, 93, 95, 96, 98, 100, 101, 102, 103, 105, 28, 29, 31, 32]);
-
-const MOB_SIZES = {
-  50: [0.6, 1.8, 1.62], 51: [0.6, 1.95, 1.74], 52: [1.4, 0.9, 0.65], 53: [3.6, 10.8, 10.44], 54: [0.6, 1.95, 1.74], 55: [0.51, 0.51, 0.31],
-  56: [4, 4, 2.6], 57: [0.6, 1.95, 1.74], 58: [0.6, 2.9, 2.55], 59: [0.7, 0.5, 0.45], 60: [0.4, 0.3, 0.1], 61: [0.6, 1.8, 1.62],
-  62: [0.51, 0.51, 0.31], 63: [16, 8, 6.8], 64: [0.9, 3.5, 3.15], 65: [0.5, 0.9, 0.81], 66: [0.6, 1.95, 1.62], 67: [0.4, 0.3, 0.1],
-  68: [0.85, 0.85, 0.425], 90: [0.9, 0.9, 0.765], 91: [0.9, 1.3, 1.105], 92: [0.9, 1.3, 1.105], 93: [0.4, 0.7, 0.595],
-  94: [0.95, 0.95, 0.475], 95: [0.6, 0.8, 0.68], 96: [0.9, 1.3, 1.105], 97: [0.7, 1.9, 1.7], 98: [0.6, 0.7, 0.595],
-  99: [1.4, 2.9, 2.465], 100: [1.4, 1.6, 1.36], 101: [0.6, 0.7, 0.595], 120: [0.6, 1.95, 1.62],
-};
-// 1.9+ mobs by registry id (setSize): wither skeleton, illagers, vex, shulker (eye 0.5), polar bear, llama, parrot
-const MOB_SIZES_BY_ID = {
-  5: [0.7, 2.4, 2.04], 34: [0.6, 1.95, 1.62], 35: [0.4, 0.8, 0.68], 36: [0.6, 1.95, 1.62], 37: [0.6, 1.95, 1.62],
-  69: [1, 1, 0.5], 102: [1.3, 1.4, 1.19], 103: [0.9, 1.87, 1.59], 105: [0.5, 0.9, 0.77],
-};
+const SNAP_KINDS = new Set(['item', 'xp', 'arrow', 'projectile', 'falling', 'tnt', 'fishhook',
+  'trident', 'spectral_arrow', 'dragon_fireball', 'shulker_bullet', 'llama_spit']);
 
 // EntityShulker's box: 1 x 1 at its position, grown towards the opening by 0.5 - sin((0.5 + peek) * PI) * 0.5
 // (attach face: 0 down .. 5 east; the shell opens away from it). Returns [minX, minY, minZ, maxX, maxY, maxZ].
@@ -49,18 +38,6 @@ const MOB_NAMES = {
   67: 'Endermite', 68: 'Guardian', 90: 'Pig', 91: 'Sheep', 92: 'Cow', 93: 'Chicken', 94: 'Squid', 95: 'Wolf', 96: 'MushroomCow',
   97: 'SnowMan', 98: 'Ozelot', 99: 'VillagerGolem', 100: 'EntityHorse', 101: 'Rabbit', 120: 'Villager',
 };
-// 1.11 split some mobs into their own types: the family our models draw, plus the variant
-// (horse kind: 0 horse, 1 donkey, 2 mule, 3 zombie, 4 skeleton)
-const MOB_FAMILY = {
-  4: [68, { elder: true }], 5: [51, { wither: true }], 6: [51, { stray: true }], 23: [54, { husk: true }],
-  27: [54, { villagerZombie: true }], 28: [100, { horseType: 4 }], 29: [100, { horseType: 3 }],
-  31: [100, { horseType: 1 }], 32: [100, { horseType: 2 }], 100: [100, { horseType: 0 }],
-};
-const OBJECT_SIZES = {
-  1: [1.375, 0.5625], 2: [0.25, 0.25], // EntityBoat 1.9+ 10: [0.98, 0.7], 50: [0.98, 0.98], 51: [2, 2], 60: [0.5, 0.5], 61: [0.25, 0.25], 62: [0.25, 0.25],
-  63: [1, 1], 64: [0.3125, 0.3125], 65: [0.25, 0.25], 66: [0.3125, 0.3125], 70: [0.98, 0.98], 71: [0.5, 0.5], 72: [0.25, 0.25],
-  73: [0.25, 0.25], 75: [0.25, 0.25], 76: [0.25, 0.25], 77: [0.375, 0.5], 78: [0.5, 1.975], 90: [0.25, 0.25],
-};
 
 const wrap = (a) => { a %= 360; if (a >= 180) a -= 360; if (a < -180) a += 360; return a; };
 
@@ -76,6 +53,15 @@ export function hangingBox(hx, hy, hz, facing, wPx, hPx) {
   const alongZ = front[0] === 0; // facing north/south: the picture spans X
   const hx2 = (alongZ ? wPx : 1) / 32, hy2 = hPx / 32, hz2 = (alongZ ? 1 : wPx) / 32;
   return [cx - hx2, cy - hy2, cz - hz2, cx + hx2, cy + hy2, cz + hz2];
+}
+
+// 1.13 item frames can also face up/down. Unlike paintings their spawn data is
+// EnumFacing's six-direction index: down, up, north, south, west, east.
+export function itemFrameBox(x, y, z, face) {
+  const d = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]][face] || [0, 0, 1];
+  const c = [Math.floor(x) + 0.5, Math.floor(y) + 0.5, Math.floor(z) + 0.5].map((v, i) => v - d[i] * 0.46875);
+  const h = d.map(v => v ? 1 / 32 : 12 / 32);
+  return [...c.map((v, i) => v - h[i]), ...c.map((v, i) => v + h[i])];
 }
 
 export class EntityManager {
@@ -122,6 +108,7 @@ export class EntityManager {
   spawnPlayer(p) {
     const e = this._base(p.entityId, p.x, p.y, p.z, p.yaw, p.pitch);
     e.kind = 'player';
+    e.entityName = 'player';
     e.typeName = 'Player';
     e.uuid = p.playerUUID;
     const info = this.game.scoreboard.players ? this.game.scoreboard.players.get(p.playerUUID) : null;
@@ -135,19 +122,23 @@ export class EntityManager {
 
   spawnMob(p) {
     const e = this._base(p.entityId, p.x, p.y, p.z, p.yaw, p.pitch);
-    e.kind = 'mob';
-    e.entityType = p.type; // registry id
-    const fam = MOB_FAMILY[p.type];
-    e.type = fam ? fam[0] : p.type;
-    if (fam) Object.assign(e, fam[1]);
-    e.typeName = MOB_NAMES[e.type] || 'Mob';
+    const def = ENTITY_TYPES[p.type];
+    e.entityType = p.type; // the unmodified wire ID, never an internal family
+    e.entityNamespace = 'entity';
+    e.entityName = def ? def.name : null;
+    e.uuid = p.entityUUID;
+    const fam = MOB_FAMILIES[e.entityName];
+    e.type = fam ? fam[0] : e.entityName || `unknown:${p.type}`;
+    if (fam && fam[1]) Object.assign(e, fam[1]);
+    e.kind = e.entityName === 'armor_stand' ? 'armorstand' : def && def.mob ? 'mob' : 'unknown_mob';
+    e.typeName = MOB_NAMES[e.type] || e.entityName || 'Unknown entity';
     e.headYaw = e.prevHeadYaw = p.headPitch; // packet's "headPitch" is the head yaw
-    const s = MOB_SIZES_BY_ID[p.type] || MOB_SIZES[e.type] || [0.6, 1.8, 1.62];
-    e.width = s[0]; e.height = s[1]; e.eyeHeight = s[2];
+    e.width = def ? def.width : 0; e.height = def ? def.height : 0; e.eyeHeight = def ? def.eyeHeight : 0;
+    if (e.kind === 'unknown_mob') e.pickable = false;
+    if (e.entityName === 'shulker') e.shulkerColor = 16;
+    if (e.entityName === 'snow_golem') e.hasPumpkin = true;
+    if (e.kind === 'armorstand') e.armorFlags = 0;
     e.motionX = p.velocity.x / 8000; e.motionY = p.velocity.y / 8000; e.motionZ = p.velocity.z / 8000;
-    // EntityList id 30: handleSpawnMob creates a real armor stand (ViaRewind sends hologram stands this way)
-    if (p.type === 30) { e.kind = 'armorstand'; e.typeName = 'ArmorStand'; e.width = 0.5; e.height = 1.975; e.eyeHeight = 1.975 * 0.85; }
-    if (e.elder) { e.width = e.height = 1.9975; }
     e.metadata = p.metadata;
     this._applyMeta(e);
     this.add(e);
@@ -155,39 +146,47 @@ export class EntityManager {
 
   spawnObject(p) {
     const e = this._base(p.entityId, p.x, p.y, p.z, p.yaw, p.pitch);
-    e.kind = 'object';
+    const def = OBJECT_TYPES[p.type];
+    e.kind = def ? def.kind : 'unknown_object';
+    e.entityType = p.type;
+    e.entityNamespace = 'object';
+    e.entityName = def ? def.name : null;
+    e.uuid = p.objectUUID;
+    // Existing object renderers still select by object ID, in their own namespace.
     e.type = p.type;
+    e.typeName = e.entityName || 'Unknown object';
     e.objectData = p.objectData;
-    const s = OBJECT_SIZES[p.type] || [0.5, 0.5];
-    e.width = s[0]; e.height = s[1]; e.eyeHeight = s[1] * 0.85;
-    // handleSpawnObject: the velocity applies only when the object data is positive
-    if (p.velocity && p.objectData > 0) { e.motionX = p.velocity.x / 8000; e.motionY = p.velocity.y / 8000; e.motionZ = p.velocity.z / 8000; }
-    switch (p.type) {
-      case 1: e.kind = 'boat'; e.typeName = 'Boat'; break;
-      case 2: e.kind = 'item'; e.typeName = 'Item'; e.pickable = false; e.hoverStart = Math.random() * Math.PI * 2; break;
-      case 10: e.kind = 'minecart'; e.typeName = 'Minecart'; e.cartType = p.objectData; break;
-      case 50: e.kind = 'tnt'; e.typeName = 'PrimedTnt'; e.pickable = false; e.fuse = 80; break;
-      case 51: e.kind = 'crystal'; e.typeName = 'EnderCrystal'; break;
-      case 60: e.kind = 'arrow'; e.typeName = 'Arrow'; e.pickable = false; break;
-      case 61: case 62: case 65: case 72: case 73: case 75: case 64: case 63: case 66: case 76:
-        e.kind = 'projectile'; e.typeName = 'Projectile'; e.pickable = false; break;
-      case 70: {
-        e.kind = 'falling'; e.typeName = 'FallingSand'; e.pickable = false;
-        const id = p.objectData & 0xfff, meta = (p.objectData >> 12) & 15;
-        e.blockState = (id << 4) | meta;
-        break;
+    e.width = def ? def.width : 0; e.height = def ? def.height : 0; e.eyeHeight = def ? def.eyeHeight : 0;
+    e.pickable = ['boat', 'minecart', 'crystal', 'itemframe', 'leash', 'armorstand', 'shulker_bullet'].includes(e.kind) || e.entityName === 'fireball';
+    // crd.a(iz) consumes velocity in constructors for spit/bullets and acceleration
+    // for fireballs, then clears data for these and several immobile objects.
+    const ignoresVelocity = ['fishing_bobber', 'item_frame', 'leash_knot', 'potion', 'experience_bottle', 'falling_block'];
+    if (p.velocity) {
+      const v = [p.velocity.x / 8000, p.velocity.y / 8000, p.velocity.z / 8000];
+      if (FIREBALLS.has(e.entityName)) {
+        const length = Math.hypot(...v);
+        [e.accelX, e.accelY, e.accelZ] = v.map(n => length ? n / length * 0.1 : 0);
+      } else if (e.entityName === 'llama_spit' || e.entityName === 'shulker_bullet' || (p.objectData > 0 && !ignoresVelocity.includes(e.entityName))) {
+        [e.motionX, e.motionY, e.motionZ] = v;
       }
-      case 71: {
-        e.kind = 'itemframe'; e.typeName = 'ItemFrame';
-        e.facing = p.objectData; // 0 south, 1 west, 2 north, 3 east
-        e.x = e.prevX = e.newX = p.x; e.z = e.prevZ = e.newZ = p.z; e.y = e.prevY = e.newY = p.y;
-        e.box = hangingBox(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z), e.facing, 12, 12);
+    }
+    if (ARROWS.has(e.entityName)) e.owner = p.objectData > 0 ? p.objectData - 1 : -1;
+    switch (e.entityName) {
+      case 'item': e.hoverStart = Math.random() * Math.PI * 2; break;
+      case 'minecart': e.cartType = p.objectData; e.entityName = MINECART_NAMES[p.objectData] || 'minecart'; break;
+      case 'tnt': e.fuse = 80; break;
+      case 'end_crystal': e.showBottom = true; break;
+      case 'falling_block': e.blockState = p.objectData; break; // flattened direct state, not id/meta
+      case 'item_frame':
+        e.facing = p.objectData;
+        e.blockPos = { x: Math.floor(p.x), y: Math.floor(p.y), z: Math.floor(p.z) };
+        e.box = itemFrameBox(p.x, p.y, p.z, e.facing);
         break;
-      }
-      case 77: e.kind = 'leash'; e.typeName = 'LeashKnot'; break;
-      case 78: e.kind = 'armorstand'; e.typeName = 'ArmorStand'; break;
-      case 90: e.kind = 'fishhook'; e.typeName = 'Fishing Float'; e.pickable = false; e.owner = p.objectData; break;
-      default: e.kind = 'projectile'; break;
+      case 'armor_stand': e.armorFlags = 0; break;
+      case 'fishing_bobber': e.owner = p.objectData; break;
+      case 'area_effect_cloud': e.radius = 3; break;
+      case 'evoker_fangs': e.fangsLife = 22; e.fangsActive = false; e.fangsProgress = e.prevFangsProgress = 0; break;
+      default: break;
     }
     this.add(e);
   }
@@ -195,17 +194,24 @@ export class EntityManager {
   spawnPainting(p) {
     const e = this._base(p.entityId, p.location.x + 0.5, p.location.y + 0.5, p.location.z + 0.5);
     e.kind = 'painting';
+    e.entityName = 'painting';
+    e.uuid = p.entityUUID;
     e.typeName = 'Painting';
-    e.title = p.title;
+    e.paintingId = p.title;
+    const art = PAINTINGS[p.title];
+    e.paintingName = art ? art[0] : null;
+    e.title = art ? art[1] : null;
     e.facing = p.direction; // horizontal index: 0 south, 1 west, 2 north, 3 east
     e.blockPos = p.location;
-    e.width = 0.5; e.height = 0.5;
+    e.width = art ? art[2] / 16 : 0; e.height = art ? art[3] / 16 : 0;
+    if (art) e.box = hangingBox(p.location.x, p.location.y, p.location.z, e.facing, art[2], art[3]);
     this.add(e);
   }
 
   spawnXpOrb(p) {
     const e = this._base(p.entityId, p.x, p.y, p.z);
     e.kind = 'xp';
+    e.entityName = 'experience_orb';
     e.typeName = 'XPOrb';
     e.count = p.count;
     e.pickable = false;
@@ -216,6 +222,9 @@ export class EntityManager {
   spawnLightning(p) {
     const e = this._base(p.entityId, p.x, p.y, p.z);
     e.kind = 'lightning';
+    e.entityName = 'lightning_bolt';
+    e.entityType = p.type;
+    e.entityNamespace = 'weather';
     e.pickable = false;
     e.lightningState = 2;
     e.boltVertex = Math.floor(Math.random() * 1e9);
@@ -249,7 +258,7 @@ export class EntityManager {
     // EntityBoat.setPositionAndRotationDirect: lerpSteps = 10; EntityMinecart: turnProgress = increments + 2
     if (e.kind === 'boat') e.inc = 10;
     else if (e.kind === 'minecart') e.inc = inc + 2;
-    if (e.kind === 'item' || e.kind === 'xp' || e.kind === 'arrow' || e.kind === 'projectile' || e.kind === 'falling' || e.kind === 'tnt' || e.kind === 'fishhook') {
+    if (SNAP_KINDS.has(e.kind)) {
       // Non-living entities snap like vanilla's setPositionAndRotation for these
       e.inc = 1;
     }
@@ -304,115 +313,177 @@ export class EntityManager {
     const e = this.map.get(id);
     if (!e) return;
     Object.assign(e.metadata, meta);
-    this._applyMeta(e);
+    this._applyMeta(e, meta);
   }
 
-  // 1.12 entity metadata indices (Entity 0-5, EntityLivingBase 6-10, EntityLiving 11, then per class)
-  _applyMeta(e) {
-    const m = e.metadata;
+  // 1.13.2 data parameters, audited through each class's superclass chain in the
+  // client jar. Dispatch ONLY by canonical identity; e.type is a renderer selector.
+  // Apply deltas, not the accumulated snapshot (e.g. an unrelated update must not
+  // restart a TNT fuse). The complete wire values remain available in e.metadata.
+  _applyMeta(e, m = e.metadata) {
+    const name = e.entityName;
+    const set = (index, key) => { if (m[index] !== undefined) e[key] = m[index]; };
+    const bit = (index, mask, key) => { if (m[index] !== undefined) e[key] = !!(m[index] & mask); };
     if (m[0] !== undefined) {
+      e.prevSwimming = !!e.swimming;
       e.onFire = !!(m[0] & 1);
       e.sneaking = !!(m[0] & 2);
       e.sprinting = !!(m[0] & 8);
+      e.swimming = !!(m[0] & 16);
       e.invisible = !!(m[0] & 32);
       e.glowing = !!(m[0] & 64);
       e.elytraFlying = !!(m[0] & 128);
     }
-    if (m[2] !== undefined) e.customName = m[2];
+    // 1.13 index 2 is optional chat (metadata type 5), including null to clear.
+    // Keep metadata raw; renderers consume only the converted display property.
+    if (m[2] !== undefined) e.customName = chatToLegacy(m[2]);
     if (m[3] !== undefined) e.nameVisible = !!m[3];
     if (m[4] !== undefined) e.silent = !!m[4];
     if (m[5] !== undefined) e.noGravity = !!m[5];
+    set(1, 'air');
     const living = e.kind === 'mob' || e.kind === 'player' || e.kind === 'armorstand';
     if (living) {
-      if (m[6] !== undefined) { e.usingItem = !!(m[6] & 1); e.activeHand = m[6] & 2 ? 1 : 0; }
-      if (m[7] !== undefined && e.kind !== 'armorstand') {
+      if (m[6] !== undefined) {
+        e.usingItem = !!(m[6] & 1); e.activeHand = m[6] & 2 ? 1 : 0; e.riptide = !!(m[6] & 4);
+      }
+      if (m[7] !== undefined) {
         const prev = e.health;
         e.health = m[7];
         if (e.health <= 0 && prev > 0) e.dead = true;
       }
+      set(8, 'potionColor'); set(9, 'potionAmbient'); set(10, 'arrowCount');
     }
-    if (e.kind === 'item' && m[6]) e.item = m[6];
-    if (e.kind === 'itemframe') { e.item = m[6] || null; e.rotation = m[7] || 0; }
-    if (e.kind === 'armorstand' && m[11] !== undefined) {
-      // EntityArmorStand.setSize: small = half size, marker = no box (name tag sits right at its feet + 0.5)
-      e.armorFlags = m[11];
-      const small = !!(m[11] & 1), marker = !!(m[11] & 16);
-      if (marker) { e.width = 0; e.height = 0; } else if (small) { e.width = 0.25; e.height = 0.9875; } else { e.width = 0.5; e.height = 1.975; }
+    if (name === 'player' || e.kind === 'player') {
+      set(11, 'absorption'); set(12, 'score'); set(13, 'skinFlags'); set(14, 'mainHand');
+      set(15, 'leftShoulder'); set(16, 'rightShoulder'); // NBT, not optional block states
     }
-    if (e.kind === 'projectile' && e.type === 76) {
-      if (m[6]) e.item = m[6];
-      if (m[7] !== undefined) e.boostedId = m[7]; // EntityFireworkRocket.BOOSTED_ENTITY_ID (elytra boost)
+    if (name === 'armor_stand' || e.kind === 'armorstand') {
+      if (m[11] !== undefined) {
+        e.armorFlags = m[11];
+        e.small = !!(m[11] & 1); e.showArms = !!(m[11] & 4); e.noBasePlate = !!(m[11] & 8); e.marker = !!(m[11] & 16);
+        const scale = e.marker ? 0 : e.small ? 0.5 : 1;
+        e.width = 0.5 * scale; e.height = 1.975 * scale;
+        e.eyeHeight = e.small ? e.height * 0.5 : e.height * 0.9;
+        e.pickable = !e.marker;
+      }
+      for (const [i, part] of ['head', 'body', 'leftArm', 'rightArm', 'leftLeg', 'rightLeg'].entries()) {
+        if (m[i + 12] !== undefined) (e.poses || (e.poses = {}))[part] = m[i + 12];
+      }
     }
-    if (e.kind === 'arrow' && m[6] !== undefined) e.critical = !!(m[6] & 1);
-    if (e.kind === 'crystal' && m[7] !== undefined) e.showBottom = !!m[7]; // EntityEnderCrystal.SHOW_BOTTOM
-    if (e.kind === 'boat') {
-      if (m[6] !== undefined) e.timeSinceHit = m[6];
-      if (m[7] !== undefined) e.forwardDirection = m[7];
-      if (m[8] !== undefined) e.damageTaken = m[8];
-      if (m[9] !== undefined) e.boatType = m[9];
-      if (m[10] !== undefined) e.paddleLeft = !!m[10];
-      if (m[11] !== undefined) e.paddleRight = !!m[11];
+    if (ARROWS.has(name)) {
+      bit(6, 1, 'critical'); set(7, 'ownerUuid');
+      if (name === 'arrow') set(8, 'arrowColor');
+      if (name === 'trident') set(8, 'loyalty');
     }
     if (e.kind === 'minecart') {
-      // EntityMinecart: rolling amplitude / direction and damage drive the hurt wobble
-      if (m[6] !== undefined) e.rollingAmplitude = m[6];
-      if (m[7] !== undefined) e.rollingDirection = m[7];
-      if (m[8] !== undefined) e.cartDamage = m[8];
-      if (m[9] !== undefined) e.displayBlock = m[9];
-      if (m[10] !== undefined) e.displayOffset = m[10];
-      if (m[11] !== undefined) e.customDisplay = !!m[11];
+      set(6, 'rollingAmplitude'); set(7, 'rollingDirection'); set(8, 'cartDamage');
+      set(9, 'displayBlock'); set(10, 'displayOffset'); set(11, 'customDisplay'); // direct block state
+    }
+    switch (name) {
+      case 'item': case 'potion': set(6, 'item'); break;
+      case 'item_frame': set(6, 'item'); set(7, 'rotation'); break;
+      case 'firework_rocket': set(6, 'item'); set(7, 'boostedId'); break;
+      case 'fishing_bobber': if (m[6] !== undefined) e.hookedEntityId = m[6] - 1; break;
+      case 'falling_block': set(6, 'origin'); break;
+      case 'tnt': set(6, 'fuse'); break;
+      case 'wither_skull': set(6, 'invulnerable'); break;
+      case 'end_crystal': set(6, 'beamTarget'); set(7, 'showBottom'); break;
+      case 'boat':
+        set(6, 'timeSinceHit'); set(7, 'forwardDirection'); set(8, 'damageTaken'); set(9, 'boatType');
+        set(10, 'paddleLeft'); set(11, 'paddleRight'); set(12, 'bubbleTime'); break;
+      case 'furnace_minecart': set(12, 'furnacePowered'); break;
+      case 'command_block_minecart': set(12, 'command'); set(13, 'lastOutput'); break;
+      case 'area_effect_cloud':
+        if (m[6] !== undefined) { e.radius = m[6]; e.width = e.radius * 2; e.height = 0.5; }
+        set(7, 'cloudColor'); set(8, 'singlePoint'); set(9, 'particle'); break;
+      default: break; // no additional data parameters for other object classes
     }
     if (e.kind === 'mob') {
-      if (m[11] !== undefined) e.leftHanded = !!(m[11] & 2);
-      switch (e.entityType) {
-        case 65: if (m[12] !== undefined) e.hanging = !!(m[12] & 1); break; // bat
-        case 69: // EntityShulker: attached face, peek tick, colour
-          if (m[12] !== undefined) e.attachFace = m[12];
-          if (m[14] !== undefined) e.peekTick = m[14];
-          if (m[15] !== undefined) e.shulkerColor = m[15];
-          break;
-        case 50: if (m[12] !== undefined) e.creeperState = m[12]; if (m[13] !== undefined) e.powered = !!m[13]; break;
-        case 51: case 5: case 6: if (m[12] !== undefined) e.armsRaised = !!m[12]; break; // AbstractSkeleton: swinging arms
-        case 54: case 23: case 27:
-          if (m[12] !== undefined) e.child = !!m[12];
-          if (e.entityType === 27 && m[16] !== undefined) e.villagerProfession = m[16];
-          break;
-        case 55: case 62: if (m[12] !== undefined) { e.size = m[12]; e.width = e.height = 0.51000005 * e.size; } break;
-        case 58: if (m[12] !== undefined) { e.carried = m[12] >> 4; e.carriedMeta = m[12] & 15; } if (m[13] !== undefined) e.screaming = !!m[13]; break;
-        case 61: if (m[12] !== undefined) e.blazeOnFire = !!(m[12] & 1); break;
-        case 64: if (m[15] !== undefined) e.invulTime = m[15]; break;
-        case 66: if (m[12] !== undefined) e.witchAggressive = !!m[12]; break;
-        default:
-          // EntityAgeable (animals, villagers): 12 = baby
-          if (m[12] !== undefined && typeof m[12] === 'boolean') e.child = m[12];
-          break;
+      bit(11, 1, 'noAI'); bit(11, 2, 'leftHanded');
+      if ((AGEABLE.has(name) || ZOMBIES.has(name)) && m[12] !== undefined) {
+        e.child = !!m[12];
+        const def = ENTITIES_BY_NAME[name], scale = e.child ? 0.5 : 1;
+        e.width = def.width * scale; e.height = def.height * scale; e.eyeHeight = def.eyeHeight * scale;
+        if (ZOMBIES.has(name) && e.child) e.eyeHeight = 0.93;
+        if ((name === 'cow' || name === 'mooshroom') && e.child) e.eyeHeight = e.height;
+        if (name === 'turtle' && e.child) { e.width = 0.36; e.height = 0.12; e.eyeHeight = 0.102; }
       }
-      switch (e.entityType) {
-        case 90: if (m[13] !== undefined) e.saddled = !!m[13]; break;
-        case 91: if (m[13] !== undefined) { e.fleece = m[13] & 15; e.sheared = !!(m[13] & 16); } break;
-        case 95:
-          if (m[13] !== undefined) { e.sitting = !!(m[13] & 1); e.angry = !!(m[13] & 2); e.tamed = !!(m[13] & 4); }
-          if (m[15] !== undefined) e.wolfHealth = m[15];
-          if (m[17] !== undefined) e.collar = m[17]; // dye damage
-          break;
-        case 98: if (m[13] !== undefined) { e.sitting = !!(m[13] & 1); e.tamed = !!(m[13] & 4); } if (m[15] !== undefined) e.catType = m[15]; break;
-        case 101: if (m[13] !== undefined) e.rabbitType = m[13]; break;
-        case 120: if (m[13] !== undefined) e.profession = m[13]; break;
-        case 100: case 28: case 29: case 31: case 32:
-          // AbstractHorse flags: 2 tame, 4 saddled, 8 bred, 16 eating, 32 rearing, 64 mouth open
-          if (m[13] !== undefined) {
-            const f = m[13];
-            e.horseFlags = (f & 2) | (f & 4) | (e.horseChest ? 8 : 0) | (f & 16 ? 32 : 0) | (f & 32 ? 64 : 0) | (f & 64 ? 128 : 0);
+      if (ZOMBIES.has(name)) {
+        set(13, 'zombieSpecialType'); set(14, 'armsRaised'); set(15, 'convertingToDrowned');
+        if (name === 'zombie_villager') { set(16, 'converting'); set(17, 'villagerProfession'); }
+      }
+      if (FISH.has(name)) set(12, 'fromBucket'); // NOT EntityAgeable's baby flag
+      if (name === 'wolf' || name === 'ocelot' || name === 'parrot') {
+        bit(13, 1, 'sitting'); bit(13, 4, 'tamed'); set(14, 'ownerUuid');
+      }
+      if (HORSES.has(name)) {
+        bit(13, 2, 'tamed'); bit(13, 4, 'saddled'); bit(13, 8, 'horseBred');
+        set(14, 'ownerUuid');
+        if (name === 'donkey' || name === 'mule' || name === 'llama') set(15, 'horseChest');
+        if (m[13] !== undefined || m[15] !== undefined) {
+          const f = e.metadata[13] || 0;
+          // Preserve the existing renderer's horse flag layout at this boundary.
+          e.horseFlags = (f & 2) | (f & 4) | (e.horseChest ? 8 : 0) | (f & 16 ? 32 : 0) | (f & 32 ? 64 : 0) | (f & 64 ? 128 : 0);
+        }
+      }
+      switch (name) {
+        case 'bat': bit(12, 1, 'hanging'); break;
+        case 'blaze': bit(12, 1, 'blazeOnFire'); break;
+        case 'creeper': set(12, 'creeperState'); set(13, 'powered'); set(14, 'ignited'); break;
+        case 'skeleton': case 'wither_skeleton': case 'stray': set(12, 'armsRaised'); break;
+        case 'spider': case 'cave_spider': bit(12, 1, 'climbing'); break;
+        case 'slime': case 'magma_cube':
+          if (m[12] !== undefined) {
+            e.size = m[12]; e.width = e.height = 0.51000005 * e.size; e.eyeHeight = e.height * 0.625;
           }
-          if (e.entityType === 100) { if (m[15] !== undefined) e.horseVariant = m[15]; if (m[16] !== undefined) e.horseArmor = m[16]; }
-          if ((e.entityType === 31 || e.entityType === 32) && m[15] !== undefined) { e.horseChest = !!m[15]; e.horseFlags = ((e.horseFlags || 0) & ~8) | (e.horseChest ? 8 : 0); }
           break;
+        case 'enderman':
+          set(12, 'carriedBlockState'); set(12, 'carried'); set(13, 'screaming'); break;
+        case 'ender_dragon': set(12, 'dragonPhase'); break;
+        case 'ghast': set(12, 'attacking'); break;
+        case 'guardian': case 'elder_guardian': set(12, 'guardianMoving'); set(13, 'guardianTarget'); break;
+        case 'shulker':
+          set(12, 'attachFace'); set(13, 'attachPosition'); set(14, 'peekTick'); set(15, 'shulkerColor'); break;
+        case 'wither':
+          if ([12, 13, 14].some(i => m[i] !== undefined)) e.witherTargets = [12, 13, 14].map(i => e.metadata[i] || 0);
+          set(15, 'invulTime'); break;
+        case 'witch': set(12, 'witchAggressive'); break;
+        case 'evoker': case 'illusioner': set(13, 'spell'); // fall through: AbstractIllager flags
+        case 'vindicator': bit(12, 1, 'armsRaised'); set(12, 'illagerFlags'); break;
+        case 'vex': bit(12, 1, 'charging'); break;
+        case 'pig': set(13, 'saddled'); set(14, 'boostTime'); break;
+        case 'sheep': if (m[13] !== undefined) { e.fleece = m[13] & 15; e.sheared = !!(m[13] & 16); } break;
+        case 'wolf': bit(13, 2, 'angry'); set(15, 'wolfHealth'); set(16, 'begging'); set(17, 'collar'); break;
+        case 'ocelot': set(15, 'catType'); break;
+        case 'parrot': set(15, 'parrotVariant'); break;
+        case 'rabbit': set(13, 'rabbitType'); break;
+        case 'villager': set(13, 'profession'); break;
+        case 'horse': set(15, 'horseVariant'); set(16, 'horseArmor'); break;
+        case 'llama': set(16, 'llamaStrength'); set(17, 'llamaCarpet'); set(18, 'llamaVariant'); break;
+        case 'polar_bear': set(13, 'standing'); break;
+        case 'snow_golem': bit(12, 16, 'hasPumpkin'); break;
+        case 'iron_golem': bit(12, 1, 'playerCreated'); break;
+        case 'dolphin': set(12, 'treasurePosition'); set(13, 'gotFish'); set(14, 'moistness'); break;
+        case 'turtle':
+          set(13, 'homePosition'); set(14, 'hasEgg'); set(15, 'layingEgg'); set(16, 'travelPosition');
+          set(17, 'goingHome'); set(18, 'travelling'); break;
+        case 'pufferfish':
+          if (m[13] !== undefined) {
+            e.puffState = m[13]; e.width = e.height = 0.7 * (e.puffState === 0 ? 0.5 : e.puffState === 1 ? 0.7 : 1);
+            e.eyeHeight = e.height * 0.65;
+          }
+          break;
+        case 'tropical_fish': set(13, 'fishVariant'); break;
+        case 'phantom':
+          if (m[12] !== undefined) {
+            e.phantomSize = m[12]; e.width = 0.9 + 0.2 * e.phantomSize; e.height = 0.5 + 0.1 * e.phantomSize;
+            e.eyeHeight = e.height * 0.35;
+          }
+          break;
+        // Chicken, cow, mooshroom, horses without subclass fields, squid,
+        // silverfish, endermite, cod, salmon, giant: inherited parameters only.
         default: break;
       }
-    }
-    if (e.kind === 'player') {
-      if (m[13] !== undefined) e.skinFlags = m[13];
-      if (m[14] !== undefined) e.mainHand = m[14];
     }
   }
 
@@ -455,6 +526,7 @@ export class EntityManager {
     switch (p.entityStatus) {
       case 2: e.hurtTime = 10; g.sound.playEntityHurt(e); break;
       case 3: e.dead = true; e.health = 0; g.sound.playEntityDeath(e); break;
+      case 4: if (e.entityName === 'evoker_fangs') e.fangsActive = true; break;
       case 6: g.particles.entityEffect(e, 'smoke'); break;
       case 7: g.particles.entityEffect(e, 'heart'); break;
       case 10: e.eatingGrass = 40; break;
@@ -528,7 +600,7 @@ export class EntityManager {
     if (list.length < 2) return [v.x, y, v.z];
     let f = list.indexOf(riderId) === 0 ? Math.fround(0.2) : Math.fround(-0.6);
     const r = this.map.get(riderId);
-    if (r && r.kind === 'mob' && ANIMALS.has(r.entityType)) f = Math.fround(f + 0.2);
+    if (r && r.kind === 'mob' && ANIMALS.has(r.entityName)) f = Math.fround(f + 0.2);
     const a = Math.fround(Math.fround(-v.yaw * Math.fround(Math.PI / 180)) - Math.fround(Math.PI / 2));
     return [v.x + f * mcCos(a), y, v.z - f * mcSin(a)];
   }
@@ -547,11 +619,11 @@ export class EntityManager {
 
   isInteractive(e, held) {
     if (e.kind === 'mob') {
-      if (e.type === 120 || e.type === 100) return true;
-      if (held && (e.type === 92 || e.type === 96) && held.id === 325) return true;
-      if (held && e.type === 91 && held.id === 359) return true;
-      if (held && held.id === 421) return true;
-      if (held && held.id === 420) return true;
+      const itemName = held ? this.game.items.name(held.id) : null;
+      if (e.entityName === 'villager' || HORSES.has(e.entityName)) return true;
+      if ((e.entityName === 'cow' || e.entityName === 'mooshroom') && itemName === 'bucket') return true;
+      if (e.entityName === 'sheep' && itemName === 'shears') return true;
+      if (itemName === 'name_tag' || itemName === 'lead') return true;
       if (e.type === 95 || e.type === 98) return !!e.tamed;
       if (e.type === 90 && e.saddled) return true;
     }
@@ -575,7 +647,7 @@ export class EntityManager {
     let s = this.self;
     if (!s) {
       s = this.self = this._base(-1, pl.x, pl.y, pl.z, pl.yaw, pl.pitch);
-      s.kind = 'player'; s.typeName = 'Player'; s.pickable = false;
+      s.kind = 'player'; s.entityName = 'player'; s.typeName = 'Player'; s.pickable = false;
     }
     s.uuid = g.playerUuid || s.uuid; s.name = g.username;
     s.prevX = s.x; s.prevY = s.y; s.prevZ = s.z;
@@ -583,8 +655,9 @@ export class EntityManager {
     s.prevLimbSwingAmount = s.limbSwingAmount;
     s.x = pl.x; s.y = pl.y; s.z = pl.z;
     s.yaw = pl.yaw; s.pitch = pl.pitch; s.headYaw = pl.yaw;
-    s.sneaking = pl.sneaking && !pl.flying; s.onGround = pl.onGround;
-    s.usingItem = pl.usingItem;
+    s.sneaking = pl.sneaking && !pl.flying; s.swimming = !!pl.swimming;
+    s.inWater = !!pl.inWater; s.onGround = pl.onGround;
+    s.usingItem = pl.usingItem; s.riptide = !!pl.riptide;
     s.riding = g.ridingEntityId;
     s.ticks++;
     const it = g.interaction;
@@ -598,7 +671,7 @@ export class EntityManager {
     s.hurtTime = g.hurtTime; s.deathTime = g.dead ? Math.min(20, (s.deathTime || 0) + 1) : 0;
     s.metadata = g.selfMetadata || s.metadata;
     if (s.metadata && s.metadata[13] !== undefined) s.skinFlags = s.metadata[13]; else s.skinFlags = g.settings.skinParts;
-    s.invisible = g.effects.has(14);
+    s.invisible = !!(g.selfMetadata && (g.selfMetadata[0] & 32)) || g.effects.has(14);
     s.onFire = g.selfMetadata ? !!(g.selfMetadata[0] & 1) : false;
     // LayerCape's sway from the view bobbing of the local player
     s.prevCameraYaw = pl.prevCameraYaw; s.cameraYaw = pl.cameraYaw;
@@ -636,8 +709,7 @@ export class EntityManager {
           let snd;
           if (ctl) snd = ctl.status === 'land' ? 'entity.boat.paddle_land' : ctl.status === 'air' ? null : 'entity.boat.paddle_water';
           else {
-            const b = blocks[this.game.world.getState(Math.floor(e.x), Math.floor(e.y + 0.1), Math.floor(e.z)) >> 4];
-            snd = b && b.isWater ? 'entity.boat.paddle_water' : 'entity.boat.paddle_land';
+            snd = isPointInFluid(this.game.world, e.x, e.y + 0.1, e.z) ? 'entity.boat.paddle_water' : 'entity.boat.paddle_land';
           }
           if (snd) this.game.sound.play(snd, e.x, e.y, e.z, 1, 0.8 + 0.4 * Math.random());
         }
@@ -693,7 +765,7 @@ export class EntityManager {
   // Every hittable box: normal entities plus dragon parts (instead of the dragon itself)
   *pickable() {
     for (const e of this.map.values()) {
-      if (e.kind === 'mob' && e.type === 63) { if (e.parts) yield* e.parts; continue; }
+      if (e.entityName === 'ender_dragon') { if (e.parts) yield* e.parts; continue; }
       yield e;
     }
   }
@@ -770,7 +842,7 @@ export class EntityManager {
       e.prevSwingProgress = e.swingProgress;
       e.ticks++;
       if (e.boostedId && e.boostedId === g.entityId) this._fireworkBoost(e);
-      if (e.kind === 'projectile' && e.type === 76) this._fireworkTick(e);
+      if (e.entityName === 'firework_rocket') this._fireworkTick(e);
       if (e.pickup) {
         e.pickup.tick++;
         if (e.pickup.tick >= 3) { this.game.entityRenderer.remove(e); this.map.delete(e.id); continue; }
@@ -801,26 +873,36 @@ export class EntityManager {
         e.yaw += wrap(e.newYaw - e.yaw) / e.inc;
         e.pitch += (e.newPitch - e.pitch) / e.inc;
         e.inc--;
-      } else if ((e.kind === 'item' || e.kind === 'xp' || e.kind === 'arrow' || e.kind === 'projectile' || e.kind === 'falling' || e.kind === 'tnt') && !(e.kind === 'projectile' && e.type === 76)) {
+      } else if (SNAP_KINDS.has(e.kind) && e.kind !== 'fishhook' && e.entityName !== 'firework_rocket') {
         // Client-side motion between server updates
-        if (e.kind !== 'arrow' || !e.inGround) {
+        if (!ARROWS.has(e.entityName) || !e.inGround) {
           e.x += e.motionX; e.y += e.motionY; e.z += e.motionZ;
-          const drag = e.kind === 'item' || e.kind === 'xp' ? 0.98 : 0.99;
-          e.motionX *= drag; e.motionY = (e.motionY - (e.kind === 'projectile' ? 0.03 : 0.04)) * 0.98; e.motionZ *= drag;
+          const fireball = FIREBALLS.has(e.entityName), bullet = e.entityName === 'shulker_bullet';
+          const drag = fireball ? 0.95 : e.kind === 'item' || e.kind === 'xp' ? 0.98 : 0.99;
+          const gravity = e.noGravity || fireball || bullet ? 0 : ARROWS.has(e.entityName) ? 0.05 : e.entityName === 'llama_spit' ? 0.06 : e.kind === 'projectile' || e.kind === 'xp' ? 0.03 : 0.04;
+          e.motionX = (e.motionX + (e.accelX || 0)) * drag;
+          e.motionY = (e.motionY + (e.accelY || 0) - gravity) * (fireball || bullet ? drag : 0.98);
+          e.motionZ = (e.motionZ + (e.accelZ || 0)) * drag;
           // stop at the ground
           const st = g.world.getState(Math.floor(e.x), Math.floor(e.y), Math.floor(e.z));
-          const b = blocks[st >> 4];
+          const b = getBlock(st);
           if (b && b.opaque) { e.y = Math.floor(e.y) + 1; e.motionY = 0; e.motionX *= 0.5; e.motionZ *= 0.5; }
         }
       }
-      if (e.kind === 'mob' && e.type === 63) this._dragonUpdate(e);
-      if (e.kind === 'tnt') e.fuse = Math.max(0, (e.fuse || 80) - 1);
+      if (e.entityName === 'ender_dragon') this._dragonUpdate(e);
+      if (e.kind === 'tnt') e.fuse = Math.max(0, (e.fuse ?? 80) - 1);
+      if (e.entityName === 'evoker_fangs' && e.fangsActive) {
+        // EntityEvokerFangs aoo: status 4 starts its 22-tick life; animation lasts 20.
+        e.prevFangsProgress = e.fangsProgress;
+        e.fangsLife--;
+        e.fangsProgress = Math.min(1, (22 - e.fangsLife) / 20);
+      }
       if (e.kind === 'boat') this._boatTick(e);
       if (e.kind === 'minecart') { // EntityMinecart.onUpdate: both count down on the client too
         if (e.rollingAmplitude > 0) e.rollingAmplitude--;
         if (e.cartDamage > 0) e.cartDamage = Math.max(0, e.cartDamage - 1);
       }
-      if (e.kind === 'mob' && e.type === 69) {
+      if (e.entityName === 'shulker') {
         // EntityShulker.onUpdate (client): peek amount follows the peek tick by 0.05, body fixed at 180
         const f1 = (e.peekTick || 0) * 0.01;
         e.prevPeek = e.peek || 0;
@@ -875,6 +957,8 @@ export class EntityManager {
   // EntityLivingBase.onUpdate: body yaw + limb swing
   _livingUpdate(e) {
     e.elytraTicks = e.elytraFlying ? (e.elytraTicks || 0) + 1 : 0; // EntityLivingBase.ticksElytraFlying
+    e.prevSwimAmount = e.swimAmount ?? 0;
+    e.swimAmount = Math.max(0, Math.min(1, e.prevSwimAmount + (e.swimming ? 0.09 : -0.09)));
     const d0 = e.x - e.prevX, d1 = e.z - e.prevZ;
     const f = d0 * d0 + d1 * d1;
     let f1 = e.bodyYaw;

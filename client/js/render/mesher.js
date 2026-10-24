@@ -1,6 +1,7 @@
 // Section mesher: turns 16^3 block sections into vertex buffers. Runs inside a worker.
 // Vertex layout (10 floats): x y z u v r g b sky block
-import { blocks, DIR_OFFSETS } from '../world/blocks.js';
+import { blocks, getBlock, getStateProperties, staticCollisionBoxes, DIR_OFFSETS, DIR_NAMES, OPPOSITE } from '../world/blocks.js';
+import { getFluidState } from '../world/fluids.js';
 import { resolveState } from '../world/blockstates.js';
 import { grassColor, foliageColor, waterColor } from '../world/biomes.js';
 import { computeVisibility } from './visgraph.js';
@@ -8,7 +9,11 @@ import { computeVisibility } from './visgraph.js';
 export const BYTES_PER_VERTEX = 20;
 
 // Block.EnumOffsetType: 1 = XZ (BlockFlower), 2 = XYZ (BlockTallGrass)
-const OFFSET_TYPES = { yellow_flower: 1, red_flower: 1, tallgrass: 2 };
+const OFFSET_TYPES = {
+  dandelion: 1, poppy: 1, blue_orchid: 1, allium: 1, azure_bluet: 1, red_tulip: 1, orange_tulip: 1,
+  white_tulip: 1, pink_tulip: 1, oxeye_daisy: 1, brown_mushroom: 1, red_mushroom: 1,
+  grass: 2, tall_grass: 2, fern: 2, large_fern: 2,
+};
 
 // MathHelper.getPositionRandom, low 32 bits (every caller only uses bits 16 - 31, and the low half of a long product
 // depends only on the low halves, so int maths gives the same bits as the 64-bit original)
@@ -17,6 +22,36 @@ function positionRandom(x, y, z) {
   return (Math.imul(Math.imul(i, i), 42317861) + Math.imul(i, 11)) | 0;
 }
 const FACE_SHADE = [0.5, 1.0, 0.8, 0.8, 0.6, 0.6];
+
+// Does the block's solid shape cover a whole fluid face? In particular a bottom
+// slab hides its water's bottom, a top slab hides its top, and stairs can cover
+// a face with several boxes. Keep transparent glass/ice boundaries visible.
+function coversFluidFace(state, dir, height = 1) {
+  const b = getBlock(state);
+  if (!b || b.isLiquid) return false;
+  if (b.opaque) return true;
+  if (b.translucent || b.name === 'glass' || b.name.endsWith('_leaves')) return false;
+  const axis = dir < 2 ? 1 : dir < 4 ? 2 : 0;
+  const u = axis === 0 ? 2 : 0, v = axis === 1 ? 2 : 1;
+  const plane = dir === 1 ? height : (dir & 1);
+  let remaining = [[0, 0, 1, axis === 1 ? 1 : height]];
+  for (const box of staticCollisionBoxes(state)) {
+    if (box[axis] > plane + 1e-6 || box[axis + 3] < plane - 1e-6) continue;
+    const next = [];
+    for (const r of remaining) {
+      const x0 = Math.max(r[0], box[u]), y0 = Math.max(r[1], box[v]);
+      const x1 = Math.min(r[2], box[u + 3]), y1 = Math.min(r[3], box[v + 3]);
+      if (x0 >= x1 || y0 >= y1) { next.push(r); continue; }
+      if (r[0] < x0) next.push([r[0], r[1], x0, r[3]]);
+      if (x1 < r[2]) next.push([x1, r[1], r[2], r[3]]);
+      if (r[1] < y0) next.push([x0, r[1], x1, y0]);
+      if (y1 < r[3]) next.push([x0, y1, x1, r[3]]);
+    }
+    remaining = next;
+    if (!remaining.length) return true;
+  }
+  return false;
+}
 
 // Packed vertex buffer (gfx FORMAT.terrain): pos unorm16 x4, uv unorm16 x2, colour unorm8 x4, light unorm8 x2 (+2 pad)
 class VBuf {
@@ -51,9 +86,8 @@ const AO_AXES = [
   [[0, 0, 1], [0, 1, 0]], // east
 ];
 
-// Small plants left out of far (LOD) sections
-// Per block id flags for the hot face test (computed once): 1 leaves, 2 hides faces against the same state
-// (glass, ice, slime, portal), 4 stained glass
+// Per block id flags for the hot face test (computed once): 1 leaves, 2 matching
+// glass/ice/slime/portal interiors, 4 pane end caps (connection-dependent).
 let FACE_FLAGS = null;
 function faceFlags() {
   if (FACE_FLAGS && FACE_FLAGS.length === blocks.length) return FACE_FLAGS;
@@ -63,15 +97,18 @@ function faceFlags() {
     if (!b) continue;
     const n = b.name;
     let f = 0;
-    if (n === 'leaves' || n === 'leaves2') f |= 1;
-    if (n === 'glass' || n === 'stained_glass' || n === 'ice' || n === 'slime' || n === 'portal') f |= 2;
-    if (n === 'stained_glass') f |= 4;
+    if (n.endsWith('_leaves')) f |= 1;
+    if (n === 'glass' || n.endsWith('_stained_glass') || n === 'ice' || n === 'frosted_ice' || n === 'slime_block' || n === 'nether_portal') f |= 2;
+    if (b.isPane) f |= 4;
     FACE_FLAGS[i] = f;
   }
   return FACE_FLAGS;
 }
 
-const LOD_SKIP = new Set(['tallgrass', 'double_plant', 'yellow_flower', 'red_flower', 'deadbush', 'brown_mushroom', 'red_mushroom', 'waterlily', 'web']);
+// Small plants left out of far (LOD) sections
+const LOD_SKIP = new Set(['grass', 'tall_grass', 'fern', 'seagrass', 'tall_seagrass', 'dandelion', 'poppy', 'blue_orchid', 'allium',
+  'azure_bluet', 'red_tulip', 'orange_tulip', 'white_tulip', 'pink_tulip', 'oxeye_daisy', 'dead_bush', 'brown_mushroom',
+  'red_mushroom', 'sunflower', 'lilac', 'rose_bush', 'peony', 'large_fern', 'lily_pad', 'cobweb']);
 
 export class Mesher {
   constructor(world, store) {
@@ -79,10 +116,10 @@ export class Mesher {
     this.store = store;
     this.cache = new Map(); // resolved model per (file|props) key
     this.atlas = store.atlas;
-    this.waterStill = this.atlas.uv('blocks/water_still');
-    this.waterFlow = this.atlas.uv('blocks/water_flow');
-    this.lavaStill = this.atlas.uv('blocks/lava_still');
-    this.lavaFlow = this.atlas.uv('blocks/lava_flow');
+    this.waterStill = this.atlas.uv('block/water_still');
+    this.waterFlow = this.atlas.uv('block/water_flow');
+    this.lavaStill = this.atlas.uv('block/lava_still');
+    this.lavaFlow = this.atlas.uv('block/lava_flow');
     this.options = { fancy: true, smooth: 2, alt: true };
     this.stateModels = new Map(); // state -> model, for states whose model ignores neighbours
     this.dynamicStates = new Set(); // states whose resolution reads neighbouring blocks
@@ -96,7 +133,7 @@ export class Mesher {
     this._tintCache = [];
   }
 
-  isLeaves(b) { return b.name === 'leaves' || b.name === 'leaves2'; }
+  isLeaves(b) { return b.name.endsWith('_leaves'); }
 
   getModel(state, x, y, z) {
     const w = this.world;
@@ -144,34 +181,32 @@ export class Mesher {
 
   tintFor(state, tint, x, y, z) {
     if (tint < 0) return 0xffffff;
-    const b = blocks[state >> 4];
+    const b = getBlock(state);
     const n = b.name;
-    const meta = state & 15;
+    const props = getStateProperties(state);
     switch (n) {
-      case 'grass': case 'tallgrass': case 'reeds': case 'double_plant':
+      case 'grass_block': case 'grass': case 'tall_grass': case 'fern': case 'large_fern': case 'sugar_cane':
         return this.biomeBlend(x, y, z, grassColor);
-      case 'leaves': {
-        const t = meta & 3;
-        if (t === 1) return 0x619961;
-        if (t === 2) return 0x80a755;
-        return this.biomeBlend(x, y, z, foliageColor);
-      }
-      case 'leaves2': case 'vine':
-        return this.biomeBlend(x, y, z, foliageColor);
-      case 'waterlily': return 0x208030;
-      case 'pumpkin_stem': case 'melon_stem': {
-        const age = meta & 7;
-        return ((age * 32) << 16) | ((255 - age * 8) << 8) | (age * 4);
-      }
-      case 'redstone_wire': {
-        const f = meta / 15;
-        let r = f * 0.6 + 0.4;
-        if (meta === 0) r = 0.3;
-        const g = Math.max(0, f * f * 0.7 - 0.5);
-        const bl = Math.max(0, f * f * 0.6 - 0.7);
-        return ((r * 255) << 16) | ((g * 255) << 8) | (bl * 255);
-      }
-      default: return 0xffffff;
+      case 'vine': return this.biomeBlend(x, y, z, foliageColor);
+      case 'spruce_leaves': return 0x619961;
+      case 'birch_leaves': return 0x80a755;
+      default:
+        if (n.endsWith('_leaves')) return this.biomeBlend(x, y, z, foliageColor);
+        if (n === 'lily_pad') return 0x208030;
+        if (n === 'attached_pumpkin_stem' || n === 'attached_melon_stem') return 0xe0c71c;
+        if (n === 'pumpkin_stem' || n === 'melon_stem') {
+          const age = Number(props.age || 0);
+          return ((age * 32) << 16) | ((255 - age * 8) << 8) | (age * 4);
+        }
+        if (n === 'redstone_wire') {
+          const power = Number(props.power || 0), f = power / 15;
+          let r = f * 0.6 + 0.4;
+          if (power === 0) r = 0.3;
+          const g = Math.max(0, f * f * 0.7 - 0.5);
+          const bl = Math.max(0, f * f * 0.6 - 0.7);
+          return ((r * 255) << 16) | ((g * 255) << 8) | (bl * 255);
+        }
+        return 0xffffff;
     }
   }
 
@@ -189,7 +224,7 @@ export class Mesher {
   // Combined light used for AO sampling: returns [sky, block] or null if position is opaque
   lightAt(x, y, z) {
     const s = this.world.getState(x, y, z);
-    const b = blocks[s >> 4];
+    const b = getBlock(s);
     if (b && b.opaque) return null;
     const l = this.world.getLight(x, y, z);
     if (b && b.useNeighborBrightness) {
@@ -206,12 +241,12 @@ export class Mesher {
   }
 
   aoValue(x, y, z) {
-    const b = blocks[this.world.getState(x, y, z) >> 4];
+    const b = getBlock(this.world.getState(x, y, z));
     return b ? b.aoLight : 1;
   }
 
   isTranslucentForAO(x, y, z) {
-    const b = blocks[this.world.getState(x, y, z) >> 4];
+    const b = getBlock(this.world.getState(x, y, z));
     return !b || !b.opaque;
   }
 
@@ -219,7 +254,7 @@ export class Mesher {
   // Returns array of 4 corners [(-,-),(+,-),(+,+),(-,+)] each [ao, sky, block] in tangent space.
   // lightAt with the block state already read
   _lightOf(state, x, y, z) {
-    const b = blocks[state >> 4];
+    const b = getBlock(state);
     if (b && b.opaque) return null;
     if (b && b.useNeighborBrightness) return this.lightAt(x, y, z);
     return this.world.getLight(x, y, z);
@@ -228,7 +263,7 @@ export class Mesher {
   faceCorners(px, py, pz, dir, out) {
     const [e1, e2] = AO_AXES[dir];
     const w = this.world;
-    const sP = w.getState(px, py, pz), bP = blocks[sP >> 4];
+    const sP = w.getState(px, py, pz), bP = getBlock(sP);
     const center = this._lightOf(sP, px, py, pz);
     const cAO = bP ? bP.aoLight : 1;
     const cSky = center === null ? 0 : center >> 4, cBlk = center === null ? 0 : center & 15;
@@ -239,7 +274,7 @@ export class Mesher {
       const bx = px + e2[0] * s2, by = py + e2[1] * s2, bz = pz + e2[2] * s2;
       const cx = ax + e2[0] * s2, cy = ay + e2[1] * s2, cz = az + e2[2] * s2;
       const sA = w.getState(ax, ay, az), sB = w.getState(bx, by, bz);
-      const bA = blocks[sA >> 4], bB = blocks[sB >> 4];
+      const bA = getBlock(sA), bB = getBlock(sB);
       const aoA = bA ? bA.aoLight : 1;
       const aoB = bB ? bB.aoLight : 1;
       const tA = !bA || !bA.opaque;
@@ -247,7 +282,7 @@ export class Mesher {
       const lA = this._lightOf(sA, ax, ay, az);
       const lB = this._lightOf(sB, bx, by, bz);
       let aoC, lC;
-      if (tA || tB) { const sC = w.getState(cx, cy, cz), bC = blocks[sC >> 4]; aoC = bC ? bC.aoLight : 1; lC = this._lightOf(sC, cx, cy, cz); } else { aoC = aoA; lC = lA; }
+      if (tA || tB) { const sC = w.getState(cx, cy, cz), bC = getBlock(sC); aoC = bC ? bC.aoLight : 1; lC = this._lightOf(sC, cx, cy, cz); } else { aoC = aoA; lC = lA; }
       const ao = (aoA + aoB + aoC + cAO) * 0.25;
       // vanilla getAoBrightness: zero entries replaced by centre
       const sky = ((lA === null || lA === 0 ? cSky : lA >> 4) + (lB === null || lB === 0 ? cSky : lB >> 4) + (lC === null || lC === 0 ? cSky : lC >> 4) + cSky) / 4;
@@ -259,17 +294,27 @@ export class Mesher {
   }
 
   shouldRenderFace(state, nState, dir) {
-    const nid = nState >> 4;
-    const nb = blocks[nid];
+    const nb = getBlock(nState);
+    const nid = nb ? nb.id : 0;
     if (!nb || nb.id === 0) return true;
     if (nb.opaque) return false;
     const F = this._flags;
     // Fast graphics: leaves are opaque cubes
     if (!this.options.fancy && (F[nid] & 1)) return false;
-    // Glass/ice/stained glass don't render faces between same blocks
-    const f = F[state >> 4];
-    if (nState === state && (f & 2)) return false;
-    if ((f & 4) && (F[nid] & 4) && (state & 15) === (nState & 15)) return false;
+    // Glass/ice compare block identity, not global state (e.g. frosted ice age).
+    // Each stained color has its own block id; keep faces between different colors.
+    const own = getBlock(state);
+    const f = own ? F[own.id] : 0;
+    if (own && own.id === nid) {
+      if ((f & 2) && (own.name !== 'nether_portal' || state === nState)) return false;
+      if (f & 4) {
+        // Pane connections and waterlogging can differ across the shared face.
+        // Only hide horizontal end caps when both panes actually connect.
+        if (dir < 2) return false;
+        const p = getStateProperties(state), np = getStateProperties(nState);
+        if (p[DIR_NAMES[dir]] === 'true' && np[DIR_NAMES[OPPOSITE[dir]]] === 'true') return false;
+      }
+    }
     return true;
   }
 
@@ -292,13 +337,15 @@ export class Mesher {
     if (!blocksArr) return null;
     for (let i = 0; i < 4096; i++) {
       const state = blocksArr[i];
-      const id = state >> 4;
+      const b = getBlock(state);
+      const id = b ? b.id : 0;
       if (id === 0) continue;
       const lx = i & 15, lz = (i >> 4) & 15, ly = i >> 8;
       const x = bx0 + lx, y = by0 + ly, z = bz0 + lz;
-      const b = blocks[id];
       if (!b) continue;
-      if (b.isLiquid) { this.renderFluid(state, b, x, y, z, trans, lx, ly, lz); continue; }
+      const fluid = getFluidState(state);
+      if (fluid) this.renderFluid(state, fluid, x, y, z, trans, lx, ly, lz);
+      if (b.isLiquid) continue;
       if (!b.hasModel) continue;
       if (this.options.lod && LOD_SKIP.has(b.name)) continue;
       const model = this.getModel(state, x, y, z);
@@ -377,8 +424,8 @@ export class Mesher {
   // ---- Fluids (port of BlockFluidRenderer) ----
 
   fluidMatches(state, lava) {
-    const b = blocks[state >> 4];
-    return b && b.isLiquid && b.isLava === lava;
+    const fluid = getFluidState(state);
+    return !!fluid && fluid.isLava === lava;
   }
 
   fluidHeight(x, y, z, lava) {
@@ -389,24 +436,24 @@ export class Mesher {
       if (this.fluidMatches(this.world.getState(bx, y + 1, bz), lava)) return 1;
       const s = this.world.getState(bx, y, bz);
       if (!this.fluidMatches(s, lava)) {
-        const b = blocks[s >> 4];
+        const b = getBlock(s);
         const solid = b && b.boundingBox === 'block' && b.id !== 0;
         if (!solid) { sum += 1; count++; }
       } else {
-        const k = s & 15;
+        const k = getFluidState(s).level;
         const pct = ((k >= 8 ? 0 : k) + 1) / 9;
         if (k >= 8 || k === 0) { sum += pct * 10; count += 10; }
         sum += pct;
         count++;
       }
     }
-    return 1 - sum / count;
+    return count ? 1 - sum / count : 0;
   }
 
   flowDecay(x, y, z, lava) {
     const s = this.world.getState(x, y, z);
     if (!this.fluidMatches(s, lava)) return -1;
-    const l = s & 15;
+    const l = getFluidState(s).level;
     return l >= 8 ? 0 : l;
   }
 
@@ -417,7 +464,7 @@ export class Mesher {
       let j = this.flowDecay(x + dx, y, z + dz, lava);
       if (j < 0) {
         const s = this.world.getState(x + dx, y, z + dz);
-        const b = blocks[s >> 4];
+        const b = getBlock(s);
         const blocksMovement = b && b.boundingBox === 'block' && b.id !== 0;
         if (!blocksMovement) {
           j = this.flowDecay(x + dx, y - 1, z + dz, lava);
@@ -431,8 +478,8 @@ export class Mesher {
     return Math.atan2(vz, vx) - Math.PI / 2;
   }
 
-  renderFluid(state, b, x, y, z, buf, lx, ly, lz) {
-    const lava = b.isLava;
+  renderFluid(state, fluid, x, y, z, buf, lx, ly, lz) {
+    const lava = fluid.isLava;
     const w = this.world;
     const still = lava ? this.lavaStill : this.waterStill;
     const flow = lava ? this.lavaFlow : this.waterFlow;
@@ -440,17 +487,18 @@ export class Mesher {
     const col = lava ? 0xffffff : this.biomeBlend(x, y, z, (bio) => waterColor(bio));
     const cr = ((col >> 16) & 255) / 255, cg = ((col >> 8) & 255) / 255, cb = (col & 255) / 255;
     const up = w.getState(x, y + 1, z);
-    const renderTop = !this.fluidMatches(up, lava);
     const down = w.getState(x, y - 1, z);
-    const renderBottom = !this.fluidMatches(down, lava) && !(blocks[down >> 4] && blocks[down >> 4].opaque);
     const sideStates = [w.getState(x, y, z - 1), w.getState(x, y, z + 1), w.getState(x - 1, y, z), w.getState(x + 1, y, z)];
-    const sides = sideStates.map((s) => !this.fluidMatches(s, lava) && !(blocks[s >> 4] && blocks[s >> 4].opaque));
-    if (!renderTop && !renderBottom && !sides.some((v) => v)) return;
-
     let h00 = this.fluidHeight(x, y, z, lava);
     let h01 = this.fluidHeight(x, y, z + 1, lava);
     let h11 = this.fluidHeight(x + 1, y, z + 1, lava);
     let h10 = this.fluidHeight(x + 1, y, z, lava);
+    const height = Math.max(h00, h01, h11, h10);
+    const renderTop = !this.fluidMatches(up, lava) && !coversFluidFace(state, 1, height);
+    const renderBottom = !this.fluidMatches(down, lava) && !coversFluidFace(state, 0) && !coversFluidFace(down, 1);
+    const sides = sideStates.map((s, i) => !this.fluidMatches(s, lava) &&
+      !coversFluidFace(state, i + 2, height) && !coversFluidFace(s, (i + 2) ^ 1, height));
+    if (!renderTop && !renderBottom && !sides.some(v => v)) return;
     const U = (uv, t) => uv[0] + (uv[2] - uv[0]) * t / 16;
     const V = (uv, t) => uv[1] + (uv[3] - uv[1]) * t / 16;
     const light = (lx2, ly2, lz2) => {

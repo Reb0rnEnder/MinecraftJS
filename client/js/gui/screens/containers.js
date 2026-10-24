@@ -1,5 +1,5 @@
 // Container GUIs (port of GuiContainer and subclasses, incl. GuiContainerCreative).
-import { FontRenderer } from '../font.js';
+import { FontRenderer, stripCodes } from '../font.js';
 import { JavaRandom } from '../../util/jrandom.js';
 import { mat4, D2R } from '../../gfx/math.js';
 import { Node } from '../../gfx/scene.js';
@@ -334,7 +334,7 @@ function withRecipeBook(screen, opts) {
 function drawPlayerEmptySlot(game, gui, i, x, y) {
   const name = i >= 5 && i <= 8 ? ['empty_armor_slot_helmet', 'empty_armor_slot_chestplate', 'empty_armor_slot_leggings', 'empty_armor_slot_boots'][i - 5]
     : i === 45 ? 'empty_armor_slot_shield' : null;
-  if (name && game.assets.atlas.entries.get('items/' + name)) game.itemRenderer.drawSprite(gui, 'items/' + name, x, y);
+  if (name && game.assets.atlas.entries.get('item/' + name)) game.itemRenderer.drawSprite(gui, 'item/' + name, x, y);
 }
 
 export class InventoryScreen extends ContainerScreen {
@@ -629,7 +629,7 @@ class AnvilScreen extends SimpleScreen {
     this.nameField.textColor = 0xffffff;
     this.nameField.onChange = (t) => {
       const w = new Writer().string(t).build();
-      this.game.send(C.customPayload('MC|ItemName', w));
+      this.game.send(C.customPayload('minecraft:item_name', w));
     };
     this.fields.push(this.nameField);
     this._lastFirst = null;
@@ -637,10 +637,11 @@ class AnvilScreen extends SimpleScreen {
   tick() {
     super.tick();
     const first = this.container.get(0);
-    const key = first ? first.id + ':' + first.damage : null;
+    const name = first ? stripCodes(this.game.items.displayName(first)) : '';
+    const key = first ? first.id + ':' + name : null;
     if (key !== this._lastFirst) {
       this._lastFirst = key;
-      this.nameField.text = first ? this.game.items.displayName(first) : '';
+      this.nameField.text = name;
       this.nameField.enabled = !!first;
       this.nameField.cursor = this.nameField.selEnd = this.nameField.text.length;
     }
@@ -748,7 +749,7 @@ class BeaconScreen extends ContainerScreen {
       if (b.cancel) { this.close(); return true; }
       if (b.confirm) {
         const w = new Writer().i32(this.field(1)).i32(this.field(2)).build();
-        this.game.send(C.customPayload('MC|Beacon', w));
+      this.game.send(C.customPayload('minecraft:beacon', w));
         this.close();
         return true;
       }
@@ -791,7 +792,7 @@ class VillagerScreen extends SimpleScreen {
   select(i) {
     if (i < 0 || i >= this.trades.length) return;
     this.index = i;
-    this.game.send(C.customPayload('MC|TrSel', new Writer().i32(i).build()));
+      this.game.send(C.customPayload('minecraft:trader_select', new Writer().i32(i).build()));
   }
   drawBackground(gui) {
     super.drawBackground(gui);
@@ -849,7 +850,7 @@ export function openContainerScreen(game, win) {
       for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) slots.push([1 + j + i * 3, 30 + j * 18, 17 + i * 18]);
       s = new SimpleScreen(game, win, 'gui/container/crafting_table.png', slots, { titleX: 28 });
       withRecipeBook(s, { slots: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9], gridW: 3, gridH: 3, button: [5, -49, 0, 168, 'gui/container/crafting_table.png'] });
-      if (!win.title || win.title === 'container.crafting') win.title = game.assets.translate('container.crafting');
+      if (!win.title) win.title = game.assets.translate('container.crafting');
       break;
     }
     case 'minecraft:furnace': s = new FurnaceScreen(game, win); break;
@@ -873,77 +874,118 @@ export function openContainerScreen(game, win) {
     case 'EntityHorse': s = new HorseScreen(game, win); break;
     default: s = new ChestScreen(game, win); break;
   }
-  if (win.title && win.title.startsWith('container.')) win.title = game.assets.translate(win.title);
   game.screens.open(s);
 }
 
 // ---------------------------------------------------------------- creative inventory
 
-// CreativeTabs (1.12) from client/data/creative.json, read from the game (tools/creative-dump): index, label, icon,
-// column / row, background, and each tab's displayAllRelevantItems (search: every item's getSubItems(SEARCH) in
-// registry order)
-const stackOf = ([id, damage, tag]) => ({ id, count: 1, damage, nbt: tag ? { t: 10, name: '', v: tag } : null });
+// Native Java 1.13.2 ItemGroups, extracted from the pinned client jar by tools/creative-dump.
+// The middle tuple field is retained for the data format only; flattened variants have distinct IDs.
+const stackOf = ([id, , tag]) => ({ id, count: 1, damage: 0, nbt: tag ? { t: 10, name: '', v: structuredClone(tag) } : null });
+// Creative templates/snapshots must never share mutable NBT with player stacks. Prefer
+// the structured tag over an older raw buffer when a caller has changed NBT in place.
+const creativeCopy = (it) => it ? { id: it.id, count: it.count, damage: 0,
+  nbt: it.nbt ? structuredClone(it.nbt) : null, nbtRaw: !it.nbt && it.nbtRaw ? it.nbtRaw.slice() : null } : null;
+const creativeLocked = (it) => !!(it && (it.locked || it.nbt?.v?.CustomCreativeLock));
+const sendCreativeSlot = (game, slot, it) => game.send(C.creativeSlot(slot, creativeCopy(it)));
 const tabData = (game) => game.assets.data.creative.tabs;
 const tabInfo = (game, i) => tabData(game).find((t) => t.index === i);
 const label = (game, i) => (tabInfo(game, i) || {}).label;
 
-function buildCreativeTabs(game) {
-  const tabs = {};
-  for (const t of tabData(game)) tabs[t.label] = t.items.map(stackOf);
-  return tabs;
+// Scope caches to the actual dataset, not a process-wide CreativeScreen static. A new
+// asset set (or replacement tabs array) cannot inherit another world's catalog/categories.
+const creativeCatalogs = new WeakMap();
+function creativeCatalog(game) {
+  const data = game.assets.data.creative;
+  let catalog = creativeCatalogs.get(data);
+  if (!catalog || catalog.source !== data.tabs) {
+    const tabs = {}, tabOfId = new Map(), enchantmentTabs = new Map();
+    for (const t of data.tabs) {
+      tabs[t.label] = t.items.map(stackOf);
+      if (['search', 'hotbar', 'inventory'].includes(t.label)) continue;
+      for (const it of tabs[t.label]) {
+        if (!tabOfId.has(it.id)) tabOfId.set(it.id, t.label);
+        for (const e of it.nbt?.v?.StoredEnchantments?.v?.items || []) {
+          if (!enchantmentTabs.has(e.id.v)) enchantmentTabs.set(e.id.v, t.label);
+        }
+      }
+    }
+    catalog = { source: data.tabs, tabs, tabOfId, enchantmentTabs };
+    creativeCatalogs.set(data, catalog);
+  }
+  return catalog;
 }
 
 // HotbarSnapshot storage (CreativeSettings, hotbar.nbt): nine saved toolbars, kept in the browser
-const HOTBARS_KEY = 'minecraftjs.hotbars';
+// Never read/write the unversioned 1.12 key: its numeric IDs cannot be safely reinterpreted.
+const HOTBARS_KEY = 'minecraftjs.hotbars.1.13.2.v1';
 const toJson = (v) => JSON.stringify(v, (k, x) => (ArrayBuffer.isView(x) ? { $ta: x.constructor.name, a: Array.from(x, (n) => (typeof n === 'bigint' ? String(n) : n)) } : typeof x === 'bigint' ? { $big: String(x) } : x));
-const fromJson = (s) => JSON.parse(s, (k, x) => (x && x.$ta ? (x.$ta === 'BigInt64Array' ? BigInt64Array.from(x.a.map(BigInt)) : new globalThis[x.$ta](x.a)) : x && x.$big !== undefined ? BigInt(x.$big) : x));
+const savedArrays = { Int8Array, Uint8Array, Int32Array, BigInt64Array };
+const fromJson = (s) => JSON.parse(s, (k, x) => {
+  if (x && x.$ta) {
+    if (!Object.prototype.hasOwnProperty.call(savedArrays, x.$ta) || !Array.isArray(x.a)) throw new Error('Invalid saved NBT array');
+    return x.$ta === 'BigInt64Array' ? BigInt64Array.from(x.a.map(BigInt)) : new savedArrays[x.$ta](x.a);
+  }
+  return x && x.$big !== undefined ? BigInt(x.$big) : x;
+});
+const emptyHotbars = () => Array.from({ length: 9 }, () => new Array(9).fill(null));
 export function hotbarSnapshots() {
-  let list = null;
-  try { list = fromJson(localStorage.getItem(HOTBARS_KEY) || 'null'); } catch (e) { list = null; }
-  if (!Array.isArray(list) || list.length !== 9) list = Array.from({ length: 9 }, () => new Array(9).fill(null));
-  return list;
+  try {
+    const saved = fromJson(localStorage.getItem(HOTBARS_KEY) || 'null');
+    if (saved?.version !== 1 || saved.minecraftVersion !== '1.13.2' || saved.protocol !== 404 || saved.dataVersion !== 1631) return emptyHotbars();
+    if (!Array.isArray(saved.bars) || saved.bars.length !== 9) return emptyHotbars();
+    return saved.bars.map(bar => {
+      if (!Array.isArray(bar) || bar.length !== 9) return new Array(9).fill(null);
+      return bar.map(it => {
+        if (!it || !Number.isInteger(it.id) || it.id < 1 || it.id > 789 || !Number.isInteger(it.count) || it.count < 1 || it.count > 127 || creativeLocked(it)) return null;
+        const copied = creativeCopy(it);
+        // Check that persisted typed NBT is serializable before it reaches a live click.
+        new Writer().slot(copied).build();
+        return copied;
+      });
+    });
+  } catch (e) { return emptyHotbars(); }
 }
-function saveHotbarSnapshots(list) { try { localStorage.setItem(HOTBARS_KEY, toJson(list)); } catch (e) { /* storage unavailable */ } }
+function saveHotbarSnapshots(list) {
+  try {
+    localStorage.setItem(HOTBARS_KEY, toJson({ version: 1, minecraftVersion: '1.13.2', protocol: 404, dataVersion: 1631, bars: list }));
+    return true;
+  } catch (e) { return false; /* storage unavailable */ }
+}
 
 // GuiContainerCreative.handleHotbarSnapshots: load (X + number) or save (C + number) a toolbar in creative mode
 export function handleHotbarSnapshots(game, n, load, save) {
+  if (!Number.isInteger(n) || n < 0 || n >= 9) return;
   const list = hotbarSnapshots();
-  const strip = (it) => (it ? { id: it.id, count: it.count, damage: it.damage || 0, nbt: it.nbt || null } : null);
   if (load) {
     for (let i = 0; i < 9; i++) {
-      const it = list[n][i] ? strip(list[n][i]) : null;
-      game.inventory.main[i] = it;
-      game.send(C.creativeSlot(36 + i, it));
+      const it = creativeCopy(list[n][i]);
+      game.inventory.setSlot(36 + i, it);
+      sendCreativeSlot(game, 36 + i, it);
     }
   } else if (save) {
-    for (let i = 0; i < 9; i++) list[n][i] = strip(game.inventory.main[i]);
-    saveHotbarSnapshots(list);
+    for (let i = 0; i < 9; i++) list[n][i] = creativeLocked(game.inventory.main[i]) ? null : creativeCopy(game.inventory.main[i]);
+    if (!saveHotbarSnapshots(list)) return;
     const k = game.settings.keys;
-    game.hud.setActionBar(tr('inventory.hotbarSaved', game.settings.keyName(k.loadToolbarActivator), game.settings.keyName(k['hotbar' + (n + 1)])));
+    game.hud.setActionBar(tr('inventory.hotbarSaved', game.settings.keyName(k['hotbar' + (n + 1)]), game.settings.keyName(k.loadToolbarActivator)));
   }
+  const screen = game.screens?.current;
+  if (screen instanceof CreativeScreen && screen.tabLabel() === 'hotbar') screen.setTab(screen.tab);
 }
 
 // Creative tab of an item id (first tab that lists it), e.g. for the recipe book's categories
-let tabOfId = null;
 export function creativeTabOf(game, id) {
-  if (!tabOfId) {
-    if (!CreativeScreen.tabs) CreativeScreen.tabs = buildCreativeTabs(game);
-    tabOfId = new Map();
-    for (const t of tabData(game).map((x) => x.label)) {
-      if (t === 'search' || t === 'hotbar' || t === 'inventory') continue;
-      for (const it of CreativeScreen.tabs[t]) if (!tabOfId.has(it.id)) tabOfId.set(it.id, t);
-    }
-  }
-  return tabOfId.get(id) || 'misc';
+  return creativeCatalog(game).tabOfId.get(id) || 'misc';
 }
 
 export class CreativeScreen extends ContainerScreen {
   constructor(game) {
     super(game, game.inventory);
     this.xSize = 195; this.ySize = 136;
-    this.tab = CreativeScreen.lastTab ?? 0;
+    this.tab = tabInfo(game, CreativeScreen.lastTab) ? CreativeScreen.lastTab : 0;
     this.scroll = 0;
-    if (!CreativeScreen.tabs) CreativeScreen.tabs = buildCreativeTabs(game);
+    this.catalog = creativeCatalog(game);
+    this.language = game.assets.lang;
     this.list = [];
     this.isScrolling = false;
   }
@@ -953,21 +995,39 @@ export class CreativeScreen extends ContainerScreen {
     // InventoryEffectRenderer: with active effects the window moves right to make room for the list
     this.effectsShift = this.game.effects.size > 0;
     if (this.effectsShift) this.guiLeft = Math.floor(160 + (this.width - this.xSize - 200) / 2);
-    this.search = new TextField(this.guiLeft + 82, this.guiTop + 6, 89, 9, { maxLength: 15, background: false, focused: false, onChange: () => this.filter() });
+    this.search = new TextField(this.guiLeft + 82, this.guiTop + 6, 80, 9, { maxLength: 50, background: false, focused: false, onChange: () => this.filter() });
     this.search.textColor = 0xffffff;
     this.setTab(this.tab);
+  }
+
+  tick() {
+    super.tick();
+    this._refreshCatalog();
+  }
+
+  _refreshCatalog() {
+    if (this.catalog === creativeCatalog(this.game) && this.language === this.game.assets.lang) return;
+    const query = this.search.text;
+    this.language = this.game.assets.lang;
+    this.setTab(this.tab);
+    if (this.tabLabel() === 'search') this.search.setText(query);
   }
 
   tabLabel(i = this.tab) { return label(this.game, i); }
 
   // GuiContainerCreative.setCurrentCreativeTab
   setTab(i) {
+    if (!tabInfo(this.game, i)) i = 0;
+    this.catalog = creativeCatalog(this.game);
     this.tab = i;
     CreativeScreen.lastTab = i;
     this.scroll = 0;
+    this.isScrolling = false;
+    this.hovered = null;
     this.fields = [];
+    this.search.focused = false;
     const lab = this.tabLabel(i);
-    if (lab === 'search') { this.fields.push(this.search); this.search.focused = true; this.search.text = ''; this.filter(); }
+    if (lab === 'search') { this.fields.push(this.search); this.search.focused = true; this.search.setText(''); }
     else if (lab === 'hotbar') {
       // saved toolbars; an empty one shows a locked paper on its own column saying how to save it
       const g = this.game, k = g.settings.keys;
@@ -976,25 +1036,28 @@ export class CreativeScreen extends ContainerScreen {
         if (bar.every((it) => !it)) {
           for (let j = 0; j < 9; j++) {
             if (j !== n) { this.list.push(null); continue; }
-            const name = tr('inventory.hotbarInfo', g.settings.keyName(k.saveToolbarActivator), g.settings.keyName(k['hotbar' + (n + 1)]));
-            this.list.push({ id: 339, count: 1, damage: 0, locked: true,
+            const name = JSON.stringify({ translate: 'inventory.hotbarInfo', with: [g.settings.keyName(k['hotbar' + (n + 1)]), g.settings.keyName(k.saveToolbarActivator)] });
+            this.list.push({ id: g.items.byName.get('paper').id, count: 1, damage: 0, locked: true,
               nbt: { t: 10, name: '', v: { CustomCreativeLock: { t: 10, v: {} }, display: { t: 10, v: { Name: { t: 8, v: name } } } } } });
           }
-        } else for (const it of bar) this.list.push(it ? { ...it, count: it.count || 1 } : null);
+        } else for (const it of bar) this.list.push(creativeCopy(it));
       });
-    } else this.list = CreativeScreen.tabs[lab] || [];
+    } else this.list = this.catalog.tabs[lab] || [];
     this._layout();
   }
 
   // GuiContainerCreative.updateCreativeSearch: SearchTreeManager.ITEMS matches the tooltip lines or the registry name
   filter() {
     const q = this.search.text.toLowerCase().trim();
-    const all = CreativeScreen.tabs.search;
+    const all = creativeCatalog(this.game).tabs.search;
     const items = this.game.items;
     const hit = (it) => {
       const def = items.def(it.id);
-      if (def && ('minecraft:' + def.name).includes(q)) return true;
-      return items.tooltip(it).some((l) => l.replace(/§./g, '').toLowerCase().includes(q));
+      const colon = q.indexOf(':');
+      const term = colon < 0 ? q : q.slice(colon + 1).trim();
+      if (colon >= 0 && !'minecraft'.includes(q.slice(0, colon).trim())) return false;
+      if (def && def.name.includes(term)) return true;
+      return items.tooltip(it).some((l) => stripCodes(l).toLowerCase().includes(term));
     };
     this.list = q ? all.filter(hit) : all;
     this.scroll = 0;
@@ -1027,6 +1090,7 @@ export class CreativeScreen extends ContainerScreen {
   }
 
   render(gui, mx, my, partial) {
+    this._refreshCatalog();
     gui.worldBackground();
     const L = this.guiLeft, T = this.guiTop;
     // Tabs behind
@@ -1074,13 +1138,26 @@ export class CreativeScreen extends ContainerScreen {
     for (const f of this.fields) f.render(gui);
     const cursor = this.inv.cursor;
     if (cursor) this.game.itemRenderer.drawItem(gui, cursor, mx - 8, my - 8);
-    else if (hoverGrid) gui.tooltip(this.game.items.tooltip(hoverGrid), mx, my);
-    else if (this.hovered !== null && this.container.get(this.hovered)) gui.tooltip(this.game.items.tooltip(this.container.get(this.hovered)), mx, my);
+    else if (hoverGrid) gui.tooltip(this._tooltip(hoverGrid), mx, my);
+    else if (this.hovered !== null && this.container.get(this.hovered)) gui.tooltip(this._tooltip(this.container.get(this.hovered)), mx, my);
     else {
       const t = this._tabAt(mx, my);
       if (t >= 0) gui.tooltip([tr('itemGroup.' + this.tabLabel(t))], mx, my);
       else if (this.tabLabel() === 'inventory' && mx >= L + 172 && mx < L + 190 && my >= T + 111 && my < T + 129) gui.tooltip([tr('inventory.binSlot')], mx, my);
     }
+  }
+
+  _tooltip(it) {
+    const items = this.game.items, lines = items.tooltip(it, this.game.settings.advancedItemTooltips);
+    if (this.tabLabel() === 'search') {
+      let group = this.catalog.tabOfId.get(it.id);
+      if (items.name(it.id) === 'enchanted_book') {
+        const ench = items.enchantments(it);
+        group = ench.length === 1 ? this.catalog.enchantmentTabs.get(ench[0].id) : null;
+      }
+      if (group) lines.splice(1, 0, '§9§l' + tr('itemGroup.' + group));
+    }
+    return lines;
   }
 
   // GuiContainerCreative.drawTab / isMouseOverTab: columns 28 apart (+1 per column), right-aligned tabs from the
@@ -1123,7 +1200,9 @@ export class CreativeScreen extends ContainerScreen {
   }
 
   mouseDown(mx, my, button, e) {
+    this._refreshCatalog();
     for (const f of this.fields) f.mouseDown(mx, my, this.gui);
+    if (this.tabLabel() === 'search') this.search.focused = true;
     const t = this._tabAt(mx, my);
     if (t >= 0 && button === 0) { if (t !== this.tab) { this.setTab(t); this.game.sound.playUi('ui.button.click', 1); } return true; }
     const L = this.guiLeft, T = this.guiTop;
@@ -1136,32 +1215,32 @@ export class CreativeScreen extends ContainerScreen {
     if (grid) {
       const it = grid.item;
       // a locked item (the empty saved toolbar's hint) cannot be taken (CustomCreativeLock)
-      if (it && it.locked) return true;
+      if (creativeLocked(it)) return true;
       const cur = inv.cursor;
-      if (btn === 2) { if (!cur && it) { const c = copy(it); c.count = g.items.maxStack(c.id); inv.cursor = c; } return true; }
-      if (cur && it && cur.id === it.id && cur.damage === it.damage) {
+      if (btn === 2) { if (!cur && it) { const c = creativeCopy(it); c.count = g.items.maxStack(c.id); inv.cursor = c; } return true; }
+      if (cur && it && stackable(cur, it)) {
         if (btn === 0) { if (shift) cur.count = g.items.maxStack(cur.id); else if (cur.count < g.items.maxStack(cur.id)) cur.count++; }
         else if (cur.count <= 1) inv.cursor = null;
         else cur.count--;
       } else if (it && !cur) {
-        const c = copy(it);
+        const c = creativeCopy(it);
         c.count = shift ? g.items.maxStack(c.id) : 1;
         inv.cursor = c;
-      } else inv.cursor = null;
+      } else if (btn === 0 || !cur || cur.count <= 1) inv.cursor = null;
+      else cur.count--;
       return true;
     }
     // Destroy slot
     if (this.tabLabel() === 'inventory' && mx >= L + 172 && mx < L + 190 && my >= T + 111 && my < T + 129) {
-      if (shift) { for (let i = 0; i < 45; i++) { if (inv.get(i)) { inv.setSlot(i, null); g.send(C.creativeSlot(i, null)); } } }
+      if (shift) { for (let i = 0; i < inv.slots.length; i++) { if (inv.get(i)) { inv.setSlot(i, null); sendCreativeSlot(g, i, null); } } }
       inv.cursor = null;
       return true;
     }
     const slot = this.slotAt(mx, my);
     if (slot !== null) {
-      const before = [];
-      for (let i = 0; i < 45; i++) before.push(inv.get(i) ? JSON.stringify([inv.get(i).id, inv.get(i).count, inv.get(i).damage]) : null);
+      const before = inv.slots.map((_, i) => creativeCopy(inv.get(i)));
       if (btn === 2) {
-        if (!inv.cursor && inv.get(slot)) { const c = copy(inv.get(slot)); c.count = g.items.maxStack(c.id); inv.cursor = c; }
+        if (!inv.cursor && inv.get(slot)) { const c = creativeCopy(inv.get(slot)); c.count = g.items.maxStack(c.id); inv.cursor = c; }
         return true;
       }
       if (shift && this.tabLabel() !== 'inventory') {
@@ -1169,16 +1248,19 @@ export class CreativeScreen extends ContainerScreen {
       } else {
         inv.slotClick(slot, btn, shift ? 1 : 0);
       }
-      for (let i = 0; i < 45; i++) {
-        const now = inv.get(i) ? JSON.stringify([inv.get(i).id, inv.get(i).count, inv.get(i).damage]) : null;
-        if (now !== before[i]) g.send(C.creativeSlot(i, inv.get(i)));
+      inv.cursor = creativeCopy(inv.cursor);
+      for (let i = 0; i < inv.slots.length; i++) {
+        const now = inv.get(i), old = before[i];
+        if ((!now && !old) || now && old && now.count === old.count && stackable(now, old)) continue;
+        inv.setSlot(i, creativeCopy(now));
+        sendCreativeSlot(g, i, inv.get(i));
       }
       return true;
     }
     if (this.isOutside(mx, my) && t < 0 && inv.cursor) {
       // Drop the cursor stack
-      if (btn === 0) { g.send(C.creativeSlot(-1, inv.cursor)); inv.cursor = null; }
-      else { const one = copy(inv.cursor); one.count = 1; g.send(C.creativeSlot(-1, one)); inv.cursor.count--; if (inv.cursor.count <= 0) inv.cursor = null; }
+      if (btn === 0) { sendCreativeSlot(g, -1, inv.cursor); inv.cursor = null; }
+      else { const one = creativeCopy(inv.cursor); one.count = 1; sendCreativeSlot(g, -1, one); inv.cursor.count--; if (inv.cursor.count <= 0) inv.cursor = null; }
     }
     return true;
   }
@@ -1192,39 +1274,47 @@ export class CreativeScreen extends ContainerScreen {
   mouseUp() { this.isScrolling = false; }
 
   key(e) {
+    this._refreshCatalog();
     const g = this.game;
-    if (this.tabLabel() === 'search' && e.code !== 'Escape') {
-      if (this.search.key(e)) return true;
-      return true;
-    }
-    if (e.code === 'Escape' || e.code === g.settings.keys.inventory) { this.close(); return true; }
-    if (e.code === g.settings.keys.chat && this.tabLabel() !== 'search') { this.setTab(5); return true; }
+    this.ignoreNextChar = false;
+    if (e.code === 'Escape') { this.close(); return true; }
     // Number keys over grid items: put into hotbar
     const [mx, my] = g.screens._mouse();
     const grid = this.gridItemAt(mx, my);
+    const slot = this.slotAt(mx, my);
     for (let i = 0; i < 9; i++) {
-      if (e.code === g.settings.keys['hotbar' + (i + 1)]) {
-        if (grid && grid.item && !grid.item.locked) {
-          const c = copy(grid.item); c.count = g.items.maxStack(c.id);
-          this.inv.main[i] = c;
-          g.send(C.creativeSlot(36 + i, c));
-        } else if (this.hovered !== null) {
-          const before = this.inv.get(36 + i);
-          const cur = this.inv.get(this.hovered);
-          this.inv.setSlot(36 + i, cur); this.inv.setSlot(this.hovered, before);
-          g.send(C.creativeSlot(36 + i, cur)); g.send(C.creativeSlot(this.hovered, before));
+      if (e.code === g.settings.keys['hotbar' + (i + 1)] && (grid?.item || slot !== null)) {
+        this.ignoreNextChar = true;
+        if (grid && grid.item && !creativeLocked(grid.item)) {
+          const c = creativeCopy(grid.item); c.count = g.items.maxStack(c.id);
+          this.inv.setSlot(36 + i, c);
+          sendCreativeSlot(g, 36 + i, c);
+        } else if (!grid && slot !== null && slot !== 36 + i) {
+          const before = creativeCopy(this.inv.get(36 + i));
+          const cur = creativeCopy(this.inv.get(slot));
+          if (!before || this.inv.isValid(slot, before) && before.count <= this.inv.slotLimit(slot, before)) {
+            this.inv.setSlot(36 + i, cur); this.inv.setSlot(slot, before);
+            sendCreativeSlot(g, 36 + i, cur); sendCreativeSlot(g, slot, before);
+          }
         }
         return true;
       }
     }
+    if (this.tabLabel() === 'search' && this.search.focused) { this.search.key(e); return true; }
+    if (e.code === g.settings.keys.inventory) { this.close(); return true; }
+    if (e.code === g.settings.keys.chat && this.tabLabel() !== 'search') { this.setTab(5); this.ignoreNextChar = true; return true; }
     return true;
   }
 
-  char(c) { if (this.tabLabel() === 'search') return this.search.char(c); if (c === 't' || c === 'T') return true; return false; }
+  char(c) {
+    if (this.ignoreNextChar) { this.ignoreNextChar = false; return true; }
+    if (this.tabLabel() === 'search') return this.search.char(c);
+    return false;
+  }
 
   close() {
     const g = this.game;
-    if (this.inv.cursor) { g.send(C.creativeSlot(-1, this.inv.cursor)); this.inv.cursor = null; }
+    if (this.inv.cursor) { sendCreativeSlot(g, -1, this.inv.cursor); this.inv.cursor = null; }
     g.send(C.closeWindow(0));
     g.screens.current = null;
     if (g.inWorld) g.input.lock();

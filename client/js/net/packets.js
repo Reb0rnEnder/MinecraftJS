@@ -21,7 +21,7 @@ const decoders = {
     x: r.f64(), y: r.f64(), z: r.f64(), yaw: r.angle(), pitch: r.angle(), headPitch: r.angle(),
     velocity: vec3i16(r), metadata: r.metadata(),
   }),
-  0x04: (r) => ({ name: 'spawn_entity_painting', entityId: r.varint(), entityUUID: r.uuid(), title: r.string(), location: r.position(), direction: r.u8() }),
+  0x04: (r) => ({ name: 'spawn_entity_painting', entityId: r.varint(), entityUUID: r.uuid(), title: r.varint(), location: r.position(), direction: r.u8() }),
   0x05: (r) => ({
     name: 'named_entity_spawn', entityId: r.varint(), playerUUID: r.uuid(),
     x: r.f64(), y: r.f64(), z: r.f64(), yaw: r.angle(), pitch: r.angle(), metadata: r.metadata(),
@@ -49,7 +49,7 @@ const decoders = {
     return p;
   },
   0x0d: (r) => ({ name: 'difficulty', difficulty: r.u8() }),
-  0x0e: (r) => ({ name: 'tab_complete', matches: strings(r) }),
+  0x0e: (r) => ({ name: 'tab_complete', transactionId: r.varint(), start: r.varint(), length: r.varint(), matches: [] }),
   0x0f: (r) => ({ name: 'chat', message: r.string(), position: r.i8() }),
   0x10: (r) => {
     const chunkX = r.i32();
@@ -112,9 +112,7 @@ const decoders = {
       x: r.f32(), y: r.f32(), z: r.f32(), offsetX: r.f32(), offsetY: r.f32(), offsetZ: r.f32(),
       particleData: r.f32(), particles: r.i32(), data: [],
     };
-    // EnumParticleTypes argument counts: iconcrack 2, blockcrack / blockdust / fallingdust 1
-    const n = p.particleId === 36 ? 2 : (p.particleId === 37 || p.particleId === 38 || p.particleId === 46) ? 1 : 0;
-    for (let i = 0; i < n; i++) p.data.push(r.varint());
+    p.data = r.particleData(p.particleId);
     return p;
   },
   0x23: (r) => ({
@@ -125,8 +123,8 @@ const decoders = {
     const p = { name: 'map', itemDamage: r.varint(), scale: r.i8(), trackingPosition: r.bool(), icons: [] };
     const n = r.varint();
     for (let i = 0; i < n; i++) {
-      const dt = r.i8();
-      p.icons.push({ type: (dt >> 4) & 15, direction: dt & 15, x: r.i8(), z: r.i8() });
+      const type = r.varint(), x = r.i8(), z = r.i8(), direction = r.u8();
+      p.icons.push({ type, direction, x, z, displayName: r.bool() ? r.string() : null });
     }
     p.columns = r.u8();
     if (p.columns > 0) {
@@ -144,7 +142,7 @@ const decoders = {
   0x28: (r) => ({ name: 'entity_look', entityId: r.varint(), yaw: r.angle(), pitch: r.angle(), onGround: r.bool() }),
   0x29: (r) => ({ name: 'vehicle_move', x: r.f64(), y: r.f64(), z: r.f64(), yaw: r.f32(), pitch: r.f32() }),
   0x2a: (r) => ({ name: 'open_sign_entity', location: r.position() }),
-  0x2b: (r) => ({ name: 'craft_recipe_response', windowId: r.i8(), recipe: r.varint() }),
+  0x2b: (r) => ({ name: 'craft_recipe_response', windowId: r.i8(), recipe: r.string() }),
   0x2c: (r) => ({ name: 'abilities', flags: r.i8(), flyingSpeed: r.f32(), walkingSpeed: r.f32() }),
   0x2d: (r) => {
     const p = { name: 'combat_event', event: r.varint() };
@@ -184,8 +182,8 @@ const decoders = {
   0x2f: (r) => ({ name: 'position', x: r.f64(), y: r.f64(), z: r.f64(), yaw: r.f32(), pitch: r.f32(), flags: r.i8(), teleportId: r.varint() }),
   0x30: (r) => ({ name: 'bed', entityId: r.varint(), location: r.position() }),
   0x31: (r) => {
-    const p = { name: 'unlock_recipes', action: r.varint(), craftingBookOpen: r.bool(), filteringCraftable: r.bool(), recipes: varints(r) };
-    if (p.action === 0) p.recipesToHighlight = varints(r);
+    const p = { name: 'unlock_recipes', action: r.varint(), craftingBookOpen: r.bool(), filteringCraftable: r.bool(), smeltingBookOpen: r.bool(), filteringSmeltable: r.bool(), recipes: strings(r) };
+    if (p.action === 0) p.recipesToHighlight = strings(r);
     return p;
   },
   0x32: (r) => ({ name: 'entity_destroy', entityIds: varints(r) }),
@@ -223,15 +221,15 @@ const decoders = {
   0x41: (r) => ({ name: 'update_health', health: r.f32(), food: r.varint(), foodSaturation: r.f32() }),
   0x42: (r) => {
     const p = { name: 'scoreboard_objective', objective: r.string(), action: r.i8() };
-    if (p.action === 0 || p.action === 2) { p.displayText = r.string(); p.type = r.string(); }
+    if (p.action === 0 || p.action === 2) { p.displayText = r.string(); p.type = r.varint(); }
     return p;
   },
   0x43: (r) => ({ name: 'set_passengers', entityId: r.varint(), passengers: varints(r) }),
   0x44: (r) => {
     const p = { name: 'scoreboard_team', team: r.string(), mode: r.i8() };
     if (p.mode === 0 || p.mode === 2) {
-      p.displayName = r.string(); p.prefix = r.string(); p.suffix = r.string();
-      p.friendlyFire = r.i8(); p.nameTagVisibility = r.string(); p.collisionRule = r.string(); p.color = r.i8();
+      p.displayName = r.string(); p.friendlyFire = r.i8(); p.nameTagVisibility = r.string(); p.collisionRule = r.string();
+      p.color = r.varint(); p.prefix = r.string(); p.suffix = r.string();
     }
     if (p.mode === 0 || p.mode === 3 || p.mode === 4) p.players = strings(r);
     return p;
@@ -310,6 +308,10 @@ const decoders = {
     p.hideParticles = !(p.flags & 2);
     return p;
   },
+  0x50: (r) => {
+    const flags = r.i8();
+    return { name: 'stop_sound', flags, source: flags & 1 ? r.varint() : null, sound: flags & 2 ? r.string() : null };
+  },
 };
 
 // 1.13.2 inserted command/recipe/tag packets and split the entity movement ids. Keep the
@@ -319,7 +321,13 @@ const decoders404 = {
   0x00: decoders[0x00], 0x01: decoders[0x01], 0x02: decoders[0x02], 0x03: decoders[0x03],
   0x04: decoders[0x04], 0x05: decoders[0x05], 0x06: decoders[0x06], 0x07: decoders[0x07],
   0x08: decoders[0x08], 0x09: decoders[0x09], 0x0a: decoders[0x0a], 0x0b: decoders[0x0b],
-  0x0c: decoders[0x0c], 0x0e: decoders[0x0f], 0x0f: decoders[0x10], 0x10: decoders[0x0e],
+  0x0c: decoders[0x0c], 0x0e: decoders[0x0f], 0x0f: decoders[0x10],
+  0x10: (r) => {
+    const p = { name: 'tab_complete', transactionId: r.varint(), start: r.varint(), length: r.varint(), matches: [] };
+    const n = r.varint();
+    for (let i = 0; i < n; i++) p.matches.push({ match: r.string(), tooltip: r.bool() ? r.string() : null });
+    return p;
+  },
   0x12: decoders[0x11], 0x13: decoders[0x12], 0x14: decoders[0x13], 0x15: decoders[0x14],
   0x16: decoders[0x15], 0x17: decoders[0x16], 0x18: decoders[0x17], 0x19: decoders[0x18],
   0x1a: decoders[0x19], 0x1b: decoders[0x1a], 0x1c: decoders[0x1b], 0x1e: decoders[0x1c],
@@ -334,8 +342,8 @@ const decoders404 = {
   0x40: decoders[0x3d], 0x41: decoders[0x3e], 0x42: decoders[0x3f], 0x43: decoders[0x40],
   0x44: decoders[0x41], 0x45: decoders[0x42], 0x46: decoders[0x43], 0x47: decoders[0x44],
   0x48: decoders[0x45], 0x49: decoders[0x46], 0x4a: decoders[0x47], 0x4b: decoders[0x48],
-  0x4d: decoders[0x49], 0x4e: decoders[0x4a], 0x4f: decoders[0x4b], 0x50: decoders[0x4c],
-  0x51: decoders[0x4d], 0x52: decoders[0x4e], 0x53: decoders[0x4f],
+  0x4c: decoders[0x50], 0x4d: decoders[0x49], 0x4e: decoders[0x4a], 0x4f: decoders[0x4b],
+  0x50: decoders[0x4c], 0x51: decoders[0x4d], 0x52: decoders[0x4e], 0x53: decoders[0x4f],
 };
 
 export function decodePacket(bytes) {
@@ -358,9 +366,33 @@ export function decodePacket(bytes) {
 
 function pkt(id) { return new Writer().varint(id); }
 
+const LEGACY_CHANNELS = {
+  'MC|Brand': 'minecraft:brand',
+  'MC|BEdit': 'minecraft:book_edit',
+  'MC|BSign': 'minecraft:book_sign',
+  'MC|BOpen': 'minecraft:book_open',
+  'MC|TrList': 'minecraft:trader_list',
+  'MC|TrSel': 'minecraft:trader_select',
+  'MC|StopSound': 'minecraft:stop_sound',
+  'MC|ItemName': 'minecraft:item_name',
+  'MC|Beacon': 'minecraft:beacon',
+  'MC|Struct': 'minecraft:structure_block',
+  'MC|AutoCmd': 'minecraft:command_block',
+  'MC|AdvCmd': 'minecraft:command_block',
+};
+
+function customPayloadChannel(channel) {
+  const value = LEGACY_CHANNELS[channel] || channel;
+  if (!/^[a-z0-9_.-]+:[a-z0-9/._-]+$/.test(value)) throw new Error(`Invalid custom payload channel: ${channel}`);
+  return value;
+}
+
 export const C = {
   teleportConfirm: (teleportId) => pkt(0x00).varint(teleportId).build(),
-  tabComplete: (text) => pkt(0x05).varint(0).string(text).build(),
+  // Protocol 404's serverbound tab-complete packet is transaction + text.
+  // Do not append the later command-assumption/position fields: 1.13.2 servers
+  // reject those bytes as trailing data (and disconnect the client).
+  tabComplete: (text, _position = null, transactionId = 0) => pkt(0x05).varint(transactionId).string(text).build(),
   // CPacketChatMessage: 256 characters since 1.11 (longer kicks the client)
   chat: (msg) => pkt(0x02).string(msg.length > 256 ? msg.slice(0, 256) : msg).build(),
   // 0 perform respawn, 1 request stats
@@ -372,7 +404,7 @@ export const C = {
   enchantItem: (windowId, enchantment) => pkt(0x07).i8(windowId).i8(enchantment).build(),
   windowClick: (windowId, slot, button, action, mode, item) => pkt(0x08).u8(windowId).i16(slot).i8(button).i16(action).varint(mode).slot(item).build(),
   closeWindow: (windowId) => pkt(0x09).u8(windowId).build(),
-  customPayload: (channel, data) => pkt(0x0a).string(channel).raw(data).build(),
+  customPayload: (channel, data) => pkt(0x0a).string(customPayloadChannel(channel)).raw(data).build(),
   // mouse: 0 interact, 1 attack, 2 interact_at
   useEntity: (target, mouse, x, y, z, hand = 0) => {
     const w = pkt(0x0d).varint(target).varint(mouse);

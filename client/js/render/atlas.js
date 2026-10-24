@@ -1,7 +1,7 @@
 // Texture atlas built from decoded block + item textures (pure JS), with .mcmeta animation support.
 
 // Sprites whose frame is chosen by game state instead of time (TextureCompass, TextureClock)
-const MANUAL = new Set(['items/compass', 'items/clock']);
+const MANUAL = new Set(['item/compass', 'item/clock']);
 
 export class Atlas {
   constructor() {
@@ -71,7 +71,7 @@ export class Atlas {
   }
 
   uv(name) {
-    const e = this.entries.get(name) || this.entries.get('blocks/stone');
+    const e = this.entries.get(name) || this.entries.get('block/stone');
     return e ? e.uv : null;
   }
 
@@ -158,7 +158,7 @@ export class Atlas {
 
 export class AtlasLookup {
   constructor(table) { this.table = table; }
-  uv(name) { const e = this.table[name] || this.table['blocks/stone']; return e ? e.uv : null; }
+  uv(name) { const e = this.table[name] || this.table['block/stone']; return e ? e.uv : null; }
   hasAlpha(name) { const e = this.table[name]; return e ? e.alpha : false; }
   has(name) { return !!this.table[name]; }
 }

@@ -1,7 +1,8 @@
 // Vehicles the local player controls (1.9+: the client moves its vehicle and reports it with CPacketVehicleMove).
 // Boats are ports of EntityBoat (water status, glide, paddles), horses of AbstractHorse.travel; both move with
 // the player's collision code (a LocalPlayer used as the vehicle's body).
-import { blocks } from '../world/blocks.js';
+import { getBlock } from '../world/blocks.js';
+import { getFluidState, fluidHeightAt } from '../world/fluids.js';
 import { LocalPlayer, mcSin, mcCos } from './physics.js';
 
 const f32 = Math.fround;
@@ -9,11 +10,9 @@ const DEG = f32(0.017453292);
 const wrap = (a) => { a %= 360; if (a >= 180) a -= 360; if (a < -180) a += 360; return a; };
 
 // BlockLiquid.getBlockLiquidHeight / getLiquidHeight for water
-function waterState(world, x, y, z) { const s = world.getState(x, y, z); const b = blocks[s >> 4]; return b && b.isWater ? s : -1; }
+function waterState(world, x, y, z) { const s = world.getState(x, y, z); return getFluidState(s)?.isWater ? s : -1; }
 function blockLiquidHeight(world, s, x, y, z) {
-  const lvl = s & 15;
-  if ((lvl & 7) === 0 && waterState(world, x, y + 1, z) >= 0) return 1;
-  return f32(1 - f32((lvl >= 8 ? 0 : lvl) + 1) / 9);
+  return f32(fluidHeightAt(world, x, y, z));
 }
 
 export class BoatController {
@@ -70,7 +69,7 @@ export class BoatController {
           out.length = 0;
           w.collisionBoxes(l1, k2, i2, out);
           const hit = out.some((c) => c[3] > bb1[0] && c[0] < bb1[3] && c[4] > bb1[1] && c[1] < bb1[4] && c[5] > bb1[2] && c[2] < bb1[5]);
-          if (hit) { const b = blocks[w.getState(l1, k2, i2) >> 4]; f = f32(f + (b ? b.slipperiness : 0.6)); n++; }
+          if (hit) { const b = getBlock(w.getState(l1, k2, i2)); f = f32(f + (b ? b.slipperiness : 0.6)); n++; }
         }
       }
     }
@@ -102,7 +101,7 @@ export class BoatController {
     for (let x = i; x < j; x++) for (let y = k; y < l; y++) for (let z = i1; z < j1; z++) {
       const s = waterState(w, x, y, z);
       if (s >= 0 && d0 < y + blockLiquidHeight(w, s, x, y, z)) {
-        if ((s & 15) !== 0) return 'under_flowing';
+        if (!getFluidState(s).source) return 'under_flowing';
         flag = true;
       }
     }
@@ -233,4 +232,3 @@ export class HorseController {
 
   setFromServer(x, y, z, yaw) { this.body.setPosition(x, y, z); this.body.yaw = yaw; }
 }
-

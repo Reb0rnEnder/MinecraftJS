@@ -1,8 +1,9 @@
 // Player interaction (port of PlayerControllerMP + Minecraft.clickMouse/rightClickMouse).
 import { C } from '../net/packets.js';
-import { blocks, blocksByName } from '../world/blocks.js';
+import { blocks, blocksByName, findState, getBlock, getStateProperties } from '../world/blocks.js';
+import { isPointInFluid } from '../world/fluids.js';
 import { rayBox } from '../world/world.js';
-import { copy } from './container.js';
+import { armorType, copy, stackable } from './container.js';
 import { COMMAND_BLOCKS, CommandBlockScreen, CommandMinecartScreen } from '../gui/screens/commandblock.js';
 import { StructureBlockScreen } from '../gui/screens/structure.js';
 
@@ -214,7 +215,7 @@ export class Interaction {
     let miss = !t;
     if (t && t.type === 'entity') this.attackEntity(t.entity);
     else if (t && t.type === 'block') {
-      const b = blocks[t.state >> 4];
+      const b = getBlock(t.state);
       if (b && b.id !== 0) this.clickBlock(t, t.face); else miss = true;
     }
     if (miss) {
@@ -279,7 +280,7 @@ export class Interaction {
       const state = g.world.getState(pos.x, pos.y, pos.z);
       g.tutorial.onHitBlock(state, 0);
       g.send(C.blockDig(0, pos.x, pos.y, pos.z, face));
-      const b = blocks[state >> 4];
+      const b = getBlock(state);
       const notAir = b && b.id !== 0;
       if (notAir && this.relativeHardness(b) >= 1) {
         this.destroyBlockClient(pos);
@@ -330,13 +331,7 @@ export class Interaction {
   _eyesInWater() {
     const g = this.game, pl = this.player;
     if (pl.ridingEntity && pl.ridingBoat) return false;
-    const d = pl.y + pl.eyeHeight();
-    const x = Math.floor(pl.x), y = Math.floor(d), z = Math.floor(pl.z);
-    const st = g.world.getState(x, y, z), b = blocks[st >> 4];
-    if (!b || !b.isWater) return false;
-    const lvl = st & 15;
-    const f = Math.fround(Math.fround(((lvl >= 8 ? 0 : lvl) + 1) / 9) - Math.fround(0.11111111));
-    return d < Math.fround(Math.fround(y + 1) - f);
+    return isPointInFluid(g.world, pl.x, pl.y + pl.eyeHeight(), pl.z);
   }
 
   // EnchantmentHelper.getAquaAffinityModifier: Aqua Affinity on any armour piece
@@ -352,7 +347,7 @@ export class Interaction {
     if (this.leftClickCounter <= 0 && !this.player.usingItem) {
       const t = this.target;
       if (leftDown && t && t.type === 'block') {
-        const b = blocks[g.world.getState(t.x, t.y, t.z) >> 4];
+        const b = getBlock(g.world.getState(t.x, t.y, t.z));
         if (b && b.id !== 0 && this.onPlayerDamageBlock(t, t.face)) {
           g.particles.blockHit(t.x, t.y, t.z, t.face);
           this.swing();
@@ -375,7 +370,7 @@ export class Interaction {
     if (g.gameMode === 3) return false;
     if (this._isHittingPos(pos)) {
       const state = g.world.getState(pos.x, pos.y, pos.z);
-      const b = blocks[state >> 4];
+      const b = getBlock(state);
       if (!b || b.id === 0) { this.isHitting = false; return false; }
       this.prevDamage = this.curDamage;
       this.curDamage = Math.fround(this.curDamage + this.relativeHardness(b)); // curBlockDamageMP is a float
@@ -412,17 +407,18 @@ export class Interaction {
   destroyBlockClient(pos) {
     const g = this.game;
     const held = g.inventory.held();
-    if (g.gameMode === 1 && held && [267, 268, 272, 276, 283].includes(held.id)) return false;
+    if (g.gameMode === 1 && held && ['wooden_sword', 'stone_sword', 'iron_sword', 'diamond_sword', 'golden_sword'].includes(g.items.name(held.id))) return false;
     const state = g.world.getState(pos.x, pos.y, pos.z);
-    const b = blocks[state >> 4];
+    const b = getBlock(state);
     if (!b || b.id === 0) return false;
     g.particles.blockBreak(pos.x, pos.y, pos.z, state);
     g.sound.playBlockBreak(pos.x, pos.y, pos.z, state);
     g.world.setState(pos.x, pos.y, pos.z, 0);
     // Doors/double plants/beds: the other half goes too (server will confirm)
     if (b.isDoor) {
-      const other = (state & 15) & 8 ? pos.y - 1 : pos.y + 1;
-      if ((g.world.getState(pos.x, other, pos.z) >> 4) === b.id) g.world.setState(pos.x, other, pos.z, 0);
+      const other = getStateProperties(state).half === 'upper' ? pos.y - 1 : pos.y + 1;
+      const otherState = g.world.getState(pos.x, other, pos.z);
+      if (getBlock(otherState)?.name === b.name) g.world.setState(pos.x, other, pos.z, 0);
     }
     if (g.gameMode !== 1 && held && g.items.isDamageable(held)) {
       held.damage++;
@@ -443,7 +439,7 @@ export class Interaction {
     const g = this.game;
     const d = FACE_DIR[face] || [0, 1, 0];
     const x = pos.x + d[0], y = pos.y + d[1], z = pos.z + d[2];
-    const b = blocks[g.world.getState(x, y, z) >> 4];
+    const b = getBlock(g.world.getState(x, y, z));
     if (!b || b.name !== 'fire') return false;
     g.sound.onWorldEvent({ effectId: 1004, location: { x, y, z }, data: 0 });
     g.world.setState(x, y, z, 0);
@@ -470,7 +466,7 @@ export class Interaction {
         if (e.kind === 'minecart' && e.cartType === 6 && g.canUseCommandBlock()) { g.screens.open(new CommandMinecartScreen(g, e, 12, 13)); return; }
         if (g.entities.isInteractive(e, stack)) return;
       } else if (t && t.type === 'block') {
-        const b = blocks[g.world.getState(t.x, t.y, t.z) >> 4];
+        const b = getBlock(g.world.getState(t.x, t.y, t.z));
         if (b && b.id !== 0) {
           const before = stack ? stack.count : 0;
           if (this.onPlayerRightClick(t, hand)) {
@@ -495,7 +491,7 @@ export class Interaction {
     const g = this.game;
     const held = g.inventory.getHand(hand);
     const fx = t.hit[0] - t.x, fy = t.hit[1] - t.y, fz = t.hit[2] - t.z;
-    const b = blocks[g.world.getState(t.x, t.y, t.z) >> 4];
+        const b = getBlock(g.world.getState(t.x, t.y, t.z));
     let activated = false;
     if (g.gameMode !== 3) {
       const mainAndOffEmpty = !g.inventory.held() && !g.inventory.offhand;
@@ -526,30 +522,29 @@ export class Interaction {
     return this._onItemUse(t, held);
   }
 
-  _itemBlock(held) { return held.id > 0 && held.id < 256 && !!blocks[held.id]; }
+  _itemBlock(held) { return !!held && this.game.items.isBlockItem(held.id); }
 
   // Block a placer item puts down (ItemBlock or ItemReed-style items)
   _placedBlock(held) {
-    if (this._itemBlock(held)) return blocks[held.id];
-    const n = { 331: 'redstone_wire', 338: 'reeds', 354: 'cake', 356: 'unpowered_repeater', 379: 'brewing_stand', 380: 'cauldron', 390: 'flower_pot',
-      404: 'unpowered_comparator', 287: 'tripwire' }[held.id];
+    if (this._itemBlock(held)) return this.game.items.blockFor(held.id);
+    const n = { redstone: 'redstone_wire', string: 'tripwire' }[this.game.items.name(held.id)];
     return n ? blocksByName[n] || null : null;
   }
 
   _replaceable(st) {
-    const b = blocks[st >> 4];
+    const b = getBlock(st);
     if (!b || b.id === 0 || b.isLiquid) return true;
-    if (b.name === 'snow_layer') return (st & 7) === 0; // one layer
-    return /^(tallgrass|deadbush|vine|fire|double_plant)$/.test(b.name);
+    if (b.name === 'snow') return Number(getStateProperties(st).layers || 1) === 1;
+    return /^(tall_grass|dead_bush|vine|fire|kelp|kelp_plant|seagrass|tall_seagrass)$/.test(b.name);
   }
 
   // World.canBlockBePlaced (+ Block.canPlaceBlockOnSide basics) at the position the item would use
   _placementPos(t, held) {
     const g = this.game;
-    const cur = blocks[g.world.getState(t.x, t.y, t.z) >> 4];
+    const cur = getBlock(g.world.getState(t.x, t.y, t.z));
     let face = t.face;
     let p = { x: t.x, y: t.y, z: t.z };
-    if (cur && cur.name === 'snow_layer' && (g.world.getState(t.x, t.y, t.z) & 7) < 1) face = 1;
+    if (cur && cur.name === 'snow' && Number(getStateProperties(g.world.getState(t.x, t.y, t.z)).layers || 1) < 1) face = 1;
     else if (!this._replaceable(g.world.getState(t.x, t.y, t.z))) {
       const d = FACE_DIR[t.face] || [0, 1, 0];
       p = { x: t.x + d[0], y: t.y + d[1], z: t.z + d[2] };
@@ -575,17 +570,17 @@ export class Interaction {
       }
     }
     // support for blocks that need something under them / beside them
-    const below = blocks[w.getState(p.x, p.y - 1, p.z) >> 4];
+    const below = getBlock(w.getState(p.x, p.y - 1, p.z));
     const solidBelow = !!(below && below.opaque);
     const n = nb.name;
-    if (/^(redstone_wire|unpowered_repeater|unpowered_comparator|carpet|wooden_pressure_plate|stone_pressure_plate|light_weighted_pressure_plate|heavy_weighted_pressure_plate|rail|golden_rail|detector_rail|activator_rail|snow_layer|cake)$/.test(n) && !solidBelow) return false;
-    if (/^(yellow_flower|red_flower|sapling|tallgrass|double_plant|deadbush)$/.test(n) && !(below && /^(grass|dirt|farmland|sand)$/.test(below.name) && (n !== 'deadbush' || below.name === 'sand'))) return false;
+    if (/^(redstone_wire|repeater|comparator|carpet|pressure_plate|rail|snow|cake)$/.test(n) && !solidBelow) return false;
+    if (/^(dandelion|poppy|sapling|tall_grass|dead_bush|fern|sunflower|lilac|rose_bush|peony|large_fern)$/.test(n) && !(below && /^(grass_block|dirt|farmland|sand)$/.test(below.name) && (n !== 'dead_bush' || below.name === 'sand'))) return false;
     if (/^(brown_mushroom|red_mushroom)$/.test(n) && !(below && below.opaque)) return false;
-    if (n === 'reeds' && !(below && (below.name === 'reeds' || /^(grass|dirt|sand)$/.test(below.name)))) return false;
+    if (n === 'sugar_cane' && !(below && (below.name === 'sugar_cane' || /^(grass_block|dirt|sand)$/.test(below.name)))) return false;
     if (/^(torch|redstone_torch|lever|stone_button|wooden_button|ladder|wall_sign|tripwire_hook)$/.test(n)) {
-      if (face === 0 && n !== 'lever' && !/button/.test(n)) return false;
+       if (face === 0 && n !== 'lever' && !/button/.test(n)) return false;
       const d = FACE_DIR[face] || [0, 1, 0];
-      const sup = blocks[w.getState(p.x - d[0], p.y - d[1], p.z - d[2]) >> 4];
+    const sup = getBlock(w.getState(p.x - d[0], p.y - d[1], p.z - d[2]));
       if (!(sup && sup.opaque)) return false;
     }
     return true;
@@ -593,9 +588,9 @@ export class Interaction {
 
   // Item.onItemUse on the client: whether the click "worked" (decides the swing), with the client-side effects
   _onItemUse(t, held) {
-    const g = this.game, w = g.world, id = held.id;
-    const st = w.getState(t.x, t.y, t.z), b = blocks[st >> 4];
-    const above = (y) => blocks[w.getState(t.x, y, t.z) >> 4];
+    const g = this.game, w = g.world, id = held.id, name = g.items.name(id);
+    const st = w.getState(t.x, t.y, t.z), b = getBlock(st);
+    const above = (y) => getBlock(w.getState(t.x, y, t.z));
     const air = (bb) => !bb || bb.id === 0;
     const placer = this._placedBlock(held);
     if (placer) {
@@ -606,23 +601,30 @@ export class Interaction {
       held.count--; // the server's slot update follows
       return true;
     }
-    switch (id) {
-      case 259: return true; // flint and steel
-      case 295: case 361: case 362: case 391: case 392: // seeds / carrot / potato
+    switch (name) {
+      case 'flint_and_steel': return true;
+      case 'wheat_seeds': case 'carrot': case 'potato':
         return t.face === 1 && b && b.name === 'farmland' && air(above(t.y + 1));
-      case 372: return t.face === 1 && b && b.name === 'soul_sand' && air(above(t.y + 1));
-      case 324: case 330: case 427: case 428: case 429: case 430: case 431: // doors
+      case 'nether_wart': return t.face === 1 && b && b.name === 'soul_sand' && air(above(t.y + 1));
+      case 'oak_door': case 'iron_door': case 'spruce_door': case 'birch_door': case 'jungle_door': case 'acacia_door': case 'dark_oak_door':
         return t.face === 1 && air(above(t.y + 1)) && air(above(t.y + 2)) && !!(b && b.opaque);
-      case 355: return t.face === 1 && air(above(t.y + 1)); // bed
-      case 323: case 425: case 397: return t.face !== 0 && !!(b && b.material !== 'plant' && b.boundingBox === 'block'); // sign, banner, skull
-      case 328: case 342: case 343: case 407: case 408: case 422: return !!(b && /rail$/.test(b.name)); // minecarts
-      case 383: case 401: return true; // spawn egg (client returns early), firework
-      case 389: case 321: return t.face >= 2; // item frame, painting
-      case 416: return t.face !== 0; // armor stand
-      case 290: case 291: case 292: case 293: case 294: // hoes
+      case 'white_bed': case 'orange_bed': case 'magenta_bed': case 'light_blue_bed': case 'yellow_bed': case 'lime_bed': case 'pink_bed': case 'gray_bed':
+      case 'light_gray_bed': case 'cyan_bed': case 'purple_bed': case 'blue_bed': case 'brown_bed': case 'green_bed': case 'red_bed': case 'black_bed':
+        return t.face === 1 && air(above(t.y + 1));
+      case 'sign': case 'oak_sign': case 'spruce_sign': case 'birch_sign': case 'jungle_sign': case 'acacia_sign': case 'dark_oak_sign':
+      case 'white_banner': case 'orange_banner': case 'magenta_banner': case 'light_blue_banner': case 'yellow_banner': case 'lime_banner': case 'pink_banner': case 'gray_banner':
+      case 'light_gray_banner': case 'cyan_banner': case 'purple_banner': case 'blue_banner': case 'brown_banner': case 'green_banner': case 'red_banner': case 'black_banner':
+      case 'skeleton_skull': case 'wither_skeleton_skull': case 'zombie_head': case 'creeper_head': case 'player_head': case 'dragon_head':
+        return t.face !== 0 && !!(b && b.material !== 'plant' && b.boundingBox === 'block');
+      case 'minecart': case 'chest_minecart': case 'furnace_minecart': case 'tnt_minecart': case 'hopper_minecart': case 'command_block_minecart': case 'spawner_minecart':
+        return !!(b && /rail$/.test(b.name));
+      case 'armor_stand': return t.face !== 0;
+      case 'firework_rocket': return true;
+      case 'painting': case 'item_frame': case 'glow_item_frame': return t.face >= 2;
+      case 'wooden_hoe': case 'stone_hoe': case 'iron_hoe': case 'diamond_hoe': case 'golden_hoe':
         return t.face !== 0 && air(above(t.y + 1)) && !!(b && (b.name === 'grass' || b.name === 'dirt'));
-      case 351: return held.damage === 15 && !!(b && /^(sapling|wheat|carrots|potatoes|pumpkin_stem|melon_stem|grass|tallgrass|double_plant|brown_mushroom|red_mushroom|cocoa)$/.test(b.name));
-      case 381: return !!(b && b.name === 'end_portal_frame' && !((st & 15) & 4)); // eye of ender into a frame
+      case 'bone_meal': return !!(b && /^(sapling|wheat|carrots|potatoes|pumpkin_stem|melon_stem|grass|tallgrass|double_plant|brown_mushroom|red_mushroom|cocoa)$/.test(b.name));
+      case 'ender_eye': return !!(b && b.name === 'end_portal_frame' && !getStateProperties(st).eye);
       default: return false;
     }
   }
@@ -635,7 +637,7 @@ export class Interaction {
     if (!SIMPLE.test(nb.name)) return;
     let meta = held.damage & 15;
     if (/^(stone|dirt|planks|sand|sandstone|wool|stonebrick|stained_hardened_clay|stained_glass|prismarine|red_sandstone|sponge)$/.test(nb.name) === false) meta = 0;
-    this.game.world.setState(p.x, p.y, p.z, (nb.id << 4) | meta);
+    this.game.world.setState(p.x, p.y, p.z, findState(nb.name));
   }
 
   // Doors, trapdoors and gates toggle instantly client-side in vanilla
@@ -643,11 +645,11 @@ export class Interaction {
     const g = this.game;
     let { x, y, z } = t;
     let st = g.world.getState(x, y, z);
-    if (b.isDoor && ((st & 15) & 8)) { y -= 1; st = g.world.getState(x, y, z); }
-    const meta = (st & 15) ^ 4;
-    g.world.setState(x, y, z, ((st >> 4) << 4) | meta);
+    let props = getStateProperties(st);
+    if (b.isDoor && props.half === 'upper') { y -= 1; st = g.world.getState(x, y, z); props = getStateProperties(st); }
+    const opening = props.open !== 'true';
+    g.world.setState(x, y, z, findState(b.name, { ...props, open: String(opening) }));
     // BlockDoor / BlockTrapDoor / BlockFenceGate.onBlockActivated: World.playEvent for the player's own client
-    const opening = !!(meta & 4);
     const iron = b.name === 'iron_trapdoor';
     const ev = b.isDoor ? (opening ? 1006 : 1012) : b.isFenceGate ? (opening ? 1008 : 1014) : iron ? (opening ? 1037 : 1036) : (opening ? 1007 : 1013);
     g.sound.onWorldEvent({ effectId: ev, location: { x, y, z }, data: 0 });
@@ -657,17 +659,22 @@ export class Interaction {
   sendUseItem(held, hand = 0) {
     const g = this.game;
     if (g.gameMode === 3) return false;
-    if (held.id === 386) {
+    const name = g.items.name(held.id);
+    if (name === 'writable_book') {
       // ItemWritableBook opens the editor client-side
       import('../gui/screens/book.js').then((m) => g.screens.open(new m.BookScreen(g, held, true)));
     }
     g.send(C.useItem(hand)); // CPacketPlayerTryUseItem
     if (g.cooldownFraction(held.id, 0) > 0) return false; // CooldownTracker: still cooling down
+    if (name === 'trident') {
+      if (g.items.damage(held) >= g.items.maxDurability(held.id)) return false;
+      if (g.items.enchantLevel(held, 'riptide') > 0 && !this._wetForRiptide()) return false;
+    }
     const action = g.items.useAction(held);
     if (action !== 'none') {
       // ItemFood.onItemRightClick -> EntityPlayer.canEat(alwaysEdible): hungry (golden apples and chorus fruit always) and
       // not invulnerable, so nothing is eaten in creative or spectator
-      const canEat = (held.id === 322 || held.id === 432 || g.food < 20) && !this.player.invulnerable;
+      const canEat = (name === 'golden_apple' || name === 'enchanted_golden_apple' || name === 'golden_carrot' || g.food < 20) && !this.player.invulnerable;
       const food = action === 'eat' && !canEat;
       if (!food) {
         this.player.usingItem = true;
@@ -677,12 +684,12 @@ export class Interaction {
       }
       return false;
     }
-    if (held.id === 346) { this.swing(hand); return true; } // ItemFishingRod swings the arm itself
+    if (name === 'fishing_rod') { this.swing(hand); return true; } // ItemFishingRod swings the arm itself
     const survival = g.gameMode !== 1;
     const t = this.target;
-    const lookingAtFrame = t && t.type === 'block' && blocks[t.state >> 4] && blocks[t.state >> 4].name === 'end_portal_frame';
+    const lookingAtFrame = t && t.type === 'block' && getBlock(t.state).name === 'end_portal_frame';
     // thrown items: snowball, egg, ender pearl, experience bottle, splash / lingering potion, eye of ender
-    const thrown = [332, 344, 368, 384, 438, 441].includes(held.id) || (held.id === 381 && !lookingAtFrame);
+    const thrown = ['snowball', 'egg', 'ender_pearl', 'experience_bottle', 'splash_potion', 'lingering_potion'].includes(name) || (name === 'ender_eye' && !lookingAtFrame);
     if (thrown) {
       if (survival) {
         held.count--;
@@ -691,16 +698,31 @@ export class Interaction {
       return true;
     }
     // armour and elytra equip themselves when that slot is empty
-    if ((held.id >= 298 && held.id <= 317) || held.id === 443) {
-      const slot = held.id === 443 ? 2 : 3 - ((held.id - 298) % 4);
+    const type = armorType(held, g.items);
+    if (type >= 0) {
+      const slot = 3 - type;
       if (!g.inventory.armor[slot]) return true;
     }
     return false;
   }
 
+  _wetForRiptide() {
+    const p = this.player, w = this.game.world;
+    return !!p.inWater || !!(w?.isRainingAt?.(p.x, p.y, p.z) || w?.isRainingAt?.(p.x, p.y + p.height, p.z));
+  }
+
   stopUsingItem() {
     const g = this.game;
+    const held = g.inventory.getHand(this.activeHand);
+    // Every release ends the server's active hand, including a charge under ten ticks.
     g.send(C.blockDig(5, 0, 0, 0, 0));
+    if (held && g.items.name(held.id) === 'trident' && this.useTicks >= 10) {
+      const level = g.items.enchantLevel(held, 'riptide');
+      if (level > 0 && this._wetForRiptide()) {
+        this.player.startRiptide(level, g.world);
+        g.sound?.playAtPlayer('item.trident.riptide_' + Math.min(level, 3), 1, 1);
+      }
+    }
     this.player.usingItem = false;
     this.useTicks = 0;
   }
@@ -715,18 +737,16 @@ export class Interaction {
       item = pickBlockItem(st, g);
     } else if (t.type === 'entity') {
       const e = t.entity;
-      if (e.kind === 'painting') item = { id: 321, count: 1, damage: 0 };
-      else if (e.kind === 'itemframe') item = e.item ? copy(e.item) : { id: 389, count: 1, damage: 0 };
-      else if (e.kind === 'minecart') item = { id: 328, count: 1, damage: 0 };
-      else if (e.kind === 'boat') item = { id: 333, count: 1, damage: 0 };
-      else if (e.kind === 'mob' && e.type) {
-        // EntityLiving.getPickedResult: a spawn egg with EntityTag.id, when the entity has an egg
-        const def = g.assets.data.entities.find((d) => d.id === (e.entityType ?? e.type));
-        const key = def ? 'minecraft:' + def.name : null;
-        if (key && g.assets.data.creative.eggs[key]) {
-          item = { id: 383, count: 1, damage: 0, nbt: { t: 10, name: '', v: { EntityTag: { t: 10, v: { id: { t: 8, v: key } } } } } };
-        }
-      }
+      let name = null;
+      if (e.kind === 'painting') name = 'painting';
+      else if (e.kind === 'itemframe') { if (e.item) item = copy(e.item); else name = 'item_frame'; }
+      else if (e.kind === 'minecart') name = e.entityName;
+      else if (e.kind === 'boat') name = (['oak', 'spruce', 'birch', 'jungle', 'acacia', 'dark_oak'][e.boatType || 0] || 'oak') + '_boat';
+      else if (e.kind === 'armorstand') name = 'armor_stand';
+      else if (e.kind === 'crystal') name = 'end_crystal';
+      else if (e.kind === 'mob' && e.entityName) name = e.entityName + '_spawn_egg';
+      const def = name && g.items.byName.get(name);
+      if (def) item = { id: def.id, count: 1, damage: 0 };
     }
     if (!item) return;
     const inv = g.inventory;
@@ -734,7 +754,7 @@ export class Interaction {
     for (let i = 0; i < 9; i++) {
       const s = inv.main[i];
       // InventoryPlayer.getSlotFor: same item, damage and tag
-      if (s && s.id === item.id && s.damage === item.damage && JSON.stringify(g.items.nbt(s) || null) === JSON.stringify(g.items.nbt(item) || null)) { g.selectSlot(i); return; }
+      if (s && stackable(s, item)) { g.selectSlot(i); return; }
     }
     if (g.gameMode !== 1) {
       // Survival: swap from main inventory if present
@@ -815,32 +835,17 @@ export class Interaction {
 
 // Block.getPickBlock -> item for a block state
 export function pickBlockItem(state, game) {
-  const id = state >> 4, m = state & 15;
-  const b = blocks[id];
-  if (!b || id === 0) return null;
+  const b = getBlock(state);
+  if (!b || b.name === 'air') return null;
   const map = {
-    wooden_door: 324, iron_door: 330, spruce_door: 427, birch_door: 428, jungle_door: 429, acacia_door: 430, dark_oak_door: 431,
-    standing_sign: 323, wall_sign: 323, reeds: 338, cake: 354, bed: 355, unpowered_repeater: 356, powered_repeater: 356,
-    unpowered_comparator: 404, powered_comparator: 404, brewing_stand: 379, cauldron: 380, flower_pot: 390, skull: 397,
-    redstone_wire: 331, wheat: 295, carrots: 391, potatoes: 392, nether_wart: 372, pumpkin_stem: 361, melon_stem: 362,
-    cocoa: 351, tripwire: 287, standing_banner: 425, wall_banner: 425, lit_furnace: 61, lit_redstone_ore: 73,
-    unlit_redstone_torch: 76, lit_redstone_lamp: 123, lit_pumpkin: 91, double_stone_slab: 44, double_wooden_slab: 126,
-    double_stone_slab2: 182, piston_head: 33, redstone_lamp: 123, daylight_detector_inverted: 151, farmland: 3,
+    wall_sign: 'sign', wall_torch: 'torch', redstone_wall_torch: 'redstone_torch',
+    redstone_wire: 'redstone', tripwire: 'string', wheat: 'wheat_seeds', carrots: 'carrot', potatoes: 'potato',
+    beetroots: 'beetroot_seeds', cocoa: 'cocoa_beans', pumpkin_stem: 'pumpkin_seeds', attached_pumpkin_stem: 'pumpkin_seeds',
+    melon_stem: 'melon_seeds', attached_melon_stem: 'melon_seeds', farmland: 'dirt', grass_path: 'dirt',
+    kelp_plant: 'kelp', tall_seagrass: 'seagrass',
   };
-  if (map[b.name] !== undefined) {
-    let damage = 0;
-    if (b.name === 'cocoa') damage = 3;
-    if (b.name === 'double_stone_slab' || b.name === 'double_wooden_slab' || b.name === 'double_stone_slab2') damage = m & 7;
-    return { id: map[b.name], count: 1, damage };
-  }
-  let damage = 0;
-  const keepMeta = new Set(['stone', 'dirt', 'planks', 'sand', 'wool', 'stained_glass', 'stained_glass_pane', 'stained_hardened_clay', 'carpet',
-    'red_flower', 'tallgrass', 'monster_egg', 'stonebrick', 'sandstone', 'red_sandstone', 'cobblestone_wall', 'prismarine', 'sponge', 'anvil']);
-  if (keepMeta.has(b.name)) damage = b.name === 'anvil' ? (m >> 2) : m;
-  if (b.name === 'log' || b.name === 'leaves' || b.name === 'sapling') damage = m & 3;
-  if (b.name === 'log2' || b.name === 'leaves2') damage = m & 1;
-  if (b.name === 'stone_slab' || b.name === 'wooden_slab' || b.name === 'stone_slab2') damage = m & 7;
-  if (b.name === 'double_plant') damage = m & 7;
-  if (b.name === 'quartz_block') damage = m >= 2 ? 2 : m;
-  return { id, count: 1, damage };
+  let name = map[b.name] || b.name.replace(/^potted_/, '').replace('_wall_', '_');
+  if (b.name === 'piston_head') name = getStateProperties(state).type === 'sticky' ? 'sticky_piston' : 'piston';
+  const def = game.items.byName.get(name);
+  return def && def.id > 0 ? { id: def.id, count: 1, damage: 0 } : null;
 }

@@ -1,5 +1,6 @@
 // Particle system (port of EffectRenderer + common EntityFX subclasses), batched into one buffer per texture.
-import { blocks } from '../world/blocks.js';
+import { getBlock, getStateProperties } from '../world/blocks.js';
+import { isPointInFluid } from '../world/fluids.js';
 import { resolveState } from '../world/blockstates.js';
 import { FORMAT, litParams } from '../gfx/device.js';
 
@@ -96,6 +97,7 @@ export class Particles {
     }
     const out = [];
     for (const p of this.list) {
+      if (p.barrier && !this._barrierVisible(p)) continue;
       p.prevX = p.x; p.prevY = p.y; p.prevZ = p.z;
       if (p.age++ >= p.maxAge) continue;
       if (p.update) { if (p.update(p) === false) continue; }
@@ -114,7 +116,7 @@ export class Particles {
     let nx = p.x + p.mx, ny = p.y + p.my, nz = p.z + p.mz;
     p.onGround = false;
     if (p.collide) {
-      const solid = (x, y, z) => { const b = blocks[w.getState(Math.floor(x), Math.floor(y), Math.floor(z)) >> 4]; return b && b.boundingBox === 'block' && b.id !== 0 && !b.isLiquid; };
+      const solid = (x, y, z) => { const b = getBlock(w.getState(Math.floor(x), Math.floor(y), Math.floor(z))); return b && b.boundingBox === 'block' && b.id !== 0 && !b.isLiquid; };
       if (solid(p.x, ny, p.z)) { if (p.my < 0) { p.onGround = true; ny = Math.floor(ny) + 1.001; } else ny = p.y; p.my = 0; }
       if (solid(nx, ny, p.z)) { nx = p.x; p.mx = 0; }
       if (solid(nx, ny, nz)) { nz = p.z; p.mz = 0; }
@@ -129,7 +131,7 @@ export class Particles {
     const w = this.game.world;
     for (const b of [this.batchP, this.batchA, this.batchE]) b.begin();
     for (const p of this.list) {
-      if (p.invisible) continue;
+      if (p.invisible || p.barrier && !this._barrierVisible(p)) continue;
       const x = p.prevX + (p.x - p.prevX) * partial;
       const y = p.prevY + (p.y - p.prevY) * partial;
       const z = p.prevZ + (p.z - p.prevZ) * partial;
@@ -183,8 +185,8 @@ export class Particles {
       const bm = this.game.assets.modelStore.bakeVariant(rs.file, rs.props, rs.variant, 0);
       tex = bm && bm.particle;
     }
-    const b = blocks[state >> 4];
-    if (!tex && b) { if (b.isWater) tex = 'blocks/water_still'; else if (b.isLava) tex = 'blocks/lava_still'; }
+    const b = getBlock(state);
+    if (!tex && b) { if (b.isWater) tex = 'block/water_still'; else if (b.isLava) tex = 'block/lava_still'; }
     const uv = tex ? this.game.assets.atlas.uv(tex) : null;
     return uv;
   }
@@ -197,7 +199,7 @@ export class Particles {
     const ju = rand() * 3, jv = rand() * 3;
     const u0 = uv[0] + ju * du, v0 = uv[1] + jv * dv;
     const p = this.fx(x, y, z, mx, my, mz, { atlas: [u0, v0, u0 + du, v0 + dv], gravity: 1, scale: (rand() * 0.5 + 0.5), r: 0.6, g: 0.6, b: 0.6 });
-    const b = blocks[state >> 4];
+    const b = getBlock(state);
     if (b && b.name === 'grass') { p.r = 0.6 * 0.5; p.g = 0.6 * 0.7; p.b = 0.6 * 0.2; }
     if (tint) { p.r *= ((tint >> 16) & 255) / 255; p.g *= ((tint >> 8) & 255) / 255; p.b *= (tint & 255) / 255; }
     p.scale /= 2;
@@ -205,7 +207,7 @@ export class Particles {
   }
 
   blockBreak(x, y, z, state) {
-    const b = blocks[state >> 4];
+    const b = getBlock(state);
     if (!b || b.id === 0) return;
     const n = 4;
     for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) for (let k = 0; k < n; k++) {
@@ -216,7 +218,7 @@ export class Particles {
 
   blockHit(x, y, z, face) {
     const st = this.game.world.getState(x, y, z);
-    const b = blocks[st >> 4];
+    const b = getBlock(st);
     if (!b || b.id === 0) return;
     const f = 0.1;
     let px = x + rand() * (1 - f * 2) + f, py = y + rand() * (1 - f * 2) + f, pz = z + rand() * (1 - f * 2) + f;
@@ -352,8 +354,7 @@ export class Particles {
     p.update = (q) => {
       q.my += 0.002; this.move(q, this.game.world);
       q.mx *= 0.85; q.my *= 0.85; q.mz *= 0.85;
-      const b = blocks[this.game.world.getState(Math.floor(q.x), Math.floor(q.y), Math.floor(q.z)) >> 4];
-      if (!b || !b.isWater) return false;
+      if (!isPointInFluid(this.game.world, q.x, q.y, q.z)) return false;
     };
     return this.add(p);
   }
@@ -633,58 +634,58 @@ export class Particles {
         }
       }
     };
-    const id = p.particleId;
-    switch (id) {
-      case 0: emit((x, y, z, mx, my, mz) => this.poof(x, y, z, mx, my, mz)); break;
-      case 1: emit((x, y, z) => this.largeExplode(x, y, z, 1)); break;
-      case 2: emit((x, y, z) => { for (let i = 0; i < 6; i++) this.largeExplode(x + (rand() - rand()) * 4, y + (rand() - rand()) * 4, z + (rand() - rand()) * 4, 1); }); break;
-      case 3: emit((x, y, z, mx, my, mz) => this.spark(x, y, z, mx, my, mz)); break;
-      case 4: emit((x, y, z, mx, my, mz) => this.bubble(x, y, z, mx, my, mz)); break;
-      case 5: case 6: case 39: emit((x, y, z, mx, my, mz) => this.splash(x, y, z, mx, my, mz)); break;
-      case 7: case 8: emit((x, y, z) => this.add({ x, y, z, tex: 0, scale: rand() * 0.6 + 0.2, r: 0.4, g: 0.4, b: 0.7, maxAge: Math.floor(16 / (rand() * 0.8 + 0.2)), collide: false, update: (q) => { q.x += q.mx; q.y += q.my; q.z += q.mz; q.mx *= 0.99; q.my *= 0.99; q.mz *= 0.99; } })); break;
-      case 9: emit((x, y, z, mx, my, mz) => this.crit1(x, y, z, mx, my, mz, false)); break;
-      case 10: emit((x, y, z, mx, my, mz) => this.crit1(x, y, z, mx, my, mz, true)); break;
-      case 11: emit((x, y, z, mx, my, mz) => this.smoke(x, y, z, mx, my, mz)); break;
-      case 12: emit((x, y, z, mx, my, mz) => this.smoke(x, y, z, mx, my, mz, 2.5)); break;
-      case 13: emit((x, y, z, mx, my, mz) => this.spell(x, y, z, mx, my, mz)); break;
-      case 14: emit((x, y, z, mx, my, mz) => this.spell(x, y, z, mx, my, mz, 1, 1, 1, true)); break;
-      case 15: case 16: emit((x, y, z, mx, my, mz, single) => this.spell(x, y, z, 0, 0, 0, single ? mx : p.offsetX, single ? my : p.offsetY, single ? mz : p.offsetZ)); break;
-      case 17: emit((x, y, z, mx, my, mz) => this.spell(x, y, z, mx, my, mz, 1, 1, 1, false, true)); break;
-      case 18: emit((x, y, z) => this.drip(x, y, z, false)); break;
-      case 19: emit((x, y, z) => this.drip(x, y, z, true)); break;
-      case 20: emit((x, y, z) => this.simpleRising(x, y, z, 81, { my: 0 })); break;
-      case 21: case 22: emit((x, y, z) => this.simpleRising(x, y, z, id === 21 ? 82 : 0, { my: 0.0, scale: id === 21 ? 1.5 : 0.5, r: id === 22 ? 0.4 : 1, g: id === 22 ? 0.4 : 1, b: id === 22 ? 0.7 : 1 })); break;
-      case 23: emit((x, y, z, mx) => this.simpleRising(x, y, z, 64, { my: 0.2, maxAge: 6, r: Math.sin(mx * Math.PI * 2) * 0.65 + 0.35, g: Math.sin((mx + 1 / 3) * Math.PI * 2) * 0.65 + 0.35, b: Math.sin((mx + 2 / 3) * Math.PI * 2) * 0.65 + 0.35 })); break;
-      case 24: emit((x, y, z, mx, my, mz) => this.portal(x, y, z, mx, my, mz)); break;
-      case 25: emit((x, y, z, mx, my, mz) => this.enchant(x, y, z, mx, my, mz)); break;
-      case 26: emit((x, y, z, mx, my, mz) => this.flame(x, y, z, mx, my, mz)); break;
-      case 27: emit((x, y, z) => this.lava(x, y, z)); break;
-      case 28: emit((x, y, z) => this.footstep(x, y, z)); break;
-      case 29: emit((x, y, z, mx, my, mz) => { const s = this.smoke(x, y, z, mx, my, mz, 2.5); if (s) { s.r = s.g = s.b = 1 - rand() * 0.3; } }); break;
-      case 30: emit((x, y, z, mx, my, mz, single) => this.reddust(x, y, z, single ? mx : p.offsetX, single ? my : p.offsetY, single ? mz : p.offsetZ)); break;
-      case 31: case 33: case 32: {
-        const uv = this._itemAtlas(id === 33 ? 341 : 332);
+    const type = this.game.assets.data.particles[p.particleId]?.name;
+    switch (type) {
+      case 'poof': emit((x, y, z, mx, my, mz) => this.poof(x, y, z, mx, my, mz)); break;
+      case 'explosion': emit((x, y, z) => this.largeExplode(x, y, z, 1)); break;
+      case 'explosion_emitter': emit((x, y, z) => { for (let i = 0; i < 6; i++) this.largeExplode(x + (rand() - rand()) * 4, y + (rand() - rand()) * 4, z + (rand() - rand()) * 4, 1); }); break;
+      case 'firework': emit((x, y, z, mx, my, mz) => this.spark(x, y, z, mx, my, mz)); break;
+      case 'bubble': emit((x, y, z, mx, my, mz) => this.bubble(x, y, z, mx, my, mz)); break;
+      case 'rain': case 'fishing': case 'splash': emit((x, y, z, mx, my, mz) => this.splash(x, y, z, mx, my, mz)); break;
+      case 'underwater': emit((x, y, z) => this.add({ x, y, z, tex: 0, scale: rand() * 0.6 + 0.2, r: 0.4, g: 0.4, b: 0.7, maxAge: Math.floor(16 / (rand() * 0.8 + 0.2)), collide: false, update: (q) => { q.x += q.mx; q.y += q.my; q.z += q.mz; q.mx *= 0.99; q.my *= 0.99; q.mz *= 0.99; } })); break;
+      case 'crit': emit((x, y, z, mx, my, mz) => this.crit1(x, y, z, mx, my, mz, false)); break;
+      case 'enchanted_hit': emit((x, y, z, mx, my, mz) => this.crit1(x, y, z, mx, my, mz, true)); break;
+      case 'smoke': emit((x, y, z, mx, my, mz) => this.smoke(x, y, z, mx, my, mz)); break;
+      case 'large_smoke': emit((x, y, z, mx, my, mz) => this.smoke(x, y, z, mx, my, mz, 2.5)); break;
+      case 'effect': emit((x, y, z, mx, my, mz) => this.spell(x, y, z, mx, my, mz)); break;
+      case 'instant_effect': emit((x, y, z, mx, my, mz) => this.spell(x, y, z, mx, my, mz, 1, 1, 1, true)); break;
+      case 'entity_effect': case 'ambient_entity_effect': emit((x, y, z, mx, my, mz, single) => this.spell(x, y, z, 0, 0, 0, single ? mx : p.offsetX, single ? my : p.offsetY, single ? mz : p.offsetZ)); break;
+      case 'witch': emit((x, y, z, mx, my, mz) => this.spell(x, y, z, mx, my, mz, 1, 1, 1, false, true)); break;
+      case 'dripping_water': emit((x, y, z) => this.drip(x, y, z, false)); break;
+      case 'dripping_lava': emit((x, y, z) => this.drip(x, y, z, true)); break;
+      case 'angry_villager': emit((x, y, z) => this.simpleRising(x, y, z, 81, { my: 0 })); break;
+      case 'happy_villager': case 'mycelium': emit((x, y, z) => this.simpleRising(x, y, z, type === 'happy_villager' ? 82 : 0, { my: 0.0, scale: type === 'happy_villager' ? 1.5 : 0.5, r: type === 'mycelium' ? 0.4 : 1, g: type === 'mycelium' ? 0.4 : 1, b: type === 'mycelium' ? 0.7 : 1 })); break;
+      case 'note': emit((x, y, z, mx) => this.simpleRising(x, y, z, 64, { my: 0.2, maxAge: 6, r: Math.sin(mx * Math.PI * 2) * 0.65 + 0.35, g: Math.sin((mx + 1 / 3) * Math.PI * 2) * 0.65 + 0.35, b: Math.sin((mx + 2 / 3) * Math.PI * 2) * 0.65 + 0.35 })); break;
+      case 'portal': emit((x, y, z, mx, my, mz) => this.portal(x, y, z, mx, my, mz)); break;
+      case 'enchant': emit((x, y, z, mx, my, mz) => this.enchant(x, y, z, mx, my, mz)); break;
+      case 'flame': emit((x, y, z, mx, my, mz) => this.flame(x, y, z, mx, my, mz)); break;
+      case 'lava': emit((x, y, z) => this.lava(x, y, z)); break;
+      case 'cloud': emit((x, y, z, mx, my, mz) => { const s = this.smoke(x, y, z, mx, my, mz, 2.5); if (s) { s.r = s.g = s.b = 1 - rand() * 0.3; } }); break;
+      case 'dust': emit((x, y, z) => {
+        const dust = this.reddust(x, y, z, p.data.red, p.data.green, p.data.blue);
+        if (dust) dust.scale *= Math.max(0.01, Math.min(4, p.data.scale));
+      }); break;
+      case 'item_snowball': case 'item_slime': {
+        const uv = this._itemAtlas(type === 'item_slime' ? this.game.items.byName.get('slime_ball')?.id : this.game.items.byName.get('snowball')?.id);
         emit((x, y, z, mx, my, mz) => { if (uv) this._itemCrackAt(uv, x, y, z, mx, my, mz); });
         break;
       }
-      case 34: emit((x, y, z) => this.simpleRising(x, y, z, 80, { my: 0.1 })); break;
-      case 35: emit((x, y, z) => this.add({ x, y, z, atlas: this.game.assets.atlas.uv('items/barrier'), scale: 5, maxAge: 80, update: () => {} })); break;
-      case 36: {
-        const itemId = p.data[0], dmg = p.data[1] || 0;
-        const m = this.game.itemRenderer.modelFor({ id: itemId, damage: dmg, count: 1 });
+      case 'heart': emit((x, y, z) => this.simpleRising(x, y, z, 80, { my: 0.1 })); break;
+      case 'barrier': emit((x, y, z) => this.barrier(Math.floor(x), Math.floor(y), Math.floor(z))); break;
+      case 'item': {
+        if (!p.data.item) break;
+        const m = this.game.itemRenderer.modelFor(p.data.item);
         const tex = m.kind === 'generated' ? m.layers[0] : m.baked && m.baked.particle;
         const uv = tex ? this.game.assets.atlas.uv(tex) : null;
         emit((x, y, z, mx, my, mz) => { if (uv) this._itemCrackAt(uv, x, y, z, mx, my, mz); });
         break;
       }
-      case 37: case 38: {
-        const st = p.data[0];
-        const state = ((st & 4095) << 4) | ((st >> 12) & 15);
+      case 'block': case 'falling_dust': {
+        const state = p.data.blockState;
         emit((x, y, z, mx, my, mz) => this.digging(x, y, z, mx, my, mz, state));
         break;
       }
-      case 40: break;
-      case 41: this.game.hud.elderGuardianTime = 60; break;
+      case 'elder_guardian': this.game.hud.elderGuardianTime = 60; break;
       default: break;
     }
   }
@@ -738,12 +739,30 @@ export class Particles {
     }
   }
 
+  _barrierVisible(p) {
+    const g = this.game, held = g.inventory.held();
+    return !!g.player.creative && !!held && g.items.name(held.id) === 'barrier'
+      && getBlock(g.world.getState(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z))).name === 'barrier';
+  }
+
+  barrier(x, y, z) {
+    if (!this._barrierVisible({ x: x + 0.5, y: y + 0.5, z: z + 0.5 })) return;
+    const existing = this.list.find(p => p.barrier && p.x === x + 0.5 && p.y === y + 0.5 && p.z === z + 0.5);
+    if (existing) { existing.age = 0; return; }
+    this.add({ x: x + 0.5, y: y + 0.5, z: z + 0.5, barrier: true,
+      atlas: this.game.assets.atlas.uv('item/barrier'), scale: 5, maxAge: 80, update: () => {} });
+  }
+
   // Ambient block particles (Block.randomDisplayTick), called by the weather/ambience ticker
   randomDisplayTick(x, y, z, state) {
-    const b = blocks[state >> 4];
+    const b = getBlock(state);
     if (!b) return;
     const n = b.name;
-    const m = state & 15;
+    if (n === 'barrier' && this.game.player.creative) {
+      const held = this.game.inventory.held();
+      if (held && this.game.items.name(held.id) === 'barrier') this.barrier(x, y, z);
+    }
+    const m = Number(getStateProperties(state).level || 0);
     if (n === 'torch' || n === 'redstone_torch') {
       let px = x + 0.5, py = y + 0.7, pz = z + 0.5;
       const off = { 1: [-0.27, 0.22, 0], 2: [0.27, 0.22, 0], 3: [0, 0.22, -0.27], 4: [0, 0.22, 0.27] }[m];
@@ -798,12 +817,12 @@ export class Particles {
       // no-op
     } else if (n === 'leaves' || n === 'leaves2') {
       // World.isRaining (canLightningStrike): rain strength above 0.2, not the "begin raining" flag
-      if (this.game.world.rainStrength > 0.2 && rand() < 0.07 && blocks[this.game.world.getState(x, y - 1, z) >> 4]?.id === 0) this.drip(x + rand(), y - 0.05, z + rand(), false);
+      if (this.game.world.rainStrength > 0.2 && rand() < 0.07 && getBlock(this.game.world.getState(x, y - 1, z)).id === 0) this.drip(x + rand(), y - 0.05, z + rand(), false);
     }
     // Liquids dripping through ceilings
-    const below = blocks[this.game.world.getState(x, y - 1, z) >> 4];
+      const below = getBlock(this.game.world.getState(x, y - 1, z));
     if (b.opaque && below && below.id === 0 && rand() < 0.01) {
-      const above = blocks[this.game.world.getState(x, y + 1, z) >> 4];
+      const above = getBlock(this.game.world.getState(x, y + 1, z));
       if (above && above.isLiquid) this.drip(x + rand(), y - 0.05, z + rand(), above.isLava);
     }
   }

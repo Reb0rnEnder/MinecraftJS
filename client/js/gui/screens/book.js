@@ -90,7 +90,7 @@ export class BookScreen extends Screen {
     const root = { t: TAG.COMPOUND, name: '', v: tagObj };
     const item = { id: sign ? 387 : 386, count: 1, damage: 0, nbt: root };
     const w = new Writer().slot(item).build();
-    g.send(C.customPayload(sign ? 'MC|BSign' : 'MC|BEdit', w));
+      g.send(C.customPayload(sign ? 'minecraft:book_sign' : 'minecraft:book_edit', w));
     const held = g.inventory.held();
     if (held && held.id === 386) { held.nbt = root; held.nbtRaw = null; held._simple = null; if (sign) held.id = 387; }
   }

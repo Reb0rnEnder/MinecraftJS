@@ -1,6 +1,7 @@
 // Client world: chunk storage, block access, light propagation, collision and raycasting.
+import { biomeInfo } from './biomes.js';
 import { Chunk, Section } from './chunk.js';
-import { blocks, DIR_OFFSETS, staticCollisionBoxes } from './blocks.js';
+import { blocks, getBlock, getStateProperties, DIR_OFFSETS, staticCollisionBoxes } from './blocks.js';
 import { stairsShape, stairsFacing, stairsHalf, doorProps } from './blockstates.js';
 
 const HORIZ = ['south', 'west', 'north', 'east'];
@@ -84,13 +85,25 @@ export class World {
     return s ? s.blocks[((y & 15) << 8) | ((z & 15) << 4) | (x & 15)] : 0;
   }
 
-  getBlockId(x, y, z) { return this.getState(x, y, z) >> 4; }
+  getBlockId(x, y, z) { return getBlock(this.getState(x, y, z)).id; }
 
-  getBlockDef(x, y, z) { return blocks[this.getState(x, y, z) >> 4] || blocks[0]; }
+  getBlockDef(x, y, z) { return getBlock(this.getState(x, y, z)); }
 
   getBiome(x, z) {
     const c = this._chunk(x >> 4, z >> 4);
     return c ? c.biomes[((z & 15) << 4) | (x & 15)] : 1;
+  }
+
+  // World.isRainingAt: rain, an exposed position, and a biome with rain precipitation.
+  isRainingAt(x, y, z) {
+    x = Math.floor(x); y = Math.floor(y); z = Math.floor(z);
+    if (!this.hasSky || this.rainStrength <= 0.2 || !this.isLoaded(x, z)) return false;
+    if (biomeInfo(this.getBiome(x, z)).precipitation !== 'rain') return false;
+    for (let above = Math.max(0, y); above < 256; above++) {
+      const b = getBlock(this.getState(x, above, z));
+      if (b.boundingBox === 'block' || b.isLiquid) return false;
+    }
+    return true;
   }
 
   getSkyLight(x, y, z) {
@@ -133,7 +146,7 @@ export class World {
     const blockSeeds = [], skySeeds = [];
     for (const [x, y, z, old, state] of changes) {
       this._markBlock(dirty, x, y, z, true);
-      const ob = blocks[old >> 4] || blocks[0], nb = blocks[state >> 4] || blocks[0];
+      const ob = getBlock(old), nb = getBlock(state);
       const opChanged = this.opacity(old) !== this.opacity(state);
       if (ob.emitLight !== nb.emitLight || opChanged) blockSeeds.push(x, y, z);
       if (this.hasSky && opChanged) skySeeds.push(x, y, z);
@@ -160,7 +173,7 @@ export class World {
   // ---------------- Lighting ----------------
 
   opacity(state) {
-    const b = blocks[state >> 4];
+    const b = getBlock(state);
     if (!b || b.id === 0) return 0;
     if (b.opaque) return 15;
     return b.filterLight || 0;
@@ -210,7 +223,7 @@ export class World {
 
   _sourceLevel(sky, x, y, z) {
     const st = this.getState(x, y, z);
-    if (!sky) return (blocks[st >> 4] || blocks[0]).emitLight;
+    if (!sky) return getBlock(st).emitLight;
     if (this.opacity(st) > 0) return 0;
     const c = this._chunk(x >> 4, z >> 4);
     return c && y >= c.heightMap[((z & 15) << 4) | (x & 15)] ? 15 : 0;
@@ -288,21 +301,23 @@ export class World {
   // Collision boxes for the block at x,y,z in world coordinates
   // state: the block's collision boxes as if it were `state` (moving piston blocks ask for the block they carry)
   collisionBoxes(x, y, z, out, state = this.getState(x, y, z)) {
-    const id = state >> 4;
-    if (id === 0) return;
-    const b = blocks[id];
-    if (!b) return;
+    const def = getBlock(state);
+    if (!def || def.id === 0) return;
+    if (!def) return;
     // BlockPistonMoving: its box is wherever the piston has moved the carried block, which may be the
     // neighbouring cell; getCollisions asks the moving blocks directly (movingCollider)
-    if (b.name === 'piston_extension') return;
+    if (def.name === 'moving_piston') return;
     // TileEntityShulkerBox: the box grows with the opening lid
-    if (this.shulkerCollider && b.name.endsWith('_shulker_box')) { this.shulkerCollider(x, y, z, state, out); return; }
+    if (this.shulkerCollider && def.name.endsWith('_shulker_box')) { this.shulkerCollider(x, y, z, state, out); return; }
+    const shapeBoxes = staticCollisionBoxes(state);
+    for (const bx of shapeBoxes) out.push([x + bx[0], y + bx[1], z + bx[2], x + bx[3], y + bx[4], z + bx[5]]);
+    return;
     const m = state & 15;
     const add = (a, bb, c, d, e, f) => out.push([x + a, y + bb, z + c, x + d, y + e, z + f]);
     if (b.isFence || b.isPane || b.isWall) {
       const conn = (dx, dz) => {
         const ns = this.getState(x + dx, y, z + dz);
-        const nb = blocks[ns >> 4];
+        const nb = getBlock(ns);
         if (!nb || nb.id === 0) return false;
         if (b.isFence) return (nb.isFence && ((nb.name === 'nether_brick_fence') === (b.name === 'nether_brick_fence'))) || nb.isFenceGate || (nb.opaque && nb.name !== 'pumpkin' && nb.name !== 'lit_pumpkin' && nb.name !== 'melon_block');
         if (b.isWall) return nb.isWall || nb.isFenceGate || (nb.opaque && nb.name !== 'pumpkin' && nb.name !== 'lit_pumpkin' && nb.name !== 'melon_block');
@@ -430,7 +445,7 @@ export class World {
   // ---------------- Raycast ----------------
 
   selectionBox(state, x, y, z) {
-    const b = blocks[state >> 4];
+    const b = getBlock(state);
     if (!b || b.id === 0 || b.isLiquid) return null;
     if (this.selectionProvider) {
       const r = this.selectionProvider(state, x, y, z);
@@ -453,11 +468,11 @@ export class World {
     let tMaxZ = stepZ ? ((stepZ > 0 ? z + 1 - oz : oz - z) * tDeltaZ) : Infinity;
     for (let i = 0; i < 200; i++) {
       const state = this.getState(x, y, z);
-      if (state >> 4) {
-        const b = blocks[state >> 4];
+      if (state !== 0) {
+        const b = getBlock(state);
         let box = null;
         if (b.isLiquid) {
-          if (hitLiquids && (state & 15) === 0) box = [0, 0, 0, 1, 0.875, 1];
+          if (hitLiquids && Number(getStateProperties(state).level || 0) === 0) box = [0, 0, 0, 1, 0.875, 1];
         } else box = this.selectionBox(state, x, y, z);
         if (box) {
           const r = rayBox(ox, oy, oz, dx, dy, dz, x + box[0], y + box[1], z + box[2], x + box[3], y + box[4], z + box[5]);

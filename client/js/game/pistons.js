@@ -2,7 +2,7 @@
 // the moved blocks into piston_extension blocks that carry a TileEntityPiston (state, direction, extending, head).
 // Those slide over two ticks (progress += 0.5 per tick, interpolated when drawn) and then become their block again;
 // the server's block changes agree with the result. Drawing is in TileEntityRenderer (TileEntityPistonRenderer).
-import { blocks, blocksByName } from '../world/blocks.js';
+import { blocks, blocksByName, getBlock, getBlockById, getStateProperties } from '../world/blocks.js';
 
 // EnumFacing index order: down, up, north, south, west, east
 export const FACING = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]];
@@ -21,18 +21,18 @@ const DESTROY = new Set([
   'jungle_door', 'acacia_door', 'dark_oak_door', 'bed', 'snow_layer', 'cactus', 'pumpkin', 'lit_pumpkin', 'melon_block',
   'dragon_egg', 'cake', 'web', 'fire', 'structure_void',
 ]);
-const BLOCK = new Set(['obsidian', 'barrier', 'portal', 'piston_head', 'piston_extension', 'end_portal', 'end_gateway']);
+const BLOCK = new Set(['obsidian', 'barrier', 'nether_portal', 'piston_head', 'moving_piston', 'end_portal', 'end_gateway']);
 // Block.hasTileEntity
 const TILE = new Set([
   'chest', 'trapped_chest', 'furnace', 'lit_furnace', 'dispenser', 'dropper', 'hopper', 'beacon', 'brewing_stand',
   'enchanting_table', 'ender_chest', 'standing_sign', 'wall_sign', 'mob_spawner', 'noteblock', 'jukebox', 'standing_banner',
   'wall_banner', 'skull', 'flower_pot', 'unpowered_comparator', 'powered_comparator', 'daylight_detector',
   'daylight_detector_inverted', 'command_block', 'repeating_command_block', 'chain_command_block', 'structure_block',
-  'end_gateway', 'end_portal', 'bed', 'piston_extension',
+  'end_gateway', 'end_portal', 'bed', 'moving_piston',
 ]);
 
-const name = (st) => (blocks[st >> 4] ? blocks[st >> 4].name : 'air');
-const isAir = (st) => (st >> 4) === 0;
+const name = (st) => getBlock(st).name;
+const isAir = (st) => st === 0;
 const mobility = (n) => (n.endsWith('_shulker_box') || DESTROY.has(n) ? 'destroy' : BLOCK.has(n) ? 'block' : n.endsWith('_glazed_terracotta') ? 'push_only' : 'normal');
 const isPiston = (n) => n === 'piston' || n === 'sticky_piston';
 const key = (x, y, z) => x + ',' + y + ',' + z;
@@ -40,7 +40,7 @@ const off = (p, f, n = 1) => [p[0] + FACING[f][0] * n, p[1] + FACING[f][1] * n, 
 
 // BlockPistonBase.canPush
 function canPush(world, st, p, facing, destroyBlocks, f2) {
-  const n = name(st), b = blocks[st >> 4];
+  const n = name(st), b = getBlock(st);
   if (n === 'obsidian') return false;
   if (Math.abs(p[0]) >= 29999984 || Math.abs(p[2]) >= 29999984) return false; // world border
   if (p[1] < 0 || (facing === 0 && p[1] === 0)) return false;
@@ -53,7 +53,7 @@ function canPush(world, st, p, facing, destroyBlocks, f2) {
       case 'push_only': if (facing !== f2) return false; break;
       default: break;
     }
-  } else if (st & 8) return false; // extended
+  } else if (getStateProperties(st).extended === 'true') return false; // extended
   return !(TILE.has(n) || n.endsWith('_shulker_box'));
 }
 
@@ -138,7 +138,7 @@ export class Pistons {
 
   // TileEntityPiston.getCollisionRelatedBlockState: a retracting head collides as the piston head
   _collisionState(t) {
-    if (!t.extending && t.head) return (blocksByName.piston_head.id << 4) | (t.state & 7) | ((blocks[t.state >> 4] || {}).name === 'sticky_piston' ? 8 : 0);
+    if (!t.extending && t.head) return blocksByName.piston_head.defaultState;
     return t.state;
   }
 
@@ -204,7 +204,7 @@ export class Pistons {
       if (d1 >= d0) break;
     }
     if (d1 <= 0) return;
-    if ((blocks[t.state >> 4] || {}).name === 'slime') {
+    if (getBlock(t.state).name === 'slime_block') {
       if (d[0]) pl.motionX = d[0]; else if (d[1]) pl.motionY = d[1]; else pl.motionZ = d[2];
     }
     d1 = Math.min(d1, d0) + 0.01;
@@ -222,10 +222,10 @@ export class Pistons {
   onBlockEvent(pos, id, param, blockId) {
     const w = this.game.world;
     const p = [pos.x, pos.y, pos.z];
-    const sticky = blocks[blockId] && blocks[blockId].name === 'sticky_piston';
+    const sticky = getBlockById(blockId).name === 'sticky_piston';
     const facing = param & 7;
     if (facing > 5) return;
-    const extId = blocksByName.piston_extension.id;
+    const extId = blocksByName.moving_piston.id;
     if (id === 0) {
       if (!this._doMove(p, facing, true, sticky)) return;
       this._set(p, (blockId << 4) | facing | 8);
@@ -239,7 +239,7 @@ export class Pistons {
         const p2 = off(p, facing, 2);
         const st = w.getState(...p2);
         let pulled = false;
-        if ((st >> 4) === extId) {
+        if (getBlock(st).id === extId) {
           const t2 = this.moving.get(key(...p2));
           if (t2 && t2.facing === facing && t2.extending) { this._clearTile(t2); pulled = true; }
         }
@@ -258,7 +258,7 @@ export class Pistons {
     if (!helper.canMove()) return false;
     const list = helper.toMove, states = list.map((q) => w.getState(...q));
     const moveDir = extending ? dir : OPPOSITE[dir];
-    const extId = blocksByName.piston_extension.id;
+    const extId = blocksByName.moving_piston.id;
     w.beginBatch();
     try {
       for (let j = helper.toDestroy.length - 1; j >= 0; j--) this._set(helper.toDestroy[j], 0);
@@ -281,7 +281,7 @@ export class Pistons {
   _clearTile(t) {
     this.moving.delete(key(t.x, t.y, t.z));
     const w = this.game.world;
-    if ((w.getState(t.x, t.y, t.z) >> 4) === blocksByName.piston_extension.id) w.setState(t.x, t.y, t.z, t.state);
+    if (getBlock(w.getState(t.x, t.y, t.z)).id === blocksByName.moving_piston.id) w.setState(t.x, t.y, t.z, t.state);
   }
 
   // TileEntityPiston.update
@@ -301,7 +301,7 @@ export class Pistons {
   // rather than the event's, since batched changes report a position's air and then its new piston_extension.
   onBlockChanged(x, y, z) {
     const t = this.moving.get(key(x, y, z));
-    if (t && (this.game.world.getState(x, y, z) >> 4) !== blocksByName.piston_extension.id) this.moving.delete(key(x, y, z));
+    if (t && getBlock(this.game.world.getState(x, y, z)).id !== blocksByName.moving_piston.id) this.moving.delete(key(x, y, z));
   }
 
   // TileEntityPiston.getProgress / getOffsetX..Z

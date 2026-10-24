@@ -30,7 +30,7 @@ export class Narrator {
     const type = position === 0 ? 'chat' : position === 1 ? 'system' : null;
     if (!type || !(n === 1 || (n === 2 && type === 'chat') || (n === 3 && type === 'system'))) return;
     if (json && typeof json === 'object' && json.translate === 'chat.type.text') {
-      const args = (json.with || []).map((a) => chatToPlain(a));
+      const args = (json.with || []).map((a) => chatToPlain(a, { parsed: true }));
       this.say(this.game.assets.translate('chat.type.text.narrate', args));
     } else this.say(chatToPlain(json));
   }

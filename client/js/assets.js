@@ -12,6 +12,7 @@ import { ModelStore } from './render/models.js';
 import { MeshPool } from './render/mesh-service.js';
 import { MINECRAFTJS_EN } from './gui/i18n.js';
 import { decodeUtf8 } from './util/utf8.js';
+import { chatToLegacy } from './gui/chat.js';
 
 const MC = 'assets/minecraft/';
 const PACK_PREFIX = 'packs/';
@@ -27,7 +28,7 @@ export class ResourcePack {
     try {
       const meta = JSON.parse(this.zip.readText(this.prefix + 'pack.mcmeta'));
       const d = meta.pack && meta.pack.description;
-      this.description = typeof d === 'string' ? d : d && d.text ? d.text : '';
+      this.description = chatToLegacy(d, { parsed: true });
       this.format = meta.pack && meta.pack.pack_format;
       if (meta.language && typeof meta.language === 'object') this.languages = meta.language;
     } catch (e) { /* pack.mcmeta missing or malformed */ }
@@ -185,7 +186,6 @@ export class Assets {
     for (const s of this.data.sounds) this.soundNames[s.id] = s.name;
     this.itemsById = new Map();
     this.itemsByName = new Map();
-    for (const b of this.data.blocks) { this.itemsById.set(b.id, b); this.itemsByName.set(b.name, b); }
     for (const it of this.data.items) { this.itemsById.set(it.id, it); this.itemsByName.set(it.name, it); }
     await this.loadResources(progress);
   }
@@ -302,24 +302,18 @@ export class Assets {
   }
 
   // en_us is always loaded first so untranslated keys fall back to English (vanilla Locale behaviour);
-  // the selected language and every active pack's .lang files are layered on top.
+  // the selected language and every active pack's .json files are layered on top.
   async loadLanguage(code) {
     code = String(code || 'en_us').toLowerCase();
     if (!this.languages[code]) code = 'en_us';
     const packsLowFirst = [...this.packs].reverse();
     const lang = { ...MINECRAFTJS_EN };
     const own = {};
-    const parse = (text, into) => {
-      for (const line of text.split('\n')) {
-        if (!line || line.startsWith('#')) continue;
-        const i = line.indexOf('=');
-        if (i > 0) into[line.slice(0, i)] = line.slice(i + 1).replace(/\r$/, '');
-      }
-    };
+    const parse = (text, into) => Object.assign(into, JSON.parse(text));
     const layer = async (c, into) => {
-      const base = await this.source.bytes('minecraft/lang/' + c + '.lang').catch(() => null);
+      const base = await this.source.bytes('minecraft/lang/' + c + '.json').catch(() => null);
       if (base) parse(decodeUtf8(base), into);
-      for (const p of packsLowFirst) if (p.has('lang/' + c + '.lang')) parse(decodeUtf8(p.read('lang/' + c + '.lang')), into);
+      for (const p of packsLowFirst) if (p.has('lang/' + c + '.json')) parse(decodeUtf8(p.read('lang/' + c + '.json')), into);
     };
     await layer('en_us', lang);
     this.langEn = { ...lang }; // English table, used to map English data names to keys

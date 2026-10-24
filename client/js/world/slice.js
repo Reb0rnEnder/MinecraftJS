@@ -101,7 +101,7 @@ export class SliceWorld {
     for (let y = 0; y < 16; y++) for (let z = 0; z < 16; z++) {
       const src = (y + SLICE_MARGIN) * SLICE_AREA + (z + SLICE_MARGIN) * SLICE + SLICE_MARGIN;
       const dst = (y << 8) | (z << 4);
-      for (let x = 0; x < 16; x++) { const v = this.states[src + x]; out[dst | x] = v; if (v >> 4) empty = false; }
+      for (let x = 0; x < 16; x++) { const v = this.states[src + x]; out[dst | x] = v; if (v !== 0) empty = false; }
     }
     return empty ? null : out;
   }

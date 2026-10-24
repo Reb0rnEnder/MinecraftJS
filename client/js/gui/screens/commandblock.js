@@ -7,7 +7,7 @@ import { Button, TextField } from '../widgets.js';
 import { chatToPlain } from '../chat.js';
 import { C } from '../../net/packets.js';
 import { Writer } from '../../net/buffer.js';
-import { blocks } from '../../world/blocks.js';
+import { getBlock } from '../../world/blocks.js';
 
 // TileEntityCommandBlock.getMode from the block, isConditional from its state
 const MODES = { command_block: 'REDSTONE', repeating_command_block: 'AUTO', chain_command_block: 'SEQUENCE' };
@@ -16,7 +16,7 @@ export const COMMAND_BLOCKS = new Set(Object.keys(MODES));
 // CommandBlockBaseLogic.getLastOutput().getUnformattedText(): LastOutput is only kept while the output is tracked
 function lastOutput(json) {
   if (!json) return null;
-  try { return chatToPlain(typeof json === 'string' ? JSON.parse(json) : json); } catch (e) { return String(e.message); }
+  return chatToPlain(json);
 }
 
 class BaseCommandScreen extends Screen {
@@ -102,7 +102,7 @@ export class CommandBlockScreen extends BaseCommandScreen {
     this.pos = pos;
     this.loaded = false;
     const state = game.world.getState(pos.x, pos.y, pos.z);
-    const b = blocks[state >> 4];
+    const b = getBlock(state);
     this.mode = (b && MODES[b.name]) || 'REDSTONE';
     this.conditional = (state & 8) !== 0; // BlockCommandBlock.CONDITIONAL
     this.automatic = false;
@@ -133,7 +133,7 @@ export class CommandBlockScreen extends BaseCommandScreen {
     this.output = this.trackOutput && data.LastOutput !== undefined ? lastOutput(data.LastOutput) : null;
     this.automatic = !!data.auto;
     const state = this.game.world.getState(this.pos.x, this.pos.y, this.pos.z);
-    const b = blocks[state >> 4];
+    const b = getBlock(state);
     if (b && MODES[b.name]) { this.mode = MODES[b.name]; this.conditional = (state & 8) !== 0; }
     this.loaded = true;
     this.updateCmdOutput();
@@ -144,7 +144,7 @@ export class CommandBlockScreen extends BaseCommandScreen {
     const w = new Writer();
     w.i32(this.pos.x).i32(this.pos.y).i32(this.pos.z);
     w.string(this.commandField.text).bool(this.trackOutput).string(this.mode).bool(this.conditional).bool(this.automatic);
-    this.game.send(C.customPayload('MC|AutoCmd', w.build()));
+    this.game.send(C.customPayload('minecraft:command_block', w.build()));
     this.game.screens.close();
   }
 
@@ -185,7 +185,7 @@ export class CommandMinecartScreen extends BaseCommandScreen {
     const w = new Writer();
     w.i8(1).i32(this.entity.id); // getCommandBlockType (1: minecart), fillInInfo
     w.string(this.commandField.text).bool(this.trackOutput);
-    this.game.send(C.customPayload('MC|AdvCmd', w.build()));
+    this.game.send(C.customPayload('minecraft:command_block', w.build()));
     this.game.screens.close();
   }
 

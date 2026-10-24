@@ -34,7 +34,7 @@ export class HandRenderer {
   }
 
   _itemObject(item) {
-    return this.game.itemRenderer.objectFor(item, this.atlasMat);
+    return this.game.itemRenderer.objectFor(item, this.atlasMat, true);
   }
 
   _mapMeshes() {
@@ -156,7 +156,7 @@ export class HandRenderer {
       let key;
       if (!stack) key = hand === 0 && !pl.invisible ? 'arm' + side : null;
       else if (stack.id === 358) key = hand === 0 && !stacks[1] ? 'map2:' + stack.damage : 'mapside' + side + ':' + stack.damage;
-      else key = 'item' + side + ':' + g.itemRenderer.iconKey(stack);
+      else key = 'item' + side + ':' + g.itemRenderer.iconKey(stack, true);
       if (key !== h.key) this._buildHand(h, key, stack, side);
       if (!stack) {
         if (key) this._armMatrix(m, equip, sw, side);
@@ -243,6 +243,16 @@ export class HandRenderer {
         }
         mat4.translate(m, m, 0, 0, f6 * 0.04);
         mat4.scale(m, m, 1, 1, 1 + f6 * 0.2);
+        R(side * 45, 0, -1, 0);
+      } else if (act === 'spear') {
+        // ItemRenderer (cuc): ten ticks to charge the throw, then hold it back.
+        this._side(m, side, equip);
+        mat4.translate(m, m, side * -0.5, 0.7, 0.1);
+        R(-55, 1, 0, 0); R(side * 35.3, 0, 1, 0); R(side * -9.785, 0, 0, 1);
+        const charge = Math.min(1, (it.useTicks + partial) / 10);
+        if (charge > 0.1) mat4.translate(m, m, 0, sin((charge - 0.1) * 1.3) * (charge - 0.1) * 0.004, 0);
+        mat4.translate(m, m, 0, 0, charge * 0.2);
+        mat4.scale(m, m, 1, 1, 1 + charge * 0.2);
         R(side * 45, 0, -1, 0);
       } else this._side(m, side, equip); // NONE and BLOCK (shields)
       return;

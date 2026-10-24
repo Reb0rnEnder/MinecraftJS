@@ -33,7 +33,7 @@ const crypto = require('crypto');
 const { execFile } = require('child_process');
 const { ZipFile } = require('../lib/zip');
 const mcassets = require('../lib/mcassets');
-const { extractModels } = require('../lib/modelextract');
+const { extractModels, assertCompleteModels } = require('../lib/modelextract');
 
 const ROOT = path.join(__dirname, '..');
 const CLIENT = path.join(ROOT, 'client');
@@ -175,11 +175,10 @@ async function collectAssets(opts) {
   }
   const icon = jar.read('pack.png');
   if (icon) files.set('pack.png', icon);
-  // Entity / block entity models: Java code in 1.12, run from the jar (lib/modelextract.js)
-  const em = extractModels(jar);
-  for (const e of em.errors) console.warn('  entity model ' + e);
-  files.set('bundles/entity-models.json', Buffer.from(JSON.stringify(em.models)));
-  console.log(`Entity models: ${Object.keys(em.models).length} from the jar`);
+  // Entity / block entity models: Java constructors run from the 1.13.2 jar.
+  const models = assertCompleteModels(extractModels(jar));
+  files.set('bundles/entity-models.json', Buffer.from(JSON.stringify(models)));
+  console.log(`Entity models: ${Object.keys(models).length} from the jar`);
 
   const index = await mcassets.loadAssetIndex();
   const meta = await index.read('pack.mcmeta');
@@ -201,7 +200,7 @@ async function collectAssets(opts) {
       after += buf.length;
       if (++done % 100 === 0) process.stdout.write(`  ${done}/${sounds.length}\r`);
     }
-    if (name === 'minecraft/lang/en_us.lang' && files.has(name)) return; // the jar's copy is authoritative
+    if (name === 'minecraft/lang/en_us.json' && files.has(name)) return; // the jar's copy is authoritative
     files.set(name, buf);
   });
   console.log(`  audio ${(before / 1048576).toFixed(1)} MB -> ${(after / 1048576).toFixed(1)} MB`);

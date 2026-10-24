@@ -1,5 +1,6 @@
 // Port of vanilla 1.13.2 player movement physics (EntityPlayerSP / EntityPlayer / EntityLivingBase / Entity).
-import { blocks } from '../world/blocks.js';
+import { getBlock, getStateProperties } from '../world/blocks.js';
+import { getFluidState, fluidHeightAt } from '../world/fluids.js';
 
 const SPRINT_UUID = '662a6b8d-da3e-4c1c-8813-96ea6097278d';
 
@@ -92,7 +93,7 @@ export class LocalPlayer {
     this.inWater = false; this.inLava = false; this.inWeb = false;
     this.fallDistance = 0;
     this.jumpTicks = 0;
-    this.sneaking = false; this.sprinting = false;
+    this.sneaking = false; this.sprinting = false; this.swimming = false;
     this.flying = false; this.allowFlying = false; this.creative = false; this.invulnerable = false;
     this.spectator = false; this.noClip = false;
     this.flySpeed = 0.05; this.walkSpeed = 0.1;
@@ -101,6 +102,7 @@ export class LocalPlayer {
     this.sprintToggleTimer = 0; this.flyToggleTimer = 0;
     this.prevJump = false; this.prevForwardHeld = false; this.prevSneak = false;
     this.usingItem = false;
+    this.riptideTicks = 0; this.riptide = false;
     this.blind = false;
     this.jumpBoost = -1;
     this.depthStrider = 0;
@@ -124,17 +126,32 @@ export class LocalPlayer {
     this._bb = null;
   }
 
+  // ItemTrident.onPlayerStoppedUsing: apply the look-direction impulse on both sides.
+  startRiptide(level, world) {
+    const yaw = f32(this.yaw * F.deg), pitch = f32(this.pitch * F.deg);
+    const x = f32(-mcSin(yaw) * mcCos(pitch));
+    const y = f32(-mcSin(pitch));
+    const z = f32(mcCos(yaw) * mcCos(pitch));
+    const length = f32(Math.sqrt(f32(f32(f32(x * x) + f32(y * y)) + f32(z * z))));
+    const speed = f32(3 * f32(f32(1 + level) / 4));
+    this.motionX += f32(f32(x / length) * speed);
+    this.motionY += f32(f32(y / length) * speed);
+    this.motionZ += f32(f32(z / length) * speed);
+    this.riptideTicks = 20; this.riptide = true;
+    if (this.onGround) this.moveEntity(world, 0, 1.1999999284744263, 0);
+  }
+
   // EntityPlayer.getEyeHeight (1.12)
   eyeHeight() {
     if (this.sleeping) return f32(0.2);
-    if (!this.sneaking && this.height !== f32(1.65)) return this.elytraFlying || this.height === f32(0.6) ? f32(0.4) : f32(1.62);
+    if (!this.sneaking && this.height !== f32(1.65)) return this.elytraFlying || this.swimming || this.height === f32(0.6) ? f32(0.4) : f32(1.62);
     return f32(f32(1.62) - f32(0.08));
   }
 
   // EntityPlayer.updateSize: 0.6 x 0.6 gliding, 0.6 x 1.65 sneaking, if the new box fits
   updateSize(world) {
     let w = f32(0.6), h = f32(1.8);
-    if (this.elytraFlying) h = f32(0.6);
+    if (this.elytraFlying || this.swimming || this.riptide) h = f32(0.6);
     else if (this.sleeping) { w = f32(0.2); h = f32(0.2); }
     else if (this.sneaking) h = f32(1.65);
     if (w === this.width && h === this.height) return;
@@ -166,7 +183,7 @@ export class LocalPlayer {
     if (this.noClip) return false;
     const bx = Math.floor(x), by = Math.floor(y), bz = Math.floor(z);
     const d0 = x - bx, d1 = z - bz;
-    const cube = (xx, yy, zz) => { const b = blocks[world.getState(xx, yy, zz) >> 4]; return !!(b && b.opaque && !b.isLiquid); };
+    const cube = (xx, yy, zz) => { const b = getBlock(world.getState(xx, yy, zz)); return !!(b && b.opaque && !b.isLiquid); };
     const open = (xx, yy, zz) => !cube(xx, yy, zz) && !cube(xx, yy + 1, zz);
     if (open(bx, by, bz)) return false;
     let i = -1, d2 = 9999;
@@ -201,17 +218,17 @@ export class LocalPlayer {
     const y0 = Math.floor(bb[1]), y1 = Math.floor(bb[4] + 1);
     const z0 = Math.floor(bb[2]), z1 = Math.floor(bb[5] + 1);
     for (let x = x0; x < x1; x++) for (let y = y0; y < y1; y++) for (let z = z0; z < z1; z++) {
-      const b = blocks[world.getState(x, y, z) >> 4];
+      const b = getBlock(world.getState(x, y, z));
       if (b && test(b)) return true;
     }
     return false;
   }
 
   handleWaterMovement(world) {
-    // Entity.handleWaterMovement: the box shrunk by 0.4F at top and bottom (grow(0, -0.4F, 0)), then by 0.001;
-    // World.handleMaterialAcceleration walks floor(min) .. ceil(max) exclusive
+    // Fluid contact is independent of the block occupying the cell. Use the
+    // actual surface and a small inset so merely touching it is not immersion.
     const bb0 = this.bb();
-    const bb = [bb0[0] + 0.001, bb0[1] + 0.4000000059604645 + 0.001, bb0[2] + 0.001, bb0[3] - 0.001, bb0[4] - 0.4000000059604645 - 0.001, bb0[5] - 0.001];
+    const bb = [bb0[0] + 0.001, bb0[1] + 0.001, bb0[2] + 0.001, bb0[3] - 0.001, bb0[4] - 0.001, bb0[5] - 0.001];
     const x0 = Math.floor(bb[0]), x1 = Math.ceil(bb[3]);
     const y0 = Math.floor(bb[1]), y1 = Math.ceil(bb[4]);
     const z0 = Math.floor(bb[2]), z1 = Math.ceil(bb[5]);
@@ -223,11 +240,9 @@ export class LocalPlayer {
     let fx = 0, fy = 0, fz = 0;
     for (let x = x0; x < x1; x++) for (let y = y0; y < y1; y++) for (let z = z0; z < z1; z++) {
       const s = world.getState(x, y, z);
-      const b = blocks[s >> 4];
-      if (!b || !b.isWater) continue;
-      const lvl = s & 15;
-      const pct = f32(((lvl >= 8 ? 0 : lvl) + 1) / 9); // BlockLiquid.getLiquidHeightPercent
-      if (y1 >= f32(f32(y + 1) - pct)) {
+      const fluid = getFluidState(s);
+      if (!fluid || !fluid.isWater) continue;
+      if (bb[1] < y + fluidHeightAt(world, x, y, z) && bb[4] > y) {
         found = true;
         const v = this.flowVector(world, x, y, z, false);
         fx += v[0]; fy += v[1]; fz += v[2];
@@ -248,9 +263,9 @@ export class LocalPlayer {
   flowVector(world, x, y, z, lava) {
     const decay = (xx, yy, zz) => {
       const s = world.getState(xx, yy, zz);
-      const b = blocks[s >> 4];
-      if (!b || !b.isLiquid || b.isLava !== lava) return -1;
-      const l = s & 15;
+      const fluid = getFluidState(s);
+      if (!fluid || fluid.isLava !== lava) return -1;
+      const l = fluid.level;
       return l >= 8 ? 0 : l;
     };
     const i = decay(x, y, z);
@@ -258,19 +273,19 @@ export class LocalPlayer {
     for (const [dx, dz] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
       let j = decay(x + dx, y, z + dz);
       if (j < 0) {
-        const b = blocks[world.getState(x + dx, y, z + dz) >> 4];
+        const b = getBlock(world.getState(x + dx, y, z + dz));
         if (!b || b.boundingBox !== 'block' || b.id === 0) {
           j = decay(x + dx, y - 1, z + dz);
           if (j >= 0) { const k = j - (i - 8); vx += dx * k; vz += dz * k; }
         }
       } else { const k = j - i; vx += dx * k; vz += dz * k; }
     }
-    if ((world.getState(x, y, z) & 15) >= 8) {
+    if ((getFluidState(world.getState(x, y, z))?.level || 0) >= 8) {
       // Falling liquid pushes down when next to solid sides
       let solidSide = false;
       for (const [dx, dz] of [[0, -1], [1, 0], [0, 1], [-1, 0]]) {
-        const b = blocks[world.getState(x + dx, y, z + dz) >> 4];
-        const b2 = blocks[world.getState(x + dx, y + 1, z + dz) >> 4];
+        const b = getBlock(world.getState(x + dx, y, z + dz));
+        const b2 = getBlock(world.getState(x + dx, y + 1, z + dz));
         if ((b && b.opaque) || (b2 && b2.opaque)) { solidSide = true; break; }
       }
       if (solidSide) {
@@ -284,27 +299,36 @@ export class LocalPlayer {
 
   isInLava(world) {
     const bb = this.bb();
-    return this.isMaterialInBB(world, [bb[0] + 0.1, bb[1] + 0.4, bb[2] + 0.1, bb[3] - 0.1, bb[4] - 0.4, bb[5] - 0.1], (b) => b.isLava);
+    return this.isFluidInBB(world, [bb[0] + 0.1, bb[1] + 0.4, bb[2] + 0.1, bb[3] - 0.1, bb[4] - 0.4, bb[5] - 0.1], true);
+  }
+
+  isFluidInBB(world, bb, lava) {
+    for (let x = Math.floor(bb[0]); x < Math.ceil(bb[3]); x++)
+      for (let y = Math.floor(bb[1]); y < Math.ceil(bb[4]); y++)
+        for (let z = Math.floor(bb[2]); z < Math.ceil(bb[5]); z++) {
+          const fluid = getFluidState(world.getState(x, y, z));
+          if (fluid && (lava === undefined || fluid.isLava === lava) && bb[1] < y + fluidHeightAt(world, x, y, z) && bb[4] > y) return true;
+        }
+    return false;
   }
 
   isOffsetPositionInLiquid(world, dx, dy, dz) {
     const bb = offsetBB(this.bb(), dx, dy, dz);
     if (world.getCollisions(bb, this).length) return false;
-    return !this.isMaterialInBB(world, bb, (b) => b.isLiquid) ? false : true;
+    return this.isFluidInBB(world, bb);
   }
 
   // EntityLivingBase.isOnLadder: ladders, vines, and an open trapdoor right above a ladder facing the same way
   isOnLadder(world) {
     if (this.spectator) return false;
     const x = Math.floor(this.x), y = Math.floor(this.bb()[1]), z = Math.floor(this.z);
-    const st = world.getState(x, y, z), b = blocks[st >> 4];
+    const st = world.getState(x, y, z), b = getBlock(st);
     if (!b) return false;
     if (b.name === 'ladder' || b.name === 'vine') return true;
-    if ((b.name === 'trapdoor' || b.name === 'iron_trapdoor') && (st & 4)) {
+    if ((b.name === 'oak_trapdoor' || b.name === 'iron_trapdoor') && getStateProperties(st).open === 'true') {
       const below = world.getState(x, y - 1, z);
-      if ((blocks[below >> 4] || {}).name !== 'ladder') return false;
-      // BlockTrapDoor meta & 3: north, south, west, east; BlockLadder meta: 2 north, 3 south, 4 west, 5 east
-      return ['north', 'south', 'west', 'east'][st & 3] === (['down', 'up', 'north', 'south', 'west', 'east'][below & 7] || '');
+      if (getBlock(below).name !== 'ladder') return false;
+      return getStateProperties(st).facing === getStateProperties(below).facing;
     }
     return false;
   }
@@ -412,9 +436,9 @@ export class LocalPlayer {
 
     // Entity.move: the block landed on / walked on, floor(y - 0.2), or the fence / wall / gate below an air block
     let lbx = Math.floor(this.x), lby = Math.floor(this.y - 0.20000000298023224), lbz = Math.floor(this.z);
-    let lst = world.getState(lbx, lby, lbz), lb = blocks[lst >> 4];
+    let lst = world.getState(lbx, lby, lbz), lb = getBlock(lst);
     if (!lb || lb.id === 0) {
-      const b2 = blocks[world.getState(lbx, lby - 1, lbz) >> 4];
+      const b2 = getBlock(world.getState(lbx, lby - 1, lbz));
       if (b2 && (b2.isFence || b2.isWall || b2.isFenceGate)) { lby--; lst = world.getState(lbx, lby, lbz); lb = b2; }
     }
 
@@ -539,13 +563,13 @@ export class LocalPlayer {
     const y0 = Math.floor(bb[1] + 0.001), y1 = Math.floor(bb[4] - 0.001);
     const z0 = Math.floor(bb[2] + 0.001), z1 = Math.floor(bb[5] - 0.001);
     for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) for (let z = z0; z <= z1; z++) {
-      const b = blocks[world.getState(x, y, z) >> 4];
+      const b = getBlock(world.getState(x, y, z));
       if (!b || b.id === 0) continue;
       if (b.name === 'web') this.inWeb = true;
       else if (b.name === 'soul_sand') { this.motionX *= 0.4; this.motionZ *= 0.4; }
     }
     // Slime: walking on it slows you
-    const below = blocks[world.getState(Math.floor(this.x), Math.floor(this.y - 0.20000000298023224), Math.floor(this.z)) >> 4];
+    const below = getBlock(world.getState(Math.floor(this.x), Math.floor(this.y - 0.20000000298023224), Math.floor(this.z)));
     if (below && below.name === 'slime' && this.onGround && Math.abs(this.motionY) < 0.1 && !this.sneaking) {
       const d = 0.4 + Math.abs(this.motionY) * 0.2;
       this.motionX *= d; this.motionZ *= d;
@@ -622,6 +646,13 @@ export class LocalPlayer {
       this.moveEntity(world, this.motionX, this.motionY, this.motionZ);
       this.motionX *= f1; this.motionY *= 0.800000011920929; this.motionZ *= f1;
       this.motionY -= 0.02;
+      if (this.swimming) {
+        // Pose.SWIMMING follows the look vector instead of treating forward
+        // input as purely horizontal water movement.
+        const look = lookVec(this.pitch, this.yaw);
+        const swim = f32(Math.max(0, forward) * 0.04);
+        this.motionX += look[0] * swim; this.motionY += look[1] * swim; this.motionZ += look[2] * swim;
+      }
       if (this.collidedH && this.isOffsetPositionInLiquid(world, this.motionX, this.motionY + 0.6000000238418579 - this.y + d0, this.motionZ)) this.motionY = 0.30000001192092896;
     } else if (this.inLava && !this.flying) {
       const d1 = this.y;
@@ -633,7 +664,7 @@ export class LocalPlayer {
     } else {
       // slipperiness of the block under the box's minY, times 0.91F (float maths)
       const slip = () => {
-        const b = blocks[world.getState(Math.floor(this.x), Math.floor(this.bb()[1]) - 1, Math.floor(this.z)) >> 4];
+        const b = getBlock(world.getState(Math.floor(this.x), Math.floor(this.bb()[1]) - 1, Math.floor(this.z)));
         return f32(f32(b ? b.slipperiness : 0.6) * F.p091);
       };
       let f4 = this.onGround ? slip() : F.p091;
@@ -717,6 +748,9 @@ export class LocalPlayer {
     }
     if (!this.sprinting && moveForward >= f && foodOk && !this.usingItem && !this.blind && input.sprint) this.sprinting = true;
     if (this.sprinting && (moveForward < f || this.collidedH || !foodOk)) this.sprinting = false;
+    // The server confirms this through entity metadata bit 4 for remote
+    // players; local prediction keeps the hitbox and camera responsive.
+    this.swimming = !!(this.inWater && this.sprinting && !this.ridingEntity && !this.flying);
 
     // Fly toggle (double tap jump)
     if (this.allowFlying) {
@@ -771,6 +805,10 @@ export class LocalPlayer {
     // EntityPlayer.onLivingUpdate after super: jumpMovementFactor and setAIMoveSpeed for the *next* tick
     this.jumpMovementFactor = this.sprinting ? f32(F.p02 + F.p02 * 0.3) : F.p02;
     this.landMovementFactor = this.aiMoveSpeed();
+
+    if (this.riptideTicks > 0) this.riptideTicks--;
+    if (this.collidedH) this.riptideTicks = 0;
+    if (this.riptideTicks === 0) this.riptide = false;
 
     // View bobbing values (EntityPlayer.onLivingUpdate)
     let f1 = Math.sqrt(this.motionX * this.motionX + this.motionZ * this.motionZ);

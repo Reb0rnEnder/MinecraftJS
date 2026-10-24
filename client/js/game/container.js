@@ -1,48 +1,93 @@
 // Inventory/container model with a faithful port of vanilla Container.slotClick and
 // per-container transferStackInSlot (1.8 servers don't echo accepted clicks back).
 import { C } from '../net/packets.js';
+import { Reader } from '../net/buffer.js';
+import { TAG } from '../net/nbt.js';
 import { craftResult, containerItem } from './crafting.js';
 
-export const copy = (it) => (it ? { id: it.id, count: it.count, damage: it.damage, nbt: it.nbt, nbtRaw: it.nbtRaw } : null);
+// ItemStack.copy owns its NBT: editing a picked/displayed stack must not mutate
+// the source entity or another inventory slot (including typed array/long tags).
+export const copy = (it) => (it ? { id: it.id, count: it.count, damage: it.damage,
+  nbt: it.nbt ? structuredClone(it.nbt) : it.nbt, nbtRaw: it.nbtRaw ? it.nbtRaw.slice() : it.nbtRaw } : null);
 
 function sameItem(a, b) {
-  return !!a && !!b && a.id === b.id && a.damage === b.damage;
+  // Protocol404 variants have separate item IDs; durability lives in Damage NBT.
+  return !!a && !!b && a.id === b.id;
 }
-function tagsEqual(a, b) {
-  const ra = a && a.nbtRaw, rb = b && b.nbtRaw;
-  if (!ra && !rb) return true;
-  if (!ra || !rb || ra.length !== rb.length) return false;
-  for (let i = 0; i < ra.length; i++) if (ra[i] !== rb[i]) return false;
-  return true;
+
+function nbtPayloadEqual(type, a, b) {
+  if (a === b) return true;
+  if (type === TAG.COMPOUND) {
+    const keys = Object.keys(a);
+    return keys.length === Object.keys(b).length && keys.every(k => Object.prototype.hasOwnProperty.call(b, k) && nbtEqual(a[k], b[k]));
+  }
+  if (type === TAG.LIST) {
+    return a.items.length === b.items.length && (!a.items.length || a.et === b.et && a.items.every((v, i) => nbtPayloadEqual(a.et, v, b.items[i])));
+  }
+  if (type === TAG.BYTE_ARRAY || type === TAG.INT_ARRAY || type === TAG.LONG_ARRAY) {
+    return a.length === b.length && a.every((v, i) => v === b[i]);
+  }
+  return false;
 }
+
+// Match NBT values and types: compound order/root names are irrelevant, list order is significant.
+// Do not simplify (which loses numeric tag types and precision for longs) or stringify typed arrays.
+function nbtEqual(a, b) { return a === b || !!a && !!b && a.t === b.t && nbtPayloadEqual(a.t, a.v, b.v); }
+function stackTag(item) { return item.nbt || (item.nbtRaw ? new Reader(item.nbtRaw).optionalNbt() : null); }
+function tagsEqual(a, b) { return nbtEqual(stackTag(a), stackTag(b)); }
 export function stackable(a, b) { return sameItem(a, b) && tagsEqual(a, b); }
 
-const ARMOR = {
-  helmet: new Set([298, 302, 306, 310, 314]),
-  chest: new Set([299, 303, 307, 311, 315]),
-  legs: new Set([300, 304, 308, 312, 316]),
-  boots: new Set([301, 305, 309, 313, 317]),
+const ARMOR_POINTS = {
+  leather: [1, 3, 2, 1], chainmail: [2, 5, 4, 1], iron: [2, 6, 5, 2], diamond: [3, 8, 6, 3], golden: [2, 5, 3, 1],
 };
-// EntityLiving.getSlotForItemStack's armour slots (0 head .. 3 feet): armour pieces, pumpkins and skulls on the head
-// (1.9+), elytra on the chest; -1 otherwise
-export function armorType(item) {
-  if (!item) return -1;
-  if (ARMOR.helmet.has(item.id) || item.id === 86 || item.id === 397) return 0;
-  if (ARMOR.chest.has(item.id) || item.id === 443) return 1;
-  if (ARMOR.legs.has(item.id)) return 2;
-  if (ARMOR.boots.has(item.id)) return 3;
+const ARMOR_PARTS = ['helmet', 'chestplate', 'leggings', 'boots'];
+const HEADWEAR = new Set(['carved_pumpkin', 'skeleton_skull', 'wither_skeleton_skull', 'zombie_head', 'player_head', 'creeper_head', 'dragon_head']);
+const itemName = (item, registry) => {
+  if (!item) return '';
+  const name = registry instanceof Map ? registry.get(item.id)?.name : registry ? registry.name(item.id) : item.name;
+  return typeof name === 'string' ? name.replace(/^minecraft:/, '') : '';
+};
+
+// Public API: numeric stacks need Items (or its byId Map); named stacks also work without a registry.
+// 0 head .. 3 feet, -1 otherwise. Never interpret a protocol404 ID as a legacy ID.
+export function armorType(item, registry = null) {
+  const name = itemName(item, registry);
+  if (name === 'turtle_helmet' || HEADWEAR.has(name)) return 0;
+  if (name === 'elytra') return 1;
+  const [material, part] = name.split('_');
+  if (ARMOR_POINTS[material]) return ARMOR_PARTS.indexOf(part);
   return -1;
 }
 
-const SMELTABLE = new Set([15, 14, 12, 4, 17, 162, 81, 337, 87, 82, 98, 319, 363, 365, 349, 423, 411, 392, 16, 73, 74, 21, 56, 129, 153, 19, 24]);
-const FUEL = new Set([5, 6, 17, 162, 47, 53, 54, 58, 65, 72, 84, 85, 96, 107, 126, 134, 135, 136, 143, 146, 151, 163, 164, 173, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192,
-  263, 268, 269, 270, 271, 290, 280, 327, 369, 346, 281, 323, 324, 333, 427, 428, 429, 430, 431, 425, 25]);
-// PotionHelper.isReagent (1.12): conversion items (gunpowder, dragon's breath) and type reagents; fish only as pufferfish
-const BREWING_INGREDIENTS = new Set([372, 348, 331, 289, 437, 376, 353, 370, 382, 377, 378, 396, 375, 349, 414]);
-const isReagent = (it) => !!it && BREWING_INGREDIENTS.has(it.id) && (it.id !== 349 || it.damage === 3);
+const WOODS = ['oak', 'spruce', 'birch', 'jungle', 'acacia', 'dark_oak'];
+const COLORS = ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'light_gray', 'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black'];
+const LOGS = WOODS.flatMap(w => [w + '_log', w + '_wood', 'stripped_' + w + '_log', 'stripped_' + w + '_wood']);
+// Vanilla 1.13.2 smelting ingredients and furnace fuel tags, verified against the local jar.
+// This is only shift-click routing; the furnace input slot accepts any manually inserted stack.
+const SMELTABLE = new Set([
+  ...`iron_ore gold_ore coal_ore lapis_ore diamond_ore emerald_ore redstone_ore nether_quartz_ore sand red_sand cobblestone
+    cactus clay_ball netherrack clay stone_bricks porkchop beef chicken cod salmon mutton rabbit potato wet_sponge
+    chorus_fruit kelp sea_pickle`.split(/\s+/),
+  ...LOGS, ...COLORS.map(c => c + '_terracotta'),
+  ...['iron', 'golden'].flatMap(m => [...ARMOR_PARTS, 'pickaxe', 'shovel', 'axe', 'hoe', 'sword', 'horse_armor'].map(p => m + '_' + p)),
+  ...ARMOR_PARTS.map(p => 'chainmail_' + p),
+]);
+const FUEL = new Set([
+  ...`lava_bucket coal_block blaze_rod coal charcoal note_block bookshelf jukebox chest trapped_chest crafting_table
+    daylight_detector bow fishing_rod ladder sign wooden_shovel wooden_sword wooden_hoe wooden_axe wooden_pickaxe
+    stick bowl dried_kelp_block`.split(/\s+/),
+  ...LOGS,
+  ...WOODS.flatMap(w => ['planks', 'stairs', 'slab', 'trapdoor', 'pressure_plate', 'fence', 'fence_gate', 'door', 'boat', 'button', 'sapling'].map(p => w + '_' + p)),
+  ...COLORS.flatMap(c => ['wool', 'carpet', 'banner'].map(p => c + '_' + p)),
+]);
+const BREWING_INGREDIENTS = new Set(`nether_wart glowstone_dust redstone gunpowder dragon_breath fermented_spider_eye sugar
+  ghast_tear glistering_melon_slice blaze_powder magma_cream golden_carrot spider_eye pufferfish rabbit_foot turtle_helmet phantom_membrane`.split(/\s+/));
+const isReagent = (it, items) => BREWING_INGREDIENTS.has(itemName(it, items));
 // ContainerBrewingStand.Potion.canHoldPotion: potions of the three kinds and glass bottles
-const canHoldPotion = (it) => !!it && (it.id === 373 || it.id === 438 || it.id === 441 || it.id === 374);
-const BEACON_PAYMENT = new Set([388, 264, 266, 265]);
+const BOTTLES = new Set(['potion', 'splash_potion', 'lingering_potion', 'glass_bottle']);
+const canHoldPotion = (it, items) => BOTTLES.has(itemName(it, items));
+const BEACON_PAYMENT = new Set(['emerald', 'diamond', 'gold_ingot', 'iron_ingot']);
+const HORSE_ARMOR = new Set(['iron_horse_armor', 'golden_horse_armor', 'diamond_horse_armor']);
 
 // Base container: slots with rules; also used for the player inventory (window 0)
 class ContainerBase {
@@ -62,8 +107,8 @@ class ContainerBase {
 
   slotLimit(i, item) {
     const s = this.slots[i];
-    let lim = s.limit !== undefined ? s.limit : 64;
-    if (item) lim = Math.min(lim, 64);
+    let lim = typeof s.limit === 'function' ? s.limit(item) : s.limit !== undefined ? s.limit : 64;
+    if (item) lim = Math.min(lim, this.maxStack(item));
     return lim;
   }
 
@@ -105,10 +150,9 @@ class ContainerBase {
     if (max > 1) {
       while (stack.count > 0 && (!reverse && i < end || reverse && i >= start)) {
         const it = this.get(i);
-        if (it && stackable(it, stack)) {
-          const j = it.count + stack.count;
-          if (j <= max) { stack.count = 0; it.count = j; this.onSlotChanged(i); flag = true; }
-          else if (it.count < max) { stack.count -= max - it.count; it.count = max; this.onSlotChanged(i); flag = true; }
+        if (it && this.isValid(i, stack) && stackable(it, stack)) {
+          const moved = Math.min(stack.count, this.slotLimit(i, stack) - it.count);
+          if (moved > 0) { stack.count -= moved; it.count += moved; this.onSlotChanged(i); flag = true; }
         }
         i += reverse ? -1 : 1;
       }
@@ -116,7 +160,13 @@ class ContainerBase {
     if (stack.count > 0) {
       i = reverse ? end - 1 : start;
       while (!reverse && i < end || reverse && i >= start) {
-        if (!this.get(i)) { this.put(i, copy(stack)); stack.count = 0; flag = true; break; }
+        if (!this.get(i) && this.isValid(i, stack)) {
+          const moved = Math.min(stack.count, this.slotLimit(i, stack));
+          if (moved > 0) {
+            const part = copy(stack); part.count = moved;
+            stack.count -= moved; this.put(i, part); flag = true; break;
+          }
+        }
         i += reverse ? -1 : 1;
       }
     }
@@ -237,7 +287,7 @@ class ContainerBase {
               this.put(slotId, cur);
               inv.cursor = st;
             }
-          } else if (st.id === cur.id && this.maxStack(cur) > 1 && st.damage === cur.damage && tagsEqual(st, cur)) {
+          } else if (this.maxStack(cur) > 1 && stackable(st, cur)) {
             const l = st.count;
             if (l > 0 && l + cur.count <= this.maxStack(cur)) {
               cur.count += l;
@@ -328,8 +378,10 @@ class ContainerBase {
     return clicked;
   }
 
-  setSlot(i, item) { if (this.slots[i]) { this.slots[i].item = item; this.onSlotChanged(i); } }
-  setAll(items) { for (let i = 0; i < items.length && i < this.slots.length; i++) this.slots[i].item = items[i]; this.onSlotChanged(1); }
+  // Network setters are authoritative. Local onSlotChanged hooks still predict from legacy recipes;
+  // invoking them here overwrites valid server output (including output-before-input packet order).
+  setSlot(i, item) { if (this.slots[i]) this.slots[i].item = item; }
+  setAll(items) { for (let i = 0; i < items.length && i < this.slots.length; i++) this.slots[i].item = items[i]; }
 }
 
 // Player inventory: window 0 (46 slots) + the underlying 36-slot main inventory, 4 armor and the off hand (slot 45)
@@ -362,7 +414,7 @@ export class Inventory extends ContainerBase {
       const at = i; // 0 helmet .. 3 boots
       s.push({
         get item() { return self.armor[3 - at]; }, set item(v) { self.armor[3 - at] = v; }, limit: 1,
-        valid: (it) => !!it && armorType(it) === at,
+        valid: (it) => !!it && armorType(it, this.items) === at,
       });
     }
     for (let i = 9; i < 36; i++) s.push({ get item() { return self.main[i]; }, set item(v) { self.main[i] = v; }, playerIndex: i });
@@ -370,15 +422,6 @@ export class Inventory extends ContainerBase {
     s.push({ get item() { return self.offhand; }, set item(v) { self.offhand = v; }, playerIndex: 40 });
     this.slots = s;
   }
-
-  // Window 0 slot index -> set
-  setSlot(i, item) {
-    if (!this.slots[i]) return;
-    this.slots[i].item = item;
-    this.onSlotChanged(i);
-  }
-
-  setAll(items) { for (let i = 0; i < items.length && i < this.slots.length; i++) this.slots[i].item = items[i]; this.updateCraftResult(); }
 
   // windowId -2 in 1.8 isn't used, kept for safety (index into main inventory)
   setPlayerSlotByInventoryIndex(i, item) { if (i >= 0 && i < 36) this.main[i] = item; }
@@ -426,16 +469,17 @@ export class Inventory extends ContainerBase {
 
   transferStackInSlot(i) {
     return this._transfer(i, (it) => {
+      const at = armorType(it, this.items);
       if (i === 0) {
         if (!this.mergeItemStack(it, 9, 45, true)) return false;
       } else if (i >= 1 && i < 5) {
         if (!this.mergeItemStack(it, 9, 45, false)) return false;
       } else if (i >= 5 && i < 9) {
         if (!this.mergeItemStack(it, 9, 45, false)) return false;
-      } else if (armorType(it) >= 0 && !this.get(5 + armorType(it))) {
-        const t = 5 + armorType(it);
+      } else if (at >= 0 && !this.get(5 + at)) {
+        const t = 5 + at;
         if (!this.mergeItemStack(it, t, t + 1, false)) return false;
-      } else if (it.id === 442 && !this.get(45)) { // a shield goes to the empty off hand
+      } else if (itemName(it, this.items) === 'shield' && i !== 45 && !this.get(45)) {
         if (!this.mergeItemStack(it, 45, 46, false)) return false;
       } else if (i >= 9 && i < 36) {
         if (!this.mergeItemStack(it, 36, 45, false)) return false;
@@ -448,10 +492,11 @@ export class Inventory extends ContainerBase {
 
   // Armor points (for the HUD)
   armorPoints() {
-    const pts = { 298: 1, 299: 3, 300: 2, 301: 1, 302: 2, 303: 5, 304: 4, 305: 1, 306: 2, 307: 6, 308: 5, 309: 2,
-      310: 3, 311: 8, 312: 6, 313: 3, 314: 2, 315: 5, 316: 3, 317: 1 };
     let n = 0;
-    for (const a of this.armor) if (a && pts[a.id]) n += pts[a.id];
+    for (const a of this.armor) {
+      const name = itemName(a, this.items), [material, part] = name.split('_');
+      n += name === 'turtle_helmet' ? 2 : ARMOR_POINTS[material]?.[ARMOR_PARTS.indexOf(part)] || 0;
+    }
     return n;
   }
 }
@@ -506,23 +551,26 @@ export class ContainerWindow extends ContainerBase {
       case 'minecraft:crafting_table': if (i === 0) { slot.output = true; slot.valid = () => false; } break;
       case 'minecraft:furnace':
         if (i === 2) { slot.output = true; slot.valid = () => false; }
-        if (i === 1) slot.valid = (it) => !!it && (FUEL.has(it.id) || it.id === 325);
+        if (i === 1) {
+          slot.valid = it => FUEL.has(itemName(it, this.items)) || itemName(it, this.items) === 'bucket';
+          slot.limit = it => itemName(it, this.items) === 'bucket' ? 1 : 64;
+        }
         break;
       case 'minecraft:brewing_stand':
-        if (i < 3) { slot.valid = canHoldPotion; slot.limit = 1; }
-        else if (i === 3) slot.valid = isReagent;
-        else slot.valid = (it) => !!it && it.id === 377; // fuel: blaze powder
+        if (i < 3) { slot.valid = it => canHoldPotion(it, this.items); slot.limit = 1; }
+        else if (i === 3) slot.valid = it => isReagent(it, this.items);
+        else slot.valid = it => itemName(it, this.items) === 'blaze_powder';
         break;
       case 'minecraft:enchanting_table':
         if (i === 0) { slot.limit = 1; }
-        else slot.valid = (it) => !!it && it.id === 351 && it.damage === 4;
+        else slot.valid = it => itemName(it, this.items) === 'lapis_lazuli';
         break;
       case 'minecraft:anvil': if (i === 2) { slot.output = true; slot.valid = () => false; } break;
       case 'minecraft:villager': if (i === 2) { slot.output = true; slot.valid = () => false; } break;
-      case 'minecraft:beacon': slot.limit = 1; slot.valid = (it) => !!it && BEACON_PAYMENT.has(it.id); break;
+      case 'minecraft:beacon': slot.limit = 1; slot.valid = it => BEACON_PAYMENT.has(itemName(it, this.items)); break;
       case 'EntityHorse':
-        if (i === 0) { slot.valid = (it) => !!it && it.id === 329; slot.limit = 1; }
-        if (i === 1) { slot.valid = (it) => !!it && it.id >= 417 && it.id <= 419; slot.limit = 1; }
+        if (i === 0) { slot.valid = it => itemName(it, this.items) === 'saddle'; slot.limit = 1; }
+        if (i === 1) { slot.valid = it => HORSE_ARMOR.has(itemName(it, this.items)); slot.limit = 1; }
         break;
       default: break;
     }
@@ -545,6 +593,7 @@ export class ContainerWindow extends ContainerBase {
     const total = this.slots.length;
     const t = this.type;
     return this._transfer(i, (it) => {
+      const name = itemName(it, this.items);
       const m = (a, b, r) => this.mergeItemStack(it, a, b, r);
       if (t === 'minecraft:crafting_table') {
         if (i === 0) { if (!m(10, 46, true)) return false; }
@@ -556,8 +605,8 @@ export class ContainerWindow extends ContainerBase {
       if (t === 'minecraft:furnace') {
         if (i === 2) { if (!m(3, 39, true)) return false; }
         else if (i !== 1 && i !== 0) {
-          if (SMELTABLE.has(it.id)) { if (!m(0, 1, false)) return false; }
-          else if (FUEL.has(it.id) || it.id === 325) { if (!m(1, 2, false)) return false; }
+          if (SMELTABLE.has(name)) { if (!m(0, 1, false)) return false; }
+          else if (FUEL.has(name) || name === 'bucket') { if (!m(1, 2, false)) return false; }
           else if (i >= 3 && i < 30) { if (!m(30, 39, false)) return false; }
           else if (i >= 30 && i < 39 && !m(3, 30, false)) return false;
         } else if (!m(3, 39, false)) return false;
@@ -566,9 +615,9 @@ export class ContainerWindow extends ContainerBase {
       if (t === 'minecraft:brewing_stand') {
         // ContainerBrewingStand.transferStackInSlot (5 slots: 3 potions, ingredient, fuel)
         if (i >= 0 && i <= 4) { if (!m(5, 41, true)) return false; }
-        else if (isReagent(it)) { if (!m(3, 4, false)) return false; }
-        else if (canHoldPotion(it) && it.count === 1) { if (!m(0, 3, false)) return false; }
-        else if (it.id === 377) { if (!m(4, 5, false)) return false; }
+        else if (isReagent(it, this.items)) { if (!m(3, 4, false)) return false; }
+        else if (canHoldPotion(it, this.items) && it.count === 1) { if (!m(0, 3, false)) return false; }
+        else if (name === 'blaze_powder') { if (!m(4, 5, false)) return false; }
         else if (i >= 5 && i < 32) { if (!m(32, 41, false)) return false; }
         else if (i >= 32 && i < 41) { if (!m(5, 32, false)) return false; }
         else if (!m(5, 41, false)) return false;
@@ -576,7 +625,7 @@ export class ContainerWindow extends ContainerBase {
       }
       if (t === 'minecraft:enchanting_table') {
         if (i === 0 || i === 1) { if (!m(2, 38, true)) return false; }
-        else if (it.id === 351 && it.damage === 4) { if (!m(1, 2, true)) return false; }
+        else if (name === 'lapis_lazuli') { if (!m(1, 2, true)) return false; }
         else {
           if (this.get(0)) return false;
           const one = copy(it); one.count = 1;
@@ -596,7 +645,7 @@ export class ContainerWindow extends ContainerBase {
       }
       if (t === 'minecraft:beacon') {
         if (i === 0) { if (!m(1, 37, true)) return false; }
-        else if (!this.get(0) && BEACON_PAYMENT.has(it.id) && it.count === 1) { if (!m(0, 1, false)) return false; }
+        else if (!this.get(0) && BEACON_PAYMENT.has(name) && it.count === 1) { if (!m(0, 1, false)) return false; }
         else if (i >= 1 && i < 28) { if (!m(28, 37, false)) return false; }
         else if (i >= 28 && i < 37) { if (!m(1, 28, false)) return false; }
         else if (!m(1, 37, false)) return false;
@@ -614,11 +663,6 @@ export class ContainerWindow extends ContainerBase {
       else if (!m(0, n, false)) return false;
       return true;
     });
-  }
-
-  setAll(items) {
-    for (let i = 0; i < items.length && i < this.slots.length; i++) this.slots[i].item = items[i];
-    this.onSlotChanged(1);
   }
 
   // Closing the window returns grid items in vanilla server-side; mirror locally

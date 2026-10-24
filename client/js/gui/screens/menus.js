@@ -274,7 +274,9 @@ class ServerList extends SlotList {
     let population = '', playerList = null, ms = -2, version = null;
     if (pr && pr.status) {
       const st = pr.status;
-      motd = typeof st.description === 'string' ? st.description : chatToLegacy(st.description);
+      // The status response has already been JSON-decoded. A string description
+      // is literal text, even if it looks like another serialized component.
+      motd = chatToLegacy(st.description, { parsed: true });
       population = st.players ? `§7${st.players.online}§8/§7${st.players.max}` : '';
       if (st.players && st.players.sample && st.players.sample.length) playerList = st.players.sample.map((p) => p.name).join('\n');
       ms = st.ping;

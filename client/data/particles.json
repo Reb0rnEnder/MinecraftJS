@@ -1,19 +1,19 @@
 [
   {
     "id": 0,
-    "name": "explode"
+    "name": "ambient_entity_effect"
   },
   {
     "id": 1,
-    "name": "largeexplode"
+    "name": "angry_villager"
   },
   {
     "id": 2,
-    "name": "hugeexplosion"
+    "name": "barrier"
   },
   {
     "id": 3,
-    "name": "fireworksSpark"
+    "name": "block"
   },
   {
     "id": 4,
@@ -21,178 +21,182 @@
   },
   {
     "id": 5,
-    "name": "splash"
-  },
-  {
-    "id": 6,
-    "name": "wake"
-  },
-  {
-    "id": 7,
-    "name": "suspended"
-  },
-  {
-    "id": 8,
-    "name": "depthsuspend"
-  },
-  {
-    "id": 9,
-    "name": "crit"
-  },
-  {
-    "id": 10,
-    "name": "magicCrit"
-  },
-  {
-    "id": 11,
-    "name": "smoke"
-  },
-  {
-    "id": 12,
-    "name": "largesmoke"
-  },
-  {
-    "id": 13,
-    "name": "spell"
-  },
-  {
-    "id": 14,
-    "name": "instantSpell"
-  },
-  {
-    "id": 15,
-    "name": "mobSpell"
-  },
-  {
-    "id": 16,
-    "name": "mobSpellAmbient"
-  },
-  {
-    "id": 17,
-    "name": "witchMagic"
-  },
-  {
-    "id": 18,
-    "name": "dripWater"
-  },
-  {
-    "id": 19,
-    "name": "dripLava"
-  },
-  {
-    "id": 20,
-    "name": "angryVillager"
-  },
-  {
-    "id": 21,
-    "name": "happyVillager"
-  },
-  {
-    "id": 22,
-    "name": "townaura"
-  },
-  {
-    "id": 23,
-    "name": "note"
-  },
-  {
-    "id": 24,
-    "name": "portal"
-  },
-  {
-    "id": 25,
-    "name": "enchantmenttable"
-  },
-  {
-    "id": 26,
-    "name": "flame"
-  },
-  {
-    "id": 27,
-    "name": "lava"
-  },
-  {
-    "id": 28,
-    "name": "footstep"
-  },
-  {
-    "id": 29,
     "name": "cloud"
   },
   {
-    "id": 30,
-    "name": "reddust"
+    "id": 6,
+    "name": "crit"
   },
   {
-    "id": 31,
-    "name": "snowballpoof"
+    "id": 7,
+    "name": "damage_indicator"
   },
   {
-    "id": 32,
-    "name": "snowshovel"
+    "id": 8,
+    "name": "dragon_breath"
   },
   {
-    "id": 33,
-    "name": "slime"
+    "id": 9,
+    "name": "dripping_lava"
   },
   {
-    "id": 34,
+    "id": 10,
+    "name": "dripping_water"
+  },
+  {
+    "id": 11,
+    "name": "dust"
+  },
+  {
+    "id": 12,
+    "name": "effect"
+  },
+  {
+    "id": 13,
+    "name": "elder_guardian"
+  },
+  {
+    "id": 14,
+    "name": "enchanted_hit"
+  },
+  {
+    "id": 15,
+    "name": "enchant"
+  },
+  {
+    "id": 16,
+    "name": "end_rod"
+  },
+  {
+    "id": 17,
+    "name": "entity_effect"
+  },
+  {
+    "id": 18,
+    "name": "explosion_emitter"
+  },
+  {
+    "id": 19,
+    "name": "explosion"
+  },
+  {
+    "id": 20,
+    "name": "falling_dust"
+  },
+  {
+    "id": 21,
+    "name": "firework"
+  },
+  {
+    "id": 22,
+    "name": "fishing"
+  },
+  {
+    "id": 23,
+    "name": "flame"
+  },
+  {
+    "id": 24,
+    "name": "happy_villager"
+  },
+  {
+    "id": 25,
     "name": "heart"
   },
   {
+    "id": 26,
+    "name": "instant_effect"
+  },
+  {
+    "id": 27,
+    "name": "item"
+  },
+  {
+    "id": 28,
+    "name": "item_slime"
+  },
+  {
+    "id": 29,
+    "name": "item_snowball"
+  },
+  {
+    "id": 30,
+    "name": "large_smoke"
+  },
+  {
+    "id": 31,
+    "name": "lava"
+  },
+  {
+    "id": 32,
+    "name": "mycelium"
+  },
+  {
+    "id": 33,
+    "name": "note"
+  },
+  {
+    "id": 34,
+    "name": "poof"
+  },
+  {
     "id": 35,
-    "name": "barrier"
+    "name": "portal"
   },
   {
     "id": 36,
-    "name": "iconcrack"
+    "name": "rain"
   },
   {
     "id": 37,
-    "name": "blockcrack"
+    "name": "smoke"
   },
   {
     "id": 38,
-    "name": "blockdust"
+    "name": "spit"
   },
   {
     "id": 39,
-    "name": "droplet"
+    "name": "squid_ink"
   },
   {
     "id": 40,
-    "name": "take"
+    "name": "sweep_attack"
   },
   {
     "id": 41,
-    "name": "mobappearance"
+    "name": "totem_of_undying"
   },
   {
     "id": 42,
-    "name": "dragonbreath"
+    "name": "underwater"
   },
   {
     "id": 43,
-    "name": "endRod"
+    "name": "splash"
   },
   {
     "id": 44,
-    "name": "damageIndicator"
+    "name": "witch"
   },
   {
     "id": 45,
-    "name": "sweepAttack"
+    "name": "bubble_pop"
   },
   {
     "id": 46,
-    "name": "fallingdust"
+    "name": "current_down"
   },
   {
     "id": 47,
-    "name": "totem"
+    "name": "bubble_column_up"
   },
   {
     "id": 48,
-    "name": "spit"
+    "name": "nautilus"
+  },
+  {
+    "id": 49,
+    "name": "dolphin"
   }
 ]

@@ -147,7 +147,7 @@ export class StructureBlockScreen extends Screen {
     w.bool(t.ignoreEntities).bool(t.showAir).bool(t.showBoundingBox);
     w.f32(parseFloatJava(e.integrity.text));
     w.varlong(parseLongJava(e.seed.text));
-    this.game.send(C.customPayload('MC|Struct', w.build()));
+    this.game.send(C.customPayload('minecraft:structure_block', w.build()));
     return true;
   }
 

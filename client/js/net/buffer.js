@@ -87,10 +87,9 @@ export class Reader {
 
   // Slot: { id, count, damage, nbt, nbtRaw } or null
   slot() {
-    const id = this.i16();
-    if (id < 0) return null;
+    if (!this.bool()) return null;
+    const id = this.varint();
     const count = this.i8();
-    const damage = this.i16();
     const start = this.offset;
     const tag = this.u8();
     let nbt = null;
@@ -100,7 +99,7 @@ export class Reader {
       nbt = readNbtRoot(this);
       nbtRaw = this.bytes.slice(start, this.offset);
     }
-    return { id, count, damage, nbt, nbtRaw };
+    return { id, count, damage: 0, nbt, nbtRaw };
   }
 
   optionalNbt() {
@@ -111,7 +110,22 @@ export class Reader {
     return readNbtRoot(this);
   }
 
-  // 1.9+ entity metadata: (index u8, type varint, value) until index 0xff -> { index: value }
+  // Particle parameter registry in 1.13.2 (also used by area-effect-cloud metadata).
+  particleData(particleId) {
+    switch (particleId) {
+      case 3: case 20: return { blockState: this.varint() }; // block, falling_dust
+      case 11: return { red: this.f32(), green: this.f32(), blue: this.f32(), scale: this.f32() };
+      case 27: return { item: this.slot() };
+      default: return {};
+    }
+  }
+
+  particle() {
+    const particleId = this.varint();
+    return { particleId, data: this.particleData(particleId) };
+  }
+
+  // 1.13 entity metadata: (index u8, type varint, value) until index 0xff.
   metadata() {
     const meta = {};
     for (;;) {
@@ -123,15 +137,17 @@ export class Reader {
         case 1: meta[index] = this.varint(); break;
         case 2: meta[index] = this.f32(); break;
         case 3: case 4: meta[index] = this.string(); break; // string, chat component
-        case 5: meta[index] = this.slot(); break;
-        case 6: meta[index] = this.bool(); break;
-        case 7: meta[index] = { pitch: this.f32(), yaw: this.f32(), roll: this.f32() }; break;
-        case 8: meta[index] = this.position(); break;
-        case 9: meta[index] = this.bool() ? this.position() : null; break;
-        case 10: meta[index] = this.varint(); break; // direction
-        case 11: meta[index] = this.bool() ? this.uuid() : null; break;
-        case 12: meta[index] = this.varint(); break; // optional block state (0 = none)
-        case 13: meta[index] = readNbtRoot(this); break;
+        case 5: meta[index] = this.bool() ? this.string() : null; break; // optional chat
+        case 6: meta[index] = this.slot(); break;
+        case 7: meta[index] = this.bool(); break;
+        case 8: meta[index] = { pitch: this.f32(), yaw: this.f32(), roll: this.f32() }; break;
+        case 9: meta[index] = this.position(); break;
+        case 10: meta[index] = this.bool() ? this.position() : null; break;
+        case 11: meta[index] = this.varint(); break; // direction
+        case 12: meta[index] = this.bool() ? this.uuid() : null; break;
+        case 13: meta[index] = this.varint(); break; // optional direct block state; 0 = absent (no boolean)
+        case 14: meta[index] = this.optionalNbt(); break;
+        case 15: meta[index] = this.particle(); break;
         default: throw new Error('Unknown metadata type ' + type);
       }
     }
@@ -213,8 +229,8 @@ export class Writer {
   }
 
   slot(item) {
-    if (!item || item.id < 0) return this.i16(-1);
-    this.i16(item.id).i8(item.count).i16(item.damage || 0);
+    if (!item || item.id < 0) return this.bool(false);
+    this.bool(true).varint(item.id).i8(item.count);
     if (item.nbtRaw) return this.raw(item.nbtRaw);
     if (item.nbt) return writeNbtRoot(this, item.nbt);
     return this.u8(0);

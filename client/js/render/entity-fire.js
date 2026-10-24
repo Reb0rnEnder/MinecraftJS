@@ -29,7 +29,7 @@ export class EntityFire {
   // entities: [{ e, p: interpolated position }], viewYaw: RenderManager.playerViewY (degrees)
   update(entities, viewYaw) {
     const A = this.game.assets;
-    const s0 = A.atlas.entries.get('blocks/fire_layer_0'), s1 = A.atlas.entries.get('blocks/fire_layer_1');
+    const s0 = A.atlas.entries.get('block/fire_0'), s1 = A.atlas.entries.get('block/fire_1');
     const out = [];
     if (s0 && s1) {
       const a = -viewYaw * Math.PI / 180, ca = Math.cos(a), sa = Math.sin(a);

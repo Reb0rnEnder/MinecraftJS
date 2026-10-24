@@ -3,6 +3,7 @@
 const COLOR_NAMES = {
   black: '0', dark_blue: '1', dark_green: '2', dark_aqua: '3', dark_red: '4', dark_purple: '5', gold: '6', gray: '7',
   dark_gray: '8', blue: '9', green: 'a', aqua: 'b', red: 'c', light_purple: 'd', yellow: 'e', white: 'f',
+  reset: 'r',
 };
 
 import { setTranslator as setI18nTranslator } from './i18n.js';
@@ -11,8 +12,10 @@ let translateFn = (k) => k;
 export function setTranslator(fn) { translateFn = fn; setI18nTranslator(fn); }
 
 function styleCodes(style) {
-  let s = '';
-  if (style.color && COLOR_NAMES[style.color]) s += '§' + COLOR_NAMES[style.color];
+  // A false flag needs an actual reset even at the root (e.g. a custom item name
+  // rendered inside an italic tooltip). Reapply the remaining effective style.
+  let s = ['obfuscated', 'bold', 'strikethrough', 'underlined', 'italic'].some((k) => style[k] === false) ? '§r' : '';
+  if (style.color && typeof COLOR_NAMES[style.color] === 'string') s += '§' + COLOR_NAMES[style.color];
   if (style.obfuscated) s += '§k';
   if (style.bold) s += '§l';
   if (style.strikethrough) s += '§m';
@@ -24,34 +27,82 @@ function styleCodes(style) {
 function inherit(parent, c) {
   const st = { ...parent };
   for (const k of ['color', 'bold', 'italic', 'underlined', 'strikethrough', 'obfuscated']) {
-    if (c[k] !== undefined) st[k] = c[k];
+    // JSON null, like an absent style property, inherits; false explicitly clears it.
+    if (c[k] !== undefined && c[k] !== null) st[k] = k === 'color' ? c[k] : c[k] === true || c[k] === 'true';
   }
   return st;
+}
+
+function rootStyle(c, parent) {
+  // A component array deserializes to its first component with the rest appended.
+  if (Array.isArray(c)) return c.length ? rootStyle(c[0], parent) : parent;
+  return c && typeof c === 'object' ? inherit(parent, c) : parent;
 }
 
 function toText(c, parentStyle) {
   if (c === null || c === undefined) return '';
   if (typeof c === 'string' || typeof c === 'number' || typeof c === 'boolean') {
-    return styleCodes(parentStyle) + String(c);
+    return c === '' ? '' : styleCodes(parentStyle) + String(c);
   }
   if (Array.isArray(c)) {
     if (!c.length) return '';
-    const first = c[0];
-    const base = typeof first === 'object' ? inherit(parentStyle, first) : parentStyle;
+    const base = rootStyle(c[0], parentStyle);
     // the first element is the parent of the rest (each later part starts from its style, not the previous part's)
-    return c.map((x, i) => (i === 0 ? toText(x, parentStyle) : '§r' + toText(x, base))).join('');
+    return c.map((x, i) => toText(x, i === 0 ? parentStyle : base)).filter(Boolean).join('§r');
   }
   const style = inherit(parentStyle, c);
   const codes = styleCodes(style);
-  let out = '';
-  if (c.text !== undefined) out += codes + c.text;
+  let text = '';
+  if (c.text !== undefined) text = String(c.text);
   else if (c.translate !== undefined) {
-    const args = (c.with || []).map((w) => toText(w, style) + '§r' + codes);
-    out += codes + translateFn(c.translate, args);
-  } else if (c.score) out += codes + (c.score.value !== undefined ? c.score.value : '');
-  else if (c.selector) out += codes + c.selector;
-  if (c.extra) for (const e of c.extra) out += '§r' + toText(e, style);
+    // Reset BEFORE an argument as well as after it: bold:false (etc.) has no
+    // enabling code of its own and otherwise leaks the translation's style.
+    const args = (c.with || []).map((w) => '§r' + toText(w, style) + '§r' + codes);
+    text = translateFn(c.translate, args);
+  } else if (c.score) text = c.score.value !== undefined ? String(c.score.value) : '';
+  else if (c.selector !== undefined) text = c.selector;
+  else if (c.keybind !== undefined) text = c.keybind; // vanilla's fallback without a keybinding resolver
+  let out = text ? codes + text : '';
+  if (c.extra) for (const e of c.extra) {
+    const part = toText(e, style);
+    if (part) out += (out ? '§r' : '') + part;
+  }
   return out;
+}
+
+const primitive = (c) => typeof c === 'string' || typeof c === 'number' || typeof c === 'boolean';
+
+function isComponent(c) {
+  if (primitive(c)) return true;
+  if (!c || typeof c !== 'object') return false;
+  if (Array.isArray(c)) return c.length > 0 && c.every(isComponent);
+  let valid = false;
+  if (c.text !== undefined) valid = primitive(c.text);
+  else if (c.translate !== undefined) valid = typeof c.translate === 'string' && (c.with === undefined || Array.isArray(c.with) && c.with.every(isComponent));
+  else if (c.score) valid = primitive(c.score.name) && primitive(c.score.objective) && (c.score.value === undefined || primitive(c.score.value));
+  else if (c.selector !== undefined) valid = typeof c.selector === 'string';
+  else if (c.keybind !== undefined) valid = typeof c.keybind === 'string';
+  return valid && (c.extra === undefined || Array.isArray(c.extra) && c.extra.every(isComponent));
+}
+
+function hasComponentObject(c) {
+  return Array.isArray(c) ? c.some(hasComponentObject) : c !== null && typeof c === 'object';
+}
+
+function decodeComponent(text) {
+  try {
+    const c = JSON.parse(text);
+    // Bare numbers/booleans/null can also be legacy text. Preserve their spelling
+    // and whitespace; quoted strings, component objects and arrays decode once.
+    return (typeof c === 'string' || c !== null && typeof c === 'object') && isComponent(c) ? c : text;
+  } catch (e) {
+    try {
+      const c = parseLenientJson(text);
+      // Leniency is for recognizable components, not prose such as [red, blue],
+      // single-quoted text or comments that happen to be accepted by Gson.
+      return hasComponentObject(c) && isComponent(c) ? c : text;
+    } catch (err) { return text; }
+  }
 }
 
 // Gson's lenient JsonReader (vanilla parses chat with it): unquoted and single-quoted strings, '=' / '=>' between
@@ -75,7 +126,12 @@ export function parseLenientJson(text) {
       let c = text[i++];
       if (c === '\\') {
         c = text[i++];
-        if (c === 'u') { out += String.fromCharCode(parseInt(text.slice(i, i + 4), 16)); i += 4; continue; }
+        if (c === 'u') {
+          const hex = text.slice(i, i + 4);
+          if (!/^[0-9a-fA-F]{4}$/.test(hex)) fail();
+          out += String.fromCharCode(parseInt(hex, 16)); i += 4; continue;
+        }
+        if (!'"\'\\/bfnrt\n'.includes(c)) fail();
         c = { n: '\n', t: '\t', r: '\r', b: '\b', f: '\f' }[c] || c;
       }
       out += c;
@@ -95,7 +151,7 @@ export function parseLenientJson(text) {
     const c = text[i];
     if (c === '{') {
       i++;
-      const o = {};
+      const o = Object.create(null);
       for (;;) {
         skip();
         if (text[i] === '}') { i++; return o; }
@@ -135,21 +191,28 @@ export function parseLenientJson(text) {
   return v;
 }
 
-export function chatToLegacy(json) {
+// At a wire/NBT component boundary, strings are serialized JSON or legacy text.
+// Use { parsed: true } for values already extracted from JSON (status.description,
+// hoverEvent.value, translation arguments, etc.). Never reparse text/extra/with
+// string values, even if they contain a complete JSON component as literal text.
+// `style` supplies an inherited style when composing components (e.g. team color).
+export function chatToLegacy(json, { parsed = false, style = {} } = {}) {
   if (json === null || json === undefined) return '';
-  let obj = json;
-  if (typeof json === 'string') {
-    try { obj = JSON.parse(json); } catch (e) {
-      try { obj = parseLenientJson(json); } catch (err) { return json; }
-    }
+  let obj = typeof json === 'string' && !parsed ? decodeComponent(json) : json;
+  if (!isComponent(obj)) obj = typeof json === 'string' ? json : JSON.stringify(json);
+  const s = toText(obj, style);
+  // Close structured formatting so appending another string cannot leak styles.
+  // Plain/legacy strings retain their exact bytes, including existing § codes.
+  if (typeof obj === 'object' || styleCodes(style)) {
+    if (!s.replace(/§./g, '')) return '';
+    return /§./.test(s) ? s + '§r' : s;
   }
-  const s = toText(obj, {});
   return s;
 }
 
 // Plain text with codes removed
-export function chatToPlain(json) {
-  return chatToLegacy(json).replace(/§./g, '');
+export function chatToPlain(json, options) {
+  return chatToLegacy(json, options).replace(/§./g, '');
 }
 
 // Extract first click event URL (for chat links)

@@ -187,7 +187,7 @@ export class Renderer {
     const m = mat4.create();
     mat4.translate(m, m, pos.x + b[0] - 0.001, pos.y + b[1] - 0.001, pos.z + b[2] - 0.001);
     mat4.scale(m, m, b[3] - b[0] + 0.002, b[4] - b[1] + 0.002, b[5] - b[2] + 0.002);
-    this.breakState = { tex: `blocks/destroy_stage_${Math.min(9, stage)}.png`, model: m, light };
+    this.breakState = { tex: `block/destroy_stage_${Math.min(9, stage)}.png`, model: m, light };
   }
 
   // ---------------------------------------------------------------- per tick / frame

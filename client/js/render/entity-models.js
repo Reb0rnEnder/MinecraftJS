@@ -1,4 +1,4 @@
-// Entity models (1.12). Their boxes come from the Minecraft client jar at build time (lib/modelextract.js runs the
+// Entity models (1.13.2). Their boxes come from the Minecraft client jar at build time (lib/modelextract.js runs the
 // game's model constructors and records every part: bundles/entity-models.json); this file names the parts and holds
 // the animation (ports of setRotationAngles / setLivingAnimations).
 import { Part } from './boxmodel.js';
@@ -39,6 +39,66 @@ export function J(name, names) {
 
 const BIPED = ['head', 'headwear', 'body', 'rightArm', 'leftArm', 'rightLeg', 'leftLeg'];
 const QUADRUPED = ['head', 'body', 'leg1', 'leg2', 'leg3', 'leg4'];
+const D2R = PI / 180;
+const finite = (value, fallback = 0) => Number.isFinite(value) ? value : fallback;
+const clamp = (value, lo = 0, hi = 1) => Math.max(lo, Math.min(hi, finite(value)));
+
+function animationArgs(args = {}) {
+  const a = { ...args };
+  for (const key of ['ls', 'lsa', 'age', 'yaw', 'pitch', 'partial']) a[key] = finite(a[key]);
+  a.swing = Number.isFinite(a.swing) && a.swing >= 0 ? clamp(a.swing) : -9999;
+  a.inWater = a.inWater ?? true;
+  a.onGround = a.onGround ?? true;
+  return a;
+}
+
+// New adapters retain the jar hierarchy, including parts reachable only through children. A root is
+// never also a child (building it twice overwrites Part.obj and leaves a stale, unanimated mesh behind).
+// Reset the constructor pose each tick: switching swimming/standing/attacking must not leave stale angles.
+// animate's optional showParts is a {partName: boolean} override, or a whitelist of names; arrays of
+// parts (saddleParts/reins) can be addressed by their group name. A whitelist preserves ancestors.
+function jarAdapter(name, names, pose, options = {}) {
+  const p = J(name, names);
+  if (JAR[name].fields.length !== names.length) {
+    throw new Error(`${name}: unexpected jar field layout; rebuild the 1.13.2 assets`);
+  }
+  const all = new Set(), children = new Set();
+  const visit = (part) => {
+    if (!(part instanceof Part)) throw new Error(`${name}: unexpected jar field layout`);
+    if (all.has(part)) return;
+    all.add(part);
+    for (const child of part.children) { children.add(child); visit(child); }
+  };
+  Object.values(p).flat().forEach(visit);
+  const roots = [...all].filter((part) => !children.has(part));
+  const keys = ['px', 'py', 'pz', 'rx', 'ry', 'rz', 'visible'];
+  const rest = [...all].map((part) => [part, keys.map((key) => part[key])]);
+  const m = {
+    parts: p, roots, jarModel: name, modelScale: 1, materialOptions: { cull: false }, ...options,
+    animate(model, args) {
+      for (const [part, values] of rest) keys.forEach((key, i) => { part[key] = values[i]; });
+      const a = animationArgs(args);
+      pose(model, a);
+      const show = a.showParts;
+      if (Array.isArray(show)) {
+        const selected = new Set(show.flatMap((key) => model.parts[key] || []));
+        const reveal = (part, inherited) => {
+          const chosen = inherited || selected.has(part);
+          const descendants = part.children.map((child) => reveal(child, chosen));
+          part.visible = selected.has(part) || (inherited && part.visible) || descendants.some(Boolean);
+          return part.visible;
+        };
+        model.roots.forEach((part) => reveal(part, false));
+      } else if (show && typeof show === 'object') {
+        for (const [key, visible] of Object.entries(show)) {
+          for (const part of [].concat(model.parts[key] || [])) part.visible = !!visible;
+        }
+      }
+    },
+  };
+  m.animate(m);
+  return m;
+}
 
 // ---------------------------------------------------------------- Biped family
 
@@ -52,10 +112,12 @@ export function biped(name = 'biped') {
 // (a.heldRight: legacy 0 / 1 = empty / item); a.swingSide: arm that swings (1 right, -1 left);
 // a.elytra: elytra flying for more than 4 ticks, a.speedSq: squared motion (slows the limb swing)
 export function animateBiped(m, a) {
+  a = animationArgs(a);
   const p = m.parts;
   const { ls, lsa, age, yaw, pitch, swing } = a;
   p.head.ry = yaw * PI / 180;
-  p.head.rx = a.elytra ? -PI / 4 : pitch * PI / 180;
+  const swim = clamp(a.swimAmount ?? (a.swimming ? 1 : 0));
+  p.head.rx = a.elytra ? -PI / 4 : swim > 0 ? lerpAngle(p.head.rx, a.swimming ? -PI / 4 : pitch * D2R, swim) : pitch * D2R;
   let f = 1;
   if (a.elytra) { f = (a.speedSq || 0) / 0.2; f = f * f * f; }
   if (f < 1) f = 1;
@@ -74,8 +136,10 @@ export function animateBiped(m, a) {
   p.rightArm.ry = 0; p.leftArm.ry = 0;
   if (lp === 'block') { p.leftArm.rx = p.leftArm.rx * 0.5 - 0.9424779; p.leftArm.ry = 0.5235988; }
   else if (lp === 'item') p.leftArm.rx = p.leftArm.rx * 0.5 - PI / 10;
+  else if (lp === 'spear') { p.leftArm.rx = p.leftArm.rx * 0.5 - PI; p.leftArm.ry = 0; }
   if (rp === 'block') { p.rightArm.rx = p.rightArm.rx * 0.5 - 0.9424779; p.rightArm.ry = -0.5235988; }
   else if (rp === 'item') p.rightArm.rx = p.rightArm.rx * 0.5 - PI / 10;
+  else if (rp === 'spear') { p.rightArm.rx = p.rightArm.rx * 0.5 - PI; p.rightArm.ry = 0; }
   p.body.ry = 0;
   p.rightArm.pz = 0; p.rightArm.px = -5; p.leftArm.pz = 0; p.leftArm.px = 5;
   if (swing > -9990) {
@@ -117,7 +181,39 @@ export function animateBiped(m, a) {
     p.rightArm.ry = -0.1 + p.head.ry - 0.4; p.leftArm.ry = 0.1 + p.head.ry;
     p.rightArm.rx = -PI / 2 + p.head.rx; p.leftArm.rx = -PI / 2 + p.head.rx;
   }
+  if (swim > 0) animateSwim(p, a, swim);
   p.headwear.copyAngles(p.head);
+}
+
+// ModelBiped (cot): a 26-tick breaststroke with pulls at 0..14,
+// recovery at 14..22, and arms returning overhead at 22..26.
+function lerpAngle(from, to, amount) {
+  let delta = (to - from) % (2 * PI);
+  if (delta < -PI) delta += 2 * PI;
+  if (delta >= PI) delta -= 2 * PI;
+  return from + amount * delta;
+}
+function animateSwim(p, a, swim) {
+  const phase = a.ls % 26, right = a.swing > 0 ? 0 : swim;
+  const mix = (from, to, t) => from + (to - from) * t;
+  let rx, lz, rz;
+  if (phase < 14) {
+    const curve = (-65 * phase + phase * phase) / (-65 * 14 + 14 * 14);
+    rx = 0; lz = PI + 1.8707964 * curve; rz = PI - 1.8707964 * curve;
+  } else if (phase < 22) {
+    const t = (phase - 14) / 8;
+    rx = PI / 2 * t; lz = 5.012389 - 1.8707964 * t; rz = 1.2707963 + 1.8707964 * t;
+  } else {
+    rx = PI / 2 * (1 - (phase - 22) / 4); lz = rz = PI;
+  }
+  p.leftArm.rx = lerpAngle(p.leftArm.rx, rx, swim);
+  p.leftArm.ry = lerpAngle(p.leftArm.ry, PI, swim);
+  p.leftArm.rz = lerpAngle(p.leftArm.rz, lz, swim);
+  p.rightArm.rx = mix(p.rightArm.rx, rx, right);
+  p.rightArm.ry = mix(p.rightArm.ry, PI, right);
+  p.rightArm.rz = mix(p.rightArm.rz, rz, right);
+  p.leftLeg.rx = mix(p.leftLeg.rx, 0.3 * cos(a.ls / 3 + PI), swim);
+  p.rightLeg.rx = mix(p.rightLeg.rx, 0.3 * cos(a.ls / 3), swim);
 }
 
 export function playerModel(slim, tw = 64, th = 64) {
@@ -332,47 +428,155 @@ export function rabbit() {
   };
 }
 
-export function horse() {
-  const p = J('horse', ['head', 'upperJaw', 'lowerJaw', 'leftEar', 'rightEar', 'muleLeftEar', 'muleRightEar', 'neck', 'faceRopes', 'mane', 'body',
-    'tailBase', 'tailMiddle', 'tailTip', 'backLeftLeg', 'backLeftShin', 'backLeftHoof', 'backRightLeg', 'backRightShin', 'backRightHoof',
-    'frontLeftLeg', 'frontLeftShin', 'frontLeftHoof', 'frontRightLeg', 'frontRightShin', 'frontRightHoof', 'muleLeftChest', 'muleRightChest',
-    'saddle', 'saddleFront', 'saddleBack', 'leftSaddleRope', 'leftSaddleMetal', 'rightSaddleRope', 'rightSaddleMetal', 'leftFaceMetal',
-    'rightFaceMetal', 'leftRein', 'rightRein']);
-  // the jaws are children of the head; ModelHorse.setLivingAnimations keeps them closed at these points
-  p.upperJaw.pivot(0, 0.02, 0.02).rot(0, 0, 0);
-  p.lowerJaw.pivot(0, 0, 0).rot(0, 0, 0);
-  const legs = ['backLeftLeg', 'backLeftShin', 'backLeftHoof', 'backRightLeg', 'backRightShin', 'backRightHoof',
-    'frontLeftLeg', 'frontLeftShin', 'frontLeftHoof', 'frontRightLeg', 'frontRightShin', 'frontRightHoof'];
-  return {
-    parts: p,
-    roots: [p.head, p.leftEar, p.rightEar, p.muleLeftEar, p.muleRightEar, p.neck, p.mane, p.body, p.tailBase, p.tailMiddle, p.tailTip, ...legs.map((k) => p[k]), p.saddle],
-    animate: (m, a) => {
-      const q = m.parts;
-      const mule = a.horseType === 1 || a.horseType === 2;
-      q.leftEar.visible = q.rightEar.visible = !mule;
-      q.muleLeftEar.visible = q.muleRightEar.visible = mule;
-      q.mane.visible = !mule;
-      q.saddle.visible = !!a.saddled;
-      const headX = 0.5235988 + a.pitch * PI / 180;
-      const headY = a.yaw * PI / 180;
-      for (const k of ['head', 'leftEar', 'rightEar', 'muleLeftEar', 'muleRightEar', 'neck', 'mane']) { q[k].rx = headX; q[k].ry = headY; }
-      q.muleLeftEar.rz = 0.2617994; q.muleRightEar.rz = -0.2617994;
-      const f = cos(a.ls * 0.6662 + PI) * 0.8 * a.lsa;
-      const g = cos(a.ls * 0.6662) * 0.8 * a.lsa;
-      q.backLeftLeg.rx = g; q.backLeftShin.rx = g; q.backLeftHoof.rx = g;
-      q.backRightLeg.rx = f; q.backRightShin.rx = f; q.backRightHoof.rx = f;
-      q.frontLeftLeg.rx = f; q.frontLeftShin.rx = f; q.frontLeftHoof.rx = f;
-      q.frontRightLeg.rx = g; q.frontRightShin.rx = g; q.frontRightHoof.rx = g;
-      // keep shins attached below the upper legs
-      for (const [up, shin, hoof] of [['backLeftLeg', 'backLeftShin', 'backLeftHoof'], ['backRightLeg', 'backRightShin', 'backRightHoof'], ['frontLeftLeg', 'frontLeftShin', 'frontLeftHoof'], ['frontRightLeg', 'frontRightShin', 'frontRightHoof']]) {
-        const L = q[up]; const len = up.startsWith('back') ? 7 : 7;
-        q[shin].py = L.py + cos(L.rx) * len; q[shin].pz = L.pz + sin(L.rx) * len;
-        q[hoof].py = q[shin].py; q[hoof].pz = q[shin].pz;
+// type is fixed at construction: 0/horse, 1/donkey, 2/mule, 3/zombie_horse, 4/skeleton_horse.
+// The 1.13 base has NINE fields (two arrays), the donkey subclass ELEVEN; no detached shins/jaws.
+// Saddle and reins remain children of body/neck; chests remain children of the donkey's body.
+export function horse(type = 0) {
+  const types = ['horse', 'donkey', 'mule', 'zombie_horse', 'skeleton_horse'];
+  const kind = typeof type === 'string' ? (types.includes(type) ? type : 'horse') : (types[type] || 'horse');
+  const chested = kind === 'donkey' || kind === 'mule';
+  const names = ['body', 'neck', 'leftHindLeg', 'rightHindLeg', 'leftFrontLeg', 'rightFrontLeg', 'tail', 'saddleParts', 'reins'];
+  const m = jarAdapter(chested ? 'donkey' : 'horse', [...names, ...(chested ? ['leftChest', 'rightChest'] : [])], (model, a) => {
+    const q = model.parts, rear = clamp(a.rearing), graze = clamp(a.grazing), mouth = clamp(a.mouthOpen);
+    const neutral = 1 - Math.max(rear, graze), down = 1 - rear;
+    const yaw = clamp(a.yaw, -20, 20) * D2R;
+    const pitch = a.pitch * D2R + (a.lsa > 0.2 ? cos(a.ls * 0.4) * 0.15 * a.lsa : 0);
+    const gait = cos((a.inWater ? 0.2 : 1) * a.ls * 0.6662 + PI);
+    q.neck.rx = rear * (PI / 12 + pitch) + graze * (2.1816616 + sin(a.age) * 0.05)
+      + neutral * (PI / 6 + pitch + mouth * sin(a.age) * 0.05);
+    q.neck.ry = (rear + neutral) * yaw;
+    q.neck.py = rear * -4 + graze * 11 + neutral * 4;
+    q.neck.pz = rear * -4 - (graze + neutral) * 12;
+    q.body.rx = -rear * PI / 4;
+    q.leftFrontLeg.py = q.rightFrontLeg.py = 2 * rear + 14 * down;
+    q.leftFrontLeg.pz = q.rightFrontLeg.pz = -6 * rear - 10 * down;
+    const paw = cos(a.age * 0.6 + PI), walk = gait * 0.8 * a.lsa;
+    q.leftFrontLeg.rx = (-PI / 3 + paw) * rear + walk * down;
+    q.rightFrontLeg.rx = (-PI / 3 - paw) * rear - walk * down;
+    q.leftHindLeg.rx = PI / 12 * rear - gait * 0.5 * a.lsa * down;
+    q.rightHindLeg.rx = PI / 12 * rear + gait * 0.5 * a.lsa * down;
+    q.tail.rx = PI / 6 + a.lsa * 0.75;
+    q.tail.py = -5 + a.lsa; q.tail.pz = 2 + a.lsa * 2;
+    q.tail.ry = a.tailWag ? cos(a.age * 0.7) : 0;
+    q.saddleParts.forEach((part) => { part.visible = !!a.saddled; });
+    q.reins.forEach((part) => { part.visible = !!a.saddled && !!a.hasRider; });
+    if (chested) q.leftChest.visible = q.rightChest.visible = !!a.chested && !a.child;
+  }, {
+    horseType: kind, modelScale: kind === 'donkey' ? 0.87 : kind === 'mule' ? 0.92 : 1,
+    texture: 'entity/horse/' + ({ horse: 'horse_white', zombie_horse: 'horse_zombie', skeleton_horse: 'horse_skeleton' }[kind] || kind) + '.png',
+  });
+  const p = m.parts;
+  [p.head, p.mane, p.muzzle, p.leftEar, p.rightEar] = p.neck.children;
+  [p.saddle, p.leftBit, p.rightBit, p.faceRopes, p.noseBand] = p.saddleParts;
+  [p.leftRein, p.rightRein] = p.reins;
+  return m;
+}
+
+// ---------------------------------------------------------------- Previously unbound 1.10-1.12 families
+
+// rearing: interpolated EntityPolarBear standing animation, 0..1.
+export function polarBear() {
+  return jarAdapter('polarBear', QUADRUPED, (m, a) => {
+    animateQuadruped(m, a);
+    const p = m.parts, stand = clamp(a.rearing) ** 2, down = 1 - stand;
+    p.body.rx = PI / 2 - stand * PI * 0.35; p.body.py = 9 * down + 11 * stand;
+    p.leg3.py = p.leg4.py = 14 * down - 6 * stand;
+    p.leg3.pz = p.leg4.pz = -8 * down - 4 * stand;
+    p.leg3.rx -= stand * PI * 0.45; p.leg4.rx -= stand * PI * 0.45;
+    p.head.py = 10 * down - 12 * stand; p.head.pz = -16 * down - 3 * stand;
+    p.head.rx += stand * PI * 0.15;
+  }, { texture: 'entity/bear/polarbear.png', modelScale: 1.2, quadruped: true, childY: 8, childZ: 6 });
+}
+
+// decor=true is the jar's inflated LayerLlamaDecor model. Bind the chosen dye texture separately.
+export function llama(decor = false) {
+  return jarAdapter(decor ? 'llamaDecor' : 'llama', [...QUADRUPED, 'rightChest', 'leftChest'], (m, a) => {
+    animateQuadruped(m, a);
+    m.parts.rightChest.visible = m.parts.leftChest.visible = !!a.chested && !a.child;
+  }, { texture: decor ? 'entity/llama/decor/white.png' : 'entity/llama/creamy.png', quadruped: true, childY: 8, childZ: 6 });
+}
+
+// age is ticks, flap is the renderer's interpolated wing amplitude (not ageInTicks). If omitted,
+// flying derives a bounded flap from age. sitting and dancing take precedence over onGround.
+export function parrot(variant = 0) {
+  const colors = ['red_blue', 'blue', 'green', 'yellow_blue', 'grey'];
+  return jarAdapter('parrot', ['body', 'tail', 'leftWing', 'rightWing', 'head', 'face', 'upperBeak', 'lowerBeak', 'crest', 'leftLeg', 'rightLeg'], (m, a) => {
+    const p = m.parts, flying = a.flying ?? !a.onGround;
+    const flap = finite(a.flap, flying ? (sin(a.age * 1.5) + 1) * 0.8 : 0);
+    p.crest.rx = -0.2214; p.body.rx = 0.4937;
+    p.leftWing.rx = p.rightWing.rx = -0.6981;
+    p.leftWing.ry = p.rightWing.ry = -PI;
+    p.leftLeg.rx = p.rightLeg.rx = -0.0299;
+    p.head.rx = a.pitch * D2R; p.head.ry = a.yaw * D2R;
+    if (a.dancing) {
+      const x = cos(a.age), y = sin(a.age);
+      p.head.px = p.body.px = p.tail.px = x;
+      p.head.py += y; p.body.py += y; p.tail.py += y;
+      p.head.rx = p.head.ry = 0; p.head.rz = y * 0.4;
+      p.leftWing.px += x; p.rightWing.px += x;
+      p.leftWing.py += y; p.rightWing.py += y;
+      p.leftWing.rz = -0.0873 - flap; p.rightWing.rz = 0.0873 + flap;
+      p.leftLeg.rz = -PI / 9; p.rightLeg.rz = PI / 9;
+    } else if (a.sitting) {
+      for (const part of [p.head, p.body, p.tail, p.leftWing, p.rightWing, p.leftLeg, p.rightLeg]) part.py += 1.9;
+      p.tail.rx = 1.5388988; p.leftWing.rz = -0.0873; p.rightWing.rz = 0.0873;
+      p.leftLeg.rx += PI / 2; p.rightLeg.rx += PI / 2;
+    } else {
+      const bob = flap * 0.3;
+      for (const part of [p.head, p.body, p.tail, p.leftWing, p.rightWing, p.leftLeg, p.rightLeg]) part.py += bob;
+      p.tail.rx = 1.015 + cos(a.ls * 0.6662) * 0.3 * a.lsa;
+      p.leftWing.rz = -0.0873 - flap; p.rightWing.rz = 0.0873 + flap;
+      if (flying) { p.leftLeg.rx += 0.6981317; p.rightLeg.rx += 0.6981317; }
+      else {
+        p.leftLeg.rx += cos(a.ls * 0.6662) * 1.4 * a.lsa;
+        p.rightLeg.rx += cos(a.ls * 0.6662 + PI) * 1.4 * a.lsa;
       }
-      const tailSwing = cos(a.ls * 0.6662) * 0.3 * a.lsa;
-      q.tailBase.ry = q.tailMiddle.ry = q.tailTip.ry = tailSwing;
-    },
-  };
+    }
+  }, { texture: 'entity/parrot/parrot_' + (colors[variant] || colors[0]) + '.png' });
+}
+
+export function vex() {
+  return jarAdapter('vex', [...BIPED, 'leftWing', 'rightWing'], (m, a) => {
+    animateBiped(m, a);
+    const p = m.parts;
+    if (a.charging) p[a.leftHanded ? 'leftArm' : 'rightArm'].rx = PI * 1.2;
+    p.rightLeg.rx += PI / 5;
+    p.leftWing.py = p.rightWing.py = 1; p.leftWing.pz = p.rightWing.pz = 2;
+    p.rightWing.ry = 0.47123894 + cos(a.age * 0.8) * PI * 0.05;
+    p.leftWing.ry = -p.rightWing.ry;
+    p.leftWing.rx = p.rightWing.rx = 0.47123894;
+    p.leftWing.rz = -0.47123894; p.rightWing.rz = 0.47123894;
+  }, { texture: 'entity/illager/vex.png', modelScale: 0.4 });
+}
+
+// pose: crossed (default), attacking, spellcasting, bow. Illusioners show the constructor-hidden hat.
+export function illager(kind = 'evoker') {
+  if (!['evoker', 'vindicator', 'illusioner'].includes(kind)) kind = 'evoker';
+  return jarAdapter('illager', ['head', 'hat', 'body', 'arms', 'rightLeg', 'leftLeg', 'nose', 'rightArm', 'leftArm'], (m, a) => {
+    const p = m.parts;
+    const pose = a.pose || (a.spellcasting ? 'spellcasting' : a.attacking ? 'attacking' : a.aimedBow ? 'bow' : 'crossed');
+    p.head.ry = a.yaw * D2R; p.head.rx = a.pitch * D2R;
+    p.hat.visible = a.showHat ?? kind === 'illusioner';
+    p.arms.py = 3; p.arms.pz = -1; p.arms.rx = -0.75;
+    p.arms.visible = pose === 'crossed'; p.rightArm.visible = p.leftArm.visible = pose !== 'crossed';
+    p.rightLeg.rx = cos(a.ls * 0.6662) * 0.7 * a.lsa;
+    p.leftLeg.rx = cos(a.ls * 0.6662 + PI) * 0.7 * a.lsa;
+    if (pose === 'attacking') {
+      const sw = Math.max(0, a.swing), f = sin(sw * PI), g = sin((1 - (1 - sw) ** 2) * PI);
+      const main = a.leftHanded ? p.leftArm : p.rightArm, off = a.leftHanded ? p.rightArm : p.leftArm;
+      p.rightArm.ry = PI / 20; p.leftArm.ry = -PI / 20;
+      main.rx = -1.8849558 + cos(a.age * 0.09) * 0.15 + f * 2.2 - g * 0.4;
+      off.rx = cos(a.age * 0.19) * 0.5 + f * 1.2 - g * 0.4;
+      p.rightArm.rz = cos(a.age * 0.09) * 0.05 + 0.05; p.leftArm.rz = -p.rightArm.rz;
+      p.rightArm.rx += sin(a.age * 0.067) * 0.05; p.leftArm.rx -= sin(a.age * 0.067) * 0.05;
+    } else if (pose === 'spellcasting') {
+      p.rightArm.rx = p.leftArm.rx = cos(a.age * 0.6662) * 0.25;
+      p.rightArm.rz = PI * 0.75; p.leftArm.rz = -PI * 0.75;
+    } else if (pose === 'bow') {
+      p.rightArm.ry = -0.1 + p.head.ry; p.rightArm.rx = -PI / 2 + p.head.rx;
+      p.leftArm.rx = -0.9424779 + p.head.rx; p.leftArm.ry = p.head.ry - 0.4; p.leftArm.rz = PI / 2;
+    }
+  }, { texture: 'entity/illager/' + kind + '.png', modelScale: 0.9375 });
 }
 
 // ---------------------------------------------------------------- Monsters
@@ -642,6 +846,155 @@ export function armorStand() {
       q.base.visible = !a.noBasePlate;
     },
   };
+}
+
+// ---------------------------------------------------------------- Update Aquatic
+
+// The outer layer is an independent, 0.25-inflated jar model with identical part names/animation.
+// swimAmount is 0..1; throwing or rightPose/leftPose='spear' raises the trident arm.
+export function drowned(outer = false) {
+  return jarAdapter(outer ? 'drownedOuter' : 'drowned', BIPED, (m, a) => {
+    animateBiped(m, a);
+    const p = m.parts, sw = Math.max(0, a.swing);
+    const f = sin(sw * PI), g = sin((1 - (1 - sw) ** 2) * PI);
+    p.rightArm.ry = -(0.1 - f * 0.6); p.leftArm.ry = -p.rightArm.ry;
+    p.rightArm.rx = p.leftArm.rx = -PI / (a.armsRaised ? 1.5 : 2.25) - f * 1.2 + g * 0.4;
+    p.rightArm.rz = cos(a.age * 0.09) * 0.05 + 0.05; p.leftArm.rz = -p.rightArm.rz;
+    p.rightArm.rx += sin(a.age * 0.067) * 0.05; p.leftArm.rx -= sin(a.age * 0.067) * 0.05;
+    const rightSpear = a.rightPose === 'spear' || (a.throwing && !a.leftHanded);
+    const leftSpear = a.leftPose === 'spear' || (a.throwing && a.leftHanded);
+    if (rightSpear) { p.rightArm.rx = p.rightArm.rx * 0.5 - PI; p.rightArm.ry = 0; }
+    if (leftSpear) { p.leftArm.rx = p.leftArm.rx * 0.5 - PI; p.leftArm.ry = 0; }
+    const swim = clamp(a.swimAmount ?? (a.swimming ? 1 : 0));
+    if (swim > 0) {
+      const lerpAngle = (from, to) => from + swim * (((to - from + PI) % (2 * PI) + 2 * PI) % (2 * PI) - PI);
+      const kick = sin(a.age * 0.1);
+      p.rightArm.rx = lerpAngle(p.rightArm.rx, -PI * 0.8) + swim * 0.35 * kick;
+      p.leftArm.rx = lerpAngle(p.leftArm.rx, -PI * 0.8) - swim * 0.35 * kick;
+      p.rightArm.rz = lerpAngle(p.rightArm.rz, -0.15); p.leftArm.rz = lerpAngle(p.leftArm.rz, 0.15);
+      p.rightLeg.rx += swim * 0.55 * kick; p.leftLeg.rx -= swim * 0.55 * kick;
+      p.head.rx = 0;
+    }
+    p.headwear.copyAngles(p.head);
+  }, { texture: 'entity/zombie/drowned' + (outer ? '_outer_layer' : '') + '.png' });
+}
+
+export function cod() {
+  return jarAdapter('cod', ['body', 'dorsalFin', 'head', 'nose', 'rightFin', 'leftFin', 'tail'], (m, a) => {
+    m.parts.tail.ry = -(a.inWater ? 1 : 1.5) * 0.45 * sin(a.age * 0.6);
+  }, { texture: 'entity/fish/cod.png' });
+}
+
+export function salmon() {
+  return jarAdapter('salmon', ['body', 'backBody', 'head', 'frontDorsalFin', 'backDorsalFin', 'tail', 'rightFin', 'leftFin'], (m, a) => {
+    // Tail/dorsal fin are backBody children; animate the joint, not a duplicate root fin.
+    m.parts.backBody.ry = -(a.inWater ? 1 : 1.3) * 0.25 * sin((a.inWater ? 1 : 1.7) * a.age * 0.6);
+  }, { texture: 'entity/fish/salmon.png' });
+}
+
+// size is fixed for this instance: 0/small, 1/medium, 2/big. Rebuild on puff-state change.
+export function pufferfish(size = 0) {
+  const state = typeof size === 'string' ? ['small', 'medium', 'big'].indexOf(size) : size;
+  const index = Number.isInteger(state) && state >= 0 && state <= 2 ? state : 0;
+  const names = [
+    ['body', 'rightEye', 'leftEye', 'rightFin', 'leftFin', 'tail'],
+    ['body', 'rightFin', 'leftFin', 'topFrontSpikes', 'topBackSpikes', 'rightFrontSpikes', 'rightBackSpikes', 'leftBackSpikes', 'leftFrontSpikes', 'bottomBackSpikes', 'bottomFrontSpikes'],
+    ['body', 'rightFin', 'leftFin', 'topFrontSpikes', 'topMiddleSpikes', 'topBackSpikes', 'rightFrontSpikes', 'leftFrontSpikes', 'bottomFrontSpikes', 'bottomBackSpikes', 'bottomMiddleSpikes', 'rightBackSpikes', 'leftBackSpikes'],
+  ];
+  return jarAdapter(['pufferfishSmall', 'pufferfishMedium', 'pufferfishBig'][index], names[index], (m, a) => {
+    m.parts.rightFin.rz = -0.2 + 0.4 * sin(a.age * 0.2);
+    m.parts.leftFin.rz = 0.2 - 0.4 * sin(a.age * 0.2);
+  }, { texture: 'entity/fish/pufferfish.png', puffState: index });
+}
+
+// shape: 0/'a' or 1/'b' (the low byte of the packed variant). pattern=true selects the
+// actual 0.008-inflated geometry. The renderer binds pattern_1..6 and applies the two dye tints.
+export function tropicalFish(shape = 0, pattern = false) {
+  const large = shape === 1 || shape === 'b', suffix = large ? 'B' : 'A';
+  return jarAdapter('tropicalFish' + (pattern ? 'Pattern' : '') + suffix,
+    ['body', 'tail', 'rightFin', 'leftFin', 'topFin', ...(large ? ['bottomFin'] : [])], (m, a) => {
+      m.parts.tail.ry = -(a.inWater ? 1 : 1.5) * 0.45 * sin(a.age * 0.6);
+    }, { texture: 'entity/fish/tropical_' + suffix.toLowerCase() + (pattern ? '_pattern_1' : '') + '.png', shape: large ? 1 : 0, pattern: !!pattern });
+}
+
+export function dolphin() {
+  const m = jarAdapter('dolphin', ['head', 'body', 'tail', 'tailFin'], (model, a) => {
+    const p = model.parts;
+    p.body.rx = a.pitch * D2R; p.body.ry = a.yaw * D2R;
+    if (a.moving ?? (finite(a.speedSq) > 0 || a.lsa > 0)) {
+      const wave = cos(a.age * 0.3);
+      p.body.rx += -0.05 - 0.05 * wave;
+      p.tail.rx = -0.1 * wave; p.tailFin.rx = -0.2 * wave;
+    }
+  }, { texture: 'entity/dolphin.png' });
+  [m.parts.dorsalFin, m.parts.leftFin, m.parts.rightFin] = m.parts.body.children;
+  m.parts.beak = m.parts.head.children[0];
+  return m;
+}
+
+// leg1/2 are rear flippers, leg3/4 front flippers. hasEgg controls the extra belly geometry;
+// child suppresses it and tells the caller to use the jar's 1/6 baby scale, not the usual 1/2.
+export function turtle() {
+  return jarAdapter('turtle', [...QUADRUPED, 'eggBelly'], (m, a) => {
+    const p = m.parts;
+    p.head.rx = a.pitch * D2R; p.head.ry = a.yaw * D2R;
+    p.body.rx = p.eggBelly.rx = PI / 2;
+    const swim = a.ls * 0.6662 * 0.6;
+    p.leg1.rx = cos(swim) * 0.5 * a.lsa; p.leg2.rx = cos(swim + PI) * 0.5 * a.lsa;
+    p.leg3.rz = cos(swim + PI) * 0.5 * a.lsa; p.leg4.rz = cos(swim) * 0.5 * a.lsa;
+    if (!a.inWater && a.onGround) {
+      const speed = a.layingEgg ? 4 : 1, amplitude = a.layingEgg ? 2 : 1;
+      p.leg3.ry = cos(speed * a.ls * 5 + PI) * 8 * a.lsa * amplitude;
+      p.leg4.ry = cos(speed * a.ls * 5) * 8 * a.lsa * amplitude;
+      p.leg3.rz = p.leg4.rz = 0;
+      p.leg1.ry = cos(a.ls * 5 + PI) * 3 * a.lsa; p.leg2.ry = cos(a.ls * 5) * 3 * a.lsa;
+      p.leg1.rx = p.leg2.rx = 0;
+    }
+    p.eggBelly.visible = !!a.hasEgg && !a.child;
+    m.modelTranslateY = p.eggBelly.visible ? -0.08 : 0;
+  }, { texture: 'entity/turtle/big_sea_turtle.png', childScale: 1 / 6 });
+}
+
+// Entity-id phase keeps flocks from flapping in lockstep. Renderer applies modelScale, then the
+// pre-render translation [0, 1.3125, 0.1875] before the normal living-model origin translation.
+export function phantom(size = 0) {
+  return jarAdapter('phantom', ['body', 'leftWing', 'leftWingTip', 'rightWing', 'rightWingTip', 'head', 'tail', 'tailTip'], (m, a) => {
+    const p = m.parts, phase = (finite(a.entityId) * 3 + a.age) * 0.13;
+    p.leftWing.rz = p.leftWingTip.rz = cos(phase) * 16 * D2R;
+    p.rightWing.rz = p.rightWingTip.rz = -p.leftWing.rz;
+    p.tail.rx = p.tailTip.rx = -(5 + cos(phase * 2) * 5) * D2R;
+  }, { texture: 'entity/phantom.png', modelScale: 1 + 0.15 * clamp(size, 0, 64), modelTranslateY: 1.3125, modelTranslateZ: 0.1875 });
+}
+
+// ---------------------------------------------------------------- Jar-built projectiles
+
+// Projectile world orientation belongs to the caller: trident uses yaw-90 about Y then pitch+90
+// about Z, spit uses yaw-90 about Y then pitch about Z. These have no living-model Y translation.
+export function trident() {
+  return jarAdapter('trident', ['shaft'], () => {}, { texture: 'entity/trident.png' });
+}
+
+export function llamaSpit() {
+  return jarAdapter('llamaSpit', ['body'], () => {}, { texture: 'entity/llama/spit.png' });
+}
+
+export function shulkerBullet() {
+  return jarAdapter('shulkerBullet', ['body'], (m, a) => {
+    m.parts.body.ry = a.yaw * D2R; m.parts.body.rx = a.pitch * D2R;
+  }, { texture: 'entity/shulker/spark.png', modelScale: 0.5 });
+}
+
+// progress: EntityEvokerFangs animation progress 0..1. The caller controls warmup/lifetime
+// visibility. At our usual 1/16 pixel unit the jar's scale(2)*unit(1/32) is modelScale=1;
+// its -0.626 translation becomes -1.252. Read modelScale again after animate for the final shrink.
+export function evokerFangs() {
+  return jarAdapter('evokerFangs', ['base', 'upperJaw', 'lowerJaw'], (m, a) => {
+    const p = m.parts, t = clamp(a.progress), open = 1 - Math.min(1, t * 2) ** 3;
+    p.upperJaw.rz = PI - open * 0.35 * PI; p.lowerJaw.rz = PI + open * 0.35 * PI;
+    p.lowerJaw.ry = PI;
+    p.base.py = p.upperJaw.py = p.lowerJaw.py = 24 - (t + sin(t * 2.7)) * 0.6 * 12;
+    m.modelScale = t > 0.9 ? (1 - t) * 10 : 1;
+  }, { texture: 'entity/illager/evoker_fangs.png', modelTranslateY: -1.252 });
 }
 
 // ---------------------------------------------------------------- Vehicles

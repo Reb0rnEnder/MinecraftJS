@@ -53,7 +53,9 @@ export function foliageColor(id, y) {
 
 export function waterColor(id) {
   const b = biomeInfo(id);
-  return isSwamp(b.name) ? 0xe0ffae : 0xffffff;
+  // The 1.13 water sprites are grayscale: their blue comes from biome tint.
+  if (typeof b.waterColor === 'number') return b.waterColor;
+  return isSwamp(b.name) ? 0x617b64 : 0x3f76e4;
 }
 
 export function biomeRainType(id, y) {

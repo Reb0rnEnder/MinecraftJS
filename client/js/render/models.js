@@ -217,7 +217,7 @@ export class ModelStore {
     if (bs && bs.multipart) return this.bakeMultipart(file, bs.multipart, props, rand);
     const v = pickWeighted(this.findVariant(file, props, exactKey), rand);
     if (!v) return null;
-    return this.bakeModel('block/' + v.model, v.x || 0, v.y || 0, !!v.uvlock);
+    return this.bakeModel(v.model, v.x || 0, v.y || 0, !!v.uvlock);
   }
 
   // 1.9+ multipart blockstate (MultipartBakedModel): every part whose "when" matches adds its model
@@ -238,7 +238,7 @@ export class ModelStore {
       const [i, k] = p.split(':').map(Number);
       const apply = parts[i].apply;
       const v = Array.isArray(apply) ? apply[k] : apply;
-      const m = this.bakeModel('block/' + v.model, v.x || 0, v.y || 0, !!v.uvlock);
+      const m = this.bakeModel(v.model, v.x || 0, v.y || 0, !!v.uvlock);
       if (!first) first = m;
       for (const q of m.quads) quads.push(q);
       if (m.bounds) {

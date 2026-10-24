@@ -1,10 +1,8 @@
 // Item rendering: GUI icons (2D sprites + 3D block icons), counts/durability/glint,
 // and 3D meshes for held/dropped items (port of ItemModelGenerator extrusion).
-import { bedPiece, shulkerBox, skullModel, DYE_NAMES } from './tile-renderer.js';
+import { bedPiece, shulkerBox, skullModel } from './tile-renderer.js';
 import { blockModel } from './entity-models.js';
 import { composeBanner, bannerLayers, buildBanner, bannerSwing } from './banner.js';
-import { itemModelName } from '../world/blockstates.js';
-import { blocks } from '../world/blocks.js';
 import { FORMAT, colorParams } from '../gfx/device.js';
 import { mat4, D2R } from '../gfx/math.js';
 import { Node } from '../gfx/scene.js';
@@ -19,6 +17,16 @@ const ICON_DEPTH_STATE = { blend: 'none', depthTest: true, depthWrite: true, col
 const DIR_N = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]];
 const SHADE_GUI = [0.5, 1.0, 0.8, 0.8, 0.6, 0.6];
 const rgbOf = (c) => [((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255];
+const COLORS = ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'light_gray',
+  'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black'];
+const GRASS_ITEMS = new Set(['grass_block', 'grass', 'fern', 'tall_grass', 'large_fern']);
+const SKULLS = { skeleton_skull: 0, wither_skeleton_skull: 1, zombie_head: 2, player_head: 3, creeper_head: 4, dragon_head: 5 };
+const POTIONS = new Set(['potion', 'splash_potion', 'lingering_potion', 'tipped_arrow']);
+const modelPath = (name) => name.replace(/^minecraft:/, '');
+// Shared banner compositor still indexes dyes black-first. Only adapt its colour input;
+// protocol404 item IDs, flattened colour names and NBT stay untouched.
+const bannerColors = (base, patterns) => bannerLayers(15 - (base & 15),
+  (Array.isArray(patterns) ? patterns : []).map(p => ({ ...p, Color: 15 - (p.Color & 15) })));
 
 export class ItemRenderer {
   constructor(game) {
@@ -47,25 +55,25 @@ export class ItemRenderer {
   // ---------------------------------------------------------------- Model resolution
 
   // holder: the entity holding the item (null: the local player, or no holder for GUI / dropped items)
-  modelFor(item, holder = null) {
+  modelFor(item, holder = null, held = false) {
     const g = this.game;
     const name = g.items.name(item.id);
-    let mname = itemModelName(name, item.damage);
+    let path = 'item/' + (held && name === 'trident' ? 'trident_in_hand' : name);
     // ItemOverrideList.applyOverride: the last override whose predicates all reach their values wins
-    const ov = this.store.resolveModel('item/' + mname).overrides;
+    const ov = this.store.resolveModel(path).overrides;
     if (ov && ov.length) {
       const pv = this._predicates(item, holder);
       for (let i = ov.length - 1; i >= 0; i--) {
         const o = ov[i];
         let ok = true;
-        for (const k in o.predicate) if (!((pv[k] || 0) >= o.predicate[k])) { ok = false; break; }
-        if (ok) { mname = o.model.replace(/^item\//, ''); break; }
+        for (const k in o.predicate) if (!((pv[modelPath(k)] ?? -Infinity) >= o.predicate[k])) { ok = false; break; }
+        if (ok) { path = modelPath(o.model); break; }
       }
     }
-    const key = mname;
+    const key = name + '|' + path, mname = path.replace(/^item\//, '');
     let m = this.models.get(key);
     if (m) return m;
-    const res = this.store.resolveModel('item/' + mname);
+    const res = this.store.resolveModel(path);
     // builtin/compass and builtin/clock are generated items whose sprite frame follows the world (TextureCompass/Clock)
     if (res.builtin === 'builtin/generated' || res.builtin === 'builtin/compass' || res.builtin === 'builtin/clock') {
       const layers = [];
@@ -77,15 +85,17 @@ export class ItemRenderer {
     } else if (res.builtin === 'builtin/entity') {
       m = { kind: 'builtin', name: mname, display: res.display };
     } else if (res.elements) {
-      const baked = this.store.bakeModel('item/' + mname);
+      const baked = this.store.bakeModel(path);
       m = { kind: 'block', baked, display: res.display, name: mname };
     } else {
       // Fallback: block item with no item model -> try block model by name
-      const b = blocks[item.id];
+      const b = g.items.blockFor(item.id);
       const bm = b ? this.store.resolveModel('block/' + b.name) : null;
       if (bm && bm.elements) m = { kind: 'block', baked: this.store.bakeModel('block/' + b.name), display: {}, name: b.name };
-      else m = { kind: 'generated', layers: ['blocks/stone'], display: {}, name: 'missing' };
+      else m = { kind: 'generated', layers: ['block/stone'], display: {}, name: 'missing' };
     }
+    m.itemName = name;
+    m.path = path;
     this.models.set(key, m);
     return m;
   }
@@ -94,37 +104,40 @@ export class ItemRenderer {
   _predicates(item, holder) {
     const g = this.game, it = g.interaction;
     const local = !holder || holder.id === g.entityId;
-    const pv = {};
+    const pv = { lefthanded: holder ? (holder.mainHand === 0 ? 1 : 0) : (g.settings?.mainHand === 'left' ? 1 : 0) };
     const max = g.items.maxDurability(item.id);
-    if (max > 0) { pv.damaged = item.damage > 0 ? 1 : 0; pv.damage = Math.min(1, Math.max(0, item.damage / max)); }
+    const damage = g.items.damage(item);
+    if (max > 0) { pv.damaged = g.items.isDamageable(item) && damage > 0 ? 1 : 0; pv.damage = Math.min(1, damage / max); }
     const using = local ? g.player.usingItem && (g.inventory.held() === item || g.inventory.offhand === item) : holder && holder.usingItem;
-    switch (item.id) {
-      case 261: // bow
+    switch (g.items.name(item.id)) {
+      case 'bow':
+        pv.pulling = 0; pv.pull = 0;
         if (using) { pv.pulling = 1; pv.pull = local && it ? Math.min(1, it.useTicks / 20) : 0; }
         break;
-      case 442: if (using) pv.blocking = 1; break; // shield
-      case 346: if (local && g.entities && g.entities.fishingCast && g.inventory.held() === item) pv.cast = 1; break;
-      case 443: pv.broken = item.damage >= max - 1 ? 1 : 0; break; // ItemElytra.isUsable
-      case 345: pv.angle = g.compassAngle || 0; break;
-      case 347: pv.time = g.clockTime || 0; break;
+      case 'shield': pv.blocking = using ? 1 : 0; break;
+      case 'fishing_rod': pv.cast = local && g.entities?.fishingCast && g.inventory.held() === item ? 1 : 0; break;
+      case 'elytra': pv.broken = damage >= max - 1 ? 1 : 0; break;
+      case 'compass': pv.angle = g.compassAngle || 0; break;
+      case 'clock': pv.time = g.clockTime || 0; break;
+      case 'trident': pv.throwing = using ? 1 : 0; break;
       default: break;
     }
-    if (local && g.cooldowns) pv.cooldown = g.cooldownFraction(item.id, 0);
+    pv.cooldown = local && g.cooldowns ? g.cooldownFraction(item.id, 0) : 0;
     return pv;
   }
 
   layerTint(item, layer) {
     const g = this.game;
-    const id = item.id;
-    if (id >= 298 && id <= 301 && layer === 0) {
+    const name = g.items.name(item.id);
+    if (name.startsWith('leather_') && layer === 0) {
       const tag = g.items.nbt(item);
       return tag && tag.display && tag.display.color !== undefined ? tag.display.color : 10511680;
     }
     // ItemColors: potions (all three kinds) and tipped arrow heads take PotionUtils.getColor on tint index 0; spawn eggs
-    // the EntityList.ENTITY_EGGS colours of their EntityTag entity
-    if ((id === 373 || id === 438 || id === 441 || id === 440) && layer === 0) return g.items.potionColor(item);
-    if (id === 383) { const c = g.items.eggInfo(item); return c ? c[layer ? 1 : 0] : 0xffffff; }
-    if (id === 402 && layer === 1) {
+    // their registered egg colours (EntityTag does not change ItemColors)
+    if (POTIONS.has(name) && layer === 0) return g.items.potionColor(item);
+    if (name.endsWith('_spawn_egg')) { const c = g.items.eggInfo(item); return c ? c[layer ? 1 : 0] : 0xffffff; }
+    if (name === 'firework_star' && layer === 1) {
       const tag = g.items.nbt(item);
       const cols = tag && tag.Explosion && tag.Explosion.Colors;
       if (cols && cols.length) {
@@ -134,18 +147,17 @@ export class ItemRenderer {
       }
       return 0x8a8a8a;
     }
-    return 0xffffff;
+    if (name === 'filled_map' && layer === 1) return g.items.nbt(item)?.display?.MapColor ?? 0x46402e;
+    return this._defaultTint(name);
   }
 
-  iconKey(item) {
-    let k = item.id + ':' + item.damage;
-    if (item.id === 373 || item.id === 438 || item.id === 441 || item.id === 440 || item.id === 383) k += ':' + this.layerTint(item, 0) + ',' + this.layerTint(item, 1);
-    if (item.id >= 298 && item.id <= 301 || item.id === 402) {
-      const tag = this.game.items.nbt(item);
-      k += ':' + JSON.stringify(tag && (tag.display || tag.Explosion) || null);
-    }
-    k += ':' + this.modelFor(item).name; // overrides (bow pulling, clock, compass, ...)
-    if (item.id === 425 || item.id === 442) { // banner / shield patterns
+  iconKey(item, held = false, holder = null) {
+    const name = this.game.items.name(item.id);
+    let k = name;
+    if (POTIONS.has(name) || name.endsWith('_spawn_egg') || name === 'filled_map') k += ':' + this.layerTint(item, 0) + ',' + this.layerTint(item, 1);
+    if (name.startsWith('leather_') || name === 'firework_star') k += ':' + this.layerTint(item, 0) + ',' + this.layerTint(item, 1);
+    k += ':' + this.modelFor(item, holder, held).path; // overrides (bow pulling, clock, compass, ...)
+    if (name.endsWith('_banner') || name === 'shield') {
       const tag = this.game.items.nbt(item);
       k += ':' + JSON.stringify((tag && tag.BlockEntityTag) || null);
     }
@@ -228,10 +240,11 @@ export class ItemRenderer {
       const color = item.count < 1 ? 0xff5555 : 0xffffff;
       gui.text(s, x + 19 - 2 - gui.textWidth(s), y + 6 + 3, color, true);
     }
-    if (g.items.isDamageable(item) && item.damage > 0) {
+    const damage = g.items.damage(item);
+    if (g.items.isDamageable(item) && damage > 0) {
       const max = g.items.maxDurability(item.id);
-      const f2 = Math.max(0, (max - item.damage) / max);
-      const i = Math.round(13 - item.damage * 13 / max);
+      const f2 = Math.max(0, (max - damage) / max);
+      const i = Math.max(0, Math.round(13 - damage * 13 / max));
       gui.rect(x + 2, y + 13, x + 15, y + 15, 0xff000000);
       gui.rect(x + 2, y + 13, x + 2 + i, y + 14, (0xff000000 | hsvToRgb(f2 / 3, 1, 1)) >>> 0);
     }
@@ -276,7 +289,7 @@ export class ItemRenderer {
     let o = 0;
     for (const q of quads) {
       const sh = q.shade ? SHADE_GUI[q.dir] : 1;
-      const [r, g, b] = rgbOf(q.tint >= 0 ? this._defaultTint(m.name) : 0xffffff);
+      const [r, g, b] = rgbOf(q.tint >= 0 ? this._defaultTint(m.itemName || m.name) : 0xffffff);
       for (let i = 0; i < 4; i++) {
         data[o] = q.pos[i * 3]; data[o + 1] = q.pos[i * 3 + 1]; data[o + 2] = q.pos[i * 3 + 2];
         data[o + 3] = q.uv[i * 2]; data[o + 4] = q.uv[i * 2 + 1];
@@ -288,8 +301,14 @@ export class ItemRenderer {
   }
 
   _defaultTint(name) {
-    if (/grass|fern|tall_grass|double_grass|vine|waterlily/.test(name)) return name === 'waterlily' ? 0x208030 : 0x7fb238;
-    if (/leaves/.test(name)) {
+    if (GRASS_ITEMS.has(name)) {
+      // ItemColors/BlockColors without a world: GrassColor.get(0.5, 1.0), including resource packs.
+      const pixels = this.assets.grassPixels, k = (127 * 256 + 127) * 4;
+      return pixels ? (pixels[k] << 16) | (pixels[k + 1] << 8) | pixels[k + 2] : 0x91bd59;
+    }
+    if (name === 'lily_pad') return 0x71c35c; // BlockColors with no world/position
+    if (name === 'vine') return 0x48b518;
+    if (name.endsWith('_leaves')) {
       if (name.startsWith('spruce')) return 0x619961;
       if (name.startsWith('birch')) return 0x80a755;
       return 0x48b518;
@@ -299,7 +318,7 @@ export class ItemRenderer {
 
   // Chest / skull / banner items (TileEntityItemStackRenderer). Node in 0..1 block space.
   _builtinObject(item, m, gui = false) {
-    const name = m.name;
+    const name = m.itemName || m.name;
     const root = new Node();
     const mat = (tex) => entityMaterial(tex, { alphaTest: 0.1, fullBright: gui, guiLighting: gui });
     if (name === 'chest' || name === 'trapped_chest' || name === 'ender_chest') {
@@ -315,24 +334,22 @@ export class ItemRenderer {
       return root;
     }
     // TileEntityItemStackRenderer: shulker boxes facing up, beds as head + foot (foot one block towards -z)
-    if (name.endsWith('_shulker_box')) {
-      const color = name.slice(0, -'_shulker_box'.length);
-      root.add(shulkerBox(mat('entity/shulker/shulker_' + color + '.png'), 1).node);
+    if (name === 'shulker_box' || name.endsWith('_shulker_box')) {
+      const color = name === 'shulker_box' ? '' : '_' + name.slice(0, -'_shulker_box'.length);
+      root.add(shulkerBox(mat('entity/shulker/shulker' + color + '.png'), 1).node);
       return root;
     }
-    if (name === 'bed') {
-      const m2 = mat('entity/bed/' + (DYE_NAMES[item.damage & 15] || 'red') + '.png');
+    if (name.endsWith('_bed')) {
+      const m2 = mat('entity/bed/' + name.slice(0, -4) + '.png');
       root.add(bedPiece(m2, true, 0));
       const foot = new Node(); foot.position.set(0, 0, -1); foot.add(bedPiece(m2, false, 0));
       root.add(foot);
       return root;
     }
-    if (name.startsWith('skull_')) {
-      // TileEntityItemStackRenderer (1.12): renderSkull(0, 0, 0, UP, 180): the skull at its block size, half a block tall
-      const which = name.slice(6);
-      const texPath = { skeleton: 'entity/skeleton/skeleton.png', wither: 'entity/skeleton/wither_skeleton.png', zombie: 'entity/zombie/zombie.png',
-        char: 'entity/steve.png', creeper: 'entity/creeper/creeper.png', dragon: 'entity/enderdragon/dragon.png' }[which];
-      const type = { skeleton: 0, wither: 1, zombie: 2, char: 3, creeper: 4, dragon: 5 }[which];
+    if (SKULLS[name] !== undefined) {
+      const type = SKULLS[name];
+      const texPath = ['entity/skeleton/skeleton.png', 'entity/skeleton/wither_skeleton.png', 'entity/zombie/zombie.png',
+        'entity/steve.png', 'entity/creeper/creeper.png', 'entity/enderdragon/dragon.png'][type];
       // the skull node is in scale(-1, -1, 1) 1/16 units; this item space flips z instead of x
       const g = new Node();
       const sk = skullModel(type, mat(texPath));
@@ -344,13 +361,13 @@ export class ItemRenderer {
     }
     if (name === 'shield' || name === 'shield_blocking') {
       // TileEntityItemStackRenderer: ModelShield under scale(1, -1, -1); the banner design (BannerTextures.SHIELD_DESIGNS,
-      // base colour from BlockEntityTag.Base, black without) or the plain shield texture
+      // base colour from BlockEntityTag.Base, white without) or the plain shield texture
       const tag = this.game.items.nbt(item);
       const bet = tag && tag.BlockEntityTag;
       let tex = 'entity/shield_base_nopattern.png';
       if (bet) {
         const base = bet.Base !== undefined ? bet.Base : 0;
-        const img = composeBanner(this.assets, bannerLayers(base, bet.Patterns), true);
+        const img = composeBanner(this.assets, bannerColors(base, bet.Patterns), true);
         if (!img) return null;
         const key = 'shielditem:' + base + ':' + JSON.stringify(bet.Patterns || []);
         tex = this.assets.textures.get(key) || this.assets.makeTexture(key, img.width, img.height, img.data);
@@ -363,12 +380,12 @@ export class ItemRenderer {
       root.add(g);
       return root;
     }
-    if (name === 'banner') {
+    if (name.endsWith('_banner')) {
       // TileEntityBannerRenderer with no world: standing, rotation 0, flag at time 0, colours from the item
       const tag = this.game.items.nbt(item);
       const bet = tag && tag.BlockEntityTag;
-      const base = bet && bet.Base !== undefined ? bet.Base : (item.damage & 15);
-      const img = composeBanner(this.assets, bannerLayers(base, bet && bet.Patterns));
+      const base = COLORS.indexOf(name.slice(0, -7));
+      const img = composeBanner(this.assets, bannerColors(base, bet && bet.Patterns));
       if (!img) return null;
       const key = 'banneritem:' + base + ':' + JSON.stringify((bet && bet.Patterns) || []);
       const tex = this.assets.textures.get(key) || this.assets.makeTexture(key, img.width, img.height, img.data);
@@ -376,15 +393,34 @@ export class ItemRenderer {
       b.swing.rotation.x = bannerSwing(0);
       return b.node;
     }
+    if (name === 'trident') {
+      // TileEntityItemStackRenderer: ModelTrident, scale(1, -1, -1).
+      const { shaft } = blockModel('trident', ['shaft']);
+      const node = shaft.build();
+      shaft.setMaterial(mat('entity/trident.png'));
+      node.scale.set(1 / 16, -1 / 16, -1 / 16);
+      root.add(node);
+      return root;
+    }
+    if (name === 'conduit') {
+      // Inactive conduit item: vanilla 1.13.2 cwd$c constructor, 32x16 texture, 6x6x6 shell.
+      const shell = new Part(32, 16).box(-3, -3, -3, 6, 6, 6);
+      const node = shell.build();
+      shell.setMaterial(mat('entity/conduit/base.png'));
+      node.scale.set(1 / 16, -1 / 16, -1 / 16);
+      node.position.set(0.5, 0.5, 0.5);
+      root.add(node);
+      return root;
+    }
     return null;
   }
 
   // ---------------------------------------------------------------- 3D meshes for world rendering
 
   // { mesh (FORMAT.entity, atlas UVs, centred), model, display, builtin: Node|null }
-  meshFor(item) {
-    const m = this.modelFor(item);
-    const key = this.iconKey(item) + '|mesh';
+  meshFor(item, held = false, holder = null) {
+    const m = this.modelFor(item, holder, held);
+    const key = this.iconKey(item, held, holder) + '|mesh';
     let r = this.meshes.get(key);
     if (r) return r;
     let mesh = null;
@@ -396,9 +432,9 @@ export class ItemRenderer {
   }
 
   // Scene node for an item (held, dropped, framed...). atlasMat: entity material using the atlas.
-  objectFor(item, atlasMat) {
+  objectFor(item, atlasMat, held = false, holder = null) {
     if (!item) return null;
-    const res = this.meshFor(item);
+    const res = this.meshFor(item, held, holder);
     if (res.builtin) {
       const o = res.builtin.clone();
       // RenderItem.renderItem: translate(-0.5) for built-in renderers too (1.9+ has no extra turn)
@@ -415,12 +451,12 @@ export class ItemRenderer {
 
   // Mesh of a baked block model, centred at the origin (entity format, atlas UVs)
   blockMesh(m) {
-    const key = m.name + '|' + (m.baked && m.baked.quads.length);
+    const key = (m.itemName || '') + '|' + (m.path || m.name) + '|' + (m.baked && m.baked.quads.length);
     let mesh = this.blockMeshes.get(key);
     if (mesh !== undefined) return mesh;
     const pos = [], uv = [], nor = [], col = [];
     for (const q of m.baked.quads) {
-      const [r, g, b] = rgbOf(q.tint >= 0 ? this._defaultTint(m.name) : 0xffffff);
+      const [r, g, b] = rgbOf(q.tint >= 0 ? this._defaultTint(m.itemName || m.name) : 0xffffff);
       for (let i = 0; i < 4; i++) {
         pos.push(q.pos[i * 3] - 0.5, q.pos[i * 3 + 1] - 0.5, q.pos[i * 3 + 2] - 0.5);
         uv.push(q.uv[i * 2], q.uv[i * 2 + 1]);

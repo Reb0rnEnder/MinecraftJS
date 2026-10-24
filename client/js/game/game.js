@@ -11,7 +11,8 @@ import { C } from '../net/packets.js';
 import { Reader, Writer } from '../net/buffer.js';
 import { simplify } from '../net/nbt.js';
 import { World } from '../world/world.js';
-import { blocks } from '../world/blocks.js';
+import { getBlock, getBlockById, getStateProperties } from '../world/blocks.js';
+import { isPointInFluid } from '../world/fluids.js';
 import { resolveState } from '../world/blockstates.js';
 import { biomeInfo } from '../world/biomes.js';
 import { LocalPlayer } from './physics.js';
@@ -111,7 +112,7 @@ export class Game {
     this.weather = new Weather(this);
     this.renderer.drawEntities = (d, camRot) => this.entityRenderer.draw(d, camRot);
     this.renderer.columnLoaded = (cx, cz) => !!this.world.getChunk(cx, cz);
-    this.renderer.opaqueAt = (x, y, z) => { const b = blocks[this.world.getState(Math.floor(x), Math.floor(y), Math.floor(z)) >> 4]; return !!(b && b.opaque); };
+    this.renderer.opaqueAt = (x, y, z) => { const b = getBlock(this.world.getState(Math.floor(x), Math.floor(y), Math.floor(z))); return !!(b && b.opaque); };
     platform().on('resize', () => { this.gui.resize(); this.renderer.resize(); });
 
     this.world = new World();
@@ -666,7 +667,7 @@ export class Game {
     this.applyGameMode();
     this.inWorld = true;
     this.sendSettings();
-    this.send(C.customPayload('MC|Brand', new Writer().string('vanilla').build()));
+    this.send(C.customPayload('minecraft:brand', new Writer().string('vanilla').build()));
   }
 
   sendSettings() {
@@ -858,6 +859,11 @@ export class Game {
   on_entity_metadata(p) {
     if (p.entityId === this.entityId) {
       this.selfMetadata = Object.assign(this.selfMetadata || {}, p.metadata);
+      if (p.metadata[6] !== undefined) {
+        this.player.riptide = !!(p.metadata[6] & 4);
+        if (this.player.riptide && !this.player.riptideTicks) this.player.riptideTicks = 20;
+        if (!this.player.riptide) this.player.riptideTicks = 0;
+      }
       if (p.metadata[0] !== undefined) this.player.elytraFlying = !!(p.metadata[0] & 0x80); // flag 7: elytra flying
     }
     this.entities.setMetadata(p.entityId, p.metadata);
@@ -937,7 +943,7 @@ export class Game {
 
   on_block_action(p) {
     // BlockPistonBase.eventReceived runs on the client too: the moving blocks start sliding right away
-    const n = blocks[p.blockId] && blocks[p.blockId].name;
+    const n = getBlockById(p.blockId).name;
     if (n === 'piston' || n === 'sticky_piston') this.pistons.onBlockEvent(p.location, p.byte1, p.byte2, p.blockId);
     this.tileRenderer.onBlockAction(p);
     this.sound.onBlockAction(p);
@@ -1074,7 +1080,7 @@ export class Game {
     pl.walkSpeed = p.walkingSpeed;
   }
 
-  on_tab_complete(p) { if (this.screens.current && this.screens.current.onTabComplete) this.screens.current.onTabComplete(p.matches); }
+  on_tab_complete(p) { if (this.screens.current && this.screens.current.onTabComplete) this.screens.current.onTabComplete(p); }
 
   on_scoreboard_objective(p) { this.scoreboard.onObjective(p); }
   on_scoreboard_score(p) { this.scoreboard.onScore(p); }
@@ -1082,18 +1088,23 @@ export class Game {
   on_scoreboard_team(p) { this.scoreboard.onTeam(p); }
 
   on_custom_payload(p) {
-    if (p.channel === 'MC|TrList') {
+    if (p.channel === 'minecraft:trader_list' || p.channel === 'MC|TrList') {
       if (this.screens.current && this.screens.current.onTradeList) this.screens.current.onTradeList(p.data);
       else this.pendingTrades = p.data;
-    } else if (p.channel === 'MC|StopSound') {
+    } else if (p.channel === 'minecraft:stop_sound' || p.channel === 'MC|StopSound') {
       // category name ("" for all), then the sound event ("" for all)
       const r = new Reader(p.data);
       const category = r.string(), sound = r.string();
       this.sound.stop(sound, SOUND_CATEGORIES.includes(category) ? category : null);
-    } else if (p.channel === 'MC|BOpen') {
+    } else if (p.channel === 'minecraft:book_open' || p.channel === 'MC|BOpen') {
       const held = this.inventory.held();
-      if (held && held.id === 387) this.screens.open(new BookScreen(this, held, false));
+      if (held && this.items.name(held.id) === 'written_book') this.screens.open(new BookScreen(this, held, false));
     }
+  }
+
+  on_stop_sound(p) {
+    const category = p.source === null || p.source === undefined ? null : SOUND_CATEGORIES[p.source] || null;
+    this.sound.stop(p.sound || '', category);
   }
 
   on_kick_disconnect(p) {
@@ -1178,54 +1189,53 @@ export class Game {
   }
 
   selectionBox(state, x, y, z) {
-    const b = blocks[state >> 4];
+    const b = getBlock(state);
     if (!b) return null;
     const n = b.name;
     if (n === 'chest' || n === 'trapped_chest' || n === 'ender_chest') return [0.0625, 0, 0.0625, 0.9375, 0.875, 0.9375];
-    if (n === 'standing_sign') return [0.25, 0, 0.25, 0.75, 1, 0.75];
+    if (n === 'sign') return [0.25, 0, 0.25, 0.75, 1, 0.75];
     if (n === 'wall_sign') {
-      const m = state & 15;
-      switch (m) {
-        case 2: return [0, 0.28125, 0.875, 1, 0.78125, 1];
-        case 3: return [0, 0.28125, 0, 1, 0.78125, 0.125];
-        case 4: return [0.875, 0.28125, 0, 1, 0.78125, 1];
+      switch (getStateProperties(state).facing) {
+        case 'south': return [0, 0.28125, 0.875, 1, 0.78125, 1];
+        case 'north': return [0, 0.28125, 0, 1, 0.78125, 0.125];
+        case 'west': return [0.875, 0.28125, 0, 1, 0.78125, 1];
         default: return [0, 0.28125, 0, 0.125, 0.78125, 1];
       }
     }
-    if (n === 'skull') return [0.25, 0, 0.25, 0.75, 0.5, 0.75];
-    if (n === 'standing_banner') return [0.25, 0, 0.25, 0.75, 1, 0.75];
-    if (n === 'wall_banner') return [0, 0, 0, 1, 1, 1];
+    if (n.endsWith('_skull') || n.endsWith('_head')) return [0.25, 0, 0.25, 0.75, 0.5, 0.75];
+    if (n.endsWith('_banner')) return [0.25, 0, 0.25, 0.75, 1, 0.75];
+    if (n.endsWith('_wall_banner')) return [0, 0, 0, 1, 1, 1];
     if (n === 'barrier') return this.player.creative ? [0, 0, 0, 1, 1, 1] : null;
-    if (n === 'tallgrass' || n === 'deadbush') return [0.1, 0, 0.1, 0.9, 0.8, 0.9];
-    if (n === 'fire' || n === 'portal' || n === 'end_portal' || n === 'piston_extension') return null;
+    if (n === 'tall_grass' || n === 'dead_bush') return [0.1, 0, 0.1, 0.9, 0.8, 0.9];
+    if (n === 'fire' || n === 'nether_portal' || n === 'end_portal' || n === 'moving_piston') return null;
     // Blocks whose vanilla bounds (setBlockBoundsBasedOnState) differ from their (rotated/cross) models
-    const m = state & 15;
-    if (n === 'torch' || n === 'redstone_torch' || n === 'unlit_redstone_torch') { // BlockTorch, meta 1 E 2 W 3 S 4 N 5 up
+    const props = getStateProperties(state);
+    if (n === 'torch' || n === 'redstone_torch' || n === 'wall_torch' || n === 'redstone_wall_torch') {
       const f = 0.15;
-      switch (m) {
-        case 1: return [0, 0.2, 0.5 - f, f * 2, 0.8, 0.5 + f];
-        case 2: return [1 - f * 2, 0.2, 0.5 - f, 1, 0.8, 0.5 + f];
-        case 3: return [0.5 - f, 0.2, 0, 0.5 + f, 0.8, f * 2];
-        case 4: return [0.5 - f, 0.2, 1 - f * 2, 0.5 + f, 0.8, 1];
+      switch (props.facing) {
+        case 'east': return [0, 0.2, 0.5 - f, f * 2, 0.8, 0.5 + f];
+        case 'west': return [1 - f * 2, 0.2, 0.5 - f, 1, 0.8, 0.5 + f];
+        case 'south': return [0.5 - f, 0.2, 0, 0.5 + f, 0.8, f * 2];
+        case 'north': return [0.5 - f, 0.2, 1 - f * 2, 0.5 + f, 0.8, 1];
         default: return [0.4, 0, 0.4, 0.6, 0.6, 0.6];
       }
     }
-    if (n === 'lever') { // BlockLever, meta & 7: 0 down_x 1 E 2 W 3 S 4 N 5 up_z 6 up_x 7 down_z
+    if (n === 'lever') {
       const f = 0.1875;
-      switch (m & 7) {
-        case 1: return [0, 0.2, 0.5 - f, f * 2, 0.8, 0.5 + f];
-        case 2: return [1 - f * 2, 0.2, 0.5 - f, 1, 0.8, 0.5 + f];
-        case 3: return [0.5 - f, 0.2, 0, 0.5 + f, 0.8, f * 2];
-        case 4: return [0.5 - f, 0.2, 1 - f * 2, 0.5 + f, 0.8, 1];
-        case 5: case 6: return [0.25, 0, 0.25, 0.75, 0.6, 0.75];
+      switch (props.facing) {
+        case 'east': return [0, 0.2, 0.5 - f, f * 2, 0.8, 0.5 + f];
+        case 'west': return [1 - f * 2, 0.2, 0.5 - f, 1, 0.8, 0.5 + f];
+        case 'south': return [0.5 - f, 0.2, 0, 0.5 + f, 0.8, f * 2];
+        case 'north': return [0.5 - f, 0.2, 1 - f * 2, 0.5 + f, 0.8, 1];
+        case 'up': return [0.25, 0, 0.25, 0.75, 0.6, 0.75];
         default: return [0.25, 0.4, 0.25, 0.75, 1, 0.75];
       }
     }
-    if (n === 'yellow_flower' || n === 'red_flower') return [0.3, 0, 0.3, 0.7, 0.6, 0.7]; // BlockBush
-    if (n === 'sapling') return [0.1, 0, 0.1, 0.9, 0.8, 0.9];
+    if (/^(dandelion|poppy|blue_orchid|allium|azure_bluet|red_tulip|orange_tulip|white_tulip|pink_tulip|oxeye_daisy)$/.test(n)) return [0.3, 0, 0.3, 0.7, 0.6, 0.7];
+    if (n.endsWith('_sapling')) return [0.1, 0, 0.1, 0.9, 0.8, 0.9];
     if (n === 'brown_mushroom' || n === 'red_mushroom') return [0.3, 0, 0.3, 0.7, 0.4, 0.7];
     if (n === 'wheat' || n === 'carrots' || n === 'potatoes' || n === 'nether_wart') return [0, 0, 0, 1, 0.25, 1];
-    if (n === 'reeds') return [0.125, 0, 0.125, 0.875, 1, 0.875];
+    if (n === 'sugar_cane') return [0.125, 0, 0.125, 0.875, 1, 0.875];
     if (b.boundingBox === 'block' && !b.isFence && !b.isPane && !b.isWall && !b.isStairs && !b.isDoor && !b.isFenceGate) {
       // Prefer model bounds, which match vanilla selection for most blocks
     }
@@ -1422,7 +1432,7 @@ export class Game {
       const tin = blocked ? {} : inp;
       const chest = this.inventory.armor[2];
       tin.autoJump = this.settings.autoJump;
-      tin.elytraUsable = !!(chest && chest.id === 443 && chest.damage < this.items.maxDurability(443) - 1);
+      tin.elytraUsable = !!(chest && this.items.name(chest.id) === 'elytra' && this.items.damage(chest) < this.items.maxDurability(chest.id) - 1);
       pl.sleeping = !!this.sleeping;
       const res = pl.tick(world, tin);
       if (res.abilitiesChanged) this.sendAbilities();
@@ -1455,7 +1465,7 @@ export class Game {
     if (walk === 0 || !isFinite(f)) f = 1;
     if (pl.usingItem) {
       const held = this.inventory.held();
-      if (held && held.id === 261) {
+      if (held && this.items.name(held.id) === 'bow') {
         const ticks = this.interaction.useTicks;
         let f1 = ticks / 20;
         f1 = f1 > 1 ? 1 : f1 * f1;
@@ -1474,7 +1484,7 @@ export class Game {
 
   portalTick() {
     const s = this.world.getState(Math.floor(this.player.x), Math.floor(this.player.y + 0.5), Math.floor(this.player.z));
-    const inPortal = blocks[s >> 4] && blocks[s >> 4].name === 'portal';
+    const inPortal = getBlock(s).name === 'nether_portal';
     this.prevPortalTime = this.portalTime;
     if (inPortal) {
       if (this.portalTime === 0) this.sound.playAtPlayer('block.portal.trigger', 1, Math.random() * 0.4 + 0.8);
@@ -1771,9 +1781,8 @@ export class Game {
     }
     let fov = this.settings.fov;
     fov *= this.prevFovModifier + (this.fovModifier - this.prevFovModifier) * partial;
-    const eyeBlock = blocks[this.world.getState(Math.floor(ex), Math.floor(ey), Math.floor(ez)) >> 4];
-    const underwater = eyeBlock && eyeBlock.isWater && ey < Math.floor(ey) + 1 - this._fluidPct(ex, ey, ez) + 0.11;
-    const inLava = eyeBlock && eyeBlock.isLava;
+    const underwater = isPointInFluid(this.world, ex, ey, ez);
+    const inLava = isPointInFluid(this.world, ex, ey, ez, true);
     if (underwater || inLava) fov = fov * 60 / 70;
     if (this.dead) fov /= (1 - 500 / (500 + 20)) * 2 + 1;
     // Portal nausea warp
@@ -1821,9 +1830,4 @@ export class Game {
     this.device.endFrame();
   }
 
-  _fluidPct(x, y, z) {
-    const s = this.world.getState(Math.floor(x), Math.floor(y), Math.floor(z));
-    const l = s & 15;
-    return ((l >= 8 ? 0 : l) + 1) / 9 - 0.11111111;
-  }
 }
