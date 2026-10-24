@@ -1,3 +1,4 @@
+import { readCommandTree, readTags } from './command-tree.js';
 // Minecraft 1.13.2 (protocol 404) play-state packet codec.
 import { Reader, Writer } from './buffer.js';
 import { readNbtRoot } from './nbt.js';
@@ -328,6 +329,7 @@ const decoders404 = {
     for (let i = 0; i < n; i++) p.matches.push({ match: r.string(), tooltip: r.bool() ? r.string() : null });
     return p;
   },
+  0x11: r => ({name:'declare_commands',...readCommandTree(r)}),
   0x12: decoders[0x11], 0x13: decoders[0x12], 0x14: decoders[0x13], 0x15: decoders[0x14],
   0x16: decoders[0x15], 0x17: decoders[0x16], 0x18: decoders[0x17], 0x19: decoders[0x18],
   0x1a: decoders[0x19], 0x1b: decoders[0x1a], 0x1c: decoders[0x1b], 0x1e: decoders[0x1c],
@@ -344,6 +346,7 @@ const decoders404 = {
   0x48: decoders[0x45], 0x49: decoders[0x46], 0x4a: decoders[0x47], 0x4b: decoders[0x48],
   0x4c: decoders[0x50], 0x4d: decoders[0x49], 0x4e: decoders[0x4a], 0x4f: decoders[0x4b],
   0x50: decoders[0x4c], 0x51: decoders[0x4d], 0x52: decoders[0x4e], 0x53: decoders[0x4f],
+  0x55: r => ({name:'tags',tags:readTags(r)}),
 };
 
 export function decodePacket(bytes) {

@@ -983,12 +983,12 @@ export class Hud {
       const properties = props => { for(const [key,value] of Object.entries(props).sort(([a],[b])=>a<b?-1:a>b?1:0)) {
         const text=String(value);lines.push(key+': '+(text==='true'?'§atrue':text==='false'?'§cfalse':text));
       }};
-      if(t){lines.push('','§nTargeted Block','minecraft:'+getBlock(t.state).name);properties(getStateProperties(t.state));}
+      if(t){lines.push('','§nTargeted Block','minecraft:'+getBlock(t.state).name);properties(getStateProperties(t.state));for(const name of g.tags?.forEntry('blocks',getBlock(t.state).id)||[])lines.push('#'+name);}
       if(targets.fluid) {
         const fluid=getFluidState(targets.fluid.state);
         const kind=fluid?.isLava?'lava':'water';
         lines.push('','§nTargeted Fluid','minecraft:'+(fluid?(fluid.source?kind:'flowing_'+kind):'empty'));
-        if(fluid){properties(fluid.source?{falling:false}:{falling:fluid.level>=8,level:8-(fluid.level>=8?0:fluid.level)});lines.push('#minecraft:'+kind);}
+        if(fluid){properties(fluid.source?{falling:false}:{falling:fluid.level>=8,level:8-(fluid.level>=8?0:fluid.level)});for(const name of g.tags?.forEntry('fluids',fluid.source?(fluid.isLava?4:2):(fluid.isLava?3:1))||['minecraft:'+kind])lines.push('#'+name);}
       }
       const entity=g.interaction.target?.type==='entity'?g.interaction.target.entity:null;
       if(entity)lines.push('','§nTargeted Entity','minecraft:'+(entity.entityName||entity.typeName||entity.type));

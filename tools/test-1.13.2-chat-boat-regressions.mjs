@@ -91,7 +91,7 @@ test('popup uses vanilla range anchoring, row insets, full-list width, ghost tex
     assert.equal(s.tabIndex, 12); assert.equal(s.tabOffset, 3);
     render(s, 42, 107);
     assert.equal(s.tabIndex, 3, 'hover picks the visible row');
-    s.wheel(1); assert.equal(s.tabOffset, 2);
+    s.wheel(-1); assert.equal(s.tabOffset, 2);
     render(s, 42, 119);
     s.mouseDown(42, 119, 0);
     assert.equal(s.input.text, '/tell ' + names[3], 'click applies visible suggestion');

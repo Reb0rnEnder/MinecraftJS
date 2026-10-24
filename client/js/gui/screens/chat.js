@@ -1,3 +1,4 @@
+import { playerSuggestions } from '../../game/commands.js';
 // GuiChat: chat input with history, tab completion and clickable messages.
 import { tr } from '../i18n.js';
 import { chatToPlain } from '../chat.js';
@@ -7,9 +8,10 @@ import { platform } from '../../platform/platform.js';
 import { C } from '../../net/packets.js';
 
 export class ChatScreen extends Screen {
-  constructor(game, initial) {
+  constructor(game, initial, options = {}) {
     super(game);
     this.initial = initial;
+    this.commandOnly = !!options.commandOnly;
     this.background = 'none';
     this.historyIndex = -1;
     this.tabMatches = null;
@@ -36,6 +38,7 @@ export class ChatScreen extends Screen {
     });
     this.input = f;
     this.fields.push(f);
+    f.formatter = (text,offset) => this.game.commands ? this.game.commands.format(text,offset,this.input.text,!this.commandOnly) : text;
     this.game.hud.chatScroll = 0;
     this.requestSuggestions();
   }
@@ -43,6 +46,12 @@ export class ChatScreen extends Screen {
   render(gui, mx, my) {
     gui.rect(2, this.height - 14, this.width - 2, this.height - 2, 0x80000000);
     this.input.render(gui);
+    this.renderSuggestions(gui,mx,my);
+    const hover = this.game.hud.chatComponentAt(mx, my);
+    if (hover && hover.hoverText) gui.tooltip(hover.hoverText.split('\n'), mx, my);
+  }
+
+  renderSuggestions(gui,mx,my) {
     this.tabBox = null;
     if (this.tabMatches?.length) {
       const box = this.tabBox = this._suggestionBox(gui);
@@ -75,8 +84,12 @@ export class ChatScreen extends Screen {
         if (tooltip) gui.tooltip(chatToPlain(tooltip).split('\n'), mx, my);
       }
     }
-    const hover = this.game.hud.chatComponentAt(mx, my);
-    if (hover && hover.hoverText) gui.tooltip(hover.hoverText.split('\n'), mx, my);
+    if (!this.tabMatches?.length && this.commandState?.error) {
+      const error=this.commandState.error,text=this.game.assets.translate(error.key,error.args||[]);
+      const x=this.input.x,y=this.commandOnly?this.input.y+this.input.h+2:this.input.y-14;
+      const width=Math.min(this.width-x-2,gui.font.width(text)+2);
+      gui.rect(x-1,y-2,x+width,y+10,0xd0000000);gui.text(text,x,y,0xffff5555,true);
+    }
   }
 
   _matchText(index) { const m = this.tabMatches[index]; return typeof m === 'string' ? m : m.match; }
@@ -87,7 +100,7 @@ export class ChatScreen extends Screen {
     const widest = Math.max(...this.tabMatches.map((_, i) => gui.font.width(this._matchText(i))));
     const anchor = this.input.x + gui.font.width(this.input.text.slice(this.input.scroll, Math.max(this.input.scroll, this.tabReplaceStart)));
     return { x: Math.floor(Math.max(0, Math.min(anchor, this.width - widest))) - 1,
-      y: this.height - 15 - rows * 12, width: widest + 1, rows };
+      y: this.commandOnly ? this.input.y + this.input.h + 2 : this.height - 15 - rows * 12, width: widest + 1, rows };
   }
 
   _suggestionRow(mx, my) {
@@ -163,13 +176,29 @@ export class ChatScreen extends Screen {
     this.tabBox = null;
     this.tabApplied = false;
     this.waitingTab = false;
-    if (!text.startsWith('/')) return;
+    const isCommand = this.commandOnly || text.startsWith('/');
+    this.commandState = isCommand && g.commands ? g.commands.parse(this.input.text,!this.commandOnly) : null;
+    if (!isCommand) {
+      if (fromTab) {
+        const result=playerSuggestions(g,this.input.text,this.input.cursor);
+        this.tabBase=this.input.text;this.tabCursor=this.input.cursor;
+        this.tabReplaceStart=result.start;this.tabReplaceEnd=result.end;
+        this._showMatches(result.matches);
+      }
+      return;
+    }
     this.tabBase = this.input.text;
     this.tabCursor = this.input.cursor;
     this.tabReplaceStart = text.search(/\S+$/);
     if (this.tabReplaceStart < 0) this.tabReplaceStart = text.length;
     this.tabReplaceEnd = this.tabCursor;
-    this.tabTransaction = (this.tabTransaction + 1) & 0x7fffffff;
+    this.tabTransaction = g.suggestionTransaction = ((g.suggestionTransaction || 0) + 1) & 0x7fffffff;
+    const local = g.commands?.suggestions(this.input.text,this.input.cursor,!this.commandOnly);
+    if (local) {
+      this.tabReplaceStart=local.start;this.tabReplaceEnd=local.end;
+      this._showMatches(local.matches);
+      if (!local.askServer) return;
+    }
     this.waitingTab = true;
     const transaction = this.tabTransaction;
     const send = () => {
@@ -182,7 +211,7 @@ export class ChatScreen extends Screen {
   }
 
   onTabComplete(packet) {
-    if (!this.waitingTab || !this.input.text.startsWith('/') || this.input.text !== this.tabBase || this.input.cursor !== this.tabCursor) return;
+    if (!this.waitingTab || !(this.commandOnly || this.input.text.startsWith('/')) || this.input.text !== this.tabBase || this.input.cursor !== this.tabCursor) return;
     const matches = Array.isArray(packet) ? packet.map(match => ({ match, tooltip: null })) : packet.matches || [];
     if (!Array.isArray(packet) && packet.transactionId !== undefined && packet.transactionId !== this.tabTransaction) return;
     this.waitingTab = false;
@@ -191,11 +220,14 @@ export class ChatScreen extends Screen {
       this.tabReplaceStart = packet.start;
       this.tabReplaceEnd = packet.start + packet.length;
     }
-    this.tabMatches = matches;
-    this.tabIndex = 0;
-    this.tabOffset = 0;
-    this.tabMouseX = this.tabMouseY = undefined;
-    this.tabApplied = false;
+    this._showMatches(matches);
+  }
+
+  _showMatches(matches) {
+    this.tabMatches = matches.length ? matches : null;
+    this.tabIndex=0;this.tabOffset=0;
+    this.tabMouseX=this.tabMouseY=undefined;
+    this.tabApplied=false;
   }
 
   _applyTab() {
@@ -204,9 +236,10 @@ export class ChatScreen extends Screen {
     const after = this.tabBase.slice(this.tabReplaceEnd);
     this.applyingTab = true;
     this.input.setText(before + m + after);
-    this.input.cursor = this.input.selEnd = before.length + m.length;
+    this.input.cursor = this.input.selEnd = Math.min(this.input.text.length, before.length + m.length);
     this.applyingTab = false;
     this.tabApplied = true;
+    if(this.game.commands&&(this.commandOnly||this.input.text.startsWith('/')))this.commandState=this.game.commands.parse(this.input.text,!this.commandOnly);
   }
 
   mouseDown(mx, my, button) {
@@ -232,9 +265,11 @@ export class ChatScreen extends Screen {
     return handled;
   }
 
+  mouseMove(mx,my) { this.tabPointerX=mx;this.tabPointerY=my; }
+
   wheel(d) {
-    if (this.tabMatches?.length && this._suggestionRow(this.tabMouseX, this.tabMouseY) >= 0) {
-      this.tabOffset = Math.max(0, Math.min(this.tabMatches.length - Math.min(10, this.tabMatches.length), this.tabOffset - d));
+    if (this.tabMatches?.length && this._suggestionRow(this.tabPointerX ?? this.tabMouseX, this.tabPointerY ?? this.tabMouseY) >= 0) {
+      this.tabOffset = Math.max(0, Math.min(this.tabMatches.length - Math.min(10, this.tabMatches.length), this.tabOffset + d));
       return;
     }
     this.game.hud.scrollChat(-d);

@@ -169,7 +169,7 @@ export class TextField {
     const tx = this.drawBackground ? this.x + 4 : this.x;
     const ty = this.drawBackground ? this.y + (this.h - 8) / 2 : this.y;
     const color = this.enabled ? this.textColor : 0x707070;
-    gui.text(visible, tx, ty, color, true);
+    gui.text(this.formatter ? this.formatter(visible, this.scroll) : visible, tx, ty, color, true);
     const cpos = this.cursor - this.scroll;
     const cx = tx + gui.font.width(visible.slice(0, cpos));
     if (this.focused && Math.floor(this.cursorCounter / 6) % 2 === 0) {

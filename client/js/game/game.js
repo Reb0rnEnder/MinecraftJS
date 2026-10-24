@@ -1,3 +1,5 @@
+import { RegistryTags } from './tags.js';
+import { CommandTree } from './commands.js';
 import { startSleeping, sleepingCamera } from './bed-sleep.js';
 import { jarSelectionBox } from '../world/blocks.js';
 import { sectionLod, lodDistance } from '../render/lod.js';
@@ -164,6 +166,8 @@ export class Game {
   }
 
   reset() {
+    this.tags = new RegistryTags();
+    this.commands = null;
     this.connected = false;
     this.inWorld = false;
     this.entityId = 0;
@@ -599,6 +603,7 @@ export class Game {
     this.input.unlock();
     // Per-server state: tab list, teams, objectives/sidebar, header/footer, titles, action bar
     this.scoreboard.reset();
+    this.tags = new RegistryTags(); this.commands = null;
     if (this.advancements) this.advancements.clear();
     this.hud.resetServerState();
     this.statValues = null; this.stats = null;
@@ -1084,6 +1089,12 @@ export class Game {
     pl.creative = !!(p.flags & 8);
     pl.flySpeed = p.flyingSpeed;
     pl.walkSpeed = p.walkingSpeed;
+  }
+
+  on_tags(p) { this.tags.replace(p.tags); this.screens.current?.requestSuggestions?.(); }
+  on_declare_commands(p) {
+    this.commands = new CommandTree(p, this);
+    this.screens.current?.requestSuggestions?.();
   }
 
   on_tab_complete(p) { if (this.screens.current && this.screens.current.onTabComplete) this.screens.current.onTabComplete(p); }

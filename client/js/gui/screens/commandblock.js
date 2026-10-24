@@ -1,3 +1,4 @@
+import { ChatScreen } from './chat.js';
 // GuiCommandBlock and GuiEditCommandBlockMinecart. The block screen opens with its buttons disabled and fills in when
 // the server sends the block's data (update tile entity action 2, see Game.applyBlockEntity); the minecart screen
 // reads the cart's synced command and last output. Done sends MC|AutoCmd (blocks) or MC|AdvCmd (minecarts).
@@ -34,6 +35,13 @@ class BaseCommandScreen extends Screen {
     this.outputField = new TextField(cx - 150, outputY, 276, 20, { text: '-', maxLength: 32500 });
     this.outputField.enabled = false;
     this.fields.push(this.commandField, this.outputField);
+    this.completions?.onClose();
+    this.completions = new ChatScreen(this.game, '', {commandOnly:true});
+    this.completions.input = this.commandField;
+    this.commandField.onChange = () => {if(!this.completions.applyingTab)this.completions.requestSuggestions();};
+    this.requestSuggestions();
+    this.commandField.formatter = (text,offset) => this.game.commands ? this.game.commands.format(text,offset,this.commandField.text,false) : text;
+
     this.doneBtn = new Button(0, cx - 4 - 150, this.height / 4 + 120 + 12, 150, 20, tr('gui.done'), () => this.done());
     this.cancelBtn = new Button(1, cx + 4, this.height / 4 + 120 + 12, 150, 20, tr('gui.cancel'), () => this.cancel());
     this.outputBtn = new Button(4, cx + 150 - 20, outputY, 20, 20, () => (this.trackOutput ? 'O' : 'X'), () => { this.trackOutput = !this.trackOutput; this.updateCmdOutput(); });
@@ -49,40 +57,27 @@ class BaseCommandScreen extends Screen {
   cancel() { this.game.screens.close(); }
   close() { this.cancel(); }
 
+  render(gui,mx,my,partial) { super.render(gui,mx,my,partial);this.completions?.renderSuggestions(gui,mx,my); }
   key(e) {
-    if (e.code === 'Tab') { this.tabComplete(); return true; }
-    this.tabMatches = null;
     if (e.code === 'Enter' || e.code === 'NumpadEnter') { if (this.doneBtn.enabled) this.done(); return true; }
-    if (e.code === 'Escape') { this.cancel(); return true; }
-    return this.commandField.key(e);
+    if (e.code === 'Escape' && !this.completions.tabMatches) { this.cancel(); return true; }
+    if(e.code==='Tab'||this.completions.tabMatches&&['ArrowUp','ArrowDown','Escape'].includes(e.code))return this.completions.key(e);
+    const cursor=this.commandField.cursor,handled=this.commandField.key(e);
+    if(cursor!==this.commandField.cursor)this.requestSuggestions();
+    return handled;
   }
-
-  // TabCompleter(commandField, true): completes as a command, with the block's position as the target
-  tabComplete() {
-    const g = this.game, f = this.commandField;
-    if (this.tabMatches && this.tabMatches.length) {
-      this.tabIndex = (this.tabIndex + 1) % this.tabMatches.length;
-      this._applyTab();
-      return;
-    }
-    const text = f.text.slice(0, f.cursor);
-    this.tabPrefixStart = text.lastIndexOf(' ') + 1;
-    this.tabBase = f.text;
-    this.waitingTab = true;
-    g.send(C.tabComplete(text, this.targetPos(), true));
+  requestSuggestions() { this.completions?.requestSuggestions(); }
+  tabComplete() { this.completions.tabComplete(); }
+  onTabComplete(packet) { this.completions?.onTabComplete(packet); }
+  mouseDown(mx,my,button) {
+    if(button===0){const row=this.completions?._suggestionRow(mx,my);if(row>=0){this.completions._selectTab(row);this.completions._applyTab();return true;}}
+    const cursor=this.commandField.cursor,handled=super.mouseDown(mx,my,button);
+    if(cursor!==this.commandField.cursor)this.requestSuggestions();
+    return handled;
   }
-
-  onTabComplete(matches) {
-    if (!this.waitingTab) return;
-    this.waitingTab = false;
-    if (!matches.length) return;
-    if (matches.length > 1) this.game.hud.addChat(matches.join(', '), null, true);
-    this.tabMatches = matches;
-    this.tabIndex = 0;
-    this._applyTab();
-  }
-
-  _applyTab() { this.commandField.setText(this.tabBase.slice(0, this.tabPrefixStart) + this.tabMatches[this.tabIndex]); }
+  mouseMove(mx,my){this.completions?.mouseMove(mx,my);}
+  wheel(delta){this.completions?.wheel(delta);}
+  onClose(){this.completions?.onClose();}
 
   // drawScreen: title, "Console Command", the selector help and "Previous Output"
   _drawLabels(gui, outputGap) {

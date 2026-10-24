@@ -9,10 +9,10 @@ client; world generation, mob AI and authoritative gameplay belong to the server
 
 | Area | Current gap | Evidence / starting point |
 | --- | --- | --- |
-| Protocol synchronization | The protocol404 decoder omits Declare Commands (`0x11`), Declare Recipes (`0x54`), Tags (`0x55`) and NBT Query Response (`0x1d`). Command parsing, server/datapack recipes and tags therefore cannot reach vanilla parity. | `client/js/net/packets.js`, `client/js/game/game.js` |
+| Protocol synchronization | Declare Commands (`0x11`) and Tags (`0x55`) are decoded and used by command input/F3. Declare Recipes (`0x54`) and NBT Query Response (`0x1d`) remain missing. Full selector-option/SNBT semantic validation and argument-specific suggestions still need parity work. | `client/js/net/packets.js`, `client/js/game/game.js` |
 | Dedicated serverbound packets | Command/command-minecart editing, structure editing, book editing/signing, anvil renaming, beacon selection and trade selection still use custom-payload implementations. Renaming their channels does not implement the dedicated 1.13 packets. | `client/js/gui/screens/{commandblock,structure,book,containers}.js` |
 | Particles | World-particle IDs and block/dust/item payloads now follow the native registry. Several newer effect renderers are still missing; area-effect clouds use default spell particles instead of all metadata-selected types. | `client/js/net/packets.js`, `client/js/render/particles.js`, `client/js/game/entities.js` |
-| Crafting and recipe UI | Local crafting matching, repair and container remainders retain legacy metadata assumptions. Repair reads `stack.damage` instead of native NBT Damage. Datapack recipe/tag synchronization and the complete furnace recipe-book flow are incomplete. | `client/js/game/{crafting,container,recipebook}.js`, `client/js/gui/screens/containers.js` |
+| Crafting and recipe UI | Local crafting matching, repair and container remainders retain legacy metadata assumptions. Repair reads `stack.damage` instead of native NBT Damage. Datapack recipe synchronization and the complete furnace recipe-book flow are incomplete; synchronized tags are available to command/F3 consumers. | `client/js/game/{crafting,container,recipebook}.js`, `client/js/gui/screens/containers.js` |
 | Movement and effects | Full 1.13 water travel/current behavior, bubble-column movement, Dolphin's Grace and Slow Falling need implementation/audit. Depth Strider exists as a movement field but is not populated from equipment. Conduit-related behavior needs a complete client-side audit. | `client/js/game/physics.js`, `Game._applyEffects`, `client/js/world/fluids.js` |
 | Pistons and interaction | Piston mobility/tile-entity lists and several interaction lists still contain pre-flattening names. Native identities are not sufficient when state behavior still assumes legacy names/metadata. | `client/js/game/{pistons,interaction}.js` |
 | Horse-family containers | The horse window assumes two equipment slots and a fixed 5-column chest. Donkey/mule restrictions and llama carpet/strength-dependent layouts need species-specific handling. | `HorseScreen` in `client/js/gui/screens/containers.js` |
@@ -25,7 +25,7 @@ client; world generation, mob AI and authoritative gameplay belong to the server
 
 - Native flattened blocks/items/entities and an 83-model jar-derived bundle are in use.
 - Numeric sound IDs now follow all 662 registrations in the 1.13.2 jar.
-- Command suggestions require `/`, and the popup geometry follows the vanilla client.
+- Automatic chat command suggestions require `/`; ordinary chat gets player-name suggestions on Tab. Command input parses the server tree, colours arguments with the vanilla palette, marks unread errors red, and supports wheel/keyboard suggestion navigation. F3 shows synchronized block/fluid tags, including both vanilla sand tags.
 - Boats use the correct ice slipperiness, including faster blue ice.
 - Held tridents use the 3D model and first-person charging transforms.
 - Player swimming strokes match the jar bytecode, with vanilla pose blending.
