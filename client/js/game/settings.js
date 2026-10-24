@@ -55,6 +55,7 @@ const DEFAULTS = {
   maxFps: 0,
   graphicsApi: 'webgl2', // 'webgl2' | 'webgpu' | 'software'
   superPotato: false, // lower internal resolution, single-pass menu panorama (always on with the CPU rasteriser)
+  skinProxy: '', // Optional HTTP/CORS proxy template for public skin/profile URLs.
   resourcePacks: [], // active pack ids, highest priority first
   entityShadows: true,
   lodDistance: 128, // World blocks from the camera; 0 disables terrain and entity LOD.
@@ -89,7 +90,9 @@ export class Settings {
     try { saved = JSON.parse((platform().loadSetting('minecraftjs.settings') || platform().loadSetting('minekampf.settings')) || '{}'); } catch (e) { saved = {}; }
     const defaults = JSON.parse(JSON.stringify(DEFAULTS));
     if (Array.isArray(config.servers)) defaults.servers = configServers(config.servers);
+    if (typeof config.skinProxy === 'string') defaults.skinProxy = config.skinProxy.trim();
     Object.assign(this, defaults, saved);
+    this.skinProxy = typeof this.skinProxy === 'string' ? this.skinProxy.trim() : '';
     if (!Object.prototype.hasOwnProperty.call(saved, 'lodDistance') && Number.isFinite(saved.lodChunks)) this.lodDistance = Math.max(0, saved.lodChunks * 16);
     if (!Number.isFinite(this.lodDistance) || this.lodDistance < 0) this.lodDistance = 128;
     delete this.lodChunks;

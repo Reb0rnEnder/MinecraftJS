@@ -63,6 +63,7 @@ export function initBlocks(blocksJson, shapesJson) {
     const def = {
       id: b.id,
       name,
+      isAir: name === 'air' || name === 'cave_air' || name === 'void_air',
       displayName: b.displayName,
       hardness: b.hardness === null || b.hardness === undefined ? -1 : b.hardness,
       material: b.material || null,

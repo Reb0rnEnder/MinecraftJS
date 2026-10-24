@@ -1196,7 +1196,7 @@ export class Game {
 
   selectionBox(state, x, y, z) {
     const b = getBlock(state);
-    if (!b) return null;
+    if (!b || b.isAir) return null;
     const n = b.name;
     if (n === 'barrier') return this.player.creative ? [0, 0, 0, 1, 1, 1] : null;
     if (n === 'fire' || n === 'nether_portal' || n === 'portal' || n === 'end_portal' || n === 'moving_piston' || n === 'piston_extension') return null;

@@ -14,6 +14,7 @@ export const proxyType = (p) => (p && PROXY_TYPES.includes(p.type) ? p.type : 'm
 
 let selected = null;
 let allProxies = [];
+let routingSettings = null;
 
 // config.json entry -> list entry ("origin" resolves to the hosting page's server, dropped on file:// pages)
 export function normalizeProxy(p) {
@@ -38,6 +39,7 @@ export function defaultProxies(config) {
 export class ProxyList {
   constructor(settings) {
     this.settings = settings;
+    routingSettings = settings;
     if (!Array.isArray(settings.proxies)) settings.proxies = defaultProxies(settings.config);
     this.clampSelection();
   }
@@ -69,10 +71,45 @@ export function proxyRoute(path) {
   return base ? base + path : null;
 }
 
-// Mojang skin through the selected proxy (textures.minecraft.net sends no CORS headers)
+// %u inserts an encoded target URL; %U inserts the unencoded URL for path-style CORS proxies.
+export function validSkinProxyTemplate(template) {
+  if (typeof template !== 'string') return false;
+  if (!template.trim()) return true; // automatic MinecraftJS route
+  if (!/%[uU]/.test(template)) return false;
+  try {
+    const expanded=template.trim().replace(/%[uU]/g, token=>token==='%u'?encodeURIComponent('https://textures.minecraft.net/texture/example'):'https://textures.minecraft.net/texture/example');
+    return ['http:','https:'].includes(new URL(expanded).protocol);
+  } catch { return false; }
+}
+
+export function skinProxyUrl(url, template = routingSettings?.skinProxy || '') {
+  const target=new URL(url);
+  if (!['http:','https:'].includes(target.protocol)) throw new Error('Invalid skin URL');
+  if (target.hostname === 'textures.minecraft.net') target.protocol='https:';
+  if (template.trim()) {
+    if (!validSkinProxyTemplate(template)) throw new Error('Invalid skin proxy template');
+    return template.trim().replace(/%[uU]/g, token=>token==='%u'?encodeURIComponent(target.href):target.href);
+  }
+  return proxyRoute('/skin?url='+encodeURIComponent(target.href));
+}
+
+// Skins/capes and the public session profile can use a separate HTTP/CORS proxy without a MinecraftJS relay.
 export function fetchSkin(url) {
-  const route = proxyRoute('/skin?url=' + encodeURIComponent(url));
-  return route ? platform().fetchBytes(route) : Promise.reject(new Error('No proxy'));
+  try {
+    const route=skinProxyUrl(url);
+    return route ? platform().fetchBytes(route) : Promise.reject(new Error('No skin proxy configured'));
+  } catch(error) { return Promise.reject(error); }
+}
+
+export function fetchSkinProfile(uuid) {
+  const id=String(uuid).replace(/-/g,'');
+  if (!/^[0-9a-f]{32}$/i.test(id)) return Promise.reject(new Error('Invalid profile UUID'));
+  try {
+    const route=routingSettings?.skinProxy
+      ? skinProxyUrl('https://sessionserver.mojang.com/session/minecraft/profile/'+id)
+      : proxyRoute('/profile?uuid='+id);
+    return route ? platform().fetchJson(route) : Promise.reject(new Error('No skin proxy configured'));
+  } catch(error) { return Promise.reject(error); }
 }
 
 // Latest test result per proxy url ({ pending } | { ping, info } | { error }), shared by the title screen button

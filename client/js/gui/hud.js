@@ -930,6 +930,9 @@ export class Hud {
       lines.push(`Chunk-relative: ${bx & 15} ${by & 15} ${bz & 15}`);
       return lines;
     }
+    const dimension = {0:'minecraft:overworld',[-1]:'minecraft:the_nether',1:'minecraft:the_end'}[g.dimension ?? g.world.dimension ?? 0];
+    // FC is the server's force-loaded chunk count; multiplayer clients do not receive it.
+    lines.splice(lines.length - 1, 0, (dimension || 'Unknown dimension (' + (g.dimension ?? g.world.dimension) + ')') + ' FC: n/a');
     const f = (n, d) => n.toFixed(d);
     const dirIdx = Math.floor(pl.yaw * 4 / 360 + 0.5) & 3; // getHorizontalFacing
     const facing = ['south', 'west', 'north', 'east'][dirIdx];

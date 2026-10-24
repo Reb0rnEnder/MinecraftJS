@@ -125,7 +125,22 @@ types:
 Java relays and Wisp servers only carry the TCP stream; the client does the handshake, login, compression and
 encryption itself. Public relays usually refuse local or private addresses. Microsoft accounts still need a MinecraftJS
 proxy somewhere in the list: it signs accounts in, joins online-mode sessions (Mojang's session server blocks
-browsers) and downloads skins.
+browsers). Skin/profile downloads can instead use the separate HTTP/CORS template below.
+
+## Skin/CORS proxy
+
+Open **Proxy Servers → Skin Proxy** to choose a separate HTTP proxy for skin,
+cape and public profile downloads. You can also set its default in `config.json`:
+
+```json
+{ "skinProxy": "https://proxy.example/?url=%u" }
+```
+
+`%u` inserts the percent-encoded URL; `%U` inserts the raw URL for path-style CORS
+proxies. Leave the field blank to use the automatic MinecraftJS proxy route.
+The service should return the original PNG or profile JSON with CORS headers.
+This works independently of the game-server relay; sign-in/session authentication
+continues to use its existing routes. Saving reloads skins immediately.
 
 ## Eaglercraft servers
 

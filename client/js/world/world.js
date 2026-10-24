@@ -447,10 +447,10 @@ export class World {
 
   selectionBox(state, x, y, z) {
     const b = getBlock(state);
-    if (!b || b.id === 0 || b.isLiquid) return null;
+    if (!b || b.isAir || b.id === 0 || b.isLiquid) return null;
     if (this.selectionProvider) {
       const r = this.selectionProvider(state, x, y, z);
-      if (r) return r;
+      if (r !== undefined) return r;
     }
     return [0, 0, 0, 1, 1, 1];
   }
