@@ -87,6 +87,7 @@ export class ItemRenderer {
       if (bm && bm.elements) m = { kind: 'block', baked: this.store.bakeModel('block/' + b.name), display: {}, name: b.name };
       else m = { kind: 'generated', layers: ['blocks/stone'], display: {}, name: 'missing' };
     }
+    m.path = 'item/' + mname;
     this.models.set(key, m);
     return m;
   }
@@ -361,7 +362,7 @@ export class ItemRenderer {
 
   // Mesh of a baked block model, centred at the origin (entity format, atlas UVs)
   blockMesh(m) {
-    const key = m.name + '|' + (m.baked && m.baked.quads.length);
+    const key = (m.itemName || '') + '|' + (m.path || m.name) + '|' + (m.baked && m.baked.quads.length);
     let mesh = this.blockMeshes.get(key);
     if (mesh !== undefined) return mesh;
     const pos = [], uv = [], nor = [], col = [];

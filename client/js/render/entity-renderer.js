@@ -1,3 +1,4 @@
+import { poseInterval } from './lod.js';
 // Entity rendering (RenderManager + Render* classes) on the gfx scene graph.
 import * as M from './entity-models.js';
 
@@ -203,7 +204,7 @@ export class EntityRenderer {
 
   _rebuild(uuid) {
     for (const [id, v] of this.visuals) if (v.uuid === uuid) { const e = this.game.entities.get(id); if (e) this.remove(e); }
-    if (uuid === this.game.playerUuid) { this._guiModel = null; if (this.game.handRenderer) this.game.handRenderer.reset(); }
+    if (uuid === this.game.playerUuid) { this._guiModel = null; if (this.game.handRenderer) this.game.handRenderer.invalidateSkin(); }
   }
 
   // Texture (or path) of a player's skin, for GUI drawing (tab list faces)
@@ -366,7 +367,10 @@ export class EntityRenderer {
     v.root.add(v.yawGroup);
     v.yawGroup.add(v.scaleGroup);
     v.scaleGroup.add(v.modelGroup);
-    v.modelGroup.add(this._makeModelObject(model, mat));
+    const bodyObject = this._makeModelObject(model, mat);
+    v.bodyDrawables = [];
+    bodyObject.traverse(n => v.bodyDrawables.push(...n.drawables));
+    v.modelGroup.add(bodyObject);
     // Overlay layers
     const addLayer = (m, tex2, opts = {}) => {
       const lm = this._mat(v, tex2, { alphaTest: 0.1, ...opts });
@@ -788,9 +792,10 @@ export class EntityRenderer {
       // RenderArmorStand.canRenderName ignores invisibility: invisible stands with a visible custom name are
       // how servers (Hypixel NPCs, holograms) float text, so keep just their name tag
       const floatingTag = e.kind === 'armorstand' && e.customName && e.nameVisible;
-      if (dx * dx + dz * dz > far || (e.invisible && e.kind !== 'player' && !floatingTag)) { if (v) v.root.visible = false; continue; }
+      const living = e.kind === 'mob' && e.type !== 63 || e.kind === 'player' || e.kind === 'armorstand';
+      if (dx * dx + dz * dz > far || (e.invisible && !living)) { if (v) v.root.visible = false; continue; }
       // Entity culling: frustum + sections hidden behind terrain (never the camera's own entity)
-      let tagOnly = !!(e.invisible && floatingTag);
+      let tagOnly = false;
       if (CULLABLE.has(e.kind) && e.id !== -1) {
         const hw = (e.width || 0.6) / 2 + 0.5, h = (e.height || 1.8) * (e.type === 56 ? 4.5 : 1) + 0.5;
         const visible = this.r.boxVisible(p.x - hw, p.y - 0.5, p.z - hw, p.x + hw, p.y + h, p.z + hw);
@@ -811,10 +816,8 @@ export class EntityRenderer {
         this._updateNameTag(e, v, p);
         continue;
       }
-      // LOD (MinecraftJS, settings.lodChunks, 0 off): far living entities re-pose less often, every 2nd frame past
-      // the distance and every 4th past twice it
-      const lod = (this.game.settings.lodChunks | 0) * 16;
-      v.lodSkip = lod <= 0 ? false : d2 > 4 * lod * lod ? (this.frame + e.id) % 4 !== 0 : d2 > lod * lod ? (this.frame + e.id) % 2 !== 0 : false;
+      const interval = v.kind === 'living' && e.id !== -1 ? poseInterval(g.settings, d2) : 1;
+      v.lodSkip = interval > 1 && (this.frame + e.id) % interval !== 0;
       if (v.lodSkip) this.stats.lod++;
       v.root.position.set(p.x, p.y, p.z);
       if (e.onFire) burning.push({ e, p });
@@ -975,15 +978,17 @@ export class EntityRenderer {
       args.showArms = !!(m[10] & 4); args.noBasePlate = !!(m[10] & 8);
       if (m[10] & 1) v.scaleGroup.scale.multiplyScalar(0.5);
     }
-    if (v.lodSkip && v.posed) {
+    if (v.lodSkip && v.posed && v.wasInvisible === !!e.invisible) {
       // Keep the previous pose; only the transforms above were updated
       this._updateHeld(e, v, held, args);
       this._updateNameTag(e, v, p);
       return;
     }
     v.posed = true;
+    v.wasInvisible = !!e.invisible;
     model.animate(model, args);
     for (const r of model.roots) r.sync();
+    for (const draw of v.bodyDrawables) draw.visible = !e.invisible;
     // Player-specific visibility
     if (e.kind === 'player') {
       const pp = model.parts;
@@ -1001,8 +1006,9 @@ export class EntityRenderer {
       L.model.animate(L.model, args);
       copyPose(model, L.model);
       for (const r of L.model.roots) r.sync();
+      L.obj.visible = !e.invisible;
     }
-    if (v.wool) v.wool.obj.visible = !e.sheared;
+    if (v.wool) v.wool.obj.visible = !e.sheared && !e.invisible;
     if (v.wool) { const c = FLEECE[e.fleece || 0]; v.wool.mat.params.setTint(c[0], c[1], c[2], 1); }
     if (v.saddle) v.saddle.obj.visible = !!e.saddled;
     if (v.mushroomBack) { const vis = !e.child && !e.invisible; v.mushroomBack.visible = vis; if (v.mushroomHead) v.mushroomHead.visible = vis; }
@@ -1022,8 +1028,8 @@ export class EntityRenderer {
       if (v.flash > 0) m.params.setOverlay(1, 1, 1, v.flash);
       else m.params.setOverlay(1, 0, 0, overlay);
     }
-    v.mainMat.params.p[3] = e.invisible ? 0.15 : 1;
-    v.mainMat.state = e.invisible ? STATE_ALPHA : { ...STATE_OPAQUE, cull: v.mainMat.state.cull };
+    v.mainMat.params.p[3] = 1;
+    v.mainMat.state = { ...STATE_OPAQUE, cull: v.mainMat.state.cull };
     // Held item
     this._updateHeld(e, v, held, args);
     this._updateHeadItem(e, v);

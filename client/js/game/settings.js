@@ -49,7 +49,7 @@ const DEFAULTS = {
   superPotato: false, // lower internal resolution, single-pass menu panorama (always on with the CPU rasteriser)
   resourcePacks: [], // active pack ids, highest priority first
   entityShadows: true,
-  lodChunks: 8, // MinecraftJS: past this many chunks terrain is simplified and mobs re-pose less often (0 = off)
+  lodDistance: 128, // World blocks from the camera; 0 disables terrain and entity LOD.
   language: 'en_US',
   forceUnicodeFont: false,
   keys: { ...DEFAULT_KEYS },
@@ -82,6 +82,9 @@ export class Settings {
     const defaults = JSON.parse(JSON.stringify(DEFAULTS));
     if (Array.isArray(config.servers)) defaults.servers = configServers(config.servers);
     Object.assign(this, defaults, saved);
+    if (!Object.prototype.hasOwnProperty.call(saved, 'lodDistance') && Number.isFinite(saved.lodChunks)) this.lodDistance = Math.max(0, saved.lodChunks * 16);
+    if (!Number.isFinite(this.lodDistance) || this.lodDistance < 0) this.lodDistance = 128;
+    delete this.lodChunks;
     this.keys = { ...DEFAULT_KEYS, ...(saved.keys || {}) };
     this.soundVolumes = { ...DEFAULTS.soundVolumes, ...(saved.soundVolumes || {}) };
     if (Array.isArray(this.servers)) {

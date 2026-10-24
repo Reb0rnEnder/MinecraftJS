@@ -1,20 +1,36 @@
 // Inventory/container model with a faithful port of vanilla Container.slotClick and
 // per-container transferStackInSlot (1.8 servers don't echo accepted clicks back).
 import { C } from '../net/packets.js';
+import { Reader } from '../net/buffer.js';
+import { TAG } from '../net/nbt.js';
 import { craftResult, containerItem } from './crafting.js';
 
-export const copy = (it) => (it ? { id: it.id, count: it.count, damage: it.damage, nbt: it.nbt, nbtRaw: it.nbtRaw } : null);
+export const copy = (it) => (it ? { id: it.id, count: it.count, damage: it.damage,
+  nbt: it.nbt ? structuredClone(it.nbt) : it.nbt, nbtRaw: it.nbtRaw ? it.nbtRaw.slice() : it.nbtRaw } : null);
 
 function sameItem(a, b) {
   return !!a && !!b && a.id === b.id && a.damage === b.damage;
 }
-function tagsEqual(a, b) {
-  const ra = a && a.nbtRaw, rb = b && b.nbtRaw;
-  if (!ra && !rb) return true;
-  if (!ra || !rb || ra.length !== rb.length) return false;
-  for (let i = 0; i < ra.length; i++) if (ra[i] !== rb[i]) return false;
-  return true;
+function nbtPayloadEqual(type, a, b) {
+  if (a === b) return true;
+  if (type === TAG.COMPOUND) {
+    const keys = Object.keys(a);
+    return keys.length === Object.keys(b).length && keys.every(k => Object.prototype.hasOwnProperty.call(b, k) && nbtEqual(a[k], b[k]));
+  }
+  if (type === TAG.LIST) {
+    return a.items.length === b.items.length && (!a.items.length || a.et === b.et && a.items.every((v, i) => nbtPayloadEqual(a.et, v, b.items[i])));
+  }
+  if (type === TAG.BYTE_ARRAY || type === TAG.INT_ARRAY || type === TAG.LONG_ARRAY) {
+    return a.length === b.length && a.every((v, i) => v === b[i]);
+  }
+  return false;
 }
+
+// Match NBT values and types: compound order/root names are irrelevant, list order is significant.
+// Do not simplify (which loses numeric tag types and precision for longs) or stringify typed arrays.
+function nbtEqual(a, b) { return a === b || !!a && !!b && a.t === b.t && nbtPayloadEqual(a.t, a.v, b.v); }
+function stackTag(item) { return item.nbt || (item.nbtRaw ? new Reader(item.nbtRaw).optionalNbt() : null); }
+function tagsEqual(a, b) { return nbtEqual(stackTag(a), stackTag(b)); }
 export function stackable(a, b) { return sameItem(a, b) && tagsEqual(a, b); }
 
 const ARMOR = {
@@ -99,10 +115,9 @@ class ContainerBase {
     if (max > 1) {
       while (stack.count > 0 && (!reverse && i < end || reverse && i >= start)) {
         const it = this.get(i);
-        if (it && stackable(it, stack)) {
-          const j = it.count + stack.count;
-          if (j <= max) { stack.count = 0; it.count = j; this.onSlotChanged(i); flag = true; }
-          else if (it.count < max) { stack.count -= max - it.count; it.count = max; this.onSlotChanged(i); flag = true; }
+        if (it && this.isValid(i, stack) && stackable(it, stack)) {
+          const moved = Math.min(stack.count, this.slotLimit(i, stack) - it.count);
+          if (moved > 0) { stack.count -= moved; it.count += moved; this.onSlotChanged(i); flag = true; }
         }
         i += reverse ? -1 : 1;
       }
@@ -110,7 +125,13 @@ class ContainerBase {
     if (stack.count > 0) {
       i = reverse ? end - 1 : start;
       while (!reverse && i < end || reverse && i >= start) {
-        if (!this.get(i)) { this.put(i, copy(stack)); stack.count = 0; flag = true; break; }
+        if (!this.get(i) && this.isValid(i, stack)) {
+          const moved = Math.min(stack.count, this.slotLimit(i, stack));
+          if (moved > 0) {
+            const part = copy(stack); part.count = moved;
+            stack.count -= moved; this.put(i, part); flag = true; break;
+          }
+        }
         i += reverse ? -1 : 1;
       }
     }
@@ -322,8 +343,8 @@ class ContainerBase {
     return clicked;
   }
 
-  setSlot(i, item) { if (this.slots[i]) { this.slots[i].item = item; this.onSlotChanged(i); } }
-  setAll(items) { for (let i = 0; i < items.length && i < this.slots.length; i++) this.slots[i].item = items[i]; this.onSlotChanged(1); }
+  setSlot(i, item) { if (this.slots[i]) this.slots[i].item = item; }
+  setAll(items) { for (let i = 0; i < items.length && i < this.slots.length; i++) this.slots[i].item = items[i]; }
 }
 
 // Player inventory: window 0 (45 slots) + the underlying 36-slot main inventory + 4 armor
@@ -367,10 +388,9 @@ export class Inventory extends ContainerBase {
   setSlot(i, item) {
     if (!this.slots[i]) return;
     this.slots[i].item = item;
-    this.onSlotChanged(i);
   }
 
-  setAll(items) { for (let i = 0; i < items.length && i < 45; i++) this.slots[i].item = items[i]; this.updateCraftResult(); }
+  setAll(items) { for (let i = 0; i < items.length && i < 45; i++) this.slots[i].item = items[i]; }
 
   // windowId -2 in 1.8 isn't used, kept for safety (index into main inventory)
   setPlayerSlotByInventoryIndex(i, item) { if (i >= 0 && i < 36) this.main[i] = item; }
@@ -603,7 +623,6 @@ export class ContainerWindow extends ContainerBase {
 
   setAll(items) {
     for (let i = 0; i < items.length && i < this.slots.length; i++) this.slots[i].item = items[i];
-    this.onSlotChanged(1);
   }
 
   // Closing the window returns grid items in vanilla server-side; mirror locally
