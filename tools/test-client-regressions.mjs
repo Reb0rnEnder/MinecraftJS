@@ -1,3 +1,11 @@
+import { createHash } from 'node:crypto';
+import { jarSelectionBox, getBlock } from '../client/js/world/blocks.js';
+import { startSleeping, sleepingCamera } from '../client/js/game/bed-sleep.js';
+import { TileEntityRenderer } from '../client/js/render/tile-renderer.js';
+import { World } from '../client/js/world/world.js';
+import { Chunk } from '../client/js/world/chunk.js';
+import { Mesher } from '../client/js/render/mesher.js';
+import { resolveState } from '../client/js/world/blockstates.js';
 import { SoftwareDevice } from '../client/js/gfx/software.js';
 import { crystalBeam, guardianBeam, dragonDeathRays, tickEntityEffects } from '../client/js/render/entity-effects.js';
 // Identical offline regression suite for 1.8.9, 1.12.2 and 1.13.2; uses each checkout's jar/data.
@@ -30,6 +38,7 @@ import { mat4 } from '../client/js/gfx/math.js';
 import { Particles } from '../client/js/render/particles.js';
 import { Weather } from '../client/js/render/weather.js';
 import { sectionLod, poseInterval } from '../client/js/render/lod.js';
+const findState = () => { throw Error('native state lookup on legacy version'); };
 const version = mcassets.MC_VERSION, native = version === '1.13.2';
 const jar = new ZipFile(await mcassets.locateJar());
 const data = Object.fromEntries(['blocks','items','creative','blockCollisionShapes','enchantments','particles','foods','materials']
@@ -304,4 +313,77 @@ test(version + ': actual rasterisation dissolves the dragon completely at tick 2
     if(process.env.EFFECTS_PREVIEW){render(100);writeFileSync(process.env.EFFECTS_PREVIEW,Buffer.concat([Buffer.from('P6\n192 192\n255\n'),Buffer.from(new Uint8Array(soft.screen.color.buffer).filter((_,i)=>i%4!==3))]));}
     g.entityRenderer.reset();
   } finally {if(original===undefined)delete globalThis.ImageData;else globalThis.ImageData=original;setModelDevice(device);}
+});
+
+test(version + ': selection bounds use jar provenance and bed bounds rather than visual model bounds', () => {
+  const selection=data.blockCollisionShapes.selection;
+  assert.equal(selection.source.version,version);assert.equal(selection.source.clientJarSha1,createHash('sha1').update(jar.data).digest('hex'));
+  const g=fixture();
+  const names=native?['white_bed','red_bed','light_gray_bed','black_bed']:['bed'];
+  for(const name of names){const b=data.blocks.find(b=>b.name===name);for(let i=0;i<16;i++){
+    const st=native?b.minStateId+i:(b.id<<4)+i;
+    assert.deepEqual(jarSelectionBox(st),[0,0,0,1,0.5625,1]);
+    assert.deepEqual(Game.prototype.selectionBox.call(g,st,0,64,0),[0,0,0,1,0.5625,1]);
+  }}
+  assert.ok(selection.states.filter(s=>s!==null&&s!==undefined).length>1000,'bounds extracted across the block registry');
+});
+
+test(version + ': sleeping anchors the player and camera to each bed direction and cancels mouse look', () => {
+  const g=fixture(),pos={x:4,y:64,z:8};
+  for(const [i,facing] of ['south','west','north','east'].entries()){
+    g.world.getState=()=>native?findState('red_bed',{facing,part:'head'}):state('bed')|i|8;
+    g.player.yaw=61;g.player.pitch=37;g.player.motionX=1;
+    startSleeping(g,pos);const view=sleepingCamera(g,0.5),d=[[0,1],[-1,0],[0,-1],[1,0]][i];
+    assert.equal(g.player.sleeping,true);assert.equal(g.player.width,Math.fround(0.2));
+    assert.ok(Math.abs(g.player.x-(4.5+d[0]*0.4))<1e-7);assert.ok(Math.abs(g.player.z-(8.5+d[1]*0.4))<1e-7);
+    assert.equal(g.player.y,64.6875);assert.equal(g.player.motionX,0);assert.equal(view.yaw,i*90+180);assert.equal(view.pitch,0);
+    assert.ok(Math.abs(view.y-65.5875)<1e-7);assert.deepEqual([view.x,view.z],[g.player.x,g.player.z]);
+    g.player.yaw=-120;g.player.pitch=-45;assert.deepEqual(sleepingCamera(g,0.5),view);
+  }
+  g.sleeping=false;assert.equal(sleepingCamera(g,0.5),null);
+});
+
+test(version + ': End portal surfaces survive chunk load, unload and reload', () => {
+  const g=fixture(),portal=state('end_portal'),c=new Chunk(0,0,true);c.setState(3,64,5,portal);
+  g.world.getState=(x,y,z)=>x===3&&y===64&&z===5?portal:0;
+  const tiles=new TileEntityRenderer(g);tiles.scanChunk(c);const t=tiles.tiles.get('3,64,5');assert.equal(t?.type,'endportal');
+  tiles._build(t);assert.ok(t.obj.drawables.some(d=>d.mat.pipeline==='endportal'),'surface has the real portal rendering layers');
+  tiles.removeChunk(0,0);assert.equal(tiles.tiles.size,0);tiles.scanChunk(c);assert.equal(tiles.tiles.get('3,64,5')?.type,'endportal');tiles.clear();
+});
+
+if(native)test('1.13.2: placed bed colours come from all sixteen block identities, including light gray', () => {
+  const g=fixture(),tiles=new TileEntityRenderer(g);
+  for(const color of ['white','orange','magenta','light_blue','yellow','lime','pink','gray','light_gray','cyan','purple','blue','brown','green','red','black']) {
+    const st=findState(color+'_bed',{part:'head',facing:'north'});g.world.getState=()=>st;
+    const t=tiles._ensure(0,64,0,st);t.data={color:14};tiles._build(t);
+    const mats=[];t.obj.traverse(n=>mats.push(...n.drawables.map(d=>d.mat)));
+    assert.ok(mats.some(m=>m.tex==='entity/bed/'+color+'.png'));assert.ok(image('entity/bed/'+color+'.png'));tiles.clear();
+  }
+});
+
+if(native)test('1.13.2: turtle eggs retain the floor face and can be stepped onto without sideways ejection', () => {
+  const stone=state('stone'),w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);
+  for(let x=0;x<8;x++)for(let z=0;z<8;z++)c.setState(x,64,z,stone);
+  const mesher=new Mesher(null,assets.modelStore);mesher._flags=new Uint8Array(data.blocks.length);
+  for(let eggs=1;eggs<=4;eggs++)for(let hatch=0;hatch<=2;hatch++) {
+    const st=findState('turtle_egg',{eggs,hatch});c.setState(3,65,3,st);
+    assert.equal(getBlock(st).opaque,false);assert.equal(mesher.shouldRenderFace(stone,st,1),true);
+    const pl=new LocalPlayer();pl.setPosition(2.5,65,3.5);pl.onGround=true;
+    for(let i=0;i<5;i++)pl.moveEntity(w,0.2,-0.08,0);
+    assert.ok(Math.abs(pl.y-65.4375)<1e-7,`steps onto eggs=${eggs},hatch=${hatch}`);assert.equal(pl.onGround,true);
+    pl.motionX=pl.motionZ=0;pl.pushOutOfBlocks(w,pl.x,pl.y+0.5,pl.z);assert.equal(pl.motionX,0);assert.equal(pl.motionZ,0);
+    for(let i=0;i<4;i++)pl.moveEntity(w,0,-0.08,0);assert.ok(Math.abs(pl.y-65.4375)<1e-7,'rests on the egg collision shape');
+  }
+});
+
+if(native)test('1.13.2: global chunk palettes have no length header and retain filled portal-frame states', () => {
+  const bits=14,count=4096,words=Array.from({length:Math.ceil(count*bits/64)},()=>0n);
+  const value=findState('end_portal_frame',{eye:true,facing:'north'});
+  for(let i=0;i<count;i++){const bit=i*bits,word=Math.floor(bit/64),shift=bit%64;words[word]|=BigInt(value)<<BigInt(shift);if(shift+bits>64)words[word+1]|=BigInt(value)>>BigInt(64-shift);}
+  const varint=n=>{const out=[];do{let b=n&127;n>>>=7;out.push(b|(n?128:0));}while(n);return out;};
+  const out=[bits,...varint(words.length)];for(const word of words)for(let k=7;k>=0;k--)out.push(Number((word>>BigInt(k*8))&255n));out.push(...new Uint8Array(4096));
+  const chunk=new Chunk(0,0,true);assert.equal(chunk.load(new Uint8Array(out),0,1,false,true),out.length);
+  for(const i of [0,1,2,3,4,31,32,63,64,4095])assert.equal(chunk.sections[0].blocks[i],value);
+  const rs=resolveState(value,()=>0,0,0,0),baked=assets.modelStore.bakeVariant(rs.file,rs.props);
+  assert.equal(baked.bounds[4],1,'persisted state retains the eye geometry');
 });

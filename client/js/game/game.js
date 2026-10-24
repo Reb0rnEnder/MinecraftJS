@@ -1,3 +1,5 @@
+import { startSleeping, sleepingCamera } from './bed-sleep.js';
+import { jarSelectionBox } from '../world/blocks.js';
 import { sectionLod, lodDistance } from '../render/lod.js';
 // MinecraftJS game core: networking, world sync, ticking, input, camera.
 import { buildCrashReport, showCrashScreen } from '../crash.js';
@@ -779,8 +781,7 @@ export class Game {
 
   on_bed(p) {
     if (p.entityId === this.entityId) {
-      this.sleeping = true;
-      this.bedPos = p.location;
+      startSleeping(this, p.location);
       this.screens.open(new SleepScreen(this));
       return;
     }
@@ -790,6 +791,8 @@ export class Game {
   on_animation(p) {
     if (p.entityId === this.entityId && p.animation === 2) {
       this.sleeping = false;
+      this.player.sleeping = false;
+      this.bedPos = null;
       if (this.screens.current instanceof SleepScreen) this.screens.close();
       return;
     }
@@ -1184,6 +1187,11 @@ export class Game {
     const b = blocks[state >> 4];
     if (!b) return null;
     const n = b.name;
+    if (n === 'barrier') return this.player.creative ? [0, 0, 0, 1, 1, 1] : null;
+    if (n === 'fire' || n === 'nether_portal' || n === 'portal' || n === 'end_portal' || n === 'moving_piston' || n === 'piston_extension') return null;
+    const extracted = jarSelectionBox(state);
+    if (extracted !== undefined) return extracted;
+
     if (n === 'chest' || n === 'trapped_chest' || n === 'ender_chest') return [0.0625, 0, 0.0625, 0.9375, 0.875, 0.9375];
     if (n === 'standing_sign') return [0.25, 0, 0.25, 0.75, 1, 0.75];
     if (n === 'wall_sign') {
@@ -1734,6 +1742,9 @@ export class Game {
     const yaw = pl.prevYaw + (pl.yaw - pl.prevYaw) * partial;
     const pitch = pl.prevPitch + (pl.pitch - pl.prevPitch) * partial;
     let camYaw = yaw, camPitch = pitch, roll = 0;
+    const sleepView = sleepingCamera(this, partial);
+    if (sleepView) { ex=sleepView.x; ey=sleepView.y; ez=sleepView.z; camYaw=sleepView.yaw; camPitch=sleepView.pitch; }
+
     if (this.debugCam) { [ex, ey, ez] = [this.debugCam.x, this.debugCam.y, this.debugCam.z]; camYaw = this.debugCam.yaw; camPitch = this.debugCam.pitch; }
     // EntityRenderer.setupCameraTransform, view-space part before orientCamera:
     // hurtCameraEffect, setupViewBobbing, then the first-person 0.1 pull-back from orientCamera
@@ -1747,7 +1758,7 @@ export class Game {
       f = Math.sin(f * f * f * f * Math.PI);
       mat4.rotateZ(pre, pre, -f * 14 * Math.PI / 180);
     }
-    if (this.settings.viewBobbing) {
+    if (this.settings.viewBobbing && !sleepView) {
       const f = pl.distanceWalked - pl.prevDistanceWalked;
       const f1 = -(pl.distanceWalked + f * partial);
       const f2 = pl.prevCameraYaw + (pl.cameraYaw - pl.prevCameraYaw) * partial;
@@ -1757,9 +1768,9 @@ export class Game {
       mat4.rotateX(pre, pre, Math.abs(Math.cos(f1 * Math.PI - 0.2) * f2) * 5 * Math.PI / 180);
       mat4.rotateX(pre, pre, f3 * Math.PI / 180);
     }
-    if (this.thirdPerson === 0 && !this.debugCam) mat4.translate(pre, pre, 0, 0, -0.1);
+    if (this.thirdPerson === 0 && !this.debugCam && !sleepView) mat4.translate(pre, pre, 0, 0, -0.1);
     const look = this.lookVector(partial);
-    if (this.thirdPerson > 0) {
+    if (this.thirdPerson > 0 && !sleepView) {
       let dist = 4;
       const dir = this.thirdPerson === 2 ? -1 : 1;
       const lx = -look[0] * dir, ly = -look[1] * dir, lz = -look[2] * dir;
