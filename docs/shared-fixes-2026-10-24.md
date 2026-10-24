@@ -39,3 +39,8 @@ npm run build
 The ten shared tests use each checkout's real game data, jar models and texture
 pixels. The 1.13.2 branch also retains its complete protocol/registry/movement
 regression suite. Live-server/browser testing remains separate.
+
+Dragon/crystal beams, guardian attack beams and dragon death effects were also
+implemented and backported in the follow-up. See [the effect audit](entity-effects-2026-10-24.md)
+for version coverage, implementation details and validation. Riptide shells are
+1.13.2-only.

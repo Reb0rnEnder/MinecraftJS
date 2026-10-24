@@ -1,3 +1,4 @@
+import { EntityEffects, dragonCorpseMatrix } from './entity-effects.js';
 import { poseInterval } from './lod.js';
 // Entity rendering (RenderManager + Render* classes) on the gfx scene graph.
 import { DYE_NAMES } from './tile-renderer.js';
@@ -101,6 +102,7 @@ export class EntityRenderer {
     this.skins = new Map(); // uuid -> { path, slim, texture?, legacy }
     this.resolve = (t) => (typeof t === 'function' ? t() : game.assets.texture(t));
     this.fire = new EntityFire(game);
+    this.effects = new EntityEffects(game);
     this.meshCache = new Map();
     this.atlasTex = () => game.assets.atlasTexture;
     // Shadow: unit quad on the XZ plane
@@ -111,6 +113,7 @@ export class EntityRenderer {
 
   // Drop everything (resource reload / world change)
   reset() {
+    this.effects.reset();
     for (const id of [...this.visuals.keys()]) this.remove({ id });
     for (const m of this.meshCache.values()) this.device.destroyMesh(m);
     this.meshCache.clear();
@@ -124,6 +127,7 @@ export class EntityRenderer {
   }
 
   remove(e) {
+    this.effects.remove(e.id);
     const v = this.visuals.get(e.id);
     if (!v) return;
     this.group.remove(v.root);
@@ -485,8 +489,14 @@ export class EntityRenderer {
     }
     v.bodyFrame.add(mirror);
     for (let i = 0; i < 12; i++) v.tail.push(add(M.spine(), unit));
+    v.dragonMask = this._mat(v, 'entity/enderdragon/dragon_exploding.png', { colorWrite: false, cull: false });
+    v.dragonSkin = mat; v.dragonEyes = eyes; v.dragonMaskDraws = [];
+    unit.traverse(n => { for (const d of [...n.drawables]) {
+      const mask = { ...d, mat: v.dragonMask, order: -1, visible: false };
+      n.drawables.push(mask); v.dragonMaskDraws.push(mask);
+    }});
     // LayerEnderDragonEyes: the same geometry again with the eyes texture
-    unit.traverse((n) => { for (const d of [...n.drawables]) n.drawables.push({ ...d, mat: eyes, order: 2 }); });
+    unit.traverse((n) => { for (const d of [...n.drawables]) if (d.mat === mat) n.drawables.push({ ...d, mat: eyes, order: 2 }); });
     for (const m of v.materials) m.state = { ...m.state, cull: false };
     v.corpse = new Node();
     v.offset = new Node();
@@ -508,13 +518,13 @@ export class EntityRenderer {
     };
     if (!e.ring) return;
     // RenderDragon.rotateCorpse, then RendererLivingEntity's scale(-1,-1,1) / translate(0,-1.5078125,0)
-    const cm = mat4.create();
-    mat4.rotateY(cm, cm, -off(7)[0] * D2R);
-    mat4.rotateX(cm, cm, (off(5)[1] - off(10)[1]) * 10 * D2R);
-    mat4.translate(cm, cm, 0, 0, 1);
-    mat4.scale(cm, cm, -1, -1, 1);
-    mat4.translate(cm, cm, 0, -1.5078125, 0);
+    const cm = dragonCorpseMatrix(e, partial);
     v.corpse.matrix = cm;
+    const dying = e.deathTime > 0;
+    for (const d of v.dragonMaskDraws) d.visible = dying;
+    v.dragonMask.params.setAlphaTest((e.deathTime || 0) / 200 + 1e-6);
+    v.dragonSkin.state.depthFunc = dying ? 'equal' : undefined;
+    v.dragonEyes.state.depthFunc = dying ? 'equal' : undefined;
     // ModelDragon.render
     const f = e.prevAnimTime + (e.animTime - e.prevAnimTime) * partial;
     const TAU = Math.PI * 2;
@@ -568,7 +578,7 @@ export class EntityRenderer {
     }
     for (const part of v.all) part.sync();
     // hurt flash (RendererLivingEntity)
-    const overlay = e.hurtTime > 0 || e.deathTime > 0 ? 0.3 : 0;
+    const overlay = e.hurtTime > 0 ? 0.3 : 0;
     for (const m of v.materials) m.params.setOverlay(1, 0, 0, overlay);
   }
 
@@ -891,6 +901,7 @@ export class EntityRenderer {
     if (g.debugCam) viewYaw = g.debugCam.yaw;
     else if (g.thirdPerson === 2) viewYaw += 180;
     this.fire.update(burning, viewYaw);
+    this.effects.update(partial);
   }
 
   // Draw the entity tree (called by the world renderer)
