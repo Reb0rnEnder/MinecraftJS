@@ -598,7 +598,7 @@ export class EntityManager {
     s.hurtTime = g.hurtTime; s.deathTime = g.dead ? Math.min(20, (s.deathTime || 0) + 1) : 0;
     s.metadata = g.selfMetadata || s.metadata;
     if (s.metadata && s.metadata[13] !== undefined) s.skinFlags = s.metadata[13]; else s.skinFlags = g.settings.skinParts;
-    s.invisible = g.effects.has(14);
+    s.invisible = !!(g.selfMetadata && (g.selfMetadata[0] & 32)) || g.effects.has(14);
     s.onFire = g.selfMetadata ? !!(g.selfMetadata[0] & 1) : false;
     // LayerCape's sway from the view bobbing of the local player
     s.prevCameraYaw = pl.prevCameraYaw; s.cameraYaw = pl.cameraYaw;
