@@ -17,7 +17,7 @@ import { JavaRandom } from '../util/jrandom.js';
 import { decodePng } from '../util/png.js';
 import { decodeBase64 } from '../util/base64.js';
 import { platform } from '../platform/platform.js';
-import { fetchSkin, proxyRoute } from '../net/proxies.js';
+import { fetchSkin, fetchSkinProfile } from '../net/proxies.js';
 import { EntityFire } from './entity-fire.js';
 import { decodeUtf8 } from '../util/utf8.js';
 
@@ -168,10 +168,8 @@ export class EntityRenderer {
   _sessionTextures(s, uuid) {
     const acc = this.game.accounts && this.game.accounts.active();
     if (!acc || acc.type !== 'microsoft' || !acc.uuid || acc.uuid.replace(/-/g, '') !== uuid.replace(/-/g, '')) return;
-    const route = proxyRoute('/profile?uuid=' + uuid.replace(/-/g, ''));
-    if (!route) return;
     s.fromSession = true;
-    platform().fetchJson(route).then((j) => {
+    fetchSkinProfile(uuid).then((j) => {
       const prop = (j.properties || []).find((p) => p.name === 'textures');
       if (prop && this.skins.get(uuid) === s) this._loadTextures(s, uuid, prop.value);
     }).catch(() => {});
@@ -184,6 +182,7 @@ export class EntityRenderer {
       if (skin && skin.url) {
         s.slim = !!(skin.metadata && skin.metadata.model === 'slim');
         fetchSkin(skin.url).then((bytes) => {
+          if (this.skins.get(uuid) !== s) return;
           // ImageBufferDownload.parseUserSkin: 64x64 layout, opaque base layer
           const img = parseUserSkin(decodePng(bytes));
           s.legacy = false;
@@ -197,6 +196,7 @@ export class EntityRenderer {
         const t = tj.textures && tj.textures[type];
         if (!t || !t.url) continue;
         fetchSkin(t.url).then((bytes) => {
+          if (this.skins.get(uuid) !== s) return;
           const img = decodePng(bytes);
           s[key] = this.game.assets.makeTexture(key + ':' + uuid, img.width, img.height, img.data);
           this._rebuild(uuid);
@@ -207,6 +207,14 @@ export class EntityRenderer {
 
   // Texture reference for a skin (falls back to the default skin until loaded)
   skinTex(s) { return () => s.texture || this.game.assets.texture(s.path); }
+
+  // Changing the HTTP template must also discard failed/pending downloads and the local hand skin.
+  reloadSkins() {
+    const known = new Set(this.skins.keys());
+    for (const [id,v] of this.visuals) if (known.has(v.uuid)) this.remove({id});
+    this.skins.clear(); this._guiModel = null;
+    this.game.handRenderer?.invalidateSkin();
+  }
 
   _rebuild(uuid) {
     for (const [id, v] of this.visuals) if (v.uuid === uuid) { const e = this.game.entities.get(id); if (e) this.remove(e); }
