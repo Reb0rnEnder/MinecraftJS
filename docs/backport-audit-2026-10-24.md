@@ -1,24 +1,25 @@
 # Backport audit — 2026-10-24
 
 Compared the current 1.13.2 worktree with `1.12.2` at `ab11987` and `1.8.9`
-at `61d9a9e`, after fetching origin. The older branches were inspected without
-editing or switching their checkouts. This is a targeted review of fixes made
+at `61d9a9e`, after fetching origin. The initial investigation inspected older branches without editing them. The
+follow-up request applied and tested the shared backports in separate worktrees. This is a targeted review of fixes made
 during the current migration and the recent shared history, not a certification
 that every historical change has been backported.
 
-## Confirmed shared fixes missing from older branches
+## Shared fixes found missing and now backported
+
+The evidence column records the original failure. All rows now have version-specific regression coverage in `tools/test-client-regressions.mjs`.
 
 | Fix present in 1.13.2 | 1.12.2 | 1.8.9 | Evidence / consequence |
 | --- | --- | --- | --- |
-| Deep-copy stack NBT and raw NBT bytes | Missing | Missing | Runtime probe: changing the copy's nested display name also changes the source stack. `game/container.js`, `copy`. |
-| Compare structured NBT, including numeric tag types and compound/list values | Missing | Missing | Runtime probe: differently named stacks with typed NBT but no `nbtRaw` incorrectly compare as stackable. Keep legacy item damage/metadata comparisons when porting. |
-| Respect JSON style resets, inherited styles and string `false` in chat | Missing | Missing | Runtime probe: `{text:'text',bold:'false'}` incorrectly emits bold formatting on both older branches. `gui/chat.js`. |
-| Keep network inventory results authoritative | Missing | Missing | Runtime probe: `Inventory.setAll` calls local recipe prediction on both older branches; the 1.13.2 setter does not. Port the inbound setters while retaining legitimate local click prediction, especially for 1.8.9 servers that do not echo accepted clicks. |
-| Keep invisible bodies separate from equipped items and handle visibility changes on skipped LOD frames | Missing | Missing | Source review: older renderers cull invisible mobs and skip poses without a visibility-state check. The current renderer has independently controlled body drawables and `wasInvisible` handling. Needs version-specific rendering tests when ported. |
-| Defer hand-skin invalidation until a safe render boundary | Present | Missing | `ab11987` (1.12.2) / `188fee8` (1.13.2) contain the same fix; 1.8.9 still calls `handRenderer.reset()` directly from skin rebuilds. |
+| Deep-copy stack NBT and raw NBT bytes | Backported | Backported | Runtime probe: changing the copy's nested display name also changes the source stack. `game/container.js`, `copy`. |
+| Compare structured NBT, including numeric tag types and compound/list values | Backported | Backported | Runtime probe: differently named stacks with typed NBT but no `nbtRaw` incorrectly compare as stackable. Keep legacy item damage/metadata comparisons when porting. |
+| Respect JSON style resets, inherited styles and string `false` in chat | Backported | Backported | Runtime probe: `{text:'text',bold:'false'}` incorrectly emits bold formatting on both older branches. `gui/chat.js`. |
+| Keep network inventory results authoritative | Backported | Backported | Runtime probe: `Inventory.setAll` calls local recipe prediction on both older branches; the 1.13.2 setter does not. Port the inbound setters while retaining legitimate local click prediction, especially for 1.8.9 servers that do not echo accepted clicks. |
+| Keep invisible bodies separate from equipped items and handle visibility changes on skipped LOD frames | Backported | Backported | Source review: older renderers cull invisible mobs and skip poses without a visibility-state check. The current renderer has independently controlled body drawables and `wasInvisible` handling. Now covered by visibility changes during skipped LOD frames on each client. |
+| Defer hand-skin invalidation until a safe render boundary | Present | Backported | `ab11987` (1.12.2) / `188fee8` (1.13.2) contain the same fix; 1.8.9 previously called `handRenderer.reset()` directly; it now defers invalidation until `prepare`. |
 
-The first four findings are executable behavior probes; the final two combine
-source inspection with history. Reproduce with:
+The initial findings combined executable behavior probes, source inspection and history. The follow-up shared regression suite exercises the backported behavior on all three clients. Reproduce with:
 
 ```sh
 node tools/audit-backports.mjs
@@ -38,7 +39,7 @@ It does not cherry-pick, commit, push, or alter either older branch.
   are absent from both older clients' local ambience pass. Their server particle
   ID 35 is correct for those versions; do **not** copy the 1.13 particle IDs.
 
-These candidates require adapted tests against each version's jar before backporting.
+These candidates are now backported and exercised by `tools/test-client-regressions.mjs` against each version's jar.
 
 ## Changes that should stay version-specific
 
@@ -56,6 +57,5 @@ These candidates require adapted tests against each version's jar before backpor
 
 ## Publication scope
 
-This request publishes the accumulated, tested 1.13.2 migration/fixes and this
-audit. It investigates backports; it does not change or push the older branches.
+The follow-up publishes adapted fixes on all three version branches. Version-specific IDs, swimming, tridents and elytra remain restricted to the versions that contain them.
 Generated `dist/` and Mojang assets remain ignored, as configured by the repository.

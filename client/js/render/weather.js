@@ -47,9 +47,15 @@ export class Weather {
 
   precipHeight(x, z) {
     const w = this.game.world;
-    for (let y = 255; y >= 0; y--) {
-      const b = getBlock(w.getState(x, y, z));
-      if (b && b.id !== 0 && (b.boundingBox === 'block' || b.isLiquid) && b.name !== 'leaves_never') return y + 1;
+    const chunk = w.getChunk?.(x >> 4, z >> 4);
+    for (let sy = 15; sy >= 0; sy--) {
+      const section = chunk?.sections[sy];
+      if (chunk && (!section || section.nonAir === 0)) continue;
+      for (let y = 15; y >= 0; y--) {
+        const state = section ? section.get(x & 15, y, z & 15) : w.getState(x, sy * 16 + y, z);
+        const b = getBlock(state);
+        if (b && b.id !== 0 && (b.boundingBox === 'block' || b.isLiquid) && b.name !== 'leaves_never') return sy * 16 + y + 1;
+      }
     }
     return 0;
   }
@@ -81,7 +87,7 @@ export class Weather {
       if (below && below.isLava) g.particles.smoke(x + rx, top + 0.1, z + rz, 0, 0, 0);
       else if (below && below.id !== 0) {
         if (Math.random() < 1 / ++count) { sx = x + rx; sy = top + 0.1; sz = z + rz; }
-        g.particles.splash(x + rx, top + 0.1, z + rz, 0, 0, 0);
+        g.particles.rain(x + rx, top + 0.1, z + rz);
       }
     }
     if (count > 0 && Math.floor(Math.random() * 3) < this.rainSoundCounter++) {

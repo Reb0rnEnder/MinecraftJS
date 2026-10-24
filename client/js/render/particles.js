@@ -4,6 +4,7 @@ import { isPointInFluid } from '../world/fluids.js';
 import { resolveState } from '../world/blockstates.js';
 import { FORMAT, litParams } from '../gfx/device.js';
 
+const PARTICLE_GRID = 32; // Logical UV grid of this version, independent of resource-pack resolution.
 const MAX = 4000;
 const rand = Math.random;
 const STRIDE = FORMAT.lit.stride;
@@ -23,10 +24,9 @@ class Batch {
     if (this.n >= MAX) return;
     const d = this.data;
     let o = this.n++ * 4 * STRIDE;
-    const uv = [u1, v1, u1, v0, u0, v0, u0, v1];
     for (let k = 0; k < 4; k++) {
       d[o] = c[k * 3]; d[o + 1] = c[k * 3 + 1]; d[o + 2] = c[k * 3 + 2];
-      d[o + 3] = uv[k * 2]; d[o + 4] = uv[k * 2 + 1];
+      d[o + 3] = k < 2 ? u1 : u0; d[o + 4] = k === 0 || k === 3 ? v1 : v0;
       d[o + 5] = r; d[o + 6] = g; d[o + 7] = b; d[o + 8] = a;
       d[o + 9] = sky; d[o + 10] = blk;
       o += STRIDE;
@@ -56,7 +56,7 @@ export class Particles {
   }
 
   count() { return this.list.length; }
-  clear() { this.list = []; }
+  clear() { this.list.length = 0; this.barrierIndex?.clear(); }
 
   setting() { return this.game.settings.particles || 0; }
 
@@ -95,11 +95,11 @@ export class Particles {
       for (const em of this.emitters) this._emit(em);
       this.emitters = this.emitters.filter((em) => em.age < 3);
     }
-    const out = [];
+    let alive = 0;
     for (const p of this.list) {
-      if (p.barrier && !this._barrierVisible(p)) continue;
+      if (p.barrier && !this._barrierVisible(p)) { this.barrierIndex?.delete(p.barrierKey); continue; }
       p.prevX = p.x; p.prevY = p.y; p.prevZ = p.z;
-      if (p.age++ >= p.maxAge) continue;
+      if (p.age++ >= p.maxAge) { if (p.barrier) this.barrierIndex?.delete(p.barrierKey); continue; }
       if (p.update) { if (p.update(p) === false) continue; }
       else {
         p.my -= 0.04 * p.gravity;
@@ -107,9 +107,9 @@ export class Particles {
         p.mx *= p.drag ?? 0.98; p.my *= p.drag ?? 0.98; p.mz *= p.drag ?? 0.98;
         if (p.onGround) { p.mx *= 0.7; p.mz *= 0.7; }
       }
-      out.push(p);
+      this.list[alive++] = p;
     }
-    this.list = out;
+    this.list.length = alive;
   }
 
   move(p, w) {
@@ -154,7 +154,7 @@ export class Particles {
         if (p.uv) [u0, v0, u1, v1] = p.uv;
         else {
           const idx = p.texFn ? p.texFn(p) : p.tex || 0;
-          u0 = (idx % 16) / 16; v0 = Math.floor(idx / 16) / 16; u1 = u0 + 1 / 16; v1 = v0 + 1 / 16;
+          u0 = (idx % 16) / PARTICLE_GRID; v0 = Math.floor(idx / 16) / PARTICLE_GRID; u1 = u0 + 0.999 / PARTICLE_GRID; v1 = v0 + 0.999 / PARTICLE_GRID;
         }
       }
       if (p.footprint) {
@@ -338,13 +338,34 @@ export class Particles {
     return this.add(p);
   }
 
-  splash(x, y, z, mx, my, mz) {
-    const p = this.fx(x, y, z, 0, 0, 0, { tex: 19 + Math.floor(rand() * 4), gravity: 0.06, r: 1, g: 1, b: 1 });
+  // ParticleRain and ParticleSplash: per-tick gravity is 0.06 / 0.04,
+  // not 0.04 multiplied by those values. Both die promptly on landing.
+  rain(x, y, z) { return this._waterDrop(x, y, z, 0, 0, 0, false); }
+
+  splash(x, y, z, mx = 0, my = 0, mz = 0) {
+    return this._waterDrop(x, y, z, mx, my, mz, true);
+  }
+
+  _waterDrop(x, y, z, mx, my, mz, splash) {
+    const p = this.fx(x, y, z, 0, 0, 0, { tex: splash ? 20 + Math.floor(rand() * 3) : 19 + Math.floor(rand() * 4), r: 1, g: 1, b: 1 });
     p.mx *= 0.3; p.my = rand() * 0.2 + 0.1; p.mz *= 0.3;
-    if (my === 0 && (mx !== 0 || mz !== 0)) { p.mx = mx; p.my = my + 0.1; p.mz = mz; }
+    if (splash && my === 0 && (mx !== 0 || mz !== 0)) { p.mx = mx; p.my = 0.1; p.mz = mz; }
     p.maxAge = Math.floor(8 / (rand() * 0.8 + 0.2));
-    p.scale = 1;
+    p.update = q => {
+      q.my -= splash ? 0.04 : 0.06;
+      this.move(q, this.game.world);
+      q.mx *= 0.98; q.my *= 0.98; q.mz *= 0.98;
+      if (q.onGround) {
+        if (rand() < 0.5) return false;
+        q.mx *= 0.7; q.mz *= 0.7;
+      }
+      if (this._dropInFluid(q)) return false;
+    };
     return this.add(p);
+  }
+
+  _dropInFluid(p) {
+    return isPointInFluid(this.game.world, p.x, p.y, p.z) || isPointInFluid(this.game.world, p.x, p.y, p.z, true);
   }
 
   bubble(x, y, z, mx, my, mz) {
@@ -641,7 +662,8 @@ export class Particles {
       case 'explosion_emitter': emit((x, y, z) => { for (let i = 0; i < 6; i++) this.largeExplode(x + (rand() - rand()) * 4, y + (rand() - rand()) * 4, z + (rand() - rand()) * 4, 1); }); break;
       case 'firework': emit((x, y, z, mx, my, mz) => this.spark(x, y, z, mx, my, mz)); break;
       case 'bubble': emit((x, y, z, mx, my, mz) => this.bubble(x, y, z, mx, my, mz)); break;
-      case 'rain': case 'fishing': case 'splash': emit((x, y, z, mx, my, mz) => this.splash(x, y, z, mx, my, mz)); break;
+      case 'rain': emit((x, y, z) => this.rain(x, y, z)); break;
+      case 'fishing': case 'splash': emit((x, y, z, mx, my, mz) => this.splash(x, y, z, mx, my, mz)); break;
       case 'underwater': emit((x, y, z) => this.add({ x, y, z, tex: 0, scale: rand() * 0.6 + 0.2, r: 0.4, g: 0.4, b: 0.7, maxAge: Math.floor(16 / (rand() * 0.8 + 0.2)), collide: false, update: (q) => { q.x += q.mx; q.y += q.my; q.z += q.mz; q.mx *= 0.99; q.my *= 0.99; q.mz *= 0.99; } })); break;
       case 'crit': emit((x, y, z, mx, my, mz) => this.crit1(x, y, z, mx, my, mz, false)); break;
       case 'enchanted_hit': emit((x, y, z, mx, my, mz) => this.crit1(x, y, z, mx, my, mz, true)); break;
@@ -747,10 +769,13 @@ export class Particles {
 
   barrier(x, y, z) {
     if (!this._barrierVisible({ x: x + 0.5, y: y + 0.5, z: z + 0.5 })) return;
-    const existing = this.list.find(p => p.barrier && p.x === x + 0.5 && p.y === y + 0.5 && p.z === z + 0.5);
+    const key = x + ',' + y + ',' + z;
+    const index = this.barrierIndex || (this.barrierIndex = new Map());
+    const existing = index.get(key);
     if (existing) { existing.age = 0; return; }
-    this.add({ x: x + 0.5, y: y + 0.5, z: z + 0.5, barrier: true,
+    const marker = this.add({ x: x + 0.5, y: y + 0.5, z: z + 0.5, barrier: true, barrierKey: key,
       atlas: this.game.assets.atlas.uv('item/barrier'), scale: 5, maxAge: 80, update: () => {} });
+    if (marker) index.set(key, marker);
   }
 
   // Ambient block particles (Block.randomDisplayTick), called by the weather/ambience ticker

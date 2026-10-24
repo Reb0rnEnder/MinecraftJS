@@ -1,3 +1,4 @@
+import { sectionLod, lodDistance } from '../render/lod.js';
 // MinecraftJS game core: networking, world sync, ticking, input, camera.
 import { buildCrashReport, showCrashScreen } from '../crash.js';
 import { mat4 } from '../gfx/math.js';
@@ -382,6 +383,7 @@ export class Game {
       this.meshStats.builds++; this.meshStats.ms += m.ms || 0;
       this._chunkUpdatesCount = (this._chunkUpdatesCount || 0) + 1;
       this.renderer.setSectionMesh(m.x, m.y, m.z, m);
+      this._lodKey = null; // A delayed worker result may have used a previous camera position.
     };
     this.meshStats = { builds: 0, ms: 0 };
   }
@@ -463,30 +465,31 @@ export class Game {
     }
   }
 
-  // MinecraftJS level of detail: chunks more than settings.lodChunks away (Chebyshev, in chunks) are meshed simplified
-  // (render/mesher.js) and drawn with a mip bias; 0 turns it off
-  _lodFor(cx, cz) {
-    const L = this.settings.lodChunks | 0;
-    if (L <= 0) return false;
-    const pcx = Math.floor(this.player.x / 16), pcz = Math.floor(this.player.z / 16);
-    return Math.max(Math.abs(cx - pcx), Math.abs(cz - pcz)) > L;
+  _lodCamera() {
+    return this.renderer.camPos || [this.player.x, this.player.y, this.player.z];
   }
 
-  // Re-mesh sections whose LOD state changed (after crossing a chunk border or changing the setting)
+  _lodFor(cx, cz, sy = 0) {
+    const previous = !!this.renderer.sections.get(cx + ',' + sy + ',' + cz)?.lod;
+    return sectionLod(this.settings, this._lodCamera(), cx, sy, cz, previous);
+  }
+
+  // Recheck at block boundaries and after sections arrive, rather than chunk borders.
   _updateLod() {
-    const pcx = Math.floor(this.player.x / 16), pcz = Math.floor(this.player.z / 16);
-    const key = pcx + ',' + pcz + ',' + (this.settings.lodChunks | 0);
+    const camera = this._lodCamera();
+    const key = Math.floor(camera[0]) + ',' + Math.floor(camera[1]) + ',' + Math.floor(camera[2]) + ',' + lodDistance(this.settings) + ',' + this.renderer.sections.size;
     if (key === this._lodKey) return;
     this._lodKey = key;
-    for (const s of this.renderer.sections.values()) {
-      if (s.lod !== this._lodFor(s.cx, s.cz)) this.dirty.add(s.cx + ',' + s.sy + ',' + s.cz);
+    for (const section of this.renderer.sections.values()) {
+      if (section.lod !== this._lodFor(section.cx, section.cz, section.sy)) this.dirty.add(section.cx + ',' + section.sy + ',' + section.cz);
     }
   }
 
   _scheduleMeshes() {
     this._updateLod();
     if (!this.dirty.size || this.inFlight.size >= this.maxInFlight) return;
-    const px = this.player.x / 16, py = this.player.y / 16, pz = this.player.z / 16;
+    const camera = this._lodCamera();
+    const px = camera[0] / 16, py = camera[1] / 16, pz = camera[2] / 16;
     const rd = this.settings.renderDistance + 1;
     const candidates = [];
     for (const key of this.dirty) {
@@ -517,7 +520,7 @@ export class Game {
       const sec = this.world.getChunk(cx, cz).sections[sy];
       if (!sec || sec.nonAir === 0) { this.inFlight.delete(key); this.renderer.removeSection(key); continue; }
       const slice = buildSlice(this.world, cx, sy, cz, this.tileProps);
-      this.worker.postMessage({ type: 'build', gen: this.meshGen, slice, lod: this._lodFor(cx, cz) }, [slice.states.buffer, slice.light.buffer, slice.biomes.buffer]);
+      this.worker.postMessage({ type: 'build', gen: this.meshGen, slice, lod: this._lodFor(cx, cz, sy) }, [slice.states.buffer, slice.light.buffer, slice.biomes.buffer]);
     }
     // Recover from lost builds
     for (const [k, t] of this.inFlight) if (platform().now() - t > 10000) this.inFlight.delete(k);

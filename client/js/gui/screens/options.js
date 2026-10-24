@@ -153,11 +153,10 @@ class VideoScreen extends OptionsBase {
       { slider: true, label: (v) => { const n = Math.round(v * 4); return trOption('options.mipmapLevels', n === 0 ? tr('options.off') : n); }, value: () => s.mipmapLevels / 4, set: (v) => { s.mipmapLevels = Math.round(v * 4); } },
       { label: () => trOption('options.vbo', onOff(s.useVbo)), click: () => { s.useVbo = !s.useVbo; } },
       { label: () => trOption('options.entityShadows', onOff(s.entityShadows)), click: () => { s.entityShadows = !s.entityShadows; } },
-      // MinecraftJS: level of detail past 2 - 32 chunks (simplified terrain, mobs re-posed less often); the slider's
-      // maximum turns it off (lodChunks 0)
-      { slider: true, label: (v) => { const k = Math.round(v * 31); return tr('minecraftjs.options.lodDistance') + ': ' + (k >= 31 ? tr('options.off') : (2 + k) + ' chunks'); },
-        value: () => ((s.lodChunks | 0) <= 0 ? 1 : Math.min(30, Math.max(0, (s.lodChunks | 0) - 2)) / 31),
-        set: (v) => { const k = Math.round(v * 31); s.lodChunks = k >= 31 ? 0 : 2 + k; } },
+      // Distance from the camera in world blocks; the slider's maximum disables LOD.
+      { slider: true, label: (v) => { const k = Math.round(v * 31); return tr('minecraftjs.options.lodDistance') + ': ' + (k >= 31 ? tr('options.off') : (16 + k * 16) + ' blocks'); },
+        value: () => s.lodDistance <= 0 ? 1 : Math.min(30, Math.max(0, (s.lodDistance - 16) / 16)) / 31,
+        set: (v) => { const k = Math.round(v * 31); s.lodDistance = k >= 31 ? 0 : 16 + k * 16; } },
       // MinecraftJS: which graphics API the renderer uses
       { label: () => {
           const names = { webgl2: 'WebGL 2', webgpu: 'WebGPU', software: tr('minecraftjs.options.graphicsApi.software') };

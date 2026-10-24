@@ -1,3 +1,4 @@
+import { poseInterval } from './lod.js';
 // Entity rendering (RenderManager + Render* classes) on the gfx scene graph.
 import * as M from './entity-models.js';
 
@@ -949,10 +950,8 @@ export class EntityRenderer {
         this._updateNameTag(e, v, p);
         continue;
       }
-      // LOD (MinecraftJS, settings.lodChunks, 0 off): far living entities re-pose less often, every 2nd frame past
-      // the distance and every 4th past twice it
-      const lod = (this.game.settings.lodChunks | 0) * 16;
-      v.lodSkip = lod <= 0 ? false : d2 > 4 * lod * lod ? (this.frame + e.id) % 4 !== 0 : d2 > lod * lod ? (this.frame + e.id) % 2 !== 0 : false;
+      const interval = v.kind === 'living' && e.id !== -1 ? poseInterval(g.settings, d2) : 1;
+      v.lodSkip = interval > 1 && (this.frame + e.id) % interval !== 0;
       if (v.lodSkip) this.stats.lod++;
       v.root.position.set(p.x, p.y, p.z);
       if (e.onFire) burning.push({ e, p });
