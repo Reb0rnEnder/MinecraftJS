@@ -1,6 +1,8 @@
+import { SoftwareDevice } from '../client/js/gfx/software.js';
+import { crystalBeam, guardianBeam, dragonDeathRays, tickEntityEffects } from '../client/js/render/entity-effects.js';
 // Identical offline regression suite for 1.8.9, 1.12.2 and 1.13.2; uses each checkout's jar/data.
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { ZipFile } from '../lib/zip.js';
 import { extractModels } from '../lib/modelextract.js';
@@ -203,4 +205,103 @@ test(version + ': rocket entities emit persistent visible trails as their attach
   }
   assert.equal(g.particles.list.length,2);
   g.particles.render(0,0,64,0); assert.equal(g.particles.batchP.n,2);
+});
+
+test(version + ': crystal beams have the jar taper, scrolling UVs, and moving world-space endpoints', () => {
+  for (const end of [[10,0,0],[0,10,0],[0,0,-10],[3,4,5]]) {
+    const start=[0,0,0],v=crystalBeam(start,end,25),center=[0,0,0];
+    assert.equal(v.length,32*9);
+    for(let face=0;face<8;face++)for(let axis=0;axis<3;axis++)center[axis]+=v[(face*4+1)*9+axis]/8;
+    end.forEach((n,i)=>assert.ok(Math.abs(center[i]-n)<1e-5, 'crystal end centre'));
+    assert.deepEqual(Array.from(v.slice(5,9)),[0,0,0,1]);
+    assert.ok(Math.abs(v[4]+0.25)<1e-6);
+    assert.ok(Math.abs(v[13]-(Math.hypot(...end)/32-0.25))<1e-6);
+  }
+  const g=fixture(),d=g.entities._base(30,0,64,0),c=g.entities._base(40,8,72,0);
+  Object.assign(d,{kind:'mob',type:63,entityType:63,entityName:'ender_dragon',width:16,height:8});
+  Object.assign(c,{kind:'crystal',entityName:'end_crystal',width:2,height:2});g.entities.add(d);g.entities.add(c);
+  tickEntityEffects(d,g.entities);assert.equal(d.healingCrystal,c.id);
+  g.entityRenderer.render(0.5);const effect=g.entityRenderer.effects.entries.get('heal:30');assert.ok(effect);
+  assert.ok(image(g.entityRenderer.effects.beamTexture).data.some(n=>n>0));
+  const before=effect.mesh.vertices.slice();c.x=12;c.prevX=10;g.entityRenderer.render(0.5);
+  assert.equal(g.entityRenderer.effects.entries.get('heal:30').mesh,effect.mesh,'moving beams reuse their GPU mesh');
+  assert.notDeepEqual(effect.mesh.vertices,before);
+  g.entities.map.delete(c.id);g.entityRenderer.render(0.5);assert.equal(g.entityRenderer.effects.entries.has('heal:30'),false);
+  if(version!=='1.8.9') {
+    g.entities.add(c);g.entities.setMetadata(c.id,{6:{x:0,y:70,z:0}});g.entityRenderer.render(0.5);
+    assert.ok(g.entityRenderer.effects.entries.has('crystal:40'),'crystal beam-target metadata renders too');
+    g.entities.setMetadata(c.id,{6:null});g.entityRenderer.render(0.5);assert.equal(g.entityRenderer.effects.entries.has('crystal:40'),false);
+  }
+});
+
+test(version + ': guardian and elder beams follow metadata, charge, local targets, and their own bounds', () => {
+  const g=fixture(),e=g.entities._base(30,-20,64,0),t=g.entities._base(40,20,64,0);
+  Object.assign(e,{kind:'mob',type:68,entityType:version==='1.12.2'?4:68,entityName:'elder_guardian',elder:true,width:1.9975,height:1.9975});
+  Object.assign(t,{kind:'mob',type:90,entityType:90,entityName:'pig',width:0.9,height:0.9});g.entities.add(e);g.entities.add(t);
+  const idx=version==='1.8.9'?17:13;
+  g.entities.setMetadata(e.id,{[idx]:t.id});assert.equal(e.guardianTarget,t.id);assert.equal(e.guardianBeamTicks,0);
+  for(let i=0;i<100;i++)tickEntityEffects(e,g.entities);assert.equal(e.guardianBeamTicks,60);
+  g.renderer.frustum=[];g.renderer.boxVisible=(x,y,z,X)=>X-x>10;
+  g.entityRenderer.render(0.5);
+  assert.ok(!g.entityRenderer.visuals.has(e.id),'owner body is outside the view');
+  const beam=g.entityRenderer.effects.entries.get('guardian:30');assert.ok(beam,'crossing beam survives body culling');
+  assert.equal(beam.mesh.vertices.length,12*9);assert.ok(image('entity/guardian_beam.png'));
+  assert.deepEqual(Array.from(beam.mesh.vertices.slice(5,9)),Array.from(new Float32Array([1,223/255,64/255,1])));
+  g.entities.updateSelf();g.entities.setMetadata(e.id,{[idx]:g.entityId});assert.equal(e.guardianBeamTicks,0);
+  g.entityRenderer.render(0.5);assert.ok(g.entityRenderer.effects.entries.has('guardian:30'),'the local player is a valid beam target');
+  g.entities.setMetadata(e.id,{[idx]:0});g.entityRenderer.render(0.5);assert.equal(g.entityRenderer.effects.entries.size,0);
+  const v=guardianBeam([0,0,0],[10,0,0],0,0,0);assert.ok(Math.abs(v[0]-11)<1e-6,'beam extends one block through its target');
+  e.elder=false;e.guardianTarget=t.id;for(let i=0;i<100;i++)tickEntityEffects(e,g.entities);assert.equal(e.guardianBeamTicks,80);
+});
+
+test(version + ': dragon death lasts 200 ticks with dissolve depth, deterministic fading rays and explosion emitters', () => {
+  const g=fixture(),e=g.entities._base(30,0,64,0);
+  Object.assign(e,{kind:'mob',type:63,entityType:63,entityName:'ender_dragon',width:16,height:8,dead:true,health:0});g.entities.add(e);
+  let poofs=0,large=0,huge=0;g.particles.deathPoof=()=>poofs++;g.particles.largeExplode=()=>large++;g.particles.hugeExplode=()=>huge++;
+  for(let i=0;i<200;i++)g.entities.tick();
+  assert.equal(e.deathTime,200);assert.equal(poofs,0);assert.equal(large,200);assert.equal(huge,21);
+  assert.ok(Math.abs(e.y-84)<1e-8);assert.equal(e.yaw,4000);
+  e.deathTime=100;g.entityRenderer.render(0.5);const v=g.entityRenderer.visuals.get(e.id);
+  assert.ok(v.dragonMaskDraws.every(d=>d.visible));assert.ok(Math.abs(v.dragonMask.params.p[12]-0.5)<2e-6);
+  assert.equal(v.dragonMask.state.colorWrite,false);assert.equal(v.dragonSkin.state.depthFunc,'equal');assert.equal(v.dragonEyes.state.depthFunc,'equal');
+  assert.ok(image('entity/enderdragon/dragon_exploding.png'));
+  const a=dragonDeathRays(e,0),b=dragonDeathRays(e,0);assert.deepEqual(a,b);assert.equal(a.length,23*12*9);
+  const end=dragonDeathRays({...e,deathTime:200},0);assert.equal(end.length,60*12*9);assert.equal(end[8],0);
+  const fading=dragonDeathRays({...e,deathTime:190},0);assert.ok(Math.abs(fading[8]-0.25)<1e-6);
+  e.deathTime=0;e.dead=false;g.entityRenderer.render(0.5);assert.ok(v.dragonMaskDraws.every(d=>!d.visible));
+  assert.equal(v.dragonSkin.state.depthFunc,undefined);assert.equal(g.entityRenderer.effects.entries.has('death:30'),false);
+  e.dead=true;e.deathTime=100;g.entityRenderer.render(0.5);g.entityRenderer.reset();assert.equal(g.entityRenderer.effects.entries.size,0);
+  const p=new Particles(fixture());let bursts=0;p.largeExplode=()=>bursts++;p.hugeExplode(0,64,0);
+  for(let i=0;i<10;i++)p.tick();assert.equal(bursts,48);assert.equal(p.explosionEmitters.length,0);
+  p.hugeExplode(0,64,0);p.clear();p.tick();assert.equal(bursts,48,'world changes clear pending explosion emitters');
+});
+
+if(native)test('1.13.2: Riptide uses the vanilla 64x64 shells and clears when the spin ends', () => {
+  const g=fixture(),e=g.entities._base(30,2,64,2);
+  Object.assign(e,{kind:'player',typeName:'Player',uuid:'00000000-0000-0000-0000-000000000001',name:'',mainHand:1,riptide:true});g.entities.add(e);
+  g.entityRenderer.render(0.5);const v=g.entityRenderer.visuals.get(e.id);assert.ok(v.riptideLayer.visible);
+  assert.equal(v.riptideShells.length,3);assert.deepEqual(v.riptideShells.map(n=>n.scale.x),[0,0.75,1.5]);
+  assert.ok(Math.abs(v.riptideShells[1].rotation.y-(-25*Math.PI/180))<1e-8);
+  v.root.updateWorld();assert.ok(v.riptideLayer.collect([]).some(({d})=>d.mat.tex==='entity/trident_riptide.png'));
+  assert.ok(image('entity/trident_riptide.png'));
+  e.riptide=false;g.entityRenderer.render(0.5);assert.equal(v.riptideLayer.visible,false);
+});
+
+test(version + ': actual rasterisation dissolves the dragon completely at tick 200', () => {
+  const original=globalThis.ImageData;
+  globalThis.ImageData=class {constructor(data,width,height){Object.assign(this,{data,width,height});}};
+  try {
+    const canvas={width:192,height:192,getContext:()=>({})},soft=new SoftwareDevice(canvas),g=fixture(),textures=new Map();
+    g.device=soft;setModelDevice(soft);
+    g.assets={...assets,texture:(name,options={})=>{if(!textures.has(name))textures.set(name,soft.createTexture({...image(name),...options}));return textures.get(name);}};
+    g.renderer.entityRoot=new Node();g.renderer.extraDraws=[];g.entityRenderer=new EntityRenderer(g);
+    const e=g.entities._base(30,0,64,0);Object.assign(e,{kind:'mob',type:63,entityType:63,entityName:'ender_dragon',width:16,height:8});g.entities.add(e);g.entities._dragonUpdate(e);
+    const view=mat4.create(),proj=mat4.create();mat4.translate(view,view,0,-69,-25);mat4.perspective(proj,Math.PI/3,1,0.1,200);
+    soft.setGlobals({view,proj,fogStart:1000,fogEnd:2000});
+    const render=tick=>{e.deathTime=tick;e.dead=tick>0;g.entityRenderer.render(0);g.entityRenderer.effects.root.visible=false;soft.beginFrame([0.02,0.02,0.02]);const bg=soft.screen.color[0];g.entityRenderer.draw(soft,mat4.create());return { pixels:soft.screen.color.reduce((n,c)=>n+(c!==bg),0), depth:soft.screen.depth.reduce((n,z)=>n+(z<1),0) };};
+    const alive=render(0),half=render(100),gone=render(200);
+    assert.ok(alive.pixels>100,'real model and jar texture render visible pixels');assert.ok(half.depth>0 && half.depth<alive.depth,'death mask removes skin fragments');assert.equal(gone.depth,0);assert.equal(gone.pixels,0,'skin and eyes disappear completely');
+    if(process.env.EFFECTS_PREVIEW){render(100);writeFileSync(process.env.EFFECTS_PREVIEW,Buffer.concat([Buffer.from('P6\n192 192\n255\n'),Buffer.from(new Uint8Array(soft.screen.color.buffer).filter((_,i)=>i%4!==3))]));}
+    g.entityRenderer.reset();
+  } finally {if(original===undefined)delete globalThis.ImageData;else globalThis.ImageData=original;setModelDevice(device);}
 });

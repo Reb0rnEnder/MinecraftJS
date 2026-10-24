@@ -59,3 +59,8 @@ These candidates are now backported and exercised by `tools/test-client-regressi
 
 The follow-up publishes adapted fixes on all three version branches. Version-specific IDs, swimming, tridents and elytra remain restricted to the versions that contain them.
 Generated `dist/` and Mojang assets remain ignored, as configured by the repository.
+
+The follow-up [entity-effect audit](entity-effects-2026-10-24.md) records shared
+dragon/crystal/guardian effects and death particles added to all supported
+versions. Crystal beam targets apply to 1.12.2/1.13.2; Riptide shells apply only
+to 1.13.2.

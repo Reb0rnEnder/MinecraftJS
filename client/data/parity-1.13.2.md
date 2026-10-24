@@ -19,7 +19,7 @@ client; world generation, mob AI and authoritative gameplay belong to the server
 | Player heads | Block and item player heads select the default Steve texture; SkullOwner/profile texture resolution is missing. | `client/js/render/{tile-renderer,item-renderer}.js` |
 | Underwater rendering | Fog still uses fixed legacy underwater colors/density. Biome-dependent fog, transition timing and underwater-vision effects need the vanilla 1.13 pipeline. | `client/js/render/renderer.js` |
 | Built-in item effects | Built-in entity item models, including the held trident, do not yet have the complete enchanted-glint rendering path. | `ItemRenderer.objectFor`, `client/js/render/item-renderer.js` |
-| Trident polish | Riptide propulsion, wetness checks, charge threshold and body spin are implemented. The Riptide vortex layer, complete client collision/bounce prediction and all Loyalty/Channeling presentation still need verification or implementation. Damage, durability, projectile creation and enchantment outcomes remain server authoritative. | `client/js/game/{interaction,physics,entities}.js`, `client/js/render/entity-renderer.js` |
+| Trident polish | Riptide propulsion, wetness checks, charge threshold and body spin are implemented. The Riptide vortex layer is implemented. Complete client collision/bounce prediction and all Loyalty/Channeling presentation still need verification or implementation. Damage, durability, projectile creation and enchantment outcomes remain server authoritative. | `client/js/game/{interaction,physics,entities}.js`, `client/js/render/entity-renderer.js` |
 
 ## Recently corrected
 
@@ -34,6 +34,10 @@ client; world generation, mob AI and authoritative gameplay belong to the server
 - Riptide I/II/III applies the local look-direction impulse after a ten-tick
   charge in water or exposed rain, retains the stack, lifts from the ground
   through collision handling, and sends release packets even for short charges.
+
+- Dragon healing/crystal-target beams and guardian/elder guardian attack beams now render.
+- Dragon death has the 200-tick dissolve, seeded light rays and explosion emitters.
+- Riptide draws the vanilla spinning texture shells in the third-person player model.
 
 ## Validation still required before claiming full parity
 

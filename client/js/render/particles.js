@@ -56,7 +56,7 @@ export class Particles {
   }
 
   count() { return this.list.length; }
-  clear() { this.list.length = 0; this.barrierIndex?.clear(); }
+  clear() { this.explosionEmitters = []; this.list.length = 0; this.barrierIndex?.clear(); }
 
   setting() { return this.game.settings.particles || 0; }
 
@@ -90,6 +90,15 @@ export class Particles {
   }
 
   tick() {
+    // ParticleHugeExplosion is an invisible emitter: six large bursts per tick for eight ticks.
+    if (this.explosionEmitters?.length) {
+      let alive = 0;
+      for (const em of this.explosionEmitters) {
+        for (let i = 0; i < 6; i++) this.largeExplode(em.x + (rand() - rand()) * 4, em.y + (rand() - rand()) * 4, em.z + (rand() - rand()) * 4, 1 - em.age / 16);
+        if (++em.age < 8) this.explosionEmitters[alive++] = em;
+      }
+      this.explosionEmitters.length = alive;
+    }
     const w = this.game.world;
     if (this.emitters && this.emitters.length) {
       for (const em of this.emitters) this._emit(em);
@@ -634,6 +643,10 @@ export class Particles {
     this.fireworks(e.x, e.y, e.z, e.motionX || 0, e.motionY || 0, e.motionZ || 0, tag && tag.Fireworks);
   }
 
+  hugeExplode(x, y, z) {
+    (this.explosionEmitters ||= []).push({ x, y, z, age: 0 });
+  }
+
   largeExplode(x, y, z, scale = 1) {
     this.add({ x, y, z, explosionFrame: 0, maxAge: 6 + Math.floor(rand() * 4), scale: (rand() * 0.6 + 0.4) * 2 * scale, collide: false, update: () => {} });
   }
@@ -659,7 +672,7 @@ export class Particles {
     switch (type) {
       case 'poof': emit((x, y, z, mx, my, mz) => this.poof(x, y, z, mx, my, mz)); break;
       case 'explosion': emit((x, y, z) => this.largeExplode(x, y, z, 1)); break;
-      case 'explosion_emitter': emit((x, y, z) => { for (let i = 0; i < 6; i++) this.largeExplode(x + (rand() - rand()) * 4, y + (rand() - rand()) * 4, z + (rand() - rand()) * 4, 1); }); break;
+      case 'explosion_emitter': emit((x, y, z) => this.hugeExplode(x, y, z)); break;
       case 'firework': emit((x, y, z, mx, my, mz) => this.spark(x, y, z, mx, my, mz)); break;
       case 'bubble': emit((x, y, z, mx, my, mz) => this.bubble(x, y, z, mx, my, mz)); break;
       case 'rain': emit((x, y, z) => this.rain(x, y, z)); break;

@@ -1,3 +1,4 @@
+import { tickEntityEffects, tickDragonDeath, isDragon } from '../render/entity-effects.js';
 // Client-side entity tracking (positions, interpolation, metadata, animation state).
 import { simplify } from '../net/nbt.js';
 import { getBlock } from '../world/blocks.js';
@@ -441,7 +442,7 @@ export class EntityManager {
           set(12, 'carriedBlockState'); set(12, 'carried'); set(13, 'screaming'); break;
         case 'ender_dragon': set(12, 'dragonPhase'); break;
         case 'ghast': set(12, 'attacking'); break;
-        case 'guardian': case 'elder_guardian': set(12, 'guardianMoving'); set(13, 'guardianTarget'); break;
+        case 'guardian': case 'elder_guardian': set(12, 'guardianMoving'); if (m[13] !== undefined && e.guardianTarget !== m[13]) { e.guardianTarget = m[13]; e.guardianBeamTicks = 0; } break;
         case 'shulker':
           set(12, 'attachFace'); set(13, 'attachPosition'); set(14, 'peekTick'); set(15, 'shulkerColor'); break;
         case 'wither':
@@ -728,6 +729,7 @@ export class EntityManager {
       const dx = e.x - e.prevX, dz = e.z - e.prevZ, dy = e.y - e.prevY;
       e.animTime += 0.2 / (Math.sqrt(dx * dx + dz * dz) * 10 + 1) * Math.pow(2, dy);
     }
+    if (e.dead) { this._dragonParts(e); return; }
     e.ringIdx = (e.ringIdx + 1) & 63;
     e.ring[e.ringIdx] = [e.yaw, e.y];
     this._dragonParts(e);
@@ -889,6 +891,7 @@ export class EntityManager {
           if (b && b.opaque) { e.y = Math.floor(e.y) + 1; e.motionY = 0; e.motionX *= 0.5; e.motionZ *= 0.5; }
         }
       }
+      tickEntityEffects(e, this);
       if (e.entityName === 'ender_dragon') this._dragonUpdate(e);
       if (e.kind === 'tnt') e.fuse = Math.max(0, (e.fuse ?? 80) - 1);
       if (e.entityName === 'evoker_fangs' && e.fangsActive) {
@@ -924,7 +927,8 @@ export class EntityManager {
       if (e.dead) {
         e.deathTime++;
         // EntityLivingBase.onDeathUpdate: at 20 ticks the body is gone in a puff of smoke
-        if (e.deathTime === 20 && (e.kind === 'mob' || e.kind === 'player')) g.particles.deathPoof(e);
+        if (isDragon(e)) { tickDragonDeath(e, g); this._dragonParts(e); }
+        else if (e.deathTime === 20 && (e.kind === 'mob' || e.kind === 'player')) g.particles.deathPoof(e);
       }
       if (e.eatingGrass > 0) e.eatingGrass--;
       // Swing progress
