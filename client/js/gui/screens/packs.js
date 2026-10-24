@@ -1,3 +1,5 @@
+import { VANILLA_UI } from '../vanilla-layout.js';
+import { ConfirmScreen } from './menus.js';
 // GuiScreenResourcePacks: available / selected pack lists, adding packs from files.
 import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
@@ -127,8 +129,8 @@ export class ResourcePacksScreen extends Screen {
   _entry(gui, L, pack, idx, x, y, mx, my) {
     const name = pack ? pack.name : tr('minecraftjs.packs.defaultName');
     const desc = pack ? pack.description || '' : tr('minecraftjs.packs.defaultDescription');
-    const incompatible = pack && pack.format !== 1 && pack.format !== undefined;
-    if (incompatible) gui.rect(x - 1, y - 1, x + ENTRY_W - 3, y + ENTRY_H - 3, 0xff770000);
+    const incompatible = pack && pack.format !== VANILLA_UI.packFormat;
+    if (incompatible) gui.rect(x - 1, y - 1, x + ENTRY_W - 9, y + ENTRY_H - 3, 0xff770000);
     const icon = gui.tex(this._icon(pack));
     if (icon) gui.drawImage(icon, 0, 0, icon.width, icon.height, x, y, 32, 32);
     const overIcon = pack && mx >= x && mx < x + 32 && my >= y && my < y + 32;
@@ -142,10 +144,11 @@ export class ResourcePacksScreen extends Screen {
         if (idx < this.selected.length - 1) gui.blit(ARROWS, x, y, 64, rx < 32 && rx > 16 && ry > 16 ? 32 : 0, 32, 32);
       }
     }
-    let title = name;
+    const warning = incompatible && ((mx >= x && mx < x + ENTRY_W && my >= y && my < y + ENTRY_H) || this.game.settings.touchscreen);
+    let title = warning ? tr('resourcePack.incompatible') : name;
     if (gui.textWidth(title) > 157) title = gui.font.trimToWidth(title, 157 - gui.textWidth('...')) + '...';
     gui.text(title, x + 32 + 2, y + 1, 0xffffff, true);
-    const lines = incompatible ? ['§c' + tr(pack.format > 1 ? 'resourcePack.incompatible.new' : 'resourcePack.incompatible.old')] : gui.font.wrap(desc, 157);
+    const lines = gui.font.wrap(warning ? tr(pack.format > VANILLA_UI.packFormat ? 'resourcePack.incompatible.new' : 'resourcePack.incompatible.old') : desc, 157);
     for (let i = 0; i < Math.min(2, lines.length); i++) gui.text(lines[i], x + 32 + 2, y + 12 + 10 * i, 0x808080, true);
   }
 
@@ -155,7 +158,16 @@ export class ResourcePacksScreen extends Screen {
     if (L.side === 0) {
       if (e && e.shift) { this._delete(pack); return true; }
       if (rx >= 32) return false;
-      this.available.splice(idx, 1); this.selected.unshift(pack);
+      const add = () => {
+        const index=this.available.findIndex(p=>p.id===pack.id);
+        if(index>=0){this.available.splice(index,1);this.selected.unshift(pack);}
+      };
+      if(pack.format !== VANILLA_UI.packFormat) {
+        this.game.screens.open(new ConfirmScreen(this.game, yes => {
+          if(yes)add();
+          this.game.screens.open(this);
+        },tr('resourcePack.incompatible.confirm.title'),tr('resourcePack.incompatible.confirm.'+(pack.format>VANILLA_UI.packFormat?'new':'old'))));
+      } else add();
     } else {
       if (rx >= 32) return false;
       if (rx < 16) { this.selected.splice(idx, 1); this.available.unshift(pack); }
