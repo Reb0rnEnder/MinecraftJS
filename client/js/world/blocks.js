@@ -130,3 +130,9 @@ export function isFullOpaque(state) {
   const b = blocks[state >> 4];
   return !!(b && b.opaque);
 }
+
+// Undefined means the shape needs the live-neighbour resolver; null means no selectable volume.
+export function jarSelectionBox(state) {
+  const selection = shapesData?.selection, index = selection?.states[state];
+  return typeof index === 'number' ? selection.boxes[index] : undefined;
+}
