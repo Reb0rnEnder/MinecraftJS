@@ -151,7 +151,7 @@ export class TileEntityRenderer {
          const state = s.blocks[i], name = getBlock(state).name;
          if (name === 'chest' || name === 'trapped_chest' || name === 'ender_chest' || name === 'sign' || name === 'wall_sign' ||
             name.endsWith('_bed') || name.endsWith('_banner') || name.endsWith('_wall_banner') || skullType(name) !== undefined ||
-            name === 'flower_pot' || name === 'end_gateway' || name.endsWith('_shulker_box') ||
+            name === 'flower_pot' || name === 'end_portal' || name === 'end_gateway' || name.endsWith('_shulker_box') ||
            name === 'enchanting_table' || name === 'beacon') {
            const x = c.x * 16 + (i & 15), y = sy * 16 + (i >> 8), z = c.z * 16 + ((i >> 4) & 15);
            this._ensure(x, y, z, state);
@@ -391,9 +391,9 @@ export class TileEntityRenderer {
         break;
       }
       case 'bed': {
-        // TileEntityBedRenderer + ModelBed (1.12): colour from the block entity (red by default)
-        const color = t.data && t.data.color !== undefined ? t.data.color : 14;
-        mat = entityMaterial('entity/bed/' + (DYE_NAMES[color & 15] || 'red') + '.png', { alphaTest: 0.1 });
+        // In 1.13 the colour belongs to the bed block, not block-entity NBT.
+        const color = getBlock(st).name.slice(0, -4);
+        mat = entityMaterial('entity/bed/' + color + '.png', { alphaTest: 0.1 });
          obj.add(bedPiece(mat, props.part === 'head', ['south', 'west', 'north', 'east'].indexOf(props.facing)));
         break;
       }

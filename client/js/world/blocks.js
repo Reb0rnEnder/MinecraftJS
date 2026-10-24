@@ -26,7 +26,7 @@ const NOT_OPAQUE = new Set([
   'end_rod', 'chorus_plant', 'chorus_flower', 'grass_path', 'frosted_ice', 'structure_void', 'end_gateway', 'slime_block',
   'barrier', 'beacon', 'mob_spawner', 'redstone_torch', 'torch', 'fire', 'kelp', 'kelp_plant', 'seagrass', 'tall_seagrass',
   'dead_bush', 'dandelion', 'poppy', 'brown_mushroom', 'red_mushroom', 'sunflower', 'lilac', 'rose_bush', 'peony', 'tall_grass',
-  'large_fern', 'snow', 'white_bed', 'white_banner', 'white_wall_banner',
+  'large_fern', 'turtle_egg', 'snow', 'white_bed', 'white_banner', 'white_wall_banner',
 ]);
 
 // Clear glass uses binary texture alpha (cutout); stained glass needs blending.
@@ -167,4 +167,10 @@ export function staticCollisionBoxes(state) {
 export function isFullOpaque(state) {
   const b = getBlock(state);
   return !!(b && b.opaque);
+}
+
+// Undefined means the shape needs the live-neighbour resolver; null means no selectable volume.
+export function jarSelectionBox(state) {
+  const selection = shapesData?.selection, index = selection?.states[state];
+  return typeof index === 'number' ? selection.boxes[index] : undefined;
 }

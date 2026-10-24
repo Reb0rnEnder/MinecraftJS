@@ -118,7 +118,7 @@ export class Chunk {
       let sec = this.sections[s];
       if (!sec) sec = this.sections[s] = new Section(this.hasSky);
       let bits = data[o++];
-      const plen = varint();
+      const plen = bits <= 8 ? varint() : 0; // 1.13 global palettes write no palette header.
       let palette = null;
       if (plen) { palette = new Int32Array(plen); for (let i = 0; i < plen; i++) palette[i] = varint(); }
       if (bits < 4) bits = 4;
