@@ -56,7 +56,7 @@ export class Particles {
   }
 
   count() { return this.list.length; }
-  clear() { this.list.length = 0; this.barrierIndex?.clear(); }
+  clear() { this.explosionEmitters = []; this.list.length = 0; this.barrierIndex?.clear(); }
 
   setting() { return this.game.settings.particles || 0; }
 
@@ -90,6 +90,15 @@ export class Particles {
   }
 
   tick() {
+    // ParticleHugeExplosion is an invisible emitter: six large bursts per tick for eight ticks.
+    if (this.explosionEmitters?.length) {
+      let alive = 0;
+      for (const em of this.explosionEmitters) {
+        for (let i = 0; i < 6; i++) this.largeExplode(em.x + (rand() - rand()) * 4, em.y + (rand() - rand()) * 4, em.z + (rand() - rand()) * 4, 1 - em.age / 16);
+        if (++em.age < 8) this.explosionEmitters[alive++] = em;
+      }
+      this.explosionEmitters.length = alive;
+    }
     const w = this.game.world;
     if (this.emitters && this.emitters.length) {
       for (const em of this.emitters) this._emit(em);
@@ -635,6 +644,10 @@ export class Particles {
   fireworkExplode(e) {
     const tag = e.item ? this.game.items.nbt(e.item) : null;
     this.fireworks(e.x, e.y, e.z, e.motionX || 0, e.motionY || 0, e.motionZ || 0, tag && tag.Fireworks);
+  }
+
+  hugeExplode(x, y, z) {
+    (this.explosionEmitters ||= []).push({ x, y, z, age: 0 });
   }
 
   largeExplode(x, y, z, scale = 1) {

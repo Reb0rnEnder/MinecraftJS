@@ -1,3 +1,4 @@
+import { tickEntityEffects, tickDragonDeath, isDragon } from '../render/entity-effects.js';
 // Client-side entity tracking (positions, interpolation, metadata, animation state).
 import { simplify } from '../net/nbt.js';
 import { blocks } from '../world/blocks.js';
@@ -324,7 +325,7 @@ export class EntityManager {
         case 65: if (m[16] !== undefined) e.hanging = !!(m[16] & 1); break;
         case 100: if (m[16] !== undefined) e.horseFlags = m[16]; if (m[19] !== undefined) e.horseType = m[19]; if (m[20] !== undefined) e.horseVariant = m[20]; if (m[22] !== undefined) e.horseArmor = m[22]; break;
         case 101: if (m[18] !== undefined) e.rabbitType = m[18]; break;
-        case 68: if (m[16] !== undefined) { e.elder = !!(m[16] & 4); if (e.elder) { e.width = e.height = 1.9975; } } break;
+        case 68: if (m[17] !== undefined && e.guardianTarget !== m[17]) { e.guardianTarget = m[17]; e.guardianBeamTicks = 0; } if (m[16] !== undefined) { e.elder = !!(m[16] & 4); if (e.elder) { e.width = e.height = 1.9975; } } break;
         case 64: if (m[20] !== undefined) e.invulTime = m[20]; break;
         case 61: if (m[16] !== undefined) e.blazeOnFire = !!m[16]; break;
         case 66: if (m[21] !== undefined) e.witchAggressive = !!m[21]; break;
@@ -548,6 +549,7 @@ export class EntityManager {
       const dx = e.x - e.prevX, dz = e.z - e.prevZ, dy = e.y - e.prevY;
       e.animTime += 0.2 / (Math.sqrt(dx * dx + dz * dz) * 10 + 1) * Math.pow(2, dy);
     }
+    if (e.dead) { this._dragonParts(e); return; }
     e.ringIdx = (e.ringIdx + 1) & 63;
     e.ring[e.ringIdx] = [e.yaw, e.y];
     this._dragonParts(e);
@@ -672,6 +674,7 @@ export class EntityManager {
           if (b && b.opaque) { e.y = Math.floor(e.y) + 1; e.motionY = 0; e.motionX *= 0.5; e.motionZ *= 0.5; }
         }
       }
+      tickEntityEffects(e, this);
       if (e.kind === 'mob' && e.type === 63) this._dragonUpdate(e);
       if (e.kind === 'tnt') e.fuse = Math.max(0, (e.fuse || 80) - 1);
       if (e.kind === 'boat') this._boatTick(e);
@@ -683,7 +686,8 @@ export class EntityManager {
       if (e.dead) {
         e.deathTime++;
         // EntityLivingBase.onDeathUpdate: at 20 ticks the body is gone in a puff of smoke
-        if (e.deathTime === 20 && (e.kind === 'mob' || e.kind === 'player')) g.particles.deathPoof(e);
+        if (isDragon(e)) { tickDragonDeath(e, g); this._dragonParts(e); }
+        else if (e.deathTime === 20 && (e.kind === 'mob' || e.kind === 'player')) g.particles.deathPoof(e);
       }
       if (e.kind === 'projectile' && e.type === 76) this._fireworkTick(e);
       if (e.eatingGrass > 0) e.eatingGrass--;
