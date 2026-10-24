@@ -8,7 +8,7 @@ import { platform } from '../../platform/platform.js';
 import { SlotList } from '../slot-list.js';
 import { ConfirmScreen } from './menus.js';
 import { parseProxyUrl } from '../../net/address.js';
-import { proxyTests, ensureTested, forgetTest, proxyType, PROXY_TYPES } from '../../net/proxies.js';
+import { proxyTests, ensureTested, forgetTest, proxyType, PROXY_TYPES, validSkinProxyTemplate } from '../../net/proxies.js';
 
 export class ProxiesScreen extends Screen {
   constructor(game, parent) {
@@ -25,6 +25,7 @@ export class ProxiesScreen extends Screen {
 
   init() {
     const g = this.game, cx = this.width / 2;
+    this.buttons.push(new Button(9, this.width - 105, 8, 100, 20, tr('minecraftjs.skinProxy.title'), () => g.screens.open(new SkinProxyScreen(g, this))));
     const prevScroll = this.list ? this.list.amountScrolled : 0;
     this.list = new ProxyList(this);
     this.list.amountScrolled = prevScroll;
@@ -236,4 +237,36 @@ export class ProxyEditScreen extends Screen {
   }
 
   close() { this.game.screens.open(this.parent); }
+}
+
+export class SkinProxyScreen extends Screen {
+  constructor(game,parent) { super(game);this.parent=parent;this.background='dirt'; }
+  init() {
+    const cx=this.width/2,w=Math.min(400,this.width-40);
+    this.urlField=new TextField(cx-w/2,76,w,20,{maxLength:2048,focused:true,text:this.game.settings.skinProxy||''});
+    this.fields.push(this.urlField);
+    this.doneBtn=new Button(0,cx-155,this.height-38,150,20,tr('gui.done'),()=>this.done());
+    this.buttons.push(this.doneBtn,new Button(1,cx+5,this.height-38,150,20,tr('gui.cancel'),()=>this.close()));
+  }
+  done() {
+    const template=this.urlField.text.trim();
+    if(!validSkinProxyTemplate(template))return;
+    const g=this.game,changed=template!==g.settings.skinProxy;
+    g.settings.skinProxy=template;g.settings.save();
+    if(changed && g.entityRenderer)g.entityRenderer.reloadSkins();
+    g.screens.open(this.parent);
+  }
+  close() { this.game.screens.open(this.parent); }
+  renderContent(gui) {
+    this.doneBtn.enabled=validSkinProxyTemplate(this.urlField.text);
+    gui.textCentered(tr('minecraftjs.skinProxy.title'),this.width/2,17,0xffffff);
+    gui.textCentered(tr('minecraftjs.skinProxy.url'),this.width/2,57,0xa0a0a0);
+    let y=108;
+    for(const key of ['automatic','encoded','raw','example']) {
+      for(const line of gui.font.wrap(tr('minecraftjs.skinProxy.'+key),this.width-40)) {
+        gui.textCentered(line,this.width/2,y,0xa0a0a0);y+=10;
+      }
+    }
+    if(!this.doneBtn.enabled)gui.textCentered(tr('minecraftjs.skinProxy.invalid'),this.width/2,this.height-54,0xff5555);
+  }
 }

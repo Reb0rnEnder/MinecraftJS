@@ -1,3 +1,6 @@
+import { ProxyList as GameProxyList, validSkinProxyTemplate, skinProxyUrl, fetchSkin, fetchSkinProfile } from '../client/js/net/proxies.js';
+import { SkinProxyScreen } from '../client/js/gui/screens/proxies.js';
+import { platform } from '../client/js/platform/platform.js';
 const debugTargets = () => { throw Error('native debug targets on legacy client'); };
 import { VANILLA_UI } from '../client/js/gui/vanilla-layout.js';
 import { VideoScreen, ControlsScreen } from '../client/js/gui/screens/options.js';
@@ -476,4 +479,78 @@ if(native)test('1.13.2: F3 traces block and any-fluid targets separately at 20 b
   const right=h._debugRight();assert.ok(right.includes('§nTargeted Block'));assert.ok(right.includes('§nTargeted Fluid'));assert.ok(right.includes('minecraft:flowing_water'));
   c.setState(0,65,3,findState('oak_slab',{type:'bottom',waterlogged:true}));g.eyePosition=()=>[0.5,65.75,0.5];targets=debugTargets(g);assert.equal(targets.fluid.z,3);
   h.debugTargets=targets;assert.ok(h._debugRight().includes('minecraft:water'));
+});
+
+test(version + ': explicit empty selection shapes stay empty instead of becoming full blocks', () => {
+  const w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);
+  c.setState(2,64,0,state('stone'));c.setState(5,64,0,state('stone'));
+  w.selectionProvider=(s,x)=>x===2?null:undefined;
+  assert.equal(w.selectionBox(state('stone'),2,64,0),null);
+  assert.equal(w.raycast(0.5,64.5,0.5,1,0,0,10).x,5,'ray skips the explicitly unselectable block');
+  w.selectionProvider=()=>undefined;assert.equal(w.raycast(0.5,64.5,0.5,1,0,0,10).x,2,'undefined retains the generic fallback');
+});
+
+if(native)test('1.13.2: cave air and void air are not targetable with or without the game selection provider', () => {
+  const g=fixture(),w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);g.world=w;
+  c.setState(1,64,0,findState('cave_air'));c.setState(2,64,0,findState('void_air'));c.setState(4,64,0,state('stone'));
+  for(const name of ['air','cave_air','void_air']){const st=findState(name);assert.equal(getBlock(st).isAir,true);assert.equal(w.selectionBox(st,1,64,0),null);assert.equal(Game.prototype.selectionBox.call(g,st,1,64,0),null);}
+  assert.equal(w.raycast(0.5,64.5,0.5,1,0,0,10).x,4);
+  w.selectionProvider=(...args)=>Game.prototype.selectionBox.call(g,...args);assert.equal(w.raycast(0.5,64.5,0.5,1,0,0,10).x,4);
+});
+
+if(native)test('1.13.2: F3 identifies each vanilla dimension immediately after the multiplayer cache line', () => {
+  const g=fixture();g.renderer.sections=new Map();g.dirty=new Set();g.inFlight=new Map();g.settings=new Settings();g.world=new World();
+  const hud=Object.create(Hud.prototype);hud.game=g;hud.debugTargets={block:null,fluid:null};
+  for(const [dim,name] of [[0,'overworld'],[-1,'the_nether'],[1,'the_end']]) {
+    g.dimension=dim;const lines=hud._debugLeft(),index=lines.findIndex(s=>s.startsWith('MultiplayerChunkCache:'));
+    assert.equal(lines[index+1],'minecraft:'+name+' FC: n/a');
+  }
+  g.reducedDebug=true;assert.ok(!hud._debugLeft().some(s=>s.includes(' FC: ')),'reduced-debug mode omits the dimension section like the jar');
+});
+
+test(version + ': skin proxy templates are configurable, validate URL formats, and persist independently of relay settings', () => {
+  saved={};const template='https://skins.example/?url=%u',settings=new Settings({skinProxy:template});assert.equal(settings.skinProxy,template);
+  saved={skinProxy:'https://other.example/%U'};assert.equal(new Settings({skinProxy:template}).skinProxy,saved.skinProxy);saved={};
+  for(const text of ['',template,'https://proxy.example/%U'])assert.equal(validSkinProxyTemplate(text),true,text);
+  for(const text of ['javascript:%u','file:///%u','https://proxy.example/','not a URL %u'])assert.equal(validSkinProxyTemplate(text),false,text);
+  const target='https://textures.minecraft.net/texture/abc?x=1&y=2';
+  assert.equal(skinProxyUrl(target,template),'https://skins.example/?url='+encodeURIComponent(target));
+  assert.equal(skinProxyUrl(target,'https://skins.example/%U'),'https://skins.example/'+target);
+  assert.equal(skinProxyUrl('http://textures.minecraft.net/texture/abc',template),'https://skins.example/?url='+encodeURIComponent('https://textures.minecraft.net/texture/abc'));
+  const original=platform();let stored;setPlatform({...original,saveSetting:(key,text)=>{stored=JSON.parse(text);}});
+  try{settings.save();assert.equal(stored.skinProxy,template);}finally{setPlatform(original);}
+});
+
+test(version + ': configured CORS route fetches public textures and profiles without a MinecraftJS proxy', async () => {
+  const original=platform(),calls=[];setPlatform({...original,fetchBytes:async url=>{calls.push(['bytes',url]);return new Uint8Array([1]);},fetchJson:async url=>{calls.push(['json',url]);return {properties:[]};}});
+  const settings={skinProxy:'https://cors.example/?url=%u',proxies:[{url:'wss://relay.example',type:'relay'}],proxy:0,save(){}};
+  try {
+    new GameProxyList(settings);await fetchSkin('https://textures.minecraft.net/texture/test');await fetchSkinProfile('00000000-0000-0000-0000-000000000001');
+    assert.equal(calls[0][1],'https://cors.example/?url='+encodeURIComponent('https://textures.minecraft.net/texture/test'));
+    assert.equal(calls[1][1],'https://cors.example/?url='+encodeURIComponent('https://sessionserver.mojang.com/session/minecraft/profile/00000000000000000000000000000001'));
+    assert.ok(calls.every(([,url])=>url.startsWith('https://cors.example/')));
+    settings.skinProxy='https://cors.example/%U';await fetchSkin('https://textures.minecraft.net/texture/test');assert.equal(calls[2][1],'https://cors.example/https://textures.minecraft.net/texture/test');
+    settings.skinProxy='';settings.proxies=[{url:'wss://game.example',type:'minecraftjs'}];new GameProxyList(settings);
+    await fetchSkin('https://textures.minecraft.net/texture/test');assert.equal(calls[3][1],'https://game.example/skin?url='+encodeURIComponent('https://textures.minecraft.net/texture/test'));
+    settings.skinProxy='javascript:%u';await assert.rejects(fetchSkin('https://textures.minecraft.net/texture/test'));assert.equal(calls.length,4,'invalid custom templates do not silently route through the game proxy');
+    await assert.rejects(fetchSkinProfile('../bad-id'));
+  } finally {setPlatform(original);new GameProxyList({skinProxy:'',proxies:[],proxy:-1,save(){}});}
+});
+
+test(version + ': saving the skin proxy reloads current skins, cancels leave settings alone, and stale downloads cannot overwrite them', async () => {
+  const g=fixture();g.gui.width=420;g.gui.height=300;g.settings=new Settings();let stored=0,reloads=0,current=null;
+  g.settings.save=()=>stored++;g.screens={open:s=>current=s};g.entityRenderer.reloadSkins=()=>reloads++;
+  const parent={},screen=new SkinProxyScreen(g,parent);screen.init();screen.urlField.text='https://cors.example/%u';screen.done();
+  assert.equal(g.settings.skinProxy,screen.urlField.text);assert.equal(stored,1);assert.equal(reloads,1);assert.equal(current,parent);
+  screen.urlField.text='https://cancelled.example/%u';screen.close();assert.equal(g.settings.skinProxy,'https://cors.example/%u');
+  screen.urlField.text='javascript:%u';screen.done();assert.equal(stored,1);
+  const renderer=new EntityRenderer(g),uuid='00000000-0000-0000-0000-000000000001',record={};renderer.skins.set(uuid,record);
+  let complete,uploaded=0;const original=platform();setPlatform({...original,fetchBytes:()=>new Promise(resolve=>complete=resolve)});
+  try {
+    new GameProxyList({skinProxy:'https://cors.example/%u',proxies:[],proxy:-1,save(){}});
+    g.assets={...assets,makeTexture:()=>{uploaded++;return {};}};
+    const property=Buffer.from(JSON.stringify({textures:{SKIN:{url:'https://textures.minecraft.net/texture/test'}}})).toString('base64');
+    renderer._loadTextures(record,uuid,property);renderer.reloadSkins();assert.equal(renderer.skins.size,0);assert.equal(g.handRenderer.skinDirty,true);
+    complete(new Uint8Array(jar.read('assets/minecraft/textures/entity/steve.png')));await Promise.resolve();await Promise.resolve();assert.equal(uploaded,0);
+  } finally {setPlatform(original);new GameProxyList({skinProxy:'',proxies:[],proxy:-1,save(){}});}
 });

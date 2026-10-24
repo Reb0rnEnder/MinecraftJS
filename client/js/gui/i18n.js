@@ -13,6 +13,14 @@ export function trOption(key, value) { return tr(key) + ': ' + value; }
 export const onOff = (v) => tr(v ? 'options.on' : 'options.off');
 
 export const MINECRAFTJS_EN = {
+  'minecraftjs.skinProxy.title': 'Skin Proxy',
+  'minecraftjs.skinProxy.url': 'Skin/profile URL template',
+  'minecraftjs.skinProxy.automatic': 'Blank: use the automatic MinecraftJS proxy.',
+  'minecraftjs.skinProxy.encoded': '%u inserts the URL with percent encoding.',
+  'minecraftjs.skinProxy.raw': '%U inserts the original URL without encoding.',
+  'minecraftjs.skinProxy.example': 'Example: https://proxy.example/?url=%u',
+  'minecraftjs.skinProxy.invalid': 'Use an HTTP(S) URL containing %u or %U.',
+
   'minecraftjs.version': 'MinecraftJS 1.8.9',
   'minecraftjs.notAffiliated': 'Not affiliated with Mojang AB',
   'minecraftjs.accounts.title': 'Accounts',

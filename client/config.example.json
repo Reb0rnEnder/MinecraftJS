@@ -1,4 +1,5 @@
 {
+  "skinProxy": "",
   "proxies": [
     { "name": "This website", "url": "origin", "type": "minecraftjs" },
     { "name": "Eaglercraft Relay", "url": "wss://relay.eaglercraft.net", "type": "relay" },
