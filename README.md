@@ -1,5 +1,8 @@
 # MinecraftJS
 
+> **1.14.4 planning branch:** the implementation still targets 1.13.2 (protocol 404).
+> Follow the [1.14.4 transition plan](docs/transition-1.14.4.md) before publishing a 1.14.4 client.
+
 A Minecraft 1.13.2 client that runs in the browser (WebGL 2 or WebGPU). It joins vanilla 1.13.2 servers through a
 small Node proxy, and Eaglercraft servers directly over WebSockets.
 
