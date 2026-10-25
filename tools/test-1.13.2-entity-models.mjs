@@ -101,10 +101,10 @@ assert.deepEqual(bundle, models, 'Served bundle matches complete jar extraction'
 M.setJarModels(bundle);
 let meshCount = 0;
 const device = {
-  createMesh(format, vertices) {
+  createMesh(format, vertices, opts={}) {
     assert.ok(vertices.every(Number.isFinite), 'Finite generated vertices (including UVs/normals)');
     meshCount++;
-    return { vertices };
+    return { vertices, dynamic:!!opts.dynamic };
   },
 };
 setModelDevice(device);
@@ -113,7 +113,7 @@ const checkTree = (root) => {
   const draws = root.collect([]);
   assert.ok(draws.length > 0, 'Nonempty client drawables');
   for (const { d, world } of draws) {
-    assert.ok(d.mesh.vertices.length > 0, 'Nonempty client mesh');
+    assert.ok(d.mesh.dynamic || d.mesh.vertices.length > 0, 'Nonempty static client mesh (ground-projected shadows populate dynamic buffers at render time)');
     assert.ok(world.every(Number.isFinite), 'Finite world transform');
     if (typeof d.mat?.tex === 'string') {
       assert.ok(jar.read('assets/minecraft/textures/' + d.mat.tex), 'Missing renderer texture: ' + d.mat.tex);

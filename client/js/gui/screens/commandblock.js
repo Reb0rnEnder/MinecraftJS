@@ -1,14 +1,13 @@
 import { ChatScreen } from './chat.js';
 // GuiCommandBlock and GuiEditCommandBlockMinecart. The block screen opens with its buttons disabled and fills in when
 // the server sends the block's data (update tile entity action 2, see Game.applyBlockEntity); the minecart screen
-// reads the cart's synced command and last output. Done sends MC|AutoCmd (blocks) or MC|AdvCmd (minecarts).
+// reads the cart's synced command and last output. Done sends the dedicated block or minecart update packet.
 import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
 import { Button, TextField } from '../widgets.js';
 import { chatToPlain } from '../chat.js';
 import { C } from '../../net/packets.js';
-import { Writer } from '../../net/buffer.js';
-import { getBlock } from '../../world/blocks.js';
+import { getBlock,getStateProperties } from '../../world/blocks.js';
 
 // TileEntityCommandBlock.getMode from the block, isConditional from its state
 const MODES = { command_block: 'REDSTONE', repeating_command_block: 'AUTO', chain_command_block: 'SEQUENCE' };
@@ -99,7 +98,7 @@ export class CommandBlockScreen extends BaseCommandScreen {
     const state = game.world.getState(pos.x, pos.y, pos.z);
     const b = getBlock(state);
     this.mode = (b && MODES[b.name]) || 'REDSTONE';
-    this.conditional = (state & 8) !== 0; // BlockCommandBlock.CONDITIONAL
+    this.conditional = getStateProperties(state).conditional === 'true'; // BlockCommandBlock.CONDITIONAL
     this.automatic = false;
   }
 
@@ -129,17 +128,14 @@ export class CommandBlockScreen extends BaseCommandScreen {
     this.automatic = !!data.auto;
     const state = this.game.world.getState(this.pos.x, this.pos.y, this.pos.z);
     const b = getBlock(state);
-    if (b && MODES[b.name]) { this.mode = MODES[b.name]; this.conditional = (state & 8) !== 0; }
+    if (b && MODES[b.name]) { this.mode = MODES[b.name]; this.conditional = getStateProperties(state).conditional === 'true'; }
     this.loaded = true;
     this.updateCmdOutput();
     this._enable(true);
   }
 
   done() {
-    const w = new Writer();
-    w.i32(this.pos.x).i32(this.pos.y).i32(this.pos.z);
-    w.string(this.commandField.text).bool(this.trackOutput).string(this.mode).bool(this.conditional).bool(this.automatic);
-    this.game.send(C.customPayload('minecraft:command_block', w.build()));
+    this.game.send(C.updateCommandBlock(this.pos,this.commandField.text,this.mode,this.trackOutput,this.conditional,this.automatic));
     this.game.screens.close();
   }
 
@@ -152,8 +148,8 @@ export class CommandMinecartScreen extends BaseCommandScreen {
     super(game);
     this.entity = entity;
     const m = entity.metadata || {};
-    this.command = String(m[commandIndex] || '');
-    const out = m[outputIndex];
+    this.command = String(entity.command ?? m[commandIndex] ?? '');
+    const out = entity.lastOutput ?? m[outputIndex];
     this.output = out ? lastOutput(out) : null;
   }
 
@@ -177,10 +173,7 @@ export class CommandMinecartScreen extends BaseCommandScreen {
   }
 
   done() {
-    const w = new Writer();
-    w.i8(1).i32(this.entity.id); // getCommandBlockType (1: minecart), fillInInfo
-    w.string(this.commandField.text).bool(this.trackOutput);
-    this.game.send(C.customPayload('minecraft:command_block', w.build()));
+    this.game.send(C.updateCommandMinecart(this.entity.id,this.commandField.text,this.trackOutput));
     this.game.screens.close();
   }
 

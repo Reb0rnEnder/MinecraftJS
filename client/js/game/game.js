@@ -1119,8 +1119,8 @@ export class Game {
       const category = r.string(), sound = r.string();
       this.sound.stop(sound, SOUND_CATEGORIES.includes(category) ? category : null);
     } else if (p.channel === 'minecraft:book_open' || p.channel === 'MC|BOpen') {
-      const held = this.inventory.held();
-      if (held && this.items.name(held.id) === 'written_book') this.screens.open(new BookScreen(this, held, false));
+      const hand = p.data.length ? new Reader(p.data).varint() : 0, held = this.inventory.getHand(hand);
+      if (held && this.items.name(held.id) === 'written_book') this.screens.open(new BookScreen(this, held, false,hand));
     }
   }
 

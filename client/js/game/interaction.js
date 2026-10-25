@@ -243,10 +243,11 @@ export class Interaction {
     if (e.kind === 'item' || e.kind === 'xp' || e.kind === 'arrow') return; // canBeAttackedWithItem() is false
     const held = g.inventory.held();
     const f2 = this.cooledAttackStrength(0.5);
-    const f1 = g.items.enchantLevel(held, 16) * 1.25 * f2; // sharpness (EnumCreatureAttribute.UNDEFINED)
+    const sharpness = g.items.enchantLevel(held, 'sharpness');
+    const f1 = (sharpness > 0 ? sharpness * .5 + .5 : 0) * f2; // sharpness (EnumCreatureAttribute.UNDEFINED)
     this.resetCooldown();
     const strong = f2 > 0.9;
-    let i = g.items.enchantLevel(held, 19); // knockback
+    let i = g.items.enchantLevel(held, 'knockback'); // knockback
     if (pl.sprinting && strong) i++;
     const crit = strong && pl.fallDistance > 0 && !pl.onGround && !pl.isOnLadder(g.world) && !pl.inWater && !g.effects.has(15) &&
       !pl.ridingEntity && (e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand') && !pl.sprinting;
@@ -328,7 +329,7 @@ export class Interaction {
     const held = g.inventory.held();
     let f = f32(g.items.strVsBlock(held, b));
     if (f > 1) {
-      const eff = g.items.enchantLevel(held, 32);
+      const eff = g.items.enchantLevel(held, 'efficiency');
       if (eff > 0 && held) f = f32(f + (eff * eff + 1));
     }
     const haste = g.effects.get(3);
@@ -351,7 +352,7 @@ export class Interaction {
   // EnchantmentHelper.getAquaAffinityModifier: Aqua Affinity on any armour piece
   _aquaAffinity() {
     const g = this.game;
-    return g.inventory.armor.some((it) => it && g.items.enchantLevel(it, 6) > 0);
+    return g.inventory.armor.some((it) => it && g.items.enchantLevel(it, 'aqua_affinity') > 0);
   }
 
   // Minecraft.sendClickBlockToController (leftClickCounter is decremented once per tick before the clicks)
@@ -678,7 +679,7 @@ export class Interaction {
     const name = g.items.name(held.id);
     if (name === 'writable_book') {
       // ItemWritableBook opens the editor client-side
-      import('../gui/screens/book.js').then((m) => g.screens.open(new m.BookScreen(g, held, true)));
+      import('../gui/screens/book.js').then((m) => g.screens.open(new m.BookScreen(g, held, true, hand)));
     }
     g.send(C.useItem(hand)); // CPacketPlayerTryUseItem
     if (g.cooldownFraction(held.id, 0) > 0) return false; // CooldownTracker: still cooling down

@@ -1,6 +1,6 @@
 import { tr } from '../gui/i18n.js';
 // Sound engine: vanilla sounds.json (+ resource packs), played through the platform audio interface.
-import { getBlock, getBlockById } from '../world/blocks.js';
+import { getBlock, getBlockById, getStateProperties } from '../world/blocks.js';
 import { platform } from '../platform/platform.js';
 
 // SoundType (1.9+): [step, break, place, volume, pitch, hit, fall]
@@ -361,11 +361,11 @@ export class SoundManager {
     if (!b) return;
     const { x, y, z } = p.location;
     if (b.name === 'note_block') {
-      // BlockNote.INSTRUMENTS (1.12)
-      const inst = ['harp', 'basedrum', 'snare', 'hat', 'bass', 'flute', 'bell', 'guitar', 'chime', 'xylophone'][p.byte1] || 'harp';
-      const pitch = Math.pow(2, (p.byte2 - 12) / 12);
+      // Flattened note blocks store instrument and pitch in their synchronized state.
+      const props=getStateProperties(this.game.world.getState(x,y,z)),inst=props.instrument||'harp',note=Number(props.note||0);
+      const pitch = Math.pow(2, (note - 12) / 12);
       this.play('block.note_block.' + inst, x + 0.5, y + 0.5, z + 0.5, 3, pitch, { category: 'record' });
-      this.game.particles.note && this.game.particles.note(x, y, z, p.byte2);
+      this.game.particles.note && this.game.particles.note(x, y, z, note);
     } else if (b.name === 'piston' || b.name === 'sticky_piston') {
       this.play(p.byte1 === 0 ? 'block.piston.extend' : 'block.piston.contract', x + 0.5, y + 0.5, z + 0.5, 0.5, Math.random() * 0.25 + 0.6, { category: 'block' });
     }

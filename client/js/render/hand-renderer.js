@@ -139,7 +139,7 @@ export class HandRenderer {
     let drawMain = true, drawOff = true;
     if (pl.usingItem) {
       const active = stacks[it.activeHand || 0];
-      if (active && active.id === 261) { drawMain = (it.activeHand || 0) === 0; drawOff = !drawMain; }
+      if (active && g.items.name(active.id) === 'bow') { drawMain = (it.activeHand || 0) === 0; drawOff = !drawMain; }
     }
     for (let hand = 0; hand < 2; hand++) {
       const h = this.hands[hand];
@@ -155,12 +155,12 @@ export class HandRenderer {
       const m = mat4.create();
       let key;
       if (!stack) key = hand === 0 && !pl.invisible ? 'arm' + side : null;
-      else if (stack.id === 358) key = hand === 0 && !stacks[1] ? 'map2:' + stack.damage : 'mapside' + side + ':' + stack.damage;
+      else if (g.items.name(stack.id)==='filled_map'){const id=g.items.nbt(stack)?.map??0;key=hand===0&&!stacks[1]?'map2:'+id:'mapside'+side+':'+id;}
       else key = 'item' + side + ':' + g.itemRenderer.iconKey(stack, true);
       if (key !== h.key) this._buildHand(h, key, stack, side);
       if (!stack) {
         if (key) this._armMatrix(m, equip, sw, side);
-      } else if (stack.id === 358) {
+      } else if (g.items.name(stack.id)==='filled_map') {
         if (key.startsWith('map2')) this._mapMatrix(h, m, pitch, equip, sw);
         else this._mapSideMatrix(h, m, equip, sw, side);
       } else {
@@ -185,8 +185,8 @@ export class HandRenderer {
     h.parts = null;
     if (!key) return;
     if (!stack) { h.node.add(this._armFor(side)); return; }
-    if (stack.id === 358) {
-      const map = this._mapNodes(stack.damage);
+    if (this.game.items.name(stack.id)==='filled_map') {
+      const map = this._mapNodes(this.game.items.nbt(stack)?.map??0);
       if (key.startsWith('map2')) {
         const right = new Node(); right.add(this._armFor(1));
         const left = new Node(); left.add(this._armFor(-1));

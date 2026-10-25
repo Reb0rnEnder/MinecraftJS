@@ -3,7 +3,6 @@ import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
 import { Button } from '../widgets.js';
 import { C } from '../../net/packets.js';
-import { Writer } from '../../net/buffer.js';
 import { nbt, TAG } from '../../net/nbt.js';
 import { chatToLegacy } from '../chat.js';
 
@@ -24,11 +23,12 @@ class PageButton {
 }
 
 export class BookScreen extends Screen {
-  constructor(game, item, editable) {
+  constructor(game, item, editable, hand=0) {
     super(game);
     this.background = 'none';
     this.item = item;
-    this.editable = editable === undefined ? item.id === 386 : editable;
+    this.hand = hand;
+    this.editable = editable === undefined ? game.items.name(item.id) === 'writable_book' : editable;
     const tag = game.items.nbt(item) || {};
     this.pages = (tag.pages && tag.pages.length ? tag.pages.slice() : ['']).map((p) => p);
     if (!this.editable) this.pages = this.pages.map((p) => { try { return chatToLegacy(p); } catch (e) { return p; } });
@@ -88,11 +88,11 @@ export class BookScreen extends Screen {
       tagObj.title = nbt.string(this.title.trim());
     }
     const root = { t: TAG.COMPOUND, name: '', v: tagObj };
-    const item = { id: sign ? 387 : 386, count: 1, damage: 0, nbt: root };
-    const w = new Writer().slot(item).build();
-      g.send(C.customPayload(sign ? 'minecraft:book_sign' : 'minecraft:book_edit', w));
-    const held = g.inventory.held();
-    if (held && held.id === 386) { held.nbt = root; held.nbtRaw = null; held._simple = null; if (sign) held.id = 387; }
+    const item={id:g.items.byName.get('writable_book').id,count:1,nbt:root};
+    g.send(C.editBook(item,sign,this.hand));
+    const held=g.inventory.getHand(this.hand);
+    if(held&&g.items.name(held.id)==='writable_book'){held.nbt=root;held.nbtRaw=null;held._simple=null;}
+    this.modified=false;
   }
 
   key(e) {

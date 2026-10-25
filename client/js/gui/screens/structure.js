@@ -1,11 +1,10 @@
 // GuiEditStructure: the structure block screen (Save / Load / Corner / Data modes). It starts from the block's data the
-// client already has (structure blocks send their full NBT with the chunk and on every change) and sends MC|Struct:
+// client already has (structure blocks send their full NBT with the chunk and on every change) and sends the dedicated structure update packet:
 // action 1 update, 2 save, 3 load, 4 detect size.
 import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
 import { Button, TextField } from '../widgets.js';
 import { C } from '../../net/packets.js';
-import { Writer } from '../../net/buffer.js';
 
 const MODES = ['SAVE', 'LOAD', 'CORNER', 'DATA'];
 const ROTATIONS = ['NONE', 'CLOCKWISE_90', 'CLOCKWISE_180', 'COUNTERCLOCKWISE_90'];
@@ -138,16 +137,9 @@ export class StructureBlockScreen extends Screen {
   // sendToServer: TileEntityStructure.writeCoordinates, then the action and every setting
   send(action) {
     const t = this.tile, e = this.edits;
-    const w = new Writer();
-    w.i32(this.pos.x).i32(this.pos.y).i32(this.pos.z);
-    w.i8(action);
-    w.string(t.mode).string(e.name.text);
-    for (const k of ['posX', 'posY', 'posZ', 'sizeX', 'sizeY', 'sizeZ']) w.i32(parseIntJava(e[k].text));
-    w.string(t.mirror).string(t.rotation).string(e.data.text);
-    w.bool(t.ignoreEntities).bool(t.showAir).bool(t.showBoundingBox);
-    w.f32(parseFloatJava(e.integrity.text));
-    w.varlong(parseLongJava(e.seed.text));
-    this.game.send(C.customPayload('minecraft:structure_block', w.build()));
+    const values={...t,name:e.name.text,metadata:e.data.text,integrity:parseFloatJava(e.integrity.text),seed:parseLongJava(e.seed.text)};
+    for(const k of ['posX','posY','posZ','sizeX','sizeY','sizeZ'])values[k]=parseIntJava(e[k].text);
+    this.game.send(C.updateStructure(this.pos,action,values));
     return true;
   }
 

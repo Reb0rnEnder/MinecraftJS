@@ -110,9 +110,9 @@ test('mob hurt/death sounds and categories follow native identities, not old num
 
 test('block-action sound uses registry IDs; block-break event uses direct states', () => {
   const s = Object.create(SoundManager.prototype), calls = [];
-  s.game = { particles: {} }; s.play = (...args) => calls.push(args);
+  s.game = { particles: {}, world:{getState:()=>findState('note_block',{instrument:'guitar',note:'16',powered:'false'})} }; s.play = (...args) => calls.push(args);
   s.onBlockAction({ blockId: blocksByName.note_block.id, byte1: 0, byte2: 12, location: { x: 1, y: 2, z: 3 } });
-  assert.equal(calls[0][0], 'block.note_block.harp'); assert.ok(sounds.has(calls[0][0]));
+  assert.equal(calls[0][0], 'block.note_block.guitar'); assert.equal(calls[0][5],Math.pow(2,4/12)); assert.ok(sounds.has(calls[0][0]));
   s.playBlockBreak = (...args) => calls.push(args);
   const state = findState('blue_stained_glass');
   s.onWorldEvent({ effectId: 2001, data: state, location: { x: 1, y: 2, z: 3 } });

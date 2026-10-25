@@ -1,3 +1,4 @@
+import {technicalPackets} from './technical-packets.js';
 import { readCommandTree, readTags } from './command-tree.js';
 // Minecraft 1.13.2 (protocol 404) play-state packet codec.
 import { Reader, Writer } from './buffer.js';
@@ -391,6 +392,8 @@ function customPayloadChannel(channel) {
 }
 
 export const C = {
+  ...technicalPackets(name=>pkt({update_command_block:0x22,update_command_block_minecart:0x23,update_structure_block:0x25}[name])),
+  editBook:(item,sign,hand=0)=>pkt(0x0b).slot(item).bool(sign).varint(hand).build(),
   teleportConfirm: (teleportId) => pkt(0x00).varint(teleportId).build(),
   // Protocol 404's serverbound tab-complete packet is transaction + text.
   // Do not append the later command-assumption/position fields: 1.13.2 servers
