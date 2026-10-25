@@ -333,7 +333,7 @@ export class Game {
   // Font flags for the current language (LanguageManager.isCurrentLocaleUnicode / isCurrentLanguageBidirectional)
   applyLanguage() {
     const f = this.gui.font;
-    f.unicode = !!(this.assets.langUnicode || this.settings.forceUnicodeFont);
+    f.unicode = !!this.settings.forceUnicodeFont;
     f.bidi = !!this.assets.langBidi;
   }
 

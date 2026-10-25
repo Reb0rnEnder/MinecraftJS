@@ -1,4 +1,4 @@
-// Port of the vanilla FontRenderer (ascii.png + unicode page fallback).
+// Vanilla 1.13+ provider fonts, with the legacy renderer retained for older asset sets.
 // layout() produces glyph quads; the GUI draws them directly and world text builds meshes from them.
 
 const CHARS = 'ÀÁÂÈÊËÍÓÔÕÚßãõğİıŒœŞşŴŵžȇ\u0000\u0000\u0000\u0000\u0000\u0000\u0000 !"#$%&\'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\u0000ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜø£Ø×ƒáíóúñÑªº¿®¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀αβΓπΣσμτΦΘΩδ∞∅∈∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■\u0000';
@@ -59,7 +59,11 @@ export class FontRenderer {
     this.cell = cell;
   }
 
+  _providerSet() { return this.assets.fontSets?.[this.texPath === 'font/ascii_sga.png' ? 'alt' : 'default']; }
+
   _ready() {
+    if (this.measuredVersion !== this.assets.version) this._widthBuckets = null;
+    if (this._providerSet()) { this.measuredVersion = this.assets.version; return true; }
     if (this.measuredVersion !== this.assets.version) this._measure();
     return this.measuredVersion === this.assets.version;
   }
@@ -67,6 +71,8 @@ export class FontRenderer {
   charW(ch) {
     if (ch === ' ') return 4;
     if (ch === '§') return -1;
+    const set = this._providerSet();
+    if (set) return set.glyph(ch, this.unicode && this.texPath !== 'font/ascii_sga.png').advance;
     const i = this.unicode ? undefined : CHAR_INDEX.get(ch);
     if (i !== undefined) return this.charWidth[i];
     const gw = this.glyphWidth[ch.charCodeAt(0)];
@@ -90,9 +96,11 @@ export class FontRenderer {
         continue;
       }
       const cw = this.charW(ch);
-      if (cw > 0) w += cw + (bold ? 1 : 0);
+      const set = this._providerSet();
+      const offset = set ? set.glyph(ch, this.unicode && this.texPath !== 'font/ascii_sga.png').boldOffset : 1;
+      if (cw > 0) w += cw + (bold ? offset : 0);
     }
-    return w;
+    return this._providerSet() ? Math.ceil(w) : w;
   }
 
   // Returns { quads: [{ tex, x0, y0, x1, y1, u0, v0, u1, v1, color:[r,g,b,a], skew }], width }
@@ -100,7 +108,8 @@ export class FontRenderer {
     const out = [];
     if (!text || !this._ready()) return { quads: out, width: 0 };
     if (this.bidi) text = bidiReorder(text);
-    if (shadow) this._layout(out, text, x + 1, y + 1, baseColor, true, alpha);
+    const offset = this._providerSet() ? 0 : 1;
+    if (shadow) this._layout(out, text, x + offset, y + offset, baseColor, true, alpha);
     const width = this._layout(out, text, x, y, baseColor, false, alpha);
     return { quads: out, width };
   }
@@ -131,9 +140,11 @@ export class FontRenderer {
         if (cands.length) ch = cands[(Math.random() * cands.length) | 0];
       }
       const c = rgb(color, alpha);
-      const adv = this._glyph(out, ascii, ch, x, y, c, italic);
-      if (bold && adv > 0) this._glyph(out, ascii, ch, x + 1, y, c, italic);
-      const total = adv + (bold && adv > 0 ? 1 : 0);
+      const set = this._providerSet(), glyph = set?.glyph(ch, this.unicode && this.texPath !== 'font/ascii_sga.png');
+      const shadowOffset = isShadow && set ? glyph.shadowOffset : 0, boldOffset = glyph?.boldOffset ?? 1;
+      const adv = this._glyph(out, ascii, ch, x + shadowOffset, y + shadowOffset, c, italic);
+      if (bold && adv > 0) this._glyph(out, ascii, ch, x + shadowOffset + boldOffset, y + shadowOffset, c, italic);
+      const total = adv + (bold && adv > 0 ? boldOffset : 0);
       if (strike) out.push({ tex: null, x0: x, y0: y + 4, x1: x + total, y1: y + 5, color: c });
       if (underline) out.push({ tex: null, x0: x - 1, y0: y + 8, x1: x + total, y1: y + 9, color: c });
       x += total;
@@ -146,7 +157,7 @@ export class FontRenderer {
       this._widthBuckets = new Map();
       for (const [ch, i] of CHAR_INDEX) {
         if (i < 32 || i > 126) continue;
-        const cw = this.charWidth[i];
+        const cw = this.charW(ch);
         if (!this._widthBuckets.has(cw)) this._widthBuckets.set(cw, []);
         this._widthBuckets.get(cw).push(ch);
       }
@@ -156,6 +167,13 @@ export class FontRenderer {
 
   _glyph(out, ascii, ch, x, y, color, italic) {
     if (ch === ' ') return 4;
+    const set = this._providerSet();
+    if (set) {
+      const g = set.glyph(ch, this.unicode && this.texPath !== 'font/ascii_sga.png'), tex = g.texture();
+      if (tex) out.push({ tex, x0:x+g.x, y0:y+g.y, x1:x+g.x+g.width, y1:y+g.y+g.height,
+        u0:g.u0, v0:g.v0, u1:g.u1, v1:g.v1, color, skew:italic?1:0, skewOrigin:y });
+      return g.advance;
+    }
     const i = this.unicode ? undefined : CHAR_INDEX.get(ch);
     const skew = italic ? 1 : 0;
     if (i !== undefined) {
@@ -206,7 +224,7 @@ export class FontRenderer {
     g.pushMatrix();
     const m = g.matrix;
     // x' = x + (y0 + 4 - y) * 0.25
-    const sh = new Float32Array([1, 0, 0, 0, -0.25, 1, 0, 0, 0, 0, 1, 0, (q.y0 + 4) * 0.25, 0, 0, 1]);
+    const sh = new Float32Array([1, 0, 0, 0, -0.25, 1, 0, 0, 0, 0, 1, 0, ((q.skewOrigin ?? q.y0) + 4) * 0.25, 0, 0, 1]);
     const r = new Float32Array(16);
     for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) { let s = 0; for (let k = 0; k < 4; k++) s += m[k * 4 + j] * sh[i * 4 + k]; r[i * 4 + j] = s; }
     m.set(r);

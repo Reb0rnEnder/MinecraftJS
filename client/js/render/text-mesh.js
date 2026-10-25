@@ -6,15 +6,15 @@ import { FORMAT } from '../gfx/device.js';
 // Returns [{ mesh, tex }] where tex null means the white texture.
 export function buildTextMeshes(device, font, items, rects = [], z = 0) {
   const groups = new Map();
-  const push = (tex, x0, y0, x1, y1, u0, v0, u1, v1, c, skew, zz) => {
+  const push = (tex, x0, y0, x1, y1, u0, v0, u1, v1, c, skew, zz, origin = y0) => {
     let g = groups.get(tex);
     if (!g) { g = []; groups.set(tex, g); }
-    const sk = skew ? 1 : 0;
+    const top = skew ? (origin + 4 - y0) * 0.25 : 0, bottom = skew ? (origin + 4 - y1) * 0.25 : 0;
     g.push(
-      [x0 + sk, y0, zz, u0, v0, c[0], c[1], c[2], c[3]],
-      [x0 - sk, y1, zz, u0, v1, c[0], c[1], c[2], c[3]],
-      [x1 - sk, y1, zz, u1, v1, c[0], c[1], c[2], c[3]],
-      [x1 + sk, y0, zz, u1, v0, c[0], c[1], c[2], c[3]],
+      [x0 + top, y0, zz, u0, v0, c[0], c[1], c[2], c[3]],
+      [x0 + bottom, y1, zz, u0, v1, c[0], c[1], c[2], c[3]],
+      [x1 + bottom, y1, zz, u1, v1, c[0], c[1], c[2], c[3]],
+      [x1 + top, y0, zz, u1, v0, c[0], c[1], c[2], c[3]],
     );
   };
   for (const r of rects) push(null, r.x0, r.y0, r.x1, r.y1, 0, 0, 1, 1, r.color, false, z + 0.01);
@@ -24,7 +24,7 @@ export function buildTextMeshes(device, font, items, rects = [], z = 0) {
     for (const q of quads) {
       // shadow glyphs sit slightly behind the text to avoid z-fighting
       const zz = z - (i++ < quads.length / 2 && it.shadow ? 0 : 0.005);
-      push(q.tex || null, q.x0, q.y0, q.x1, q.y1, q.u0 || 0, q.v0 || 0, q.u1 || 1, q.v1 || 1, q.color, q.skew, zz);
+      push(q.tex || null, q.x0, q.y0, q.x1, q.y1, q.u0 || 0, q.v0 || 0, q.u1 || 1, q.v1 || 1, q.color, q.skew, zz, q.skewOrigin);
     }
   }
   const out = [];
