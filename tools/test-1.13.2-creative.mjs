@@ -282,7 +282,7 @@ test('actual search typing, translated variant tooltips, namespace lookup and ho
   result = search(g, 'loyalty iii');
   assert.equal(result.length, 1); assert.equal(g.items.enchantments(result[0])[0].id, 'minecraft:loyalty');
   pointFor(g, () => true); s.render(g.gui, ...g.mouse, 0);
-  assert.ok(g.records.tooltips.at(-1).map(plain).includes('Combat'));
+  assert.ok(g.records.tooltips.at(-1).includes('§9Combat'), 'category is blue without bold (vanilla color codes reset formatting)');
   assert.ok(g.records.tooltips.at(-1).map(plain).includes('Loyalty III'));
   result = search(g, 'minecraft:slow falling');
   assert.equal(result.length, 8, 'normal/long potions, splash, lingering and arrows');

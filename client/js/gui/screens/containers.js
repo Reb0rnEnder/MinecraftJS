@@ -1155,7 +1155,7 @@ export class CreativeScreen extends ContainerScreen {
         const ench = items.enchantments(it);
         group = ench.length === 1 ? this.catalog.enchantmentTabs.get(ench[0].id) : null;
       }
-      if (group) lines.splice(1, 0, '§9§l' + tr('itemGroup.' + group));
+      if (group) lines.splice(1, 0, '§9' + tr('itemGroup.' + group));
     }
     return lines;
   }

@@ -8,6 +8,7 @@
 // (site owners), else the server that hosts the page. A config url of "origin" is the page's own server.
 import { platform } from '../platform/platform.js';
 import { proxyHttpBase } from './address.js';
+import { wispUrl, wispPacket } from './wisp.js';
 
 export const PROXY_TYPES = ['minecraftjs', 'relay', 'wisp'];
 export const proxyType = (p) => (p && PROXY_TYPES.includes(p.type) ? p.type : 'minecraftjs');
@@ -180,13 +181,14 @@ async function testRelay(p, timeout) {
 async function testWisp(p, timeout) {
   let sock;
   const t0 = platform().now();
-  try { sock = await withTimeout(platform().openSocket(p.url), timeout); } catch (e) { return { error: 'Unreachable' }; }
+  try { sock = await withTimeout(platform().openSocket(wispUrl(p.url)), timeout); } catch (e) { return { error: 'Unreachable' }; }
   return new Promise((resolve) => {
     let done = false;
     const finish = (r) => { if (done) return; done = true; clearTimeout(timer); sock.close(); resolve(r); };
     const timer = setTimeout(() => finish({ error: 'Not a Wisp server' }), Math.min(timeout, 3000));
     sock.on('binary', (b) => {
-      if (b[0] === 0x03 || b[0] === 0x05) finish({ ping: Math.round(platform().now() - t0), info: { name: 'Wisp', version: b[0] === 0x05 ? 'v' + b[5] + '.' + b[6] : 'v1' } });
+      const packet = wispPacket(b);
+      if (packet && packet.id === 0 && (packet.type === 3 || packet.type === 5)) finish({ ping: Math.round(platform().now() - t0), info: { name: 'Wisp', version: b[0] === 0x05 ? 'v' + b[5] + '.' + b[6] : 'v1' } });
       else finish({ error: 'Not a Wisp server' });
     });
     sock.on('close', () => finish({ error: 'Closed the connection' }));
