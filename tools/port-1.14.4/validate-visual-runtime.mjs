@@ -24,7 +24,7 @@ export function validateVisualRuntime(jar,models,shapes=read('blockCollisionShap
   const e={kind:'mob',entityName:entry.name,type:MOB_FAMILIES[entry.name]?.[0]||entry.name,...MOB_FAMILIES[entry.name]?.[1]};
   mobs++;if(e.type===63){texture('entity/enderdragon/dragon.png');continue;}
   texture(renderer._texFor(e));
-  
+
   const model=renderer._modelFor(e);if(!model)throw Error('Missing living entity adapter: '+entry.name);
   model.animate(model,{age:0,yaw:0,pitch:0,ls:0,lsa:0,swing:0,peek:0,squish:0,onGround:true,inWater:false,entityId:1});
   const seen=new Set();const visit=part=>{
