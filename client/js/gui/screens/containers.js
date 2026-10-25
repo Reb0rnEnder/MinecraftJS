@@ -13,6 +13,7 @@ import { C } from '../../net/packets.js';
 import { Writer } from '../../net/buffer.js';
 import { copy, stackable } from '../../game/container.js';
 import { blocks } from '../../world/blocks.js';
+import {createWorkstationScreen} from './workstations.js';
 import { RecipeBookGui } from '../recipebook.js';
 
 const quickcraft = (stage, mode) => (stage & 3) | ((mode & 3) << 2);
@@ -435,7 +436,7 @@ class SimpleScreen extends ContainerScreen {
 }
 
 class FurnaceScreen extends SimpleScreen {
-  constructor(game, win) { super(game, win, 'gui/container/furnace.png', [[0, 56, 17], [1, 56, 53], [2, 116, 35]]); }
+  constructor(game, win) { super(game, win, 'gui/container/'+({'minecraft:blast_furnace':'blast_furnace','minecraft:smoker':'smoker'}[win.type]||'furnace')+'.png', [[0, 56, 17], [1, 56, 53], [2, 116, 35]]); }
   drawBackground(gui) {
     super.drawBackground(gui);
     const p = this.container.properties;
@@ -840,6 +841,8 @@ class HorseScreen extends ContainerScreen {
 
 export function openContainerScreen(game, win) {
   const t = win.type;
+  const native=createWorkstationScreen(game,win,SimpleScreen,ContainerScreen);
+  if(native){game.screens.open(native);return;}
   let s;
   const P = (x, y) => [x, y];
   void P;
@@ -853,12 +856,16 @@ export function openContainerScreen(game, win) {
       if (!win.title) win.title = game.assets.translate('container.crafting');
       break;
     }
-    case 'minecraft:furnace': s = new FurnaceScreen(game, win); break;
+    case 'minecraft:blast_furnace': case 'minecraft:smoker': case 'minecraft:furnace': s = new FurnaceScreen(game, win); break;
     case 'minecraft:dispenser': case 'minecraft:dropper': {
       const slots = [];
       for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) slots.push([j + i * 3, 62 + j * 18, 17 + i * 18]);
       s = new SimpleScreen(game, win, 'gui/container/dispenser.png', slots);
       break;
+    }
+    case 'minecraft:shulker_box': {
+      const slots=[];for(let i=0;i<27;i++)slots.push([i,8+i%9*18,18+Math.floor(i/9)*18]);
+      s=new SimpleScreen(game,win,'gui/container/shulker_box.png',slots,{titleX:8});break;
     }
     case 'minecraft:hopper': {
       const slots = [];

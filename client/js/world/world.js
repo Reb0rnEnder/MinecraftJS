@@ -1,3 +1,4 @@
+import {scaffoldingCollision} from './scaffolding.js';
 import {decodeChunkData498} from './chunk-1.14.4.js';
 import { getFluidState, fluidHeightAt } from './fluids.js';
 // Client world: chunk storage, block access, light propagation, collision and raycasting.
@@ -351,7 +352,7 @@ export class World {
 
   // Collision boxes for the block at x,y,z in world coordinates
   // state: the block's collision boxes as if it were `state` (moving piston blocks ask for the block they carry)
-  collisionBoxes(x, y, z, out, state = this.getState(x, y, z)) {
+  collisionBoxes(x, y, z, out, state = this.getState(x, y, z), mover = null) {
     const def = getBlock(state);
     if (!def || def.id === 0) return;
     if (!def) return;
@@ -360,7 +361,7 @@ export class World {
     if (def.name === 'moving_piston') return;
     // TileEntityShulkerBox: the box grows with the opening lid
     if (this.shulkerCollider && def.name.endsWith('_shulker_box')) { this.shulkerCollider(x, y, z, state, out); return; }
-    const shapeBoxes = staticCollisionBoxes(state);
+    const shapeBoxes = def.name === 'scaffolding' ? scaffoldingCollision(getStateProperties(state), y, mover) : staticCollisionBoxes(state);
     for (const bx of shapeBoxes) out.push([x + bx[0], y + bx[1], z + bx[2], x + bx[3], y + bx[4], z + bx[5]]);
     return;
     const m = state & 15;
@@ -482,7 +483,7 @@ export class World {
         }
         for (let y = y0; y < y1; y++) {
           tmp.length = 0;
-          this.collisionBoxes(x, y, z, tmp);
+          this.collisionBoxes(x, y, z, tmp, this.getState(x, y, z), mover);
           for (const c of tmp) {
             if (c[3] > bb[0] && c[0] < bb[3] && c[4] > bb[1] && c[1] < bb[4] && c[5] > bb[2] && c[2] < bb[5]) out.push(c);
           }

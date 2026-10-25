@@ -10,7 +10,10 @@ export const C=Object.fromEntries(Object.entries(OLD).map(([name,encode])=>[name
  if(id===undefined)throw new Error('No native 498 packet for '+name);
  return new Writer498().varint(id).raw(r.rest()).build();
 }]));
-Object.assign(C,{blockDig:C498.blockDig,blockPlace:C498.blockPlace,
+Object.assign(C,{
+ selectTrade:index=>new Writer498().varint(0x21).varint(index).build(),
+ menuButton:(windowId,button)=>new Writer498().varint(0x08).u8(windowId).u8(button).build(),
+ blockDig:C498.blockDig,blockPlace:C498.blockPlace,
  recipeInfoSettings:(open,filtering)=>new Writer498().varint(0x1d).varint(1).bool(open).bool(filtering).bool(false).bool(false).bool(false).bool(false).bool(false).bool(false).build(),
  updateSign:(x,y,z,lines)=>{const w=new Writer498().varint(0x29).position(x,y,z);for(let i=0;i<4;i++)w.string(lines[i]||'');return w.build();}});
 export const mcStringBytes=s=>new Writer498().string(s).build();

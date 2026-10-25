@@ -3,6 +3,7 @@
 import { C } from '../net/packets.js';
 import { Reader } from '../net/buffer.js';
 import { TAG } from '../net/nbt.js';
+import {tradeCost,stonecutterRecipes} from './workstations-1.14.4.js';
 import { craftResult, containerItem } from './crafting.js';
 
 // ItemStack.copy owns its NBT: editing a picked/displayed stack must not mutate
@@ -75,7 +76,7 @@ const SMELTABLE = new Set([
 const FUEL = new Set([
   ...`lava_bucket coal_block blaze_rod coal charcoal note_block bookshelf jukebox chest trapped_chest crafting_table
     daylight_detector bow fishing_rod ladder sign wooden_shovel wooden_sword wooden_hoe wooden_axe wooden_pickaxe
-    stick bowl dried_kelp_block`.split(/\s+/),
+    stick bowl dried_kelp_block bamboo scaffolding barrel loom cartography_table fletching_table smithing_table lectern composter`.split(/\s+/),
   ...LOGS,
   ...WOODS.flatMap(w => ['planks', 'stairs', 'slab', 'trapdoor', 'pressure_plate', 'fence', 'fence_gate', 'door', 'boat', 'button', 'sapling'].map(p => w + '_' + p)),
   ...COLORS.flatMap(c => ['wool', 'carpet', 'banner'].map(p => c + '_' + p)),
@@ -541,6 +542,7 @@ export class ContainerWindow extends ContainerBase {
       this._configureSlot(i, slot);
       s.push(slot);
     }
+    if(this.type==='minecraft:lectern'){this.slots=s;return;}
     for (let i = 9; i < 36; i++) s.push({ get item() { return inv.main[i]; }, set item(v) { inv.main[i] = v; }, playerIndex: i });
     for (let i = 0; i < 9; i++) s.push({ get item() { return inv.main[i]; }, set item(v) { inv.main[i] = v; }, playerIndex: i });
     this.slots = s;
@@ -549,7 +551,7 @@ export class ContainerWindow extends ContainerBase {
   _configureSlot(i, slot) {
     switch (this.type) {
       case 'minecraft:crafting_table': if (i === 0) { slot.output = true; slot.valid = () => false; } break;
-      case 'minecraft:furnace':
+      case 'minecraft:blast_furnace': case 'minecraft:smoker': case 'minecraft:furnace':
         if (i === 2) { slot.output = true; slot.valid = () => false; }
         if (i === 1) {
           slot.valid = it => FUEL.has(itemName(it, this.items)) || itemName(it, this.items) === 'bucket';
@@ -565,6 +567,20 @@ export class ContainerWindow extends ContainerBase {
         if (i === 0) { slot.limit = 1; }
         else slot.valid = it => itemName(it, this.items) === 'lapis_lazuli';
         break;
+      case 'minecraft:stonecutter':
+        if(i===1){slot.output=true;slot.valid=()=>false;} break;
+      case 'minecraft:loom':
+        if(i===3){slot.output=true;slot.valid=()=>false;}
+        else if(i===0)slot.valid=it=>itemName(it,this.items).endsWith('_banner');
+        else if(i===1)slot.valid=it=>itemName(it,this.items).endsWith('_dye');
+        else slot.valid=it=>itemName(it,this.items).endsWith('_banner_pattern'); break;
+      case 'minecraft:cartography':
+        if(i===2){slot.output=true;slot.valid=()=>false;}
+        else slot.valid=it=>i===0?itemName(it,this.items)==='filled_map':['paper','map','glass_pane'].includes(itemName(it,this.items)); break;
+      case 'minecraft:grindstone':
+        if(i===2){slot.output=true;slot.valid=()=>false;}
+        else slot.valid=it=>this.items.def(it.id)?.maxDurability>0 || itemName(it,this.items)==='enchanted_book' || !!this.items.nbt(it)?.Enchantments?.length; break;
+      case 'minecraft:lectern': slot.valid=()=>false;slot.canTake=()=>false; break;
       case 'minecraft:anvil': if (i === 2) { slot.output = true; slot.valid = () => false; } break;
       case 'minecraft:villager': if (i === 2) { slot.output = true; slot.valid = () => false; } break;
       case 'minecraft:beacon': slot.limit = 1; slot.valid = it => BEACON_PAYMENT.has(itemName(it, this.items)); break;
@@ -582,8 +598,49 @@ export class ContainerWindow extends ContainerBase {
     }
   }
 
+  // ResultContainer and MerchantContainer remove the entire result even on right click.
+  decr(i,n) {
+    if(this.slots[i]?.output && ['minecraft:stonecutter','minecraft:grindstone','minecraft:cartography','minecraft:villager'].includes(this.type))n=this.get(i)?.count||n;
+    return super.decr(i,n);
+  }
+
   onPickupFromSlot(i, taken) {
     if (this.type === 'minecraft:crafting_table' && i === 0) consumeGrid(this, 1, 9);
+    if(!this.slots[i]?.output)return;
+    const consume=(slot,count=1)=>{const it=this.get(slot);if(it)this.put(slot,it.count>count?{...it,count:it.count-count}:null);};
+    // Accepted clicks do not echo these predicted input changes. Network setters
+    // still replace every slot when the server changes/rejects the result.
+    if(this.type==='minecraft:stonecutter'){
+      const recipe=stonecutterRecipes(this.game,this.get(0))[this.properties[0]];
+      consume(0);this.put(1,this.get(0)&&recipe?copy(recipe.data.result):null);
+    }else if(this.type==='minecraft:loom'){
+      consume(0);consume(1);this.put(3,this.get(0)&&this.get(1)?{...copy(taken),count:1}:null);
+    }else if(this.type==='minecraft:grindstone'){
+      this.put(0,null);this.put(1,null);this.put(2,null);
+    }else if(this.type==='minecraft:cartography'){
+      const count=itemName(this.get(1),this.items)==='map'?2:1;
+      consume(0);consume(1);this.put(2,this.get(0)&&this.get(1)?{...copy(taken),count}:null);
+    }else if(this.type==='minecraft:villager'){
+      const data=this.tradeData;if(!data)return;
+      const matches=(slot,item)=>item?this.get(slot)?.id===item.id&&this.get(slot).count>=item.count:!this.get(slot);
+      // With the default selection hint, MerchantOffers also finds offers by
+      // manually supplied inputs, including reversed input slots.
+      const selected=data.trades[this.selectedTrade||0];
+      const candidates=[selected,...data.trades.filter(t=>t!==selected)];
+      let trade,cost,first,second;
+      for(const candidate of candidates){
+        if(!candidate||candidate.disabled||!stackable(candidate.out,taken))continue;
+        const required=tradeCost(candidate,this.maxStack(candidate.a));
+        if(matches(0,required)&&matches(1,candidate.b)){trade=candidate;cost=required;first=0;second=1;break;}
+        if(matches(1,required)&&matches(0,candidate.b)){trade=candidate;cost=required;first=1;second=0;break;}
+      }
+      if(!trade)return;
+      if(matches(first,cost)&&matches(second,trade.b)){
+        consume(first,cost.count);if(trade.b)consume(second,trade.b.count);
+        trade.uses++;trade.disabled=trade.uses>=trade.max;data.experience+=trade.xp;
+      }
+      this.put(2,!trade.disabled&&matches(first,cost)&&matches(second,trade.b)?copy(trade.out):null);
+    }
   }
 
   canMergeSlot(i) { return !this.slots[i].output; }
@@ -602,10 +659,12 @@ export class ContainerWindow extends ContainerBase {
         else if (!m(10, 46, false)) return false;
         return true;
       }
-      if (t === 'minecraft:furnace') {
+      if (t === 'minecraft:furnace' || t === 'minecraft:blast_furnace' || t === 'minecraft:smoker') {
         if (i === 2) { if (!m(3, 39, true)) return false; }
         else if (i !== 1 && i !== 0) {
-          if (SMELTABLE.has(name)) { if (!m(0, 1, false)) return false; }
+          const kind=t==='minecraft:blast_furnace'?'minecraft:blasting':t==='minecraft:smoker'?'minecraft:smoking':'minecraft:smelting';
+          const smeltable=this.game.serverRecipes?this.game.serverRecipes.some(r=>r.type===kind&&r.data.ingredient.some(s=>s?.id===it.id)):SMELTABLE.has(name);
+          if (smeltable) { if (!m(0, 1, false)) return false; }
           else if (FUEL.has(name) || name === 'bucket') { if (!m(1, 2, false)) return false; }
           else if (i >= 3 && i < 30) { if (!m(30, 39, false)) return false; }
           else if (i >= 30 && i < 39 && !m(3, 30, false)) return false;

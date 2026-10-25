@@ -7,7 +7,7 @@ import { armorType, copy, stackable } from './container.js';
 import { COMMAND_BLOCKS, CommandBlockScreen, CommandMinecartScreen } from '../gui/screens/commandblock.js';
 import { StructureBlockScreen } from '../gui/screens/structure.js';
 
-const INTERACTIVE = new Set(['chest', 'trapped_chest', 'ender_chest', 'crafting_table', 'furnace', 'lit_furnace', 'dispenser', 'dropper',
+const INTERACTIVE = new Set(['barrel', 'blast_furnace', 'smoker', 'stonecutter', 'loom', 'cartography_table', 'grindstone', 'lectern', 'bell', 'chest', 'trapped_chest', 'ender_chest', 'crafting_table', 'furnace', 'lit_furnace', 'dispenser', 'dropper',
   'hopper', 'brewing_stand', 'enchanting_table', 'anvil', 'beacon', 'wooden_door', 'spruce_door', 'birch_door', 'jungle_door',
   'acacia_door', 'dark_oak_door', 'trapdoor', 'fence_gate', 'spruce_fence_gate', 'birch_fence_gate', 'jungle_fence_gate',
   'dark_oak_fence_gate', 'acacia_fence_gate', 'lever', 'stone_button', 'wooden_button', 'bed', 'noteblock', 'jukebox',
@@ -515,7 +515,7 @@ export class Interaction {
       // (TileEntityStructure.usedBy too: GuiEditStructure)
       if (activated && (COMMAND_BLOCKS.has(b.name) || b.name === 'structure_block') && !g.canUseCommandBlock()) activated = false;
       // ItemBlock.canPlaceBlockOnSide: no packet at all when the block could not go there
-      if (!activated && held && this._itemBlock(held) && !this._canPlaceBlockOnSide(t, held)) return false;
+      if (!activated && held && this._itemBlock(held) && g.items.name(held.id)!=='scaffolding' && !this._canPlaceBlockOnSide(t, held)) return false;
     }
     // CPacketPlayerTryUseItemOnBlock (cursor position on the face)
     g.send(C.blockPlace(t.x, t.y, t.z, t.face, hand, fx, fy, fz));
@@ -526,6 +526,7 @@ export class Interaction {
       return true;
     }
     if (g.gameMode === 3) return true;
+    if (held && g.items.name(held.id)==='scaffolding') return true; // authoritative extension/support/falling rules
     if (!held) return false;
     if (g.gameMode === 1) {
       // creative: onItemUse runs but the stack is restored

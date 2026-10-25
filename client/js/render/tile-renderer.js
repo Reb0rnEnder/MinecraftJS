@@ -1,7 +1,7 @@
 // Tile entity (block entity) rendering: chests, signs, skulls, banners, enchanting book, beacon beam, end portal,
 // beds and shulker boxes.
 import { composeBanner, bannerLayers, buildBanner, bannerSwing } from './banner.js';
-import { entityMaterial, entityMesh } from './boxmodel.js';
+import { Part, entityMaterial, entityMesh } from './boxmodel.js';
 import { blockModel } from './entity-models.js';
 import { buildTextMeshes, destroyTextMeshes } from './text-mesh.js';
 import { blocks, blocksByName, getBlock, getStateProperties } from '../world/blocks.js';
@@ -132,6 +132,7 @@ export class TileEntityRenderer {
     else if (skullType(n) !== undefined) type = 'skull';
     else if (n.endsWith('_banner') || n.endsWith('_wall_banner')) type = 'banner';
     else if (n === 'enchanting_table') type = 'book';
+    else if (n === 'bell') type = 'bell';
     else if (n === 'beacon') type = 'beacon';
     else if (n === 'end_portal' || n === 'end_gateway') type = 'endportal';
     else if (n.endsWith('_bed')) type = 'bed';
@@ -145,7 +146,7 @@ export class TileEntityRenderer {
   // Use the live model (including lid/cloth transforms) for the damage pass.
   breakingModel(pos,state) {
     let t=this._ensure(pos.x,pos.y,pos.z,state);
-    if(!t||!['chest','sign','skull','banner','bed','shulker'].includes(t.type))return null;
+    if(!t||!['chest','sign','skull','banner','bed','shulker','bell'].includes(t.type))return null;
     if(!t.built)this._build(t);
     if(t.type==='chest'&&t.secondary){
       const current=this.game.world.getBlockDef(pos.x,pos.y,pos.z).id;
@@ -169,7 +170,7 @@ export class TileEntityRenderer {
          if (name === 'chest' || name === 'trapped_chest' || name === 'ender_chest' || name === 'sign' || name === 'wall_sign' ||
             name.endsWith('_bed') || name.endsWith('_banner') || name.endsWith('_wall_banner') || skullType(name) !== undefined ||
             name === 'flower_pot' || name === 'end_portal' || name === 'end_gateway' || name.endsWith('_shulker_box') ||
-           name === 'enchanting_table' || name === 'beacon') {
+           name === 'enchanting_table' || name === 'beacon' || name === 'bell') {
            const x = c.x * 16 + (i & 15), y = sy * 16 + (i >> 8), z = c.z * 16 + ((i >> 4) & 15);
            this._ensure(x, y, z, state);
          }
@@ -209,6 +210,10 @@ export class TileEntityRenderer {
   onBlockAction(p) {
     const b = blocks[p.blockId];
     if (!b) return;
+    if (b.name === 'bell' && p.byte1 === 1) {
+      const t=this._ensure(p.location.x,p.location.y,p.location.z,this.game.world.getState(p.location.x,p.location.y,p.location.z));
+      if(t){t.bellTime=0;t.bellDirection=p.byte2;t.bellShaking=true;}
+    }
     if (b.name === 'chest' || b.name === 'trapped_chest' || b.name === 'ender_chest' || b.name.endsWith('_shulker_box')) {
       const t = this._ensure(p.location.x, p.location.y, p.location.z, this.game.world.getState(p.location.x, p.location.y, p.location.z));
       if (t && p.byte1 === 1) {
@@ -225,6 +230,7 @@ export class TileEntityRenderer {
     const g = this.game;
     const beaconUpdate = (Number(g.world.worldAge) || this.ticks) % 80 === 0;
     for (const t of this.tiles.values()) {
+      if(t.type==='bell' && t.bellShaking && ++t.bellTime>=50){t.bellShaking=false;t.bellTime=0;}
       if (t.type === 'beacon' && beaconUpdate) this._updateBeacon(t);
       if (t.type === 'shulker') {
         // TileEntityShulkerBox.update: closed / opening / opened / closing, 0.1 per tick; while it moves, entities in
@@ -378,6 +384,14 @@ export class TileEntityRenderer {
     t.ownMeshes = [];
     let mat;
     switch (t.type) {
+      case 'bell': {
+        mat=entityMaterial('entity/bell/bell_body.png');
+        const bell=new Part(32,32).tex(0,0).box(-3,-6,-3,6,7,6).pivot(8,12,8);
+        bell.add(new Part(32,32).tex(0,13).box(4,4,4,8,2,8).pivot(-8,-12,-8));
+        const model=new Node();model.scale.set(1/16,1/16,1/16);
+        model.add(bell.build());bell.setMaterial(mat);obj.add(model);t.bellPart=bell;
+        break;
+      }
       case 'chest': {
         const id = getBlock(st).id;
         const isEnder = getBlock(st).name === 'ender_chest';
@@ -670,6 +684,14 @@ export class TileEntityRenderer {
           blk = Math.max(blk, g.world.getBlockLight(t.x + ox, t.y + oy, t.z + oz) - 1);
         }
         t.mat.params.setLight(sky, blk);
+      }
+      if(t.type==='bell' && t.bellPart){
+        const time=(t.bellTime||0)+partial;
+        const angle=t.bellShaking?Math.sin(time/Math.PI)/(4+time/3):0;
+        const direction=t.bellDirection;
+        t.bellPart.rx=direction===2?-angle:direction===3?angle:0;
+        t.bellPart.rz=direction===5?-angle:direction===4?angle:0;
+        t.bellPart.sync();
       }
       if (t.type === 'chest' && t.lidParts) {
         let f = t.prevLid + (t.lid - t.prevLid) * partial;

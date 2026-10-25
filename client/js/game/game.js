@@ -1016,7 +1016,7 @@ export class Game {
   on_open_window(p) {
     if(typeof p.inventoryType==='number'){
       const name=MENUS_498[p.inventoryType],rows=/generic_9x([1-6])/.exec(name||'');
-      const aliases={'minecraft:generic_3x3':['minecraft:dispenser',9],'minecraft:crafting':['minecraft:crafting_table',10],'minecraft:enchantment':['minecraft:enchanting_table',2],'minecraft:merchant':['minecraft:villager',3],'minecraft:blast_furnace':['minecraft:furnace',3],'minecraft:smoker':['minecraft:furnace',3]};
+      const aliases={'minecraft:generic_3x3':['minecraft:dispenser',9],'minecraft:crafting':['minecraft:crafting_table',10],'minecraft:enchantment':['minecraft:enchanting_table',2],'minecraft:merchant':['minecraft:villager',3],'minecraft:blast_furnace':['minecraft:blast_furnace',3],'minecraft:smoker':['minecraft:smoker',3]};
       const fixed={'minecraft:anvil':3,'minecraft:beacon':1,'minecraft:brewing_stand':5,'minecraft:furnace':3,'minecraft:hopper':5,'minecraft:shulker_box':27,'minecraft:grindstone':3,'minecraft:lectern':1,'minecraft:loom':4,'minecraft:cartography':3,'minecraft:stonecutter':2};
       const [type,count]=rows?['minecraft:chest',Number(rows[1])*9]:aliases[name]||[name,fixed[name]];
       if(!type||count===undefined)throw new Error('Unknown 1.14.4 menu '+p.inventoryType);
@@ -1025,6 +1025,14 @@ export class Game {
     const win = new ContainerWindow(this, p.windowId, p.inventoryType, chatToLegacy(p.windowTitle), p.slotCount, p.entityId);
     this.window = win;
     openContainerScreen(this, win);
+  }
+
+  on_declare_recipes(p) { this.serverRecipes=p.recipes; }
+
+  on_trade_list(p) {
+    if(this.window?.id!==p.windowId)return;
+    this.window.tradeData=p;
+    this.screens.current?.onTradeList?.(p);
   }
 
   on_close_window(p) {

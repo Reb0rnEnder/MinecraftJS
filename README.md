@@ -1,7 +1,8 @@
 # MinecraftJS
 
-> **1.14.4 development branch:** the browser and proxy now use protocol 498 with native terrain data and independent light updates. Entity, workstation and remaining visual parity work is ongoing.
+> **1.14.4 development branch:** the browser and proxy now use protocol 498 with native terrain data and independent light updates. Native workstations, trading, lectern controls, bell rendering and scaffolding movement are implemented; remaining entity, pose and visual parity work is ongoing.
 > Follow the [1.14.4 transition plan](docs/transition-1.14.4.md) before publishing a 1.14.4 client.
+> The [content milestone](docs/workstations-content-1.14.4.md) records workstation/block support and its limits.
 > The [runtime milestone](docs/runtime-1.14.4-milestone.md) records browser join/reconnect validation and remaining work.
 
 A Minecraft 1.14.4 client that runs in the browser (WebGL 2 or WebGPU). It joins vanilla 1.14.4 servers through a

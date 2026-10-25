@@ -17,6 +17,14 @@ The title uses the native full-resolution CubeMap renderer and overlay, and
 stale extracted asset folders are rejected by version/hash identity. See the
 [asset/panorama milestone](indexed-assets-panorama-1.14.4.md) for the cause and tests.
 
+## Native workstations and block interactions
+
+The added workstation screens, native merchant offers, lectern book controls,
+map lock decoding, bell body/ringing and contextual scaffolding movement now have
+an initial functional implementation. See the [content milestone](workstations-content-1.14.4.md)
+for its validation and remaining gaps. Native particle sprites and remaining
+entity/pose support are the next milestones.
+
 ## Implemented starting milestone (2026-10-25)
 
 - Added hash-verified Mojang client/server jars, official mappings and metadata inputs.

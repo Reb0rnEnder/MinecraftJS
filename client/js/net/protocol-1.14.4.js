@@ -1,4 +1,4 @@
-// Staged native protocol 498 codec. Not selected by the browser gameplay loop yet.
+// Native Java 1.14.4 protocol 498 codec.
 import {Reader,Writer} from './buffer.js';
 import {readPacketBody404} from './packets-1.13.2.js';
 import {BODY_404} from './protocol-1.14.4-reuse.js';
@@ -87,6 +87,17 @@ const decoders={
   open_window:r=>({windowId:r.varint(),inventoryType:r.varint(),windowTitle:r.string()}),
   open_horse_window:r=>({windowId:r.u8(),nbSlots:r.varint(),entityId:r.i32()}),
   open_book:r=>({hand:r.varint()}),
+  map:r=>{
+    const p={itemDamage:r.varint(),scale:r.i8(),trackingPosition:r.bool(),locked:r.bool(),icons:array(r,r=>({type:r.varint(),x:r.i8(),z:r.i8(),direction:r.u8(),displayName:r.bool()?r.string():null}))};
+    p.columns=r.u8();
+    if(p.columns){p.rows=r.u8();p.x=r.u8();p.y=r.u8();p.data=r.bytesN(r.varint()).slice();if(p.columns>128||p.rows>128||p.x+p.columns>128||p.y+p.rows>128||p.data.length!==p.columns*p.rows)throw new Error('Invalid map rectangle');}
+    return p;
+  },
+  trade_list:r=>{
+    const windowId=r.varint(),count=r.u8(),trades=[];
+    for(let i=0;i<count;i++)trades.push({a:r.slot(),out:r.slot(),b:r.bool()?r.slot():null,disabled:r.bool(),uses:r.i32(),max:r.i32(),xp:r.i32(),specialPrice:r.i32(),priceMultiplier:r.f32(),demand:r.i32()});
+    return {windowId,trades,villagerLevel:r.varint(),experience:r.varint(),isRegularVillager:r.bool(),canRestock:r.bool()};
+  },
   declare_recipes:r=>({recipes:array(r,r=>{
     const type=r.string(),recipeId=r.string(),data={},kind=type.replace(/^minecraft:/,'');
     const ingredient=()=>array(r,r=>r.slot());

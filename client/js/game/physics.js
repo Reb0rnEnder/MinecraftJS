@@ -158,7 +158,7 @@ export class LocalPlayer {
     if (w === this.width && h === this.height) return;
     const bb = this.bb();
     const nb = [bb[0], bb[1], bb[2], bb[0] + w, bb[1] + h, bb[2] + w];
-    if (world.getCollisions(nb).length) return; // World.collidesWithAnyBlock
+    if (world.getCollisions(nb, this).length) return; // World.collidesWithAnyBlock
     // Entity.setSize: keep minX/minZ, then recentre (setPosition of the new box)
     this.width = w; this.height = h;
     this._bb = [nb[0], nb[1], nb[2], nb[0] + w, nb[1] + h, nb[2] + w];
@@ -325,7 +325,7 @@ export class LocalPlayer {
     const x = Math.floor(this.x), y = Math.floor(this.bb()[1]), z = Math.floor(this.z);
     const st = world.getState(x, y, z), b = getBlock(st);
     if (!b) return false;
-    if (b.name === 'ladder' || b.name === 'vine') return true;
+    if (b.name === 'ladder' || b.name === 'vine' || b.name === 'scaffolding') return true;
     if ((b.name === 'oak_trapdoor' || b.name === 'iron_trapdoor') && getStateProperties(st).open === 'true') {
       const below = world.getState(x, y - 1, z);
       if (getBlock(below).name !== 'ladder') return false;
@@ -694,10 +694,10 @@ export class LocalPlayer {
         this.motionZ = Math.min(Math.max(this.motionZ, -f6), f6);
         this.fallDistance = 0;
         if (this.motionY < -0.15) this.motionY = -0.15;
-        if (this.sneaking && this.motionY < 0) this.motionY = 0;
+        if (this.sneaking && this.motionY < 0 && getBlock(world.getState(Math.floor(this.x),Math.floor(this.y),Math.floor(this.z))).name!=='scaffolding') this.motionY = 0;
       }
       this.moveEntity(world, this.motionX, this.motionY, this.motionZ);
-      if (this.collidedH && ladder) this.motionY = 0.2;
+      if ((this.collidedH || this.jumping) && ladder) this.motionY = 0.2;
       if (this.levitation >= 0) {
         this.motionY += (0.05 * (this.levitation + 1) - this.motionY) * 0.2;
       } else if (!world.isLoaded(Math.floor(this.x), Math.floor(this.z))) {
