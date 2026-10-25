@@ -564,6 +564,7 @@ export class Interaction {
       const hit = (b) => b[3] > p.x && b[0] < p.x + 1 && b[4] > p.y && b[1] < p.y + 1 && b[5] > p.z && b[2] < p.z + 1;
       if (hit(this.player.bb())) return false;
       for (const e of g.entities.all()) {
+        if(e.kind==='falling'&&w.getState(Math.floor(e.x),Math.floor(e.y),Math.floor(e.z))===e.blockState)continue;
         if (!['player', 'mob', 'armorstand', 'boat', 'minecart', 'tnt', 'falling'].includes(e.kind)) continue;
         const hw = (e.width || 0) / 2;
         if (hit([e.x - hw, e.y, e.z - hw, e.x + hw, e.y + (e.height || 0), e.z + hw])) return false;

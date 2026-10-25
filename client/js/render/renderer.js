@@ -1,3 +1,4 @@
+import { waterFog } from './water-fog.js';
 // World renderer (device-agnostic, see gfx/device.js).
 import { FORMAT, terrainParams, colorParams } from '../gfx/device.js';
 import { mat4, D2R, frustumPlanes, aabbInFrustum } from '../gfx/math.js';
@@ -208,7 +209,7 @@ export class Renderer {
     const sun = sunBrightness(angle, rain, thunder);
     updateLightmap(this.lightmapData, {
       sun: dimension === 0 ? sun : 1, dimension, torchFlicker: this.torchFlickerX, gamma: this.gamma,
-      nightVision: state.nightVision || 0, lightning: this.lightningTicks,
+      nightVision: state.nightVision || (state.conduitPower ? state.waterVision || 0 : 0), lightning: this.lightningTicks,
     });
     this.device.updateTexture(this.lightmap, this.lightmapData);
 
@@ -238,15 +239,23 @@ export class Renderer {
       fogR = 0.627 * 0.15; fogG = 0.5 * 0.15; fogB = 0.627 * 0.15;
     }
     let fogMode = 0, fogStart = renderDistBlocks * 0.75, fogEnd = renderDistBlocks, fogDensity = 0.1;
-    if (state.underwater) { fogR = 0.02; fogG = 0.02; fogB = 0.2; fogMode = 1; fogDensity = 0.1 - (state.respiration || 0) * 0.03; }
+    if (state.underwater) {
+      const water=waterFog(state,this.waterFogState,platform().now());this.waterFogState=water.transition;
+      [fogR,fogG,fogB]=water.color;fogMode=3;fogDensity=water.density;
+    }
     else if (state.inLava) { fogR = 0.6; fogG = 0.1; fogB = 0; fogMode = 1; fogDensity = 2.0; }
     else if (dimension === -1) { fogStart = 0; fogEnd = renderDistBlocks * 0.5; }
+    if(!state.underwater)this.waterFogState=null;
     if (state.blindness) { fogMode = 0; fogStart = 0; fogEnd = 5; fogR *= 0.1; fogG *= 0.1; fogB *= 0.1; }
     // WorldProvider.getVoidFogYFactor: 1.0 on superflat worlds, 1/32 otherwise
     const voidFactor = state.horizon === 0 ? 1 : 0.03125;
     if (dimension === 0 && state.camPos[1] * voidFactor < 1) {
       let d1 = state.camPos[1] * voidFactor;
       if (d1 < 1) { if (d1 < 0) d1 = 0; d1 *= d1; fogR *= d1; fogG *= d1; fogB *= d1; }
+    }
+    if(state.underwater) {
+      const vision=state.waterVision||0,max=Math.max(fogR,fogG,fogB);
+      if(max>0){const gain=1-vision+vision/max;fogR*=gain;fogG*=gain;fogB*=gain;}
     }
     this.fog = { color: [fogR, fogG, fogB], start: fogStart, end: fogEnd, density: fogDensity, mode: fogMode };
 
@@ -391,7 +400,7 @@ export class Renderer {
   cull() {
     const c = this.camPos;
     const f = this.fog;
-    const fogEnd = f.mode === 0 ? f.end : f.mode === 1 ? 4.6 / Math.max(0.001, f.density) : Infinity; // exp fog: 99% at 4.6/density
+    const fogEnd = f.mode === 0 ? f.end : f.mode === 1 ? 4.6 / Math.max(0.001, f.density) : f.mode === 3 ? Math.sqrt(4.6) / Math.max(0.001,f.density) : Infinity; // exp fog: 99% at 4.6/density
     this.visibleList = this.culler.update(this.sections, this.frustum, c, this.renderDistance, this.columnLoaded, this.opaqueAt(c[0], c[1], c[2]), this.culler.enabled ? fogEnd : Infinity);
     return this.visibleList;
   }

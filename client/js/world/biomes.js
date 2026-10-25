@@ -1,3 +1,4 @@
+import { WATER_BIOMES } from './water-biomes.js';
 // Biome colour helpers (ColorizerGrass / ColorizerFoliage + per-biome overrides). Worker-safe.
 
 let biomeTable = [];
@@ -52,6 +53,7 @@ export function foliageColor(id, y) {
 }
 
 export function waterColor(id) {
+  if(WATER_BIOMES[id])return WATER_BIOMES[id][0];
   const b = biomeInfo(id);
   // The 1.13 water sprites are grayscale: their blue comes from biome tint.
   if (typeof b.waterColor === 'number') return b.waterColor;

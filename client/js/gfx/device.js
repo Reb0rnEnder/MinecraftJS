@@ -19,7 +19,7 @@
 //   destroyMesh(mesh)
 //   beginFrame(clearColor [r,g,b])          clears colour + depth
 //   clearDepth()
-//   setGlobals({ view, proj, fogColor:[r,g,b], fogStart, fogEnd, fogDensity, fogMode: 0 linear|1 exp|2 none, lightmap: Texture })
+//   setGlobals({ view, proj, fogColor:[r,g,b], fogStart, fogEnd, fogDensity, fogMode: 0 linear|1 exp|2 none|3 exp2, lightmap: Texture })
 //   setScissor(rect | null)                 rect = [x, y, w, h] in pixels, origin top-left
 //   draw({ mesh, pipeline, textures: [Texture, ...], model: mat4, params: Float32Array(16), state, first?, count?, primitive?: 'triangles'|'lines' })
 //   createRenderTarget(w, h) -> Texture     offscreen colour + depth, sampled linear/clamped

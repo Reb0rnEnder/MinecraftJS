@@ -1455,6 +1455,8 @@ export class Game {
       const chest = this.inventory.armor[2];
       tin.autoJump = this.settings.autoJump;
       tin.elytraUsable = !!(chest && this.items.name(chest.id) === 'elytra' && this.items.damage(chest) < this.items.maxDurability(chest.id) - 1);
+      pl.depthStrider=this.items.enchantLevel(this.inventory.armor[0],'depth_strider');
+      pl.dolphinsGrace=this.effects.has(30);pl.slowFalling=this.effects.has(28);
       pl.sleeping = !!this.sleeping;
       const res = pl.tick(world, tin);
       if (res.abilitiesChanged) this.sendAbilities();
@@ -1820,7 +1822,7 @@ export class Game {
     const rain = this.world.prevRain !== undefined ? this.world.prevRain + (this.world.rainStrength - this.world.prevRain) * partial : this.world.rainStrength;
     r.updateEnvironment({
       worldTime: this.world.timeOfDay, partial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,
-      camPos: [ex, ey, ez], lookDir: look, dimension: this.dimension, underwater, inLava,
+      camPos: [ex, ey, ez], lookDir: look, dimension: this.dimension, underwater, inLava, biomeId:this.world.getBiome(Math.floor(ex),Math.floor(ez)), waterVision:pl.waterVision(), conduitPower:this.effects.has(29),
       blindness: this.effects.has(15), nightVision: this.effects.has(16) ? 1 : 0, clouds: this.settings.clouds,
       horizon: String(this.levelType).toLowerCase() === 'flat' ? 0 : 63,
     });

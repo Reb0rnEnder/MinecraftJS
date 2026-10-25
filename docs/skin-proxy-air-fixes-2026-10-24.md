@@ -21,11 +21,11 @@ Updated 2026-10-24.
 Example `config.json` entry:
 
 ```json
-{"skinProxy":"https://proxy.example/?url=%u"}
+{"skinProxy":"https://proxy.example/?url=%R"}
 ```
 
-`%u` inserts the percent-encoded target URL. `%U` inserts the target URL without
-encoding, for services that expect a path such as
+`%u` inserts the undashed player UUID. `%R` inserts the percent-encoded target
+URL. `%r` (or the legacy `%U` alias) inserts the target URL without encoding, for services that expect a path such as
 `https://proxy.example/https://textures.minecraft.net/texture/...`.
 Every placeholder is replaced. The configured endpoint must be HTTP(S) and
 contain one of these placeholders. Blank retains the automatic MinecraftJS
@@ -33,7 +33,7 @@ proxy route. Site configuration supplies the default; saved user settings take
 precedence. The same configuration is embedded by the existing `--config` build
 option.
 
-Custom routes handle skin, cape and elytra images and the public Mojang session
+URL-based custom routes handle skin, cape and elytra images and the public Mojang session
 profile fallback. They work independently of the chosen game-server relay,
 including when no MinecraftJS HTTP proxy exists. The CORS service must return
 the original PNG or profile JSON response with browser-accessible CORS headers.
@@ -56,3 +56,7 @@ automatic-route fallback, invalid templates, GUI save/cancel and stale responses
 Selection tests cover explicit-null versus undefined shapes on every branch and
 cave/void air in 1.13.2. F3 tests cover all three dimensions and reduced debug.
 All native suites and production builds are checked as well.
+
+The 2026-10-25 update changed `%u` to UUID and introduced `%r`/`%R` for URLs.
+UUID-only templates fetch skin PNGs directly, including for players without a
+textures property. Cape/profile requests use the automatic route in that mode.

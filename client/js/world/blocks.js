@@ -116,6 +116,7 @@ export function initBlocks(blocksJson, shapesJson) {
   for (const b of Object.values(blocksByName)) {
     if (b.name.endsWith('_slab') || b.isStairs || b.name === 'farmland') { b.filterLight = 15; b.useNeighborBrightness = true; }
   }
+  if(blocksByName.grass_path)blocksByName.grass_path.useNeighborBrightness=true;
 }
 
 function propertyValues(prop) {

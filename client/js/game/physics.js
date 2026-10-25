@@ -48,7 +48,7 @@ export function calcYOffset(box, bb, off) {
   }
   return off;
 }
-function calcXOffset(box, bb, off) {
+export function calcXOffset(box, bb, off) {
   if (bb[4] > box[1] && bb[1] < box[4] && bb[5] > box[2] && bb[2] < box[5]) {
     if (off > 0) {
       if (bb[3] <= box[0]) { const d = box[0] - bb[3]; if (d < off) off = d; }
@@ -58,7 +58,7 @@ function calcXOffset(box, bb, off) {
   }
   return off;
 }
-function calcZOffset(box, bb, off) {
+export function calcZOffset(box, bb, off) {
   if (bb[3] > box[0] && bb[0] < box[3] && bb[4] > box[1] && bb[1] < box[4]) {
     if (off > 0) {
       if (bb[5] <= box[2]) { const d = box[2] - bb[5]; if (d < off) off = d; }
@@ -90,6 +90,7 @@ export class LocalPlayer {
     this.landMovementFactor = Math.fround(0.1); this.jumpMovementFactor = Math.fround(0.02);
     this.onGround = false;
     this.collidedH = false; this.collidedV = false;
+    this.eyesInWater = false; this.waterVisionTicks = 0;
     this.inWater = false; this.inLava = false; this.inWeb = false;
     this.fallDistance = 0;
     this.jumpTicks = 0;
@@ -586,7 +587,23 @@ export class LocalPlayer {
     }
   }
 
+  // Entity.isInWaterRainOrBubble uses body contact; starting swimming uses eye immersion instead.
+  isEyeInWater(world) {
+    const eye=this.y+this.eyeHeight(),by=Math.floor(eye),fluid=getFluidState(world.getState(Math.floor(this.x),by,Math.floor(this.z)));
+    return !!fluid&&!fluid.isLava&&eye<by+Math.fround(fluid.height+Math.fround(0.11111111))&&!this.ridingBoat;
+  }
+
+  waterVision() {
+    if(!this.eyesInWater)return 0;
+    return Math.min(1,this.waterVisionTicks/100)*0.6+Math.max(0,Math.min(1,(this.waterVisionTicks-100)/500))*0.4;
+  }
+
   moveEntityWithHeading(world, strafe, forward) {
+    if(this.swimming&&!this.flying) {
+      const lookY=lookVec(this.pitch,this.yaw)[1],factor=lookY < -0.2 ? 0.085 : 0.06;
+      const fluidAbove=getFluidState(world.getState(Math.floor(this.x),Math.floor(this.y+0.9),Math.floor(this.z)));
+      if(lookY<=0||this.jumping||fluidAbove&&!fluidAbove.isLava)this.motionY+=(lookY-this.motionY)*factor;
+    }
     if (this.flying && !this.ridingEntity) {
       const d3 = this.motionY;
       const jmf = Math.fround(Math.fround(this.flySpeed) * (this.sprinting ? 2 : 1));
@@ -634,7 +651,7 @@ export class LocalPlayer {
     }
     if (this.inWater && !this.flying) {
       const d0 = this.y;
-      let f1 = F.p08, f2 = F.p02;
+      let f1 = this.sprinting ? f32(0.9) : F.p08, f2 = F.p02;
       let f3 = this.depthStrider;
       if (f3 > 3) f3 = 3;
       if (!this.onGround) f3 *= 0.5;
@@ -642,16 +659,14 @@ export class LocalPlayer {
         f1 = Math.fround(f1 + Math.fround(Math.fround(Math.fround(0.54600006) - f1) * f3) / 3);
         f2 = Math.fround(f2 + Math.fround(Math.fround(this.landMovementFactor - f2) * f3) / 3);
       }
+      if(this.dolphinsGrace)f1=f32(0.96);
       this.moveFlying(strafe, forward, f2);
       this.moveEntity(world, this.motionX, this.motionY, this.motionZ);
       this.motionX *= f1; this.motionY *= 0.800000011920929; this.motionZ *= f1;
-      this.motionY -= 0.02;
-      if (this.swimming) {
-        // Pose.SWIMMING follows the look vector instead of treating forward
-        // input as purely horizontal water movement.
-        const look = lookVec(this.pitch, this.yaw);
-        const swim = f32(Math.max(0, forward) * 0.04);
-        this.motionX += look[0] * swim; this.motionY += look[1] * swim; this.motionZ += look[2] * swim;
+      // 1.13 water gravity is 0.08 / 16 and is skipped during sprint swimming.
+      if(!this.noGravity&&!this.sprinting) {
+        const gravity=this.slowFalling&&this.motionY<=0?0.01:0.08;
+        this.motionY=this.motionY<=0&&Math.abs(this.motionY-0.005)>=0.003&&Math.abs(this.motionY-gravity/16)<0.003?-0.003:this.motionY-gravity/16;
       }
       if (this.collidedH && this.isOffsetPositionInLiquid(world, this.motionX, this.motionY + 0.6000000238418579 - this.y + d0, this.motionZ)) this.motionY = 0.30000001192092896;
     } else if (this.inLava && !this.flying) {
@@ -709,6 +724,8 @@ export class LocalPlayer {
     this.ticksExisted++;
     this.handleWaterMovement(world);
     this.inLava = this.isInLava(world);
+    this.eyesInWater = this.isEyeInWater(world);
+    this.waterVisionTicks = Math.max(0,Math.min(600,this.waterVisionTicks+(this.eyesInWater?(this.spectator?10:1):-10)));
 
     if (this.sprintToggleTimer > 0) this.sprintToggleTimer--;
     if (this.flyToggleTimer > 0) this.flyToggleTimer--;
@@ -742,15 +759,18 @@ export class LocalPlayer {
     // Sprint logic
     const f = 0.8;
     const foodOk = this.food > 6 || this.allowFlying;
-    if (this.onGround && !this.prevSneak && !this.prevForwardHeld && moveForward >= f && !this.sprinting && foodOk && !this.usingItem && !this.blind) {
+    if ((this.onGround || this.eyesInWater) && !this.prevSneak && !this.prevForwardHeld && moveForward >= f && !this.sprinting && foodOk && !this.usingItem && !this.blind) {
       if (this.sprintToggleTimer <= 0 && !input.sprint) this.sprintToggleTimer = 7;
       else this.sprinting = true;
     }
-    if (!this.sprinting && moveForward >= f && foodOk && !this.usingItem && !this.blind && input.sprint) this.sprinting = true;
-    if (this.sprinting && (moveForward < f || this.collidedH || !foodOk)) this.sprinting = false;
+    if (!this.sprinting && (!this.inWater || this.eyesInWater) && moveForward >= f && foodOk && !this.usingItem && !this.blind && input.sprint) this.sprinting = true;
+    if(this.sprinting) {
+      const stopped=moveForward<f||!foodOk;
+      if(this.swimming ? (!this.onGround&&!sneakKey&&stopped||!this.inWater) : (stopped||this.collidedH||this.inWater&&!this.eyesInWater))this.sprinting=false;
+    }
     // The server confirms this through entity metadata bit 4 for remote
     // players; local prediction keeps the hitbox and camera responsive.
-    this.swimming = !!(this.inWater && this.sprinting && !this.ridingEntity && !this.flying);
+    this.swimming = !!(this.inWater && (this.swimming || this.eyesInWater) && this.sprinting && !this.ridingEntity && !this.flying);
 
     // Fly toggle (double tap jump)
     if (this.allowFlying) {
@@ -784,6 +804,8 @@ export class LocalPlayer {
     if (Math.abs(this.motionY) < 0.003) this.motionY = 0;
     if (Math.abs(this.motionZ) < 0.003) this.motionZ = 0;
 
+    this.jumping = jump;
+    if(this.inWater&&sneakKey&&!this.flying)this.motionY-=f32(0.04);
     if (jump) {
       if (this.inWater || this.isInLava(world)) this.motionY += 0.03999999910593033; // handleJumpWater / Lava: 0.04F
       else if (this.onGround && this.jumpTicks === 0) { this.jump(); this.jumpTicks = 10; }

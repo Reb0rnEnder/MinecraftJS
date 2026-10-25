@@ -12,7 +12,8 @@ uniform vec3 uFogColor;
 uniform sampler2D uTex0;
 uniform sampler2D uLightmap;
 float fogFactor(float d) {
-  if (uFog.w > 1.5) return 0.0;
+  if (uFog.w > 1.5 && uFog.w < 2.5) return 0.0;
+  if (uFog.w > 2.5) return 1.0 - clamp(exp(-pow(uFog.z * d, 2.0)), 0.0, 1.0);
   if (uFog.w < 0.5) return clamp((d - uFog.x) / max(0.0001, uFog.y - uFog.x), 0.0, 1.0);
   return 1.0 - clamp(exp(-uFog.z * d), 0.0, 1.0);
 }

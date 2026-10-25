@@ -11,7 +11,8 @@ struct Draw { model: mat4x4f, p: array<vec4f, 4> };
 @group(2) @binding(0) var tex0: texture_2d<f32>;
 @group(2) @binding(1) var samp0: sampler;
 fn fogFactor(d: f32) -> f32 {
-  if (G.fog.w > 1.5) { return 0.0; }
+  if (G.fog.w > 1.5 && G.fog.w < 2.5) { return 0.0; }
+  if (G.fog.w > 2.5) { return 1.0 - clamp(exp(-pow(G.fog.z * d, 2.0)), 0.0, 1.0); }
   if (G.fog.w < 0.5) { return clamp((d - G.fog.x) / max(0.0001, G.fog.y - G.fog.x), 0.0, 1.0); }
   return 1.0 - clamp(exp(-G.fog.z * d), 0.0, 1.0);
 }

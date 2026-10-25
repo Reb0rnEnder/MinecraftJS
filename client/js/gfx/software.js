@@ -429,10 +429,10 @@ export class SoftwareDevice {
       tv[o + 4] = src[s + 3]; tv[o + 5] = src[s + 4];
       // eye distance for fog
       let f = 0;
-      if (fog[3] < 1.5 && colorUseFog && !portal) {
+      if ((fog[3] < 1.5 || fog[3] > 2.5) && colorUseFog && !portal) {
         const ex = MV[0] * x + MV[4] * y + MV[8] * z + MV[12], ey = MV[1] * x + MV[5] * y + MV[9] * z + MV[13], ez = MV[2] * x + MV[6] * y + MV[10] * z + MV[14];
         const dist = Math.sqrt(ex * ex + ey * ey + ez * ez);
-        f = fog[3] < 0.5 ? clamp01((dist - fog[0]) / Math.max(0.0001, fog[1] - fog[0])) : 1 - clamp01(Math.exp(-fog[2] * dist));
+        f = fog[3] < 0.5 ? clamp01((dist - fog[0]) / Math.max(0.0001, fog[1] - fog[0])) : 1 - clamp01(Math.exp(fog[3]>2.5?-Math.pow(fog[2]*dist,2):-fog[2]*dist));
       }
       const nf = 1 - f;
       let mr, mg, mb, ar = 0, ag = 0, ab = 0, am;

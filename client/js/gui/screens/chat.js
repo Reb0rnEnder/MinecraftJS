@@ -1,3 +1,4 @@
+import { chatHoverTooltip } from '../chat-hover.js';
 import { playerSuggestions } from '../../game/commands.js';
 // GuiChat: chat input with history, tab completion and clickable messages.
 import { tr } from '../i18n.js';
@@ -11,6 +12,7 @@ export class ChatScreen extends Screen {
   constructor(game, initial, options = {}) {
     super(game);
     this.initial = initial;
+    this.isChatScreen = true;
     this.commandOnly = !!options.commandOnly;
     this.background = 'none';
     this.historyIndex = -1;
@@ -48,7 +50,8 @@ export class ChatScreen extends Screen {
     this.input.render(gui);
     this.renderSuggestions(gui,mx,my);
     const hover = this.game.hud.chatComponentAt(mx, my);
-    if (hover && hover.hoverText) gui.tooltip(hover.hoverText.split('\n'), mx, my);
+    const tooltip=chatHoverTooltip(this.game,hover);
+    if(tooltip)gui.tooltip(hover?.hover?.action==='show_text'&&gui.font.wrap?tooltip.flatMap(line=>gui.font.wrap(line,Math.max(this.width/2,200))):tooltip,mx,my);
   }
 
   renderSuggestions(gui,mx,my) {
@@ -265,11 +268,17 @@ export class ChatScreen extends Screen {
     return handled;
   }
 
-  mouseMove(mx,my) { this.tabPointerX=mx;this.tabPointerY=my; }
+  mouseMove(mx,my) {
+    this.tabPointerX=mx;this.tabPointerY=my;
+    const row=this._suggestionRow(mx,my);
+    if(row>=0){this.tabIndex=row;this.tabApplied=false;}
+  }
 
   wheel(d) {
     if (this.tabMatches?.length && this._suggestionRow(this.tabPointerX ?? this.tabMouseX, this.tabPointerY ?? this.tabMouseY) >= 0) {
       this.tabOffset = Math.max(0, Math.min(this.tabMatches.length - Math.min(10, this.tabMatches.length), this.tabOffset + d));
+      const row=this._suggestionRow(this.tabPointerX??this.tabMouseX,this.tabPointerY??this.tabMouseY);
+      if(row>=0){this.tabIndex=row;this.tabApplied=false;}
       return;
     }
     this.game.hud.scrollChat(-d);
