@@ -4,6 +4,7 @@
 > Follow the [1.14.4 transition plan](docs/transition-1.14.4.md) before publishing a 1.14.4 client.
 > The [content milestone](docs/workstations-content-1.14.4.md) records workstation/block support and its limits.
 > The [runtime milestone](docs/runtime-1.14.4-milestone.md) records browser join/reconnect validation and remaining work.
+> The [complete feature audit](docs/feature-audit-1.14.4.md) covers every 1.14 additions/change topic and target patch changes, including confirmed gaps and unexecuted gameplay checks. Asset coverage does not imply full parity.
 
 A Minecraft 1.14.4 client that runs in the browser (WebGL 2 or WebGPU). It joins vanilla 1.14.4 servers through a
 small Node proxy, and Eaglercraft servers directly over WebSockets.

@@ -1,0 +1,2748 @@
+{
+  "target": "1.14.4",
+  "protocol": 498,
+  "date": "2026-10-25",
+  "scope": "All 151 topic headings in Additions and Changes of the cited 1.14 page, plus 15 patch-behavior groups. Topic coverage is not bullet-level runtime certification or certification of the hundreds of listed vanilla bug fixes.",
+  "sources": [
+    "https://minecraft.wiki/w/Java_Edition_1.14",
+    "https://www.minecraft.net/en-us/article/minecraft-java-edition-1-14-1",
+    "https://www.minecraft.net/en-us/article/minecraft-java-edition-1-14-2",
+    "https://www.minecraft.net/en-us/article/minecraft-java-edition-1-14-3",
+    "https://www.minecraft.net/en-us/article/minecraft-java-1-14-4-released"
+  ],
+  "referenceWikitextSha256": "b202d8a2e8b3eb96143ded787d969d83ac6de2f4cf7621881db20c6f99f02582",
+  "features": [
+    {
+      "id": "additions-blocks-bamboo",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Bamboo",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native states, models, shapes and potted variant exist; growth and panda feeding are server decisions.",
+      "acceptance": "Plant, bone-meal, break a tall stalk, pot it, burn it and feed a panda."
+    },
+    {
+      "id": "additions-blocks-flowers",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Flowers",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "All three flowers and pots are registered; wither damage is authoritative on the server.",
+      "acceptance": "Place cornflower, lily and wither rose; craft dyes and stew, test rose damage outside Peaceful."
+    },
+    {
+      "id": "additions-blocks-looms",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Looms",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Routing, slots, scrolling and pattern selection have runtime tests; all live combinations are not certified.",
+      "acceptance": "Apply each ordinary and template pattern; repeat until six layers, shift-click outputs and check template retention."
+    },
+    {
+      "id": "additions-blocks-signs",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Signs",
+      "status": "missing",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native wood sign names are not routed to the tile renderer; old sign texture path and undyed text remain.",
+      "acceptance": "Place every wood standing/wall sign; edit, select, copy, paste and dye text all 16 colors; rejoin."
+    },
+    {
+      "id": "additions-blocks-slabs",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Slabs",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native states and collision/selection data exist for the added variants; every placement combination needs visual testing.",
+      "acceptance": "Place all variants top, bottom, double and waterlogged; inspect occlusion, lighting and breaking overlays."
+    },
+    {
+      "id": "additions-blocks-stairs",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Stairs",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native states and shapes exist; full rotations and corner combinations are not certified.",
+      "acceptance": "Place each variant in all facings, upside down, inner/outer corners and waterlogged; walk and break them."
+    },
+    {
+      "id": "additions-blocks-walls",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Walls",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native states and shapes exist; all adjacency combinations need visual testing.",
+      "acceptance": "Connect each wall to walls, glass, fences, gates and solid blocks; inspect selection and climb collision."
+    },
+    {
+      "id": "additions-blocks-barrels",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Barrels",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native block and generic chest inventory routing exist; server controls open state and obstruction rules.",
+      "acceptance": "Open all six orientations under solid blocks, shift-click and transfer with hoppers; rejoin."
+    },
+    {
+      "id": "additions-blocks-bells",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Bells",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native model and ringing event timer are tested; raid resonance effects are incomplete.",
+      "acceptance": "Ring all attachments from each valid side, use projectiles, wake villagers and ring during a raid."
+    },
+    {
+      "id": "additions-blocks-blast-furnaces",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Blast furnaces",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native furnace window routing, slots and texture are tested; server owns processing time and recipes.",
+      "acceptance": "Smelt ore and metal at double speed; reject food; test fuel, progress, XP and hoppers."
+    },
+    {
+      "id": "additions-blocks-smokers",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Smokers",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native furnace variant and GUI routing are tested; full recipe/fuel combinations remain unverified.",
+      "acceptance": "Cook food at double speed; reject ores; test fuel, progress, XP and hoppers."
+    },
+    {
+      "id": "additions-blocks-cartography-tables",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Cartography tables",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Menu, map-lock packet decoding and preview path exist; all live map transformations need checking.",
+      "acceptance": "Clone, extend and lock maps, then inspect both held maps and item frames after rejoin."
+    },
+    {
+      "id": "additions-blocks-fletching-tables",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Fletching tables",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Block data/model exist; this version has no player crafting GUI, which is correct.",
+      "acceptance": "Craft/place it and confirm a villager becomes a fletcher; do not expect a later-version crafting menu."
+    },
+    {
+      "id": "additions-blocks-smithing-tables",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Smithing tables",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Block data/model exist; this version has no player smithing GUI, which is correct.",
+      "acceptance": "Craft/place it and confirm a villager becomes a toolsmith; no netherite upgrade is expected."
+    },
+    {
+      "id": "additions-blocks-stonecutters",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Stonecutters",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Recipe sorting, menu selection, output counts and stepping have tests; every recipe needs a live pass.",
+      "acceptance": "Process each stone family, scroll recipes, right-click and shift-click results; stand on the block."
+    },
+    {
+      "id": "additions-blocks-grindstones",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Grindstones",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native menu routing and result consumption are tested; all curse/durability/XP cases remain unverified.",
+      "acceptance": "Repair and disenchant tools/books; retain curses, collect XP, test all mounting positions."
+    },
+    {
+      "id": "additions-blocks-lecterns",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Lecterns",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native book GUI/page/take controls exist; the placed book is not handled by the tile renderer.",
+      "acceptance": "Insert and remove a book, share pages between two clients, inspect the block book and comparator output."
+    },
+    {
+      "id": "additions-blocks-scaffolding",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Scaffolding",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Jump/sneak collision and falling-block mover regression are tested; full placement/collapse behavior needs a live pass.",
+      "acceptance": "Build vertically and six blocks horizontally, extend to falling distance, collapse and climb while sneaking."
+    },
+    {
+      "id": "additions-blocks-lanterns",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Lanterns",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native state, shape and light properties exist; pane/bar support changes need live placement checks.",
+      "acceptance": "Place upright and hanging, including on/below panes and iron bars; remove support and rejoin."
+    },
+    {
+      "id": "additions-blocks-jigsaw-blocks",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Jigsaw blocks",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Block model and state exist; no native jigsaw editor was found.",
+      "acceptance": "Obtain by command, edit pool/attachment/final state as an operator and test save/reload."
+    },
+    {
+      "id": "additions-blocks-sweet-berry-bushes",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Sweet berry bushes",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "All age models exist; local physics lacks berry-bush slowdown.",
+      "acceptance": "Plant, bone-meal and harvest each age; walk/jump through mature bushes and compare server correction/damage."
+    },
+    {
+      "id": "additions-blocks-campfires",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Campfires",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native light, face visibility and stepping have regression tests; cooking-item renderer and smoke dispatch are absent.",
+      "acceptance": "Cook four foods, place hay below, extinguish/reignite, test waterlogging and burning-arrow ignition."
+    },
+    {
+      "id": "additions-blocks-composters",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Composters",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native fill states/models exist; composter particle packets are ignored.",
+      "acceptance": "Compost multiple plant types through level eight, extract bone meal, test hopper transfer and particles."
+    },
+    {
+      "id": "additions-blocks-note-blocks",
+      "section": "Additions",
+      "category": "Blocks",
+      "topic": "Note blocks",
+      "status": "partial",
+      "evidence": [
+        "client/js/render/tile-renderer.js",
+        "client/js/world/blocks.js",
+        "client/js/world/scaffolding.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native event 0/0 requires instrument and note from BlockState, but dispatch reads legacy byte fields and only lists ten instruments.",
+      "acceptance": "Play all 16 instruments over their substrate blocks and compare pitch and note particles."
+    },
+    {
+      "id": "additions-items-general",
+      "section": "Additions",
+      "category": "Items",
+      "topic": "General",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/js/game/container.js",
+        "client/js/render/item-renderer.js",
+        "client/data/enchantments.json"
+      ],
+      "observation": "BlockStateTag survives generic NBT transport, but placement prediction does not interpret it.",
+      "acceptance": "Give blocks with custom facing/axis/age BlockStateTag and compare immediate placement with authoritative updates."
+    },
+    {
+      "id": "additions-items-banner-patterns",
+      "section": "Additions",
+      "category": "Items",
+      "topic": "Banner patterns",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/js/game/container.js",
+        "client/js/render/item-renderer.js",
+        "client/data/enchantments.json"
+      ],
+      "observation": "Loom has all five template patterns and native ordinals; template retention needs live verification.",
+      "acceptance": "Use flower, creeper, skull, thing and globe templates; verify recipe/trade acquisition and reuse."
+    },
+    {
+      "id": "additions-items-crossbows",
+      "section": "Additions",
+      "category": "Items",
+      "topic": "Crossbows",
+      "status": "missing",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/js/game/container.js",
+        "client/js/render/item-renderer.js",
+        "client/data/enchantments.json"
+      ],
+      "observation": "useAction is none, useDuration is zero, charging/charged predicates are absent and enchantment registry is stale.",
+      "acceptance": "Charge in either hand, retain a charge in inventory, fire arrows/rockets and test Multishot, Piercing and Quick Charge."
+    },
+    {
+      "id": "additions-items-suspicious-stew",
+      "section": "Additions",
+      "category": "Items",
+      "topic": "Suspicious stew",
+      "status": "missing",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/js/game/container.js",
+        "client/js/render/item-renderer.js",
+        "client/data/enchantments.json"
+      ],
+      "observation": "The item is registered but not classified as food; no sustained eating action starts.",
+      "acceptance": "Eat each flower recipe and brown-mooshroom stew; verify 1.14.4 poppy Night Vision and bowl return."
+    },
+    {
+      "id": "additions-items-dyes",
+      "section": "Additions",
+      "category": "Items",
+      "topic": "Dyes",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/js/game/container.js",
+        "client/js/render/item-renderer.js",
+        "client/data/enchantments.json"
+      ],
+      "observation": "Native names/items exist; sign colors and all replacement dye actions are not certified.",
+      "acceptance": "Use all 16 dyes on sheep, wool, leather, banners and signs; ensure the four former ingredients no longer dye directly."
+    },
+    {
+      "id": "additions-items-sweet-berries",
+      "section": "Additions",
+      "category": "Items",
+      "topic": "Sweet berries",
+      "status": "missing",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/js/game/container.js",
+        "client/js/render/item-renderer.js",
+        "client/data/enchantments.json"
+      ],
+      "observation": "The item is registered but not classified as food; planting/harvesting is server-owned.",
+      "acceptance": "Eat berries and plant them; verify hunger, use priority on dirt and mature-bush harvesting."
+    },
+    {
+      "id": "additions-items-leather-horse-armor",
+      "section": "Additions",
+      "category": "Items",
+      "topic": "Leather horse armor",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/js/game/container.js",
+        "client/js/render/item-renderer.js",
+        "client/data/enchantments.json"
+      ],
+      "observation": "Item tinting is generic, but horse armor slot validation excludes leather and horse rendering needs adaptation.",
+      "acceptance": "Equip, dye, remove and dispense leather armor; inspect color and invisibility rendering."
+    },
+    {
+      "id": "additions-items-spawn-eggs",
+      "section": "Additions",
+      "category": "Items",
+      "topic": "Spawn eggs",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/js/game/container.js",
+        "client/js/render/item-renderer.js",
+        "client/data/enchantments.json"
+      ],
+      "observation": "All seven new eggs have native item IDs; their runtime color lookup returns null.",
+      "acceptance": "Inspect all seven egg icons, spawn adults/babies and test EntityTag overrides without changing egg colors."
+    },
+    {
+      "id": "additions-mobs-mooshrooms",
+      "section": "Additions",
+      "category": "Mobs",
+      "topic": "Mooshrooms",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/entity-models.js",
+        "client/js/render/villager-layers.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Brown/red texture selection exists; conversion, feeding and stew outcomes are server-owned and untested here.",
+      "acceptance": "Summon both types, strike with lightning, feed flowers, milk stew and shear."
+    },
+    {
+      "id": "additions-mobs-pandas",
+      "section": "Additions",
+      "category": "Mobs",
+      "topic": "Pandas",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/entity-models.js",
+        "client/js/render/villager-layers.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native model and default texture render; personality skins, rolling/sneezing/eating poses remain incomplete.",
+      "acceptance": "Spawn every gene variant and babies; observe sneeze, roll, eat, breeding and unhappy behavior."
+    },
+    {
+      "id": "additions-mobs-pillagers",
+      "section": "Additions",
+      "category": "Mobs",
+      "topic": "Pillagers",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/entity-models.js",
+        "client/js/render/villager-layers.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native living renderer exists; crossbow charging/aim poses and raid participation need completion.",
+      "acceptance": "Inspect patrol leader banner, load/fire poses and a raid wave; test shield interactions."
+    },
+    {
+      "id": "additions-mobs-ravagers",
+      "section": "Additions",
+      "category": "Mobs",
+      "topic": "Ravagers",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/entity-models.js",
+        "client/js/render/villager-layers.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native model renders; attack/stun/roar poses and passenger combinations are not certified.",
+      "acceptance": "Observe bite, shield stun, roar and pillager/vindicator/evoker jockeys in raids."
+    },
+    {
+      "id": "additions-mobs-cats",
+      "section": "Additions",
+      "category": "Mobs",
+      "topic": "Cats",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/entity-models.js",
+        "client/js/render/villager-layers.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Separate cat registry and texture metadata are handled; full sleeping/lying/taming poses need testing.",
+      "acceptance": "Spawn all 11 coats and babies; tame, sit, sleep near player, wake and collect gifts."
+    },
+    {
+      "id": "additions-mobs-trader-llamas",
+      "section": "Additions",
+      "category": "Mobs",
+      "topic": "Trader Llamas",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/entity-models.js",
+        "client/js/render/villager-layers.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native living classification and trader texture exist; leash/carpet/chest combinations need checking.",
+      "acceptance": "Spawn with trader, lead them, inspect decor and chests, ride and watch spit/despawn."
+    },
+    {
+      "id": "additions-mobs-wandering-traders",
+      "section": "Additions",
+      "category": "Mobs",
+      "topic": "Wandering Traders",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/entity-models.js",
+        "client/js/render/villager-layers.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native model/texture render; AI, offers and invisibility transitions need a live check.",
+      "acceptance": "Trade all offers, inspect llamas and lead, observe night potion/milk transitions and despawn."
+    },
+    {
+      "id": "additions-mobs-foxes",
+      "section": "Additions",
+      "category": "Mobs",
+      "topic": "Foxes",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/entity-models.js",
+        "client/js/render/villager-layers.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native model and red/snow variants render; sleeping/crouching/pouncing and held-item poses need testing.",
+      "acceptance": "Observe both types sleeping, pouncing, carrying/eating items and breeding; test trusted babies."
+    },
+    {
+      "id": "additions-world-generation-general",
+      "section": "Additions",
+      "category": "World generation",
+      "topic": "General",
+      "status": "server-owned",
+      "evidence": [
+        "client/data/biomes.json",
+        "client/js/world/chunk-1.14.4.js",
+        "tools/test-1.14.4-chunks.mjs"
+      ],
+      "observation": "Chunk generation/loading policy is vanilla-server-owned; receiving native chunks is tested separately.",
+      "acceptance": "Travel quickly through newly generated terrain and compare lighting and terrain with a native client."
+    },
+    {
+      "id": "additions-world-generation-bamboo-forests",
+      "section": "Additions",
+      "category": "World generation",
+      "topic": "Bamboo Forests",
+      "status": "partial",
+      "evidence": [
+        "client/data/biomes.json",
+        "client/js/world/chunk-1.14.4.js",
+        "tools/test-1.14.4-chunks.mjs"
+      ],
+      "observation": "Both bamboo-jungle biome entries exist; structure and vegetation generation are server-owned.",
+      "acceptance": "Visit both bamboo-jungle biomes, check foliage colors, bamboo, pandas and transitions."
+    },
+    {
+      "id": "additions-world-generation-pillager-outposts",
+      "section": "Additions",
+      "category": "World generation",
+      "topic": "Pillager outposts",
+      "status": "server-owned",
+      "evidence": [
+        "client/data/biomes.json",
+        "client/js/world/chunk-1.14.4.js",
+        "tools/test-1.14.4-chunks.mjs"
+      ],
+      "observation": "Structure placement, loot and spawning are server-owned; rendering all generated contents needs a live tour.",
+      "acceptance": "Locate an outpost, inspect tower/cages/loot and observe pillagers and golem."
+    },
+    {
+      "id": "additions-world-generation-villages",
+      "section": "Additions",
+      "category": "World generation",
+      "topic": "Villages",
+      "status": "server-owned",
+      "evidence": [
+        "client/data/biomes.json",
+        "client/js/world/chunk-1.14.4.js",
+        "tools/test-1.14.4-chunks.mjs"
+      ],
+      "observation": "Snowy village generation and contents are server-owned; client workstation/mob gaps apply.",
+      "acceptance": "Tour a newly generated snowy village and compare structures, beds, paths, mobs and workstations."
+    },
+    {
+      "id": "additions-world-generation-zombie-villages",
+      "section": "Additions",
+      "category": "World generation",
+      "topic": "Zombie Villages",
+      "status": "server-owned",
+      "evidence": [
+        "client/data/biomes.json",
+        "client/js/world/chunk-1.14.4.js",
+        "tools/test-1.14.4-chunks.mjs"
+      ],
+      "observation": "Snowy abandoned village generation is server-owned; zombie-villager display needs live coverage.",
+      "acceptance": "Visit or load a snowy abandoned village, inspect cobwebs and villagers through day/night."
+    },
+    {
+      "id": "additions-gameplay-advancements",
+      "section": "Additions",
+      "category": "Gameplay",
+      "topic": "Advancements",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/hud.js",
+        "client/js/gui/screens/advancements.js",
+        "client/js/gui/screens/packs.js",
+        "client/js/game/items.js"
+      ],
+      "observation": "Server advancement packets and generic tree/toast UI exist; new icon/text and trigger scenarios are unverified.",
+      "acceptance": "Earn all new crossbow, raid and trading advancements; inspect toast, icons, descriptions and persistence."
+    },
+    {
+      "id": "additions-gameplay-illager-patrols",
+      "section": "Additions",
+      "category": "Gameplay",
+      "topic": "Illager patrols",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/hud.js",
+        "client/js/gui/screens/advancements.js",
+        "client/js/gui/screens/packs.js",
+        "client/js/game/items.js"
+      ],
+      "observation": "Patrol spawning and Bad Omen assignment are server-owned; new effect display is incomplete.",
+      "acceptance": "Encounter a patrol, kill its captain and inspect banner, effect and raid trigger."
+    },
+    {
+      "id": "additions-gameplay-raids",
+      "section": "Additions",
+      "category": "Gameplay",
+      "topic": "Raids",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/hud.js",
+        "client/js/gui/screens/advancements.js",
+        "client/js/gui/screens/packs.js",
+        "client/js/game/items.js"
+      ],
+      "observation": "Generic boss bars work; Bad Omen/Hero runtime definitions, bell resonance and some mob poses are missing.",
+      "acceptance": "Run a full raid including loss/victory, all waves, boss bar, horn, glowing, discounts and gifts."
+    },
+    {
+      "id": "additions-gameplay-resource-packs",
+      "section": "Additions",
+      "category": "Gameplay",
+      "topic": "Resource packs",
+      "status": "missing",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/hud.js",
+        "client/js/gui/screens/advancements.js",
+        "client/js/gui/screens/packs.js",
+        "client/js/game/items.js"
+      ],
+      "observation": "External packs load, but the built-in Programmer Art pack is not exposed in the pack chooser.",
+      "acceptance": "Enable built-in Programmer Art, reorder with another pack and reload; test old-format red warning/dialog."
+    },
+    {
+      "id": "additions-gameplay-status-effects",
+      "section": "Additions",
+      "category": "Gameplay",
+      "topic": "Status effects",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/hud.js",
+        "client/js/gui/screens/advancements.js",
+        "client/js/gui/screens/packs.js",
+        "client/js/game/items.js"
+      ],
+      "observation": "Native effects table includes Bad Omen and Hero; Items.effects lookup lacks both and HUD uses legacy icons.",
+      "acceptance": "Apply/remove both effects, trigger raid, drink milk and inspect HUD/inventory names, timers and icons."
+    },
+    {
+      "id": "additions-command-format-tags",
+      "section": "Additions",
+      "category": "Command format",
+      "topic": "Tags",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/screens/chat.js",
+        "client/js/game/tags.js"
+      ],
+      "observation": "Native block/item/fluid tag consumption exists; the local tag cache discards entity-type tags and creative tag search is absent.",
+      "acceptance": "Reload block/item/entity/fluid tags; inspect F3 block tags, creative # search and command completions."
+    },
+    {
+      "id": "additions-command-format-loot",
+      "section": "Additions",
+      "category": "Command format",
+      "topic": "/loot",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/screens/chat.js",
+        "client/js/game/tags.js"
+      ],
+      "observation": "Execution and loot evaluation belong to the server; command tree and suggestion transport exist.",
+      "acceptance": "Type, complete and run loot give/insert/spawn/replace with permissions and inspect outputs."
+    },
+    {
+      "id": "additions-command-format-schedule",
+      "section": "Additions",
+      "category": "Command format",
+      "topic": "/schedule",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/screens/chat.js",
+        "client/js/game/tags.js"
+      ],
+      "observation": "Function scheduling belongs to the server; no local command interpreter is required.",
+      "acceptance": "Complete and run schedule for a test function and inspect timed chat/block updates."
+    },
+    {
+      "id": "additions-command-format-teammsg",
+      "section": "Additions",
+      "category": "Command format",
+      "topic": "/teammsg",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/screens/chat.js",
+        "client/js/game/tags.js"
+      ],
+      "observation": "Team routing is server-owned; translated chat and suggestions need live comparison.",
+      "acceptance": "Join two teams and compare tm/teammsg delivery, translation and hover/click metadata."
+    },
+    {
+      "id": "additions-general-client-jar",
+      "section": "Additions",
+      "category": "General",
+      "topic": "Client.jar",
+      "status": "partial",
+      "evidence": [
+        "tools/port-1.14.4/target.json",
+        "client/js/render/splash.js",
+        "client/js/gui/font-providers.js",
+        "client/js/render/particles.js",
+        "client/js/game/recipebook.js",
+        "client/js/gui/screens/menus.js",
+        "client/js/gui/screens/stats.js"
+      ],
+      "observation": "Official jar/mappings are pinned and extraction is validated; root version.json metadata is present in the target jar.",
+      "acceptance": "Verify root version.json version, protocol and data/pack versions agree with native runtime tables and displayed client identity."
+    },
+    {
+      "id": "additions-general-death-messages",
+      "section": "Additions",
+      "category": "General",
+      "topic": "Death messages",
+      "status": "unverified",
+      "evidence": [
+        "tools/port-1.14.4/target.json",
+        "client/js/render/splash.js",
+        "client/js/gui/font-providers.js",
+        "client/js/render/particles.js",
+        "client/js/game/recipebook.js",
+        "client/js/gui/screens/menus.js",
+        "client/js/gui/screens/stats.js"
+      ],
+      "observation": "Generic translation/chat supports server messages; each new death message has not been replayed.",
+      "acceptance": "Trigger new berry/firework/falling variants as applicable and compare translated text and hover data."
+    },
+    {
+      "id": "additions-general-font",
+      "section": "Additions",
+      "category": "General",
+      "topic": "Font",
+      "status": "partial",
+      "evidence": [
+        "tools/port-1.14.4/target.json",
+        "client/js/render/splash.js",
+        "client/js/gui/font-providers.js",
+        "client/js/render/particles.js",
+        "client/js/game/recipebook.js",
+        "client/js/gui/screens/menus.js",
+        "client/js/gui/screens/stats.js"
+      ],
+      "observation": "Bitmap, legacy Unicode and TTF providers have tests; complete native glyph coverage remains a visual check.",
+      "acceptance": "Compare added glyphs and non-Latin text; load TTF/OpenType resource packs and test fallback/Unicode mode."
+    },
+    {
+      "id": "additions-general-title-screen",
+      "section": "Additions",
+      "category": "General",
+      "topic": "Title screen",
+      "status": "missing",
+      "evidence": [
+        "tools/port-1.14.4/target.json",
+        "client/js/render/splash.js",
+        "client/js/gui/font-providers.js",
+        "client/js/render/particles.js",
+        "client/js/game/recipebook.js",
+        "client/js/gui/screens/menus.js",
+        "client/js/gui/screens/stats.js"
+      ],
+      "observation": "The title screen has the new panorama but lacks the Accessibility entry point.",
+      "acceptance": "Inspect accessibility button, keyboard focus, narration and navigation to accessibility options."
+    },
+    {
+      "id": "additions-general-particles",
+      "section": "Additions",
+      "category": "General",
+      "topic": "Particles",
+      "status": "missing",
+      "evidence": [
+        "tools/port-1.14.4/target.json",
+        "client/js/render/splash.js",
+        "client/js/gui/font-providers.js",
+        "client/js/render/particles.js",
+        "client/js/game/recipebook.js",
+        "client/js/gui/screens/menus.js",
+        "client/js/gui/screens/stats.js"
+      ],
+      "observation": "All native particle IDs exist, but eight new dispatches emit nothing and the legacy atlas is absent from the native jar.",
+      "acceptance": "Use particle commands for every native ID and compare animation, color, collision and resource-pack overrides."
+    },
+    {
+      "id": "additions-general-recipes",
+      "section": "Additions",
+      "category": "General",
+      "topic": "Recipes",
+      "status": "partial",
+      "evidence": [
+        "tools/port-1.14.4/target.json",
+        "client/js/render/splash.js",
+        "client/js/gui/font-providers.js",
+        "client/js/render/particles.js",
+        "client/js/game/recipebook.js",
+        "client/js/gui/screens/menus.js",
+        "client/js/gui/screens/stats.js"
+      ],
+      "observation": "Native recipe codec includes new workstation/campfire types; recipe-book JSON tags are not resolved.",
+      "acceptance": "Learn/craft added recipes, use all furnace books and campfire recipes, check filtering and ghost ingredients."
+    },
+    {
+      "id": "additions-general-splashes",
+      "section": "Additions",
+      "category": "General",
+      "topic": "Splashes",
+      "status": "partial",
+      "evidence": [
+        "tools/port-1.14.4/target.json",
+        "client/js/render/splash.js",
+        "client/js/gui/font-providers.js",
+        "client/js/render/particles.js",
+        "client/js/game/recipebook.js",
+        "client/js/gui/screens/menus.js",
+        "client/js/gui/screens/stats.js"
+      ],
+      "observation": "Splashes are loaded from native assets; individual additions have not been visually sampled.",
+      "acceptance": "Inspect native splash list and sample title splashes including localization/special dates."
+    },
+    {
+      "id": "additions-general-startup-screen",
+      "section": "Additions",
+      "category": "General",
+      "topic": "Startup screen",
+      "status": "partial",
+      "evidence": [
+        "tools/port-1.14.4/target.json",
+        "client/js/render/splash.js",
+        "client/js/gui/font-providers.js",
+        "client/js/render/particles.js",
+        "client/js/game/recipebook.js",
+        "client/js/gui/screens/menus.js",
+        "client/js/gui/screens/stats.js"
+      ],
+      "observation": "Startup splash still draws the old white-logo presentation without native loading progress.",
+      "acceptance": "Reload cached/uncached resources and compare startup progress bar, logo and fade into the main menu."
+    },
+    {
+      "id": "additions-general-statistics",
+      "section": "Additions",
+      "category": "General",
+      "topic": "Statistics",
+      "status": "partial",
+      "evidence": [
+        "tools/port-1.14.4/target.json",
+        "client/js/render/splash.js",
+        "client/js/gui/font-providers.js",
+        "client/js/render/particles.js",
+        "client/js/game/recipebook.js",
+        "client/js/gui/screens/menus.js",
+        "client/js/gui/screens/stats.js"
+      ],
+      "observation": "Generic statistic packets and screen exist; all new actions and entity statistics are unverified.",
+      "acceptance": "Use each new workstation, raid and mob interaction, then compare updated statistics after rejoin."
+    },
+    {
+      "id": "changes-blocks-beds",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Beds",
+      "status": "partial",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native collision/selection shapes are extracted; color/sleep rendering has prior fixes but all orientations need a visual pass.",
+      "acceptance": "Select and collide with both halves in every orientation, sleep and break/rejoin all colors."
+    },
+    {
+      "id": "changes-blocks-brewing-stands",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Brewing stands",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "New village generation/job-site assignment is server-owned; existing brewing UI remains in use.",
+      "acceptance": "Visit a temple and assign a cleric; open brewing stand and brew with hoppers."
+    },
+    {
+      "id": "changes-blocks-carpets",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Carpets",
+      "status": "partial",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native recipes are available, but tag-based ingredients break recipe-book matching.",
+      "acceptance": "Recolor eight white carpets around every non-white dye and inspect recipe-book filtering."
+    },
+    {
+      "id": "changes-blocks-cauldrons",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Cauldrons",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Village placement and leatherworker job assignment are server-owned.",
+      "acceptance": "Visit a tannery, assign a leatherworker and test water levels/dye removal."
+    },
+    {
+      "id": "changes-blocks-chorus-flowers",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Chorus flowers",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Projectile break/drop behavior is server-owned; client must apply block/item updates.",
+      "acceptance": "Shoot with arrows and tridents, inspect block disappearance, dropped flower and relog state."
+    },
+    {
+      "id": "changes-blocks-crops-and-nether-wart",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Crops and nether wart",
+      "status": "partial",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native sound assets exist; legacy local sound-type heuristics are not exhaustive.",
+      "acceptance": "Place/break every crop and wart; compare sound and volume against native 1.14.4."
+    },
+    {
+      "id": "changes-blocks-cut-sandstone-and-cut-red-sandstone",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Cut sandstone and cut red sandstone",
+      "status": "partial",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native stonecutting recipes and menu are available; exact result recipes need live testing.",
+      "acceptance": "Select both cut sandstone recipes in the stonecutter and take/shift-click outputs."
+    },
+    {
+      "id": "changes-blocks-dispensers",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Dispensers",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Shearing sheep is server-owned; animation, wool item updates and sounds need live testing.",
+      "acceptance": "Dispense shears at sheep, verify drops, durability and regrowth."
+    },
+    {
+      "id": "changes-blocks-glass",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Glass",
+      "status": "partial",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native support/occlusion properties exist; local placement rules are not fully certified.",
+      "acceptance": "Place redstone on glass and inspect support, rendering, light and power updates."
+    },
+    {
+      "id": "changes-blocks-grass-path-mycelium-and-podzol",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Grass path, mycelium, and podzol",
+      "status": "partial",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native models are loaded; randomized top orientation needs a visual comparison.",
+      "acceptance": "Place large patches of all three blocks and compare random top rotation and lighting before/after updates."
+    },
+    {
+      "id": "changes-blocks-leaves",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Leaves",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Stick drop probabilities and decay are server-owned.",
+      "acceptance": "Break/decay leaves with and without Fortune/Silk Touch; inspect stick drops and collision."
+    },
+    {
+      "id": "changes-blocks-nether-brick-fences",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Nether brick fences",
+      "status": "partial",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native crafting recipes exist; recipe-book ingredient handling remains incomplete.",
+      "acceptance": "Craft fences with blocks plus brick items and walls with the former fence layout; compare yields."
+    },
+    {
+      "id": "changes-blocks-redstone-dust",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Redstone dust",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Depowering simulation/performance is server-owned, while received power states render locally.",
+      "acceptance": "Toggle long redstone lines and inspect power colors and block-state updates."
+    },
+    {
+      "id": "changes-blocks-signs",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Signs",
+      "status": "missing",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Oak rename is registered, but renderer routing, native textures, text colors and selection editor are stale.",
+      "acceptance": "Use all wood recipes, move cursor, select/copy/paste text and dye it; rejoin."
+    },
+    {
+      "id": "changes-blocks-smooth-quartz-smooth-sandstone-smooth-red-sandstone-and-smooth-stone",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Smooth quartz, smooth sandstone, smooth red sandstone and smooth stone",
+      "status": "partial",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native smelting recipes exist; books and all furnace interactions need verification.",
+      "acceptance": "Smelt all four source blocks and check recipe book, timing and output stacks."
+    },
+    {
+      "id": "changes-blocks-smooth-stone-slab",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Smooth stone slab",
+      "status": "partial",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native item/block names and models exist; recipe-book tag handling is incomplete.",
+      "acceptance": "Craft from smooth stone, inspect single/double models and ensure stone produces the separate stone slab."
+    },
+    {
+      "id": "changes-blocks-stained-glass-panes",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Stained glass panes",
+      "status": "partial",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native recoloring recipes exist; recipe-book matching needs correction.",
+      "acceptance": "Surround all dyes with clear panes and inspect result count, color and recipe filtering."
+    },
+    {
+      "id": "changes-blocks-tnt",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "TNT",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Explosion block-drop policy is server-owned.",
+      "acceptance": "Explode a controlled block palette and compare surviving item count and client block/light updates."
+    },
+    {
+      "id": "changes-blocks-transparent-blocks",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Transparent blocks",
+      "status": "partial",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Per-state native opacity/occlusion is extracted; every support and light-propagation rule is not certified.",
+      "acceptance": "Test slabs, stairs, snow, panes, leaves, paths and pistons for face culling, light and supported attachments."
+    },
+    {
+      "id": "changes-blocks-vines",
+      "section": "Changes",
+      "category": "Blocks",
+      "topic": "Vines",
+      "status": "partial",
+      "evidence": [
+        "client/js/world/blocks.js",
+        "client/js/world/world.js",
+        "client/js/game/physics.js",
+        "client/js/audio/sound.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/game/recipebook.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Local ladder detection accepts unsupported vines; motion and jump transitions need a server comparison.",
+      "acceptance": "Climb hanging vines without backing blocks, jump from them and test corners/sneaking."
+    },
+    {
+      "id": "changes-items-beetroot-soup",
+      "section": "Changes",
+      "category": "Items",
+      "topic": "Beetroot soup",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/js/gui/screens/book.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/game/container.js"
+      ],
+      "observation": "Native shapeless recipe exists; food use predates this port but recipe-book matching is incomplete.",
+      "acceptance": "Craft with shuffled slots, eat and check hunger/bowl return and recipe-book placement."
+    },
+    {
+      "id": "changes-items-book-and-quill",
+      "section": "Changes",
+      "category": "Items",
+      "topic": "Book and quill",
+      "status": "missing",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/js/gui/screens/book.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/game/container.js"
+      ],
+      "observation": "Editor uses legacy item IDs and custom-payload save channels; native open-book packets have no consumer.",
+      "acceptance": "Write up to 100 pages, select/copy/paste words/pages, sign in either hand, reopen and verify server persistence."
+    },
+    {
+      "id": "changes-items-dead-bush",
+      "section": "Changes",
+      "category": "Items",
+      "topic": "Dead bush",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/js/gui/screens/book.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/game/container.js"
+      ],
+      "observation": "Fuel acceptance/time is decided by server furnace processing.",
+      "acceptance": "Burn dead bushes in furnaces/smokers/blast furnaces and check progress and consumption."
+    },
+    {
+      "id": "changes-items-dye",
+      "section": "Changes",
+      "category": "Items",
+      "topic": "Dye",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/js/gui/screens/book.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/game/container.js"
+      ],
+      "observation": "Native renamed items exist; use behavior relies on server and local inventory validation.",
+      "acceptance": "Check red/yellow/green names; reject old raw ingredients for dyeing while preserving bone-meal growth use."
+    },
+    {
+      "id": "changes-items-horse-armor",
+      "section": "Changes",
+      "category": "Items",
+      "topic": "Horse armor",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/js/gui/screens/book.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/game/container.js"
+      ],
+      "observation": "Horse rendering/slot code is inherited; invisibility and hurt-tint changes are not certified.",
+      "acceptance": "Equip each material, make horse invisible and damage it; verify armor stays visible without red tint."
+    },
+    {
+      "id": "changes-items-rabbit-stew",
+      "section": "Changes",
+      "category": "Items",
+      "topic": "Rabbit stew",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/js/gui/screens/book.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/game/container.js"
+      ],
+      "observation": "Native shapeless recipe exists; recipe-book ingredients still need adaptation.",
+      "acceptance": "Craft both mushroom variants in shuffled slots; eat and check bowl return."
+    },
+    {
+      "id": "changes-items-totem-of-undying",
+      "section": "Changes",
+      "category": "Items",
+      "topic": "Totem of undying",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/js/gui/screens/book.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/game/container.js"
+      ],
+      "observation": "Totem animation exists but custom_model_data predicate is absent.",
+      "acceptance": "Trigger a totem with a custom model resource pack and compare held versus activation appearance."
+    },
+    {
+      "id": "changes-mobs-general",
+      "section": "Changes",
+      "category": "Mobs",
+      "topic": "General",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/villager-layers.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native entity metadata is decoded; local sneaking dimensions are stale and full sleeping/hitbox behavior is unverified.",
+      "acceptance": "Compare entity hitboxes, eye positions, sleeping and forced player poses against native 1.14.4."
+    },
+    {
+      "id": "changes-mobs-cats-and-ocelots",
+      "section": "Changes",
+      "category": "Mobs",
+      "topic": "Cats and ocelots",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/villager-layers.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Separate entity routing exists; tame/trust behavior is server-owned.",
+      "acceptance": "Feed both species, inspect tame/trust outcomes and collar, sitting and baby states."
+    },
+    {
+      "id": "changes-mobs-creepers",
+      "section": "Changes",
+      "category": "Mobs",
+      "topic": "Creepers",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/villager-layers.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Music-disc loot conditions are server-owned.",
+      "acceptance": "Have skeletons and strays kill creepers and inspect drops."
+    },
+    {
+      "id": "changes-mobs-dolphins",
+      "section": "Changes",
+      "category": "Mobs",
+      "topic": "Dolphins",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/villager-layers.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Dispenser armor rejection is server-owned.",
+      "acceptance": "Dispense armor at dolphins and verify inventory/equipment remains correct."
+    },
+    {
+      "id": "changes-mobs-fish",
+      "section": "Changes",
+      "category": "Mobs",
+      "topic": "Fish",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/villager-layers.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Vanilla fish AI optimizations do not transfer to browser rendering.",
+      "acceptance": "Load schools of fish, compare movement updates and profile browser rendering separately."
+    },
+    {
+      "id": "changes-mobs-illusioners-players-and-the-wither",
+      "section": "Changes",
+      "category": "Mobs",
+      "topic": "Illusioners, players and the wither",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/villager-layers.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Loot table evaluation is server-owned.",
+      "acceptance": "Use custom loot tables for each entity type and verify received item updates."
+    },
+    {
+      "id": "changes-mobs-iron-golem",
+      "section": "Changes",
+      "category": "Mobs",
+      "topic": "Iron golem",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/villager-layers.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Village spawning rules include patch changes and are server-owned.",
+      "acceptance": "Run a working/sleeping/panicking village and inspect golem spawning and rendering."
+    },
+    {
+      "id": "changes-mobs-mooshrooms",
+      "section": "Changes",
+      "category": "Mobs",
+      "topic": "Mooshrooms",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/villager-layers.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Brown variant metadata/texture exists; transformation sounds and feeding effects need live verification.",
+      "acceptance": "Strike each type with lightning, feed flowers and milk suspicious stew; compare sounds/textures."
+    },
+    {
+      "id": "changes-mobs-parrots",
+      "section": "Changes",
+      "category": "Mobs",
+      "topic": "Parrots",
+      "status": "unverified",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/villager-layers.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Native sound IDs exist; new imitation selection and playback have not been observed.",
+      "acceptance": "Place parrots near pillagers, ravagers and pandas; compare imitation sound events."
+    },
+    {
+      "id": "changes-mobs-phantoms",
+      "section": "Changes",
+      "category": "Mobs",
+      "topic": "Phantoms",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/villager-layers.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Cat avoidance is server AI.",
+      "acceptance": "Observe phantoms near tame and stray cats and compare client interpolation."
+    },
+    {
+      "id": "changes-mobs-villagers",
+      "section": "Changes",
+      "category": "Mobs",
+      "topic": "Villagers",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/villager-layers.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Seven biome/profession/badge texture layers and trade packets have tests; sleep/held-offer poses and all AI transitions remain unverified.",
+      "acceptance": "Exercise all professions, levels, biome skins, children, work, sleep, meetings, curing and demand/restock trades."
+    },
+    {
+      "id": "changes-mobs-vindicators",
+      "section": "Changes",
+      "category": "Mobs",
+      "topic": "Vindicators",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/villager-layers.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Door breaking is server AI; client receives animation and block updates.",
+      "acceptance": "Observe a vindicator breaking a door and compare animation/sounds and final block state."
+    },
+    {
+      "id": "changes-mobs-wolves",
+      "section": "Changes",
+      "category": "Mobs",
+      "topic": "Wolves",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/villager-layers.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-visual-properties.mjs"
+      ],
+      "observation": "Tamed-kill attribution, loot and captain Bad Omen are server-owned.",
+      "acceptance": "Have a tame wolf kill mobs and a raid captain; inspect loot, XP and effect updates."
+    },
+    {
+      "id": "changes-non-mob-entities-armor-stands",
+      "section": "Changes",
+      "category": "Non-mob entities",
+      "topic": "Armor stands",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js"
+      ],
+      "observation": "Armor stand loot-table evaluation is server-owned; rendering has an existing adapter.",
+      "acceptance": "Assign a custom loot table, break the stand and inspect drops/equipment and metadata poses."
+    },
+    {
+      "id": "changes-non-mob-entities-thrown-projectiles",
+      "section": "Changes",
+      "category": "Non-mob entities",
+      "topic": "Thrown projectiles",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js"
+      ],
+      "observation": "Object rendering mostly chooses fixed item types; full optional Item metadata overrides need adaptation.",
+      "acceptance": "Summon each egg/pearl/bottle/eye/fireball/snowball with a custom Item stack and compare model/tint."
+    },
+    {
+      "id": "changes-non-mob-entities-minecart-with-tnt",
+      "section": "Changes",
+      "category": "Non-mob entities",
+      "topic": "Minecart with TNT",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js"
+      ],
+      "observation": "Explosion drop-rate changes are server-owned.",
+      "acceptance": "Explode a TNT minecart against a controlled palette and inspect drops, particles and block updates."
+    },
+    {
+      "id": "changes-non-mob-entities-paintings",
+      "section": "Changes",
+      "category": "Non-mob entities",
+      "topic": "Paintings",
+      "status": "missing",
+      "evidence": [
+        "client/js/game/entities.js",
+        "client/js/render/entity-renderer.js"
+      ],
+      "observation": "Renderer requests the removed combined atlas; native jar has separate painting sprites.",
+      "acceptance": "Place every motive, use an animated painting pack and inspect frame/back/lighting after rejoin."
+    },
+    {
+      "id": "changes-world-generation-villages",
+      "section": "Changes",
+      "category": "World generation",
+      "topic": "Villages",
+      "status": "server-owned",
+      "evidence": [
+        "client/data/biomes.json",
+        "client/js/world/chunk-1.14.4.js",
+        "client/js/render/entity-renderer.js"
+      ],
+      "observation": "New layouts, paths, job sites and generation are server-owned; client mob/block gaps still apply.",
+      "acceptance": "Tour all five village styles and inspect every generated block/entity in both clients."
+    },
+    {
+      "id": "changes-world-generation-swamp-huts",
+      "section": "Changes",
+      "category": "World generation",
+      "topic": "Swamp huts",
+      "status": "server-owned",
+      "evidence": [
+        "client/data/biomes.json",
+        "client/js/world/chunk-1.14.4.js",
+        "client/js/render/entity-renderer.js"
+      ],
+      "observation": "Black cat generation is server-owned; coat metadata has a client adapter.",
+      "acceptance": "Visit a fresh witch hut and inspect spawned black cat and witch."
+    },
+    {
+      "id": "changes-world-generation-zombie-villages",
+      "section": "Changes",
+      "category": "World generation",
+      "topic": "Zombie villages",
+      "status": "server-owned",
+      "evidence": [
+        "client/data/biomes.json",
+        "client/js/world/chunk-1.14.4.js",
+        "client/js/render/entity-renderer.js"
+      ],
+      "observation": "Abandoned biome-style variants are server-owned.",
+      "acceptance": "Tour each abandoned village style and verify blocks, cobwebs and zombie-villager skins."
+    },
+    {
+      "id": "changes-world-generation-the-nether",
+      "section": "Changes",
+      "category": "World generation",
+      "topic": "The Nether",
+      "status": "server-owned",
+      "evidence": [
+        "client/data/biomes.json",
+        "client/js/world/chunk-1.14.4.js",
+        "client/js/render/entity-renderer.js"
+      ],
+      "observation": "Nether generation changes belong to the server; biome/terrain display uses native tables.",
+      "acceptance": "Visit new Nether terrain and compare bedrock, terrain and block lighting with native client."
+    },
+    {
+      "id": "changes-command-format-advancements",
+      "section": "Changes",
+      "category": "Command format",
+      "topic": "Advancements",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/screens/chat.js",
+        "client/js/gui/screens/containers.js",
+        "client/js/game/items.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/villager-layers.js"
+      ],
+      "observation": "Changed predicates are evaluated by the server; advancement display is generic.",
+      "acceptance": "Load a test datapack using changed predicates and inspect progress, toast and descriptions."
+    },
+    {
+      "id": "changes-command-format-commands-nbt-data",
+      "section": "Changes",
+      "category": "Command format",
+      "topic": "Commands/NBT data",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/screens/chat.js",
+        "client/js/gui/screens/containers.js",
+        "client/js/game/items.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/villager-layers.js"
+      ],
+      "observation": "Time suffixes and command NBT semantics are server-owned; input is sent as text.",
+      "acceptance": "Complete and execute time arguments with t/s/d and fractional values; inspect server feedback."
+    },
+    {
+      "id": "changes-command-format-conditions",
+      "section": "Changes",
+      "category": "Command format",
+      "topic": "Conditions",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/screens/chat.js",
+        "client/js/gui/screens/containers.js",
+        "client/js/game/items.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/villager-layers.js"
+      ],
+      "observation": "Loot entity-properties predicate evaluation is server-owned.",
+      "acceptance": "Exercise entity_properties predicate variants through test loot and inspect received items."
+    },
+    {
+      "id": "changes-command-format-creative-menu",
+      "section": "Changes",
+      "category": "Command format",
+      "topic": "Creative menu",
+      "status": "missing",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/screens/chat.js",
+        "client/js/gui/screens/containers.js",
+        "client/js/game/items.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/villager-layers.js"
+      ],
+      "observation": "Creative search only matches names; #tag search and matching-tag tooltips are absent.",
+      "acceptance": "Search #minecraft:logs and another item tag; inspect matched items and tooltip tag labels."
+    },
+    {
+      "id": "changes-command-format-loot-tables",
+      "section": "Changes",
+      "category": "Command format",
+      "topic": "Loot tables",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/screens/chat.js",
+        "client/js/gui/screens/containers.js",
+        "client/js/game/items.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/villager-layers.js"
+      ],
+      "observation": "New entries/functions/conditions are server datapack logic, not a client loot interpreter.",
+      "acceptance": "Exercise block/entity/dynamic/tag/sequence loot and NBT/lore functions; inspect item updates and tooltips."
+    },
+    {
+      "id": "changes-command-format-json-text-components",
+      "section": "Changes",
+      "category": "Command format",
+      "topic": "JSON text components",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/screens/chat.js",
+        "client/js/gui/screens/containers.js",
+        "client/js/game/items.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/villager-layers.js"
+      ],
+      "observation": "Generic chat parses server-resolved text; NBT interpretation belongs to server; JSON item lore still renders as raw text.",
+      "acceptance": "Use entity/block NBT text components and interpret=true, plus JSON-formatted item lore in tooltips."
+    },
+    {
+      "id": "changes-command-format-nbt-paths",
+      "section": "Changes",
+      "category": "Command format",
+      "topic": "NBT paths",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/screens/chat.js",
+        "client/js/gui/screens/containers.js",
+        "client/js/game/items.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/villager-layers.js"
+      ],
+      "observation": "Multi-match paths, filters and negative indices are parsed/evaluated by server.",
+      "acceptance": "Run data modify/get with list/object filters, [] and negative indices and inspect feedback."
+    },
+    {
+      "id": "changes-command-format-villager-nbt",
+      "section": "Changes",
+      "category": "Command format",
+      "topic": "Villager NBT",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/screens/chat.js",
+        "client/js/gui/screens/containers.js",
+        "client/js/game/items.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/villager-layers.js"
+      ],
+      "observation": "Structured profession/biome/level metadata maps to native layers; offers/brain NBT is server-owned.",
+      "acceptance": "Summon every profession/type/level and mutate VillagerData, then trade and rejoin."
+    },
+    {
+      "id": "changes-command-format-world-generator-registries",
+      "section": "Changes",
+      "category": "Command format",
+      "topic": "World generator registries",
+      "status": "server-owned",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/screens/chat.js",
+        "client/js/gui/screens/containers.js",
+        "client/js/game/items.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/villager-layers.js"
+      ],
+      "observation": "Generator registry and datapack validation are server-owned.",
+      "acceptance": "Load custom biome-related generator configuration on a separate vanilla world and inspect received terrain."
+    },
+    {
+      "id": "changes-command-format-zombie-villager-nbt",
+      "section": "Changes",
+      "category": "Command format",
+      "topic": "Zombie villager NBT",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/screens/chat.js",
+        "client/js/gui/screens/containers.js",
+        "client/js/game/items.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/villager-layers.js"
+      ],
+      "observation": "Structured type/profession texture layers exist; offers persistence through curing is server-owned.",
+      "acceptance": "Summon matching VillagerData/Offers, cure and zombify, inspect skin and retained trades."
+    },
+    {
+      "id": "changes-command-format-other",
+      "section": "Changes",
+      "category": "Command format",
+      "topic": "Other",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/screens/chat.js",
+        "client/js/gui/screens/containers.js",
+        "client/js/game/items.js",
+        "client/js/render/item-renderer.js",
+        "client/js/render/villager-layers.js"
+      ],
+      "observation": "Server implements data/execute/locate/tag/quote changes; client custom_model_data predicate is missing.",
+      "acceptance": "Test command completions, modified item frames and resource-pack CustomModelData overrides."
+    },
+    {
+      "id": "changes-gameplay-crafting",
+      "section": "Changes",
+      "category": "Gameplay",
+      "topic": "Crafting",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/physics.js",
+        "client/js/world/world.js",
+        "client/js/game/items.js",
+        "client/js/gui/hud.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-world-light.mjs"
+      ],
+      "observation": "Combining damaged items was restored in 1.14.3; inherited repair logic is appropriate for target, with recipe-book gaps remaining.",
+      "acceptance": "Repair tools in crafting and grindstone; compare durability, enchantment loss and counts on 1.14.4."
+    },
+    {
+      "id": "changes-gameplay-enchanting",
+      "section": "Changes",
+      "category": "Gameplay",
+      "topic": "Enchanting",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/physics.js",
+        "client/js/world/world.js",
+        "client/js/game/items.js",
+        "client/js/gui/hud.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-world-light.mjs"
+      ],
+      "observation": "Protection exclusivity was restored in 1.14.3; new crossbow IDs and enchanting clue labels are incorrect.",
+      "acceptance": "Enchant crossbows and normal tools; compare offered clue IDs/names, costs and mutually exclusive protections."
+    },
+    {
+      "id": "changes-gameplay-lighting-system",
+      "section": "Changes",
+      "category": "Gameplay",
+      "topic": "Lighting system",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/physics.js",
+        "client/js/world/world.js",
+        "client/js/game/items.js",
+        "client/js/gui/hud.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-world-light.mjs"
+      ],
+      "observation": "Separate light packets and pending chunk lifecycle have tests; directional block properties are native.",
+      "acceptance": "Load/unload dimensions, travel fast, edit partial blocks and compare light at borders without requiring block updates."
+    },
+    {
+      "id": "changes-gameplay-sneaking",
+      "section": "Changes",
+      "category": "Gameplay",
+      "topic": "Sneaking",
+      "status": "missing",
+      "evidence": [
+        "client/js/game/physics.js",
+        "client/js/world/world.js",
+        "client/js/game/items.js",
+        "client/js/gui/hud.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-world-light.mjs"
+      ],
+      "observation": "Local height remains 1.65 and eye height remains pre-1.14; 1.5-block gaps are unsupported.",
+      "acceptance": "Sneak beneath top slabs/trapdoors; release crouch with blocked headroom and compare camera and server correction."
+    },
+    {
+      "id": "changes-gameplay-status-effects",
+      "section": "Changes",
+      "category": "Gameplay",
+      "topic": "Status effects",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/physics.js",
+        "client/js/world/world.js",
+        "client/js/game/items.js",
+        "client/js/gui/hud.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-world-light.mjs"
+      ],
+      "observation": "Effect icons still use the old atlas, and new effect runtime definitions are absent; AI detection is server-owned.",
+      "acceptance": "Apply all effects, inspect separate native icons and timers, and test invisible armor/entity layers."
+    },
+    {
+      "id": "changes-gameplay-trading",
+      "section": "Changes",
+      "category": "Gameplay",
+      "topic": "Trading",
+      "status": "partial",
+      "evidence": [
+        "client/js/game/physics.js",
+        "client/js/world/world.js",
+        "client/js/game/items.js",
+        "client/js/gui/hud.js",
+        "client/js/game/workstations-1.14.4.js",
+        "tools/test-1.14.4-content.mjs",
+        "tools/test-1.14.4-world-light.mjs"
+      ],
+      "observation": "Native offer list, demand/special-price calculation, XP and repeated shift trades have tests; full restock/reputation sessions are unverified.",
+      "acceptance": "Trade across all five levels, exhaust/restock, cure/attack villagers and inspect prices, discounts and badges."
+    },
+    {
+      "id": "changes-general-advancements",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Advancements",
+      "status": "partial",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Server owns changed requirements; new foods/crossbow use prevent completing some from this client.",
+      "acceptance": "Test Balanced Diet, Two by Two, Monster Hunter and How Did We Get Here using 1.14.4 requirements."
+    },
+    {
+      "id": "changes-general-collision-code",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Collision code",
+      "status": "partial",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Native selection/collision data plus specialized scaffolding behavior are validated; new pose fitting remains stale.",
+      "acceptance": "Run a collision course covering every new partial block, pistons, doors, swimming, sneaking and moving entities."
+    },
+    {
+      "id": "changes-general-creative-inventory",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Creative inventory",
+      "status": "partial",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Tabs are extracted from the native jar; tag search, new egg tinting and all special item renderers are incomplete.",
+      "acceptance": "Compare every tab/order including walls, search tags, tooltips, saved hotbars and all new icons."
+    },
+    {
+      "id": "changes-general-credits",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Credits",
+      "status": "partial",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Credits are read from native text assets; full screen layout/music behavior is not visually certified.",
+      "acceptance": "Open credits, compare staff text, scrolling, narration, skip behavior and music."
+    },
+    {
+      "id": "changes-general-debug-screen",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Debug screen",
+      "status": "partial",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Existing F3/graphs are inherited; new tick min/avg/max and server chunk metrics need a dedicated comparison.",
+      "acceptance": "Compare F3 and Alt+F3 lines/charts with native client; server tick metrics are unavailable on ordinary remote servers."
+    },
+    {
+      "id": "changes-general-dedicated-servers",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Dedicated servers",
+      "status": "not-applicable",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "This repository is a browser client/proxy; vanilla owns server.properties, EULA and server CLI changes.",
+      "acceptance": "Confirm external server starts with desired settings; no browser implementation of Java server CLI is required."
+    },
+    {
+      "id": "changes-general-language",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Language",
+      "status": "missing",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Language selection immediately calls setLanguage rather than applying on Done.",
+      "acceptance": "Choose several languages, cancel/Done and compare reload timing and selection behavior."
+    },
+    {
+      "id": "changes-general-loading-screen",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Loading screen",
+      "status": "partial",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Old splash renderer lacks a resource progress bar; chunk/loading screens need comparison.",
+      "acceptance": "Reload assets and connect/change dimension, comparing progress indication and transitions."
+    },
+    {
+      "id": "changes-general-lwjgl",
+      "section": "Changes",
+      "category": "General",
+      "topic": "LWJGL",
+      "status": "not-applicable",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Browser WebGL/audio/input replace the Java native library; matching its version is not a browser feature.",
+      "acceptance": "Validate supported WebGL platform separately; no LWJGL dependency is expected."
+    },
+    {
+      "id": "changes-general-title-screen",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Title screen",
+      "status": "partial",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Native panorama source hashes and runtime cube map have tests; accessibility/navigation gaps remain.",
+      "acceptance": "Compare all six panorama faces, rotation, title layout and button focus."
+    },
+    {
+      "id": "changes-general-menus",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Menus",
+      "status": "missing",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Base Tab handling cycles text fields only; full button focus and Shift+Tab/list arrow navigation are absent.",
+      "acceptance": "Navigate every menu without a mouse using Tab, Shift+Tab, arrows, Space and Enter."
+    },
+    {
+      "id": "changes-general-narrator",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Narrator",
+      "status": "partial",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "A narrator exists, but native accessibility placement and hovered/focused button narration are not certified.",
+      "acceptance": "Enable narration and traverse buttons, lists, chat and inventory; verify hovered/focused announcements."
+    },
+    {
+      "id": "changes-general-optimizations",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Optimizations",
+      "status": "not-applicable",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "World-save optimization and Nether portal chunk tickets are server/integrated-server responsibilities.",
+      "acceptance": "Test server portal retention separately; browser performance must be profiled rather than claiming vanilla engine optimizations."
+    },
+    {
+      "id": "changes-general-options",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Options",
+      "status": "missing",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Accessibility and mouse submenus are absent; obsolete Snooper remains and layout is generated for 1.13.2.",
+      "acceptance": "Compare all options, chat background/text opacity, scroll sensitivity/discrete scrolling and saved settings."
+    },
+    {
+      "id": "changes-general-particles",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Particles",
+      "status": "missing",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Renderer still addresses removed particles.png; native per-particle sprite definitions are not consumed.",
+      "acceptance": "Override sprite lists in a resource pack; test all frames and each native particle ID."
+    },
+    {
+      "id": "changes-general-pause-screen",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Pause screen",
+      "status": "missing",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Give Feedback and Report Bugs buttons are absent.",
+      "acceptance": "Open pause menu and compare buttons, links, placement and keyboard focus."
+    },
+    {
+      "id": "changes-general-player-positioning",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Player positioning",
+      "status": "missing",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Local updateSize does not choose a fitting pose under blocked headroom; forced crawling is absent.",
+      "acceptance": "Close a trapdoor on the player, crawl under one-block gaps and return to standing only when space permits."
+    },
+    {
+      "id": "changes-general-sounds",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Sounds",
+      "status": "partial",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Native sound IDs/assets exist; new note instruments and entity-attached sound consumer are missing.",
+      "acceptance": "Compare new block/mob sound types, entity-attached sounds, global volume and movement while sounds play."
+    },
+    {
+      "id": "changes-general-splash",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Splash",
+      "status": "partial",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Native splash text is loaded, but removed-string exclusion has not been independently asserted.",
+      "acceptance": "Check the native list excludes removed strings and sample rendered title messages."
+    },
+    {
+      "id": "changes-general-technical",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Technical",
+      "status": "partial",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Per-state opacity, occlusion and light data is extracted and build-validated; broad light propagation needs live coverage.",
+      "acceptance": "Test partial faces on slabs/stairs/snow/paths/pistons/portal frames against native client lighting."
+    },
+    {
+      "id": "changes-general-textures",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Textures",
+      "status": "partial",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Native asset source is pinned and panorama/entity textures validated; sign, particle, painting and effect consumers remain stale.",
+      "acceptance": "Inspect terrain/items/entities/GUI/effects with default assets and layered packs; look for missing or legacy paths."
+    },
+    {
+      "id": "changes-general-video-settings",
+      "section": "Changes",
+      "category": "General",
+      "topic": "Video settings",
+      "status": "missing",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "The obsolete VBO toggle remains and the shared option order table identifies 1.13.2.",
+      "acceptance": "Compare every video option/order/default including biome blend; remove obsolete VBO controls."
+    },
+    {
+      "id": "changes-general-world-creation",
+      "section": "Changes",
+      "category": "General",
+      "topic": "World creation",
+      "status": "not-applicable",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/manager.js",
+        "client/js/gui/screens/pause.js",
+        "client/js/gui/vanilla-layout.js",
+        "client/js/render/splash.js",
+        "client/js/gui/narrator.js",
+        "client/js/game/physics.js",
+        "tools/test-1.14.4-assets-panorama.mjs"
+      ],
+      "observation": "Singleplayer world creation/save upgrades are not implemented in this multiplayer browser client.",
+      "acceptance": "Treat save folder naming and structure upgrade progress as future integrated-server scope, not a passed feature."
+    },
+    {
+      "id": "patch-1.14.1-campfire-arrow-ignition",
+      "section": "Patches",
+      "category": "1.14.1",
+      "topic": "campfire-arrow-ignition",
+      "status": "server-owned",
+      "observation": "Burning-arrow ignition is decided by server block state updates.",
+      "acceptance": "Shoot a lit arrow into an unlit campfire; verify flames, light, smoke and state after rejoin.",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/render/particles.js"
+      ]
+    },
+    {
+      "id": "patch-1.14.2-lighting-and-world-diagnostics",
+      "section": "Patches",
+      "category": "1.14.2",
+      "topic": "lighting-and-world-diagnostics",
+      "status": "server-owned",
+      "observation": "Old-save light recalculation and region diagnostics belong to the server; client light packets are tested separately.",
+      "acceptance": "Load an upgraded world and check section boundaries and emitters against a native client.",
+      "evidence": [
+        "client/js/world/world.js",
+        "tools/test-1.14.4-world-light.mjs"
+      ]
+    },
+    {
+      "id": "patch-1.14.2-debug-server-chunk-count",
+      "section": "Patches",
+      "category": "1.14.2",
+      "topic": "debug-server-chunk-count",
+      "status": "unverified",
+      "observation": "Server chunk metrics differ between integrated and remote servers; inherited F3 is not certified.",
+      "acceptance": "Compare native F3 chunk lines in multiplayer and avoid inventing unavailable server counts.",
+      "evidence": [
+        "client/js/gui/hud.js"
+      ]
+    },
+    {
+      "id": "patch-1.14.2-raids-and-parrot-spawning",
+      "section": "Patches",
+      "category": "1.14.2",
+      "topic": "raids-and-parrot-spawning",
+      "status": "server-owned",
+      "observation": "Loaded-chunk raid spawning, larger bell search radius and grass-block parrot spawn checks are server-owned.",
+      "acceptance": "Trigger raids at chunk edges and locate parrots on grass blocks.",
+      "evidence": [
+        "client/js/game/entities.js"
+      ]
+    },
+    {
+      "id": "patch-1.14.3-crafting-repair-restoration",
+      "section": "Patches",
+      "category": "1.14.3",
+      "topic": "crafting-repair-restoration",
+      "status": "partial",
+      "observation": "Target restores crafting repair; do not implement base-1.14 removal.",
+      "acceptance": "Combine damaged items in a crafting grid and compare result/consumption with native 1.14.4.",
+      "evidence": [
+        "client/js/game/crafting.js"
+      ]
+    },
+    {
+      "id": "patch-1.14.3-enchanting-reversion",
+      "section": "Patches",
+      "category": "1.14.3",
+      "topic": "enchanting-reversion",
+      "status": "partial",
+      "observation": "Protection enchantment exclusivity is restored; crossbow registration and numeric clues still need fixing.",
+      "acceptance": "Compare enchanting and anvil combinations including crossbow enchantments.",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/data/enchantments.json"
+      ]
+    },
+    {
+      "id": "patch-1.14.3-pane-bar-attachments",
+      "section": "Patches",
+      "category": "1.14.3",
+      "topic": "pane-bar-attachments",
+      "status": "unverified",
+      "observation": "Native shapes exist; full torch/lantern/plate placement prediction has not been verified.",
+      "acceptance": "Place torches/lanterns/pressure plates on panes/bars and hang lanterns below them.",
+      "evidence": [
+        "client/js/game/interaction.js",
+        "client/js/world/blocks.js"
+      ]
+    },
+    {
+      "id": "patch-1.14.3-advancements-patrols-village-ai",
+      "section": "Patches",
+      "category": "1.14.3",
+      "topic": "advancements-patrols-village-ai",
+      "status": "server-owned",
+      "observation": "Saturation requirement removal, disableRaids, patrol spawning and villager AI/persistence are vanilla-server logic.",
+      "acceptance": "Use 1.14.4 advancement requirements; toggle raids and observe work/sleep/patrol behavior.",
+      "evidence": [
+        "client/js/game/game.js",
+        "client/js/gui/screens/advancements.js"
+      ]
+    },
+    {
+      "id": "patch-1.14.4-poppy-stew-night-vision",
+      "section": "Patches",
+      "category": "1.14.4",
+      "topic": "poppy-stew-night-vision",
+      "status": "missing",
+      "observation": "Poppy stew gives Night Vision in target; suspicious stew cannot currently begin eating.",
+      "acceptance": "Eat poppy stew and verify Night Vision rather than Speed, correct duration and bowl return.",
+      "evidence": [
+        "client/js/game/items.js"
+      ]
+    },
+    {
+      "id": "patch-1.14.4-first-person-camera-offset",
+      "section": "Patches",
+      "category": "1.14.4",
+      "topic": "first-person-camera-offset",
+      "status": "missing",
+      "observation": "renderFrame still applies a -0.1 first-person pivot translation, removed by target.",
+      "acceptance": "Compare first-person camera/raycast origin against native 1.14.4 near walls and at different FOVs.",
+      "evidence": [
+        "client/js/game/game.js"
+      ]
+    },
+    {
+      "id": "patch-1.14.4-pillager-texture",
+      "section": "Patches",
+      "category": "1.14.4",
+      "topic": "pillager-texture",
+      "status": "partial",
+      "observation": "Native pillager texture is used; exact pose/UV comparison remains unverified.",
+      "acceptance": "Compare front/back and crossbow aiming with native 1.14.4.",
+      "evidence": [
+        "client/js/render/entity-renderer.js"
+      ]
+    },
+    {
+      "id": "patch-1.14.4-chunk-streaming",
+      "section": "Patches",
+      "category": "1.14.4",
+      "topic": "chunk-streaming",
+      "status": "partial",
+      "observation": "Native chunk/light decoding and lifecycle have tests; high-speed live stress and memory profiling remain outstanding.",
+      "acceptance": "Fly/teleport rapidly across dimensions and verify no stale sections, dark borders or retained unloaded chunks.",
+      "evidence": [
+        "client/js/world/world.js",
+        "tools/test-1.14.4-chunks.mjs",
+        "tools/test-1.14.4-world-light.mjs"
+      ]
+    },
+    {
+      "id": "patch-1.14.4-commands-and-permissions",
+      "section": "Patches",
+      "category": "1.14.4",
+      "topic": "commands-and-permissions",
+      "status": "server-owned",
+      "observation": "debug report, reload/forceload permission changes and function-permission-level are server responsibilities.",
+      "acceptance": "Complete and execute those commands at appropriate permissions; verify feedback.",
+      "evidence": [
+        "client/js/gui/screens/chat.js"
+      ]
+    },
+    {
+      "id": "patch-1.14.4-villagers-spawning-pathfinding",
+      "section": "Patches",
+      "category": "1.14.4",
+      "topic": "villagers-spawning-pathfinding",
+      "status": "server-owned",
+      "observation": "Stock/restock, persistent gossip, siege exclusions and bamboo pathfinding are server-owned; client displays resulting metadata/offers.",
+      "acceptance": "Run work/restock/cure sessions and bamboo paths; compare offer counts, demand and trade UI updates.",
+      "evidence": [
+        "client/js/game/workstations-1.14.4.js",
+        "client/js/render/villager-layers.js"
+      ]
+    },
+    {
+      "id": "patch-1.14.4-realms-activity",
+      "section": "Patches",
+      "category": "1.14.4",
+      "topic": "realms-activity",
+      "status": "not-applicable",
+      "observation": "Realms is disabled in this client; removal of its Player Activity button is outside implemented scope.",
+      "acceptance": "Revisit if Realms support is added.",
+      "evidence": [
+        "client/js/gui/screens/menus.js"
+      ]
+    }
+  ]
+}

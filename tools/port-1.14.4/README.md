@@ -1,5 +1,13 @@
 # Native 1.14.4 extraction bootstrap
 
+For current feature coverage, see the [complete feature audit](../../docs/feature-audit-1.14.4.md).
+The milestone descriptions below record the successive implementation stages.
+`node tools/port-1.14.4/audit-features.mjs` runs native registry/asset checks and
+focused runtime probes. It reports known gaps; use `--strict` to fail on them,
+or `--write` to refresh the checked-in diagnostic JSON after reviewing a change.
+The separate `feature-checklist.json` contains reviewed observations and gameplay
+acceptance scenarios, which are not automatically certified by those probes.
+
 This is the first implementation milestone of the 1.14.4 port. It prepares and
 checks native source data without changing the inherited 1.13.2 runtime codecs.
 It uses Node's standard library and Java 11 or newer; `JAVA` may select the Java

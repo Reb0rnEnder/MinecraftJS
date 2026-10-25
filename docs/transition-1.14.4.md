@@ -5,6 +5,12 @@ independent lighting and browser join/reconnect verified. Remaining entity,
 workstation, movement and visual parity work is tracked below. This branch is
 not yet a complete vanilla-parity release.
 
+The [feature audit](feature-audit-1.14.4.md) is the current comprehensive parity
+backlog: 151 reference topics and 15 patch-behavior groups, with evidence,
+diagnostic results and acceptance scenarios. It supersedes earlier summaries of
+remaining work; working default models and workstation screens do not establish
+complete interaction, pose, particle or menu parity.
+
 See [the active-runtime milestone](runtime-1.14.4-milestone.md) for implementation,
 validation and the remaining work. Older networking-only limitations in the
 initial milestone below are historical and superseded by this runtime milestone.
@@ -43,8 +49,9 @@ entity/pose support are the next milestones.
 - Added packet/type change inventories, regeneration checks and integrity tests.
 - Carried forward the End sky and resource-pack row-hover fixes on this branch.
 
-See [bootstrap commands and limitations](../tools/port-1.14.4/README.md). The
-client-side model/shape/GUI extraction and native 498 codecs are still pending.
+See [bootstrap commands and limitations](../tools/port-1.14.4/README.md). This was
+the initial bootstrap status; native extraction and codecs have since been
+implemented in the milestones above.
 
 ## Native networking milestone (2026-10-25)
 
