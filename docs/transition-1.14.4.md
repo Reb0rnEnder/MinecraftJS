@@ -1,8 +1,20 @@
 # Transition from 1.13.2 to Java 1.14.4
 
-Status: planning branch. The client still runs the inherited 1.13.2 implementation
+Status: extraction bootstrap implemented; native runtime port pending. The client still runs the inherited 1.13.2 implementation
 (protocol 404). No protocol/version constants have been changed yet. Do not
 publish this branch as a working 1.14.4 client until the release gates below pass.
+
+## Implemented starting milestone (2026-10-25)
+
+- Added hash-verified Mojang client/server jars, official mappings and metadata inputs.
+- Pinned minecraft-data and both protocol schemas for reproducible comparisons.
+- Ran the real 1.14.4 data generator: 676 blocks, 11,271 block states, 37 registries
+  and 71 command roots, with a committed source/report hash baseline.
+- Added packet/type change inventories, regeneration checks and integrity tests.
+- Carried forward the End sky and resource-pack row-hover fixes on this branch.
+
+See [bootstrap commands and limitations](../tools/port-1.14.4/README.md). The
+client-side model/shape/GUI extraction and native 498 codecs are still pending.
 
 ## Baseline and scope
 
