@@ -1,3 +1,4 @@
+import { BreakingOverlay } from './breaking.js';
 import { waterFog } from './water-fog.js';
 // World renderer (device-agnostic, see gfx/device.js).
 import { FORMAT, terrainParams, colorParams } from '../gfx/device.js';
@@ -59,6 +60,7 @@ export class Renderer {
     this.env = { sky: [0, 0, 0], skyVisible: true };
     this.outlineBox = null;
     this.breakState = null;
+    this.breaking = new BreakingOverlay(device,assets);
     this.extraDraws = [];
     this.afterHand = []; // functions(device) drawn after the hand with depth cleared (F3 world axes) // functions(device) drawn in the world pass after entities, ordered by .order
     this._setupSky();
@@ -94,7 +96,7 @@ export class Renderer {
   }
 
   removeChunk(cx, cz) { for (let y = 0; y < 16; y++) this.removeSection(sectionKey(cx, y, cz)); }
-  clearSections() { for (const k of [...this.sections.keys()]) this.removeSection(k); }
+  clearSections() { for (const k of [...this.sections.keys()]) this.removeSection(k); this.breaking.clear(); this.breakState=null; }
 
   // ---------------------------------------------------------------- sky geometry
 
@@ -138,18 +140,7 @@ export class Renderer {
     this.moonPhase = -1;
     // Clouds: a single quad whose UVs scroll
     this.cloudMesh = colorMesh(d, [[[0, 0, 0, 0, 0, 1, 1, 1, 1], [0, 0, 1, 0, 1, 1, 1, 1, 1], [1, 0, 1, 1, 1, 1, 1, 1, 1], [1, 0, 0, 1, 0, 1, 1, 1, 1]]], { dynamic: true });
-    // Break overlay unit cube
-    const cube = [];
-    // Vertex colour = vanilla's face shading (up 1, down 0.5, north/south 0.8, east/west 0.6)
-    let shade = 1;
-    const c = (x, y, z, u, v) => [x, y, z, u, v, shade, shade, shade, 1];
-    shade = 1; cube.push([c(0, 1, 0, 0, 0), c(0, 1, 1, 0, 1), c(1, 1, 1, 1, 1), c(1, 1, 0, 1, 0)]);
-    shade = 0.5; cube.push([c(0, 0, 1, 0, 0), c(0, 0, 0, 0, 1), c(1, 0, 0, 1, 1), c(1, 0, 1, 1, 0)]);
-    shade = 0.8; cube.push([c(1, 1, 0, 0, 0), c(1, 0, 0, 0, 1), c(0, 0, 0, 1, 1), c(0, 1, 0, 1, 0)]);
-    cube.push([c(0, 1, 1, 0, 0), c(0, 0, 1, 0, 1), c(1, 0, 1, 1, 1), c(1, 1, 1, 1, 0)]);
-    shade = 0.6; cube.push([c(0, 1, 0, 0, 0), c(0, 0, 0, 0, 1), c(0, 0, 1, 1, 1), c(0, 1, 1, 1, 0)]);
-    cube.push([c(1, 1, 1, 0, 0), c(1, 0, 1, 0, 1), c(1, 0, 0, 1, 1), c(1, 1, 0, 1, 0)]);
-    this.cubeMesh = colorMesh(d, cube);
+
   }
 
   _setupOutline() {
@@ -180,15 +171,11 @@ export class Renderer {
 
   setBreakTextures(paths) { this.breakTextures = paths; }
 
-  // light: { sky, block } levels at the block; the overlay is lit like the block (vanilla draws it through the
-  // block's own model with the lightmap on), otherwise the 2x multiply blend would brighten dark blocks
-  setBreakProgress(pos, stage, box, light = { sky: 15, block: 15 }) {
-    if (!pos || stage < 0) { this.breakState = null; return; }
-    const b = box || [0, 0, 0, 1, 1, 1];
-    const m = mat4.create();
-    mat4.translate(m, m, pos.x + b[0] - 0.001, pos.y + b[1] - 0.001, pos.z + b[2] - 0.001);
-    mat4.scale(m, m, b[3] - b[0] + 0.002, b[4] - b[1] + 0.002, b[5] - b[2] + 0.002);
-    this.breakState = { tex: `block/destroy_stage_${Math.min(9, stage)}.png`, model: m, light };
+  // Damage uses rendered geometry; the selection outline remains independent.
+  setBreakProgress(pos,stage,state,light={sky:15,block:15}) {
+    if(!pos||stage<0){this.breakState=null;return;}
+    const geometry=this.breaking.update(this.breakContext?.(),pos,state);
+    this.breakState=geometry?{...geometry,tex:`block/destroy_stage_${Math.min(9,stage)}.png`,light}:null;
   }
 
   // ---------------------------------------------------------------- per tick / frame
@@ -442,13 +429,13 @@ export class Renderer {
     // Selection outline + break progress
     if (this.outlineBox) d.draw({ mesh: this.outlineMesh, pipeline: 'color', params: P_WHITE, primitive: 'lines', state: { blend: 'alpha', depthWrite: false } });
     if (this.breakState) {
-      const t = this.assets.texture(this.breakState.tex);
+      const t = this.assets.texture(this.breakState.tex,{wrap:'repeat'});
       if (t) {
         // RenderGlobal.preRenderDamagedBlocks: blendFunc(DST_COLOR, SRC_COLOR), alpha test 0.1
         const { sky, block } = this.breakState.light;
         const i = (sky * 16 + block) * 4, L = this.lightmapData;
         colorParams(L[i] / 255, L[i + 1] / 255, L[i + 2] / 255, 1, 0.1, 0, P_BREAK);
-        d.draw({ mesh: this.cubeMesh, pipeline: 'color', textures: [t], params: P_BREAK, model: this.breakState.model, state: { blend: 'multiply', depthWrite: false, polygonOffset: true } });
+        d.draw({ mesh: this.breakState.mesh, pipeline: 'color', textures: [t], params: P_BREAK, model: this.breakState.model, state: { blend: 'multiply', depthWrite: false, polygonOffset: true } });
       }
     }
     const extras = [...this.extraDraws].sort((a, b) => (a.order || 0) - (b.order || 0));

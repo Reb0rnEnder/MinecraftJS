@@ -1,3 +1,7 @@
+import { Renderer } from '../client/js/render/renderer.js';
+import { BreakingOverlay } from '../client/js/render/breaking.js';
+import { blockModelOffset } from '../client/js/render/mesher.js';
+import { Interaction } from '../client/js/game/interaction.js';
 import { Assets } from '../client/js/assets.js';
 import { ProxyList as GameProxyList, validSkinProxyTemplate, skinProxyUrl, fetchSkin, fetchSkinProfile } from '../client/js/net/proxies.js';
 import { SkinProxyScreen } from '../client/js/gui/screens/proxies.js';
@@ -595,4 +599,65 @@ if(native)test('1.13.2: controls use printable key names and video GUI scale use
   const video=new VideoScreen(g,null);video.init();const button=video.rows.flat().find(b=>b.optionKey==='options.guiScale');
   for(const [value,label] of [[0,'Auto'],[1,'1'],[2,'2'],[3,'3']]){g.settings.guiScale=value;assert.equal(button.label(),'GUI Scale: '+label);}
  }finally{setTranslator(k=>k);}
+});
+
+test(version + ': breaking overlays use baked model geometry and UVs instead of selection bounds',()=>{
+ const w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);const pos={x:3,y:64,z:3};
+ const overlay=new BreakingOverlay(device,assets),context={world:w};
+ for(const name of ['oak_stairs','stone_slab','lever',native?'oak_fence':'fence',native?'dandelion':'yellow_flower',...(native?['turtle_egg']:[])]){
+  const st=state(name);c.setState(3,64,3,st);const result=overlay.update(context,pos,st);assert.ok(result,name);
+  const model=overlay.mesher.getModel(st,3,64,3),offset=blockModelOffset(name,3,64,3),vertices=result.mesh.vertices;
+  assert.equal(vertices.length,model.quads.length*4*9,name);
+  let at=0;for(const q of model.quads){const uv=assets.atlas.uv(q.tex);for(let i=0;i<4;i++){
+   for(let axis=0;axis<3;axis++)assert.ok(Math.abs(vertices[at+axis]-q.pos[i*3+axis]-offset[axis])<1e-6,name+' position');
+   assert.ok(Math.abs(vertices[at+3]-(q.uv[i*2]-uv[0])/(uv[2]-uv[0]))<1e-5,name+' U');
+   assert.ok(Math.abs(vertices[at+4]-(q.uv[i*2+1]-uv[1])/(uv[3]-uv[1]))<1e-5,name+' V');at+=9;
+  }}
+  if(name==='oak_stairs')assert.ok(vertices.some((n,i)=>i%9===1&&Math.abs(n-.5)<1e-6),'cracks cover the stair tread inside its selection box');
+ }
+ overlay.clear();
+});
+
+test(version + ': damage geometry refreshes exposed faces and resource packs without re-uploading unchanged stages',()=>{
+ let created=0,updated=0,destroyed=0;
+ const d={...device,createMesh:(...args)=>{created++;return device.createMesh(...args);},updateMesh:(mesh,v)=>{updated++;device.updateMesh(mesh,v);},destroyMesh:()=>{destroyed++;}};
+ const a={...assets},w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);c.setState(3,64,3,state('stone'));
+ const overlay=new BreakingOverlay(d,a),context={world:w},pos={x:3,y:64,z:3};let result=overlay.update(context,pos,state('stone'));
+ assert.equal(result.mesh.vertices.length,24*9);overlay.update(context,pos,state('stone'));assert.equal(created,1);assert.equal(updated,0);
+ c.setState(4,64,3,state('stone'));result=overlay.update(context,pos,state('stone'));assert.equal(result.mesh.vertices.length,20*9);assert.equal(updated,1);
+ a.version++;overlay.update(context,pos,state('stone'));assert.equal(created,2);assert.equal(destroyed,1);
+ overlay.clear();assert.equal(destroyed,2);assert.equal(overlay.update(context,pos,0),null);
+});
+
+test(version + ': chest cracks follow the live lid and include both halves of a double chest',()=>{
+ const g=fixture(),w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);g.world=w;g.renderer.camPos=[3,65,3];
+ const st=state('chest'),pos={x:3,y:64,z:3};c.setState(3,64,3,st);
+ const tiles=new TileEntityRenderer(g);tiles.scanChunk(c);tiles.render(0);
+ const overlay=new BreakingOverlay(device,assets),context={world:w,tileRenderer:tiles};
+ const first=overlay.update(context,pos,st);assert.ok(first);const closed=new Float32Array(first.mesh.vertices);assert.ok(closed.length>24*9,'lid, base and latch are separate model geometry');
+ const t=tiles.tiles.get('3,64,3');t.prevLid=0;t.lid=1;tiles.render(1);const open=overlay.update(context,pos,st).mesh.vertices;
+ assert.notDeepEqual(open,closed,'damage geometry follows the animated lid');assert.ok(open.some((n,i)=>i%9===1&&n>1),'open lid extends above a unit selection box');
+ tiles.clear();c.setState(4,64,3,st);tiles.scanChunk(c);tiles.render(0);
+ const primary=overlay.update(context,pos,st),a=new Float32Array(primary.mesh.vertices);const secondaryPos={x:4,y:64,z:3},secondary=overlay.update(context,secondaryPos,st),b=secondary.mesh.vertices;
+ assert.equal(a.length,b.length);for(let i=0;i<a.length;i+=9){assert.ok(Math.abs(a[i]+pos.x-b[i]-secondaryPos.x)<1e-6);assert.ok(Math.abs(a[i+1]-b[i+1])<1e-6);assert.ok(Math.abs(a[i+2]-b[i+2])<1e-6);}
+ overlay.clear();tiles.clear();
+});
+
+test(version + ': local and remote break rendering receive block state while selection outline keeps its own box',()=>{
+ const g=fixture(),w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);g.world=w;c.setState(3,64,3,state('oak_stairs'));
+ const calls=[],outlines=[];g.renderer.setOutline=b=>outlines.push(b);g.renderer.setBreakProgress=(...args)=>calls.push(args);
+ w.selectionBox=()=>{throw new Error('damage must not use selection geometry');};
+ const it=new Interaction(g);it.updateTarget=()=>it.target;it.isHitting=true;it.curBlock={x:3,y:64,z:3};it.curDamage=.5;it.prevDamage=.5;it.target={type:'block',x:3,y:64,z:3,box:[0,0,0,1,1,1]};
+ it.renderSelection(.5);assert.equal(calls.at(-1)[2],state('oak_stairs'));assert.deepEqual(outlines.at(-1),[3,64,3,4,65,4]);
+ it.isHitting=false;it.setRemoteBreak(8,{x:3,y:64,z:3},4);it.renderSelection(.5);assert.equal(calls.at(-1)[2],state('oak_stairs'));
+ it.remoteBreaks.clear();it.renderSelection(.5);assert.equal(calls.at(-1)[0],null);
+});
+
+test(version + ': renderer damage stages keep model scale, reuse geometry and clear on reset',()=>{
+ const w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);c.setState(3,64,3,state('oak_stairs'));
+ const r=Object.create(Renderer.prototype);r.breaking=new BreakingOverlay(device,assets);r.breakContext=()=>({world:w});r.sections=new Map();
+ r.setBreakProgress({x:3,y:64,z:3},2,state('oak_stairs'));const first=r.breakState;
+ assert.ok(first.mesh);assert.equal(first.model[0],1);assert.equal(first.model[5],1);assert.equal(first.model[10],1);assert.deepEqual([...first.model.slice(12,15)],[3,64,3]);
+ assert.equal(first.tex,(native?'block/':'blocks/')+'destroy_stage_2.png');r.setBreakProgress({x:3,y:64,z:3},99,state('oak_stairs'));assert.equal(r.breakState.mesh,first.mesh);assert.ok(r.breakState.tex.endsWith('destroy_stage_9.png'));
+ r.setBreakProgress(null,-1);assert.equal(r.breakState,null);r.clearSections();assert.equal(r.breaking.mesh,null);
 });

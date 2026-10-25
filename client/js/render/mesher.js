@@ -89,7 +89,7 @@ const AO_AXES = [
 // Per block id flags for the hot face test (computed once): 1 leaves, 2 matching
 // glass/ice/slime/portal interiors, 4 pane end caps (connection-dependent).
 let FACE_FLAGS = null;
-function faceFlags() {
+export function faceFlags() {
   if (FACE_FLAGS && FACE_FLAGS.length === blocks.length) return FACE_FLAGS;
   FACE_FLAGS = new Uint8Array(blocks.length);
   for (let i = 0; i < blocks.length; i++) {
@@ -109,6 +109,14 @@ function faceFlags() {
 const LOD_SKIP = new Set(['grass', 'tall_grass', 'fern', 'seagrass', 'tall_seagrass', 'dandelion', 'poppy', 'blue_orchid', 'allium',
   'azure_bluet', 'red_tulip', 'orange_tulip', 'white_tulip', 'pink_tulip', 'oxeye_daisy', 'dead_bush', 'brown_mushroom',
   'red_mushroom', 'sunflower', 'lilac', 'rose_bush', 'peony', 'large_fern', 'lily_pad', 'cobweb']);
+
+const ZERO_OFFSET=Object.freeze([0,0,0]);
+// Shared with damage rendering so plants keep the same per-position model offsets.
+export function blockModelOffset(name,x,y,z) {
+  const type=OFFSET_TYPES[name];if(!type)return ZERO_OFFSET;
+  const r=positionRandom(x,y,z);
+  return [(((r>>>16)&15)/15-.5)*.5,type===2?(((r>>>20)&15)/15-1)*.2:0,(((r>>>24)&15)/15-.5)*.5];
+}
 
 export class Mesher {
   constructor(world, store) {
@@ -352,14 +360,8 @@ export class Mesher {
       const model = this.getModel(state, x, y, z);
       if (!model || !model.quads.length) continue;
       // Block.getOffsetType: flowers are nudged randomly in XZ, tall grass in XYZ (BlockModelRenderer)
-      let ox = 0, oy = 0, oz = 0;
-      const offType = OFFSET_TYPES[b.name];
-      if (offType) {
-        const r = positionRandom(x, y, z);
-        ox = (((r >>> 16) & 15) / 15 - 0.5) * 0.5;
-        oz = (((r >>> 24) & 15) / 15 - 0.5) * 0.5;
-        if (offType === 2) oy = (((r >>> 20) & 15) / 15 - 1) * 0.2;
-      }
+      let ox=0,oy=0,oz=0;
+      if(OFFSET_TYPES[b.name])[ox,oy,oz]=blockModelOffset(b.name,x,y,z);
       const useAO = this.options.smooth && model.ao && b.emitLight === 0;
       const fastLeaves = !this.options.fancy && this.isLeaves(b);
       const visible = this._visible;

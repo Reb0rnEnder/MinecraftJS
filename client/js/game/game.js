@@ -108,6 +108,7 @@ export class Game {
     this.entityRenderer = new EntityRenderer(this);
     this.handRenderer = new HandRenderer(this);
     this.tileRenderer = new TileEntityRenderer(this);
+    this.renderer.breakContext=()=>({world:this.world,tileRenderer:this.tileRenderer,tileProps:this.tileProps,alternatives:this.settings.blockAlternatives!==false,fancy:!!this.settings.fancyGraphics});
     this.structureBlocks = new Map(); // "x,y,z" -> structure block tile entity data
     this.pistons = new Pistons(this);
     this.serverPacks = new ServerPacks(this);
