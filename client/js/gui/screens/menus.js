@@ -91,9 +91,9 @@ export class TitleScreen extends Screen {
   }
 
   render(gui, mx, my, partial) {
-    // Panorama is drawn by the 3D renderer; add vanilla's gradient overlays
-    gui.gradient(0, 0, this.width, this.height, 0x80ffffff, 0x00ffffff);
-    gui.gradient(0, 0, this.width, this.height, 0x00000000, 0x80000000);
+    // Native TitleScreen overlay, shared with resource-pack replacements.
+    const overlay=gui.tex('gui/title/background/panorama_overlay.png');
+    if(overlay)gui.drawImage(overlay,0,0,overlay.width,overlay.height,0,0,this.width,this.height);
     const logo = 'gui/title/minecraft.png';
     const lx = this.width / 2 - 137, ly = 30;
     if (this.minceraftRoll < 1e-4) {

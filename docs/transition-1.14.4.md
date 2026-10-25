@@ -9,6 +9,14 @@ See [the active-runtime milestone](runtime-1.14.4-milestone.md) for implementati
 validation and the remaining work. Older networking-only limitations in the
 initial milestone below are historical and superseded by this runtime milestone.
 
+## Indexed assets and native title rendering
+
+The village panorama now comes from the 1.14 asset index, overriding stale jar
+copies. Source serving, built assets and the embedded HTML use the same defaults.
+The title uses the native full-resolution CubeMap renderer and overlay, and
+stale extracted asset folders are rejected by version/hash identity. See the
+[asset/panorama milestone](indexed-assets-panorama-1.14.4.md) for the cause and tests.
+
 ## Implemented starting milestone (2026-10-25)
 
 - Added hash-verified Mojang client/server jars, official mappings and metadata inputs.

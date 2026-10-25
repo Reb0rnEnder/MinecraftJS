@@ -483,83 +483,36 @@ export class Renderer {
     }
   }
 
-  // Title screen panorama (GuiMainMenu.drawPanorama): cube of 6 images, slowly rotating
+  // Native 1.14 CubeMap/PanoramaRenderer: full-resolution cube, four jitter
+  // passes, 85-degree FOV. No legacy 256px framebuffer or blur chain.
   renderPanorama(timeMs) {
-    const d = this.device;
-    if (!this.panoMesh) {
-      const faces = [];
-      // face i: 0 front (-z), 1 right (+x), 2 back (+z), 3 left (-x), 4 top, 5 bottom
-      const corners = [
-        [[-1, 1, -1], [-1, -1, -1], [1, -1, -1], [1, 1, -1]],
-        [[1, 1, -1], [1, -1, -1], [1, -1, 1], [1, 1, 1]],
-        [[1, 1, 1], [1, -1, 1], [-1, -1, 1], [-1, 1, 1]],
-        [[-1, 1, 1], [-1, -1, 1], [-1, -1, -1], [-1, 1, -1]],
-        [[-1, 1, 1], [-1, 1, -1], [1, 1, -1], [1, 1, 1]],
-        [[-1, -1, -1], [-1, -1, 1], [1, -1, 1], [1, -1, -1]],
-      ];
-      const uv = [[0, 0], [0, 1], [1, 1], [1, 0]];
-      this.panoMeshes = corners.map((c) => colorMesh(d, [c.map((p, k) => [p[0], p[1], p[2], uv[k][0], uv[k][1], 1, 1, 1, 1])]));
-      this.panoMesh = true;
+    const d=this.device;
+    if(!this.panoMeshes){
+      const corners=[
+        [[-1,-1,1],[-1,1,1],[1,1,1],[1,-1,1]],
+        [[1,-1,1],[1,1,1],[1,1,-1],[1,-1,-1]],
+        [[1,-1,-1],[1,1,-1],[-1,1,-1],[-1,-1,-1]],
+        [[-1,-1,-1],[-1,1,-1],[-1,1,1],[-1,-1,1]],
+        [[-1,-1,-1],[-1,-1,1],[1,-1,1],[1,-1,-1]],
+        [[-1,1,1],[-1,1,-1],[1,1,-1],[1,1,1]],
+      ],uv=[[0,0],[0,1],[1,1],[1,0]];
+      this.panoMeshes=corners.map(c=>colorMesh(d,[c.map((p,i)=>[...p,...uv[i],1,1,1,1])]));
     }
-    const t = timeMs / 50;
-    this.aspect = platform().width / platform().height;
-    // GuiMainMenu.renderSkybox: the cube is drawn 64 times with tiny jitter into a 256x256 texture,
-    // blurred by 6 passes of rotateAndBlurSkybox, then stretched over the screen (which blurs it more)
-    if (!this.panoRT && d.createRenderTarget) this.panoRT = [d.createRenderTarget(256, 256), d.createRenderTarget(256, 256)];
-    d.beginFrame([0, 0, 0]);
-    if (!this.panoRT) return;
-    const [A, B] = this.panoRT;
-    d.setRenderTarget(A, [0, 0, 0, 1]);
-    const proj = mat4.perspective(mat4.create(), 120 * D2R, 1, 0.05, 10);
-    const view = mat4.create();
-    const noDepth = { blend: 'alpha', depthTest: false, depthWrite: false };
-    const texs = [];
-    for (let i = 0; i < 6; i++) texs.push(this.assets.texture('gui/title/background/panorama_' + i + '.png'));
-    // Super Potato Mode: the cube once (64 jittered passes are 64 times the fill)
-    const passes = platform().potato ? 1 : 64;
-    for (let j = 0; j < passes; j++) {
-      mat4.identity(view);
-      mat4.translate(view, view, ((j % 8) / 8 - 0.5) / 64, (Math.floor(j / 8) / 8 - 0.5) / 64, 0);
-      mat4.rotateX(view, view, (Math.sin(t / 400) * 25 + 20) * D2R);
-      mat4.rotateY(view, view, t * 0.1 * D2R);
-      d.setGlobals({ view, proj, fogMode: 2 });
-      const p = colorParams(1, 1, 1, Math.floor(255 / (j + 1)) / 255);
-      for (let i = 0; i < 6; i++) if (texs[i]) d.draw({ mesh: this.panoMeshes[i], pipeline: 'color', textures: [texs[i]], params: p, state: noDepth });
+    this.panoStart ??= timeMs;
+    const t=(timeMs-this.panoStart)/50,pitch=Math.sin(t*.001)*5+25,yaw=-t*.1;
+    this.aspect=platform().width/platform().height;
+    const proj=mat4.perspective(mat4.create(),85*D2R,this.aspect,.05,10);
+    const textures=Array.from({length:6},(_,i)=>this.assets.texture('gui/title/background/panorama_'+i+'.png',{filter:'linear'}));
+    d.beginFrame([0,0,0]);
+    const state={blend:'alpha',depthTest:false,depthWrite:false,cull:false},passes=platform().potato?1:4;
+    for(let pass=0;pass<passes;pass++){
+      const view=mat4.create();mat4.rotateX(view,view,180*D2R);
+      mat4.translate(view,view,((pass%2)/2-.5)/256,(Math.floor(pass/2)/2-.5)/256,0);
+      mat4.rotateX(view,view,pitch*D2R);mat4.rotateY(view,view,yaw*D2R);
+      d.setGlobals({view,proj,fogMode:2});
+      const params=colorParams(1,1,1,Math.floor(255/(pass+1))/255);
+      for(let face=0;face<6;face++)if(textures[face])d.draw({mesh:this.panoMeshes[face],pipeline:'color',textures:[textures[face]],params,state});
     }
-    // Fullscreen quads in clip space; rtFlip: render targets are stored bottom-up (WebGL)
-    const flip = !!d.rtOriginBottom;
-    const vOf = (ty) => (flip ? 1 - ty : ty); // ty: 0 = top of the image
-    const quad = (u0, t0, u1, t1) => [[-1, 1, 0, u0, vOf(t0), 1, 1, 1, 1], [-1, -1, 0, u0, vOf(t1), 1, 1, 1, 1], [1, -1, 0, u1, vOf(t1), 1, 1, 1, 1], [1, 1, 0, u1, vOf(t0), 1, 1, 1, 1]];
-    if (!this.panoBlur || this.panoBlurFlip !== flip) {
-      this.panoBlurFlip = flip;
-      this.panoBlur = [];
-      for (let axis = 0; axis < 2; axis++) {
-        for (let j = 0; j < 3; j++) {
-          const o = (j - 1) / 256;
-          this.panoBlur.push(colorMesh(d, [axis === 0 ? quad(o, 0, 1 + o, 1) : quad(0, o, 1, 1 + o)]));
-        }
-      }
-      this.panoScreen = null;
-    }
-    const ident = mat4.create();
-    d.setGlobals({ view: ident, proj: ident, fogMode: 2 });
-    let src = A, dst = B;
-    for (let pass = 0; pass < 6; pass++) {
-      d.setRenderTarget(dst, [0, 0, 0, 1]);
-      for (let j = 0; j < 3; j++) d.draw({ mesh: this.panoBlur[(pass & 1) * 3 + j], pipeline: 'color', textures: [src], params: colorParams(1, 1, 1, 1 / (j + 1)), state: noDepth });
-      [src, dst] = [dst, src];
-    }
-    d.setRenderTarget(null);
-    const W = platform().width, H = platform().height;
-    const f = W > H ? 120 / W : 120 / H;
-    const fy = H * f / 256, fx = W * f / 256;
-    const key = fx.toFixed(5) + ',' + fy.toFixed(5);
-    if (this.panoScreenKey !== key || !this.panoScreen) {
-      this.panoScreenKey = key;
-      if (this.panoScreen) d.destroyMesh(this.panoScreen);
-      this.panoScreen = colorMesh(d, [quad(0.5 - fx, 0.5 - fy, 0.5 + fx, 0.5 + fy)]);
-    }
-    d.draw({ mesh: this.panoScreen, pipeline: 'color', textures: [src], params: P_WHITE, state: { blend: 'none', depthTest: false, depthWrite: false } });
   }
 
   // Plain clear (menus without panorama)

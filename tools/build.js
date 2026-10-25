@@ -33,6 +33,7 @@ const crypto = require('crypto');
 const { execFile } = require('child_process');
 const { ZipFile } = require('../lib/zip');
 const mcassets = require('../lib/mcassets');
+const {indexedClientAssets}=require('../lib/asset-layers');
 const { extractModels, assertCompleteModels } = require('../lib/modelextract');
 
 const ROOT = path.join(__dirname, '..');
@@ -187,7 +188,7 @@ async function collectAssets(opts) {
   mcmeta.pack = { pack_format: 4, description: 'The default look and feel of Minecraft' };
   files.set('pack.mcmeta', Buffer.from(JSON.stringify(mcmeta)));
 
-  const names = Object.keys(index.objects).filter((n) => n === 'minecraft/sounds.json' || n.startsWith('minecraft/lang/') || n.startsWith('minecraft/sounds/'))
+  const names = indexedClientAssets(index)
     .filter((n) => !opts['no-music'] || !/^minecraft\/sounds\/(music|records)\//.test(n));
   const sounds = names.filter((n) => n.startsWith('minecraft/sounds/'));
   const enc = new AudioEncoder(opts);
@@ -201,10 +202,11 @@ async function collectAssets(opts) {
       after += buf.length;
       if (++done % 100 === 0) process.stdout.write(`  ${done}/${sounds.length}\r`);
     }
-    if (name === 'minecraft/lang/en_us.json' && files.has(name)) return; // the jar's copy is authoritative
     files.set(name, buf);
   });
   console.log(`  audio ${(before / 1048576).toFixed(1)} MB -> ${(after / 1048576).toFixed(1)} MB`);
+  const metadata=await mcassets.getVersionJson();
+  files.set('asset-manifest.json',Buffer.from(JSON.stringify({layoutVersion:2,minecraftVersion:mcassets.MC_VERSION,clientJarSha1:crypto.createHash('sha1').update(fs.readFileSync(jarPath)).digest('hex'),assetIndex:metadata.assetIndex.id})));
   return files;
 }
 

@@ -12,6 +12,7 @@ const crypto = require('crypto');
 const { ZipFile } = require('./lib/zip');
 const msauth = require('./lib/msauth');
 const mcassets = require('./lib/mcassets');
+const {readDefaultAsset,builtAssetsMatch}=require('./lib/asset-layers');
 const { extractModels, assertCompleteModels } = require('./lib/modelextract');
 
 const PORT = parseInt(process.env.PORT, 10) || 3000;
@@ -24,6 +25,7 @@ const PROXY_VERSION = require('./package.json').version || '';
 // ---------------------------------------------------------------------------
 
 let jar = null;
+let validBuiltAssets=false;
 let assetIndex = null; // mcassets.loadAssetIndex(): { objects, read(name) }
 const bundleCache = new Map();
 
@@ -97,10 +99,7 @@ async function readAsset(rel) {
   if (rel === 'pack.mcmeta') return defaultPackMeta();
   if (rel === 'pack.png') return jar.read('pack.png');
   if (rel.startsWith('minecraft/')) {
-    // Sounds, sounds.json and translations other than en_us live in the asset index, the rest in the jar
-    const fromJar = jar.read('assets/' + rel);
-    if (fromJar) return fromJar;
-    return assetIndex ? assetIndex.read(rel) : null;
+    return readDefaultAsset(jar,assetIndex,rel);
   }
   return null;
 }
@@ -110,7 +109,8 @@ async function readAsset(rel) {
 // ---------------------------------------------------------------------------
 
 const app = express();
-app.use(express.static(CLIENT_DIR));
+const serveClient=express.static(CLIENT_DIR);
+app.use((req,res,next)=>{if(req.path.startsWith('/assets/')&&!validBuiltAssets)return next();return serveClient(req,res,next);});
 
 // Pages on other sites (static hosting, the single-file build) use this proxy for sign in and skins
 app.use(['/auth', '/skin', '/profile', '/pack'], (req, res, next) => {
@@ -150,7 +150,7 @@ app.get(/^\/assets\/(.+)$/, async (req, res) => {
     } else body = await readAsset(rel);
     if (!body) { res.removeHeader('Content-Encoding'); return res.status(404).end(); }
     res.set('Content-Type', rel === 'bundles/textures.bin' ? 'application/octet-stream' : MIME[path.extname(rel)] || 'application/octet-stream');
-    res.set('Cache-Control', 'public, max-age=3600');
+    res.set('Cache-Control', 'no-cache');
     res.send(body);
   } catch (e) { res.status(502).send(String(e.message)); }
 });
@@ -504,6 +504,12 @@ wss.on('connection', (ws) => {
   }
   try {
     assetIndex = await mcassets.loadAssetIndex();
+    try {
+      const manifest=JSON.parse(fs.readFileSync(path.join(CLIENT_DIR,'assets','asset-manifest.json'),'utf8'));
+      const version=await mcassets.getVersionJson();
+      validBuiltAssets=builtAssetsMatch(manifest,mcassets.MC_VERSION,crypto.createHash('sha1').update(jar.data).digest('hex'),version.assetIndex.id);
+    }catch(e){validBuiltAssets=false;}
+    if(built&&!validBuiltAssets)console.log('Ignoring unversioned/stale client/assets; serving native indexed assets instead');
     console.log('Sound asset index loaded');
   } catch (e) {
     console.error('Could not load sound asset index (sounds disabled):', e.message);

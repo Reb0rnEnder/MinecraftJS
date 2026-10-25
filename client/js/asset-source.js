@@ -8,16 +8,17 @@ import { decodeUtf8 } from './util/utf8.js';
 
 export class FolderSource {
   constructor(base = 'assets/') { this.base = base; this.kind = 'folder'; }
-  bytes(rel) { return platform().fetchBytes(this.base + rel).catch(() => null); }
+  url(rel) { return this.base + rel + '?v=1.14.4-indexed-v2'; }
+  bytes(rel) { return platform().fetchBytes(this.url(rel)).catch(() => null); }
   data(name) { return platform().fetchJson(`data/${name}.json`); }
-  models() { return platform().fetchJson(this.base + 'bundles/models.json'); }
-  recipes() { return platform().fetchJson(this.base + 'bundles/recipes.json').catch(() => []); }
-  entityModels() { return platform().fetchJson(this.base + 'bundles/entity-models.json').catch(() => null); }
+  models() { return platform().fetchJson(this.url('bundles/models.json')); }
+  recipes() { return platform().fetchJson(this.url('bundles/recipes.json')).catch(() => []); }
+  entityModels() { return platform().fetchJson(this.url('bundles/entity-models.json')).catch(() => null); }
 
   // { files: Map<name, () => png bytes>, mcmeta } for textures/block and textures/item
   async blockTextures() {
-    const bundle = await platform().fetchBytes(this.base + 'bundles/textures.bin');
-    if (!bundle) throw new Error('Missing ' + this.base + 'bundles/textures.bin');
+    const bundle = await platform().fetchBytes(this.url('bundles/textures.bin'));
+    if (!bundle) throw new Error('Missing ' + this.url('bundles/textures.bin'));
     const dv = new DataView(bundle.buffer, bundle.byteOffset, bundle.byteLength);
     const hlen = dv.getUint32(0, true);
     const header = JSON.parse(decodeUtf8(bundle.subarray(4, 4 + hlen)));
