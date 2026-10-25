@@ -1,3 +1,4 @@
+import {shadowGeometry} from './shadows.js';
 import { updateRiptide } from './riptide-layer.js';
 import { EntityEffects, dragonCorpseMatrix } from './entity-effects.js';
 import { poseInterval } from './lod.js';
@@ -115,10 +116,7 @@ export class EntityRenderer {
     this.effects = new EntityEffects(game);
     this.meshCache = new Map();
     this.atlasTex = () => game.assets.atlasTexture;
-    // Shadow: unit quad on the XZ plane
-    this.shadowMesh = game.device.createMesh(FORMAT.color, new Float32Array([
-      -0.5, 0, -0.5, 0, 0, 1, 1, 1, 1, -0.5, 0, 0.5, 0, 1, 1, 1, 1, 1, 0.5, 0, 0.5, 1, 1, 1, 1, 1, 1, 0.5, 0, -0.5, 1, 0, 1, 1, 1, 1,
-    ]), { quads: true });
+
   }
 
   // Drop everything (resource reload / world change)
@@ -681,7 +679,9 @@ export class EntityRenderer {
   _addShadow(v) {
     const n = new Node();
     v.shadowParams = colorParams(1, 1, 1, 0.5, 0, 1);
-    n.addDrawable(this.shadowMesh, material('color', 'misc/shadow.png', v.shadowParams, { blend: 'alpha', depthWrite: false, polygonOffset: true }), { order: 3 });
+    v.shadowMesh=this.device.createMesh(FORMAT.color,new Float32Array(0),{quads:true,dynamic:true});
+    (v.ownMeshes ||= []).push(v.shadowMesh);
+    n.addDrawable(v.shadowMesh, material('color', 'misc/shadow.png', v.shadowParams, { blend: 'alpha', depthWrite: false, polygonOffset: true }), { order: 3 });
     v.shadow = n;
     v.root.add(n);
   }
@@ -1497,25 +1497,14 @@ export class EntityRenderer {
 
   _updateShadow(e, v, p) {
     const w = this.game.world;
-    // Find ground below
-    let y = Math.floor(p.y);
-    let found = false;
-    for (let i = 0; i < 4; i++) {
-          const b = getBlock(w.getState(Math.floor(p.x), y - 1, Math.floor(p.z)));
-      if (b && b.boundingBox === 'block' && b.id !== 0) { found = true; break; }
-      y--;
-    }
-    const size = e.kind === 'mob' && (e.type === 55 || e.type === 62) ? 0.25 * (e.size || 1) : e.kind === 'item' ? 0.15 : Math.min(e.width, 2) * 0.5;
-    if (!found || e.invisible || e.deathTime > 0 || !this.game.settings.entityShadows) { v.shadow.visible = false; return; }
-    const dist = p.y - y;
-    const a = (1 - dist / 3) * 0.5;
-    if (a <= 0) { v.shadow.visible = false; return; }
-    v.shadow.visible = true;
-    v.shadowParams[3] = a;
-    const s = size * 2;
-    v.shadow.scale.set(s, 1, s);
-    // shadow node is a child of root; root is at p, so place it at ground level
-    v.shadow.position.set(0, y - v.root.position.y + 0.002, 0);
+    const size = (e.kind==='mob'&&(e.type===55||e.type===62)? .25*(e.size||1):e.kind==='item'?.15:Math.min(e.width,2)*.5);
+    const camera=this.r.camPos||[p.x,p.y,p.z],distance=(p.x-camera[0])**2+(p.y-camera[1])**2+(p.z-camera[2])**2;
+    if(e.invisible||e.deathTime>0||!this.game.settings.entityShadows||distance>=256){v.shadow.visible=false;return;}
+    const vertices=shadowGeometry(w,p,size,1-distance/256);
+    v.shadow.visible=vertices.length>0;if(!vertices.length)return;
+    v.shadowParams[3]=1;v.shadow.scale.set(1,1,1);
+    v.shadow.position.set(p.x-v.root.position.x,p.y-v.root.position.y,p.z-v.root.position.z);
+    this.device.updateMesh(v.shadowMesh,vertices,{quads:true});
   }
 
   _renderItem(e, v, p, partial) {
