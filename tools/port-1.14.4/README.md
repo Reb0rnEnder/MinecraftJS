@@ -42,3 +42,20 @@ The next work is adapting the client-side model/shape/GUI extractors with the
 verified official mappings, followed by the version-498 binary codecs and
 separate chunk/light lifecycle described in the transition plan. Keep all old
 runtime tests until their expectations are intentionally ported.
+
+
+## Native networking milestone
+
+The separate 498 codec, section decoder and opt-in live probe are now implemented:
+
+```sh
+node tools/port-1.14.4/packet-ids.mjs --check
+node tools/test-1.14.4-protocol.mjs
+node tools/test-1.14.4-chunks.mjs
+node tools/port-1.14.4/probe-server.mjs --host=127.0.0.1 --port=25565 --duration=25000
+```
+
+See [live-server evidence and limits](../../docs/protocol-1.14.4-milestone.md).
+The browser codec, native asset adapters and world/light lifecycle are not yet
+switched to 1.14.4. The probe needs an offline-mode test server and logs in as
+`Codex1144Probe`; it leaves the server running and does not edit blocks/config.

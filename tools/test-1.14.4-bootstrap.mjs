@@ -4,6 +4,7 @@ import {existsSync,readFileSync} from 'node:fs';
 import {join} from 'node:path';
 import {cache,target,verify} from './port-1.14.4/prepare.mjs';
 import {summarize} from './port-1.14.4/reports.mjs';
+import {AIR_STATES_498,BLOCK_STATE_COUNT_498} from '../client/js/world/chunk-1.14.4.js';
 const baseline=JSON.parse(readFileSync(new URL('./port-1.14.4/baseline.json',import.meta.url)));
 
 test('source pins identify native 1.14.4 and protocol 498 and match the committed baseline',()=>{
@@ -31,6 +32,8 @@ test('vanilla reports reproduce the pinned state and registry baseline', {skip:!
   const result=summarize(generated('blocks'),generated('registries'),generated('commands'),Object.fromEntries(Object.entries(baseline.sources).filter(([key])=>key!=='minecraftDataRevision')),json('protocol-1.13.2.json'),json('protocol-1.14.4.json'));
   assert.deepEqual(result,baseline);
   const blocks=generated('blocks'),registries=generated('registries');
+  assert.equal(BLOCK_STATE_COUNT_498,result.blockStates);
+  assert.deepEqual([...AIR_STATES_498].sort((a,b)=>a-b),['minecraft:air','minecraft:void_air','minecraft:cave_air'].flatMap(name=>blocks[name].states.map(s=>s.id)).sort((a,b)=>a-b));
   for(const name of ['minecraft:scaffolding','minecraft:bell','minecraft:campfire','minecraft:stonecutter'])assert.ok(blocks[name]?.states.length,name);
   for(const name of ['minecraft:fox','minecraft:panda','minecraft:pillager','minecraft:ravager'])assert.ok(registries['minecraft:entity_type'].entries[name],name);
   assert.ok(registries['minecraft:item'].entries['minecraft:crossbow']);

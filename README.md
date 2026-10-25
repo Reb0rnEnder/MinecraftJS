@@ -1,7 +1,8 @@
 # MinecraftJS
 
-> **1.14.4 development branch:** source extraction has started; the runtime still targets 1.13.2 (protocol 404).
+> **1.14.4 development branch:** native extraction and initial 498 networking are implemented; the browser still targets 1.13.2 (protocol 404).
 > Follow the [1.14.4 transition plan](docs/transition-1.14.4.md) before publishing a 1.14.4 client.
+> The [networking milestone](docs/protocol-1.14.4-milestone.md) records live-server validation and remaining work.
 
 A Minecraft 1.13.2 client that runs in the browser (WebGL 2 or WebGPU). It joins vanilla 1.13.2 servers through a
 small Node proxy, and Eaglercraft servers directly over WebSockets.

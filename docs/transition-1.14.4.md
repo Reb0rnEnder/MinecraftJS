@@ -1,6 +1,6 @@
 # Transition from 1.13.2 to Java 1.14.4
 
-Status: extraction bootstrap implemented; native runtime port pending. The client still runs the inherited 1.13.2 implementation
+Status: extraction bootstrap and first native networking milestone implemented; browser runtime port pending. The client still runs the inherited 1.13.2 implementation
 (protocol 404). No protocol/version constants have been changed yet. Do not
 publish this branch as a working 1.14.4 client until the release gates below pass.
 
@@ -15,6 +15,18 @@ publish this branch as a working 1.14.4 client until the release gates below pas
 
 See [bootstrap commands and limitations](../tools/port-1.14.4/README.md). The
 client-side model/shape/GUI extraction and native 498 codecs are still pending.
+
+## Native networking milestone (2026-10-25)
+
+The staged protocol-498 codec now handles startup/control packets, native packed
+positions, metadata additions, chunk heightmaps, section palettes and separate
+light packets. A 25-second session against the local vanilla 1.14.4 server
+successfully decoded 462 chunks / 2,372 sections / 462 light updates and completed
+teleport and keepalive replies. Unsupported packet families remain explicit.
+See [scope, validation and remaining work](protocol-1.14.4-milestone.md).
+
+The browser still uses the inherited 404 codec and assets. Native asset adapters
+and world/light lifecycle integration must be ready before switching it to 498.
 
 ## Baseline and scope
 
