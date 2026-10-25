@@ -1,0 +1,30 @@
+{
+  "skinProxy": "https://proxy.example/?url=%R",
+  "proxies": [
+    {
+      "name": "This website",
+      "url": "origin",
+      "type": "minecraftjs"
+    },
+    {
+      "name": "Eaglercraft Relay",
+      "url": "wss://relay.eaglercraft.net",
+      "type": "relay"
+    },
+    {
+      "name": "Public Java Relay",
+      "url": "wss://eagler-minecraft-relay.u2471966200.workers.dev",
+      "type": "relay"
+    }
+  ],
+  "servers": [
+    {
+      "name": "My Server",
+      "address": "mc.example.com"
+    },
+    {
+      "name": "My Eaglercraft Server",
+      "address": "wss://eagler.example.com/"
+    }
+  ]
+}

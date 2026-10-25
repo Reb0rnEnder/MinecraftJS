@@ -81,6 +81,7 @@ A `config.json` next to `index.html` (or embedded in the single-file build) sets
 
 ```json
 {
+  "skinProxy": "",
   "proxies": [
     { "name": "This website", "url": "origin", "type": "minecraftjs" },
     { "name": "Eaglercraft Relay", "url": "wss://relay.eaglercraft.net", "type": "relay" },
@@ -137,6 +138,19 @@ cape and public profile downloads. You can also set its default in `config.json`
 ```json
 { "skinProxy": "https://proxy.example/?url=%R" }
 ```
+
+For a ready-to-edit configuration, copy `client/config.skin-proxy.example.json` to
+`config.json` beside the built HTML and replace `https://proxy.example/?url=%R`
+with your service URL. You can also embed it:
+
+```sh
+npm run build -- --config=client/config.skin-proxy.example.json
+```
+
+Saved player settings take precedence over site defaults. Players who already
+saved a skin proxy can update it in **Proxy Servers → Skin Proxy**.
+External `config.json` loads when served over HTTP(S); builds opened with `file://`
+use their embedded configuration.
 
 `%u` inserts the player UUID without hyphens; `%r` inserts the full raw URL;
 `%R` inserts the full percent-encoded URL. `%U` remains an alias for `%r`.
