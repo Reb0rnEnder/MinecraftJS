@@ -6,7 +6,7 @@ import { platform } from '../platform/platform.js';
 import { resolveState } from '../world/blockstates.js';
 import { biomeInfo } from '../world/biomes.js';
 import { stripCodes } from './font.js';
-import { chatToLegacy } from './chat.js';
+import { chatToLegacy, chatSegments, wrapChatSegments } from './chat.js';
 
 const ICONS = 'gui/icons.png';
 const WIDGETS = 'gui/widgets.png';
@@ -70,11 +70,11 @@ export class Hud {
     if (this.chat.length > 100) this.chat.pop();
     const width = this.chatWidth();
     const lines = g.gui.font.wrap(text, Math.floor(width / this.chatScale()));
-    const comps = raw ? extractComponents(raw) : null;
+    const comps = wrapChatSegments(raw ? chatSegments(raw) : null,lines);
     // GuiNewChat.setChatLine: each wrapped line is pushed to the front in order, so the message's last
     // line ends up at the bottom and its first line above it
     for (let i = 0; i < lines.length; i++) {
-      this.chatLines.unshift({ text: lines[i], tick: this.updateCounter, comps, first: i === 0 });
+      this.chatLines.unshift({ text: lines[i], tick: this.updateCounter, comps:comps[i], first: i === 0 });
     }
     while (this.chatLines.length > 100) this.chatLines.pop();
     if (this.chatScroll > 0) this.chatScroll += lines.length;
@@ -83,7 +83,7 @@ export class Hud {
 
   chatScale() { return this.game.settings.chatScale || 1; }
   chatWidth() { return Math.floor((this.game.settings.chatWidth || 1) * 280 + 40); }
-  chatOpen() { return this.game.screens.current && this.game.screens.current.constructor.name === 'ChatScreen'; }
+  chatOpen() { return !!this.game.screens.current?.isChatScreen; }
   // GuiNewChat.getChatHeight / getLineCount: height = f * 160 + 20 pixels, 9 pixels per line
   chatLinesVisible() {
     const s = this.game.settings;
@@ -182,7 +182,7 @@ export class Hud {
     if (idx >= this.chatLines.length || Math.floor(y / 9) >= this.chatLinesVisible()) return null;
     const line = this.chatLines[idx];
     if (!line.comps) return null;
-    // Find which component the x position lands on (only exact for single-line messages)
+    // Find which component the x position lands on (components are sliced to each wrapped line)
     let cx = 0;
     for (const c of line.comps) {
       const w = gui.font.width(c.text);
@@ -860,29 +860,3 @@ function localDifficulty(difficulty, worldTime) {
 }
 
 function chatText(json) { return chatToLegacy(json); }
-
-// Flatten a chat component into [{text, click, hoverText}] for hit-testing
-function extractComponents(raw) {
-  let obj = raw;
-  if (typeof raw === 'string') { try { obj = JSON.parse(raw); } catch (e) { return null; } }
-  const out = [];
-  const walk = (c, click, hover) => {
-    if (c === null || c === undefined) return;
-    if (typeof c === 'string') { out.push({ text: c, click, hoverText: hover }); return; }
-    if (Array.isArray(c)) { c.forEach((x) => walk(x, click, hover)); return; }
-    const ck = c.clickEvent || click;
-    let hv = hover;
-    if (c.hoverEvent && c.hoverEvent.action === 'show_text') {
-      try { hv = chatToLegacy(c.hoverEvent.value); } catch (e) { hv = String(c.hoverEvent.value); }
-    }
-    if (c.text !== undefined) out.push({ text: c.text, click: ck, hoverText: hv });
-    else if (c.translate) {
-      try { out.push({ text: stripCodes(chatToLegacy(c)), click: ck, hoverText: hv }); } catch (e) { /* ignore */ }
-      return;
-    }
-    for (const e of c.extra || []) walk(e, ck, hv);
-  };
-  walk(obj, null, null);
-  if (!out.some((c) => c.click || c.hoverText)) return null;
-  return out;
-}

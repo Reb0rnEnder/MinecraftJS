@@ -19,7 +19,7 @@ const F = {
 
 const f32 = Math.fround;
 
-function calcYOffset(box, bb, off) {
+export function calcYOffset(box, bb, off) {
   if (bb[3] > box[0] && bb[0] < box[3] && bb[5] > box[2] && bb[2] < box[5]) {
     if (off > 0) {
       if (bb[4] <= box[1]) { const d = box[1] - bb[4]; if (d < off) off = d; }
@@ -29,7 +29,7 @@ function calcYOffset(box, bb, off) {
   }
   return off;
 }
-function calcXOffset(box, bb, off) {
+export function calcXOffset(box, bb, off) {
   if (bb[4] > box[1] && bb[1] < box[4] && bb[5] > box[2] && bb[2] < box[5]) {
     if (off > 0) {
       if (bb[3] <= box[0]) { const d = box[0] - bb[3]; if (d < off) off = d; }
@@ -39,7 +39,7 @@ function calcXOffset(box, bb, off) {
   }
   return off;
 }
-function calcZOffset(box, bb, off) {
+export function calcZOffset(box, bb, off) {
   if (bb[3] > box[0] && bb[0] < box[3] && bb[4] > box[1] && bb[1] < box[4]) {
     if (off > 0) {
       if (bb[5] <= box[2]) { const d = box[2] - bb[5]; if (d < off) off = d; }

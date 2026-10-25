@@ -225,3 +225,47 @@ export function chatClickUrl(json) {
   };
   return walk(obj);
 }
+
+// Preserve events on translated arguments (advancement and item announcements).
+export function chatSegments(raw) {
+  const obj=typeof raw==='string'?decodeComponent(raw):raw,out=[];
+  const walk=(c,parent={},events={})=>{
+    if(c===null||c===undefined)return;
+    if(Array.isArray(c)){const first=c[0],base=first&&typeof first==='object'?{...events,click:first.clickEvent||events.click,hover:first.hoverEvent||events.hover}:events;c.forEach((x,i)=>walk(x,i?rootStyle(first,parent):parent,i?base:events));return;}
+    if(typeof c!=='object'){out.push({text:styleCodes(parent)+String(c),...events,style:parent});return;}
+    const style=inherit(parent,c),next={click:c.clickEvent||events.click,hover:c.hoverEvent||events.hover};
+    if(next.hover?.action==='show_text')next.hoverText=chatToLegacy(next.hover.value,{parsed:true});
+    const push=text=>{if(text)out.push({text:styleCodes(style)+text,...next,style});};
+    if(c.translate!==undefined){
+      const args=c.with||[],marked=translateFn(c.translate,args.map((_,i)=>'\u0000'+i+'\u0000'));
+      let end=0;for(const match of marked.matchAll(/\u0000(\d+)\u0000/g)){push(marked.slice(end,match.index));walk(args[Number(match[1])],style,next);end=match.index+match[0].length;}push(marked.slice(end));
+    }else if(c.text!==undefined)push(String(c.text));
+    else if(c.score)push(String(c.score.value??''));
+    else if(c.selector!==undefined)push(c.selector);
+    else if(c.keybind!==undefined)push(c.keybind);
+    for(const extra of c.extra||[])walk(extra,style,next);
+  };
+  walk(obj);return out.some(c=>c.click||c.hover)?out:null;
+}
+
+
+function sliceLegacySegment(text,start,end) {
+  let at=0,active='',out='',started=false;
+  for(let i=0;i<text.length&&at<end;i++) {
+    if(text[i]==='§'&&i+1<text.length){const code=text.slice(i,i+2);i++;active=/[0-9a-fr]/i.test(code[1])?code:active+code;if(started)out+=code;continue;}
+    if(at>=start){if(!started){out=active;started=true;}out+=text[i];}at++;
+  }
+  return out;
+}
+
+export function wrapChatSegments(segments,lines) {
+  if(!segments)return lines.map(()=>null);
+  const plain=s=>s.replace(/§./g,''),source=segments.map(s=>plain(s.text)).join('');let cursor=0;
+  return lines.map(line=>{
+    const text=plain(line),found=source.indexOf(text,cursor),start=found<0?cursor:found,end=start+text.length;cursor=end;
+    let offset=0;return segments.flatMap(segment=>{
+      const raw=plain(segment.text),a=Math.max(0,start-offset),b=Math.min(raw.length,end-offset);offset+=raw.length;
+      return b>a?[{...segment,text:sliceLegacySegment(segment.text,a,b)}]:[];
+    });
+  });
+}
