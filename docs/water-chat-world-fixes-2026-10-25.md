@@ -37,3 +37,11 @@ exercise EXP2 software rendering and biome transitions, verify proxy routes and
 hover data on each version, and cover faded history, literal-format translation
 keys, path lighting and placement on landed sand. Production HTML builds are
 checked on all three branches.
+
+Follow-up path audit: vanilla 1.13.2 reports 38 default block states using
+neighbour brightness. All have the flag in the client after the path fix. The
+path opacity was also corrected from 0 to 15; the exposed top remains bright
+while direct skylight is blocked beneath it. Native jar reflection confirmed
+opacity 15; the 1.12.2 `arc` path constructor explicitly sets opacity 255
+(normalized to 15 by this client's light system). No path block exists in 1.8.9.
+This checks default states, not every state-dependent lighting behaviour.

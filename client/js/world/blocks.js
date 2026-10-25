@@ -104,7 +104,7 @@ export function initBlocks(blocksJson, shapesJson) {
   for (const n of ['stone_slab', 'wooden_slab', 'stone_slab2', 'farmland', ...STAIRS]) {
     if (blocksByName[n]) { blocksByName[n].filterLight = 15; blocksByName[n].useNeighborBrightness = true; }
   }
-  if(blocksByName.grass_path)blocksByName.grass_path.useNeighborBrightness=true;
+  if(blocksByName.grass_path){blocksByName.grass_path.filterLight=15;blocksByName.grass_path.useNeighborBrightness=true;}
 }
 
 export function getBlock(id) { return blocks[id] || blocks[0]; }
