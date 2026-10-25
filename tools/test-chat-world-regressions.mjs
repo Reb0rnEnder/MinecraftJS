@@ -35,6 +35,7 @@ test('expired chat stays in history and renders again when a chat screen with a 
 if(blocksByName.grass_path)test('path top faces use bright adjacent skylight immediately after chunk loading',()=>{
  const w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);c.setState(8,64,8,state('grass_path'));c.setSkyLight(8,64,8,0);c.setSkyLight(8,65,8,15);
  const m=Object.create(Mesher.prototype);m.world={getState:(x,y,z)=>w.getState(x,y,z),getLight:(x,y,z)=>(w.getSkyLight(x,y,z)<<4)|w.getBlockLight(x,y,z)};
+ assert.equal(w.opacity(state('grass_path')),15);
  assert.equal(m.lightAt(8,64,8)>>4,15);assert.equal(w.getState(8,64,8),state('grass_path'));
 });
 
@@ -47,4 +48,13 @@ test('falling sand removes its source, collides at the floor and does not obstru
  const interaction=Object.create(Interaction.prototype);interaction.game=g;Object.defineProperty(interaction,'player',{value:g.player});
  const held={id:g.items.byName.get('stone').id,count:64,damage:0};const target={x:8,y:64,z:8,face:1,hit:[8.5,65,8.5]};
  assert.equal(interaction._canPlaceBlockOnSide(target,held),true,'a redundant falling entity must not block placement above landed sand');
+});
+
+if(blocksByName.grass_path)test('path lighting keeps the exposed top bright while blocking direct skylight below',()=>{
+ const w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);
+ for(let x=0;x<16;x++)for(let z=0;z<16;z++)for(let y=60;y<70;y++)c.setSkyLight(x,y,z,15);
+ w.setState(8,64,8,state('grass_path'));
+ assert.equal(w.getSkyLight(8,64,8),0);assert.equal(c.heightMap[(8<<4)|8],65);
+ assert.ok(w.getSkyLight(8,63,8)<15,'direct sunlight must not pass through the path');
+ assert.equal(w.getSkyLight(8,65,8),15);
 });
