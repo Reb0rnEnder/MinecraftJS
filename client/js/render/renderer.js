@@ -113,6 +113,12 @@ export class Renderer {
       }
       return colorMesh(d, q);
     };
+    // RenderGlobal.renderSkyEnd: the same bottom quad rotated onto six faces.
+    // UVs repeat the jar's end_sky texture sixteen times across each face.
+    const endFace = [[-100,-100,-100,0,0],[-100,-100,100,0,16],[100,-100,100,16,16],[100,-100,-100,16,0]];
+    const rotations = [(x,y,z)=>[x,y,z],(x,y,z)=>[x,-z,y],(x,y,z)=>[x,z,-y],
+      (x,y,z)=>[x,-y,-z],(x,y,z)=>[-y,x,z],(x,y,z)=>[y,-x,z]];
+    this.endSky = colorMesh(d, rotations.map(rotate => endFace.map(([x,y,z,u,v]) => [...rotate(x,y,z),u,v,1,1,1,1])));
     this.skyPlane = plane(0, false);
     this.voidPlane = plane(0, true);
     // Sunrise fan as triangles (centre + ring), vertex alpha fades towards the ring
@@ -247,6 +253,7 @@ export class Renderer {
     this.fog = { color: [fogR, fogG, fogB], start: fogStart, end: fogEnd, density: fogDensity, mode: fogMode };
 
     const env = this.env;
+    env.endSkyVisible = dimension === 1;
     env.skyVisible = dimension === 0 && !state.underwater && !state.inLava;
     env.sky = sky;
     env.angle = angle;
@@ -354,6 +361,16 @@ export class Renderer {
   _drawSky() {
     const d = this.device;
     const env = this.env;
+    if (env.endSkyVisible) {
+      const texture = this.assets.texture('environment/end_sky.png', { wrap: 'repeat' });
+      if (texture) {
+        this._globals(this.skyView, this.skyProj);
+        d.draw({ mesh: this.endSky, pipeline: 'color', textures: [texture],
+          params: colorParams(40 / 255, 40 / 255, 40 / 255, 1), model: mat4.create(),
+          state: { blend: 'none', depthTest: false, depthWrite: false } });
+      }
+      return;
+    }
     if (!env.skyVisible) return;
     this._globals(this.skyView, this.skyProj);
     const sky = env.sky;
