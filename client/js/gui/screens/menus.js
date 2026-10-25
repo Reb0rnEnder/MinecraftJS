@@ -54,7 +54,7 @@ export class TitleScreen extends Screen {
     this.buttons.push(lang);
     const accessibility=new Button(6,cx+104,y+84,20,20,'',()=>import('./options.js').then(m=>g.screens.open(new m.AccessibilityScreen(g,this))));
     accessibility.narration=()=>tr('options.accessibility.title');
-    accessibility.render=(gui,mx,my)=>{gui.button(accessibility.x,accessibility.y,20,20,'',accessibility.focused||accessibility.hovered(mx,my),true);gui.blit('gui/accessibility.png',accessibility.x+2,accessibility.y+2,0,0,16,16,32,64);};
+    accessibility.render=(gui,mx,my)=>gui.blit('gui/accessibility.png',accessibility.x,accessibility.y,0,accessibility.focused||accessibility.hovered(mx,my)?20:0,20,20,32,64);
     this.buttons.push(accessibility);
     // Account manager (top right): current account's face and name
     const acct = new Button(20, this.width - 104, 4, 100, 20, '', () => g.screens.open(new AccountsScreen(g, this)));

@@ -14,7 +14,7 @@ import { tr } from '../gui/i18n.js';
 import { Connection } from '../net/connection.js';
 import { isEaglerAddress } from '../net/address.js';
 import { C } from '../net/packets.js';
-import { Reader, Writer } from '../net/buffer.js';
+import { Writer } from '../net/buffer.js';
 import { simplify } from '../net/nbt.js';
 import { World } from '../world/world.js';
 import { getBlock, getBlockById, getStateProperties } from '../world/blocks.js';
@@ -1149,21 +1149,6 @@ export class Game {
   on_scoreboard_score(p) { this.scoreboard.onScore(p); }
   on_scoreboard_display_objective(p) { this.scoreboard.onDisplay(p); }
   on_scoreboard_team(p) { this.scoreboard.onTeam(p); }
-
-  on_custom_payload(p) {
-    if (p.channel === 'minecraft:trader_list' || p.channel === 'MC|TrList') {
-      if (this.screens.current && this.screens.current.onTradeList) this.screens.current.onTradeList(p.data);
-      else this.pendingTrades = p.data;
-    } else if (p.channel === 'minecraft:stop_sound' || p.channel === 'MC|StopSound') {
-      // category name ("" for all), then the sound event ("" for all)
-      const r = new Reader(p.data);
-      const category = r.string(), sound = r.string();
-      this.sound.stop(sound, SOUND_CATEGORIES.includes(category) ? category : null);
-    } else if (p.channel === 'minecraft:book_open' || p.channel === 'MC|BOpen') {
-      const held = this.inventory.held();
-      if (held && this.items.name(held.id) === 'written_book') this.screens.open(new BookScreen(this, held, false));
-    }
-  }
 
   on_stop_sound(p) {
     const category = p.source === null || p.source === undefined ? null : SOUND_CATEGORIES[p.source] || null;

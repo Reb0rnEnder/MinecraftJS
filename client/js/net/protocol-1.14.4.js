@@ -1,8 +1,7 @@
 // Native Java 1.14.4 protocol 498 codec.
 import {Reader,Writer} from './buffer.js';
 import {technicalPackets} from './technical-packets.js';
-import {readPacketBody404} from './packets-1.13.2.js';
-import {BODY_404} from './protocol-1.14.4-reuse.js';
+import {PACKET_BODIES_498} from './packet-bodies-1.14.4.js';
 import {readCommandTree} from './command-tree.js';
 import {readNbtRoot} from './nbt.js';
 import {CLIENTBOUND_498 as IN,SERVERBOUND_498 as OUT} from './protocol-1.14.4-ids.js';
@@ -119,7 +118,7 @@ const decoders={
 const names=Object.fromEntries(Object.entries(IN).map(([name,id])=>[id,name]));
 export function decodePacket498(bytes) {
   const r=new Reader498(bytes),id=r.varint(),name=names[id];
-  const body = decoders[name] ? decoders[name](r) : BODY_404[id] !== undefined ? readPacketBody404(BODY_404[id],r) : null;
+  const body = decoders[name] ? decoders[name](r) : PACKET_BODIES_498[name] ? PACKET_BODIES_498[name](r) : null;
   if(!body)return {name:'unsupported',packetName:name||null,id,data:r.rest()};
   const p={name,id,...body};
   if(r.remaining())throw new Error(`Trailing data in 498 ${name}: ${r.remaining()} bytes`);

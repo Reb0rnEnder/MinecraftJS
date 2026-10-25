@@ -629,8 +629,7 @@ class AnvilScreen extends SimpleScreen {
     this.nameField = new TextField(this.guiLeft + 62, this.guiTop + 24, 103, 12, { maxLength: 30, background: false, focused: false });
     this.nameField.textColor = 0xffffff;
     this.nameField.onChange = (t) => {
-      const w = new Writer().string(t).build();
-      this.game.send(C.customPayload('minecraft:item_name', w));
+      this.game.send(C.nameItem(t));
     };
     this.fields.push(this.nameField);
     this._lastFirst = null;
@@ -748,8 +747,7 @@ class BeaconScreen extends ContainerScreen {
       this.game.sound.playUi('ui.button.click', 1);
       if (b.cancel) { this.close(); return true; }
       if (b.confirm) {
-        const w = new Writer().i32(this.field(1)).i32(this.field(2)).build();
-      this.game.send(C.customPayload('minecraft:beacon', w));
+        this.game.send(C.setBeaconEffects(this.field(1),this.field(2)));
         this.close();
         return true;
       }
@@ -758,60 +756,6 @@ class BeaconScreen extends ContainerScreen {
       return true;
     }
     return false;
-  }
-}
-
-class VillagerScreen extends SimpleScreen {
-  constructor(game, win) {
-    super(game, win, 'gui/container/villager.png', [[0, 36, 53], [1, 62, 53], [2, 120, 53]]);
-    this.trades = [];
-    this.index = 0;
-    if (game.pendingTrades) { this.onTradeList(game.pendingTrades); game.pendingTrades = null; }
-  }
-  init() {
-    super.init();
-    this.next = new Button(1, this.guiLeft + 120 + 27, this.guiTop + 24 - 1, 12, 19, '>', () => this.select(this.index + 1));
-    this.prev = new Button(2, this.guiLeft + 36 - 19, this.guiTop + 24 - 1, 12, 19, '<', () => this.select(this.index - 1));
-    this.buttons.push(this.next, this.prev);
-  }
-  onTradeList(data) {
-    // MC|TrList: int windowId, byte count, then recipes
-    import('../../net/buffer.js').then(({ Reader }) => {
-      const r = new Reader(data);
-      r.i32();
-      const n = r.u8();
-      const trades = [];
-      for (let i = 0; i < n; i++) {
-        const a = r.slot(); const out = r.slot(); const hasB = r.bool(); const b = hasB ? r.slot() : null;
-        const disabled = r.bool(); const uses = r.i32(); const max = r.i32();
-        trades.push({ a, b, out, disabled, uses, max });
-      }
-      this.trades = trades;
-    });
-  }
-  select(i) {
-    if (i < 0 || i >= this.trades.length) return;
-    this.index = i;
-      this.game.send(C.customPayload('minecraft:trader_select', new Writer().i32(i).build()));
-  }
-  drawBackground(gui) {
-    super.drawBackground(gui);
-    this.next.enabled = this.index < this.trades.length - 1;
-    this.prev.enabled = this.index > 0;
-    const t = this.trades[this.index];
-    if (t && t.disabled) {
-      gui.blit(this.tex, this.guiLeft + 83, this.guiTop + 21, 212, 0, 28, 21);
-      gui.blit(this.tex, this.guiLeft + 83, this.guiTop + 51, 212, 0, 28, 21);
-    }
-  }
-  drawForeground(gui) {
-    super.drawForeground(gui);
-    const t = this.trades[this.index];
-    if (!t) return;
-    const ir = this.game.itemRenderer;
-    ir.drawItem(gui, t.a, 36, 24);
-    if (t.b) ir.drawItem(gui, t.b, 62, 24);
-    ir.drawItem(gui, t.out, 120, 24);
   }
 }
 
@@ -876,7 +820,6 @@ export function openContainerScreen(game, win) {
     case 'minecraft:enchanting_table': s = new EnchantScreen(game, win); break;
     case 'minecraft:anvil': s = new AnvilScreen(game, win); break;
     case 'minecraft:beacon': s = new BeaconScreen(game, win); break;
-    case 'minecraft:villager': s = new VillagerScreen(game, win); break;
     case 'EntityHorse': s = new HorseScreen(game, win); break;
     default: s = new ChestScreen(game, win); break;
   }
@@ -885,7 +828,7 @@ export function openContainerScreen(game, win) {
 
 // ---------------------------------------------------------------- creative inventory
 
-// Native Java 1.13.2 ItemGroups, extracted from the pinned client jar by tools/creative-dump.
+// Native Java 1.14.4 creative tabs, extracted from the pinned client jar by tools/creative-dump.
 // The middle tuple field is retained for the data format only; flattened variants have distinct IDs.
 const stackOf = ([id, , tag]) => ({ id, count: 1, damage: 0, nbt: tag ? { t: 10, name: '', v: structuredClone(tag) } : null });
 // Creative templates/snapshots must never share mutable NBT with player stacks. Prefer
@@ -943,7 +886,7 @@ export function hotbarSnapshots() {
     return saved.bars.map(bar => {
       if (!Array.isArray(bar) || bar.length !== 9) return new Array(9).fill(null);
       return bar.map(it => {
-        if (!it || !Number.isInteger(it.id) || it.id < 1 || it.id > 789 || !Number.isInteger(it.count) || it.count < 1 || it.count > 127 || creativeLocked(it)) return null;
+        if (!it || !Number.isInteger(it.id) || it.id < 1 || it.id > 876 || !Number.isInteger(it.count) || it.count < 1 || it.count > 127 || creativeLocked(it)) return null;
         const copied = creativeCopy(it);
         // Check that persisted typed NBT is serializable before it reaches a live click.
         new Writer().slot(copied).build();

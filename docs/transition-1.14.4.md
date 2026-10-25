@@ -29,6 +29,13 @@ regressions, browser/isolated-server evidence and remaining gaps. The requested
 Additions/Changes heading and inventories all 233 listed bug tickets without
 claiming they have all been reproduced. Full-parity release remains gated.
 
+## Search and native protocol cleanup
+
+See [the follow-up fixes](native-protocol-cleanup-1.14.4.md): Search now has all
+1,127 native stacks, the title accessibility button uses the full native sprite,
+and active packet handling no longer depends on the 1.13.2 codec or legacy
+plugin-channel aliases. Native anvil/beacon actions are fixed and backported.
+
 ## Indexed assets and native title rendering
 
 The village panorama now comes from the 1.14 asset index, overriding stale jar

@@ -1,4 +1,4 @@
-// Declare Commands, protocol 404. Every parser below is registered by the pinned jar's ArgumentTypes.
+// Native Brigadier command tree. Every parser below is registered by the pinned jar's ArgumentTypes.
 const SIMPLE = new Set(['brigadier:bool','minecraft:game_profile','minecraft:block_pos','minecraft:column_pos','minecraft:vec3','minecraft:vec2','minecraft:block_state','minecraft:block_predicate','minecraft:item_stack','minecraft:item_predicate','minecraft:color','minecraft:component','minecraft:message','minecraft:nbt','minecraft:nbt_path','minecraft:objective','minecraft:objective_criteria','minecraft:operation','minecraft:particle','minecraft:rotation','minecraft:scoreboard_slot','minecraft:swizzle','minecraft:team','minecraft:item_slot','minecraft:resource_location','minecraft:mob_effect','minecraft:function','minecraft:entity_anchor','minecraft:int_range','minecraft:float_range','minecraft:item_enchantment','minecraft:entity_summon','minecraft:dimension','minecraft:nbt_tag','minecraft:nbt_compound_tag','minecraft:time']);
 export function readCommandTree(r) {
   const count=r.varint(),nodes=[];

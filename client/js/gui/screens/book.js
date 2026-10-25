@@ -1,4 +1,4 @@
-// GuiScreenBook: read written books, edit/sign book & quill (MC|BEdit / MC|BSign)
+// GuiScreenBook: read written books, edit/sign book & quill (native edit_book packet)
 import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
 import { Button } from '../widgets.js';

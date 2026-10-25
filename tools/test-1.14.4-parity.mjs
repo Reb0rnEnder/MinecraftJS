@@ -30,6 +30,8 @@ import {PANDA_VARIANTS} from '../client/js/game/panda-variants-1.14.4.js';
 import {EntityManager} from '../client/js/game/entities.js';
 import {Game} from '../client/js/game/game.js';
 import {nbt} from '../client/js/net/nbt.js';
+import {CreativeScreen} from '../client/js/gui/screens/containers.js';
+import {TitleScreen} from '../client/js/gui/screens/menus.js';
 import {JigsawScreen} from '../client/js/gui/screens/jigsaw.js';
 const data=n=>JSON.parse(readFileSync(new URL('../client/data/'+n+'.json',import.meta.url)));
 const require=createRequire(import.meta.url),{ZipFile}=require('../lib/zip.js'),jar=new ZipFile(new URL('../cache/port-1.14.4/client.jar',import.meta.url));
@@ -142,4 +144,24 @@ test('panda skin selection follows native dominant/recessive genes and all selec
  for(let main=0;main<7;main++)for(let hidden=0;hidden<7;hidden++){const path=EntityRenderer.prototype._texFor.call({}, {type:'panda',pandaGene:main,pandaHiddenGene:hidden});assert.ok(jar.read('assets/minecraft/textures/'+path),path);skins.add(path);}
  assert.equal(skins.size,7);const tex=(main,hidden)=>EntityRenderer.prototype._texFor.call({}, {type:'panda',pandaGene:main,pandaHiddenGene:hidden});
  assert.equal(tex(4,0),'entity/panda/panda.png');assert.equal(tex(4,4),'entity/panda/brown_panda.png');assert.equal(tex(5,5),'entity/panda/weak_panda.png');assert.equal(tex(1,4),'entity/panda/lazy_panda.png');
+});
+
+test('creative Search contains native all-item variants, filters names/tags and repopulates after clearing',()=>{
+ const g=fixture();g.gui={width:640,height:480};g.effects=new Map();g.tags={forEntry:(_,id)=>id===g.items.byName.get('sand').id?['minecraft:sand']:[]};
+ const screen=new CreativeScreen(g);screen.init();screen.setTab(5);assert.equal(screen.list.length,1127);assert.ok(screen.list.some(it=>g.items.name(it.id)==='crossbow'));assert.ok(screen.list.some(it=>g.items.name(it.id)==='enchanted_book'&&g.items.enchantments(it).some(e=>e.id==='minecraft:multishot')));
+ screen.search.setText('crossbow');assert.ok(screen.list.length);assert.ok(screen.list.every(it=>g.items.name(it.id)==='crossbow'));
+ screen.search.setText('#minecraft:sand');assert.ok(screen.list.length);assert.ok(screen.list.every(it=>g.items.name(it.id)==='sand'));
+ screen.search.setText('');assert.equal(screen.list.length,1127);screen.setTab(0);screen.setTab(5);assert.equal(screen.list.length,1127);
+});
+
+test('accessibility button draws full native 20-pixel sheet rows at the actual button position',()=>{
+ const screen=new TitleScreen({gui:{width:640,height:480},assets:{splashes:[]}});screen.init();const b=screen.buttons.find(b=>b.id===6),calls=[],gui={blit:(...a)=>calls.push(a)};
+ b.render(gui,-1,-1);b.render(gui,b.x+1,b.y+1);b.focused=true;b.render(gui,-1,-1);
+ assert.deepEqual(calls,[["gui/accessibility.png",b.x,b.y,0,0,20,20,32,64],["gui/accessibility.png",b.x,b.y,0,20,20,20,32,64],["gui/accessibility.png",b.x,b.y,0,20,20,20,32,64]]);
+});
+
+test('native brand, anvil and beacon packets use resource locations and dedicated packet layouts',()=>{
+ const brand=new Reader498(C.customPayload('minecraft:brand',new Writer498().string('vanilla').build()));assert.equal(brand.varint(),11);assert.equal(brand.string(),'minecraft:brand');assert.equal(brand.string(),'vanilla');assert.equal(brand.remaining(),0);assert.throws(()=>C.customPayload('MC|Brand',new Uint8Array()),/Invalid custom payload/);
+ assert.equal(Buffer.from(C.nameItem('Test')).toString('hex'),'1e0454657374');assert.equal(Buffer.from(C.setBeaconEffects(1,10)).toString('hex'),'22010a');assert.equal(Buffer.from(C.selectTrade(130)).toString('hex'),'218201');
+ const s=new Reader498(C.settings('en_us',12,2,false,85,0));assert.equal(s.varint(),5);assert.equal(s.string(),'en_us');assert.equal(s.i8(),12);assert.equal(s.varint(),2);assert.equal(s.bool(),false);assert.equal(s.u8(),85);assert.equal(s.varint(),0);assert.equal(s.remaining(),0);
 });
