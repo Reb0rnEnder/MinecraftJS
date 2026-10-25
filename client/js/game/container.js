@@ -88,7 +88,7 @@ const isReagent = (it, items) => BREWING_INGREDIENTS.has(itemName(it, items));
 const BOTTLES = new Set(['potion', 'splash_potion', 'lingering_potion', 'glass_bottle']);
 const canHoldPotion = (it, items) => BOTTLES.has(itemName(it, items));
 const BEACON_PAYMENT = new Set(['emerald', 'diamond', 'gold_ingot', 'iron_ingot']);
-const HORSE_ARMOR = new Set(['iron_horse_armor', 'golden_horse_armor', 'diamond_horse_armor']);
+const HORSE_ARMOR = new Set(['leather_horse_armor', 'iron_horse_armor', 'golden_horse_armor', 'diamond_horse_armor']);
 
 // Base container: slots with rules; also used for the player inventory (window 0)
 class ContainerBase {

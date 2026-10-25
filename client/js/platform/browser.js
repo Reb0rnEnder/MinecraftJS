@@ -230,7 +230,7 @@ export class BrowserPlatform extends Emitter {
     window.addEventListener('mouseup', (e) => this.emit('mouseup', { button: e.button, x: e.clientX * (this.pxScale || this.dpr), y: e.clientY * (this.pxScale || this.dpr), shift: e.shiftKey }));
     window.addEventListener('wheel', (e) => {
       e.preventDefault();
-      if (e.deltaY) this.emit('wheel', Math.sign(e.deltaY));
+      if (e.deltaY) this.emit('wheel', e.deltaY/(e.deltaMode===0?100:e.deltaMode===1?3:1));
     }, { passive: false });
     window.addEventListener('contextmenu', (e) => e.preventDefault());
     window.addEventListener('keydown', (e) => {

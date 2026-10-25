@@ -107,7 +107,11 @@ export function auditFeatures() {
       specialRenderer:tiles._ensure(b.id,0,0,b.defaultState)?.type ?? null})),
     items:data('items').map(i=>({name:i.name,id:i.id,nativeModel:!!jar.read('assets/minecraft/models/item/'+i.name+'.json'),useAction:items.useAction({id:i.id})})),
   };
-  return {target:'1.14.4',protocol:498,clientJarSha1:sha1,method:'Offline runtime probes plus native data validation; no live server or visual parity certification.',registryChecks,visuals,assetChecks,contentInventory,probes,
+  const features=json('tools/port-1.14.4/feature-checklist.json').features;
+  const openTopics=features.filter(f=>!['verified','not-applicable'].includes(f.status)).map(f=>f.id);
+  const patches=json('tools/port-1.14.4/patch-checklist.json');
+  for(const patch of patches)for(const topic of patch.topics)if(!['verified','not-applicable'].includes(topic.status))openTopics.push(patch.version+':'+topic.section+':'+topic.topic);
+  return {target:'1.14.4',protocol:498,clientJarSha1:sha1,method:'Offline runtime probes plus native data validation; no live server or visual parity certification.',review:{topics:features.length,openTopics},registryChecks,visuals,assetChecks,contentInventory,probes,
     totals:{verified:probes.filter(p=>p.result==='verified').length,gaps:probes.filter(p=>p.result==='gap').length}};
 }
 
@@ -116,5 +120,5 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
   if (process.argv.includes('--write')) writeFileSync(new URL('docs/feature-audit-1.14.4-results.json',root),JSON.stringify(result,null,2)+'\n');
   console.log(JSON.stringify(result,null,2));
   // --strict is suitable as a future parity gate; the default is a successful diagnostic run.
-  if (process.argv.includes('--strict') && (result.totals.gaps || Object.values(result.registryChecks).some(r=>r.missing.length || r.mismatchedIds.length || r.extra.length))) process.exitCode = 1;
+  if (process.argv.includes('--strict') && (result.review.openTopics.length || result.totals.gaps || Object.values(result.registryChecks).some(r=>r.missing.length || r.mismatchedIds.length || r.extra.length))) process.exitCode = 1;
 }

@@ -11,6 +11,9 @@ import { Node, material } from '../gfx/scene.js';
 import { resolveState } from '../world/blockstates.js';
 import { Pistons } from '../game/pistons.js';
 import { JavaRandom } from '../util/jrandom.js';
+import {isSign,signWood,signTextColor} from '../game/signs-1.14.4.js';
+import {chatToLegacy} from '../gui/chat.js';
+import {applyTransform} from './item-renderer.js';
 const FLOWER_POT = {
   'minecraft:red_flower': ['rose', 'blue_orchid', 'allium', 'houstonia', 'red_tulip', 'orange_tulip', 'white_tulip', 'pink_tulip', 'oxeye_daisy'],
   'minecraft:yellow_flower': ['dandelion'],
@@ -77,6 +80,7 @@ export class TileEntityRenderer {
     const k = key(x, y, z);
     const t = this.tiles.get(k);
     if (t && getBlock(newState).id !== getBlock(oldState).id) { this._dispose(t); this.tiles.delete(k); }
+    else if (t && oldState !== newState) { t.state=newState; this._rebuild(t); }
     this._ensure(x, y, z, newState);
     // Neighbouring chests may need re-pairing
     for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
@@ -128,11 +132,13 @@ export class TileEntityRenderer {
     const n = b.name;
     let type = null;
     if (n === 'chest' || n === 'trapped_chest' || n === 'ender_chest') type = 'chest';
-    else if (n === 'sign' || n === 'wall_sign') type = 'sign';
+    else if (isSign(n)) type = 'sign';
     else if (skullType(n) !== undefined) type = 'skull';
     else if (n.endsWith('_banner') || n.endsWith('_wall_banner')) type = 'banner';
     else if (n === 'enchanting_table') type = 'book';
     else if (n === 'bell') type = 'bell';
+    else if (n === 'campfire') type = 'campfire';
+    else if (n === 'lectern') type = 'lectern';
     else if (n === 'beacon') type = 'beacon';
     else if (n === 'end_portal' || n === 'end_gateway') type = 'endportal';
     else if (n.endsWith('_bed')) type = 'bed';
@@ -167,7 +173,7 @@ export class TileEntityRenderer {
       if (!s) continue;
        for (let i = 0; i < 4096; i++) {
          const state = s.blocks[i], name = getBlock(state).name;
-         if (name === 'chest' || name === 'trapped_chest' || name === 'ender_chest' || name === 'sign' || name === 'wall_sign' ||
+         if (name === 'chest' || name === 'trapped_chest' || name === 'ender_chest' || isSign(name) || name === 'campfire' || name === 'lectern' ||
             name.endsWith('_bed') || name.endsWith('_banner') || name.endsWith('_wall_banner') || skullType(name) !== undefined ||
             name === 'flower_pot' || name === 'end_portal' || name === 'end_gateway' || name.endsWith('_shulker_box') ||
            name === 'enchanting_table' || name === 'beacon' || name === 'bell') {
@@ -202,7 +208,8 @@ export class TileEntityRenderer {
     if (!t) return;
     t.data = data;
     if (t.type === 'sign' && data.Text1 !== undefined) {
-      // Signs can also arrive as tile entity NBT
+      t.lines = [1,2,3,4].map(n=>chatToLegacy(data['Text'+n]||''));
+      this.signs.set(key(pos.x,pos.y,pos.z),t.lines);
     }
     this._rebuild(t);
   }
@@ -230,6 +237,10 @@ export class TileEntityRenderer {
     const g = this.game;
     const beaconUpdate = (Number(g.world.worldAge) || this.ticks) % 80 === 0;
     for (const t of this.tiles.values()) {
+      if(t.type==='campfire'&&g.player&&Math.hypot(t.x-g.player.x,t.y-g.player.y,t.z-g.player.z)<64) {
+        const props=getStateProperties(g.world.getState(t.x,t.y,t.z));
+        if(props.lit==='true'&&Math.random()<.11)for(let i=0,n=2+Math.floor(Math.random()*2);i<n;i++)g.particles?.campfireSmoke(t.x+.5+(Math.random()-.5)/3,t.y+.4+Math.random()*.1,t.z+.5+(Math.random()-.5)/3,props.signal_fire==='true');
+      }
       if(t.type==='bell' && t.bellShaking && ++t.bellTime>=50){t.bellShaking=false;t.bellTime=0;}
       if (t.type === 'beacon' && beaconUpdate) this._updateBeacon(t);
       if (t.type === 'shulker') {
@@ -439,9 +450,9 @@ export class TileEntityRenderer {
         break;
       }
       case 'sign': {
-        mat = entityMaterial('entity/sign.png', { alphaTest: 0.1 });
+        mat = entityMaterial('entity/signs/'+signWood(getBlock(st).name)+'.png', { alphaTest: 0.1 });
         const { board, stick } = blockModel('sign', ['board', 'stick']); // ModelSign
-         const standing = getBlock(st).name === 'sign';
+         const standing = !getBlock(st).name.includes('_wall_sign');
         const f = 0.6666667;
         const outer = new Node();
         outer.position.set(0.5, 0.75 * f, 0.5);
@@ -461,7 +472,7 @@ export class TileEntityRenderer {
           const items = [];
           for (let j = 0; j < 4; j++) {
             const line = lines[j] || '';
-            if (line) items.push({ text: line, x: -font.width(line) / 2, y: j * 10 - 20, color: 0x000000 });
+            if (line) items.push({ text: line, x: -font.width(line) / 2, y: j * 10 - 20, color: signTextColor(t.data?.Color) });
           }
           t.textMeshes = buildTextMeshes(this.device, font, items);
           const tn = new Node();
@@ -506,16 +517,43 @@ export class TileEntityRenderer {
         obj.add(b.node);
         break;
       }
+      case 'campfire': {
+        const facing=['south','west','north','east'].indexOf(props.facing);
+        const atlasMat=entityMaterial(()=>g.assets.atlasTexture,{alphaTest:.1});
+        mat=atlasMat;
+        for(const entry of t.data?.Items||[]) {
+          const def=g.items.byName.get(String(entry.id).replace(/^minecraft:/,''));
+          if(!def||entry.Count<=0)continue;
+          const item={id:def.id,count:entry.Count,nbt:null,_renderTag:entry.tag||{}};
+          const node=g.itemRenderer.objectFor(item,atlasMat)?.obj;if(!node)continue;
+          applyTransform(node,g.itemRenderer.modelFor(item).display?.fixed);
+          const slot=new Node(),flat=new Node(),scaled=new Node();
+          slot.position.set(.5,.44921875,.5);slot.rotation.y=-((facing+Number(entry.Slot||0))%4)*Math.PI/2;
+          flat.rotation.x=Math.PI/2;scaled.position.set(-.3125,-.3125,0);scaled.scale.set(.375,.375,.375);
+          scaled.add(node);flat.add(scaled);slot.add(flat);obj.add(slot);
+        }
+        break;
+      }
+      case 'lectern':
       case 'book': {
+        if(t.type==='lectern'&&props.has_book!=='true')break;
         mat = entityMaterial('entity/enchanting_table_book.png', { alphaTest: 0.1, cull: true }); // enableCull: the zero-thickness pages show one side
         // ModelBook
         const parts = blockModel('book', ['coverRight', 'coverLeft', 'pagesRight', 'pagesLeft', 'flipRight', 'flipLeft', 'spine']);
         const model = new Node(); model.scale.set(1 / 16, 1 / 16, 1 / 16);
         for (const p of Object.values(parts)) { model.add(p.build()); p.setMaterial(mat); }
         t.bookParts = parts;
-        const outer = new Node(); outer.position.set(0.5, 0.75, 0.5);
+        const outer = new Node(); outer.position.set(0.5, t.type==='lectern'?1.0625:.75, 0.5);
         const rotG = new Node();
-        const tilt = new Node(); tilt.rotation.z = 80 * D2R;
+        const tilt = new Node(); tilt.rotation.z = (t.type==='lectern'?67.5:80) * D2R;
+        if(t.type==='lectern') {
+          rotG.rotation.y= -({south:0,west:90,north:180,east:270}[props.facing]||0)*D2R;
+          const f=1.5;
+          parts.coverRight.ry=Math.PI+f;parts.coverLeft.ry=-f;parts.pagesRight.ry=f;parts.pagesLeft.ry=-f;
+          parts.flipRight.ry=f-f*2*.1;parts.flipLeft.ry=f-f*2*.9;
+          for(const name of ['pagesRight','pagesLeft','flipRight','flipLeft'])parts[name].px=Math.sin(f);
+          for(const part of Object.values(parts))part.sync();
+        }
         tilt.add(model); rotG.add(tilt); outer.add(rotG);
         t.bookOuter = outer; t.bookRot = rotG;
         obj.add(outer);

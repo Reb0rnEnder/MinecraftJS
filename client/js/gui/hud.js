@@ -1,4 +1,5 @@
 import { debugTargets } from './debug-targets.js';
+import {drawEffectIcon} from './effect-icons.js';
 import { getStateProperties } from '../world/blocks.js';
 import { getFluidState } from '../world/fluids.js';
 // In-game overlay (port of GuiIngame / GuiNewChat / GuiPlayerTabOverlay / GuiOverlayDebug).
@@ -277,7 +278,7 @@ export class Hud {
       a = Math.floor(a * opacity);
       if (a <= 3) continue;
       const y = -i * 9;
-      gui.rect(0, y - 9, w + 4, y, (Math.floor(a / 2) << 24) >>> 0);
+      gui.rect(0, y - 9, w + 4, y, (Math.floor(255*(open?1:d)*(g.settings.textBackgroundOpacity??.5)) << 24) >>> 0);
       gui.font.draw(line.text, 0, y - 8, 0xffffff, true, a / 255);
       drawn++;
     }
@@ -311,7 +312,7 @@ export class Hud {
 
     if (g.settings.fancyGraphics) this.renderVignette(gui);
     const helmet = g.inventory.armor[3];
-    if (g.thirdPerson === 0 && helmet && helmet.id === 86) {
+    if (g.thirdPerson === 0 && helmet && g.items.name(helmet.id) === 'carved_pumpkin') {
       const t = gui.tex('misc/pumpkinblur.png');
       if (t) gui.quad(t, 0, 0, W, H, 0, 0, 1, 1, [1, 1, 1, 1]);
     }
@@ -326,6 +327,7 @@ export class Hud {
     else this._crosshair(showCross);
 
     this.renderBossBar(gui);
+    this.renderStatusEffects(gui);
     if (survival) this.renderStats(gui);
     if (g.sleeping) {
       gui.rect(0, 0, W, H, 0xb0101020);
@@ -686,6 +688,21 @@ export class Hud {
       gui.text(t.text, -Math.floor(gui.textWidth(t.text) / 2), -j1, col, false);
       gui.popMatrix();
     });
+  }
+
+  renderStatusEffects(gui) {
+    const g=this.game;
+    if(g.screens.current?.effectsShift)return;
+    let good=0,bad=0;
+    for(const [id,e] of [...g.effects].sort((a,b)=>b[0]-a[0])) {
+      const def=g.items.effects[id];if(!def||e.showIcon===false)continue;
+      const beneficial=def.beneficial??!def.bad;
+      const x=gui.width-25*(beneficial?++good:++bad),y=beneficial?1:27;
+      gui.blit('gui/container/inventory.png',x,y,e.ambient?165:141,166,24,24);
+      let alpha=1;
+      if(!e.ambient&&e.duration<=200){const n=10-Math.floor(e.duration/20);alpha=Math.max(0,Math.min(.5,e.duration/50))+Math.cos(e.duration*Math.PI/5)*Math.max(0,Math.min(.25,n/10*.25));}
+      drawEffectIcon(g,gui,id,x+3,y+3,18,alpha);
+    }
   }
 
   renderBossBar(gui) {

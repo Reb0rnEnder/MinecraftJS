@@ -47,8 +47,9 @@ export class Input {
       this.emit('mouse', { code, button: e.button, down: false, shift: e.shift });
     });
     P.on('wheel', (d) => {
+      d=(this.settings.discreteMouseScroll?Math.sign(d):d)*(this.settings.mouseWheelSensitivity??1);
       this.emit('wheel', d);
-      if (this.locked) this.wheel += d;
+      if (this.locked){if(Math.sign(d)!==Math.sign(this.wheelCarry||0))this.wheelCarry=0;this.wheelCarry=(this.wheelCarry||0)+d;const steps=Math.trunc(this.wheelCarry);this.wheel+=steps;this.wheelCarry-=steps;}
     });
     P.on('keydown', (e) => {
       if (!e.repeat) { this.down.add(e.code); this.pressed.push(e.code); }
@@ -57,7 +58,8 @@ export class Input {
     P.on('char', (text) => {
       // A key that opened a screen (e.g. T for chat) must not also type into it
       if (this.suppressNextChar) { this.suppressNextChar = false; if (text.length === 1) return; }
-      for (const ch of text) if (ch >= ' ') this.emit('char', ch);
+      const allowed=[...text].filter(ch=>ch>=' '||ch==='\n'||ch==='\r'||ch==='\t').join('');
+      if(allowed)this.emit('char',allowed);
     });
     P.on('keyup', (e) => {
       this.down.delete(e.code);

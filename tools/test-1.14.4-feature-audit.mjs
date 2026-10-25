@@ -36,3 +36,9 @@ test('checked-in diagnostic results match current runtime, native registry IDs a
   assert.equal(actual.contentInventory.items.length+1,actual.registryChecks.items.native,'air is intentionally not an inventory item');
   assert.equal(actual.contentInventory.blocks.reduce((n,b)=>n+b.states,0),actual.visuals.states);
 });
+
+test('patch review retains each release topic and bug inventory without certifying unexecuted regressions',()=>{
+ const patches=read('tools/port-1.14.4/patch-checklist.json');assert.deepEqual(patches.map(p=>p.version),['1.14.1','1.14.2','1.14.3','1.14.4']);
+ assert.deepEqual(patches.map(p=>p.topics.length),[9,9,10,11]);assert.deepEqual(patches.map(p=>p.bugIds.length),[62,35,82,54]);
+ for(const p of patches){assert.match(p.sha256,/^[a-f0-9]{64}$/);assert.equal(p.bugFixStatus,'not-certified');assert.equal(new Set(p.bugIds).size,p.bugIds.length);for(const t of p.topics){assert.notEqual(t.status,'review-needed');assert.ok(t.observation.length>25);}}
+});

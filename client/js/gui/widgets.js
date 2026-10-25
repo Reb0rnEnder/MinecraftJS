@@ -12,7 +12,7 @@ export class Button {
   hovered(mx, my) { return mx >= this.x && my >= this.y && mx < this.x + this.w && my < this.y + this.h; }
   render(gui, mx, my) {
     if (!this.visible) return;
-    gui.button(this.x, this.y, this.w, this.h, typeof this.label === 'function' ? this.label() : this.label, this.enabled && this.hovered(mx, my), this.enabled);
+    gui.button(this.x, this.y, this.w, this.h, typeof this.label === 'function' ? this.label() : this.label, this.enabled && (this.focused||this.hovered(mx, my)), this.enabled);
   }
   mouseDown(mx, my, game) {
     if (this.visible && this.enabled && this.hovered(mx, my)) {
@@ -20,6 +20,10 @@ export class Button {
       if (this.onClick) this.onClick(this);
       return true;
     }
+    return false;
+  }
+  key(e,game) {
+    if(this.enabled&&this.visible&&['Enter','NumpadEnter','Space'].includes(e.code)){game.sound.playUi('ui.button.click',1);this.onClick?.(this);return true;}
     return false;
   }
 }
@@ -43,6 +47,10 @@ export class Slider extends Button {
     let v = (mx - (this.x + 4)) / (this.w - 8);
     v = Math.min(1, Math.max(0, v));
     if (v !== this.value) { this.value = v; this.onChange(v); }
+  }
+  key(e,game){
+    if(['ArrowLeft','ArrowRight'].includes(e.code)){this.value=Math.max(0,Math.min(1,this.value+(e.code==='ArrowLeft'?-.01:.01)));this.onChange(this.value);return true;}
+    return false;
   }
   mouseDown(mx, my, game) {
     if (this.visible && this.enabled && this.hovered(mx, my)) {
@@ -72,6 +80,7 @@ export class TextField {
     this.filter = opts.filter || null;
     this.onEnter = opts.onEnter || null;
     this.onChange = opts.onChange || null;
+    this.validate = opts.validate || null;
   }
 
   setText(t) {
@@ -91,7 +100,9 @@ export class TextField {
     const [a, b] = this.selection();
     const room = this.maxLength - this.text.length + (b - a);
     s = s.slice(0, Math.max(0, room));
-    this.text = this.text.slice(0, a) + s + this.text.slice(b);
+    const next = this.text.slice(0, a) + s + this.text.slice(b);
+    if(this.validate&&!this.validate(next))return;
+    this.text = next;
     this.cursor = this.selEnd = a + s.length;
     if (this.onChange) this.onChange(this.text);
   }

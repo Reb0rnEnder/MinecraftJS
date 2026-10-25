@@ -1,5 +1,6 @@
 // Container GUIs (port of GuiContainer and subclasses, incl. GuiContainerCreative).
 import { FontRenderer, stripCodes } from '../font.js';
+import {drawEffectIcon} from '../effect-icons.js';
 import { JavaRandom } from '../../util/jrandom.js';
 import { mat4, D2R } from '../../gfx/math.js';
 import { Node } from '../../gfx/scene.js';
@@ -379,8 +380,7 @@ function drawEffects(game, gui, x, y) {
   const iconIdx = POTION_ICON;
   for (const [id, e] of game.effects) {
     gui.blit('gui/container/inventory.png', x, y, 0, 166, 140, 32);
-    const ic = iconIdx[id];
-    if (ic !== undefined) gui.blit('gui/container/inventory.png', x + 6, y + 7, (ic % 8) * 18, 198 + Math.floor(ic / 8) * 18, 18, 18);
+    drawEffectIcon(game,gui,id,x+6,y+7);
     let name = game.assets.translate(effectKey(game, id)); // Potion.getName: effect.*
     if (e.amplifier === 1) name += ' ' + game.assets.translate('enchantment.level.2');
     else if (e.amplifier === 2) name += ' ' + game.assets.translate('enchantment.level.3');
@@ -715,8 +715,7 @@ class BeaconScreen extends ContainerScreen {
       if (!b.enabled) u += 44; else if (b.selected) u += 22; else if (hov) u += 66;
       gui.blit(BEACON_TEX, b.x, b.y, u, 219, 22, 22);
       if (b.effect) {
-        const ic = POTION_ICON[b.effect];
-        if (ic >= 0) gui.blit('gui/container/inventory.png', b.x + 2, b.y + 2, (ic % 8) * 18, 198 + Math.floor(ic / 8) * 18, 18, 18);
+        drawEffectIcon(this.game,gui,b.effect,b.x+2,b.y+2);
       } else gui.blit(BEACON_TEX, b.x + 2, b.y + 2, b.u, b.v, 18, 18);
     }
   }
@@ -1059,6 +1058,10 @@ export class CreativeScreen extends ContainerScreen {
     const all = creativeCatalog(this.game).tabs.search;
     const items = this.game.items;
     const hit = (it) => {
+      if(q.startsWith('#')) {
+        const term=q.slice(1),colon=term.indexOf(':');
+        return this.game.tags.forEntry('items',it.id).some(tag=>colon<0?tag.split(':')[1].includes(term):tag.split(':')[0].includes(term.slice(0,colon))&&tag.split(':')[1].includes(term.slice(colon+1)));
+      }
       const def = items.def(it.id);
       const colon = q.indexOf(':');
       const term = colon < 0 ? q : q.slice(colon + 1).trim();
@@ -1163,6 +1166,7 @@ export class CreativeScreen extends ContainerScreen {
         group = ench.length === 1 ? this.catalog.enchantmentTabs.get(ench[0].id) : null;
       }
       if (group) lines.splice(1, 0, '§9' + tr('itemGroup.' + group));
+      if(this.search.text.startsWith('#'))for(const tag of this.game.tags.forEntry('items',it.id))lines.splice(1,0,'§5#'+tag);
     }
     return lines;
   }

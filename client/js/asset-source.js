@@ -8,7 +8,7 @@ import { decodeUtf8 } from './util/utf8.js';
 
 export class FolderSource {
   constructor(base = 'assets/') { this.base = base; this.kind = 'folder'; }
-  url(rel) { return this.base + rel + '?v=1.14.4-native-v3'; }
+  url(rel) { return this.base + rel + '?v=1.14.4-native-v4'; }
   bytes(rel) { return platform().fetchBytes(this.url(rel)).catch(() => null); }
   data(name) { return platform().fetchJson(`data/${name}.json`); }
   models() { return platform().fetchJson(this.url('bundles/models.json')); }

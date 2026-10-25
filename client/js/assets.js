@@ -15,6 +15,7 @@ import { MINECRAFTJS_EN } from './gui/i18n.js';
 import { decodeUtf8 } from './util/utf8.js';
 import { chatToLegacy } from './gui/chat.js';
 import { loadFontSets } from './gui/font-providers.js';
+import { loadParticleSprites } from './render/particle-sprites.js';
 
 const MC = 'assets/minecraft/';
 const PACK_PREFIX = 'packs/';
@@ -66,6 +67,10 @@ export class Assets {
   async listPacks() {
     const ids = await platform().files.list(PACK_PREFIX).catch(() => []);
     const out = [];
+    try {
+      const bytes=await this.source.bytes('minecraft/resourcepacks/programmer_art.zip');
+      if(bytes){const pack=new ResourcePack('programmer_art',bytes);pack.name='Programmer Art';pack.builtin=true;out.push(pack);}
+    }catch{ /* Native built-in pack unavailable in an incomplete asset tree. */ }
     for (const key of ids) {
       const id = key.slice(PACK_PREFIX.length);
       try {
@@ -99,6 +104,11 @@ export class Assets {
   }
 
   async readText(rel) { const b = await this.readBytes(rel); return b ? decodeUtf8(b) : null; }
+  async readResourceBytes(location) {
+    const [namespace,path]=location.includes(':')?location.split(':'):['minecraft',location];
+    for(const pack of this.packs){const key=pack.prefix+'assets/'+namespace+'/'+path;if(pack.zip.has(key))return pack.zip.read(key);}
+    return this.source.bytes(namespace+'/'+path);
+  }
   async readJson(rel) { const t = await this.readText(rel); return t ? JSON.parse(t) : null; }
 
   async readSound(rel) {
@@ -174,7 +184,7 @@ export class Assets {
     if (!meta) throw new Error('Game assets not found: put the assets/ folder (built with `npm run assets`) next to index.html');
     try { this.defaultPackMeta = JSON.parse(decodeUtf8(meta)); } catch (e) { this.defaultPackMeta = {}; }
     step('Loading game data...', 5);
-    const names = ['blocks', 'items', 'entities', 'blockCollisionShapes', 'biomes', 'foods', 'effects', 'enchantments', 'windows', 'particles', 'materials', 'recipes', 'sounds', 'creative'];
+    const names = ['blocks', 'items', 'entities', 'blockCollisionShapes', 'biomes', 'foods', 'effects', 'enchantments', 'windows', 'particles', 'particleSprites', 'materials', 'recipes', 'sounds', 'creative'];
     const datas = await Promise.all(names.map((n) => this.source.data(n)));
     names.forEach((n, i) => { this.data[n] = datas[i]; });
     // CraftingManager recipes in id order (id = 11 + index; 0 - 10 are the special recipes)
@@ -235,6 +245,7 @@ export class Assets {
     this.atlas.build(textures, mcmeta);
     if (this.atlasTexture) this.device.destroyTexture(this.atlasTexture);
     this.atlasTexture = this.device.createTexture({ width: this.atlas.size, height: this.atlas.size, data: this.atlas.data, filter: 'nearest', mipmaps: this.mipmapLevels });
+    await loadParticleSprites(this);
 
     step('Loading colour maps...', 65);
     const [grass, foliage] = await Promise.all([this.imageAsync('colormap/grass.png'), this.imageAsync('colormap/foliage.png')]);
@@ -253,7 +264,7 @@ export class Assets {
     await Promise.all([
       'gui/widgets.png', 'gui/icons.png', 'font/ascii.png', 'font/ascii_sga.png', 'gui/options_background.png', 'gui/title/minecraft.png', 'gui/title/edition.png',
       'gui/container/inventory.png', 'environment/sun.png', 'environment/moon_phases.png', 'environment/clouds.png',
-      'misc/vignette.png', 'particle/particles.png', 'misc/shadow.png',
+      'misc/vignette.png', 'misc/shadow.png',
     ].map((p) => this.imageAsync(p).catch(() => null)));
     try { this.glyphSizes = await this.readBytes('font/glyph_sizes.bin'); } catch (e) { this.glyphSizes = null; }
     this.fontSets = await loadFontSets(this);

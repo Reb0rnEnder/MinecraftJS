@@ -181,6 +181,14 @@ export function animateBiped(m, a) {
     p.rightArm.ry = -0.1 + p.head.ry - 0.4; p.leftArm.ry = 0.1 + p.head.ry;
     p.rightArm.rx = -PI / 2 + p.head.rx; p.leftArm.rx = -PI / 2 + p.head.rx;
   }
+  const crossbowRight=rp==='crossbow_charge'||rp==='crossbow_hold',crossbowLeft=lp==='crossbow_charge'||lp==='crossbow_hold';
+  if(crossbowRight||crossbowLeft){
+    const sign=crossbowRight?1:-1,main=crossbowRight?p.rightArm:p.leftArm,off=crossbowRight?p.leftArm:p.rightArm;
+    if((crossbowRight?rp:lp)==='crossbow_charge'){
+      main.ry=-.8*sign;main.rx=-.97079635;off.rx=main.rx;const f=Math.min(1,(a.useTicks||0)/(a.crossbowChargeDuration||25));
+      off.ry=(.4+(.85-.4)*f)*sign;off.rx=main.rx+(-PI/2-main.rx)*f;
+    }else{main.ry=-.3*sign+p.head.ry;off.ry=.6*sign+p.head.ry;main.rx=-PI/2+p.head.rx+.1;off.rx=-1.5+p.head.rx;}
+  }
   if (swim > 0) animateSwim(p, a, swim);
   p.headwear.copyAngles(p.head);
 }

@@ -35,7 +35,7 @@ import { Tutorial } from './tutorial.js';
 import { ScreenManager } from '../gui/screens/manager.js';
 import { DownloadingTerrainScreen, DisconnectedScreen, ConnectingScreen } from '../gui/screens/menus.js';
 import { ChatScreen } from '../gui/screens/chat.js';
-import { PauseScreen } from '../gui/screens/pause.js';
+import { PauseScreen,InvisiblePauseScreen } from '../gui/screens/pause.js';
 import { DeathScreen } from '../gui/screens/death.js';
 import { SignEditScreen } from '../gui/screens/sign.js';
 import { openContainerScreen, InventoryScreen, CreativeScreen, handleHotbarSnapshots } from '../gui/screens/containers.js';
@@ -75,7 +75,7 @@ function attributeValue(prop) {
 // SPacketUpdateTileEntity action per block entity id (signs are handled by applyBlockEntity)
 const BLOCK_ENTITY_ACTIONS = {
   mob_spawner: 1, command_block: 2, beacon: 3, skull: 4, flower_pot: 5, banner: 6, structure_block: 7, end_gateway: 8,
-  shulker_box: 10, bed: 11,
+  shulker_box: 10, bed: 11, jigsaw:12, campfire:13,
 };
 
 const TICK_MS = 50;
@@ -111,6 +111,7 @@ export class Game {
     this.tileRenderer = new TileEntityRenderer(this);
     this.renderer.breakContext=()=>({world:this.world,tileRenderer:this.tileRenderer,tileProps:this.tileProps,alternatives:this.settings.blockAlternatives!==false,fancy:!!this.settings.fancyGraphics});
     this.structureBlocks = new Map(); // "x,y,z" -> structure block tile entity data
+    this.jigsawBlocks = new Map();
     this.pistons = new Pistons(this);
     this.serverPacks = new ServerPacks(this);
     this.postEffects = new PostEffects(this);
@@ -297,7 +298,9 @@ export class Game {
         if ((this.permissionLevel | 0) < 2) this.debugFeedback('debug.creative_spectator.error');
         else if (this.gameMode === 1) this.send(C.chat('/gamemode spectator'));
         else if (this.gameMode === 3) this.send(C.chat('/gamemode creative'));
+        else this.send(C.chat('/gamemode creative'));
         return true;
+      case 'Escape':this.screens.open(new InvisiblePauseScreen(this));return true;
       case 'KeyP':
         s.pauseOnLostFocus = s.pauseOnLostFocus === false; s.save();
         this.debugFeedback(s.pauseOnLostFocus ? 'debug.pause_focus.on' : 'debug.pause_focus.off');
@@ -596,6 +599,7 @@ export class Game {
 
   leaveWorld() {
     this.structureBlocks.clear();
+    this.jigsawBlocks.clear();
     if (this.tutorial) this.tutorial.stop();
     this.inWorld = false;
     this.connected = false;
@@ -876,8 +880,8 @@ export class Game {
   on_entity_metadata(p) {
     if (p.entityId === this.entityId) {
       this.selfMetadata = Object.assign(this.selfMetadata || {}, p.metadata);
-      if (p.metadata[6] !== undefined) {
-        this.player.riptide = !!(p.metadata[6] & 4);
+      if (p.metadata[7] !== undefined) {
+        this.player.riptide = !!(p.metadata[7] & 4);
         if (this.player.riptide && !this.player.riptideTicks) this.player.riptideTicks = 20;
         if (!this.player.riptide) this.player.riptideTicks = 0;
       }
@@ -888,7 +892,7 @@ export class Game {
 
   on_entity_effect(p) {
     if (p.entityId === this.entityId) {
-      this.effects.set(p.effectId, { amplifier: p.amplifier, duration: p.duration, hideParticles: p.hideParticles, start: this.ticks });
+      this.effects.set(p.effectId, { amplifier: p.amplifier, duration: p.duration, hideParticles: p.hideParticles, ambient:p.ambient, showIcon:p.showIcon, start: this.ticks });
       this._applyEffects();
     }
     this.entities.addEffect(p);
@@ -936,10 +940,11 @@ export class Game {
     const pos = { x: data.x, y: data.y, z: data.z };
     const id = String(data.id || '').replace(/^minecraft:/, '');
     if (id === 'sign') {
-      this.tileRenderer.setSign(pos, [data.Text1, data.Text2, data.Text3, data.Text4].map((l) => chatToLegacy(l || '')));
+      this.tileRenderer.setTileEntity(pos,9,data,nbt);
       return;
     }
     if (id === 'structure_block') this.structureBlocks.set(pos.x + ',' + pos.y + ',' + pos.z, data); // for GuiEditStructure
+    if (id === 'jigsaw') this.jigsawBlocks.set(pos.x+','+pos.y+','+pos.z,data);
     // GuiCommandBlock.updateGui once the opened block's data (action 2) arrives
     if (id === 'command_block' && action === 2) {
       const s = this.screens.current;
@@ -989,6 +994,23 @@ export class Game {
   }
 
   on_world_particles(p) { this.particles.onPacket(p); }
+
+  on_entity_sound_effect(p) {
+    const e = p.entityId === this.entityId ? this.player : this.entities.get(p.entityId);
+    const name = this.assets.soundNames[p.soundId];
+    if (e && name) this.sound.play(name,e.x,e.y,e.z,p.volume,p.pitch,{category:p.soundCategory,entity:e});
+  }
+
+  on_open_horse_window(p) {
+    this.on_open_window({...p,inventoryType:'EntityHorse',slotCount:p.nbSlots,windowTitle:JSON.stringify({translate:'entity.minecraft.horse'})});
+  }
+
+  on_open_book(p) {
+    const item = this.inventory.getHand(p.hand);
+    if (item && this.items.name(item.id) === 'written_book') this.screens.open(new BookScreen(this,item,false,p.hand));
+  }
+
+  on_acknowledge_player_digging(p) { this.interaction.acknowledgeDigging(p); }
 
   on_game_state_change(p) {
     switch (p.reason) {
@@ -1815,7 +1837,6 @@ export class Game {
       mat4.rotateX(pre, pre, Math.abs(Math.cos(f1 * Math.PI - 0.2) * f2) * 5 * Math.PI / 180);
       mat4.rotateX(pre, pre, f3 * Math.PI / 180);
     }
-    if (this.thirdPerson === 0 && !this.debugCam && !sleepView) mat4.translate(pre, pre, 0, 0, -0.1);
     const look = this.lookVector(partial);
     if (this.thirdPerson > 0 && !sleepView) {
       let dist = 4;

@@ -15,6 +15,10 @@ export const DEFAULT_KEYS = {
 const DEFAULTS = {
   fov: 70,
   sensitivity: 0.5,
+  mouseWheelSensitivity: 1,
+  discreteMouseScroll: false,
+  textBackgroundOpacity: .5,
+  textBackgroundOnlyChat: true,
   invertMouse: false,
   renderDistance: 8,
   biomeBlendRadius: 2, // 1.13.2: 0=off, 1..7 average a (2r+1)^2 biome area.

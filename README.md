@@ -1,10 +1,10 @@
 # MinecraftJS
 
-> **1.14.4 development branch:** the browser and proxy now use protocol 498 with native terrain data and independent light updates. Native workstations, trading, lectern controls, bell rendering and scaffolding movement are implemented; jar-derived block properties and visible models for the new mobs are in place; remaining pose, animation and particle parity work is ongoing.
+> **1.14.4 development branch:** the browser and proxy now use protocol 498 with native terrain data and independent light updates. Native workstations, trading, lectern controls, bell rendering and scaffolding movement are implemented; jar-derived block properties and visible models for the new mobs are in place; native crossbow use, fitting poses, colored signs, campfire contents, particle sprite lists, effect icons and Accessibility/Mouse settings are implemented. Remaining special animations, recipe-book and visual parity work is ongoing.
 > Follow the [1.14.4 transition plan](docs/transition-1.14.4.md) before publishing a 1.14.4 client.
 > The [content milestone](docs/workstations-content-1.14.4.md) records workstation/block support and its limits.
 > The [runtime milestone](docs/runtime-1.14.4-milestone.md) records browser join/reconnect validation and remaining work.
-> The [complete feature audit](docs/feature-audit-1.14.4.md) covers every 1.14 additions/change topic and target patch changes, including confirmed gaps and unexecuted gameplay checks. Asset coverage does not imply full parity.
+> The [complete feature audit](docs/feature-audit-1.14.4.md) covers every 1.14 additions/change topic and target patch changes, including confirmed gaps and unexecuted gameplay checks. The [1.14.1–1.14.4 patch review](docs/patch-audit-1.14.1-1.14.4.md) inventories all requested patch topics and bug tickets. Asset coverage does not imply full parity.
 
 A Minecraft 1.14.4 client that runs in the browser (WebGL 2 or WebGPU). It joins vanilla 1.14.4 servers through a
 small Node proxy, and Eaglercraft servers directly over WebSockets.

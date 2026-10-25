@@ -208,7 +208,7 @@ async function collectAssets(opts) {
   });
   console.log(`  audio ${(before / 1048576).toFixed(1)} MB -> ${(after / 1048576).toFixed(1)} MB`);
   const metadata=await mcassets.getVersionJson();
-  files.set('asset-manifest.json',Buffer.from(JSON.stringify({layoutVersion:3,minecraftVersion:mcassets.MC_VERSION,clientJarSha1:crypto.createHash('sha1').update(fs.readFileSync(jarPath)).digest('hex'),assetIndex:metadata.assetIndex.id})));
+  files.set('asset-manifest.json',Buffer.from(JSON.stringify({layoutVersion:4,minecraftVersion:mcassets.MC_VERSION,clientJarSha1:crypto.createHash('sha1').update(fs.readFileSync(jarPath)).digest('hex'),assetIndex:metadata.assetIndex.id})));
   return files;
 }
 

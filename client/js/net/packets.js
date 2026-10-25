@@ -11,6 +11,9 @@ export const C=Object.fromEntries(Object.entries(OLD).map(([name,encode])=>[name
  return new Writer498().varint(id).raw(r.rest()).build();
 }]));
 Object.assign(C,{
+ editBook:C498.editBook,
+ updateCommandBlock:C498.updateCommandBlock,updateCommandMinecart:C498.updateCommandMinecart,updateStructure:C498.updateStructure,
+ updateJigsaw:(pos,type,pool,state)=>new Writer498().varint(0x27).position(pos.x,pos.y,pos.z).string(type).string(pool).string(state).build(),
  selectTrade:index=>new Writer498().varint(0x21).varint(index).build(),
  menuButton:(windowId,button)=>new Writer498().varint(0x08).u8(windowId).u8(button).build(),
  blockDig:C498.blockDig,blockPlace:C498.blockPlace,

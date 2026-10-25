@@ -1,5 +1,6 @@
 // Native Java 1.14.4 protocol 498 codec.
 import {Reader,Writer} from './buffer.js';
+import {technicalPackets} from './technical-packets.js';
 import {readPacketBody404} from './packets-1.13.2.js';
 import {BODY_404} from './protocol-1.14.4-reuse.js';
 import {readCommandTree} from './command-tree.js';
@@ -87,6 +88,8 @@ const decoders={
   open_window:r=>({windowId:r.varint(),inventoryType:r.varint(),windowTitle:r.string()}),
   open_horse_window:r=>({windowId:r.u8(),nbSlots:r.varint(),entityId:r.i32()}),
   open_book:r=>({hand:r.varint()}),
+  entity_sound_effect:r=>({soundId:r.varint(),soundCategory:r.varint(),entityId:r.varint(),volume:r.f32(),pitch:r.f32()}),
+  entity_effect:r=>{const p={entityId:r.varint(),effectId:r.u8(),amplifier:r.u8(),duration:r.varint(),flags:r.u8()};return {...p,ambient:!!(p.flags&1),hideParticles:!(p.flags&2),showIcon:!!(p.flags&4)};},
   map:r=>{
     const p={itemDamage:r.varint(),scale:r.i8(),trackingPosition:r.bool(),locked:r.bool(),icons:array(r,r=>({type:r.varint(),x:r.i8(),z:r.i8(),direction:r.u8(),displayName:r.bool()?r.string():null}))};
     p.columns=r.u8();
@@ -124,6 +127,8 @@ export function decodePacket498(bytes) {
 }
 const packet=name=>new Writer498().varint(OUT[name]);
 export const C498={
+  ...technicalPackets(packet),
+  editBook:(item,sign,hand)=>packet('edit_book').slot(item).bool(sign).varint(hand).build(),
   teleportConfirm:id=>packet('teleport_confirm').varint(id).build(),
   keepAlive:id=>packet('keep_alive').i64(id).build(),
   settings:(locale='en_us',distance=4)=>packet('settings').string(locale).i8(distance).varint(0).bool(true).u8(127).varint(1).build(),

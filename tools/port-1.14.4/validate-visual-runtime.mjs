@@ -13,7 +13,7 @@ export function validateVisualRuntime(jar,models,shapes=read('blockCollisionShap
  if(props?.source?.clientJarSha1!==hash||props.states.length!==count)throw Error('Native rendering table is missing/stale: regenerate runtime data from this jar');
  for(let state=0;state<count;state++){
   const p=props.values[props.states[state]];
-  if(!p||typeof p.solid!=='boolean'||typeof p.viewBlocking!=='boolean'||!Number.isInteger(p.renderType)||typeof p.collisionFull!=='boolean'||typeof p.occludes!=='boolean'||!Number.isFinite(p.shade)||!Number.isInteger(p.lightBlock)||!Number.isInteger(p.emission)||!Array.isArray(p.occlusion))throw Error('Invalid native rendering properties for state '+state);
+  if(!p||typeof p.solid!=='boolean'||typeof p.viewBlocking!=='boolean'||!Number.isInteger(p.renderType)||typeof p.collisionFull!=='boolean'||typeof p.occludes!=='boolean'||!Number.isFinite(p.shade)||!Number.isInteger(p.lightBlock)||!Number.isInteger(p.emission)||!Array.isArray(p.occlusion)||p.sound?.length!==7||p.sound.some((s,i)=>[3,4].includes(i)?!Number.isFinite(s):typeof s!=='string'))throw Error('Invalid native rendering/sound properties for state '+state);
  }
  initBlocks(definitions,shapes);setJarModels(models);
  const renderer=Object.create(EntityRenderer.prototype),tested=new Set();

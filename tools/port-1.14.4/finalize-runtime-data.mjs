@@ -11,6 +11,13 @@ const path=name=>join(root,'client/data',name+'.json');
 const old=JSON.parse(await readFile(path('creative')));
 const stack=s=>[s[0],0,s[2]?readNbtRoot(new Reader(Buffer.from(s[2],'base64'))).v:null];
 const creative={...old,version:'1.14.4',protocol:498,dataVersion:1976,source:{clientJarSha1:target.downloads.client.sha1},tabs:native.tabs.map(t=>({...t,scrollbar:t.scroll,right:t.column===5,items:t.items.map(stack)}))};
+const items=JSON.parse(await readFile(path('items'))),itemsById=new Map(items.map(i=>[i.id,i]));
+creative.itemMechanics=native.itemMechanics;
+await writeFile(join(root,'client/js/game/panda-variants-1.14.4.js'),'// Panda.Gene.getVariantFromGenes, indexed by main/hidden gene IDs in the pinned jar.\nexport const PANDA_VARIANTS='+JSON.stringify(native.pandaVariants)+';\n');
+await writeFile(join(root,'client/js/game/player-poses-1.14.4.js'),'// Player.POSES dimensions extracted from the pinned native 1.14.4 jar.\nexport const PLAYER_POSES='+JSON.stringify(native.playerPoses)+';\n');
+await writeFile(join(root,'client/js/game/block-entity-data-1.14.4.js'),'// DyeColor text colors extracted from the pinned native 1.14.4 jar.\nexport const DYE_TEXT_COLORS='+JSON.stringify(native.dyeTextColors)+';\n');
+creative.eggs=Object.fromEntries(Object.entries(native.eggs).map(([id,colors])=>{const name=itemsById.get(Number(id)).name.replace(/_spawn_egg$/,'');return ['minecraft:'+name,[...colors,name]];}));
+creative.effects=Object.fromEntries(Object.entries(native.effects).map(([id,e])=>[id,{...old.effects[id],...e,key:e.name.replace('effect.minecraft.','minecraft:'),modifiers:old.effects[id]?.modifiers||[]}]));
 await writeFile(path('creative'),JSON.stringify(creative)+'\n');
 const shapes=JSON.parse(await readFile(path('blockCollisionShapes'))),boxes=[null],keys=new Map([['null',0]]),states=[];
 for(const shape of native.selections){const key=JSON.stringify(shape);if(!keys.has(key)){keys.set(key,boxes.length);boxes.push(shape);}states.push(keys.get(key));}
@@ -24,6 +31,10 @@ shapes.selection={source:{version:'1.14.4',clientJarSha1:target.downloads.client
 await writeFile(path('blockCollisionShapes'),JSON.stringify(shapes)+'\n');
 // Native tags resolve through native registries, including nested tag references.
 const reports=JSON.parse(await readFile(join(cache,'generated/reports/registries.json'))),jar=new ZipFile(join(cache,'client.jar'));
+const oldEnchantments=new Map(JSON.parse(await readFile(path('enchantments'))).map(e=>[e.name,e]));
+await writeFile(path('enchantments'),JSON.stringify(Object.entries(reports['minecraft:enchantment'].entries).map(([key,{protocol_id:id}])=>({...(oldEnchantments.get(key.replace('minecraft:',''))||{}),id,name:key.replace('minecraft:',''),...native.enchantments[id]})).sort((a,b)=>a.id-b.id))+'\n');
+const sprites={};for(const name of jar.list('assets/minecraft/particles/'))if(name.endsWith('.json'))sprites[name.slice('assets/minecraft/particles/'.length,-5)]=JSON.parse(jar.read(name));
+await writeFile(path('particleSprites'),JSON.stringify(sprites)+'\n');
 const tags={source:{version:'1.14.4',clientJarSha1:target.downloads.client.sha1}};
 for(const [kind,registry] of [['blocks','block'],['items','item'],['fluids','fluid'],['entity_types','entity_type']]){
  const prefix='data/minecraft/tags/'+kind+'/',defs={};for(const name of jar.list(prefix))if(name.endsWith('.json'))defs['minecraft:'+name.slice(prefix.length,-5)]=JSON.parse(jar.read(name));

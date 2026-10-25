@@ -1,6 +1,6 @@
 import { tr } from '../gui/i18n.js';
 // Sound engine: vanilla sounds.json (+ resource packs), played through the platform audio interface.
-import { getBlock, getBlockById } from '../world/blocks.js';
+import { getBlock, getBlockById, getStateProperties } from '../world/blocks.js';
 import { platform } from '../platform/platform.js';
 
 // SoundType (1.9+): [step, break, place, volume, pitch, hit, fall]
@@ -13,6 +13,7 @@ const SOUND_TYPES = {
 
 function soundTypeOf(b) {
   if (!b) return SOUND_TYPES.stone;
+  if (b.soundType) return b.soundType;
   const n = b.name;
   if (n === 'slime') return SOUND_TYPES.slime;
   if (n === 'anvil') return SOUND_TYPES.anvil;
@@ -205,7 +206,7 @@ export class SoundManager {
     if (catVol <= 0) return null;
     const buf = await this._buffer(def.file);
     if (!buf) return null;
-    const handle = { name: assetName, category: cat, onEnd: null };
+    const handle = { name: assetName, category: cat, onEnd: null, entity:opts.entity };
     const voice = this.audio.play(buf, {
       volume: Math.min(1, volume) * def.volume * catVol,
       pitch: Math.max(0.5, Math.min(2, pitch * def.pitch)),
@@ -361,11 +362,11 @@ export class SoundManager {
     if (!b) return;
     const { x, y, z } = p.location;
     if (b.name === 'note_block') {
-      // BlockNote.INSTRUMENTS (1.12)
-      const inst = ['harp', 'basedrum', 'snare', 'hat', 'bass', 'flute', 'bell', 'guitar', 'chime', 'xylophone'][p.byte1] || 'harp';
-      const pitch = Math.pow(2, (p.byte2 - 12) / 12);
+      // Since 1.13 the event is 0/0; both values belong to the synchronized block state.
+      const props=getStateProperties(this.game.world.getState(x,y,z)), inst=props.instrument||'harp', note=Number(props.note||0);
+      const pitch = Math.pow(2, (note - 12) / 12);
       this.play('block.note_block.' + inst, x + 0.5, y + 0.5, z + 0.5, 3, pitch, { category: 'record' });
-      this.game.particles.note && this.game.particles.note(x, y, z, p.byte2);
+      this.game.particles.note && this.game.particles.note(x, y, z, note);
     } else if (b.name === 'piston' || b.name === 'sticky_piston') {
       this.play(p.byte1 === 0 ? 'block.piston.extend' : 'block.piston.contract', x + 0.5, y + 0.5, z + 0.5, 0.5, Math.random() * 0.25 + 0.6, { category: 'block' });
     }
@@ -437,6 +438,7 @@ export class SoundManager {
   tick() {
     const g = this.game;
     if (!this.audio) return;
+    for(const h of this.playing)if(h.entity)h.voice.setPosition?.([h.entity.x,h.entity.y,h.entity.z]);
     this._moodTick();
     // Listener follows camera
     const f = g.lookVector();

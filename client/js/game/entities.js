@@ -1,4 +1,5 @@
 import {NATIVE_METADATA} from './entity-metadata-1.14.4.js';
+import {PLAYER_POSES} from './player-poses-1.14.4.js';
 import { tickFallingBlock } from './falling-block.js';
 import { tickEntityEffects, tickDragonDeath, isDragon } from '../render/entity-effects.js';
 // Client-side entity tracking (positions, interpolation, metadata, animation state).
@@ -328,7 +329,16 @@ export class EntityManager {
     // Preserve native metadata on e.metadata. Adapt the unchanged consumers below
     // around 1.14's base pose and living sleeping-position insertions.
     const native=m,living498=e.kind==='mob'||e.kind==='player'||e.kind==='armorstand';
-    if(native[6]!==undefined)e.pose=native[6];
+    if(native[6]!==undefined){
+      e.pose=native[6];
+      if(e.kind==='player'){
+        const pose=['standing','fall_flying','sleeping','swimming','spin_attack','sneaking','dying'][e.pose];
+        const size=PLAYER_POSES[pose];
+        if(size){e.width=Math.fround(size[0]);e.height=Math.fround(size[1]);}
+        e.visuallySwimming=pose==='swimming';
+        e.eyeHeight=pose==='sneaking'?1.27:['swimming','fall_flying','spin_attack'].includes(pose)?.4:pose==='sleeping'?.2:1.62;
+      }
+    }
     const villagerData=Object.values(native).find(v=>v&&typeof v==='object'&&Number.isInteger(v.villagerProfession));
     if(villagerData){e.villagerData=villagerData;e.profession=villagerData.villagerProfession;e.villagerProfession=e.profession;e.villagerType=villagerData.villagerType;e.villagerLevel=villagerData.level;}
     if(living498&&native[12]!==undefined)e.sleepingPosition=native[12];
@@ -439,7 +449,7 @@ export class EntityManager {
         set(14, 'ownerUuid');
         if (name === 'donkey' || name === 'mule' || name === 'llama' || name === 'trader_llama') set(15, 'horseChest');
         if (m[13] !== undefined || m[15] !== undefined) {
-          const f = e.metadata[13] || 0;
+          const f = e.metadata[15] || 0;
           // Preserve the existing renderer's horse flag layout at this boundary.
           e.horseFlags = (f & 2) | (f & 4) | (e.horseChest ? 8 : 0) | (f & 16 ? 32 : 0) | (f & 32 ? 64 : 0) | (f & 64 ? 128 : 0);
         }
@@ -463,7 +473,7 @@ export class EntityManager {
         case 'shulker':
           set(12, 'attachFace'); set(13, 'attachPosition'); set(14, 'peekTick'); set(15, 'shulkerColor'); break;
         case 'wither':
-          if ([12, 13, 14].some(i => m[i] !== undefined)) e.witherTargets = [12, 13, 14].map(i => e.metadata[i] || 0);
+          if ([12, 13, 14].some(i => m[i] !== undefined)) e.witherTargets = [14, 15, 16].map(i => e.metadata[i] || 0);
           set(15, 'invulTime'); break;
         case 'witch': set(12, 'witchAggressive'); break;
         case 'evoker': case 'illusioner': set(13, 'spell'); // fall through: AbstractIllager flags
@@ -673,9 +683,10 @@ export class EntityManager {
     s.prevLimbSwingAmount = s.limbSwingAmount;
     s.x = pl.x; s.y = pl.y; s.z = pl.z;
     s.yaw = pl.yaw; s.pitch = pl.pitch; s.headYaw = pl.yaw;
-    s.sneaking = pl.sneaking && !pl.flying; s.swimming = !!pl.swimming;
+    s.sneaking = !!pl.crouching; s.swimming = pl.swimming; s.visuallySwimming = pl.pose === 'swimming'; s.pose = pl.pose;
     s.inWater = !!pl.inWater; s.onGround = pl.onGround;
     s.usingItem = pl.usingItem; s.riptide = !!pl.riptide;
+    s.useTicks=g.interaction.useTicks;
     s.riding = g.ridingEntityId;
     s.ticks++;
     const it = g.interaction;
@@ -688,7 +699,7 @@ export class EntityManager {
     s.motionX = pl.motionX; s.motionY = pl.motionY; s.motionZ = pl.motionZ;
     s.hurtTime = g.hurtTime; s.deathTime = g.dead ? Math.min(20, (s.deathTime || 0) + 1) : 0;
     s.metadata = g.selfMetadata || s.metadata;
-    if (s.metadata && s.metadata[13] !== undefined) s.skinFlags = s.metadata[13]; else s.skinFlags = g.settings.skinParts;
+    if (s.metadata && s.metadata[15] !== undefined) s.skinFlags = s.metadata[15]; else s.skinFlags = g.settings.skinParts;
     s.invisible = !!(g.selfMetadata && (g.selfMetadata[0] & 32)) || g.effects.has(14);
     s.onFire = g.selfMetadata ? !!(g.selfMetadata[0] & 1) : false;
     // LayerCape's sway from the view bobbing of the local player
@@ -961,9 +972,9 @@ export class EntityManager {
       if (e.onFire && Math.random() < 0.3) g.particles.entityFire && g.particles.entityFire(e);
       // EntityLivingBase.updatePotionEffects (1.9+): colour in metadata 8, "ambient" (beacon) in 9
       const living = e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand';
-      const color = living ? e.metadata[8] | 0 : 0;
+      const color = living ? e.potionColor | 0 : 0;
       if (color > 0) {
-        const ambient = !!e.metadata[9];
+        const ambient = !!e.potionAmbient;
         let spawn = e.invisible ? Math.random() < 1 / 15 : Math.random() < 0.5;
         if (ambient) spawn = spawn && Math.random() < 0.2;
         if (spawn) g.particles.potionSwirl && g.particles.potionSwirl(e, color, ambient);
@@ -979,9 +990,10 @@ export class EntityManager {
 
   // EntityLivingBase.onUpdate: body yaw + limb swing
   _livingUpdate(e) {
+    e.useTicks=e.usingItem?(e.useTicks||0)+1:0;
     e.elytraTicks = e.elytraFlying ? (e.elytraTicks || 0) + 1 : 0; // EntityLivingBase.ticksElytraFlying
     e.prevSwimAmount = e.swimAmount ?? 0;
-    e.swimAmount = Math.max(0, Math.min(1, e.prevSwimAmount + (e.swimming ? 0.09 : -0.09)));
+    e.swimAmount = Math.max(0, Math.min(1, e.prevSwimAmount + ((e.visuallySwimming ?? e.swimming) ? 0.09 : -0.09)));
     const d0 = e.x - e.prevX, d1 = e.z - e.prevZ;
     const f = d0 * d0 + d1 * d1;
     let f1 = e.bodyYaw;

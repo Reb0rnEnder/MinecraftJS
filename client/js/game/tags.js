@@ -3,7 +3,7 @@ export class RegistryTags {
   constructor(tags=DEFAULT_TAGS) { this.replace(tags); }
   replace(tags) {
     this.registries={};this.byEntry={};
-    for(const kind of ['blocks','items','fluids']) {
+    for(const kind of ['blocks','items','fluids','entities']) {
       const entries=new Map(Object.entries(tags[kind]||{})),index=new Map();
       for(const [name,ids] of entries)for(const id of ids){if(!index.has(id))index.set(id,[]);index.get(id).push(name);}
       for(const names of index.values())names.sort();

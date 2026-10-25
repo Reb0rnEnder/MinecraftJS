@@ -1,7 +1,7 @@
 {
   "target": "1.14.4",
   "protocol": 498,
-  "date": "2026-10-25",
+  "date": "2026-10-26",
   "scope": "All 151 topic headings in Additions and Changes of the cited 1.14 page, plus 15 patch-behavior groups. Topic coverage is not bullet-level runtime certification or certification of the hundreds of listed vanilla bug fixes.",
   "sources": [
     "https://minecraft.wiki/w/Java_Edition_1.14",
@@ -68,7 +68,7 @@
       "section": "Additions",
       "category": "Blocks",
       "topic": "Signs",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "client/js/render/tile-renderer.js",
         "client/js/world/blocks.js",
@@ -77,7 +77,7 @@
         "tools/test-1.14.4-content.mjs",
         "tools/test-1.14.4-visual-properties.mjs"
       ],
-      "observation": "Native wood sign names are not routed to the tile renderer; old sign texture path and undyed text remain.",
+      "observation": "All native wood sign names now route to per-wood textures, colored JSON text and a cursor/selection editor; complete visual/resource-pack combinations still need comparison.",
       "acceptance": "Place every wood standing/wall sign; edit, select, copy, paste and dye text all 16 colors; rejoin."
     },
     {
@@ -298,7 +298,7 @@
         "tools/test-1.14.4-content.mjs",
         "tools/test-1.14.4-visual-properties.mjs"
       ],
-      "observation": "Native book GUI/page/take controls exist; the placed book is not handled by the tile renderer.",
+      "observation": "Native page/take controls and a placed open book model are implemented. Exact transforms, shared reading and all packet interactions remain acceptance work.",
       "acceptance": "Insert and remove a book, share pages between two clients, inspect the block book and comparator output."
     },
     {
@@ -349,7 +349,7 @@
         "tools/test-1.14.4-content.mjs",
         "tools/test-1.14.4-visual-properties.mjs"
       ],
-      "observation": "Block model and state exist; no native jigsaw editor was found.",
+      "observation": "Native three-field operator editor and dedicated packed-position update packet are implemented, including the native attachement_type spelling and input validation.",
       "acceptance": "Obtain by command, edit pool/attachment/final state as an operator and test save/reload."
     },
     {
@@ -383,7 +383,7 @@
         "tools/test-1.14.4-content.mjs",
         "tools/test-1.14.4-visual-properties.mjs"
       ],
-      "observation": "Native light, face visibility and stepping have regression tests; cooking-item renderer and smoke dispatch are absent.",
+      "observation": "Native light/collision plus placed cooking items, smoke sprite sets and hay signal-fire lifetime are implemented. Cooking/extinguishing and all live combinations remain acceptance work.",
       "acceptance": "Cook four foods, place hay below, extinguish/reignite, test waterlogging and burning-arrow ignition."
     },
     {
@@ -417,7 +417,7 @@
         "tools/test-1.14.4-content.mjs",
         "tools/test-1.14.4-visual-properties.mjs"
       ],
-      "observation": "Native event 0/0 requires instrument and note from BlockState, but dispatch reads legacy byte fields and only lists ten instruments.",
+      "observation": "Events now read instrument and note from synchronized state, including all six new instruments; native sound types are extracted for every state.",
       "acceptance": "Play all 16 instruments over their substrate blocks and compare pitch and note particles."
     },
     {
@@ -455,14 +455,14 @@
       "section": "Additions",
       "category": "Items",
       "topic": "Crossbows",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "client/js/game/items.js",
         "client/js/game/container.js",
         "client/js/render/item-renderer.js",
         "client/data/enchantments.json"
       ],
-      "observation": "useAction is none, useDuration is zero, charging/charged predicates are absent and enchantment registry is stale.",
+      "observation": "Native use/charge duration, ammo checks, Quick Charge, charged/rocket predicates and first/third-person hand poses are implemented. A browser network test loaded/fired a real crossbow against isolated vanilla 1.14.4; all enchantment/projectile variants still need live tests.",
       "acceptance": "Charge in either hand, retain a charge in inventory, fire arrows/rockets and test Multishot, Piercing and Quick Charge."
     },
     {
@@ -470,14 +470,14 @@
       "section": "Additions",
       "category": "Items",
       "topic": "Suspicious stew",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "client/js/game/items.js",
         "client/js/game/container.js",
         "client/js/render/item-renderer.js",
         "client/data/enchantments.json"
       ],
-      "observation": "The item is registered but not classified as food; no sustained eating action starts.",
+      "observation": "Native extracted food mechanics now start eating. Server decides flower effects, including target poppy Night Vision; live effect/return-bowl combinations remain unverified.",
       "acceptance": "Eat each flower recipe and brown-mooshroom stew; verify 1.14.4 poppy Night Vision and bowl return."
     },
     {
@@ -500,14 +500,14 @@
       "section": "Additions",
       "category": "Items",
       "topic": "Sweet berries",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "client/js/game/items.js",
         "client/js/game/container.js",
         "client/js/render/item-renderer.js",
         "client/data/enchantments.json"
       ],
-      "observation": "The item is registered but not classified as food; planting/harvesting is server-owned.",
+      "observation": "Native extracted food mechanics now start eating; planting is recognized separately from eating. Bush slowdown/harvest interaction priority still needs work.",
       "acceptance": "Eat berries and plant them; verify hunger, use priority on dirt and mature-bush harvesting."
     },
     {
@@ -522,7 +522,7 @@
         "client/js/render/item-renderer.js",
         "client/data/enchantments.json"
       ],
-      "observation": "Item tinting is generic, but horse armor slot validation excludes leather and horse rendering needs adaptation.",
+      "observation": "Horse slot validation now admits leather. Native item tinting exists; equipped horse armor layer/NBT rendering still needs completion.",
       "acceptance": "Equip, dye, remove and dispense leather armor; inspect color and invisibility rendering."
     },
     {
@@ -537,7 +537,7 @@
         "client/js/render/item-renderer.js",
         "client/data/enchantments.json"
       ],
-      "observation": "All seven new eggs have native item IDs; their runtime color lookup returns null.",
+      "observation": "All native spawn egg colors are extracted, and every registered egg resolves tint data in tests. Every spawn interaction is not yet played.",
       "acceptance": "Inspect all seven egg icons, spawn adults/babies and test EntityTag overrides without changing egg colors."
     },
     {
@@ -569,7 +569,7 @@
         "client/js/render/villager-layers.js",
         "tools/test-1.14.4-visual-properties.mjs"
       ],
-      "observation": "Native model and default texture render; personality skins, rolling/sneezing/eating poses remain incomplete.",
+      "observation": "Native default model and all seven gene-dependent skins are routed; all 49 gene combinations tested. Special poses, eating/sneezing/rolling and live genetics remain unverified.",
       "acceptance": "Spawn every gene variant and babies; observe sneeze, roll, eat, breeding and unhappy behavior."
     },
     {
@@ -791,7 +791,7 @@
       "section": "Additions",
       "category": "Gameplay",
       "topic": "Resource packs",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "client/js/game/game.js",
         "client/js/gui/hud.js",
@@ -799,7 +799,7 @@
         "client/js/gui/screens/packs.js",
         "client/js/game/items.js"
       ],
-      "observation": "External packs load, but the built-in Programmer Art pack is not exposed in the pack chooser.",
+      "observation": "Native Programmer Art is shipped/listed as a read-only built-in selectable pack. External format warnings remain; ordering and all pack visual combinations need comparison.",
       "acceptance": "Enable built-in Programmer Art, reorder with another pack and reload; test old-format red warning/dialog."
     },
     {
@@ -815,7 +815,7 @@
         "client/js/gui/screens/packs.js",
         "client/js/game/items.js"
       ],
-      "observation": "Native effects table includes Bad Omen and Hero; Items.effects lookup lacks both and HUD uses legacy icons.",
+      "observation": "Native Bad Omen/Hero definitions, separate sprite icons and show-icon/ambient packet flags are implemented. Raid/discount transitions remain live acceptance work.",
       "acceptance": "Apply/remove both effects, trigger raid, drink milk and inspect HUD/inventory names, timers and icons."
     },
     {
@@ -829,7 +829,7 @@
         "client/js/gui/screens/chat.js",
         "client/js/game/tags.js"
       ],
-      "observation": "Native block/item/fluid tag consumption exists; the local tag cache discards entity-type tags and creative tag search is absent.",
+      "observation": "Block/item/fluid/entity tags are cached; creative #tag search and tag tooltips are implemented. Reloaded custom tag display still needs live verification.",
       "acceptance": "Reload block/item/entity/fluid tags; inspect F3 block tags, creative # search and command completions."
     },
     {
@@ -933,7 +933,7 @@
       "section": "Additions",
       "category": "General",
       "topic": "Title screen",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "tools/port-1.14.4/target.json",
         "client/js/render/splash.js",
@@ -943,7 +943,7 @@
         "client/js/gui/screens/menus.js",
         "client/js/gui/screens/stats.js"
       ],
-      "observation": "The title screen has the new panorama but lacks the Accessibility entry point.",
+      "observation": "Native Accessibility entry point is implemented and browser-smoke tested. Complete focus, narration and presentation comparison remains.",
       "acceptance": "Inspect accessibility button, keyboard focus, narration and navigation to accessibility options."
     },
     {
@@ -951,7 +951,7 @@
       "section": "Additions",
       "category": "General",
       "topic": "Particles",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "tools/port-1.14.4/target.json",
         "client/js/render/splash.js",
@@ -961,7 +961,7 @@
         "client/js/gui/screens/menus.js",
         "client/js/gui/screens/stats.js"
       ],
-      "observation": "All native particle IDs exist, but eight new dispatches emit nothing and the legacy atlas is absent from the native jar.",
+      "observation": "All native per-particle sprite lists load and support pack overrides; all new dispatches emit. Some particle motion/lifetimes use initial adapters and are not fully native-certified.",
       "acceptance": "Use particle commands for every native ID and compare animation, color, collision and resource-pack overrides."
     },
     {
@@ -979,7 +979,7 @@
         "client/js/gui/screens/menus.js",
         "client/js/gui/screens/stats.js"
       ],
-      "observation": "Native recipe codec includes new workstation/campfire types; recipe-book JSON tags are not resolved.",
+      "observation": "JSON ingredient tags and cooking-result strings now resolve. Workstation codecs exist; separate furnace/smoker/blast-furnace recipe-book interfaces still need implementation.",
       "acceptance": "Learn/craft added recipes, use all furnace books and campfire recipes, check filtering and ghost ingredients."
     },
     {
@@ -1141,7 +1141,7 @@
         "client/js/game/recipebook.js",
         "tools/test-1.14.4-visual-properties.mjs"
       ],
-      "observation": "Native sound assets exist; legacy local sound-type heuristics are not exhaustive.",
+      "observation": "Block state sound types, including crop and wart sounds, are extracted from native SoundType and consumed by step/break/place/hit/fall audio.",
       "acceptance": "Place/break every crop and wart; compare sound and volume against native 1.14.4."
     },
     {
@@ -1275,7 +1275,7 @@
       "section": "Changes",
       "category": "Blocks",
       "topic": "Signs",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "client/js/world/blocks.js",
         "client/js/world/world.js",
@@ -1285,7 +1285,7 @@
         "client/js/game/recipebook.js",
         "tools/test-1.14.4-visual-properties.mjs"
       ],
-      "observation": "Oak rename is registered, but renderer routing, native textures, text colors and selection editor are stale.",
+      "observation": "Native names, per-wood textures, dye colors and cursor/selection/copy/paste are implemented. Chunk NBT retains Color; exact editor presentation still needs comparison.",
       "acceptance": "Use all wood recipes, move cursor, select/copy/paste text and dye it; rejoin."
     },
     {
@@ -1417,7 +1417,7 @@
       "section": "Changes",
       "category": "Items",
       "topic": "Book and quill",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "client/js/game/items.js",
         "client/js/gui/screens/book.js",
@@ -1425,7 +1425,7 @@
         "client/js/render/entity-renderer.js",
         "client/js/game/container.js"
       ],
-      "observation": "Editor uses legacy item IDs and custom-payload save channels; native open-book packets have no consumer.",
+      "observation": "Native item IDs/edit-book/off-hand packets, 100 pages, multiline selection/copy/paste, movement and word/page mouse selection are implemented. Rich written-book hover/click and exact editor layout still need comparison.",
       "acceptance": "Write up to 100 pages, select/copy/paste words/pages, sign in either hand, reopen and verify server persistence."
     },
     {
@@ -1505,7 +1505,7 @@
         "client/js/render/entity-renderer.js",
         "client/js/game/container.js"
       ],
-      "observation": "Totem animation exists but custom_model_data predicate is absent.",
+      "observation": "CustomModelData predicates now resolve item overrides; activation animation must still be checked for retaining the original stack tag.",
       "acceptance": "Trigger a totem with a custom model resource pack and compare held versus activation appearance."
     },
     {
@@ -1760,12 +1760,12 @@
       "section": "Changes",
       "category": "Non-mob entities",
       "topic": "Paintings",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "client/js/game/entities.js",
         "client/js/render/entity-renderer.js"
       ],
-      "observation": "Renderer requests the removed combined atlas; native jar has separate painting sprites.",
+      "observation": "Renderer now reads native individual motive/front/back textures. Tiled per-block lighting and animated resource-pack paintings still need work.",
       "acceptance": "Place every motive, use an animated painting pack and inspect frame/back/lighting after rejoin."
     },
     {
@@ -1880,7 +1880,7 @@
       "section": "Changes",
       "category": "Command format",
       "topic": "Creative menu",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "client/js/game/game.js",
         "client/js/gui/screens/chat.js",
@@ -1889,7 +1889,7 @@
         "client/js/render/item-renderer.js",
         "client/js/render/villager-layers.js"
       ],
-      "observation": "Creative search only matches names; #tag search and matching-tag tooltips are absent.",
+      "observation": "Creative #tag search and matching-tag tooltips are implemented; full namespace/filter/order scenarios remain unverified.",
       "acceptance": "Search #minecraft:logs and another item tag; inspect matched items and tooltip tag labels."
     },
     {
@@ -1923,7 +1923,7 @@
         "client/js/render/item-renderer.js",
         "client/js/render/villager-layers.js"
       ],
-      "observation": "Generic chat parses server-resolved text; NBT interpretation belongs to server; JSON item lore still renders as raw text.",
+      "observation": "JSON item lore now renders as components; server handles NBT interpretation. Complete styled chat/tooltip cases remain unverified.",
       "acceptance": "Use entity/block NBT text components and interpret=true, plus JSON-formatted item lore in tooltips."
     },
     {
@@ -2008,7 +2008,7 @@
         "client/js/render/item-renderer.js",
         "client/js/render/villager-layers.js"
       ],
-      "observation": "Server implements data/execute/locate/tag/quote changes; client custom_model_data predicate is missing.",
+      "observation": "CustomModelData predicates now resolve. Native technical editor packets replace obsolete command/structure custom payloads; other command semantics are server-owned.",
       "acceptance": "Test command completions, modified item frames and resource-pack CustomModelData overrides."
     },
     {
@@ -2044,7 +2044,7 @@
         "tools/test-1.14.4-content.mjs",
         "tools/test-1.14.4-world-light.mjs"
       ],
-      "observation": "Protection exclusivity was restored in 1.14.3; new crossbow IDs and enchanting clue labels are incorrect.",
+      "observation": "All 37 native enchantment IDs and max levels now resolve; numeric clues and single-level labels are tested. Full enchanting/anvil combinations remain live work.",
       "acceptance": "Enchant crossbows and normal tools; compare offered clue IDs/names, costs and mutually exclusive protections."
     },
     {
@@ -2070,7 +2070,7 @@
       "section": "Changes",
       "category": "Gameplay",
       "topic": "Sneaking",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "client/js/game/physics.js",
         "client/js/world/world.js",
@@ -2080,7 +2080,7 @@
         "tools/test-1.14.4-content.mjs",
         "tools/test-1.14.4-world-light.mjs"
       ],
-      "observation": "Local height remains 1.65 and eye height remains pre-1.14; 1.5-block gaps are unsupported.",
+      "observation": "Native extracted pose dimensions now permit 1.5-high sneaking and forced 0.6-high crawling, with appropriate eye height and stand-up clearance tests.",
       "acceptance": "Sneak beneath top slabs/trapdoors; release crouch with blocked headroom and compare camera and server correction."
     },
     {
@@ -2098,7 +2098,7 @@
         "tools/test-1.14.4-content.mjs",
         "tools/test-1.14.4-world-light.mjs"
       ],
-      "observation": "Effect icons still use the old atlas, and new effect runtime definitions are absent; AI detection is server-owned.",
+      "observation": "Native separate effect icons and extracted definitions replace legacy inventory atlas coordinates. Invisibility/armor and all effect transitions remain unverified.",
       "acceptance": "Apply all effects, inspect separate native icons and timers, and test invisible armor/entity layers."
     },
     {
@@ -2238,7 +2238,7 @@
       "section": "Changes",
       "category": "General",
       "topic": "Language",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "client/js/gui/screens/options.js",
         "client/js/gui/screens/manager.js",
@@ -2249,7 +2249,7 @@
         "client/js/game/physics.js",
         "tools/test-1.14.4-assets-panorama.mjs"
       ],
-      "observation": "Language selection immediately calls setLanguage rather than applying on Done.",
+      "observation": "Selecting a language now defers reload until Done; Escape returns without applying the pending choice. Full Unicode/localization scenarios remain unverified.",
       "acceptance": "Choose several languages, cancel/Done and compare reload timing and selection behavior."
     },
     {
@@ -2314,7 +2314,7 @@
       "section": "Changes",
       "category": "General",
       "topic": "Menus",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "client/js/gui/screens/options.js",
         "client/js/gui/screens/manager.js",
@@ -2325,7 +2325,7 @@
         "client/js/game/physics.js",
         "tools/test-1.14.4-assets-panorama.mjs"
       ],
-      "observation": "Base Tab handling cycles text fields only; full button focus and Shift+Tab/list arrow navigation are absent.",
+      "observation": "Tab/Shift+Tab, button activation, slider arrows and list navigation are implemented. Complete keyboard traversal of nested container controls remains unverified.",
       "acceptance": "Navigate every menu without a mouse using Tab, Shift+Tab, arrows, Space and Enter."
     },
     {
@@ -2371,7 +2371,7 @@
       "section": "Changes",
       "category": "General",
       "topic": "Options",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "client/js/gui/screens/options.js",
         "client/js/gui/screens/manager.js",
@@ -2382,7 +2382,7 @@
         "client/js/game/physics.js",
         "tools/test-1.14.4-assets-panorama.mjs"
       ],
-      "observation": "Accessibility and mouse submenus are absent; obsolete Snooper remains and layout is generated for 1.13.2.",
+      "observation": "Native Accessibility/Mouse submenus replace Snooper; scroll settings and chat-background opacity are wired. Broader accessibility/background/narration behavior still needs verification.",
       "acceptance": "Compare all options, chat background/text opacity, scroll sensitivity/discrete scrolling and saved settings."
     },
     {
@@ -2390,7 +2390,7 @@
       "section": "Changes",
       "category": "General",
       "topic": "Particles",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "client/js/gui/screens/options.js",
         "client/js/gui/screens/manager.js",
@@ -2401,7 +2401,7 @@
         "client/js/game/physics.js",
         "tools/test-1.14.4-assets-panorama.mjs"
       ],
-      "observation": "Renderer still addresses removed particles.png; native per-particle sprite definitions are not consumed.",
+      "observation": "Native individual sprite lists replace removed atlases; per-particle frame selection and pack overrides are tested. All trajectories/lifetimes are not certified.",
       "acceptance": "Override sprite lists in a resource pack; test all frames and each native particle ID."
     },
     {
@@ -2409,7 +2409,7 @@
       "section": "Changes",
       "category": "General",
       "topic": "Pause screen",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "client/js/gui/screens/options.js",
         "client/js/gui/screens/manager.js",
@@ -2420,7 +2420,7 @@
         "client/js/game/physics.js",
         "tools/test-1.14.4-assets-panorama.mjs"
       ],
-      "observation": "Give Feedback and Report Bugs buttons are absent.",
+      "observation": "Native feedback/report links are implemented; exact layout, link behavior and focus require comparison.",
       "acceptance": "Open pause menu and compare buttons, links, placement and keyboard focus."
     },
     {
@@ -2428,7 +2428,7 @@
       "section": "Changes",
       "category": "General",
       "topic": "Player positioning",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "client/js/gui/screens/options.js",
         "client/js/gui/screens/manager.js",
@@ -2439,7 +2439,7 @@
         "client/js/game/physics.js",
         "tools/test-1.14.4-assets-panorama.mjs"
       ],
-      "observation": "Local updateSize does not choose a fitting pose under blocked headroom; forced crawling is absent.",
+      "observation": "Fitting-pose fallback handles standing, crouching and crawling; native dimensions and eye heights have collision-course regressions. Remote pose/sleep presentation remains incomplete.",
       "acceptance": "Close a trapdoor on the player, crawl under one-block gaps and return to standing only when space permits."
     },
     {
@@ -2458,7 +2458,7 @@
         "client/js/game/physics.js",
         "tools/test-1.14.4-assets-panorama.mjs"
       ],
-      "observation": "Native sound IDs/assets exist; new note instruments and entity-attached sound consumer are missing.",
+      "observation": "Native state sound types and note instruments replace heuristics; entity-attached sound decode/playback is implemented. All sound events/movement/mixing remain unverified.",
       "acceptance": "Compare new block/mob sound types, entity-attached sounds, global volume and movement while sounds play."
     },
     {
@@ -2515,7 +2515,7 @@
         "client/js/game/physics.js",
         "tools/test-1.14.4-assets-panorama.mjs"
       ],
-      "observation": "Native asset source is pinned and panorama/entity textures validated; sign, particle, painting and effect consumers remain stale.",
+      "observation": "Native asset source/cache v4 includes Programmer Art; signs/particles/paintings/effect sprite consumers are adapted. All default/pack visuals are not certified.",
       "acceptance": "Inspect terrain/items/entities/GUI/effects with default assets and layered packs; look for missing or legacy paths."
     },
     {
@@ -2523,7 +2523,7 @@
       "section": "Changes",
       "category": "General",
       "topic": "Video settings",
-      "status": "missing",
+      "status": "partial",
       "evidence": [
         "client/js/gui/screens/options.js",
         "client/js/gui/screens/manager.js",
@@ -2534,7 +2534,7 @@
         "client/js/game/physics.js",
         "tools/test-1.14.4-assets-panorama.mjs"
       ],
-      "observation": "The obsolete VBO toggle remains and the shared option order table identifies 1.13.2.",
+      "observation": "Native video option order is extracted and obsolete VBO removed. GUI scale limits and complete input/render setting behavior still need comparison.",
       "acceptance": "Compare every video option/order/default including biome blend; remove obsolete VBO controls."
     },
     {
@@ -2662,8 +2662,8 @@
       "section": "Patches",
       "category": "1.14.4",
       "topic": "poppy-stew-night-vision",
-      "status": "missing",
-      "observation": "Poppy stew gives Night Vision in target; suspicious stew cannot currently begin eating.",
+      "status": "partial",
+      "observation": "Native food-use classification permits eating stew. The isolated vanilla server supplies target effect semantics; all flower/bowl combinations still need live checks.",
       "acceptance": "Eat poppy stew and verify Night Vision rather than Speed, correct duration and bowl return.",
       "evidence": [
         "client/js/game/items.js"
@@ -2674,8 +2674,8 @@
       "section": "Patches",
       "category": "1.14.4",
       "topic": "first-person-camera-offset",
-      "status": "missing",
-      "observation": "renderFrame still applies a -0.1 first-person pivot translation, removed by target.",
+      "status": "partial",
+      "observation": "The obsolete first-person -0.1 pivot translation is removed; near-wall/FOV comparisons remain unverified.",
       "acceptance": "Compare first-person camera/raycast origin against native 1.14.4 near walls and at different FOVs.",
       "evidence": [
         "client/js/game/game.js"

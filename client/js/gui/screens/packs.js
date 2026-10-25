@@ -190,6 +190,7 @@ export class ResourcePacksScreen extends Screen {
   mouseMove(mx, my) { for (const L of this.lists) L.list.mouseMove(mx, my); }
 
   async _delete(pack) {
+    if(pack.builtin)return;
     await this.game.assets.removePack(pack.id);
     this.available = this.available.filter((p) => p !== pack);
     this.message = '§e' + tr('minecraftjs.packs.deleted', pack.name);

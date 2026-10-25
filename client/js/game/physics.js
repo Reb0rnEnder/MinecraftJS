@@ -1,6 +1,7 @@
 // Port of vanilla 1.13.2 player movement physics (EntityPlayerSP / EntityPlayer / EntityLivingBase / Entity).
 import { getBlock, getStateProperties } from '../world/blocks.js';
 import { getFluidState, fluidHeightAt } from '../world/fluids.js';
+import { PLAYER_POSES } from './player-poses-1.14.4.js';
 
 const SPRINT_UUID = '662a6b8d-da3e-4c1c-8813-96ea6097278d';
 
@@ -95,6 +96,7 @@ export class LocalPlayer {
     this.fallDistance = 0;
     this.jumpTicks = 0;
     this.sneaking = false; this.sprinting = false; this.swimming = false;
+    this.pose = 'standing'; this.crouching = false;
     this.flying = false; this.allowFlying = false; this.creative = false; this.invulnerable = false;
     this.spectator = false; this.noClip = false;
     this.flySpeed = 0.05; this.walkSpeed = 0.1;
@@ -145,24 +147,26 @@ export class LocalPlayer {
   // EntityPlayer.getEyeHeight (1.12)
   eyeHeight() {
     if (this.sleeping) return f32(0.2);
-    if (!this.sneaking && this.height !== f32(1.65)) return this.elytraFlying || this.swimming || this.height === f32(0.6) ? f32(0.4) : f32(1.62);
-    return f32(f32(1.62) - f32(0.08));
+    if (['fall_flying','swimming','spin_attack'].includes(this.pose)) return f32(0.4);
+    if (this.pose === 'sneaking') return f32(1.27);
+    return f32(1.62);
   }
 
-  // EntityPlayer.updateSize: 0.6 x 0.6 gliding, 0.6 x 1.65 sneaking, if the new box fits
+  canEnterPose(world, pose) {
+    const [width,height] = PLAYER_POSES[pose].map(f32), r = width / 2, eps = 1e-7;
+    return !world.getCollisions([this.x-r+eps,this.y+eps,this.z-r+eps,this.x+r-eps,this.y+height-eps,this.z+r-eps],this).length;
+  }
+
+  // Player.updatePlayerPose: a blocked standing/crouching pose falls back to a fitting pose.
   updateSize(world) {
-    let w = f32(0.6), h = f32(1.8);
-    if (this.elytraFlying || this.swimming || this.riptide) h = f32(0.6);
-    else if (this.sleeping) { w = f32(0.2); h = f32(0.2); }
-    else if (this.sneaking) h = f32(1.65);
+    if (!this.canEnterPose(world,'swimming')) return;
+    let pose = this.elytraFlying ? 'fall_flying' : this.sleeping ? 'sleeping' : this.swimming ? 'swimming' : this.riptide ? 'spin_attack' : this.sneaking && !this.flying ? 'sneaking' : 'standing';
+    if (!this.spectator && !this.ridingEntity && !this.canEnterPose(world,pose)) pose = this.canEnterPose(world,'sneaking') ? 'sneaking' : 'swimming';
+    this.pose = pose; this.crouching = pose === 'sneaking';
+    const [w,h] = PLAYER_POSES[pose].map(f32);
     if (w === this.width && h === this.height) return;
-    const bb = this.bb();
-    const nb = [bb[0], bb[1], bb[2], bb[0] + w, bb[1] + h, bb[2] + w];
-    if (world.getCollisions(nb, this).length) return; // World.collidesWithAnyBlock
-    // Entity.setSize: keep minX/minZ, then recentre (setPosition of the new box)
     this.width = w; this.height = h;
-    this._bb = [nb[0], nb[1], nb[2], nb[0] + w, nb[1] + h, nb[2] + w];
-    this.x = (this._bb[0] + this._bb[3]) / 2; this.z = (this._bb[2] + this._bb[5]) / 2;
+    this._bb = null; // Native dimensions stay centered on the entity's feet.
   }
 
   bb() {
@@ -738,7 +742,9 @@ export class LocalPlayer {
     if (input.right) moveStrafe--;
     let jump = !!input.jump;
     const sneakKey = !!input.sneak;
-    if (sneakKey) { moveStrafe = f32(moveStrafe * 0.3); moveForward = f32(moveForward * 0.3); }
+    this.sneaking = sneakKey;
+    this.updateSize(world);
+    if (this.crouching || this.pose === 'swimming' && !this.inWater) { moveStrafe = f32(moveStrafe * 0.3); moveForward = f32(moveForward * 0.3); }
     if (this.usingItem && !this.ridingEntity) { moveStrafe = f32(moveStrafe * F.p02b); moveForward = f32(moveForward * F.p02b); this.sprintToggleTimer = 0; }
     this._moveVec = [moveStrafe, moveForward]; // MovementInput.getMoveVector
     this.autoJump = !!input.autoJump;

@@ -15,6 +15,20 @@ See [the active-runtime milestone](runtime-1.14.4-milestone.md) for implementati
 validation and the remaining work. Older networking-only limitations in the
 initial milestone below are historical and superseded by this runtime milestone.
 
+## Native gameplay and patch review — 2026-10-26
+
+Native item mechanics, crossbow use/rendering, fitting poses, colored wood signs,
+campfire contents/smoke, lectern books, particle sprites, effect icons, native
+sound types and packet/editor adaptations are implemented. Accessibility/Mouse
+settings and Programmer Art now use target resources. Shared note, book, map,
+technical-editor and melee prediction fixes are backported deliberately.
+
+The updated [feature audit](feature-audit-1.14.4.md) records implemented scope,
+regressions, browser/isolated-server evidence and remaining gaps. The requested
+[1.14.1–1.14.4 patch review](patch-audit-1.14.1-1.14.4.md) accounts for every
+Additions/Changes heading and inventories all 233 listed bug tickets without
+claiming they have all been reproduced. Full-parity release remains gated.
+
 ## Indexed assets and native title rendering
 
 The village panorama now comes from the 1.14 asset index, overriding stale jar

@@ -1,4 +1,5 @@
 import {shadowGeometry} from './shadows.js';
+import {PANDA_VARIANTS} from '../game/panda-variants-1.14.4.js';
 import {villagerLayers} from './villager-layers.js';
 import { updateRiptide } from './riptide-layer.js';
 import { EntityEffects, dragonCorpseMatrix } from './entity-effects.js';
@@ -80,6 +81,7 @@ function uvBoxMesh(w, h, d, faces, texW, texH) {
   const x0 = -w / 2, x1 = w / 2, y0 = -h / 2, y1 = h / 2, z0 = -d / 2, z1 = d / 2;
   const pos = [], uv = [], nor = [];
   const face = (pts, r, n) => {
+    if(!r)return;
     const t = [[r[0], r[1]], [r[0], r[3]], [r[2], r[3]], [r[2], r[1]]];
     for (let i = 0; i < 4; i++) { pos.push(...pts[i]); uv.push(t[i][0] / texW, t[i][1] / texH); nor.push(...n); }
   };
@@ -298,7 +300,10 @@ export class EntityRenderer {
       case 'trader_llama': return 'entity/llama/' + (LLAMA_TEX[e.llamaVariant] || LLAMA_TEX[0]) + '.png';
       case 'cat': return 'entity/cat/'+(['tabby','black','red','siamese','british_shorthair','calico','persian','ragdoll','white','jellie','all_black'][e.catType||0]||'tabby')+'.png';
       case 'fox': return 'entity/fox/'+(e.foxType===1?'snow_fox':'fox')+'.png';
-      case 'panda': return 'entity/panda/panda.png';
+      case 'panda': {
+        const variant=PANDA_VARIANTS[e.pandaGene||0]?.[e.pandaHiddenGene||0]||'normal';
+        return 'entity/panda/'+(variant==='normal'?'':variant+'_')+'panda.png';
+      }
       case 'ravager': return 'entity/illager/ravager.png';
       case 'pillager': return 'entity/illager/pillager.png';
       case 'polar_bear': return 'entity/bear/polarbear.png';
@@ -873,12 +878,11 @@ export class EntityRenderer {
         v = { root: new Node(), kind: 'painting', materials: [] };
         const art = PAINTINGS[e.title] || PAINTINGS.Kebab;
         const w = art[0] / 16, h = art[1] / 16;
-        const back = [192, 0, 208, 16];
-        const mesh = this._cachedMesh('painting:' + (e.title || 'Kebab'), () => uvBoxMesh(w, h, 1 / 16, {
-          pz: [art[2], art[3], art[2] + art[0], art[3] + art[1]], nz: back, px: back, nx: back, py: back, ny: back,
-        }, 256, 256));
-        const mat = this._mat(v, 'painting/paintings_kristoffer_zetterstrand.png', { alphaTest: 0.1 });
-        v.mesh = new Node().addDrawable(mesh, mat);
+        const mesh = this._cachedMesh('painting-front:' + (e.title || 'Kebab'), () => uvBoxMesh(w,h,1/16,{pz:[0,0,art[0],art[1]]},art[0],art[1]));
+        const back=[0,0,16,16],backMesh=this._cachedMesh('painting-back:'+w+':'+h,()=>uvBoxMesh(w,h,1/16,{nz:back,px:back,nx:back,py:back,ny:back},16,16));
+        const name=e.paintingName||'kebab';
+        const mat = this._mat(v, 'painting/'+name+'.png', { alphaTest: 0.1 });
+        v.mesh = new Node().addDrawable(mesh, mat);v.mesh.addDrawable(backMesh,this._mat(v,'painting/back.png',{alphaTest:.1}));
         v.root.add(v.mesh);
         e.width = Math.max(w, 0.5); e.height = h;
         break;
@@ -1141,15 +1145,14 @@ export class EntityRenderer {
     }
     const swimAmount = (e.prevSwimAmount ?? e.swimAmount ?? 0) + ((e.swimAmount ?? (e.swimming ? 1 : 0)) - (e.prevSwimAmount ?? e.swimAmount ?? 0)) * partial;
     if ((e.kind === 'player' || e.kind === 'mob') && swimAmount > 0.001 && !e.elytraFlying && !e.riptide) {
-      // RenderPlayer.applyRotations: pitch around X, then move the horizontal
-      // body to its swimming hitbox. Retain the last pitch while leaving water.
+      // PlayerRenderer.setupRotations: land crawling stays horizontal; water
+      // swimming follows look pitch. Translation follows pose, not sprint flags.
       const m = mat4.create();
       mat4.rotateY(m, m, (180 - body) * D2R);
-      let angle = (-90 - pitch) * swimAmount;
-      if (e.swimming) v.swimRotation = angle;
-      else angle = (v.swimRotation || 0) * (1 - swimAmount);
+      const inWater=e.inWater??isPointInFluid(g.world,e.x,e.y+e.height/2,e.z);
+      const angle = (-90 - (inWater ? pitch : 0)) * swimAmount;
       mat4.rotateX(m, m, angle * D2R);
-      if (e.swimming) mat4.translate(m, m, 0, -1, 0.3);
+      if (e.visuallySwimming ?? e.swimming) mat4.translate(m, m, 0, -1, 0.3);
       v.yawGroup.matrix = m;
     }
     if (e.riptide && (e.kind === 'player' || e.kind === 'mob')) {
@@ -1211,7 +1214,9 @@ export class EntityRenderer {
         if (name === 'shield') return 'block';
         if (name === 'bow') return 'bow';
         if (name === 'trident') return 'spear';
+        if (name === 'crossbow') return 'crossbow_charge';
       }
+      if(g.items.name(stack.id)==='crossbow'&&g.items.crossbowCharged(stack))return 'crossbow_hold';
       return 'item';
     };
     const mainPose = poseOf(held, 0), offPose = poseOf(e.offhand, 1);
@@ -1220,6 +1225,7 @@ export class EntityRenderer {
     const args = {
       ls, lsa, age, yaw: head - body, pitch, swing: swing > 0 ? swing : -9999, partial,
       sneak: !!e.sneaking, riding: e.riding >= 0,
+      useTicks:e.useTicks||0,crossbowChargeDuration:held&&g.items.name(held.id)==='crossbow'?g.items.crossbowChargeDuration(held):25,
       rightPose: skeletonAim ? 'bow' : primaryRight ? mainPose : offPose, leftPose: primaryRight ? offPose : mainPose,
       swingSide: ((e.swingHand || 0) === 0) === primaryRight ? 1 : -1,
       elytra: (e.elytraTicks || 0) > 4, speedSq,
@@ -1242,11 +1248,9 @@ export class EntityRenderer {
     };
     if (e.type === 'illusioner' && !e.spell && e.armsRaised) args.pose = 'bow';
     if (e.kind === 'armorstand') {
-      const m = e.metadata;
-      const r = (i) => (m[i] ? [m[i].pitch, m[i].yaw, m[i].roll] : null);
-      args.poses = { head: r(12), body: r(13), leftArm: r(14), rightArm: r(15), leftLeg: r(16), rightLeg: r(17) };
-      args.showArms = !!(m[11] & 4); args.noBasePlate = !!(m[11] & 8);
-      if (m[11] & 1) v.scaleGroup.scale.multiplyScalar(0.5);
+      args.poses = Object.fromEntries(Object.entries(e.poses||{}).map(([key,r])=>[key,[r.pitch,r.yaw,r.roll]]));
+      args.showArms = !!e.showArms; args.noBasePlate = !!e.noBasePlate;
+      if (e.small) v.scaleGroup.scale.multiplyScalar(0.5);
     }
     if (v.lodSkip && v.posed && v.wasInvisible === !!e.invisible) {
       // Keep the previous pose; only the transforms above were updated

@@ -3,6 +3,208 @@
   "protocol": 498,
   "clientJarSha1": "8c325a0c5bd674dd747d6ebaa4c791fd363ad8a9",
   "method": "Offline runtime probes plus native data validation; no live server or visual parity certification.",
+  "review": {
+    "topics": 166,
+    "openTopics": [
+      "additions-blocks-bamboo",
+      "additions-blocks-flowers",
+      "additions-blocks-looms",
+      "additions-blocks-signs",
+      "additions-blocks-slabs",
+      "additions-blocks-stairs",
+      "additions-blocks-walls",
+      "additions-blocks-barrels",
+      "additions-blocks-bells",
+      "additions-blocks-blast-furnaces",
+      "additions-blocks-smokers",
+      "additions-blocks-cartography-tables",
+      "additions-blocks-fletching-tables",
+      "additions-blocks-smithing-tables",
+      "additions-blocks-stonecutters",
+      "additions-blocks-grindstones",
+      "additions-blocks-lecterns",
+      "additions-blocks-scaffolding",
+      "additions-blocks-lanterns",
+      "additions-blocks-jigsaw-blocks",
+      "additions-blocks-sweet-berry-bushes",
+      "additions-blocks-campfires",
+      "additions-blocks-composters",
+      "additions-blocks-note-blocks",
+      "additions-items-general",
+      "additions-items-banner-patterns",
+      "additions-items-crossbows",
+      "additions-items-suspicious-stew",
+      "additions-items-dyes",
+      "additions-items-sweet-berries",
+      "additions-items-leather-horse-armor",
+      "additions-items-spawn-eggs",
+      "additions-mobs-mooshrooms",
+      "additions-mobs-pandas",
+      "additions-mobs-pillagers",
+      "additions-mobs-ravagers",
+      "additions-mobs-cats",
+      "additions-mobs-trader-llamas",
+      "additions-mobs-wandering-traders",
+      "additions-mobs-foxes",
+      "additions-world-generation-general",
+      "additions-world-generation-bamboo-forests",
+      "additions-world-generation-pillager-outposts",
+      "additions-world-generation-villages",
+      "additions-world-generation-zombie-villages",
+      "additions-gameplay-advancements",
+      "additions-gameplay-illager-patrols",
+      "additions-gameplay-raids",
+      "additions-gameplay-resource-packs",
+      "additions-gameplay-status-effects",
+      "additions-command-format-tags",
+      "additions-command-format-loot",
+      "additions-command-format-schedule",
+      "additions-command-format-teammsg",
+      "additions-general-client-jar",
+      "additions-general-death-messages",
+      "additions-general-font",
+      "additions-general-title-screen",
+      "additions-general-particles",
+      "additions-general-recipes",
+      "additions-general-splashes",
+      "additions-general-startup-screen",
+      "additions-general-statistics",
+      "changes-blocks-beds",
+      "changes-blocks-brewing-stands",
+      "changes-blocks-carpets",
+      "changes-blocks-cauldrons",
+      "changes-blocks-chorus-flowers",
+      "changes-blocks-crops-and-nether-wart",
+      "changes-blocks-cut-sandstone-and-cut-red-sandstone",
+      "changes-blocks-dispensers",
+      "changes-blocks-glass",
+      "changes-blocks-grass-path-mycelium-and-podzol",
+      "changes-blocks-leaves",
+      "changes-blocks-nether-brick-fences",
+      "changes-blocks-redstone-dust",
+      "changes-blocks-signs",
+      "changes-blocks-smooth-quartz-smooth-sandstone-smooth-red-sandstone-and-smooth-stone",
+      "changes-blocks-smooth-stone-slab",
+      "changes-blocks-stained-glass-panes",
+      "changes-blocks-tnt",
+      "changes-blocks-transparent-blocks",
+      "changes-blocks-vines",
+      "changes-items-beetroot-soup",
+      "changes-items-book-and-quill",
+      "changes-items-dead-bush",
+      "changes-items-dye",
+      "changes-items-horse-armor",
+      "changes-items-rabbit-stew",
+      "changes-items-totem-of-undying",
+      "changes-mobs-general",
+      "changes-mobs-cats-and-ocelots",
+      "changes-mobs-creepers",
+      "changes-mobs-dolphins",
+      "changes-mobs-fish",
+      "changes-mobs-illusioners-players-and-the-wither",
+      "changes-mobs-iron-golem",
+      "changes-mobs-mooshrooms",
+      "changes-mobs-parrots",
+      "changes-mobs-phantoms",
+      "changes-mobs-villagers",
+      "changes-mobs-vindicators",
+      "changes-mobs-wolves",
+      "changes-non-mob-entities-armor-stands",
+      "changes-non-mob-entities-thrown-projectiles",
+      "changes-non-mob-entities-minecart-with-tnt",
+      "changes-non-mob-entities-paintings",
+      "changes-world-generation-villages",
+      "changes-world-generation-swamp-huts",
+      "changes-world-generation-zombie-villages",
+      "changes-world-generation-the-nether",
+      "changes-command-format-advancements",
+      "changes-command-format-commands-nbt-data",
+      "changes-command-format-conditions",
+      "changes-command-format-creative-menu",
+      "changes-command-format-loot-tables",
+      "changes-command-format-json-text-components",
+      "changes-command-format-nbt-paths",
+      "changes-command-format-villager-nbt",
+      "changes-command-format-world-generator-registries",
+      "changes-command-format-zombie-villager-nbt",
+      "changes-command-format-other",
+      "changes-gameplay-crafting",
+      "changes-gameplay-enchanting",
+      "changes-gameplay-lighting-system",
+      "changes-gameplay-sneaking",
+      "changes-gameplay-status-effects",
+      "changes-gameplay-trading",
+      "changes-general-advancements",
+      "changes-general-collision-code",
+      "changes-general-creative-inventory",
+      "changes-general-credits",
+      "changes-general-debug-screen",
+      "changes-general-language",
+      "changes-general-loading-screen",
+      "changes-general-title-screen",
+      "changes-general-menus",
+      "changes-general-narrator",
+      "changes-general-options",
+      "changes-general-particles",
+      "changes-general-pause-screen",
+      "changes-general-player-positioning",
+      "changes-general-sounds",
+      "changes-general-splash",
+      "changes-general-technical",
+      "changes-general-textures",
+      "changes-general-video-settings",
+      "patch-1.14.1-campfire-arrow-ignition",
+      "patch-1.14.2-lighting-and-world-diagnostics",
+      "patch-1.14.2-debug-server-chunk-count",
+      "patch-1.14.2-raids-and-parrot-spawning",
+      "patch-1.14.3-crafting-repair-restoration",
+      "patch-1.14.3-enchanting-reversion",
+      "patch-1.14.3-pane-bar-attachments",
+      "patch-1.14.3-advancements-patrols-village-ai",
+      "patch-1.14.4-poppy-stew-night-vision",
+      "patch-1.14.4-first-person-camera-offset",
+      "patch-1.14.4-pillager-texture",
+      "patch-1.14.4-chunk-streaming",
+      "patch-1.14.4-commands-and-permissions",
+      "patch-1.14.4-villagers-spawning-pathfinding",
+      "1.14.1:Additions:Controls",
+      "1.14.1:Additions:Splashes",
+      "1.14.1:Changes:Campfire",
+      "1.14.1:Changes:Crafting table",
+      "1.14.1:Changes:Iron ore",
+      "1.14.1:Changes:Iron horse armor",
+      "1.14.1:Changes:Leather horse armor",
+      "1.14.1:Changes:Villages",
+      "1.14.1:Changes:Controls",
+      "1.14.2:Additions:Font",
+      "1.14.2:Changes:Campfire",
+      "1.14.2:Changes:Shulker boxes",
+      "1.14.2:Changes:Parrots",
+      "1.14.2:Changes:Raids",
+      "1.14.2:Changes:Error messages",
+      "1.14.2:Changes:Lighting",
+      "1.14.2:Changes:Splashes",
+      "1.14.3:Additions:/gamerule",
+      "1.14.3:Additions:Languages",
+      "1.14.3:Changes:Lanterns",
+      "1.14.3:Changes:Pressure plates and torches",
+      "1.14.3:Changes:General",
+      "1.14.3:Changes:Villagers",
+      "1.14.3:Changes:Illager patrols",
+      "1.14.3:Changes:Enchantments",
+      "1.14.3:Changes:Advancements",
+      "1.14.3:Changes:Performance",
+      "1.14.4:Additions:/debug",
+      "1.14.4:Additions:server.properties",
+      "1.14.4:Additions:Splashes",
+      "1.14.4:Changes:Suspicious stew",
+      "1.14.4:Changes:Pillagers",
+      "1.14.4:Changes:Villagers",
+      "1.14.4:Changes:Permissions",
+      "1.14.4:Changes:Camera",
+      "1.14.4:Changes:Performance"
+    ]
+  },
   "registryChecks": {
     "blocks": {
       "native": 676,
@@ -32,24 +234,9 @@
     },
     "enchantments": {
       "native": 37,
-      "local": 34,
-      "missing": [
-        "minecraft:multishot",
-        "minecraft:quick_charge",
-        "minecraft:piercing"
-      ],
-      "mismatchedIds": [
-        {
-          "name": "minecraft:mending",
-          "expected": 35,
-          "actual": 32
-        },
-        {
-          "name": "minecraft:vanishing_curse",
-          "expected": 36,
-          "actual": 33
-        }
-      ],
+      "local": 37,
+      "missing": [],
+      "mismatchedIds": [],
       "extra": [],
       "allowedOmissions": []
     }
@@ -1299,7 +1486,7 @@
         "states": 32,
         "nativeBlockstate": true,
         "collisionShape": true,
-        "specialRenderer": null
+        "specialRenderer": "sign"
       },
       {
         "name": "spruce_sign",
@@ -1307,7 +1494,7 @@
         "states": 32,
         "nativeBlockstate": true,
         "collisionShape": true,
-        "specialRenderer": null
+        "specialRenderer": "sign"
       },
       {
         "name": "birch_sign",
@@ -1315,7 +1502,7 @@
         "states": 32,
         "nativeBlockstate": true,
         "collisionShape": true,
-        "specialRenderer": null
+        "specialRenderer": "sign"
       },
       {
         "name": "acacia_sign",
@@ -1323,7 +1510,7 @@
         "states": 32,
         "nativeBlockstate": true,
         "collisionShape": true,
-        "specialRenderer": null
+        "specialRenderer": "sign"
       },
       {
         "name": "jungle_sign",
@@ -1331,7 +1518,7 @@
         "states": 32,
         "nativeBlockstate": true,
         "collisionShape": true,
-        "specialRenderer": null
+        "specialRenderer": "sign"
       },
       {
         "name": "dark_oak_sign",
@@ -1339,7 +1526,7 @@
         "states": 32,
         "nativeBlockstate": true,
         "collisionShape": true,
-        "specialRenderer": null
+        "specialRenderer": "sign"
       },
       {
         "name": "oak_door",
@@ -1379,7 +1566,7 @@
         "states": 8,
         "nativeBlockstate": true,
         "collisionShape": true,
-        "specialRenderer": null
+        "specialRenderer": "sign"
       },
       {
         "name": "spruce_wall_sign",
@@ -1387,7 +1574,7 @@
         "states": 8,
         "nativeBlockstate": true,
         "collisionShape": true,
-        "specialRenderer": null
+        "specialRenderer": "sign"
       },
       {
         "name": "birch_wall_sign",
@@ -1395,7 +1582,7 @@
         "states": 8,
         "nativeBlockstate": true,
         "collisionShape": true,
-        "specialRenderer": null
+        "specialRenderer": "sign"
       },
       {
         "name": "acacia_wall_sign",
@@ -1403,7 +1590,7 @@
         "states": 8,
         "nativeBlockstate": true,
         "collisionShape": true,
-        "specialRenderer": null
+        "specialRenderer": "sign"
       },
       {
         "name": "jungle_wall_sign",
@@ -1411,7 +1598,7 @@
         "states": 8,
         "nativeBlockstate": true,
         "collisionShape": true,
-        "specialRenderer": null
+        "specialRenderer": "sign"
       },
       {
         "name": "dark_oak_wall_sign",
@@ -1419,7 +1606,7 @@
         "states": 8,
         "nativeBlockstate": true,
         "collisionShape": true,
-        "specialRenderer": null
+        "specialRenderer": "sign"
       },
       {
         "name": "lever",
@@ -5403,7 +5590,7 @@
         "states": 16,
         "nativeBlockstate": true,
         "collisionShape": true,
-        "specialRenderer": null
+        "specialRenderer": "lectern"
       },
       {
         "name": "smithing_table",
@@ -5443,7 +5630,7 @@
         "states": 32,
         "nativeBlockstate": true,
         "collisionShape": true,
-        "specialRenderer": null
+        "specialRenderer": "campfire"
       },
       {
         "name": "sweet_berry_bush",
@@ -10421,7 +10608,7 @@
         "name": "splash_potion",
         "id": 824,
         "nativeModel": true,
-        "useAction": "none"
+        "useAction": "drink"
       },
       {
         "name": "spectral_arrow",
@@ -10439,7 +10626,7 @@
         "name": "lingering_potion",
         "id": 827,
         "nativeModel": true,
-        "useAction": "none"
+        "useAction": "drink"
       },
       {
         "name": "shield",
@@ -10613,13 +10800,13 @@
         "name": "crossbow",
         "id": 856,
         "nativeModel": true,
-        "useAction": "none"
+        "useAction": "crossbow"
       },
       {
         "name": "suspicious_stew",
         "id": 857,
         "nativeModel": true,
-        "useAction": "none"
+        "useAction": "eat"
       },
       {
         "name": "loom",
@@ -10727,7 +10914,7 @@
         "name": "sweet_berries",
         "id": 875,
         "nativeModel": true,
-        "useAction": "none"
+        "useAction": "eat"
       },
       {
         "name": "campfire",
@@ -10761,392 +10948,392 @@
     },
     {
       "id": "crossbow.use-action",
-      "result": "gap",
+      "result": "verified",
       "expected": "crossbow",
-      "actual": "none",
+      "actual": "crossbow",
       "evidence": "client/js/game/items.js:useAction"
     },
     {
       "id": "crossbow.positive-use-duration",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/game/items.js:useDuration"
     },
     {
       "id": "sweet_berries.use-action",
-      "result": "gap",
+      "result": "verified",
       "expected": "eat",
-      "actual": "none",
+      "actual": "eat",
       "evidence": "client/js/game/items.js:useAction"
     },
     {
       "id": "sweet_berries.positive-use-duration",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/game/items.js:useDuration"
     },
     {
       "id": "suspicious_stew.use-action",
-      "result": "gap",
+      "result": "verified",
       "expected": "eat",
-      "actual": "none",
+      "actual": "eat",
       "evidence": "client/js/game/items.js:useAction"
     },
     {
       "id": "suspicious_stew.positive-use-duration",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/game/items.js:useDuration"
     },
     {
       "id": "enchantment.multishot",
-      "result": "gap",
+      "result": "verified",
       "expected": "enchantment.minecraft.multishot",
-      "actual": "enchantment.minecraft.mending",
+      "actual": "enchantment.minecraft.multishot",
       "evidence": "client/js/game/items.js:enchantmentName"
     },
     {
       "id": "enchantment.quick_charge",
-      "result": "gap",
+      "result": "verified",
       "expected": "enchantment.minecraft.quick_charge",
-      "actual": "enchantment.minecraft.vanishing_curse",
+      "actual": "enchantment.minecraft.quick_charge",
       "evidence": "client/js/game/items.js:enchantmentName"
     },
     {
       "id": "enchantment.piercing",
-      "result": "gap",
+      "result": "verified",
       "expected": "enchantment.minecraft.piercing",
-      "actual": "enchantment.unknown",
+      "actual": "enchantment.minecraft.piercing",
       "evidence": "client/js/game/items.js:enchantmentName"
     },
     {
       "id": "enchantment.mending",
-      "result": "gap",
+      "result": "verified",
       "expected": "enchantment.minecraft.mending",
-      "actual": "enchantment.unknown",
+      "actual": "enchantment.minecraft.mending",
       "evidence": "client/js/game/items.js:enchantmentName"
     },
     {
       "id": "enchantment.vanishing_curse",
-      "result": "gap",
+      "result": "verified",
       "expected": "enchantment.minecraft.vanishing_curse",
-      "actual": "enchantment.unknown",
+      "actual": "enchantment.minecraft.vanishing_curse",
       "evidence": "client/js/game/items.js:enchantmentName"
     },
     {
       "id": "effect.31.runtime-definition",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/game/items.js:Items.effects"
     },
     {
       "id": "effect.32.runtime-definition",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/game/items.js:Items.effects"
     },
     {
       "id": "spawn-egg.cat.colors",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/game/items.js:eggInfo"
     },
     {
       "id": "spawn-egg.fox.colors",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/game/items.js:eggInfo"
     },
     {
       "id": "spawn-egg.panda.colors",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/game/items.js:eggInfo"
     },
     {
       "id": "spawn-egg.pillager.colors",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/game/items.js:eggInfo"
     },
     {
       "id": "spawn-egg.ravager.colors",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/game/items.js:eggInfo"
     },
     {
       "id": "spawn-egg.trader_llama.colors",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/game/items.js:eggInfo"
     },
     {
       "id": "spawn-egg.wandering_trader.colors",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/game/items.js:eggInfo"
     },
     {
       "id": "sneaking.height",
-      "result": "gap",
+      "result": "verified",
       "expected": 1.5,
-      "actual": 1.649999976158142,
+      "actual": 1.5,
       "evidence": "client/js/game/physics.js:updateSize"
     },
     {
       "id": "sneaking.eye-height",
-      "result": "gap",
+      "result": "verified",
       "expected": 1.2699999809265137,
-      "actual": 1.5399999618530273,
+      "actual": 1.2699999809265137,
       "evidence": "client/js/game/physics.js:eyeHeight"
     },
     {
       "id": "sign.oak_sign.renderer-route",
-      "result": "gap",
+      "result": "verified",
       "expected": "sign",
-      "actual": null,
+      "actual": "sign",
       "evidence": "client/js/render/tile-renderer.js:_ensure"
     },
     {
       "id": "sign.spruce_sign.renderer-route",
-      "result": "gap",
+      "result": "verified",
       "expected": "sign",
-      "actual": null,
+      "actual": "sign",
       "evidence": "client/js/render/tile-renderer.js:_ensure"
     },
     {
       "id": "sign.birch_sign.renderer-route",
-      "result": "gap",
+      "result": "verified",
       "expected": "sign",
-      "actual": null,
+      "actual": "sign",
       "evidence": "client/js/render/tile-renderer.js:_ensure"
     },
     {
       "id": "sign.acacia_sign.renderer-route",
-      "result": "gap",
+      "result": "verified",
       "expected": "sign",
-      "actual": null,
+      "actual": "sign",
       "evidence": "client/js/render/tile-renderer.js:_ensure"
     },
     {
       "id": "sign.jungle_sign.renderer-route",
-      "result": "gap",
+      "result": "verified",
       "expected": "sign",
-      "actual": null,
+      "actual": "sign",
       "evidence": "client/js/render/tile-renderer.js:_ensure"
     },
     {
       "id": "sign.dark_oak_sign.renderer-route",
-      "result": "gap",
+      "result": "verified",
       "expected": "sign",
-      "actual": null,
+      "actual": "sign",
       "evidence": "client/js/render/tile-renderer.js:_ensure"
     },
     {
       "id": "sign.oak_wall_sign.renderer-route",
-      "result": "gap",
+      "result": "verified",
       "expected": "sign",
-      "actual": null,
+      "actual": "sign",
       "evidence": "client/js/render/tile-renderer.js:_ensure"
     },
     {
       "id": "sign.spruce_wall_sign.renderer-route",
-      "result": "gap",
+      "result": "verified",
       "expected": "sign",
-      "actual": null,
+      "actual": "sign",
       "evidence": "client/js/render/tile-renderer.js:_ensure"
     },
     {
       "id": "sign.birch_wall_sign.renderer-route",
-      "result": "gap",
+      "result": "verified",
       "expected": "sign",
-      "actual": null,
+      "actual": "sign",
       "evidence": "client/js/render/tile-renderer.js:_ensure"
     },
     {
       "id": "sign.acacia_wall_sign.renderer-route",
-      "result": "gap",
+      "result": "verified",
       "expected": "sign",
-      "actual": null,
+      "actual": "sign",
       "evidence": "client/js/render/tile-renderer.js:_ensure"
     },
     {
       "id": "sign.jungle_wall_sign.renderer-route",
-      "result": "gap",
+      "result": "verified",
       "expected": "sign",
-      "actual": null,
+      "actual": "sign",
       "evidence": "client/js/render/tile-renderer.js:_ensure"
     },
     {
       "id": "sign.dark_oak_wall_sign.renderer-route",
-      "result": "gap",
+      "result": "verified",
       "expected": "sign",
-      "actual": null,
+      "actual": "sign",
       "evidence": "client/js/render/tile-renderer.js:_ensure"
     },
     {
       "id": "particle.campfire_cosy_smoke.dispatch",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/render/particles.js:onPacket"
     },
     {
       "id": "particle.campfire_signal_smoke.dispatch",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/render/particles.js:onPacket"
     },
     {
       "id": "particle.composter.dispatch",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/render/particles.js:onPacket"
     },
     {
       "id": "particle.sneeze.dispatch",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/render/particles.js:onPacket"
     },
     {
       "id": "particle.flash.dispatch",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/render/particles.js:onPacket"
     },
     {
       "id": "particle.falling_lava.dispatch",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/render/particles.js:onPacket"
     },
     {
       "id": "particle.landing_lava.dispatch",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/render/particles.js:onPacket"
     },
     {
       "id": "particle.falling_water.dispatch",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/render/particles.js:onPacket"
     },
     {
       "id": "note-block.iron_xylophone",
-      "result": "gap",
+      "result": "verified",
       "expected": "block.note_block.iron_xylophone",
-      "actual": "block.note_block.harp",
+      "actual": "block.note_block.iron_xylophone",
       "evidence": "client/js/audio/sound.js:onBlockAction"
     },
     {
       "id": "note-block.cow_bell",
-      "result": "gap",
+      "result": "verified",
       "expected": "block.note_block.cow_bell",
-      "actual": "block.note_block.harp",
+      "actual": "block.note_block.cow_bell",
       "evidence": "client/js/audio/sound.js:onBlockAction"
     },
     {
       "id": "note-block.didgeridoo",
-      "result": "gap",
+      "result": "verified",
       "expected": "block.note_block.didgeridoo",
-      "actual": "block.note_block.harp",
+      "actual": "block.note_block.didgeridoo",
       "evidence": "client/js/audio/sound.js:onBlockAction"
     },
     {
       "id": "note-block.bit",
-      "result": "gap",
+      "result": "verified",
       "expected": "block.note_block.bit",
-      "actual": "block.note_block.harp",
+      "actual": "block.note_block.bit",
       "evidence": "client/js/audio/sound.js:onBlockAction"
     },
     {
       "id": "note-block.banjo",
-      "result": "gap",
+      "result": "verified",
       "expected": "block.note_block.banjo",
-      "actual": "block.note_block.harp",
+      "actual": "block.note_block.banjo",
       "evidence": "client/js/audio/sound.js:onBlockAction"
     },
     {
       "id": "note-block.pling",
-      "result": "gap",
+      "result": "verified",
       "expected": "block.note_block.pling",
-      "actual": "block.note_block.harp",
+      "actual": "block.note_block.pling",
       "evidence": "client/js/audio/sound.js:onBlockAction"
     },
     {
       "id": "packet.open_horse_window.consumer",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/game/game.js:packet dispatch"
     },
     {
       "id": "packet.open_book.consumer",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/game/game.js:packet dispatch"
     },
     {
       "id": "packet.acknowledge_player_digging.consumer",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/game/game.js:packet dispatch"
     },
     {
       "id": "packet.entity_sound_effect.consumer",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/game/game.js:packet dispatch"
     },
     {
       "id": "recipe-book.tag-ingredient",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/game/recipebook.js:_parse"
     },
     {
       "id": "crossbow.charged-predicate",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/render/item-renderer.js:_predicates"
     },
     {
       "id": "custom-model-data.predicate",
-      "result": "gap",
+      "result": "verified",
       "expected": true,
-      "actual": false,
+      "actual": true,
       "evidence": "client/js/render/item-renderer.js:_predicates"
     }
   ],
   "totals": {
-    "verified": 3,
-    "gaps": 55
+    "verified": 58,
+    "gaps": 0
   }
 }

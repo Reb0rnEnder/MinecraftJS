@@ -34,14 +34,17 @@ export class Screen {
   mouseUp(mx, my, button) { for (const b of this.buttons) if (b.mouseUp) b.mouseUp(); }
   mouseMove() {}
   key(e) {
-    for (const f of this.fields) if (f.key(e)) return true;
-    if (e.code === 'Escape') { this.close(); return true; }
-    if (e.code === 'Tab' && this.fields.length > 1) {
-      const i = this.fields.findIndex((f) => f.focused);
-      this.fields.forEach((f) => { f.focused = false; });
-      this.fields[(i + 1) % this.fields.length].focused = true;
+    if(e.code==='Tab') {
+      const widgets=[...this.fields.filter(w=>w.enabled!==false),...this.buttons.filter(w=>w.visible!==false&&w.enabled!==false),...(this.list?[this.list]:[])];
+      if(!widgets.length)return false;
+      const i=widgets.findIndex(w=>w.focused),next=(i+(e.shift?-1:1)+widgets.length)%widgets.length;
+      widgets.forEach(w=>{w.focused=false;});this.focusedWidget=widgets[next];this.focusedWidget.focused=true;
+      if([1,3].includes(this.game.settings.narrator)){const w=this.focusedWidget,label=w.narration?.()||(typeof w.label==='function'?w.label():w.label)||w.text;this.game.narrator?.say(label);}
       return true;
     }
+    for (const f of this.fields) if (f.key(e)) return true;
+    if(this.focusedWidget&&!this.fields.includes(this.focusedWidget)&&this.focusedWidget.key?.(e,this.game))return true;
+    if (e.code === 'Escape') { this.close(); return true; }
     return false;
   }
   keyUp() {}
@@ -114,7 +117,7 @@ export class ScreenManager {
   onKeyUp(e) { if (this.current) this.current.keyUp(e); }
   onChar(c) { if (this.current) this.current.char(c); }
   onMove() { if (this.current && this.current.mouseMove) { const [mx, my] = this._mouse(); this.current.mouseMove(mx, my); } }
-  onWheel(d) { if (this.current) this.current.wheel(Math.sign(d)); }
+  onWheel(d) { if (this.current) this.current.wheel(d); }
   onMouse(e) {
     if (!this.current) return;
     const [mx, my] = this._mouse();

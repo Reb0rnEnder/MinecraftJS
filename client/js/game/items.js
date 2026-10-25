@@ -14,11 +14,6 @@ const RARITY_UNCOMMON = new Set(`experience_bottle nether_star enchanted_book el
   heart_of_the_sea skeleton_skull wither_skeleton_skull player_head zombie_head creeper_head dragon_head`.split(/\s+/));
 const RARITY_RARE = new Set(['golden_apple', 'end_crystal', 'beacon', 'conduit']);
 const RARITY_EPIC = new Set(['enchanted_golden_apple', 'dragon_egg', 'command_block', 'chain_command_block', 'repeating_command_block', 'structure_block']);
-// Protocol404 enchantment registry order (for enchanting-table clues). Stack NBT uses resource locations.
-const ENCHANTMENTS = `protection fire_protection feather_falling blast_protection projectile_protection respiration
-  aqua_affinity thorns depth_strider frost_walker binding_curse sharpness smite bane_of_arthropods knockback fire_aspect
-  looting sweeping efficiency silk_touch unbreaking fortune power punch flame infinity luck_of_the_sea lure loyalty
-  impaling riptide channeling mending vanishing_curse`.split(/\s+/);
 const SINGLE_LEVEL = new Set(`aqua_affinity binding_curse silk_touch flame infinity channeling mending vanishing_curse`.split(' '));
 const resource = (name) => name.includes(':') ? name : 'minecraft:' + name;
 const translationKey = (kind, name) => kind + '.' + resource(name).replace(':', '.');
@@ -49,7 +44,7 @@ export class Items {
     this.byId = new Map(assets.data.items.map(d => [d.id, d]));
     this.byName = new Map(assets.data.items.map(d => [d.name, d]));
     this.maps = new Map();
-    this.effects = { ...assets.data.creative.effects, ...EFFECT_ADDITIONS };
+    this.effects = { ...EFFECT_ADDITIONS, ...assets.data.creative.effects };
   }
 
   def(id) { return this.byId.get(id) || null; }
@@ -72,6 +67,7 @@ export class Items {
   damage(item) { return Math.max(0, this.nbt(item)?.Damage | 0); }
 
   nbt(item) {
+    if (item?._renderTag !== undefined) return item._renderTag; // Simplified block-entity display stack; never sent as an inventory stack.
     if (!item || !item.nbt) return null;
     if (!item._simple || item._simpleFor !== item.nbt) {
       item._simple = simplify(item.nbt) || {};
@@ -189,7 +185,7 @@ export class Items {
     // ItemColors uses the egg item's own colours, even when EntityTag changes what it spawns.
     const name = this.name(item.id).replace(/_spawn_egg$/, '');
     const oldName = { evoker: 'evocation_illager', vindicator: 'vindication_illager' }[name] || name;
-    return EGG_ADDITIONS[name] || this.assets.data.creative.eggs['minecraft:' + oldName] || null;
+    return this.assets.data.creative.eggs['minecraft:' + name] || EGG_ADDITIONS[name] || this.assets.data.creative.eggs['minecraft:' + oldName] || null;
   }
 
   enchantments(item) {
@@ -215,19 +211,19 @@ export class Items {
 
   // Enchantment.getTranslatedName: curses in red, the level unless a single-level enchantment at level 1
   enchantmentName(id, level) {
-    const name = typeof id === 'number' ? ENCHANTMENTS[id] : id;
+    const definition = this.assets.data.enchantments.find(e => typeof id === 'number' ? e.id === id : resource(e.name) === resource(id));
+    const name = typeof id === 'number' ? definition?.name : id;
     if (!name) return this.assets.translate('enchantment.unknown', [id]);
     const short = name.replace(/^minecraft:/, '');
     let s = this.assets.translate(translationKey('enchantment', name));
     if (short === 'binding_curse' || short === 'vanishing_curse') s = '§c' + s;
     const key = 'enchantment.level.' + level, translated = this.assets.translate(key);
-    return level === 1 && SINGLE_LEVEL.has(short) ? s : s + ' ' + (translated === key ? level : translated);
+    return level === 1 && (definition ? definition.maxLevel === 1 : SINGLE_LEVEL.has(short)) ? s : s + ' ' + (translated === key ? level : translated);
   }
 
   enchantLevel(item, id) {
     if (!item) return 0;
-    // Compatibility for existing internal interaction.js calls (6/16/19/32); these are NOT wire IDs.
-    // New callers should pass names; enchanting-table wire IDs go to enchantmentName above.
+    // Numeric IDs use this target registry; gameplay callers use resource names.
     const name = typeof id === 'number' ? this.assets.data.enchantments.find(e => e.id === id)?.name : id;
     const e = name && this.enchantments(item).find((x) => x.id === resource(name));
     return e ? e.lvl : 0;
@@ -256,8 +252,9 @@ export class Items {
       if (tag.display.color !== undefined && registryName.startsWith('leather_')) {
         lines.push(advanced ? '§7Color: #' + tag.display.color.toString(16).toUpperCase() : '§7§o' + t('item.dyed'));
       }
-      // Lore did not become JSON text components until 1.14.
-      if (Array.isArray(tag.display.Lore)) for (const l of tag.display.Lore) lines.push('§5§o' + l);
+      if (Array.isArray(tag.display.Lore)) for (const l of tag.display.Lore) {
+        try { lines.push(chatToLegacy(JSON.parse(l), { parsed: true, style: { color: 'dark_purple', italic: true } })); } catch { /* Native tooltips ignore malformed JSON lore. */ }
+      }
     }
     const weapon = { iron_sword: 6, wooden_sword: 4, stone_sword: 5, diamond_sword: 7, golden_sword: 4,
       iron_axe: 9, wooden_axe: 7, stone_axe: 9, diamond_axe: 9, golden_axe: 7,
@@ -279,6 +276,8 @@ export class Items {
   // Use action: 'none' | 'eat' | 'drink' | 'block' | 'bow' | 'spear'
   useAction(item) {
     if (!item) return 'none';
+    const native = this.assets.data.creative.itemMechanics?.[item.id];
+    if (native) return native.action;
     // 1.9+: potions are always drinkable (splash / lingering are separate items), swords no longer block, shields do
     const name = this.name(item.id);
     if (name === 'potion' || name === 'milk_bucket') return 'drink';
@@ -290,13 +289,20 @@ export class Items {
   }
 
   useDuration(item) {
+    if (!item) return 0;
+    if (this.name(item.id) === 'crossbow') return this.crossbowChargeDuration(item) + 3;
+    const native = this.assets.data.creative.itemMechanics?.[item.id];
+    if (native) return native.duration;
     const a = this.useAction(item);
     if (a === 'eat' || a === 'drink') return this.name(item.id) === 'dried_kelp' ? 16 : 32;
     if (a === 'block' || a === 'bow' || a === 'spear') return 72000;
     return 0;
   }
 
-  isFood(item) { return !!item && FOOD_NAMES.has(this.name(item.id)); }
+  isFood(item) { return !!item && (this.assets.data.creative.itemMechanics?.[item.id]?.food ?? FOOD_NAMES.has(this.name(item.id))); }
+  canAlwaysEat(item) { return !!this.assets.data.creative.itemMechanics?.[item?.id]?.alwaysEat; }
+  crossbowChargeDuration(item) { return 25 - 5 * this.enchantLevel(item, 'quick_charge'); }
+  crossbowCharged(item) { return !!this.nbt(item)?.Charged; }
 
   // ItemTool.getStrVsBlock
   strVsBlock(item, blockDef) {

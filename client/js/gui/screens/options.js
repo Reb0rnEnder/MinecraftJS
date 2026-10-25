@@ -74,12 +74,41 @@ export class OptionsScreen extends OptionsBase {
     btn(102, 0, 2, 'options.language', open(LanguageScreen));
     btn(103, 1, 2, 'options.chat.title', open(ChatOptionsScreen));
     btn(105, 0, 3, 'options.resourcepack', open(ResourcePacksScreen));
-    btn(104, 1, 3, 'options.snooper.view', open(SnooperScreen));
+    btn(104, 1, 3, 'options.accessibility.title', open(AccessibilityScreen));
     this.doneButton();
   }
 }
 
 const GameOptionsIds = { REALMS_NOTIFICATIONS: 30 };
+
+function nativeOption(screen,key) {
+  const s=screen.s,g=screen.game;
+  const toggle=(name,field)=>({label:()=>trOption(name,onOff(s[field])),click:()=>{s[field]=!s[field];}});
+  const slider=(name,field)=>({slider:true,label:v=>trOption(name,Math.round(v*100)+'%'),value:()=>s[field],set:v=>{s[field]=v;}});
+  switch(key){
+    case 'options.narrator':return {label:()=>g.narrator.label(),enabled:g.narrator.active,click:()=>g.narrator.cycle()};
+    case 'options.showSubtitles':return toggle(key,'showSubtitles');
+    case 'options.autoJump':return toggle(key,'autoJump');
+    case 'options.invertMouse':return toggle(key,'invertMouse');
+    case 'options.touchscreen':return toggle(key,'touchscreen');
+    case 'options.discrete_mouse_scroll':return toggle(key,'discreteMouseScroll');
+    case 'options.sensitivity':return {slider:true,label:v=>trOption(key,v===0?tr('options.sensitivity.min'):v===1?tr('options.sensitivity.max'):Math.round(v*200)+'%'),value:()=>s.sensitivity,set:v=>{s.sensitivity=v;}};
+    case 'options.mouseWheelSensitivity':return {slider:true,label:v=>trOption(key,Math.pow(10,v*2-1).toFixed(2)),value:()=>(Math.log10(s.mouseWheelSensitivity||1)+1)/2,set:v=>{s.mouseWheelSensitivity=Math.pow(10,v*2-1);}};
+    case 'options.accessibility.text_background_opacity':return slider(key,'textBackgroundOpacity');
+    case 'options.accessibility.text_background':return {label:()=>trOption(key,tr('options.accessibility.text_background.'+(s.textBackgroundOnlyChat?'chat':'everywhere'))),click:()=>{s.textBackgroundOnlyChat=!s.textBackgroundOnlyChat;}};
+    case 'options.chat.opacity':return {slider:true,label:v=>trOption(key,Math.round((v*.9+.1)*100)+'%'),value:()=>s.chatOpacity,set:v=>{s.chatOpacity=v;}};
+    default:throw Error('Missing native option '+key);
+  }
+}
+
+export class AccessibilityScreen extends OptionsBase {
+  constructor(game,parent){super(game,parent,'options.accessibility.title');}
+  init(){this.grid(VANILLA_UI.accessibilityOptions.map(k=>nativeOption(this,k)));this.doneButton();}
+}
+export class MouseSettingsScreen extends OptionsBase {
+  constructor(game,parent){super(game,parent,'options.mouse_settings.title');}
+  init(){this.grid(VANILLA_UI.mouseOptions.map(k=>nativeOption(this,k)));this.doneButton();}
+}
 
 // GuiLanguage + GuiLanguage.List (GuiSlot, 18 high, centred names, the current language selected)
 class LanguageScreen extends OptionsBase {
@@ -103,7 +132,7 @@ class LanguageScreen extends OptionsBase {
     const old = this.list;
     this.list = new ListOf(this, 32, this.height - 65 + 4, 18, {
       size: () => codes.length,
-      selected: (i) => codes[i] === this.game.assets.language,
+      selected: (i) => codes[i] === (this.pendingLanguage||this.game.assets.language),
       draw: (gui, i, x, y) => { const l = this.game.assets.languages[codes[i]]; gui.textCentered(l.name + ' (' + l.region + ')', this.width / 2, y + 1, 0xffffff, true); },
       click: (i) => this._pick(codes[i]),
     });
@@ -112,13 +141,10 @@ class LanguageScreen extends OptionsBase {
     this.list.clamp();
   }
   _pick(code) {
-    if (!code || this.busy || code === this.game.assets.language) return;
-    this.busy = true;
-    this.game.setLanguage(code).finally(() => {
-      this.busy = false;
-      this.buttons = []; this.fields = []; this.init(); // labels in the new language
-    });
+    if(code&&!this.busy)this.pendingLanguage=code;
   }
+  async done() {if(this.busy)return;this.busy=true;try{if(this.pendingLanguage&&this.pendingLanguage!==this.game.assets.language)await this.game.setLanguage(this.pendingLanguage);super.done();}finally{this.busy=false;}}
+  close() {this.s.save();this.game.screens.open(this.parent);}
   render(gui, mx, my) {
     this.list.render(gui, mx, my);
     gui.textCentered(tr('options.language'), this.width / 2, 16, 0xffffff);
@@ -152,7 +178,6 @@ class VideoScreen extends OptionsBase {
       { key: 'options.fullscreen', label: () => trOption('options.fullscreen', onOff(platform().isFullscreen())), click: () => platform().toggleFullscreen() },
       { key: 'options.vsync', label: () => trOption('options.vsync', onOff(s.enableVsync)), click: () => { s.enableVsync = !s.enableVsync; platform().vsync = s.enableVsync; } },
       { key: 'options.mipmapLevels', slider: true, label: (v) => { const n = Math.round(v * 4); return trOption('options.mipmapLevels', n === 0 ? tr('options.off') : n); }, value: () => s.mipmapLevels / 4, set: (v) => { s.mipmapLevels = Math.round(v * 4); } },
-      { key: 'options.vbo', label: () => trOption('options.vbo', onOff(s.useVbo)), click: () => { s.useVbo = !s.useVbo; } },
       { key: 'options.entityShadows', label: () => trOption('options.entityShadows', onOff(s.entityShadows)), click: () => { s.entityShadows = !s.entityShadows; } },
       // Distance from the camera in world blocks; the slider's maximum disables LOD.
       { slider: true, label: (v) => { const k = Math.round(v * 31); return tr('minecraftjs.options.lodDistance') + ': ' + (k >= 31 ? tr('options.off') : (16 + k * 16) + ' blocks'); },
@@ -314,12 +339,8 @@ class ControlsScreen extends OptionsBase {
     this.buttons.push(new Button(200, cx - 155 + 160, this.height - 29, 150, 20, tr('gui.done'), () => this.done()));
     this.resetAll = new Button(201, cx - 155, this.height - 29, 150, 20, tr('controls.resetAll'), () => { s.keys = { ...DEFAULT_KEYS }; });
     this.buttons.push(this.resetAll);
-    this.grid([
-      { label: () => trOption('options.invertMouse', onOff(s.invertMouse)), click: () => { s.invertMouse = !s.invertMouse; } },
-      { slider: true, label: (v) => trOption('options.sensitivity', v === 0 ? tr('options.sensitivity.min') : v === 1 ? tr('options.sensitivity.max') : Math.round(v * 200) + '%'), value: () => s.sensitivity, set: (v) => { s.sensitivity = v; } },
-      { label: () => trOption('options.touchscreen', onOff(s.touchscreen)), click: () => { s.touchscreen = !s.touchscreen; } },
-      { label: () => trOption('options.autoJump', onOff(s.autoJump)), click: () => { s.autoJump = !s.autoJump; } },
-    ], 18);
+    this.buttons.push(new Button(202,cx-155,18,150,20,tr('options.mouse_settings'),()=>this.game.screens.open(new MouseSettingsScreen(this.game,this))));
+    this.buttons.push(new Button(203,cx+5,18,150,20,()=>trOption('options.autoJump',onOff(s.autoJump)),()=>{s.autoJump=!s.autoJump;}));
     const keys = Object.keys(KEY_BINDINGS).sort((a, b) => {
       const ca=KEY_BINDINGS[a][1], cb=KEY_BINDINGS[b][1];
       const order=VANILLA_UI.categoryOrder;

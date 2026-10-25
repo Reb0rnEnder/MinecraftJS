@@ -51,10 +51,11 @@ import { ModelStore } from '../client/js/render/models.js';
 import { decodePng } from '../client/js/util/png.js';
 import { Node } from '../client/js/gfx/scene.js';
 import { mat4 } from '../client/js/gfx/math.js';
+import { loadParticleSprites } from '../client/js/render/particle-sprites.js';
 import { Particles } from '../client/js/render/particles.js';
 import { Weather } from '../client/js/render/weather.js';
 import { sectionLod, poseInterval } from '../client/js/render/lod.js';
-const version = mcassets.MC_VERSION, native = version === '1.13.2';
+const version = mcassets.MC_VERSION, native = ['1.13.2','1.14.4'].includes(version), target14=version==='1.14.4';
 const jar = new ZipFile(await mcassets.locateJar());
 const data = Object.fromEntries(['blocks','items','creative','blockCollisionShapes','enchantments','particles','foods','materials']
   .map(n => [n, JSON.parse(readFileSync(new URL('../client/data/' + n + '.json', import.meta.url)))]));
@@ -84,6 +85,7 @@ const device = {
   destroyTexture() {}, updateTexture() {}, draw() {}, setGlobals() {},
 };
 setModelDevice(device);
+if(target14){assets.packs=[];assets.device=device;assets.data.particleSprites=JSON.parse(readFileSync(new URL('../client/data/particleSprites.json',import.meta.url)));assets.readResourceBytes=async name=>jar.read('assets/'+name.replace(':','/'));await loadParticleSprites(assets);}
 let saved = {};
 setPlatform({ now: () => 1000, width: 320, height: 240, loadSetting: () => JSON.stringify(saved), saveSetting() {} });
 const state = name => { const b = data.blocks.find(b => b.name === name); assert.ok(b, name); return native ? b.defaultState : b.id << 4; };
@@ -148,7 +150,7 @@ test(version + ': saved chunk LOD settings migrate once to blocks, including Off
 });
 
 test(version + ': rain and rocket spark UVs sample nontransparent pixels from the real particle sheet', () => {
-  const g = fixture(), p = g.particles, sheet = image('particle/particles.png');
+  const g = fixture(), p = g.particles, sheet = target14?{width:assets.particleAtlas.size,height:assets.particleAtlas.size,data:assets.particleAtlas.data}:image('particle/particles.png');
   p.rain(1,65,1); p.spark(2,65,1,0,0,0);
   p.render(0,0,64,0);
   assert.equal(p.batchP.n, 2);
@@ -158,7 +160,7 @@ test(version + ': rain and rocket spark UVs sample nontransparent pixels from th
     const uv = Array.from({ length: 4 }, (_, i) => [v[offset+i*stride+3],v[offset+i*stride+4]]);
     const u0 = Math.min(...uv.map(v => v[0])), u1 = Math.max(...uv.map(v => v[0]));
     const v0 = Math.min(...uv.map(v => v[1])), v1 = Math.max(...uv.map(v => v[1]));
-    assert.ok(Math.abs((u1-u0) - 0.999/(native?32:16)) < 1e-6);
+    if(!target14)assert.ok(Math.abs((u1-u0) - 0.999/(native?32:16)) < 1e-6);else assert.ok(u1>u0&&v1>v0);
     let opaque = 0;
     for (let y = Math.floor(v0*sheet.height); y < Math.ceil(v1*sheet.height); y++) for (let x = Math.floor(u0*sheet.width); x < Math.ceil(u1*sheet.width); x++) opaque += sheet.data[(y*sheet.width+x)*4+3] > 0;
     assert.ok(opaque > 0, particle === 0 ? 'visible rain sprite' : 'visible rocket spark sprite');
@@ -216,7 +218,7 @@ test(version + ': rocket entities emit persistent visible trails as their attach
   e.kind='projectile'; e.type=76; e.entityName='firework_rocket'; g.entities.add(e);
   if (version!=='1.8.9') {
     g.player.elytraFlying=true; g.player.motionZ=1.5;
-    g.entities.setMetadata(10,{7:g.entityId});
+    g.entities.setMetadata(10,{[target14?8:7]:g.entityId});
     g.player.setPosition(4,64,10);
     g.entities._fireworkTick(e);
     assert.equal(e.x,4); assert.equal(e.z,10);
@@ -252,9 +254,9 @@ test(version + ': crystal beams have the jar taper, scrolling UVs, and moving wo
   assert.notDeepEqual(effect.mesh.vertices,before);
   g.entities.map.delete(c.id);g.entityRenderer.render(0.5);assert.equal(g.entityRenderer.effects.entries.has('heal:30'),false);
   if(version!=='1.8.9') {
-    g.entities.add(c);g.entities.setMetadata(c.id,{6:{x:0,y:70,z:0}});g.entityRenderer.render(0.5);
+    g.entities.add(c);g.entities.setMetadata(c.id,{[target14?7:6]:{x:0,y:70,z:0}});g.entityRenderer.render(0.5);
     assert.ok(g.entityRenderer.effects.entries.has('crystal:40'),'crystal beam-target metadata renders too');
-    g.entities.setMetadata(c.id,{6:null});g.entityRenderer.render(0.5);assert.equal(g.entityRenderer.effects.entries.has('crystal:40'),false);
+    g.entities.setMetadata(c.id,{[target14?7:6]:null});g.entityRenderer.render(0.5);assert.equal(g.entityRenderer.effects.entries.has('crystal:40'),false);
   }
 });
 
@@ -262,7 +264,7 @@ test(version + ': guardian and elder beams follow metadata, charge, local target
   const g=fixture(),e=g.entities._base(30,-20,64,0),t=g.entities._base(40,20,64,0);
   Object.assign(e,{kind:'mob',type:68,entityType:version==='1.12.2'?4:68,entityName:'elder_guardian',elder:true,width:1.9975,height:1.9975});
   Object.assign(t,{kind:'mob',type:90,entityType:90,entityName:'pig',width:0.9,height:0.9});g.entities.add(e);g.entities.add(t);
-  const idx=version==='1.8.9'?17:13;
+  const idx=version==='1.8.9'?17:target14?15:13;
   g.entities.setMetadata(e.id,{[idx]:t.id});assert.equal(e.guardianTarget,t.id);assert.equal(e.guardianBeamTicks,0);
   for(let i=0;i<100;i++)tickEntityEffects(e,g.entities);assert.equal(e.guardianBeamTicks,60);
   g.renderer.frustum=[];g.renderer.boxVisible=(x,y,z,X)=>X-x>10;
@@ -391,7 +393,7 @@ if(native)test('1.13.2: turtle eggs retain the floor face and can be stepped ont
   }
 });
 
-if(native)test('1.13.2: global chunk palettes have no length header and retain filled portal-frame states', () => {
+if(version==='1.13.2')test('1.13.2: global chunk palettes have no length header and retain filled portal-frame states', () => {
   const bits=14,count=4096,words=Array.from({length:Math.ceil(count*bits/64)},()=>0n);
   const value=findState('end_portal_frame',{eye:true,facing:'north'});
   for(let i=0;i<count;i++){const bit=i*bits,word=Math.floor(bit/64),shift=bit%64;words[word]|=BigInt(value)<<BigInt(shift);if(shift+bits>64)words[word+1]|=BigInt(value)>>BigInt(64-shift);}

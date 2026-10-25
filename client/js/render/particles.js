@@ -3,8 +3,9 @@ import { getBlock, getStateProperties } from '../world/blocks.js';
 import { isPointInFluid } from '../world/fluids.js';
 import { resolveState } from '../world/blockstates.js';
 import { FORMAT, litParams } from '../gfx/device.js';
+import { particleSprite } from './particle-sprites.js';
 
-const PARTICLE_GRID = 32; // Logical UV grid of this version, independent of resource-pack resolution.
+const SIMPLE_SPRITES={0:'mycelium',32:'bubble',48:'flame',49:'lava',64:'note',65:'crit',66:'enchanted_hit',80:'heart',81:'angry_villager',82:'happy_villager',112:'falling_water',113:'dripping_water'};
 const MAX = 4000;
 const rand = Math.random;
 const STRIDE = FORMAT.lit.stride;
@@ -46,9 +47,9 @@ export class Particles {
     this.list = [];
     const r = game.renderer;
     const dev = game.device;
-    this.batchP = new Batch(dev, 'particle/particles.png');
+    this.batchP = new Batch(dev, () => game.assets.particleTexture);
     this.batchA = new Batch(dev, () => game.assets.atlasTexture);
-    this.batchE = new Batch(dev, 'entity/explosion.png');
+    this.batchE = new Batch(dev, () => game.assets.particleTexture);
     const resolve = (t) => (typeof t === 'function' ? t() : game.assets.texture(t));
     const draw = (d) => { for (const b of [this.batchP, this.batchA, this.batchE]) b.draw(d, resolve); };
     draw.order = 11;
@@ -66,6 +67,8 @@ export class Particles {
     if (s === 2 && !p.important) return;
     if (s === 1 && !p.important && rand() * 3 < 1) return; // RenderGlobal.spawnEntityFX: 1 in 3 dropped
     p.age = 0;
+    p.sprite ||= p.explosionFrame!==undefined?'explosion':SIMPLE_SPRITES[p.tex]||'poof';
+    p.spriteRandom=rand();
     p.prevX = p.x; p.prevY = p.y; p.prevZ = p.z;
     p.mx = p.mx || 0; p.my = p.my || 0; p.mz = p.mz || 0;
     p.r = p.r ?? 1; p.g = p.g ?? 1; p.b = p.b ?? 1; p.a = p.a ?? 1;
@@ -154,17 +157,12 @@ export class Particles {
         [u0, v0, u1, v1] = p.atlas;
       } else if (p.explosionFrame !== undefined) {
         batch = this.batchE;
-        const f = Math.min(15, Math.floor((p.age + partial) * 15 / p.maxAge));
-        u0 = (f % 4) / 4; v0 = Math.floor(f / 4) / 4; u1 = u0 + 0.25; v1 = v0 + 0.25;
+        const uv=particleSprite(this.game.assets,p,partial);if(!uv)continue;[u0,v0,u1,v1]=uv;
         size = 2 * (1 - p.age / p.maxAge * 0.5) * p.scale * 0.5;
         sky = -1;
       } else {
         batch = this.batchP;
-        if (p.uv) [u0, v0, u1, v1] = p.uv;
-        else {
-          const idx = p.texFn ? p.texFn(p) : p.tex || 0;
-          u0 = (idx % 16) / PARTICLE_GRID; v0 = Math.floor(idx / 16) / PARTICLE_GRID; u1 = u0 + 0.999 / PARTICLE_GRID; v1 = v0 + 0.999 / PARTICLE_GRID;
-        }
+        const uv=particleSprite(this.game.assets,p,partial);if(!uv)continue;[u0,v0,u1,v1]=uv;
       }
       if (p.footprint) {
         // flat on the ground (handled with particles texture fallback)
@@ -282,7 +280,7 @@ export class Particles {
 
   // EntityCrit2FX (magic: tinted, next sprite): grows in over its first frames, green/blue fade
   crit1(x, y, z, mx, my, mz, magic) {
-    const p = this.fx(x, y, z, 0, 0, 0, { tex: magic ? 66 : 65 });
+    const p = this.fx(x, y, z, 0, 0, 0, { sprite:magic?'enchanted_hit':'crit',spriteMode:'random' });
     p.mx = p.mx * 0.1 + mx * 0.4; p.my = p.my * 0.1 + my * 0.4; p.mz = p.mz * 0.1 + mz * 0.4;
     const c = rand() * 0.30000001192092896 + 0.6000000238418579;
     p.r = p.g = p.b = c;
@@ -304,7 +302,7 @@ export class Particles {
   }
 
   smoke(x, y, z, mx, my, mz, scaleMul = 1) {
-    const p = { x, y, z, mx: mx + (rand() * 2 - 1) * 0.1 * 0 , my: my, mz: mz };
+    const p = { x, y, z, sprite:scaleMul>1?'large_smoke':'smoke', mx: mx + (rand() * 2 - 1) * 0.1 * 0 , my: my, mz: mz };
     p.mx = p.mx * 0.1 + mx; p.my = p.my * 0.1 + my; p.mz = p.mz * 0.1 + mz;
     const c = rand() * 0.3;
     p.r = p.g = p.b = c;
@@ -356,7 +354,7 @@ export class Particles {
   }
 
   _waterDrop(x, y, z, mx, my, mz, splash) {
-    const p = this.fx(x, y, z, 0, 0, 0, { tex: splash ? 20 + Math.floor(rand() * 3) : 19 + Math.floor(rand() * 4), r: 1, g: 1, b: 1 });
+    const p = this.fx(x, y, z, 0, 0, 0, { sprite:splash?'splash':'rain',spriteMode:'random', r: 1, g: 1, b: 1 });
     p.mx *= 0.3; p.my = rand() * 0.2 + 0.1; p.mz *= 0.3;
     if (splash && my === 0 && (mx !== 0 || mz !== 0)) { p.mx = mx; p.my = 0.1; p.mz = mz; }
     p.maxAge = Math.floor(8 / (rand() * 0.8 + 0.2));
@@ -390,7 +388,7 @@ export class Particles {
   }
 
   spell(x, y, z, mx, my, mz, r = 1, g = 1, b = 1, instant = false, witch = false) {
-    const p = { x, y, z, mx: mx, my: my, mz: mz };
+    const p = { x, y, z, sprite:witch?'witch':instant?'instant_effect':'effect', mx: mx, my: my, mz: mz };
     p.my *= 0.2;
     if (mx === 0 && mz === 0) { p.mx *= 0.1; p.mz *= 0.1; }
     p.scale = (rand() * 0.5 + 0.5) * 2 * 0.75;
@@ -415,7 +413,7 @@ export class Particles {
   }
 
   simpleRising(x, y, z, tex, opts = {}) {
-    const p = { x, y, z, tex, mx: opts.mx || 0, my: opts.my ?? 0.1, mz: opts.mz || 0, maxAge: opts.maxAge || 16, scale: opts.scale || 1.5, r: opts.r ?? 1, g: opts.g ?? 1, b: opts.b ?? 1, collide: false };
+    const p = { x, y, z, tex, sprite:opts.sprite||SIMPLE_SPRITES[tex], mx: opts.mx || 0, my: opts.my ?? 0.1, mz: opts.mz || 0, maxAge: opts.maxAge || 16, scale: opts.scale || 1.5, r: opts.r ?? 1, g: opts.g ?? 1, b: opts.b ?? 1, collide: false };
     p.update = (q) => { this.move(q, this.game.world); if (q.y === q.prevY) { q.mx *= 1.1; q.mz *= 1.1; } q.mx *= 0.86; q.my *= 0.86; q.mz *= 0.86; };
     return this.add(p);
   }
@@ -444,7 +442,7 @@ export class Particles {
   }
 
   portal(x, y, z, mx, my, mz) {
-    const p = { x, y, z, mx, my, mz, tex: Math.floor(rand() * 8), collide: false };
+    const p = { x, y, z, mx, my, mz, sprite:'portal',spriteMode:'random', collide: false };
     p.sx = x; p.sy = y; p.sz = z;
     const f = rand() * 0.6 + 0.4;
     p.r = p.g = p.b = f; p.g *= 0.3; p.r *= 0.9;
@@ -459,7 +457,7 @@ export class Particles {
   }
 
   enchant(x, y, z, mx, my, mz) {
-    const p = { x, y, z, mx, my, mz, tex: 225 + Math.floor(rand() * 26), collide: false };
+    const p = { x, y, z, mx, my, mz, sprite:'enchant',spriteMode:'random', collide: false };
     p.sx = x; p.sy = y; p.sz = z;
     const f = rand() * 0.6 + 0.4;
     p.r = p.g = p.b = f; p.r *= 0.9; p.g *= 0.9;
@@ -475,7 +473,7 @@ export class Particles {
   reddust(x, y, z, r, g, b) {
     if (r === 0) r = 1;
     const f = rand() * 0.4 + 0.6;
-    const p = { x, y, z, mx: (rand() * 2 - 1) * 0.1 * 0.1, my: (rand() * 2 - 1) * 0.1 * 0.1, mz: (rand() * 2 - 1) * 0.1 * 0.1 };
+    const p = { x, y, z, sprite:'dust', mx: (rand() * 2 - 1) * 0.1 * 0.1, my: (rand() * 2 - 1) * 0.1 * 0.1, mz: (rand() * 2 - 1) * 0.1 * 0.1 };
     p.r = (rand() * 0.2 + 0.8) * r * f; p.g = (rand() * 0.2 + 0.8) * g * f; p.b = (rand() * 0.2 + 0.8) * b * f;
     p.scale = (rand() * 0.5 + 0.5) * 2 * 0.75;
     p.maxAge = Math.floor(8 / (rand() * 0.8 + 0.2));
@@ -485,12 +483,12 @@ export class Particles {
   }
 
   drip(x, y, z, lava) {
-    const p = { x, y, z, mx: 0, my: 0, mz: 0, tex: 113, scale: 1, maxAge: Math.floor(64 / (rand() * 0.8 + 0.2)) };
+    const p = { x, y, z, sprite:lava?'dripping_lava':'dripping_water', mx: 0, my: 0, mz: 0, tex: 113, scale: 1, maxAge: Math.floor(64 / (rand() * 0.8 + 0.2)) };
     p.r = lava ? 1 : 0; p.g = lava ? 0.2 : 0; p.b = lava ? 0 : 1;
     p.delay = 40;
     p.update = (q) => {
       if (q.delay-- > 0) { q.mx *= 0.02; q.my *= 0.02; q.mz *= 0.02; q.tex = 113; }
-      else { q.tex = 112; q.my -= 0.06 * 0.5; }
+      else { q.sprite=lava?'falling_lava':'falling_water';q.tex = 112; q.my -= 0.06 * 0.5; }
       this.move(q, this.game.world);
       q.mx *= 0.98; q.my *= 0.98; q.mz *= 0.98;
       if (q.onGround) { if (!lava) this.splash(q.x, q.y, q.z, 0, 0, 0); return false; }
@@ -529,7 +527,7 @@ export class Particles {
   // ParticleFirework.Spark (ParticleSimpleAnimated: textures 160 - 167, full bright, y accel -0.004, friction 0.91).
   // opts: { color, fade, trail, twinkle, a }
   spark(x, y, z, mx, my, mz, opts = {}) {
-    const p = { x, y, z, mx, my, mz, fullBright: true, important: !!opts.important, a: opts.a ?? 1 };
+    const p = { x, y, z, sprite:'firework', mx, my, mz, fullBright: true, important: !!opts.important, a: opts.a ?? 1 };
     p.scale = (rand() * 0.5 + 0.5) * 2 * 0.75;
     p.maxAge = 48 + Math.floor(rand() * 12);
     if (opts.color !== undefined) { p.r = ((opts.color >> 16) & 255) / 255; p.g = ((opts.color >> 8) & 255) / 255; p.b = (opts.color & 255) / 255; }
@@ -624,7 +622,7 @@ export class Particles {
         }
         // ParticleFirework.Overlay: a 4-tick flash in the first colour
         const c = colors[0];
-        this.add({ x, y, z, collide: false, important: true, maxAge: 4, uv: [0.25, 0.125, 0.5, 0.375], update: () => {},
+        this.add({ x, y, z, sprite:'flash', collide: false, important: true, maxAge: 4, update: () => {},
           r: ((c >> 16) & 255) / 255, g: ((c >> 8) & 255) / 255, b: (c & 255) / 255,
           sizeFn: (q, pt) => 7.1 * Math.sin((q.age + pt - 1) * 0.25 * Math.PI) * 10,
           alphaFn: (q, pt) => 0.6 - (q.age + pt - 1) * 0.25 * 0.5 });
@@ -656,6 +654,48 @@ export class Particles {
   }
 
   // S2A packet
+  campfireSmoke(x,y,z,signal=false) {
+    const p={x,y,z,sprite:signal?'campfire_signal_smoke':'campfire_cosy_smoke',mx:0,my:.07,mz:0,a:.9,scale:3+rand()*3,maxAge:Math.floor(rand()*50)+(signal?280:80),collide:false};
+    p.update=q=>{
+      q.mx+=(rand()/5000)*(rand()<.5?1:-1);q.mz+=(rand()/5000)*(rand()<.5?1:-1);q.my-=.000003;
+      this.move(q,this.game.world);
+      if(q.age>=q.maxAge-60)q.a-=.015;
+      return q.a>0;
+    };
+    return this.add(p);
+  }
+
+  fallingDrop(x,y,z,lava=false,landing=false) {
+    const p={x,y,z,sprite:landing?'landing_lava':lava?'falling_lava':'falling_water',mx:0,my:0,mz:0,scale:1,maxAge:landing?Math.floor(16/(rand()*.8+.2)):Math.floor(64/(rand()*.8+.2)),r:lava?1:.2,g:lava?.285:.3,b:lava?.083:1,fullBright:lava,collide:!landing};
+    if(landing)p.update=()=>{};
+    else p.update=q=>{
+      q.my-=.06;this.move(q,this.game.world);q.mx*=.98;q.my*=.98;q.mz*=.98;
+      if(q.onGround){if(lava)this.fallingDrop(q.x,q.y,q.z,true,true);else this.splash(q.x,q.y,q.z);return false;}
+    };
+    return this.add(p);
+  }
+
+  nativeParticle(type,x,y,z,mx=0,my=0,mz=0) {
+    const p={x,y,z,mx,my,mz,sprite:type,scale:1,maxAge:20,drag:.96,collide:false};
+    switch(type){
+      case 'flash':p.maxAge=4;p.scale=7.1;p.update=()=>{};p.sizeFn=(q,t)=>71*Math.sin((q.age+t-1)*.25*Math.PI);p.alphaFn=(q,t)=>.6-(q.age+t-1)*.125;break;
+      case 'sneeze':p.r=200/255;p.g=231/255;p.b=193/255;p.a=.4;p.maxAge=Math.floor(8/(rand()*.8+.2));p.scale=2;break;
+      case 'end_rod':p.fullBright=true;p.maxAge=60+Math.floor(rand()*12);p.gravity=-.0005;break;
+      case 'totem_of_undying':p.r=.1+rand()*.2;p.g=.4+rand()*.6;p.b=rand()*.2;p.maxAge=60+Math.floor(rand()*12);p.scale=.75;p.gravity=.1;break;
+      case 'damage_indicator':p.maxAge=20;p.scale=2;p.gravity=.5;break;
+      case 'dragon_breath':p.r=.7+rand()*.3;p.g=0;p.b=.5+rand()*.5;p.maxAge=20+Math.floor(rand()*20);break;
+      case 'spit':p.gravity=.5;break;
+      case 'squid_ink':p.r=p.g=p.b=0;p.maxAge=Math.floor(12/(rand()*.8+.2));p.scale=1.5;break;
+      case 'sweep_attack':p.maxAge=4;p.scale=10;p.update=()=>{};break;
+      case 'bubble_pop':p.maxAge=4;break;
+      case 'current_down':p.my=-.05;p.maxAge=30+Math.floor(rand()*60);break;
+      case 'bubble_column_up':p.my=.06;p.maxAge=40+Math.floor(rand()*40);break;
+      case 'dolphin':p.r=.3;p.g=.5;p.b=1;p.maxAge=Math.floor(16/(rand()*.8+.2));break;
+      case 'nautilus':p.fullBright=true;p.maxAge=30+Math.floor(rand()*30);p.scale=.75;break;
+    }
+    return this.add(p);
+  }
+
   onPacket(p) {
     const n = p.particles;
     const emit = (fn) => {
@@ -677,7 +717,7 @@ export class Particles {
       case 'bubble': emit((x, y, z, mx, my, mz) => this.bubble(x, y, z, mx, my, mz)); break;
       case 'rain': emit((x, y, z) => this.rain(x, y, z)); break;
       case 'fishing': case 'splash': emit((x, y, z, mx, my, mz) => this.splash(x, y, z, mx, my, mz)); break;
-      case 'underwater': emit((x, y, z) => this.add({ x, y, z, tex: 0, scale: rand() * 0.6 + 0.2, r: 0.4, g: 0.4, b: 0.7, maxAge: Math.floor(16 / (rand() * 0.8 + 0.2)), collide: false, update: (q) => { q.x += q.mx; q.y += q.my; q.z += q.mz; q.mx *= 0.99; q.my *= 0.99; q.mz *= 0.99; } })); break;
+      case 'underwater': emit((x, y, z) => this.add({ x, y, z, sprite:'underwater',spriteMode:'random', scale: rand() * 0.6 + 0.2, r: 0.4, g: 0.4, b: 0.7, maxAge: Math.floor(16 / (rand() * 0.8 + 0.2)), collide: false, update: (q) => { q.x += q.mx; q.y += q.my; q.z += q.mz; q.mx *= 0.99; q.my *= 0.99; q.mz *= 0.99; } })); break;
       case 'crit': emit((x, y, z, mx, my, mz) => this.crit1(x, y, z, mx, my, mz, false)); break;
       case 'enchanted_hit': emit((x, y, z, mx, my, mz) => this.crit1(x, y, z, mx, my, mz, true)); break;
       case 'smoke': emit((x, y, z, mx, my, mz) => this.smoke(x, y, z, mx, my, mz)); break;
@@ -688,6 +728,13 @@ export class Particles {
       case 'witch': emit((x, y, z, mx, my, mz) => this.spell(x, y, z, mx, my, mz, 1, 1, 1, false, true)); break;
       case 'dripping_water': emit((x, y, z) => this.drip(x, y, z, false)); break;
       case 'dripping_lava': emit((x, y, z) => this.drip(x, y, z, true)); break;
+      case 'falling_lava':emit((x,y,z)=>this.fallingDrop(x,y,z,true));break;
+      case 'falling_water':emit((x,y,z)=>this.fallingDrop(x,y,z,false));break;
+      case 'landing_lava':emit((x,y,z)=>this.fallingDrop(x,y,z,true,true));break;
+      case 'campfire_cosy_smoke':case 'campfire_signal_smoke':emit((x,y,z)=>this.campfireSmoke(x,y,z,type==='campfire_signal_smoke'));break;
+      case 'composter':emit((x,y,z)=>this.simpleRising(x,y,z,0,{sprite:'composter',scale:.5,my:0}));break;
+      case 'flash':case 'sneeze':case 'end_rod':case 'totem_of_undying':case 'damage_indicator':case 'dragon_breath':case 'spit':case 'squid_ink':case 'sweep_attack':case 'bubble_pop':case 'current_down':case 'bubble_column_up':case 'nautilus':case 'dolphin':
+        emit((x,y,z,mx,my,mz)=>this.nativeParticle(type,x,y,z,mx,my,mz));break;
       case 'angry_villager': emit((x, y, z) => this.simpleRising(x, y, z, 81, { my: 0 })); break;
       case 'happy_villager': case 'mycelium': emit((x, y, z) => this.simpleRising(x, y, z, type === 'happy_villager' ? 82 : 0, { my: 0.0, scale: type === 'happy_villager' ? 1.5 : 0.5, r: type === 'mycelium' ? 0.4 : 1, g: type === 'mycelium' ? 0.4 : 1, b: type === 'mycelium' ? 0.7 : 1 })); break;
       case 'note': emit((x, y, z, mx) => this.simpleRising(x, y, z, 64, { my: 0.2, maxAge: 6, r: Math.sin(mx * Math.PI * 2) * 0.65 + 0.35, g: Math.sin((mx + 1 / 3) * Math.PI * 2) * 0.65 + 0.35, b: Math.sin((mx + 2 / 3) * Math.PI * 2) * 0.65 + 0.35 })); break;
@@ -695,7 +742,7 @@ export class Particles {
       case 'enchant': emit((x, y, z, mx, my, mz) => this.enchant(x, y, z, mx, my, mz)); break;
       case 'flame': emit((x, y, z, mx, my, mz) => this.flame(x, y, z, mx, my, mz)); break;
       case 'lava': emit((x, y, z) => this.lava(x, y, z)); break;
-      case 'cloud': emit((x, y, z, mx, my, mz) => { const s = this.smoke(x, y, z, mx, my, mz, 2.5); if (s) { s.r = s.g = s.b = 1 - rand() * 0.3; } }); break;
+      case 'cloud': emit((x, y, z, mx, my, mz) => { const s = this.smoke(x, y, z, mx, my, mz, 2.5); if (s) { s.sprite='cloud';s.r = s.g = s.b = 1 - rand() * 0.3; } }); break;
       case 'dust': emit((x, y, z) => {
         const dust = this.reddust(x, y, z, p.data.red, p.data.green, p.data.blue);
         if (dust) dust.scale *= Math.max(0.01, Math.min(4, p.data.scale));

@@ -28,6 +28,15 @@ export class SlotList {
   size() { return 0; }
   isSelected() { return false; }
   clicked() { return false; }
+  key(e) {
+    if(!this.size())return false;
+    if(e.code==='ArrowUp'||e.code==='ArrowDown') {
+      this.focusedIndex=Math.max(0,Math.min(this.size()-1,(this.focusedIndex??-1)+(e.code==='ArrowUp'?-1:1)));
+      const y=this.slotTop(this.focusedIndex);if(y<this.top)this.amountScrolled-=this.top-y;else if(y+this.slotHeight>this.bottom)this.amountScrolled+=y+this.slotHeight-this.bottom;this.clamp();return true;
+    }
+    if(['Enter','NumpadEnter','Space'].includes(e.code)&&this.focusedIndex>=0){const x=this.slotLeft(),y=this.slotTop(this.focusedIndex);this.clicked(this.focusedIndex,false,x,y,0,0,e);return true;}
+    return false;
+  }
   drawSlot() {}
   drawHeader() {}
   headerClicked() {}
@@ -66,7 +75,7 @@ export class SlotList {
     for (let i = 0; i < this.size(); i++) {
       const k1 = y + i * this.slotHeight + this.headerPadding, l1 = this.slotHeight - 4;
       if (k1 > this.bottom || k1 + l1 < this.top) continue;
-      if (this.showSelectionBox && this.isSelected(i)) {
+      if (this.showSelectionBox && (this.isSelected(i)||this.focused&&this.focusedIndex===i)) {
         const i1 = this.left + (this.width / 2 - lw / 2), j1 = this.left + this.width / 2 + lw / 2;
         gui.rect(i1, k1 - 2, j1, k1 + l1 + 2, 0xff808080);
         gui.rect(i1 + 1, k1 - 1, j1 - 1, k1 + l1 + 1, 0xff000000);

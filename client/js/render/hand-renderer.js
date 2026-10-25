@@ -139,8 +139,9 @@ export class HandRenderer {
     let drawMain = true, drawOff = true;
     if (pl.usingItem) {
       const active = stacks[it.activeHand || 0];
-      if (active && active.id === 261) { drawMain = (it.activeHand || 0) === 0; drawOff = !drawMain; }
+      if (active && ['bow','crossbow'].includes(g.items.name(active.id))) { drawMain = (it.activeHand || 0) === 0; drawOff = !drawMain; }
     }
+    else if(stacks[0]&&g.items.name(stacks[0].id)==='crossbow'&&g.items.crossbowCharged(stacks[0]))drawOff=false;
     for (let hand = 0; hand < 2; hand++) {
       const h = this.hands[hand];
       const draw = hand === 0 ? drawMain : drawOff;
@@ -155,12 +156,12 @@ export class HandRenderer {
       const m = mat4.create();
       let key;
       if (!stack) key = hand === 0 && !pl.invisible ? 'arm' + side : null;
-      else if (stack.id === 358) key = hand === 0 && !stacks[1] ? 'map2:' + stack.damage : 'mapside' + side + ':' + stack.damage;
+      else if (g.items.name(stack.id) === 'filled_map') {const mapId=g.items.nbt(stack)?.map??0;key = hand === 0 && !stacks[1] ? 'map2:' + mapId : 'mapside' + side + ':' + mapId;}
       else key = 'item' + side + ':' + g.itemRenderer.iconKey(stack, true);
       if (key !== h.key) this._buildHand(h, key, stack, side);
       if (!stack) {
         if (key) this._armMatrix(m, equip, sw, side);
-      } else if (stack.id === 358) {
+      } else if (g.items.name(stack.id) === 'filled_map') {
         if (key.startsWith('map2')) this._mapMatrix(h, m, pitch, equip, sw);
         else this._mapSideMatrix(h, m, equip, sw, side);
       } else {
@@ -185,8 +186,8 @@ export class HandRenderer {
     h.parts = null;
     if (!key) return;
     if (!stack) { h.node.add(this._armFor(side)); return; }
-    if (stack.id === 358) {
-      const map = this._mapNodes(stack.damage);
+    if (this.game.items.name(stack.id) === 'filled_map') {
+      const map = this._mapNodes(this.game.items.nbt(stack)?.map??0);
       if (key.startsWith('map2')) {
         const right = new Node(); right.add(this._armFor(1));
         const left = new Node(); left.add(this._armFor(-1));
@@ -244,6 +245,13 @@ export class HandRenderer {
         mat4.translate(m, m, 0, 0, f6 * 0.04);
         mat4.scale(m, m, 1, 1, 1 + f6 * 0.2);
         R(side * 45, 0, -1, 0);
+      } else if (act === 'crossbow') {
+        this._side(m,side,equip);
+        mat4.translate(m,m,side*-.4785682,-.094387,.05731531);
+        R(-11.935,1,0,0);R(side*65.3,0,1,0);R(side*-9.785,0,0,1);
+        const ticks=it.useTicks+partial,charge=Math.min(1,ticks/g.items.crossbowChargeDuration(stack));
+        if(charge>.1)mat4.translate(m,m,0,sin((ticks-.1)*1.3)*(charge-.1)*.004,0);
+        mat4.translate(m,m,0,0,charge*.04);mat4.scale(m,m,1,1,1+charge*.2);R(side*45,0,-1,0);
       } else if (act === 'spear') {
         // ItemRenderer (cuc): ten ticks to charge the throw, then hold it back.
         this._side(m, side, equip);
@@ -268,6 +276,7 @@ export class HandRenderer {
     const b = sin(sqrt(sw) * Math.PI);
     R(side * b * -20, 0, 0, 1);
     R(b * -80, 1, 0, 0);
+    if(hand===0&&g.items.name(stack.id)==='crossbow'&&g.items.crossbowCharged(stack)&&sw<.001){mat4.translate(m,m,side*-.641864,0,0);R(side*10,0,1,0);}
     R(side * -45, 0, 1, 0);
   }
 

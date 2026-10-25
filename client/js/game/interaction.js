@@ -6,6 +6,7 @@ import { rayBox } from '../world/world.js';
 import { armorType, copy, stackable } from './container.js';
 import { COMMAND_BLOCKS, CommandBlockScreen, CommandMinecartScreen } from '../gui/screens/commandblock.js';
 import { StructureBlockScreen } from '../gui/screens/structure.js';
+import { JigsawScreen } from '../gui/screens/jigsaw.js';
 
 const INTERACTIVE = new Set(['barrel', 'blast_furnace', 'smoker', 'stonecutter', 'loom', 'cartography_table', 'grindstone', 'lectern', 'bell', 'chest', 'trapped_chest', 'ender_chest', 'crafting_table', 'furnace', 'lit_furnace', 'dispenser', 'dropper',
   'hopper', 'brewing_stand', 'enchanting_table', 'anvil', 'beacon', 'wooden_door', 'spruce_door', 'birch_door', 'jungle_door',
@@ -14,7 +15,7 @@ const INTERACTIVE = new Set(['barrel', 'blast_furnace', 'smoker', 'stonecutter',
   'unpowered_repeater', 'powered_repeater', 'unpowered_comparator', 'powered_comparator', 'cake', 'cauldron', 'flower_pot',
   'daylight_detector', 'daylight_detector_inverted', 'command_block', 'dragon_egg', 'standing_sign', 'wall_sign',
   // 1.9+: their onBlockActivated succeeds too, so the off hand must not click again
-  'repeating_command_block', 'chain_command_block', 'structure_block',
+  'repeating_command_block', 'chain_command_block', 'structure_block', 'jigsaw',
   ...['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'silver', 'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black'].map((c) => c + '_shulker_box')]);
 
 // Items whose onItemUse places/acts on the clicked block (returns true in vanilla)
@@ -145,7 +146,7 @@ export class Interaction {
       if (!useDown) this.stopUsingItem();
       const held = g.inventory.getHand(this.activeHand);
       const dur = g.items.useDuration(held);
-      if (held && dur > 0 && dur < 72000 && this.useTicks >= dur) {
+      if (held && ['eat','drink'].includes(g.items.useAction(held)) && dur > 0 && this.useTicks >= dur) {
         // Server finishes eating; stop locally
         this.player.usingItem = false;
         this.useTicks = 0;
@@ -243,10 +244,11 @@ export class Interaction {
     if (e.kind === 'item' || e.kind === 'xp' || e.kind === 'arrow') return; // canBeAttackedWithItem() is false
     const held = g.inventory.held();
     const f2 = this.cooledAttackStrength(0.5);
-    const f1 = g.items.enchantLevel(held, 16) * 1.25 * f2; // sharpness (EnumCreatureAttribute.UNDEFINED)
+    const sharpness = g.items.enchantLevel(held, 'sharpness');
+    const f1 = (sharpness > 0 ? sharpness * .5 + .5 : 0) * f2;
     this.resetCooldown();
     const strong = f2 > 0.9;
-    let i = g.items.enchantLevel(held, 19); // knockback
+    let i = g.items.enchantLevel(held, 'knockback');
     if (pl.sprinting && strong) i++;
     const crit = strong && pl.fallDistance > 0 && !pl.onGround && !pl.isOnLadder(g.world) && !pl.inWater && !g.effects.has(15) &&
       !pl.ridingEntity && (e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand') && !pl.sprinting;
@@ -284,16 +286,16 @@ export class Interaction {
     if(this._creativeSwordBlocksMining(pos,face)){this.resetBreaking();return false;}
     if (g.gameMode === 1) {
       g.tutorial.onHitBlock(g.world.getState(pos.x, pos.y, pos.z), 1);
-      g.send(C.blockDig(0, pos.x, pos.y, pos.z, face));
+      this._sendDig(0, pos, face);
       if (!this._extinguishFire(pos, face)) this.destroyBlockClient(pos);
       this.blockHitDelay = 5;
       return;
     }
     if (!this.isHitting || !this._isHittingPos(pos)) {
-      if (this.isHitting) g.send(C.blockDig(1, this.curBlock.x, this.curBlock.y, this.curBlock.z, face));
+      if (this.isHitting) this._sendDig(1, this.curBlock, face);
       const state = g.world.getState(pos.x, pos.y, pos.z);
       g.tutorial.onHitBlock(state, 0);
-      g.send(C.blockDig(0, pos.x, pos.y, pos.z, face));
+      this._sendDig(0, pos, face);
       const b = getBlock(state);
       const notAir = b && b.id !== 0;
       if (notAir && this.relativeHardness(b) >= 1) {
@@ -328,7 +330,7 @@ export class Interaction {
     const held = g.inventory.held();
     let f = f32(g.items.strVsBlock(held, b));
     if (f > 1) {
-      const eff = g.items.enchantLevel(held, 32);
+      const eff = g.items.enchantLevel(held, 'efficiency');
       if (eff > 0 && held) f = f32(f + (eff * eff + 1));
     }
     const haste = g.effects.get(3);
@@ -351,7 +353,7 @@ export class Interaction {
   // EnchantmentHelper.getAquaAffinityModifier: Aqua Affinity on any armour piece
   _aquaAffinity() {
     const g = this.game;
-    return g.inventory.armor.some((it) => it && g.items.enchantLevel(it, 6) > 0);
+    return g.inventory.armor.some((it) => it && g.items.enchantLevel(it, 'aqua_affinity') > 0);
   }
 
   // Minecraft.sendClickBlockToController (leftClickCounter is decremented once per tick before the clicks)
@@ -378,7 +380,7 @@ export class Interaction {
     if (g.gameMode === 1) {
       this.blockHitDelay = 5;
       g.tutorial.onHitBlock(g.world.getState(pos.x, pos.y, pos.z), 1);
-      g.send(C.blockDig(0, pos.x, pos.y, pos.z, face));
+      this._sendDig(0, pos, face);
       if (!this._extinguishFire(pos, face)) this.destroyBlockClient(pos);
       return true;
     }
@@ -394,7 +396,7 @@ export class Interaction {
       g.tutorial.onHitBlock(state, Math.max(0, Math.min(1, this.curDamage)));
       if (this.curDamage >= 1) {
         this.isHitting = false;
-        g.send(C.blockDig(2, pos.x, pos.y, pos.z, face));
+        this._sendDig(2, pos, face);
         this.destroyBlockClient(pos);
         this.curDamage = 0;
         this.prevDamage = 0;
@@ -411,7 +413,7 @@ export class Interaction {
     if (this.isHitting && this.curBlock) {
       const c = this.curBlock;
       this.game.tutorial.onHitBlock(this.game.world.getState(c.x, c.y, c.z), -1);
-      this.game.send(C.blockDig(1, this.curBlock.x, this.curBlock.y, this.curBlock.z, this.curFace || 0));
+      this._sendDig(1, this.curBlock, this.curFace || 0);
     }
     this.isHitting = false;
     this.curDamage = 0;
@@ -448,7 +450,25 @@ export class Interaction {
     return true;
   }
 
-  onBlockChange(pos, state) { /* reserved for prediction rollback */ }
+  _sendDig(status,pos,face) {
+    this.pendingDigs ||= new Map();
+    const p=this.player;
+    this.pendingDigs.set(`${pos.x},${pos.y},${pos.z}:${status}`,{x:p.x,y:p.y,z:p.z});
+    while(this.pendingDigs.size>50)this.pendingDigs.delete(this.pendingDigs.keys().next().value);
+    this.game.send(C.blockDig(status,pos.x,pos.y,pos.z,face));
+  }
+
+  acknowledgeDigging(p) {
+    const {x,y,z}=p.location,key=`${x},${y},${z}:${p.status}`,before=this.pendingDigs?.get(key);
+    this.pendingDigs?.delete(key);
+    const g=this.game;
+    if(g.world.getState(x,y,z)!==p.block && (!p.successful || p.status!==0 || !before)) {
+      g.world.setState(x,y,z,p.block);
+      if(before && g.world.getCollisions(this.player.bb(),this.player).length)this.player.setPosition(before.x,before.y,before.z);
+    }
+  }
+
+  onBlockChange(pos, state) { /* authoritative block changes arrive independently of digging acknowledgements */ }
 
   _extinguishFire(pos, face) {
     const g = this.game;
@@ -513,7 +533,7 @@ export class Interaction {
       if ((!this.player.sneaking || mainAndOffEmpty) && b && INTERACTIVE.has(b.name) && b.name !== 'iron_door' && b.name !== 'iron_trapdoor') activated = true;
       // BlockCommandBlock.onBlockActivated: only for players who can use command blocks, who get GuiCommandBlock
       // (TileEntityStructure.usedBy too: GuiEditStructure)
-      if (activated && (COMMAND_BLOCKS.has(b.name) || b.name === 'structure_block') && !g.canUseCommandBlock()) activated = false;
+      if (activated && (COMMAND_BLOCKS.has(b.name) || b.name === 'structure_block' || b.name==='jigsaw') && !g.canUseCommandBlock()) activated = false;
       // ItemBlock.canPlaceBlockOnSide: no packet at all when the block could not go there
       if (!activated && held && this._itemBlock(held) && g.items.name(held.id)!=='scaffolding' && !this._canPlaceBlockOnSide(t, held)) return false;
     }
@@ -522,6 +542,7 @@ export class Interaction {
     if (activated) {
       if (COMMAND_BLOCKS.has(b.name)) g.screens.open(new CommandBlockScreen(g, { x: t.x, y: t.y, z: t.z }));
       if (b.name === 'structure_block') g.screens.open(new StructureBlockScreen(g, { x: t.x, y: t.y, z: t.z }, g.structureBlocks.get(t.x + ',' + t.y + ',' + t.z)));
+      if (b.name === 'jigsaw') g.screens.open(new JigsawScreen(g,{x:t.x,y:t.y,z:t.z},g.jigsawBlocks.get(t.x+','+t.y+','+t.z)));
       if (b.isDoor || b.name === 'trapdoor' || b.isFenceGate) this.predictToggle(t, b);
       return true;
     }
@@ -576,7 +597,7 @@ export class Interaction {
     if (p.y < 0 || p.y > 255) return false;
     if (!this._replaceable(w.getState(p.x, p.y, p.z))) return false;
     // entities in the way of a block with a collision box (EntityLivingBase, boats, minecarts, TNT, falling blocks)
-    if (nb.boundingBox === 'block') {
+    if (nb.collisionFull) {
       const hit = (b) => b[3] > p.x && b[0] < p.x + 1 && b[4] > p.y && b[1] < p.y + 1 && b[5] > p.z && b[2] < p.z + 1;
       if (hit(this.player.bb())) return false;
       for (const e of g.entities.all()) {
@@ -598,7 +619,7 @@ export class Interaction {
        if (face === 0 && n !== 'lever' && !/button/.test(n)) return false;
       const d = FACE_DIR[face] || [0, 1, 0];
     const sup = getBlock(w.getState(p.x - d[0], p.y - d[1], p.z - d[2]));
-      if (!(sup && sup.opaque)) return false;
+      if (!(sup && (sup.opaque||face===1&&sup.isPane&&/^(torch|redstone_torch)$/.test(n)))) return false;
     }
     return true;
   }
@@ -623,6 +644,7 @@ export class Interaction {
       case 'wheat_seeds': case 'carrot': case 'potato':
         return t.face === 1 && b && b.name === 'farmland' && air(above(t.y + 1));
       case 'nether_wart': return t.face === 1 && b && b.name === 'soul_sand' && air(above(t.y + 1));
+      case 'sweet_berries':return t.face===1&&/^(grass_block|dirt|coarse_dirt|podzol)$/.test(b?.name||'')&&air(above(t.y+1));
       case 'oak_door': case 'iron_door': case 'spruce_door': case 'birch_door': case 'jungle_door': case 'acacia_door': case 'dark_oak_door':
         return t.face === 1 && air(above(t.y + 1)) && air(above(t.y + 2)) && !!(b && b.opaque);
       case 'white_bed': case 'orange_bed': case 'magenta_bed': case 'light_blue_bed': case 'yellow_bed': case 'lime_bed': case 'pink_bed': case 'gray_bed':
@@ -679,7 +701,7 @@ export class Interaction {
     const name = g.items.name(held.id);
     if (name === 'writable_book') {
       // ItemWritableBook opens the editor client-side
-      import('../gui/screens/book.js').then((m) => g.screens.open(new m.BookScreen(g, held, true)));
+      import('../gui/screens/book.js').then((m) => g.screens.open(new m.BookScreen(g, held, true, hand)));
     }
     g.send(C.useItem(hand)); // CPacketPlayerTryUseItem
     if (g.cooldownFraction(held.id, 0) > 0) return false; // CooldownTracker: still cooling down
@@ -688,10 +710,15 @@ export class Interaction {
       if (g.items.enchantLevel(held, 'riptide') > 0 && !this._wetForRiptide()) return false;
     }
     const action = g.items.useAction(held);
+    if (name === 'crossbow' && g.items.crossbowCharged(held)) return true; // Server fires and clears Charged NBT.
+    if (action === 'bow' || action === 'crossbow') {
+      const ammo = [g.inventory.offhand, ...g.inventory.main].some(s => s && (/^(arrow|spectral_arrow|tipped_arrow)$/.test(g.items.name(s.id)) || action === 'crossbow' && s === g.inventory.offhand && g.items.name(s.id) === 'firework_rocket'));
+      if (!this.player.creative && !ammo) return false;
+    }
     if (action !== 'none') {
       // ItemFood.onItemRightClick -> EntityPlayer.canEat(alwaysEdible): hungry (golden apples and chorus fruit always) and
       // not invulnerable, so nothing is eaten in creative or spectator
-      const canEat = (name === 'golden_apple' || name === 'enchanted_golden_apple' || name === 'golden_carrot' || g.food < 20) && !this.player.invulnerable;
+      const canEat = (g.items.canAlwaysEat(held) || g.food < 20) && !this.player.invulnerable;
       const food = action === 'eat' && !canEat;
       if (!food) {
         this.player.usingItem = true;

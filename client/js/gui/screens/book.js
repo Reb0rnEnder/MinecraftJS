@@ -3,9 +3,10 @@ import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
 import { Button } from '../widgets.js';
 import { C } from '../../net/packets.js';
-import { Writer } from '../../net/buffer.js';
 import { nbt, TAG } from '../../net/nbt.js';
 import { chatToLegacy } from '../chat.js';
+import {TextEditor,textLines} from '../text-editor.js';
+import {platform} from '../../platform/platform.js';
 
 const W = 192, H = 192;
 
@@ -24,11 +25,12 @@ class PageButton {
 }
 
 export class BookScreen extends Screen {
-  constructor(game, item, editable) {
+  constructor(game, item, editable, hand = 0) {
     super(game);
     this.background = 'none';
     this.item = item;
-    this.editable = editable === undefined ? item.id === 386 : editable;
+    this.hand = hand;
+    this.editable = editable === undefined ? game.items.name(item.id) === 'writable_book' : editable;
     const tag = game.items.nbt(item) || {};
     this.pages = (tag.pages && tag.pages.length ? tag.pages.slice() : ['']).map((p) => p);
     if (!this.editable) this.pages = this.pages.map((p) => { try { return chatToLegacy(p); } catch (e) { return p; } });
@@ -38,6 +40,8 @@ export class BookScreen extends Screen {
     this.modified = false;
     this.counter = 0;
     this.author = tag.author || '';
+    this.editor=new TextEditor(()=>this.pages[this.page],s=>{this.pages[this.page]=s;this.modified=true;},s=>s.length<1024&&textLines(s,this.gui.font,114).length*9<=128);
+    this.titleEditor=new TextEditor(()=>this.title,s=>{this.title=s;this.updateButtons();},s=>s.length<=16&&!s.includes('\n'));
   }
 
   init() {
@@ -62,11 +66,12 @@ export class BookScreen extends Screen {
 
   nextPage() {
     if (this.page < this.pages.length - 1) this.page++;
-    else if (this.editable && this.pages.length < 50) { this.pages.push(''); this.page++; this.modified = true; }
+    else if (this.editable && this.pages.length < 100) { this.pages.push(''); this.page++; this.modified = true; }
     this.updateButtons();
   }
 
   updateButtons() {
+    if(this.editedPage!==this.page){this.editor?.move(this.pages[this.page]?.length||0);this.editedPage=this.page;}
     this.nextBtn.visible = !this.signing && (this.page < this.pages.length - 1 || this.editable);
     this.prevBtn.visible = !this.signing && this.page > 0;
     if (this.editable) {
@@ -88,41 +93,48 @@ export class BookScreen extends Screen {
       tagObj.title = nbt.string(this.title.trim());
     }
     const root = { t: TAG.COMPOUND, name: '', v: tagObj };
-    const item = { id: sign ? 387 : 386, count: 1, damage: 0, nbt: root };
-    const w = new Writer().slot(item).build();
-      g.send(C.customPayload(sign ? 'minecraft:book_sign' : 'minecraft:book_edit', w));
-    const held = g.inventory.held();
-    if (held && held.id === 386) { held.nbt = root; held.nbtRaw = null; held._simple = null; if (sign) held.id = 387; }
+    // The edit_book stack is writable even when signing; the server creates the written book.
+    const item = { id:g.items.byName.get('writable_book').id,count:1,nbt:root };
+    g.send(C.editBook(item,sign,this.hand));
+    const held = g.inventory.getHand(this.hand);
+    if (held && g.items.name(held.id) === 'writable_book') { held.nbt = root; held.nbtRaw = null; held._simple = null; }
+    this.modified = false;
   }
 
   key(e) {
     if (e.code === 'Escape') { if (this.editable) this.sendBook(false); this.close(); return true; }
     if (!this.editable) return true;
     if (this.signing) {
-      if (e.code === 'Backspace') { this.title = this.title.slice(0, -1); this.updateButtons(); return true; }
       if (e.code === 'Enter' || e.code === 'NumpadEnter') { if (this.title.trim()) { this.sendBook(true); this.close(); } return true; }
-      return true;
+      return this.titleEditor.key(e)||super.key(e);
     }
-    const cur = this.pages[this.page] || '';
-    if (e.code === 'Backspace') { this.pages[this.page] = cur.slice(0, -1); this.modified = true; return true; }
     if (e.code === 'Enter' || e.code === 'NumpadEnter') { this._insert('\n'); return true; }
-    if (e.ctrl && e.code === 'KeyV') return true;
-    return true;
+    return this.editor.key(e,textLines(this.pages[this.page],this.gui.font,114))||super.key(e);
   }
 
   char(c) {
     if (!this.editable) return true;
-    if (this.signing) { if (this.title.length < 16 && c >= ' ') this.title += c; this.updateButtons(); return true; }
-    if (c >= ' ' && c !== '§') this._insert(c);
+    if (this.signing) {this.titleEditor.replace(c);return true;}
+    this._insert(c);
     return true;
   }
 
   _insert(s) {
-    const next = (this.pages[this.page] || '') + s;
-    // Fit within 116px x 128px (FontRenderer.splitStringWidth)
-    const lines = this.gui.font.wrap(next, 116);
-    if (lines.length * 9 <= 128 && next.length < 256) { this.pages[this.page] = next; this.modified = true; }
+    this.editor.replace(s);
   }
+
+  _cursorAt(mx,my){const lines=textLines(this.pages[this.page],this.gui.font,114),line=lines[Math.max(0,Math.min(lines.length-1,Math.floor((my-this.top-32)/9)))];let i=line.start;while(i<line.end&&this.gui.textWidth(this.pages[this.page].slice(line.start,i+1))<mx-this.left-36)i++;return i;}
+  mouseDown(mx,my,button,e){
+    if(super.mouseDown(mx,my,button))return true;
+    if(!this.editable||this.signing||button!==0||mx<this.left+36||mx>this.left+150||my<this.top+32||my>this.top+160)return false;
+    const now=platform().now(),index=this._cursorAt(mx,my);this.clickCount=now-(this.clickTime||0)<250?(this.clickCount||0)+1:1;this.clickTime=now;
+    this.editor.move(index,!!e?.shift);this.dragging=true;
+    if(this.clickCount===2){this.editor.move(this.editor.boundary(-1));this.editor.anchor=this.editor.cursor;this.editor.move(this.editor.boundary(1),true);}
+    if(this.clickCount>=3){this.editor.anchor=0;this.editor.cursor=this.pages[this.page].length;this.clickCount=0;}
+    return true;
+  }
+  mouseMove(mx,my){if(this.dragging)this.editor.move(this._cursorAt(mx,my),true);}
+  mouseUp(mx,my,button){this.dragging=false;super.mouseUp(mx,my,button);}
 
   render(gui, mx, my) {
     const x = this.left, y = this.top;
@@ -140,10 +152,12 @@ export class BookScreen extends Screen {
     } else {
       const ind = tr('book.pageIndicator', this.page + 1, this.pages.length);
       gui.text(ind, x - gui.textWidth(ind) + W - 44, y + 16, 0, false);
-      let text = this.pages[this.page] || '';
-      if (this.editable && Math.floor(this.counter / 6) % 2 === 0) text += '§0_';
-      const lines = gui.font.wrap(text, 116);
-      lines.slice(0, 14).forEach((l, i) => gui.text(l, x + 36, y + 16 + 16 + i * 9, 0, false));
+      const text=this.pages[this.page]||'',lines=textLines(text,gui.font,114),[a,b]=this.editor.selection();
+      lines.slice(0,14).forEach((l,i)=>{
+        const lx=x+36,ly=y+32+i*9;gui.text(l.text,lx,ly,0,false);
+        if(this.editable&&a<l.end&&b>l.start){gui.setBlend('invert');gui.rect(lx+gui.textWidth(text.slice(l.start,Math.max(a,l.start))),ly,lx+gui.textWidth(text.slice(l.start,Math.min(b,l.end))),ly+9,0xffffffff);gui.setBlend('alpha');}
+        if(this.editable&&this.editor.cursor>=l.start&&this.editor.cursor<=l.end&&Math.floor(this.counter/6)%2===0){const cx=lx+gui.textWidth(text.slice(l.start,this.editor.cursor));gui.rect(cx,ly-1,cx+1,ly+9,0xff000000);}
+      });
     }
     for (const b of this.buttons) b.render(gui, mx, my);
   }

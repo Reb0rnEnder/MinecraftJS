@@ -105,6 +105,7 @@ export class ItemRenderer {
     const g = this.game, it = g.interaction;
     const local = !holder || holder.id === g.entityId;
     const pv = { lefthanded: holder ? (holder.mainHand === 0 ? 1 : 0) : (g.settings?.mainHand === 'left' ? 1 : 0) };
+    pv.custom_model_data = Number(g.items.nbt(item)?.CustomModelData || 0);
     const max = g.items.maxDurability(item.id);
     const damage = g.items.damage(item);
     if (max > 0) { pv.damaged = g.items.isDamageable(item) && damage > 0 ? 1 : 0; pv.damage = Math.min(1, damage / max); }
@@ -114,6 +115,14 @@ export class ItemRenderer {
         pv.pulling = 0; pv.pull = 0;
         if (using) { pv.pulling = 1; pv.pull = local && it ? Math.min(1, it.useTicks / 20) : 0; }
         break;
+      case 'crossbow': {
+        const charged = g.items.crossbowCharged(item);
+        pv.charged = charged ? 1 : 0;
+        pv.pulling = using && !charged ? 1 : 0;
+        pv.pull = using && !charged ? (local ? it?.useTicks || 0 : holder.useTicks || 0) / g.items.crossbowChargeDuration(item) : 0;
+        pv.firework = charged && g.items.nbt(item)?.ChargedProjectiles?.some(p => p.id === 'minecraft:firework_rocket') ? 1 : 0;
+        break;
+      }
       case 'shield': pv.blocking = using ? 1 : 0; break;
       case 'fishing_rod': pv.cast = local && g.entities?.fishingCast && g.inventory.held() === item ? 1 : 0; break;
       case 'elytra': pv.broken = damage >= max - 1 ? 1 : 0; break;
