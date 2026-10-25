@@ -259,6 +259,19 @@ export class Interaction {
     if (f1 > 0) g.particles.magicCrit(e);
   }
 
+  _holdingCreativeSword() {
+    const g=this.game,held=g.inventory.held();
+    return !!(g.gameMode === 1 && held && [267, 268, 272, 276, 283].includes(held.id));
+  }
+
+  // Do not ask the server to mine with a Creative sword. Adjacent fire still
+  // uses START_DESTROY_BLOCK so extinguishing remains synchronized.
+  _creativeSwordBlocksMining(pos,face) {
+    if(!this._holdingCreativeSword())return false;
+    const d=FACE_DIR[face]||[0,1,0],st=this.game.world.getState(pos.x+d[0],pos.y+d[1],pos.z+d[2]);
+    return blocks[st >> 4]?.name!=='fire';
+  }
+
   // PlayerControllerMP.clickBlock
   clickBlock(t, face) {
     const g = this.game;
@@ -267,6 +280,7 @@ export class Interaction {
       // Adventure: only with tools able to "destroy" (CanDestroy not supported); spectator nothing
       if (g.gameMode === 3) return;
     }
+    if(this._creativeSwordBlocksMining(pos,face)){this.resetBreaking();return false;}
     if (g.gameMode === 1) {
       g.tutorial.onHitBlock(g.world.getState(pos.x, pos.y, pos.z), 1);
       g.send(C.blockDig(0, pos.x, pos.y, pos.z, face));
@@ -365,6 +379,7 @@ export class Interaction {
     const g = this.game;
     const pos = { x: t.x, y: t.y, z: t.z };
     if (this.blockHitDelay > 0) { this.blockHitDelay--; return true; }
+    if(this._creativeSwordBlocksMining(pos,face)){this.resetBreaking();return false;}
     if (g.gameMode === 1) {
       this.blockHitDelay = 5;
       g.tutorial.onHitBlock(g.world.getState(pos.x, pos.y, pos.z), 1);
@@ -412,7 +427,7 @@ export class Interaction {
   destroyBlockClient(pos) {
     const g = this.game;
     const held = g.inventory.held();
-    if (g.gameMode === 1 && held && [267, 268, 272, 276, 283].includes(held.id)) return false;
+    if (this._holdingCreativeSword()) return false;
     const state = g.world.getState(pos.x, pos.y, pos.z);
     const b = blocks[state >> 4];
     if (!b || b.id === 0) return false;
