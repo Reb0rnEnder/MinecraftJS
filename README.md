@@ -122,6 +122,8 @@ types:
 | Java Relay | an [Eaglercraft 26.2 relay](https://radicle.network/nodes/radicle.jarg.io/rad%3Az3rCaaQD1cNmPDTjyinYWmPpcMgNX) (`wss://relay.eaglercraft.net`) | the client |
 | Wisp | a [Wisp](https://github.com/MercuryWorkshop/wisp-protocol) server (v1 protocol, which v2 servers also speak) | the client |
 
+Wisp v1 is supported, including `wisp-python`. Select the **Wisp** proxy type and enter its WebSocket endpoint (for example, `ws://localhost:4000/`); endpoint paths are normalized to end in `/`. The client waits for the server’s initial buffer allowance before sending data. For local or LAN Minecraft targets, start wisp-python with `--allow-loopback` or `--allow-private` as appropriate.
+
 Java relays and Wisp servers only carry the TCP stream; the client does the handshake, login, compression and
 encryption itself. Public relays usually refuse local or private addresses. Microsoft accounts still need a MinecraftJS
 proxy somewhere in the list: it signs accounts in, joins online-mode sessions (Mojang's session server blocks

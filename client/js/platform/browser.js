@@ -11,6 +11,22 @@ class Emitter {
   emit(ev, a) { const h = this.handlers[ev]; if (h) for (const fn of h) fn(a); }
 }
 
+// Server-first protocols (Wisp) can send their greeting in the same network turn as open.
+// Keep those events until the caller of openSocket has installed its listeners.
+class SocketEmitter extends Emitter {
+  constructor() { super(); this.pending = {}; }
+  on(ev, fn) {
+    super.on(ev, fn);
+    const pending = this.pending[ev];
+    delete this.pending[ev];
+    if (pending) for (const value of pending) fn(value);
+  }
+  emit(ev, value) {
+    if (this.handlers[ev]?.length) super.emit(ev, value);
+    else (this.pending[ev] ||= []).push(value);
+  }
+}
+
 // ---------------------------------------------------------------- IndexedDB file store
 
 class IdbFiles {
@@ -310,7 +326,7 @@ export class BrowserPlatform extends Emitter {
       let ws;
       try { ws = new WebSocket(url); } catch (e) { reject(new Error('Bad address ' + url)); return; }
       ws.binaryType = 'arraybuffer';
-      const sock = new Emitter();
+      const sock = new SocketEmitter();
       sock.sendText = (s) => { if (ws.readyState === 1) ws.send(s); };
       sock.sendBinary = (b) => { if (ws.readyState === 1) ws.send(b); };
       sock.close = () => ws.close();

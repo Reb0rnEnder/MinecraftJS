@@ -16,11 +16,20 @@ import { inflate, deflate } from '../lib/pako.esm.mjs';
 import { decodeUtf8, encodeUtf8 } from '../util/utf8.js';
 import { Cfb8, serverHash, rsaEncrypt } from '../util/mccrypto.js';
 import { proxyRoute } from './proxies.js';
+import { wispUrl, wispPacket } from './wisp.js';
 
 class Emitter {
-  constructor() { this.handlers = {}; }
-  on(ev, fn) { (this.handlers[ev] ||= []).push(fn); }
-  emit(ev, a) { for (const fn of this.handlers[ev] || []) fn(a); }
+  constructor(buffered = false) { this.handlers = {}; this.pending = buffered ? {} : null; }
+  on(ev, fn) {
+    (this.handlers[ev] ||= []).push(fn);
+    const pending = this.pending?.[ev];
+    if (pending) { delete this.pending[ev]; for (const value of pending) fn(value); }
+  }
+  emit(ev, a) {
+    const handlers = this.handlers[ev] || [];
+    if (!handlers.length && this.pending) (this.pending[ev] ||= []).push(a);
+    else for (const fn of handlers) fn(a);
+  }
 }
 
 const randomBytes = (n) => { const b = new Uint8Array(n); crypto.getRandomValues(b); return b; };
@@ -53,8 +62,8 @@ async function openRelay(entry, host, port) {
 async function openWisp(entry, host, port) {
   if (port === 25565 && !isIp(host) && host !== 'localhost') ({ host, port } = await resolveSrv(host, port));
   let sock;
-  try { sock = await platform().openSocket(entry.url); } catch (e) { throw new Error('Could not reach the Wisp server ' + entry.url); }
-  const s = new Emitter();
+  try { sock = await platform().openSocket(wispUrl(entry.url)); } catch (e) { throw new Error('Could not reach the Wisp server ' + entry.url); }
+  const s = new Emitter(true);
   const ID = 1;
   let credit = -1; // DATA frames the server will take (-1: no CONTINUE yet)
   const queue = [];
@@ -66,37 +75,41 @@ async function openWisp(entry, host, port) {
     return f;
   };
   const flush = () => {
-    while (queue.length && credit > 0) { sock.sendBinary(frame(0x02, ID, queue.shift())); credit--; }
+    while (!closed && queue.length && credit > 0) { sock.sendBinary(frame(0x02, ID, queue.shift())); credit--; }
   };
   const hostBytes = encodeUtf8(host);
   const connect = new Uint8Array(3 + hostBytes.length);
   connect[0] = 0x01; connect[1] = port & 255; connect[2] = port >>> 8;
   connect.set(hostBytes, 3);
   let opened = false;
-  const open = () => { if (!opened) { opened = true; sock.sendBinary(frame(0x01, ID, connect)); } };
+  const open = () => { if (!closed && !opened) { opened = true; sock.sendBinary(frame(0x01, ID, connect)); } };
+  const timer = setTimeout(() => {
+    if (!opened && !closed) { closed = true; s.emit('close', 'Wisp: no initial CONTINUE received'); sock.close(); }
+  }, 6000);
   sock.on('binary', (b) => {
-    if (b.length < 5) return;
-    const type = b[0], id = b[1] | (b[2] << 8) | (b[3] << 16) | (b[4] << 24), p = b.subarray(5);
-    if (type === 0x05) {
+    if (closed) return;
+    const packet = wispPacket(b);
+    if (!packet) return;
+    const { type, id, payload: p } = packet;
+    if (type === 0x05 && id === 0 && !opened) {
       // v2 INFO: answer with v2.0 and no extensions, then the server continues as for v1 clients
       sock.sendBinary(frame(0x05, 0, new Uint8Array([2, 0])));
-    } else if (type === 0x03) {
-      credit = p[0] | (p[1] << 8) | (p[2] << 16) | (p[3] << 24);
+    } else if (type === 0x03 && ((!opened && id === 0) || (opened && id === ID))) {
+      clearTimeout(timer);
+      credit = packet.credit;
       open();
       flush();
     } else if (type === 0x02 && id === ID) s.emit('data', p);
     else if (type === 0x04 && (id === ID || id === 0)) {
-      closed = true;
-      const reason = { 0x41: 'invalid host', 0x42: 'could not connect', 0x43: 'connection timed out', 0x44: 'connection refused', 0x47: 'blocked by the Wisp server', 0x48: 'connection throttled' }[p[0]];
+      closed = true; clearTimeout(timer); queue.length = 0;
+      const reason = { 0x03: 'network error', 0x41: 'invalid connection information', 0x42: 'could not connect', 0x43: 'connection timed out', 0x44: 'connection refused', 0x47: 'transfer timed out', 0x48: 'blocked by the Wisp server', 0x49: 'connection throttled' }[p[0]];
       s.emit('close', reason ? 'Wisp: ' + reason : null);
       sock.close();
     }
   });
-  sock.on('close', () => { if (!closed) { closed = true; s.emit('close', null); } });
-  // servers that skip the initial CONTINUE still get the CONNECT
-  setTimeout(() => { if (!opened) { if (credit < 0) credit = 128; open(); flush(); } }, 1500);
-  s.write = (b) => { queue.push(b); if (opened) flush(); };
-  s.close = () => { if (!closed) { sock.sendBinary(frame(0x04, ID, new Uint8Array([0x02]))); sock.close(); } };
+  sock.on('close', () => { clearTimeout(timer); queue.length = 0; if (!closed) { closed = true; s.emit('close', null); } });
+  s.write = (b) => { if (closed) return; queue.push(b); if (opened) flush(); };
+  s.close = () => { if (!closed) { closed = true; clearTimeout(timer); queue.length = 0; if (opened) sock.sendBinary(frame(0x04, ID, new Uint8Array([0x02]))); sock.close(); } };
   return s;
 }
 
