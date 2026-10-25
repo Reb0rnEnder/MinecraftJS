@@ -80,8 +80,8 @@ export function showCrashScreen(report) {
   background:#2a2017 repeating-conic-gradient(#33281c 0 25%,#2a2017 0 50%) 0 0/32px 32px;color:#e0e0e0;font:14px/1.4 monospace;overflow:auto}
 #crash h1{margin:8px 0 0;font:bold 28px monospace;color:#fff;text-shadow:3px 3px 0 #3f3f3f;text-align:center}
 #crash .sub{color:#a0a0a0;text-align:center;max-width:860px}
-#crash pre{margin:0;width:min(1000px,100%);flex:1 1 auto;min-height:200px;overflow:auto;background:rgba(0,0,0,.55);border:2px solid #000;
-  box-shadow:inset 0 0 0 2px #555;padding:12px;white-space:pre-wrap;word-break:break-word;color:#ddd;font-size:12px}
+#crash textarea{margin:0;width:min(1000px,100%);flex:1 1 auto;min-height:200px;overflow:auto;background:rgba(0,0,0,.55);border:2px solid #000;
+  box-shadow:inset 0 0 0 2px #555;padding:12px;white-space:pre-wrap;word-break:break-word;color:#ddd;font:12px/1.4 monospace;box-sizing:border-box;resize:none;user-select:text;-webkit-user-select:text;cursor:text}
 #crash .buttons{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
 #crash button{min-width:160px;padding:8px 16px;font:15px monospace;color:#fff;text-shadow:2px 2px 0 #3f3f3f;cursor:pointer;
   background:#6f6f6f linear-gradient(#8a8a8a,#5f5f5f);border:2px solid #000;box-shadow:inset 0 2px 0 #aaa,inset 0 -2px 0 #444}
@@ -94,14 +94,27 @@ export function showCrashScreen(report) {
   const h1 = document.createElement('h1'); h1.textContent = 'MinecraftJS has crashed!';
   const sub = document.createElement('div'); sub.className = 'sub';
   sub.textContent = 'Something went wrong and the game had to stop. The crash report below explains what happened; please include it when reporting the problem.';
-  const pre = document.createElement('pre'); pre.textContent = report;
+  // A native read-only text control supports selection, Ctrl/Cmd+A and copying
+  // independently of the game's canvas and its user-select:none styling.
+  const text = document.createElement('textarea'); text.value = report; text.readOnly = true;
+  text.setAttribute('aria-label', 'Crash report'); text.spellcheck = false;
+  // Keep game-wide input listeners from cancelling native scrolling, text
+  // selection, keyboard shortcuts, or the report's context menu after a crash.
+  for (const type of ['mousedown', 'mouseup', 'mousemove', 'wheel', 'contextmenu', 'keydown', 'keyup', 'paste']) {
+    root.addEventListener(type, (event) => event.stopPropagation());
+  }
   const buttons = document.createElement('div'); buttons.className = 'buttons';
   const button = (label, fn) => { const b = document.createElement('button'); b.textContent = label; b.onclick = fn; buttons.appendChild(b); return b; };
   const copy = button('Copy crash report', async () => {
-    try { await navigator.clipboard.writeText(report); copy.textContent = 'Copied!'; } catch (e) {
-      const r = document.createRange(); r.selectNodeContents(pre); const s = getSelection(); s.removeAllRanges(); s.addRange(r);
-      copy.textContent = 'Press Ctrl+C to copy';
+    if (navigator.clipboard?.writeText) {
+      try { await navigator.clipboard.writeText(report); copy.textContent = 'Copied!'; return; } catch { /* fall back below */ }
     }
+    // Clipboard API is unavailable on ordinary LAN HTTP pages. execCommand
+    // still supports user-initiated copying there; keep the selection if denied.
+    text.focus(); text.select();
+    let copied = false;
+    try { copied = document.execCommand('copy'); } catch { /* manual copy remains available */ }
+    copy.textContent = copied ? 'Copied!' : (/Mac|iPhone|iPad/.test(navigator.platform) ? 'Press Cmd+C to copy' : 'Press Ctrl+C to copy');
   });
   button('Save crash report', () => {
     const a = document.createElement('a');
@@ -111,7 +124,7 @@ export function showCrashScreen(report) {
     setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   });
   button('Reload game', () => location.reload());
-  root.append(h1, sub, pre, buttons);
+  root.append(h1, sub, text, buttons);
   if (document.pointerLockElement) document.exitPointerLock();
   const loading = document.getElementById('loading');
   if (loading) loading.style.display = 'none';
