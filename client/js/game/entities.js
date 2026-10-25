@@ -1,3 +1,4 @@
+import { tickFallingBlock } from './falling-block.js';
 import { tickEntityEffects, tickDragonDeath, isDragon } from '../render/entity-effects.js';
 // Client-side entity tracking (positions, interpolation, metadata, animation state).
 import { simplify } from '../net/nbt.js';
@@ -805,6 +806,8 @@ export class EntityManager {
         e.yaw += wrap(e.newYaw - e.yaw) / e.inc;
         e.pitch += (e.newPitch - e.pitch) / e.inc;
         e.inc--;
+      } else if(e.kind==='falling'){
+        tickFallingBlock(e,g.world);
       } else if ((e.kind === 'item' || e.kind === 'xp' || e.kind === 'arrow' || e.kind === 'projectile' || e.kind === 'falling' || e.kind === 'tnt') && !(e.kind === 'projectile' && e.type === 76)) {
         // Client-side motion between server updates
         if (e.kind !== 'arrow' || !e.inGround) {

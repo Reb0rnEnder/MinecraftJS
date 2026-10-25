@@ -17,7 +17,7 @@ import { JavaRandom } from '../util/jrandom.js';
 import { decodePng } from '../util/png.js';
 import { decodeBase64 } from '../util/base64.js';
 import { platform } from '../platform/platform.js';
-import { fetchSkin, fetchSkinProfile } from '../net/proxies.js';
+import { fetchSkin, fetchSkinProfile, uuidSkinProxyAvailable } from '../net/proxies.js';
 import { EntityFire } from './entity-fire.js';
 import { decodeUtf8 } from '../util/utf8.js';
 
@@ -161,7 +161,10 @@ export class EntityRenderer {
     s = fresh;
     this.skins.set(e.uuid, s);
     if (value) this._loadTextures(s, e.uuid, value);
-    else if (e.uuid && e.uuid === this.game.playerUuid) this._sessionTextures(s, e.uuid);
+    else {
+      if(e.uuid&&uuidSkinProxyAvailable())this._loadSkin(s,e.uuid,null);
+      if(e.uuid&&e.uuid===this.game.playerUuid)this._sessionTextures(s,e.uuid);
+    }
     return s;
   }
 
@@ -175,13 +178,8 @@ export class EntityRenderer {
     }).catch(() => {});
   }
 
-  _loadTextures(s, uuid, value) {
-    try {
-      const tj = JSON.parse(decodeUtf8(decodeBase64(value)));
-      const skin = tj.textures && tj.textures.SKIN;
-      if (skin && skin.url) {
-        s.slim = !!(skin.metadata && skin.metadata.model === 'slim');
-        fetchSkin(skin.url).then((bytes) => {
+  _loadSkin(s, uuid, url) {
+    fetchSkin(url, uuid).then((bytes) => {
           if (this.skins.get(uuid) !== s) return;
           // ImageBufferDownload.parseUserSkin: 64x64 layout, opaque base layer
           const img = parseUserSkin(decodePng(bytes));
@@ -190,12 +188,22 @@ export class EntityRenderer {
           s.texture = this.game.assets.makeTexture('skin:' + uuid, img.width, img.height, img.data);
           this._rebuild(uuid);
         }).catch(() => {});
+  }
+
+  _loadTextures(s, uuid, value) {
+    try {
+      const tj = JSON.parse(decodeUtf8(decodeBase64(value)));
+      const skin = tj.textures && tj.textures.SKIN;
+      if(!skin?.url&&uuidSkinProxyAvailable())this._loadSkin(s,uuid,null);
+      if (skin && skin.url) {
+        s.slim = !!(skin.metadata && skin.metadata.model === 'slim');
+        this._loadSkin(s, uuid, skin.url);
       }
       // Mojang capes (LayerCape, and LayerElytra without an elytra texture) and elytra textures, used as downloaded
       for (const [type, key] of [['CAPE', 'cape'], ['ELYTRA', 'elytra']]) {
         const t = tj.textures && tj.textures[type];
         if (!t || !t.url) continue;
-        fetchSkin(t.url).then((bytes) => {
+        fetchSkin(t.url, uuid, key).then((bytes) => {
           if (this.skins.get(uuid) !== s) return;
           const img = decodePng(bytes);
           s[key] = this.game.assets.makeTexture(key + ':' + uuid, img.width, img.height, img.data);
@@ -891,7 +899,7 @@ export class EntityRenderer {
           case 'item': this._renderItem(e, v, p, partial); break;
           case 'xp': this._renderXp(e, v, partial); break;
           case 'arrow': this._renderArrow(e, v, partial); break;
-          case 'falling': if (v.inner) v.inner.position.set(0, 0.5, 0); break;
+          case 'falling': if (v.inner) { v.inner.position.set(0, 0.5, 0);v.inner.visible=g.world.getState(Math.floor(e.x),Math.floor(e.y),Math.floor(e.z))!==e.blockState; } break;
           case 'tnt': this._renderTnt(e, v, partial); break;
           case 'boat': case 'minecart': this._renderVehicle(e, v, p, partial); break;
           case 'painting': this._renderPainting(e, v); break;

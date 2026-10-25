@@ -1,3 +1,4 @@
+import { chatHoverTooltip } from '../chat-hover.js';
 // GuiChat: chat input with history, tab completion and clickable messages.
 import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
@@ -9,6 +10,7 @@ export class ChatScreen extends Screen {
   constructor(game, initial) {
     super(game);
     this.initial = initial;
+    this.isChatScreen = true;
     this.background = 'none';
     this.historyIndex = -1;
     this.tabMatches = null;
@@ -27,7 +29,8 @@ export class ChatScreen extends Screen {
     gui.rect(2, this.height - 14, this.width - 2, this.height - 2, 0x80000000);
     this.input.render(gui);
     const hover = this.game.hud.chatComponentAt(mx, my);
-    if (hover && hover.hoverText) gui.tooltip(hover.hoverText.split('\n'), mx, my);
+    const tooltip=chatHoverTooltip(this.game,hover);
+    if(tooltip)gui.tooltip(hover?.hover?.action==='show_text'&&gui.font.wrap?tooltip.flatMap(line=>gui.font.wrap(line,Math.max(this.width/2,200))):tooltip,mx,my);
   }
 
   key(e) {

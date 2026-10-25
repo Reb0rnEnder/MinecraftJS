@@ -337,8 +337,7 @@ export class Assets {
 
   // String.format-like: %s, %d, %1$s positional arguments and %% escapes
   translate(key, args = []) {
-    let s = this.lang[key];
-    if (s === undefined) return key;
+    let s = this.lang[key] ?? key;
     let i = 0;
     s = s.replace(/%(%|(\d+\$)?[sd])/g, (m, spec, pos) => {
       if (spec === '%') return '%';

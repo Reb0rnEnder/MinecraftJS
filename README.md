@@ -133,11 +133,14 @@ Open **Proxy Servers → Skin Proxy** to choose a separate HTTP proxy for skin,
 cape and public profile downloads. You can also set its default in `config.json`:
 
 ```json
-{ "skinProxy": "https://proxy.example/?url=%u" }
+{ "skinProxy": "https://proxy.example/?url=%R" }
 ```
 
-`%u` inserts the percent-encoded URL; `%U` inserts the raw URL for path-style CORS
-proxies. Leave the field blank to use the automatic MinecraftJS proxy route.
+`%u` inserts the player UUID without hyphens; `%r` inserts the full raw URL;
+`%R` inserts the full percent-encoded URL. `%U` remains an alias for `%r`.
+A UUID image service can use `https://skins.example/skin/%u` even when the server
+sends no texture property. UUID-only templates apply to skins; cape/profile
+requests keep the automatic route so PNG endpoints never receive JSON requests. Leave the field blank to use the automatic MinecraftJS proxy route.
 The service should return the original PNG or profile JSON with CORS headers.
 This works independently of the game-server relay; sign-in/session authentication
 continues to use its existing routes. Saving reloads skins immediately.

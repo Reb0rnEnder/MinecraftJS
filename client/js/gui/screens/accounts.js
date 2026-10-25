@@ -13,13 +13,13 @@ const ROW_H = 36;
 const faces = new Map();
 export function accountFace(game, acc) {
   const fallback = acc && acc.slim ? 'entity/alex.png' : 'entity/steve.png';
-  if (!acc || !acc.skinUrl) return fallback;
-  const key = acc.skinUrl + '@' + game.assets.version;
+  if (!acc || !acc.skinUrl && !acc.uuid) return fallback;
+  const key = acc.skinUrl + '@' + acc.uuid + '@' + (game.settings?.skinProxy||'') + '@' + game.assets.version;
   const cur = faces.get(key);
   if (cur) return cur.tex || fallback;
   const entry = { tex: null };
   faces.set(key, entry);
-  fetchSkin(acc.skinUrl).then((bytes) => {
+  fetchSkin(acc.skinUrl, acc.uuid).then((bytes) => {
     if (!bytes) return;
     const img = decodePng(bytes);
     entry.tex = game.assets.makeTexture('accountskin:' + acc.skinUrl, img.width, img.height, img.data);
