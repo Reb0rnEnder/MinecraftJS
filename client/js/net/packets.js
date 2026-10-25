@@ -452,6 +452,8 @@ export const C = {
   spectate: (uuid) => pkt(0x28).uuid(uuid).build(),
   // cursor position on the face, 0..1
   blockPlace: (x, y, z, face, hand, cx, cy, cz) => pkt(0x29).position(x, y, z).varint(face).varint(hand).f32(cx).f32(cy).f32(cz).build(),
+  nameItem: name => pkt(0x1c).string(name).build(),
+  setBeaconEffects: (primary,secondary) => pkt(0x20).varint(primary).varint(secondary).build(),
   useItem: (hand = 0) => pkt(0x2a).varint(hand).build(),
 };
 

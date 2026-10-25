@@ -11,3 +11,9 @@ These fixes were found during the 1.14.4 audit and adapted to protocol 404:
 Validation: 223 tests pass, one optional external-endpoint test is skipped. This includes packet round trips, existing entity/item/GUI regressions and the crash-screen browser test using a separately installed Playwright. No 1.14 content, new menus, crawling, crossbows, particle format or registry IDs were backported.
 
 The Sharpness formula correction also applies to 1.12.2. Minecraft 1.8.9 retains its native 1.25-per-level formula.
+
+Follow-up: anvil rename and beacon effect selection now use protocol-404
+`name_item` (0x1c) and `set_beacon_effect` (0x20), with native string/VarInt
+fields. Their obsolete plugin payloads were also found during the 1.14.4 cleanup.
+The older 1.12.2/1.8.9 targets still require their native plugin channels.
+Validation after this follow-up: 224 checks pass, one optional endpoint skipped.

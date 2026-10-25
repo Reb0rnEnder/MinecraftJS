@@ -628,8 +628,7 @@ class AnvilScreen extends SimpleScreen {
     this.nameField = new TextField(this.guiLeft + 62, this.guiTop + 24, 103, 12, { maxLength: 30, background: false, focused: false });
     this.nameField.textColor = 0xffffff;
     this.nameField.onChange = (t) => {
-      const w = new Writer().string(t).build();
-      this.game.send(C.customPayload('minecraft:item_name', w));
+      this.game.send(C.nameItem(t));
     };
     this.fields.push(this.nameField);
     this._lastFirst = null;
@@ -748,8 +747,7 @@ class BeaconScreen extends ContainerScreen {
       this.game.sound.playUi('ui.button.click', 1);
       if (b.cancel) { this.close(); return true; }
       if (b.confirm) {
-        const w = new Writer().i32(this.field(1)).i32(this.field(2)).build();
-      this.game.send(C.customPayload('minecraft:beacon', w));
+        this.game.send(C.setBeaconEffects(this.field(1),this.field(2)));
         this.close();
         return true;
       }
