@@ -112,6 +112,8 @@ export function initBlocks(blocksJson, shapesJson) {
   }
   for (const b of Object.values(blocksByName)) if (b.name.endsWith('_leaves') || b.name === 'cobweb') b.filterLight = 1;
   for (const n of ['water', 'bubble_column', 'ice']) if (blocksByName[n]) blocksByName[n].filterLight = 3;
+  // Turtle eggs are collision shapes, not light blockers (BlockTurtleEgg in the pinned jar).
+  if(blocksByName.turtle_egg)blocksByName.turtle_egg.filterLight=0;
   // Slabs, stairs and farmland block light completely in 1.8 but render with their neighbours' brightness
   for (const b of Object.values(blocksByName)) {
     if (b.name.endsWith('_slab') || b.isStairs || b.name === 'farmland') { b.filterLight = 15; b.useNeighborBrightness = true; }

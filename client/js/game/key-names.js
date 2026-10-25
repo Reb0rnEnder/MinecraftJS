@@ -17,6 +17,9 @@ export function keyName(code) {
     const n=Number(code.slice(5)),name=['left','middle','right'][n]||String(n+1);
     return n < 3 ? tr('key.mouse.'+name) : tr('key.mouse', n+1);
   }
-  const name=NAMES[code] || (/^Key[A-Z]$/.test(code)?code.slice(3).toLowerCase():/^Digit[0-9]$/.test(code)?code.slice(5):/^Numpad[0-9]$/.test(code)?'keypad.'+code.slice(6):/^F\d+$/.test(code)?code.toLowerCase():null);
+  // GLFW supplies printable key names directly; the language file has no a-z/0-9 entries.
+  if(/^Key[A-Z]$/.test(code))return code.slice(3).toLowerCase();
+  if(/^Digit[0-9]$/.test(code))return code.slice(5);
+  const name=NAMES[code] || (/^Numpad[0-9]$/.test(code)?'keypad.'+code.slice(6):/^F\d+$/.test(code)?code.toLowerCase():null);
   return name?tr('key.keyboard.'+name):code;
 }

@@ -1,3 +1,4 @@
+import { Assets } from '../client/js/assets.js';
 import { ProxyList as GameProxyList, validSkinProxyTemplate, skinProxyUrl, fetchSkin, fetchSkinProfile } from '../client/js/net/proxies.js';
 import { SkinProxyScreen } from '../client/js/gui/screens/proxies.js';
 import { platform } from '../client/js/platform/platform.js';
@@ -552,4 +553,46 @@ test(version + ': saving the skin proxy reloads current skins, cancels leave set
     renderer._loadTextures(record,uuid,property);renderer.reloadSkins();assert.equal(renderer.skins.size,0);assert.equal(g.handRenderer.skinDirty,true);
     complete(new Uint8Array(jar.read('assets/minecraft/textures/entity/steve.png')));await Promise.resolve();await Promise.resolve();assert.equal(uploaded,0);
   } finally {setPlatform(original);new GameProxyList({skinProxy:'',proxies:[],proxy:-1,save(){}});}
+});
+
+if(native)test('1.13.2: turtle eggs preserve the sand surface lighting for every egg/hatch state',()=>{
+ const w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);c.biomes.fill(1);
+ for(let x=0;x<16;x++)for(let z=0;z<16;z++){
+  c.setState(x,64,z,findState('sand'));
+  for(let y=64;y<70;y++)c.setSkyLight(x,y,z,15);
+ }
+ w._computeHeights(c);
+ const mesh=new Mesher(null,assets.modelStore),packed=n=>Math.round((n+8)*2048);
+ const surface=()=>{
+  const bytes=mesh.buildSection(new SliceWorld(buildSlice(w,0,4,0)),0,4,0).solid,view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength),out=[];
+  for(let i=0;i<bytes.length;i+=80){
+   const corners=Array.from({length:4},(_,v)=>{const at=i+v*20;return {x:view.getUint16(at,true),y:view.getUint16(at+2,true),z:view.getUint16(at+4,true),shade:[...bytes.slice(at+12,at+15),...bytes.slice(at+16,at+18)]};});
+   if(corners.every(p=>p.y===packed(1)&&[packed(3),packed(4)].includes(p.x)&&[packed(3),packed(4)].includes(p.z)))out.push(...corners.sort((a,b)=>a.x-b.x||a.z-b.z).map(p=>p.shade));
+  }
+  assert.equal(out.length,4,'the complete support-block top remains present');return out;
+ };
+ for(const smooth of [0,2]){
+  mesh.options.smooth=smooth;w.setState(3,65,3,0);const expected=surface();
+  for(let eggs=1;eggs<=4;eggs++)for(let hatch=0;hatch<3;hatch++){
+   const st=findState('turtle_egg',{eggs,hatch});w.setState(3,65,3,st);
+   assert.equal(w.opacity(st),0);assert.equal(getBlock(st).aoLight,1);assert.equal(w.getSkyLight(3,65,3),15);
+   assert.deepEqual(surface(),expected,`smooth=${smooth},eggs=${eggs},hatch=${hatch}`);
+  }
+ }
+});
+
+if(native)test('1.13.2: controls use printable key names and video GUI scale uses native numeric labels',()=>{
+ const lang=JSON.parse(jar.read('assets/minecraft/lang/en_us.json'));
+ setTranslator((key,args)=>Assets.prototype.translate.call({lang},key,args));
+ try{
+  const g=fixture();g.settings=new Settings();g.gui.width=420;g.gui.height=300;g.gui.textWidth=s=>s.length*6;g.gui.resize=()=>{};
+  for(let n=0;n<26;n++)assert.equal(g.settings.keyName('Key'+String.fromCharCode(65+n)),String.fromCharCode(97+n));
+  for(let n=0;n<10;n++)assert.equal(g.settings.keyName('Digit'+n),String(n));
+  for(const [code,label] of [['ShiftLeft','Left Shift'],['Numpad3','Keypad 3'],['F12','F12'],['Slash','/'],['mouse4','Button 5']])assert.equal(g.settings.keyName(code),label);
+  const controls=new ControlsScreen(g,null);controls.init();g.settings.keys.forward='KeyR';const labels=[];
+  controls._drawEntry({text(){},button:(x,y,w,h,label)=>labels.push(label)},controls.entries.find(e=>e.key==='forward'),0,0,20,0,0);
+  assert.ok(labels.includes('r'));assert.ok(!labels.some(s=>s.includes('key.keyboard.')));
+  const video=new VideoScreen(g,null);video.init();const button=video.rows.flat().find(b=>b.optionKey==='options.guiScale');
+  for(const [value,label] of [[0,'Auto'],[1,'1'],[2,'2'],[3,'3']]){g.settings.guiScale=value;assert.equal(button.label(),'GUI Scale: '+label);}
+ }finally{setTranslator(k=>k);}
 });
