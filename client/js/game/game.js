@@ -371,6 +371,7 @@ export class Game {
     this.worker = this.assets.worker;
     this.dirty = new Set();
     this.inFlight = new Map();
+    this.buildTokens = new Map(); this.buildSerial = 0;
     this.maxInFlight = 3 * (this.worker.size || 1) + 2;
     this.meshedChunks = new Set();
     this._chunkWaitStart = new Map();
@@ -380,8 +381,9 @@ export class Game {
       const m = e.data;
       if (m.type !== 'built') return;
       const key = m.x + ',' + m.y + ',' + m.z;
+      if (m.gen !== this.meshGen || m.token !== this.buildTokens.get(key)) return;
       this.inFlight.delete(key);
-      if (m.gen !== this.meshGen || !this.world.getChunk(m.x, m.z)) return; // result from a previous world
+      if (!this.world.getChunk(m.x,m.z) || this.dirty.has(key)) return; // unloaded or invalidated while the snapshot was built
       this.meshStats.builds++; this.meshStats.ms += m.ms || 0;
       this._chunkUpdatesCount = (this._chunkUpdatesCount || 0) + 1;
       this.renderer.setSectionMesh(m.x, m.y, m.z, m);
@@ -394,6 +396,7 @@ export class Game {
   _resetMeshing() {
     this.renderer.clearSections();
     this.dirty.clear(); this.inFlight.clear(); this.meshedChunks.clear();
+    this.buildTokens.clear();
     this.tileProps.clear();
     this.meshGen++;
   }
@@ -416,7 +419,7 @@ export class Game {
     w.on('chunkUnloaded', (c) => {
       this.renderer.removeChunk(c.x, c.z);
       this.meshedChunks.delete(c.x + ',' + c.z);
-      for (let y = 0; y < 16; y++) this.dirty.delete(c.x + ',' + y + ',' + c.z);
+      for (let y = 0; y < 16; y++) { const key=c.x+','+y+','+c.z;this.dirty.delete(key);this.inFlight.delete(key);this.buildTokens.delete(key); }
       this.tileRenderer.removeChunk(c.x, c.z);
     });
     w.on('sectionDirty', (cx, sy, cz) => {
@@ -522,7 +525,8 @@ export class Game {
       const sec = this.world.getChunk(cx, cz).sections[sy];
       if (!sec || sec.nonAir === 0) { this.inFlight.delete(key); this.renderer.removeSection(key); continue; }
       const slice = buildSlice(this.world, cx, sy, cz, this.tileProps);
-      this.worker.postMessage({ type: 'build', gen: this.meshGen, slice, lod: this._lodFor(cx, cz, sy) }, [slice.states.buffer, slice.light.buffer, slice.biomes.buffer]);
+      const token=++this.buildSerial;this.buildTokens.set(key,token);
+      this.worker.postMessage({ type: 'build', gen: this.meshGen, token, slice, lod: this._lodFor(cx, cz, sy) }, [slice.states.buffer, slice.light.buffer, slice.biomes.buffer]);
     }
     // Recover from lost builds
     for (const [k, t] of this.inFlight) if (platform().now() - t > 10000) this.inFlight.delete(k);
