@@ -242,7 +242,8 @@ export class Interaction {
     if (e.kind === 'item' || e.kind === 'xp' || e.kind === 'arrow') return; // canBeAttackedWithItem() is false
     const held = g.inventory.held();
     const f2 = this.cooledAttackStrength(0.5);
-    const f1 = g.items.enchantLevel(held, 16) * 1.25 * f2; // sharpness (EnumCreatureAttribute.UNDEFINED)
+    const sharpness = g.items.enchantLevel(held, 16);
+    const f1 = (sharpness > 0 ? sharpness * .5 + .5 : 0) * f2; // sharpness (EnumCreatureAttribute.UNDEFINED)
     this.resetCooldown();
     const strong = f2 > 0.9;
     let i = g.items.enchantLevel(held, 19); // knockback
