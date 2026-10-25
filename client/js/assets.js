@@ -13,6 +13,7 @@ import { MeshPool } from './render/mesh-service.js';
 import { MINECRAFTJS_EN } from './gui/i18n.js';
 import { decodeUtf8 } from './util/utf8.js';
 import { chatToLegacy } from './gui/chat.js';
+import { loadFontSets } from './gui/font-providers.js';
 
 const MC = 'assets/minecraft/';
 const PACK_PREFIX = 'packs/';
@@ -249,6 +250,7 @@ export class Assets {
       'misc/vignette.png', 'particle/particles.png', 'misc/shadow.png',
     ].map((p) => this.imageAsync(p).catch(() => null)));
     try { this.glyphSizes = await this.readBytes('font/glyph_sizes.bin'); } catch (e) { this.glyphSizes = null; }
+    this.fontSets = await loadFontSets(this);
 
     step('Starting mesh worker...', 85);
     await this.startMeshWorker();
