@@ -813,14 +813,13 @@ export class Interaction {
       const dmg = this.prevDamage + (this.curDamage - this.prevDamage) * partial;
       const stage = Math.floor(dmg * 10) - 1;
       const st = g.world.getState(this.curBlock.x, this.curBlock.y, this.curBlock.z);
-      const box = g.world.selectionBox(st, this.curBlock.x, this.curBlock.y, this.curBlock.z);
-      r.setBreakProgress(this.curBlock, stage, box, this._lightAround(this.curBlock));
+      r.setBreakProgress(this.curBlock, stage, st, this._lightAround(this.curBlock));
     } else {
       let shown = false;
       for (const rb of this.remoteBreaks.values()) {
         if (g.ticks - rb.time > 400) continue;
         const st = g.world.getState(rb.pos.x, rb.pos.y, rb.pos.z);
-        r.setBreakProgress(rb.pos, rb.stage, g.world.selectionBox(st, rb.pos.x, rb.pos.y, rb.pos.z), this._lightAround(rb.pos));
+        r.setBreakProgress(rb.pos, rb.stage, st, this._lightAround(rb.pos));
         shown = true;
         break;
       }
