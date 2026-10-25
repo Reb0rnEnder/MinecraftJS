@@ -105,3 +105,18 @@ test('scaffolding tower supports ascending with jump, descending with sneak and 
  const up=pl.y;for(let i=0;i<20;i++)pl.tick(w,{sneak:true});assert.ok(pl.y<up-2,'sneak descends instead of freezing ladder velocity');
  pl.setPosition(.5,7,.5);pl.motionY=0;for(let i=0;i<10;i++)pl.tick(w,{});assert.equal(pl.y,7);assert.equal(pl.onGround,true);
 });
+test('falling entities without player bb() land on scaffolding without crashing',async()=>{
+ const {Chunk}=await import('../client/js/world/chunk.js');
+ const {tickFallingBlock}=await import('../client/js/game/falling-block.js');
+ const world=new World();for(let x=-1;x<=1;x++)for(let z=-1;z<=1;z++)world.chunks.set(x+','+z,new Chunk(x,z,true));
+ const state=findState('scaffolding',{distance:'0',bottom:'false',waterlogged:'false'});
+ world.getChunk(0,0).setState(0,3,0,state);
+ assert.equal(scaffoldingCollision({distance:'0',bottom:'false'},3,{y:4}).length,5);
+ assert.deepEqual(scaffoldingCollision({distance:'0',bottom:'false'},3,{y:3.2}),[]);
+ for(const blockState of [state,findState('sand')]){
+   const entity={x:.5,y:5,z:.5,width:.98,height:.98,blockState,motionX:0,motionY:0,motionZ:0};
+   assert.equal(entity.bb,undefined);
+   for(let tick=0;tick<30;tick++)tickFallingBlock(entity,world);
+   assert.equal(entity.y,4);assert.equal(entity.onGround,true);assert.equal(entity.motionY,0);
+ }
+});
