@@ -59,3 +59,13 @@ See [live-server evidence and limits](../../docs/protocol-1.14.4-milestone.md).
 The browser codec, native asset adapters and world/light lifecycle are not yet
 switched to 1.14.4. The probe needs an offline-mode test server and logs in as
 `Codex1144Probe`; it leaves the server running and does not edit blocks/config.
+
+
+## Active browser runtime
+
+The browser and proxy now use native protocol 498 and 1.14.4 terrain/assets.
+The prior networking-only status is superseded by the
+[active runtime milestone](../../docs/runtime-1.14.4-milestone.md).
+Use `runtime-data.mjs` followed by `finalize-runtime-data.mjs` to regenerate native
+runtime tables; the latter executes the jar for creative tabs and shape data.
+Remaining entities, workstations and other parity gates still apply.

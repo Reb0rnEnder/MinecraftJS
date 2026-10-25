@@ -1,8 +1,13 @@
 # Transition from 1.13.2 to Java 1.14.4
 
-Status: extraction bootstrap and first native networking milestone implemented; browser runtime port pending. The client still runs the inherited 1.13.2 implementation
-(protocol 404). No protocol/version constants have been changed yet. Do not
-publish this branch as a working 1.14.4 client until the release gates below pass.
+Status: **active development runtime on protocol 498**, with native terrain data,
+independent lighting and browser join/reconnect verified. Remaining entity,
+workstation, movement and visual parity work is tracked below. This branch is
+not yet a complete vanilla-parity release.
+
+See [the active-runtime milestone](runtime-1.14.4-milestone.md) for implementation,
+validation and the remaining work. Older networking-only limitations in the
+initial milestone below are historical and superseded by this runtime milestone.
 
 ## Implemented starting milestone (2026-10-25)
 
@@ -25,8 +30,8 @@ successfully decoded 462 chunks / 2,372 sections / 462 light updates and complet
 teleport and keepalive replies. Unsupported packet families remain explicit.
 See [scope, validation and remaining work](protocol-1.14.4-milestone.md).
 
-The browser still uses the inherited 404 codec and assets. Native asset adapters
-and world/light lifecycle integration must be ready before switching it to 498.
+The browser now selects the native 498 codec, native asset tables and independent
+world/light lifecycle; see the active-runtime milestone above.
 
 ## Baseline and scope
 

@@ -30,6 +30,12 @@ export function buildSlice(world, cx, sy, cz, tileProps, biomeBlendRadius = 2) {
         const c = chunks[(czOff + 1) * 3 + dx + 1];
         const o = row + lx0;
         if (!c) { light.fill(0xf0, o, o + len); continue; }
+        if(c.nativeLight){
+          const sy=y>>4,s=c.sections[sy],sky=c.nativeLight.sky[sy+1],block=c.nativeLight.block[sy+1];
+          const base=((y&15)<<8)|(bz<<4);
+          for(let k=0;k<len;k++){const i=base|(bx0+k),sh=(i&1)<<2,j=i>>1;states[o+k]=s?s.blocks[i]:0;light[o+k]=(((sky?.[j]??(y>255&&c.hasSky?255:0))>>sh)&15)<<4|(((block?.[j]||0)>>sh)&15);}
+          continue;
+        }
         if (y < 0) continue; // void: air, no light
         if (y > 255) { light.fill(0xf0, o, o + len); continue; }
         const s = c.sections[y >> 4];

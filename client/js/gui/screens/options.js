@@ -1,5 +1,5 @@
 import { VANILLA_UI } from '../vanilla-layout.js';
-// GuiOptions and its sub-screens, laid out like 1.13.2 (video, controls, sounds, chat, skin, language, snooper).
+// GuiOptions and its sub-screens, laid out like 1.14.4 (video, controls, sounds, chat, skin, language, snooper).
 // Scrolling lists are GuiSlot / GuiListExtended ports (ListOf): drag the list or its scrollbar, or use the wheel.
 import { Screen } from './manager.js';
 import { Button, Slider } from '../widgets.js';
@@ -131,7 +131,7 @@ class LanguageScreen extends OptionsBase {
   wheel(d) { this.list.wheel(d); }
 }
 
-// GuiVideoSettings: GuiOptionsRowList (two columns, scrolling) with GameSettings.Options in 1.13.2 order
+// GuiVideoSettings: GuiOptionsRowList (two columns, scrolling) with GameSettings.Options in 1.14.4 order
 class VideoScreen extends OptionsBase {
   constructor(game, parent) { super(game, parent, 'options.videoTitle'); }
   init() {
@@ -403,7 +403,7 @@ class SnooperScreen extends OptionsBase {
     this.buttons.push(new Button(2, cx + 2, this.height - 30, 150, 20, tr('gui.done'), () => this.done()));
     const P = platform();
     this.data = [
-      ['version', '1.13.2'], ['client_brand', 'vanilla'], ['display_type', P.isFullscreen() ? 'fullscreen' : 'windowed'],
+      ['version', '1.14.4'], ['client_brand', 'vanilla'], ['display_type', P.isFullscreen() ? 'fullscreen' : 'windowed'],
       ['display_frequency', '-'], ['gl_version', this.game.device.name], ['cpu_cores', String(P.cpuCount || '?')],
       ['opengl_version', this.game.device.name], ['render_distance', String(s.renderDistance)],
     ];

@@ -1,3 +1,4 @@
+import {decodeChunkData498} from './chunk-1.14.4.js';
 import { getFluidState, fluidHeightAt } from './fluids.js';
 // Client world: chunk storage, block access, light propagation, collision and raycasting.
 import { biomeInfo } from './biomes.js';
@@ -10,6 +11,7 @@ const HORIZ = ['south', 'west', 'north', 'east'];
 export class World {
   constructor() {
     this.chunks = new Map();
+    this.lightColumns = new Map();
     this.dimension = 0;
     this.hasSky = true;
     this.listeners = { sectionDirty: [], chunkLoaded: [], chunkUnloaded: [], blockChanged: [] };
@@ -43,6 +45,7 @@ export class World {
   }
 
   setDimension(dim) {
+    if (dim !== this.dimension) this.clear();
     this.dimension = dim;
     this.hasSky = dim === 0;
   }
@@ -51,6 +54,7 @@ export class World {
   clear() {
     for (const c of this.chunks.values()) this.emit('chunkUnloaded', c);
     this.chunks.clear();
+    this.lightColumns.clear();
     this._gen++;
     this.raining = false;
     this.rainStrength = this.prevRain = 0;
@@ -71,7 +75,53 @@ export class World {
     return n;
   }
 
+  // Light columns have their own lifecycle: Update Light may precede terrain.
+  _lightColumn(x, z) {
+    const key=World.key(x,z);let light=this.lightColumns.get(key);
+    if(!light){light={sky:new Array(18),block:new Array(18)};this.lightColumns.set(key,light);}
+    return light;
+  }
+
+  loadChunk498(packet) {
+    const decoded=decodeChunkData498(packet),{x,z,groundUp,bitMap}=packet;
+    let c=this.getChunk(x,z);
+    if(!c){c=new Chunk(x,z,this.hasSky);this.chunks.set(World.key(x,z),c);this._gen++;}
+    c.nativeLight=this._lightColumn(x,z);c.heightmaps=packet.heightmaps;
+    for(let sy=0;sy<16;sy++) {
+      const data=decoded.sections[sy];
+      if(!data){if(groundUp)c.sections[sy]=null;continue;}
+      const sec=new Section(false);sec.blocks=data.blocks;sec.nonAir=data.nonAir;sec.wireNonAir=data.wireNonAir;
+      sec.skyLight=c.nativeLight.sky[sy+1] ||= new Uint8Array(2048);
+      sec.blockLight=c.nativeLight.block[sy+1] ||= new Uint8Array(2048);
+      c.sections[sy]=sec;
+    }
+    if(decoded.biomes)c.biomes=decoded.biomes;
+    this._computeHeights(c);
+    this.emit('chunkLoaded',c,bitMap,groundUp);
+    // Include cleared sections so previous geometry cannot survive a full reload.
+    for(let sy=0;sy<16;sy++)if(groundUp||bitMap&(1<<sy))for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)this.emit('sectionDirty',x+dx,sy,z+dz);
+    return c;
+  }
+
+  updateLight498(packet) {
+    const light=this._lightColumn(packet.chunkX,packet.chunkZ),changed=new Set();
+    for(const [name,arrays,empty] of [['sky',packet.skyLight,packet.emptySkyLightMask],['block',packet.blockLight,packet.emptyBlockLightMask]]) {
+      for(let i=0;i<18;i++) {
+        const bytes=arrays?.[i-1];if(!bytes&&!(empty&(1<<i)))continue;
+        if(bytes?.length!==2048&&bytes)throw new Error('Invalid light section');
+        light[name][i]=bytes?bytes.slice():new Uint8Array(2048);changed.add(i-1);
+      }
+    }
+    const c=this.getChunk(packet.chunkX,packet.chunkZ);if(!c)return;
+    c.nativeLight=light;
+    for(const sy of changed) {
+      const sec=c.sections[sy];if(sec){sec.skyLight=light.sky[sy+1]||sec.skyLight;sec.blockLight=light.block[sy+1]||sec.blockLight;}
+      for(let dy=-1;dy<=1;dy++)if(sy+dy>=0&&sy+dy<16)for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)this.emit('sectionDirty',c.x+dx,sy+dy,c.z+dz);
+    }
+  }
+
   unloadChunk(x, z) {
+    this.lightColumns.delete(World.key(x,z));
     const c = this.getChunk(x, z);
     if (c) { this.chunks.delete(x + ',' + z); this._gen++; this.emit('chunkUnloaded', c); }
   }

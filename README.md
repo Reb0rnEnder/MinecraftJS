@@ -1,14 +1,14 @@
 # MinecraftJS
 
-> **1.14.4 development branch:** native extraction and initial 498 networking are implemented; the browser still targets 1.13.2 (protocol 404).
+> **1.14.4 development branch:** the browser and proxy now use protocol 498 with native terrain data and independent light updates. Entity, workstation and remaining visual parity work is ongoing.
 > Follow the [1.14.4 transition plan](docs/transition-1.14.4.md) before publishing a 1.14.4 client.
-> The [networking milestone](docs/protocol-1.14.4-milestone.md) records live-server validation and remaining work.
+> The [runtime milestone](docs/runtime-1.14.4-milestone.md) records browser join/reconnect validation and remaining work.
 
-A Minecraft 1.13.2 client that runs in the browser (WebGL 2 or WebGPU). It joins vanilla 1.13.2 servers through a
+A Minecraft 1.14.4 client that runs in the browser (WebGL 2 or WebGPU). It joins vanilla 1.14.4 servers through a
 small Node proxy, and Eaglercraft servers directly over WebSockets.
 
 MinecraftJS is not affiliated with Mojang or Microsoft. The repository contains no Mojang files: the game assets
-are taken from your own copy of Minecraft 1.13.2, or downloaded from Mojang's servers on first use. That includes the
+are taken from your own copy of Minecraft 1.14.4, or downloaded from Mojang's servers on first use. That includes the
 entity and block entity models (mobs, boats, chests, signs, skulls, beds, ...): in 1.12 they are Java code, so the
 build runs the model constructors from the client jar in a small bytecode interpreter (`lib/jvm.js`,
 `lib/modelextract.js`) and stores the boxes in `bundles/entity-models.json`.
@@ -31,13 +31,13 @@ relays Microsoft account sign in and serves player skins.
 Game assets are found automatically, in this order:
 
 1. `client/assets/` if you have built it (see below)
-2. the 1.13.2 jar from `./1.13.2/`, `MC_JAR`, `MC_DIR`, or your launcher's `.minecraft` folder
+2. the 1.14.4 jar from `./1.14.4/`, `MC_JAR`, `MC_DIR`, or your launcher's `.minecraft` folder
 3. otherwise a download from Mojang into `cache/`
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `PORT` | `3000` | HTTP and WebSocket port |
-| `MC_JAR` | | path to a `1.13.2.jar` |
+| `MC_JAR` | | path to a `1.14.4.jar` |
 | `MC_DIR` | | a `.minecraft` folder to look in |
 
 ## Building

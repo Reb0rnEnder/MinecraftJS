@@ -1,40 +1,7 @@
 // Protocol 404 registry order and constructor dimensions from the 1.13.2 client jar
 // (SHA-1 30bfe37a8db404db11c7edf02cb5165817afb4d9, EntityType = aev).
 // These IDs belong to Spawn Mob. Spawn Object has a DIFFERENT namespace below.
-const REGISTRY = [
-  ['area_effect_cloud', 6, 0.5], ['armor_stand', 0.5, 1.975], ['arrow', 0.5, 0.5],
-  ['bat', 0.5, 0.9], ['blaze', 0.6, 1.8], ['boat', 1.375, 0.5625],
-  ['cave_spider', 0.7, 0.5], ['chicken', 0.4, 0.7], ['cod', 0.5, 0.3],
-  ['cow', 0.9, 1.4], ['creeper', 0.6, 1.7], ['donkey', 1.396484375, 1.6],
-  ['dolphin', 0.9, 0.6], ['dragon_fireball', 1, 1], ['drowned', 0.6, 1.95],
-  ['elder_guardian', 1.9975, 1.9975], ['end_crystal', 2, 2], ['ender_dragon', 16, 8],
-  ['enderman', 0.6, 2.9], ['endermite', 0.4, 0.3], ['evoker_fangs', 0.5, 0.8],
-  ['evoker', 0.6, 1.95], ['experience_orb', 0.5, 0.5], ['eye_of_ender', 0.25, 0.25],
-  ['falling_block', 0.98, 0.98], ['firework_rocket', 0.25, 0.25], ['ghast', 4, 4],
-  ['giant', 3.6, 10.8], ['guardian', 0.85, 0.85], ['horse', 1.396484375, 1.6],
-  ['husk', 0.6, 1.95], ['illusioner', 0.6, 1.95], ['item', 0.25, 0.25],
-  ['item_frame', 0.5, 0.5], ['fireball', 1, 1], ['leash_knot', 0.375, 0.5],
-  ['llama', 0.9, 1.87], ['llama_spit', 0.25, 0.25], ['magma_cube', 0.51000005, 0.51000005],
-  ['minecart', 0.98, 0.7], ['chest_minecart', 0.98, 0.7], ['command_block_minecart', 0.98, 0.7],
-  ['furnace_minecart', 0.98, 0.7], ['hopper_minecart', 0.98, 0.7], ['spawner_minecart', 0.98, 0.7],
-  ['tnt_minecart', 0.98, 0.7], ['mule', 1.396484375, 1.6], ['mooshroom', 0.9, 1.4],
-  ['ocelot', 0.6, 0.7], ['painting', 0.5, 0.5], ['parrot', 0.5, 0.9],
-  ['pig', 0.9, 0.9], ['pufferfish', 0.7, 0.7], ['zombie_pigman', 0.6, 1.95],
-  ['polar_bear', 1.3, 1.4], ['tnt', 0.98, 0.98], ['rabbit', 0.4, 0.5],
-  ['salmon', 0.7, 0.4], ['sheep', 0.9, 1.3], ['shulker', 1, 1],
-  ['shulker_bullet', 0.3125, 0.3125], ['silverfish', 0.4, 0.3], ['skeleton', 0.6, 1.99],
-  ['skeleton_horse', 1.396484375, 1.6], ['slime', 0.51000005, 0.51000005], ['small_fireball', 0.3125, 0.3125],
-  ['snow_golem', 0.7, 1.9], ['snowball', 0.25, 0.25], ['spectral_arrow', 0.5, 0.5],
-  ['spider', 1.4, 0.9], ['squid', 0.8, 0.8], ['stray', 0.6, 1.99],
-  ['tropical_fish', 0.5, 0.4], ['turtle', 1.2, 0.4], ['egg', 0.25, 0.25],
-  ['ender_pearl', 0.25, 0.25], ['experience_bottle', 0.25, 0.25], ['potion', 0.25, 0.25],
-  ['vex', 0.4, 0.8], ['villager', 0.6, 1.95], ['iron_golem', 1.4, 2.7],
-  ['vindicator', 0.6, 1.95], ['witch', 0.6, 1.95], ['wither', 0.9, 3.5],
-  ['wither_skeleton', 0.7, 2.4], ['wither_skull', 0.3125, 0.3125], ['wolf', 0.6, 0.85],
-  ['zombie', 0.6, 1.95], ['zombie_horse', 1.396484375, 1.6], ['zombie_villager', 0.6, 1.95],
-  ['phantom', 0.9, 0.5], ['lightning_bolt', 0, 0], ['player', 0.6, 1.8],
-  ['fishing_bobber', 0.25, 0.25], ['trident', 0.5, 0.5],
-];
+const REGISTRY = [["area_effect_cloud", 6, 0.5], ["armor_stand", 0.5, 1.975], ["arrow", 0.5, 0.5], ["bat", 0.5, 0.9], ["blaze", 0.6, 1.8], ["boat", 1.375, 0.5625], ["cat", 0.6, 0.7], ["cave_spider", 0.7, 0.5], ["chicken", 0.4, 0.7], ["cod", 0.5, 0.3], ["cow", 0.9, 1.4], ["creeper", 0.6, 1.7], ["donkey", 1.39648, 1.5], ["dolphin", 0.9, 0.6], ["dragon_fireball", 1, 1], ["drowned", 0.6, 1.95], ["elder_guardian", 1.9975, 1.9975], ["end_crystal", 2, 2], ["ender_dragon", 16, 8], ["enderman", 0.6, 2.9], ["endermite", 0.4, 0.3], ["evoker_fangs", 0.5, 0.8], ["evoker", 0.6, 1.95], ["experience_orb", 0.5, 0.5], ["eye_of_ender", 0.25, 0.25], ["falling_block", 0.98, 0.98], ["firework_rocket", 0.25, 0.25], ["fox", 0.6, 0.7], ["ghast", 4, 4], ["giant", 3.6, 12], ["guardian", 0.85, 0.85], ["horse", 1.39648, 1.6], ["husk", 0.6, 1.95], ["illusioner", 0.6, 1.95], ["item", 0.25, 0.25], ["item_frame", 0.5, 0.5], ["fireball", 1, 1], ["leash_knot", 0.5, 0.5], ["llama", 0.9, 1.87], ["llama_spit", 0.25, 0.25], ["magma_cube", 2.04, 2.04], ["minecart", 0.98, 0.7], ["chest_minecart", 0.98, 0.7], ["command_block_minecart", 0.98, 0.7], ["furnace_minecart", 0.98, 0.7], ["hopper_minecart", 0.98, 0.7], ["spawner_minecart", 0.98, 0.7], ["tnt_minecart", 0.98, 0.7], ["mule", 1.39648, 1.6], ["mooshroom", 0.9, 1.4], ["ocelot", 0.6, 0.7], ["painting", 0.5, 0.5], ["panda", 1.3, 1.25], ["parrot", 0.5, 0.9], ["pig", 0.9, 0.9], ["pufferfish", 0.7, 0.7], ["zombie_pigman", 0.6, 1.95], ["polar_bear", 1.4, 1.4], ["tnt", 0.98, 0.98], ["rabbit", 0.4, 0.5], ["salmon", 0.7, 0.4], ["sheep", 0.9, 1.3], ["shulker", 1, 1], ["shulker_bullet", 0.3125, 0.3125], ["silverfish", 0.4, 0.3], ["skeleton", 0.6, 1.99], ["skeleton_horse", 1.39648, 1.6], ["slime", 2.04, 2.04], ["small_fireball", 0.3125, 0.3125], ["snow_golem", 0.7, 1.9], ["snowball", 0.25, 0.25], ["spectral_arrow", 0.5, 0.5], ["spider", 1.4, 0.9], ["squid", 0.8, 0.8], ["stray", 0.6, 1.99], ["trader_llama", 0.9, 1.87], ["tropical_fish", 0.5, 0.4], ["turtle", 1.2, 0.4], ["egg", 0.25, 0.25], ["ender_pearl", 0.25, 0.25], ["experience_bottle", 0.25, 0.25], ["potion", 0.25, 0.25], ["trident", 0.5, 0.5], ["vex", 0.4, 0.8], ["villager", 0.6, 1.95], ["iron_golem", 1.4, 2.7], ["vindicator", 0.6, 1.95], ["pillager", 0.6, 1.95], ["wandering_trader", 0.6, 1.95], ["witch", 0.6, 1.95], ["wither", 0.9, 3.5], ["wither_skeleton", 0.7, 2.4], ["wither_skull", 0.3125, 0.3125], ["wolf", 0.6, 0.85], ["zombie", 0.6, 1.95], ["zombie_horse", 1.39648, 1.6], ["zombie_villager", 0.6, 1.95], ["phantom", 0.9, 0.5], ["ravager", 1.95, 2.2], ["lightning_bolt", 0, 0], ["player", 0.6, 1.8], ["fishing_bobber", 0.25, 0.25]];
 
 // INTERNAL renderer selectors, never protocol IDs. Only families already selected
 // by the renderer use numbers. A new family keeps its canonical string as e.type.
@@ -75,7 +42,7 @@ export const ENTITY_TYPES = REGISTRY.map(([name, width, height], id) => ({
 export const ENTITIES_BY_NAME = Object.fromEntries(ENTITY_TYPES.map(e => [e.name, e]));
 
 // NetHandlerPlayClient crd.a(iz): object ID -> canonical identity and renderer kind.
-export const OBJECT_TYPES = Object.fromEntries([
+const LEGACY_OBJECT_TYPES = Object.fromEntries([
   [1, 'boat', 'boat'], [2, 'item', 'item'], [3, 'area_effect_cloud', 'area_effect_cloud'],
   [10, 'minecart', 'minecart'], [50, 'tnt', 'tnt'], [51, 'end_crystal', 'crystal'],
   [60, 'arrow', 'arrow'], [61, 'snowball', 'projectile'], [62, 'egg', 'projectile'],
@@ -102,3 +69,6 @@ export const PAINTINGS = [
   ['pointer', 'Pointer', 64, 64], ['pigscene', 'Pigscene', 64, 64], ['burning_skull', 'BurningSkull', 64, 64],
   ['skeleton', 'Skeleton', 64, 48], ['donkey_kong', 'DonkeyKong', 64, 48],
 ];
+
+// Since 1.14 Spawn Entity and Spawn Mob use the same entity registry.
+export const OBJECT_TYPES=Object.fromEntries(ENTITY_TYPES.map(def=>[def.id,{...def,kind:Object.values(LEGACY_OBJECT_TYPES).find(o=>o.name===def.name)?.kind||def.name}]));

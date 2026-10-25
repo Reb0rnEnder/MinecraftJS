@@ -29,13 +29,13 @@ export class RecipeBook {
   _parse() {
     if (this.recipes) return;
     const g = this.game;
-    this.recipes = [];
+    this.recipes = {};
     (g.assets.recipes || []).forEach((r, i) => {
-      const id = FIRST_JSON_ID + i;
+      const id = r.name.includes(':') ? r.name : 'minecraft:' + r.name;
       const ing = (v) => (Array.isArray(v) ? v : [v]).map((x) => stackOf(g, x)).filter(Boolean);
       const result = stackOf(g, r.result || {});
       if (!result) return;
-      const rec = { id, name: r.name, group: r.group || '', result, shaped: r.type === 'crafting_shaped' };
+      const rec = { id, name: r.name, group: r.group || '', result, shaped: r.type.replace(/^minecraft:/,'') === 'crafting_shaped' };
       if (rec.shaped) {
         rec.height = r.pattern.length;
         rec.width = Math.max(...r.pattern.map((row) => row.length));
@@ -56,7 +56,7 @@ export class RecipeBook {
     this.lists = {};
     for (const t of BOOK_TABS) this.lists[t] = [];
     const groups = new Map();
-    for (const rec of this.recipes) {
+    for (const rec of Object.values(this.recipes)) {
       if (!rec) continue;
       const tab = this.categoryOf(rec);
       let list = rec.group ? groups.get(tab + '|' + rec.group) : null;

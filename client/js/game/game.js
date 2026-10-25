@@ -1,3 +1,4 @@
+import {MENUS_498} from './menus-1.14.4.js';
 import { RegistryTags } from './tags.js';
 import { CommandTree } from './commands.js';
 import { startSleeping, sleepingCamera } from './bed-sleep.js';
@@ -376,6 +377,7 @@ export class Game {
     this.worker = this.assets.worker;
     this.dirty = new Set();
     this.inFlight = new Map();
+    this.buildTokens = new Map(); this.buildSerial = 0;
     this.maxInFlight = 3 * (this.worker.size || 1) + 2;
     this.meshedChunks = new Set();
     this._chunkWaitStart = new Map();
@@ -385,8 +387,9 @@ export class Game {
       const m = e.data;
       if (m.type !== 'built') return;
       const key = m.x + ',' + m.y + ',' + m.z;
+      if (m.gen !== this.meshGen || m.token !== this.buildTokens.get(key)) return;
       this.inFlight.delete(key);
-      if (m.gen !== this.meshGen || !this.world.getChunk(m.x, m.z)) return; // result from a previous world
+      if (!this.world.getChunk(m.x,m.z) || this.dirty.has(key)) return; // unloaded or invalidated while the snapshot was built
       this.meshStats.builds++; this.meshStats.ms += m.ms || 0;
       this._chunkUpdatesCount = (this._chunkUpdatesCount || 0) + 1;
       this.renderer.setSectionMesh(m.x, m.y, m.z, m);
@@ -399,6 +402,7 @@ export class Game {
   _resetMeshing() {
     this.renderer.clearSections();
     this.dirty.clear(); this.inFlight.clear(); this.meshedChunks.clear();
+    this.buildTokens.clear();
     this.tileProps.clear();
     this.meshGen++;
   }
@@ -421,7 +425,7 @@ export class Game {
     w.on('chunkUnloaded', (c) => {
       this.renderer.removeChunk(c.x, c.z);
       this.meshedChunks.delete(c.x + ',' + c.z);
-      for (let y = 0; y < 16; y++) this.dirty.delete(c.x + ',' + y + ',' + c.z);
+      for (let y = 0; y < 16; y++) { const key=c.x+','+y+','+c.z;this.dirty.delete(key);this.inFlight.delete(key);this.buildTokens.delete(key); }
       this.tileRenderer.removeChunk(c.x, c.z);
     });
     w.on('sectionDirty', (cx, sy, cz) => {
@@ -527,7 +531,8 @@ export class Game {
       const sec = this.world.getChunk(cx, cz).sections[sy];
       if (!sec || sec.nonAir === 0) { this.inFlight.delete(key); this.renderer.removeSection(key); continue; }
       const slice = buildSlice(this.world, cx, sy, cz, this.tileProps, this.settings.biomeBlendRadius ?? 2);
-      this.worker.postMessage({ type: 'build', gen: this.meshGen, slice, lod: this._lodFor(cx, cz, sy) }, [slice.states.buffer, slice.light.buffer, slice.biomes.buffer]);
+      const token=++this.buildSerial;this.buildTokens.set(key,token);
+      this.worker.postMessage({ type: 'build', gen: this.meshGen, token, slice, lod: this._lodFor(cx, cz, sy) }, [slice.states.buffer, slice.light.buffer, slice.biomes.buffer]);
     }
     // Recover from lost builds
     for (const [k, t] of this.inFlight) if (platform().now() - t > 10000) this.inFlight.delete(k);
@@ -670,7 +675,7 @@ export class Game {
     this.gameMode = p.gameMode & 7;
     this.hardcore = !!(p.gameMode & 8);
     this.dimension = p.dimension;
-    this.difficulty = p.difficulty;
+    if(p.difficulty!==undefined)this.difficulty = p.difficulty;
     this.maxPlayers = p.maxPlayers;
     this.levelType = p.levelType;
     this.reducedDebug = p.reducedDebugInfo;
@@ -915,9 +920,11 @@ export class Game {
   }
 
   on_map_chunk(p) {
-    this.world.loadChunk(p.x, p.z, p.groundUp, p.bitMap, p.chunkData, 0, this.world.hasSky);
+    this.world.loadChunk498(p);
     for (const nbt of p.blockEntities) this.applyBlockEntity(nbt);
   }
+
+  on_update_light(p) { this.world.updateLight498(p); }
 
   on_unload_chunk(p) { this.world.unloadChunk(p.chunkX, p.chunkZ); }
 
@@ -1007,6 +1014,14 @@ export class Game {
   }
 
   on_open_window(p) {
+    if(typeof p.inventoryType==='number'){
+      const name=MENUS_498[p.inventoryType],rows=/generic_9x([1-6])/.exec(name||'');
+      const aliases={'minecraft:generic_3x3':['minecraft:dispenser',9],'minecraft:crafting':['minecraft:crafting_table',10],'minecraft:enchantment':['minecraft:enchanting_table',2],'minecraft:merchant':['minecraft:villager',3],'minecraft:blast_furnace':['minecraft:furnace',3],'minecraft:smoker':['minecraft:furnace',3]};
+      const fixed={'minecraft:anvil':3,'minecraft:beacon':1,'minecraft:brewing_stand':5,'minecraft:furnace':3,'minecraft:hopper':5,'minecraft:shulker_box':27,'minecraft:grindstone':3,'minecraft:lectern':1,'minecraft:loom':4,'minecraft:cartography':3,'minecraft:stonecutter':2};
+      const [type,count]=rows?['minecraft:chest',Number(rows[1])*9]:aliases[name]||[name,fixed[name]];
+      if(!type||count===undefined)throw new Error('Unknown 1.14.4 menu '+p.inventoryType);
+      p={...p,inventoryType:type,slotCount:count};
+    }
     const win = new ContainerWindow(this, p.windowId, p.inventoryType, chatToLegacy(p.windowTitle), p.slotCount, p.entityId);
     this.window = win;
     openContainerScreen(this, win);

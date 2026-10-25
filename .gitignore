@@ -15,3 +15,8 @@ client/assets/
 1.12.2/
 server1222/
 server189/
+
+# Native 1.14.4 local assets/server and data-generator logs
+1.14.4/
+server1144/
+logs/

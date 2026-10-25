@@ -918,7 +918,7 @@ function creativeCatalog(game) {
 
 // HotbarSnapshot storage (CreativeSettings, hotbar.nbt): nine saved toolbars, kept in the browser
 // Never read/write the unversioned 1.12 key: its numeric IDs cannot be safely reinterpreted.
-const HOTBARS_KEY = 'minecraftjs.hotbars.1.13.2.v1';
+const HOTBARS_KEY = 'minecraftjs.hotbars.1.14.4.v1';
 const toJson = (v) => JSON.stringify(v, (k, x) => (ArrayBuffer.isView(x) ? { $ta: x.constructor.name, a: Array.from(x, (n) => (typeof n === 'bigint' ? String(n) : n)) } : typeof x === 'bigint' ? { $big: String(x) } : x));
 const savedArrays = { Int8Array, Uint8Array, Int32Array, BigInt64Array };
 const fromJson = (s) => JSON.parse(s, (k, x) => {
@@ -932,7 +932,7 @@ const emptyHotbars = () => Array.from({ length: 9 }, () => new Array(9).fill(nul
 export function hotbarSnapshots() {
   try {
     const saved = fromJson(localStorage.getItem(HOTBARS_KEY) || 'null');
-    if (saved?.version !== 1 || saved.minecraftVersion !== '1.13.2' || saved.protocol !== 404 || saved.dataVersion !== 1631) return emptyHotbars();
+    if (saved?.version !== 1 || saved.minecraftVersion !== '1.14.4' || saved.protocol !== 498 || saved.dataVersion !== 1976) return emptyHotbars();
     if (!Array.isArray(saved.bars) || saved.bars.length !== 9) return emptyHotbars();
     return saved.bars.map(bar => {
       if (!Array.isArray(bar) || bar.length !== 9) return new Array(9).fill(null);
@@ -948,7 +948,7 @@ export function hotbarSnapshots() {
 }
 function saveHotbarSnapshots(list) {
   try {
-    localStorage.setItem(HOTBARS_KEY, toJson({ version: 1, minecraftVersion: '1.13.2', protocol: 404, dataVersion: 1631, bars: list }));
+    localStorage.setItem(HOTBARS_KEY, toJson({ version: 1, minecraftVersion: '1.14.4', protocol: 498, dataVersion: 1976, bars: list }));
     return true;
   } catch (e) { return false; /* storage unavailable */ }
 }

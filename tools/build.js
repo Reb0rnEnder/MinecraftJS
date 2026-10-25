@@ -173,6 +173,7 @@ async function collectAssets(opts) {
     if (name.startsWith(P + 'shaders/')) continue; // post-processing shaders are not used by this client
     files.set('minecraft/' + name.slice(P.length), jar.read(name));
   }
+  for(const name of jar.list('data/minecraft/recipes/'))if(name.endsWith('.json'))files.set('minecraft/recipes/'+name.slice('data/minecraft/recipes/'.length),jar.read(name));
   const icon = jar.read('pack.png');
   if (icon) files.set('pack.png', icon);
   // Entity / block entity models: Java constructors run from the 1.13.2 jar.

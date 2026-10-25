@@ -50,7 +50,8 @@ test('serverbound interaction packets use new IDs and block-place hand/inside-bl
 test('498 tags include entity types, menus use VarInts and unported packets stay explicit',()=>{
  const p=decodePacket498(packet('tags',w=>{for(const kind of ['blocks','items','fluids','entities'])w.varint(1).string(kind).varint(2).varint(0).varint(1);}));assert.deepEqual(p.tags.entities,{entities:[0,1]});
  const menu=decodePacket498(packet('open_window',w=>w.varint(300).varint(23).string('{"text":"Loom"}')));assert.equal(menu.windowId,300);assert.equal(menu.inventoryType,23);
- const unknown=decodePacket498(packet('declare_recipes',w=>w.varint(0)));assert.equal(unknown.name,'unsupported');assert.equal(unknown.packetName,'declare_recipes');
+ const recipes=decodePacket498(packet('declare_recipes',w=>w.varint(0)));assert.equal(recipes.name,'declare_recipes');assert.deepEqual(recipes.recipes,[]);
+ const unknown=decodePacket498(new Writer498().varint(127).build());assert.equal(unknown.name,'unsupported');
  assert.throws(()=>decodePacket498(packet('held_item_slot',w=>w.u8(0).u8(0))),/Trailing data/);
  assert.throws(()=>new Reader498(new Uint8Array()).bytesN(-1),/Invalid byte length/);
 });

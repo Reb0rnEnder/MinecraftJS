@@ -1,5 +1,8 @@
 // Staged native protocol 498 codec. Not selected by the browser gameplay loop yet.
 import {Reader,Writer} from './buffer.js';
+import {readPacketBody404} from './packets-1.13.2.js';
+import {BODY_404} from './protocol-1.14.4-reuse.js';
+import {readCommandTree} from './command-tree.js';
 import {readNbtRoot} from './nbt.js';
 import {CLIENTBOUND_498 as IN,SERVERBOUND_498 as OUT} from './protocol-1.14.4-ids.js';
 export const PROTOCOL_498=498;
@@ -48,6 +51,9 @@ const lightArrays=(r,mask)=>{
   return result;
 };
 const decoders={
+  spawn_entity:r=>({entityId:r.varint(),objectUUID:r.uuid(),type:r.varint(),x:r.f64(),y:r.f64(),z:r.f64(),pitch:r.angle(),yaw:r.angle(),objectData:r.i32(),velocity:{x:r.i16(),y:r.i16(),z:r.i16()}}),
+  statistics:r=>({entries:array(r,r=>({categoryId:r.varint(),statisticId:r.varint(),value:r.varint()}))}),
+  declare_commands:r=>readCommandTree(r),
   login:r=>({entityId:r.i32(),gameMode:r.u8(),dimension:r.i32(),maxPlayers:r.u8(),levelType:r.string(),viewDistance:r.varint(),reducedDebugInfo:r.bool()}),
   respawn:r=>({dimension:r.i32(),gameMode:r.u8(),levelType:r.string()}),
   difficulty:r=>({difficulty:r.u8(),difficultyLocked:r.bool()}),
@@ -81,6 +87,16 @@ const decoders={
   open_window:r=>({windowId:r.varint(),inventoryType:r.varint(),windowTitle:r.string()}),
   open_horse_window:r=>({windowId:r.u8(),nbSlots:r.varint(),entityId:r.i32()}),
   open_book:r=>({hand:r.varint()}),
+  declare_recipes:r=>({recipes:array(r,r=>{
+    const type=r.string(),recipeId=r.string(),data={},kind=type.replace(/^minecraft:/,'');
+    const ingredient=()=>array(r,r=>r.slot());
+    if(kind==='crafting_shaped'){data.width=r.varint();data.height=r.varint();if(data.width<1||data.width>3||data.height<1||data.height>3)throw new Error('Invalid recipe size');data.group=r.string();data.ingredients=Array.from({length:data.width*data.height},ingredient);data.result=r.slot();}
+    else if(kind==='crafting_shapeless'){data.group=r.string();data.ingredients=array(r,ingredient);data.result=r.slot();}
+    else if(['smelting','blasting','smoking','campfire_cooking'].includes(kind)){data.group=r.string();data.ingredient=ingredient();data.result=r.slot();data.experience=r.f32();data.cookingTime=r.varint();}
+    else if(kind==='stonecutting'){data.group=r.string();data.ingredient=ingredient();data.result=r.slot();}
+    else if(!kind.startsWith('crafting_special_'))throw new Error('Unsupported recipe serializer '+type);
+    return {type,recipeId,data};
+  })}),
   tags:r=>{
     const tags={};for(const kind of ['blocks','items','fluids','entities'])tags[kind]=Object.fromEntries(array(r,r=>[r.string(),array(r,r=>r.varint())]));
     return {tags};
@@ -89,8 +105,9 @@ const decoders={
 const names=Object.fromEntries(Object.entries(IN).map(([name,id])=>[id,name]));
 export function decodePacket498(bytes) {
   const r=new Reader498(bytes),id=r.varint(),name=names[id];
-  if(!name||!decoders[name])return {name:'unsupported',packetName:name||null,id,data:r.rest()};
-  const p={name,id,...decoders[name](r)};
+  const body = decoders[name] ? decoders[name](r) : BODY_404[id] !== undefined ? readPacketBody404(BODY_404[id],r) : null;
+  if(!body)return {name:'unsupported',packetName:name||null,id,data:r.rest()};
+  const p={name,id,...body};
   if(r.remaining())throw new Error(`Trailing data in 498 ${name}: ${r.remaining()} bytes`);
   return p;
 }

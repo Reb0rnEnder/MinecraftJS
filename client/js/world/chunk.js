@@ -1,3 +1,4 @@
+import {AIR_STATES_498} from './chunk-1.14.4.js';
 // Chunk storage: 16 sections of 16^3 flattened global block-state ids (1.13+),
 // nibble arrays for block light and sky light, and a 16x16 biome array.
 
@@ -17,8 +18,8 @@ export class Section {
   set(x, y, z, state) {
     const i = (y << 8) | (z << 4) | x;
     const old = this.blocks[i];
-    if (old === 0 && state !== 0) this.nonAir++;
-    else if (old !== 0 && state === 0) this.nonAir--;
+    if (AIR_STATES_498.includes(old) && !AIR_STATES_498.includes(state)) this.nonAir++;
+    else if (!AIR_STATES_498.includes(old) && AIR_STATES_498.includes(state)) this.nonAir--;
     this.blocks[i] = state;
   }
 
@@ -39,7 +40,7 @@ export class Section {
 
   recount() {
     let n = 0;
-    for (let i = 0; i < 4096; i++) if (this.blocks[i] !== 0) n++;
+    for (let i = 0; i < 4096; i++) if (!AIR_STATES_498.includes(this.blocks[i])) n++;
     this.nonAir = n;
   }
 }
@@ -66,37 +67,36 @@ export class Chunk {
     let s = this.sections[y >> 4];
     if (!s) {
       if (state === 0) return;
-      s = this.sections[y >> 4] = new Section(this.hasSky);
+      s = this.sections[y >> 4] = new Section(this.nativeLight?false:this.hasSky);
+      if(this.nativeLight){s.skyLight=this.nativeLight.sky[(y>>4)+1] ||= new Uint8Array(2048);s.blockLight=this.nativeLight.block[(y>>4)+1] ||= new Uint8Array(2048);}
     }
     s.set(x, y & 15, z, state);
   }
 
   getSkyLight(x, y, z) {
-    if (y < 0) return 0;
-    if (y > 255) return this.hasSky ? 15 : 0;
-    const s = this.sections[y >> 4];
-    if (!s) return this.hasSky ? 15 : 0;
-    return s.getSky(((y & 15) << 8) | (z << 4) | x);
+    if(this.nativeLight){const a=this.nativeLight.sky[(y>>4)+1],i=((y&15)<<8)|(z<<4)|x;return a?(a[i>>1]>>((i&1)<<2))&15:y>255&&this.hasSky?15:0;}
+    if(y<0)return 0;if(y>255)return this.hasSky?15:0;
+    const s=this.sections[y>>4];return s?s.getSky(((y&15)<<8)|(z<<4)|x):this.hasSky?15:0;
   }
 
   getBlockLight(x, y, z) {
-    if (y < 0 || y > 255) return 0;
-    const s = this.sections[y >> 4];
-    if (!s) return 0;
-    return s.getBlockLight(((y & 15) << 8) | (z << 4) | x);
+    if(this.nativeLight){const a=this.nativeLight.block[(y>>4)+1],i=((y&15)<<8)|(z<<4)|x;return a?(a[i>>1]>>((i&1)<<2))&15:0;}
+    if(y<0||y>255)return 0;const s=this.sections[y>>4];return s?s.getBlockLight(((y&15)<<8)|(z<<4)|x):0;
   }
 
   setSkyLight(x, y, z, v) {
     if (y < 0 || y > 255) return;
     let s = this.sections[y >> 4];
-    if (!s) s = this.sections[y >> 4] = new Section(this.hasSky);
+    if (!s) s = this.sections[y >> 4] = new Section(this.nativeLight?false:this.hasSky);
+      if(this.nativeLight){s.skyLight=this.nativeLight.sky[(y>>4)+1] ||= new Uint8Array(2048);s.blockLight=this.nativeLight.block[(y>>4)+1] ||= new Uint8Array(2048);}
     s.setSky(((y & 15) << 8) | (z << 4) | x, v);
   }
 
   setBlockLightAt(x, y, z, v) {
     if (y < 0 || y > 255) return;
     let s = this.sections[y >> 4];
-    if (!s) s = this.sections[y >> 4] = new Section(this.hasSky);
+    if (!s) s = this.sections[y >> 4] = new Section(this.nativeLight?false:this.hasSky);
+      if(this.nativeLight){s.skyLight=this.nativeLight.sky[(y>>4)+1] ||= new Uint8Array(2048);s.blockLight=this.nativeLight.block[(y>>4)+1] ||= new Uint8Array(2048);}
     s.setBlockLight(((y & 15) << 8) | (z << 4) | x, v);
   }
 

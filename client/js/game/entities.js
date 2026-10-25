@@ -323,6 +323,12 @@ export class EntityManager {
   // Apply deltas, not the accumulated snapshot (e.g. an unrelated update must not
   // restart a TNT fuse). The complete wire values remain available in e.metadata.
   _applyMeta(e, m = e.metadata) {
+    // Preserve native metadata on e.metadata. Adapt the unchanged consumers below
+    // around 1.14's base pose and living sleeping-position insertions.
+    const native=m,living498=e.kind==='mob'||e.kind==='player'||e.kind==='armorstand';
+    if(native[6]!==undefined)e.pose=native[6];
+    if(living498&&native[12]!==undefined)e.sleepingPosition=native[12];
+    m={};for(const [key,value] of Object.entries(native)){const i=Number(key);if(i===6||living498&&i===12)continue;m[i-(i>=7?living498&&i>=13?2:1:0)]=value;}
     const name = e.entityName;
     const set = (index, key) => { if (m[index] !== undefined) e[key] = m[index]; };
     const bit = (index, mask, key) => { if (m[index] !== undefined) e[key] = !!(m[index] & mask); };
