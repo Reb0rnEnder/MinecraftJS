@@ -133,18 +133,19 @@ export class ResourcePacksScreen extends Screen {
     if (incompatible) gui.rect(x - 1, y - 1, x + ENTRY_W - 9, y + ENTRY_H - 3, 0xff770000);
     const icon = gui.tex(this._icon(pack));
     if (icon) gui.drawImage(icon, 0, 0, icon.width, icon.height, x, y, 32, 32);
-    const overIcon = pack && mx >= x && mx < x + 32 && my >= y && my < y + 32;
-    if (overIcon) {
+    const overEntry = mx >= x && mx < x + ENTRY_W && my >= y && my < y + ENTRY_H;
+    const overIcon = overEntry && mx < x + 32 && my < y + 32;
+    if (pack && (overEntry || this.game.settings.touchscreen)) {
       gui.rect(x, y, x + 32, y + 32, 0xa0909090);
       const rx = mx - x, ry = my - y;
-      if (L.side === 0) gui.blit(ARROWS, x, y, 0, rx < 32 ? 32 : 0, 32, 32);
+      if (L.side === 0) gui.blit(ARROWS, x, y, 0, overIcon ? 32 : 0, 32, 32);
       else {
-        gui.blit(ARROWS, x, y, 32, rx < 16 ? 32 : 0, 32, 32);
-        if (idx > 0) gui.blit(ARROWS, x, y, 96, rx < 32 && rx > 16 && ry < 16 ? 32 : 0, 32, 32);
-        if (idx < this.selected.length - 1) gui.blit(ARROWS, x, y, 64, rx < 32 && rx > 16 && ry > 16 ? 32 : 0, 32, 32);
+        gui.blit(ARROWS, x, y, 32, overIcon && rx < 16 ? 32 : 0, 32, 32);
+        if (idx > 0) gui.blit(ARROWS, x, y, 96, overIcon && rx > 16 && ry < 16 ? 32 : 0, 32, 32);
+        if (idx < this.selected.length - 1) gui.blit(ARROWS, x, y, 64, overIcon && rx > 16 && ry > 16 ? 32 : 0, 32, 32);
       }
     }
-    const warning = incompatible && ((mx >= x && mx < x + ENTRY_W && my >= y && my < y + ENTRY_H) || this.game.settings.touchscreen);
+    const warning = incompatible && (overEntry || this.game.settings.touchscreen);
     let title = warning ? tr('resourcePack.incompatible') : name;
     if (gui.textWidth(title) > 157) title = gui.font.trimToWidth(title, 157 - gui.textWidth('...')) + '...';
     gui.text(title, x + 32 + 2, y + 1, 0xffffff, true);
