@@ -104,6 +104,23 @@ export class TileEntityRenderer {
     return t;
   }
 
+  // Use the live model (including lid/cloth transforms) for the damage pass.
+  breakingModel(pos,state) {
+    let t=this._ensure(pos.x,pos.y,pos.z,state);
+    if(!t||!['chest','sign','skull','banner','bed','shulker'].includes(t.type))return null;
+    if(!t.built)this._build(t);
+    if(t.type==='chest'&&t.secondary){
+      const current=this.game.world.getBlockDef(pos.x,pos.y,pos.z).id;
+      for(const [dx,dz] of [[-1,0],[0,-1]]){
+        if(this.game.world.getBlockDef(pos.x+dx,pos.y,pos.z+dz).id!==current)continue;
+        const other=this._ensure(pos.x+dx,pos.y,pos.z+dz,this.game.world.getState(pos.x+dx,pos.y,pos.z+dz));
+        if(other&&!other.built)this._build(other);
+        if(other?.obj){t=other;break;}
+      }
+    }
+    return {root:t.obj,type:t.type};
+  }
+
   // Scan a newly loaded chunk for tile blocks
   scanChunk(c) {
     for (let sy = 0; sy < 16; sy++) {

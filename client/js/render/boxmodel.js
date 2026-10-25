@@ -112,6 +112,7 @@ export function boxesMesh(boxes, texW, texH) {
   const v = entityVertices(pos, uv, nor, null);
   m = device.createMesh(FORMAT.entity, v, { quads: true });
   m.cpu = v;
+  m.textureSize = [texW,texH];
   boxCache.set(key, m);
   return m;
 }
