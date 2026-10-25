@@ -184,7 +184,7 @@ export class LocalPlayer {
     if (this.noClip) return false;
     const bx = Math.floor(x), by = Math.floor(y), bz = Math.floor(z);
     const d0 = x - bx, d1 = z - bz;
-    const cube = (xx, yy, zz) => { const b = getBlock(world.getState(xx, yy, zz)); return !!(b && b.opaque && !b.isLiquid); };
+    const cube = (xx, yy, zz) => { const b = getBlock(world.getState(xx, yy, zz)); return !!(b && (b.suffocates??b.opaque) && !b.isLiquid); };
     const open = (xx, yy, zz) => !cube(xx, yy, zz) && !cube(xx, yy + 1, zz);
     if (open(bx, by, bz)) return false;
     let i = -1, d2 = 9999;

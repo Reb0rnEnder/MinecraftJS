@@ -17,6 +17,9 @@ for(const shape of native.selections){const key=JSON.stringify(shape);if(!keys.h
 const definitions=JSON.parse(await readFile(path('blocks'))),collisionShapes={0:[]},collisionKeys=new Map([['[]',0]]),collisionBlocks={};
 for(const b of definitions){const ids=[];for(let state=b.minStateId;state<=b.maxStateId;state++){const boxes=native.collisions[state],key=JSON.stringify(boxes);if(!collisionKeys.has(key)){const id=collisionKeys.size;collisionKeys.set(key,id);collisionShapes[id]=boxes;}ids.push(collisionKeys.get(key));}collisionBlocks[b.name]=ids.every(id=>id===ids[0])?ids[0]:ids;}
 shapes.blocks=collisionBlocks;shapes.shapes=collisionShapes;
+const renderValues=[],renderKeys=new Map(),renderStates=[];
+for(const render of native.rendering){const key=JSON.stringify(render);if(!renderKeys.has(key)){renderKeys.set(key,renderValues.length);renderValues.push(render);}renderStates.push(renderKeys.get(key));}
+shapes.render={source:{version:'1.14.4',clientJarSha1:target.downloads.client.sha1},values:renderValues,states:renderStates};
 shapes.selection={source:{version:'1.14.4',clientJarSha1:target.downloads.client.sha1},boxes,states};
 await writeFile(path('blockCollisionShapes'),JSON.stringify(shapes)+'\n');
 // Native tags resolve through native registries, including nested tag references.
@@ -29,3 +32,16 @@ for(const [kind,registry] of [['blocks','block'],['items','item'],['fluids','flu
 }
 await writeFile(join(root,'client/js/game/default-tags.js'),'// Extracted native 1.14.4 tags.\nexport const DEFAULT_TAGS = '+JSON.stringify(tags)+';\n');
 console.log('Native creative catalog, selection shapes and default tags generated');
+const order=key=>Object.entries(reports['minecraft:'+key].entries).sort((a,b)=>a[1].protocol_id-b[1].protocol_id).map(([name])=>name.replace('minecraft:',''));
+const hats={};for(const name of jar.list('assets/minecraft/textures/entity/'))if(/\/(villager|zombie_villager)\/.*\.png\.mcmeta$/.test(name)){
+ const meta=JSON.parse(jar.read(name));if(meta.villager?.hat)hats[name.slice('assets/minecraft/textures/'.length,-7)]=meta.villager.hat;
+}
+await writeFile(join(root,'client/js/game/villager-data.js'),'// Extracted from the pinned native 1.14.4 registries and texture metadata.\nexport const VILLAGER_TYPES='+JSON.stringify(order('villager_type'))+';\nexport const VILLAGER_PROFESSIONS='+JSON.stringify(order('villager_profession'))+';\nexport const VILLAGER_HATS='+JSON.stringify(hats)+';\n');
+
+const official=await readFile(join(cache,'client.txt'),'utf8'),names=new Map();let owner;
+for(const line of official.split('\n')){
+ const cls=/^\S+ -> (\S+):$/.exec(line);if(cls){owner=cls[1];continue;}
+ const field=/net.minecraft.network.syncher.EntityDataAccessor (\S+) -> (\S+)$/.exec(line);if(field)names.set(owner+'.'+field[2],field[1]);
+}
+const entityMetadata=Object.fromEntries(Object.entries(native.entityMetadata).map(([name,fields])=>[name,Object.fromEntries(Object.entries(fields).map(([key,index])=>{if(!names.has(key))throw new Error('Unmapped entity metadata '+key);return [names.get(key),index];}))]));
+await writeFile(join(root,'client/js/game/entity-metadata-1.14.4.js'),'// Entity metadata indices extracted from the pinned native jar and official mappings.\nexport const NATIVE_METADATA='+JSON.stringify(entityMetadata)+';\n');

@@ -1,3 +1,5 @@
+import {shadowGeometry} from './shadows.js';
+import {villagerLayers} from './villager-layers.js';
 import { updateRiptide } from './riptide-layer.js';
 import { EntityEffects, dragonCorpseMatrix } from './entity-effects.js';
 import { poseInterval } from './lod.js';
@@ -115,10 +117,7 @@ export class EntityRenderer {
     this.effects = new EntityEffects(game);
     this.meshCache = new Map();
     this.atlasTex = () => game.assets.atlasTexture;
-    // Shadow: unit quad on the XZ plane
-    this.shadowMesh = game.device.createMesh(FORMAT.color, new Float32Array([
-      -0.5, 0, -0.5, 0, 0, 1, 1, 1, 1, -0.5, 0, 0.5, 0, 1, 1, 1, 1, 1, 0.5, 0, 0.5, 1, 1, 1, 1, 1, 1, 0.5, 0, -0.5, 1, 0, 1, 1, 1, 1,
-    ]), { quads: true });
+
   }
 
   // Drop everything (resource reload / world change)
@@ -259,7 +258,7 @@ export class EntityRenderer {
       case 51: return e.wither ? 'entity/skeleton/wither_skeleton.png' : e.stray ? 'entity/skeleton/stray.png' : 'entity/skeleton/skeleton.png';
       case 52: return 'entity/spider/spider.png';
       // RenderZombieVillager (1.11+): textures by profession; RenderHusk
-      case 53: case 54: return e.villagerZombie ? 'entity/zombie_villager/zombie_' + (['farmer', 'librarian', 'priest', 'smith', 'butcher'][e.villagerProfession] || 'villager') + '.png'
+      case 53: case 54: return e.villagerZombie ? 'entity/zombie_villager/zombie_villager.png'
         : e.husk ? 'entity/zombie/husk.png' : 'entity/zombie/zombie.png';
       case 55: return 'entity/slime/slime.png';
       case 56: return e.attacking ? 'entity/ghast/ghast_shooting.png' : 'entity/ghast/ghast.png';
@@ -281,7 +280,7 @@ export class EntityRenderer {
       case 93: return 'entity/chicken.png';
       case 94: return 'entity/squid.png';
       case 95: return e.tamed ? 'entity/wolf/wolf_tame.png' : e.angry ? 'entity/wolf/wolf_angry.png' : 'entity/wolf/wolf.png';
-      case 96: return 'entity/cow/mooshroom.png';
+      case 96: return 'entity/cow/'+(e.mooshroomType==='brown'?'brown':'red')+'_mooshroom.png';
       case 97: return 'entity/snow_golem.png';
       case 98: return 'entity/cat/' + (CAT_TEX[e.catType || 0] || 'ocelot') + '.png';
       case 99: return 'entity/iron_golem.png';
@@ -294,7 +293,14 @@ export class EntityRenderer {
         return 'entity/horse/horse_' + (HORSE_COLORS[(e.horseVariant || 0) & 0xff] || 'white') + '.png';
       }
       case 101: return 'entity/rabbit/' + (e.rabbitType === 99 ? 'caerbannog' : (RABBIT_TEX[e.rabbitType || 0] || 'brown')) + '.png';
-      case 120: return 'entity/villager/' + (VILLAGER_TEX[e.profession] || 'villager') + '.png';
+      case 120: return 'entity/villager/villager.png';
+      case 'wandering_trader': return 'entity/wandering_trader.png';
+      case 'trader_llama': return 'entity/llama/' + (LLAMA_TEX[e.llamaVariant] || LLAMA_TEX[0]) + '.png';
+      case 'cat': return 'entity/cat/'+(['tabby','black','red','siamese','british_shorthair','calico','persian','ragdoll','white','jellie','all_black'][e.catType||0]||'tabby')+'.png';
+      case 'fox': return 'entity/fox/'+(e.foxType===1?'snow_fox':'fox')+'.png';
+      case 'panda': return 'entity/panda/panda.png';
+      case 'ravager': return 'entity/illager/ravager.png';
+      case 'pillager': return 'entity/illager/pillager.png';
       case 'polar_bear': return 'entity/bear/polarbear.png';
       case 'llama': return 'entity/llama/' + (LLAMA_TEX[e.llamaVariant] || LLAMA_TEX[0]) + '.png';
       case 'parrot': return 'entity/parrot/parrot_' + (PARROT_TEX[e.parrotVariant] || PARROT_TEX[0]) + '.png';
@@ -345,7 +351,13 @@ export class EntityRenderer {
       case 99: return M.ironGolem();
       case 100: return M.horse(e.horseType || 0);
       case 101: return M.rabbit();
-      case 120: return M.villager(64, 64, false);
+      case 120: case 'wandering_trader': return M.villager(64, 64, false);
+      case 'trader_llama': return M.llama();
+      case 'cat': return M.cat();
+      case 'fox': return M.fox();
+      case 'panda': return M.panda();
+      case 'ravager': return M.ravager();
+      case 'pillager': return M.illager('pillager');
       case 'polar_bear': return M.polarBear();
       case 'llama': return M.llama();
       case 'parrot': return M.parrot(e.parrotVariant);
@@ -367,7 +379,7 @@ export class EntityRenderer {
   // size, fish patterns, phantom size, horse markings). Don't leave stale models.
   _livingKey(e) {
     return [e.type, this._texFor(e), e.puffState || 0, e.fishVariant || 0, e.phantomSize || 0,
-      e.horseVariant || 0, e.horseType || 0].join('|');
+      e.horseVariant || 0, e.horseType || 0,e.villagerType??2,e.profession??0,e.villagerLevel??1,!!e.child].join('|');
   }
 
   _visualKey(e) {
@@ -388,9 +400,9 @@ export class EntityRenderer {
   }
 
   // LayerMooshroomMushroom: red mushroom block models, two on the back and one on the head
-  _addMushrooms(v, model) {
-    const bm = this.game.assets.modelStore.bakeVariant('red_mushroom', {}, 'normal', 0);
-    const mesh = bm && this.game.itemRenderer.blockMesh({ baked: bm, name: 'red_mushroom' });
+  _addMushrooms(v, model, mushroom='red_mushroom') {
+    const bm = this.game.assets.modelStore.bakeVariant(mushroom, {}, 'normal', 0);
+    const mesh = bm && this.game.itemRenderer.blockMesh({ baked: bm, name: mushroom });
     if (!mesh) return;
     const mat = this._mat(v, this.atlasTex, { alphaTest: 0.1 });
     // block meshes are centred, so translate(-0.5, -0.5, 0.5) becomes (0, 0, 1) plus the block's centre offset
@@ -462,6 +474,11 @@ export class EntityRenderer {
       return v.layers[v.layers.length - 1];
     };
     if (e.kind === 'mob') {
+      if(e.type===120||e.villagerZombie)for(const layer of villagerLayers(e,this.game.assets.villagerHats)){
+        const layerModel=e.villagerZombie?M.zombie(64,64,true):M.villager();
+        addLayer(layerModel,layer.texture,{hideHat:!!layer.hideHat,cull:false});
+      }
+      if(e.type==='trader_llama')addLayer(M.llama(true),'entity/llama/decor/trader_llama.png',{cull:false});
       if (e.type === 91) v.wool = addLayer(M.sheep(true), 'entity/sheep/sheep_fur.png');
       if (e.type === 52 || e.type === 59) addLayer(M.spider(), 'entity/spider_eyes.png', { fullBright: true, transparent: true, additive: true, depthWrite: false, eyes: true });
       if (e.type === 58) addLayer(M.enderman(), 'entity/enderman/enderman_eyes.png', { fullBright: true, transparent: true, additive: true, depthWrite: false, eyes: true });
@@ -535,7 +552,7 @@ export class EntityRenderer {
       model.parts.head.obj.add(h);
       v.headHolder = h;
     }
-    if (v.mushroomLayer) this._addMushrooms(v, model);
+    if (v.mushroomLayer) this._addMushrooms(v, model,e.mooshroomType==='brown'?'brown_mushroom':'red_mushroom');
     this._addShadow(v);
     return v;
   }
@@ -681,7 +698,9 @@ export class EntityRenderer {
   _addShadow(v) {
     const n = new Node();
     v.shadowParams = colorParams(1, 1, 1, 0.5, 0, 1);
-    n.addDrawable(this.shadowMesh, material('color', 'misc/shadow.png', v.shadowParams, { blend: 'alpha', depthWrite: false, polygonOffset: true }), { order: 3 });
+    v.shadowMesh=this.device.createMesh(FORMAT.color,new Float32Array(0),{quads:true,dynamic:true});
+    (v.ownMeshes ||= []).push(v.shadowMesh);
+    n.addDrawable(v.shadowMesh, material('color', 'misc/shadow.png', v.shadowParams, { blend: 'alpha', depthWrite: false, polygonOffset: true }), { order: 3 });
     v.shadow = n;
     v.root.add(n);
   }
@@ -1170,7 +1189,7 @@ export class EntityRenderer {
           break;
         }
         case 66: sx = sy = sz = 0.9375; break;
-        case 120: sx = sy = sz = 0.9375; break;
+        case 120: case 'wandering_trader': sx = sy = sz = 0.9375; break;
         case 68: if (e.elder) sx = sy = sz = 2.35; break;
         case 69: sx = sy = sz = 0.999; break;
         case 100: if (e.horseType === 1 || e.horseType === 2) { sx = sz = sy = e.horseType === 1 ? 0.87 : 0.92; } break;
@@ -1274,6 +1293,7 @@ export class EntityRenderer {
     for (const L of v.layers) {
       L.model.animate(L.model, args);
       copyPose(model, L.model);
+      if(L.hideHat){for(const key of ['head','hat','hatRim','headwear'])if(L.model.parts[key])L.model.parts[key].visible=false;}
       for (const r of L.model.roots) r.sync();
       L.obj.visible = !e.invisible;
     }
@@ -1497,25 +1517,14 @@ export class EntityRenderer {
 
   _updateShadow(e, v, p) {
     const w = this.game.world;
-    // Find ground below
-    let y = Math.floor(p.y);
-    let found = false;
-    for (let i = 0; i < 4; i++) {
-          const b = getBlock(w.getState(Math.floor(p.x), y - 1, Math.floor(p.z)));
-      if (b && b.boundingBox === 'block' && b.id !== 0) { found = true; break; }
-      y--;
-    }
-    const size = e.kind === 'mob' && (e.type === 55 || e.type === 62) ? 0.25 * (e.size || 1) : e.kind === 'item' ? 0.15 : Math.min(e.width, 2) * 0.5;
-    if (!found || e.invisible || e.deathTime > 0 || !this.game.settings.entityShadows) { v.shadow.visible = false; return; }
-    const dist = p.y - y;
-    const a = (1 - dist / 3) * 0.5;
-    if (a <= 0) { v.shadow.visible = false; return; }
-    v.shadow.visible = true;
-    v.shadowParams[3] = a;
-    const s = size * 2;
-    v.shadow.scale.set(s, 1, s);
-    // shadow node is a child of root; root is at p, so place it at ground level
-    v.shadow.position.set(0, y - v.root.position.y + 0.002, 0);
+    const size = (e.kind==='mob'&&(e.type===55||e.type===62)? .25*(e.size||1):e.kind==='item'?.15:Math.min(e.width,2)*.5);
+    const camera=this.r.camPos||[p.x,p.y,p.z],distance=(p.x-camera[0])**2+(p.y-camera[1])**2+(p.z-camera[2])**2;
+    if(e.invisible||e.deathTime>0||!this.game.settings.entityShadows||distance>=256){v.shadow.visible=false;return;}
+    const vertices=shadowGeometry(w,p,size,1-distance/256);
+    v.shadow.visible=vertices.length>0;if(!vertices.length)return;
+    v.shadowParams[3]=1;v.shadow.scale.set(1,1,1);
+    v.shadow.position.set(p.x-v.root.position.x,p.y-v.root.position.y,p.z-v.root.position.z);
+    this.device.updateMesh(v.shadowMesh,vertices,{quads:true});
   }
 
   _renderItem(e, v, p, partial) {

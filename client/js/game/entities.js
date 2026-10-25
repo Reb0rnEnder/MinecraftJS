@@ -1,3 +1,4 @@
+import {NATIVE_METADATA} from './entity-metadata-1.14.4.js';
 import { tickFallingBlock } from './falling-block.js';
 import { tickEntityEffects, tickDragonDeath, isDragon } from '../render/entity-effects.js';
 // Client-side entity tracking (positions, interpolation, metadata, animation state).
@@ -158,6 +159,7 @@ export class EntityManager {
     e.type = p.type;
     e.typeName = e.entityName || 'Unknown object';
     e.objectData = p.objectData;
+    if(e.kind==='minecart')e.cartType=Math.max(0,MINECART_NAMES.indexOf(e.entityName));
     e.width = def ? def.width : 0; e.height = def ? def.height : 0; e.eyeHeight = def ? def.eyeHeight : 0;
     e.pickable = ['boat', 'minecart', 'crystal', 'itemframe', 'leash', 'armorstand', 'shulker_bullet'].includes(e.kind) || e.entityName === 'fireball';
     // crd.a(iz) consumes velocity in constructors for spit/bullets and acceleration
@@ -327,9 +329,17 @@ export class EntityManager {
     // around 1.14's base pose and living sleeping-position insertions.
     const native=m,living498=e.kind==='mob'||e.kind==='player'||e.kind==='armorstand';
     if(native[6]!==undefined)e.pose=native[6];
+    const villagerData=Object.values(native).find(v=>v&&typeof v==='object'&&Number.isInteger(v.villagerProfession));
+    if(villagerData){e.villagerData=villagerData;e.profession=villagerData.villagerProfession;e.villagerProfession=e.profession;e.villagerType=villagerData.villagerType;e.villagerLevel=villagerData.level;}
     if(living498&&native[12]!==undefined)e.sleepingPosition=native[12];
     m={};for(const [key,value] of Object.entries(native)){const i=Number(key);if(i===6||living498&&i===12)continue;m[i-(i>=7?living498&&i>=13?2:1:0)]=value;}
     const name = e.entityName;
+    const ids=NATIVE_METADATA[name];
+    if(ids){
+      const assignments={cat:{DATA_TYPE_ID:'catType',IS_LYING:'catLying',RELAX_STATE_ONE:'catRelaxing',DATA_COLLAR_COLOR:'collar'},fox:{DATA_TYPE_ID:'foxType'},panda:{MAIN_GENE_ID:'pandaGene',HIDDEN_GENE_ID:'pandaHiddenGene'},villager:{DATA_UNHAPPY_COUNTER:'unhappyCounter'}}[name]||{};
+      for(const [field,key] of Object.entries(assignments))if(native[ids[field]]!==undefined)e[key]=native[ids[field]];
+    }
+    if(name==='mooshroom')e.mooshroomType=Object.values(native).find(v=>v==='brown'||v==='red')||e.mooshroomType||'red';
     const set = (index, key) => { if (m[index] !== undefined) e[key] = m[index]; };
     const bit = (index, mask, key) => { if (m[index] !== undefined) e[key] = !!(m[index] & mask); };
     if (m[0] !== undefined) {
@@ -418,16 +428,16 @@ export class EntityManager {
       }
       if (ZOMBIES.has(name)) {
         set(13, 'zombieSpecialType'); set(14, 'armsRaised'); set(15, 'convertingToDrowned');
-        if (name === 'zombie_villager') { set(16, 'converting'); set(17, 'villagerProfession'); }
+        if (name === 'zombie_villager') { set(16, 'converting'); if(!e.villagerData)set(17, 'villagerProfession'); }
       }
       if (FISH.has(name)) set(12, 'fromBucket'); // NOT EntityAgeable's baby flag
-      if (name === 'wolf' || name === 'ocelot' || name === 'parrot') {
+      if (name === 'wolf' || name === 'ocelot' || name === 'cat' || name === 'parrot') {
         bit(13, 1, 'sitting'); bit(13, 4, 'tamed'); set(14, 'ownerUuid');
       }
       if (HORSES.has(name)) {
         bit(13, 2, 'tamed'); bit(13, 4, 'saddled'); bit(13, 8, 'horseBred');
         set(14, 'ownerUuid');
-        if (name === 'donkey' || name === 'mule' || name === 'llama') set(15, 'horseChest');
+        if (name === 'donkey' || name === 'mule' || name === 'llama' || name === 'trader_llama') set(15, 'horseChest');
         if (m[13] !== undefined || m[15] !== undefined) {
           const f = e.metadata[13] || 0;
           // Preserve the existing renderer's horse flag layout at this boundary.
@@ -465,9 +475,9 @@ export class EntityManager {
         case 'ocelot': set(15, 'catType'); break;
         case 'parrot': set(15, 'parrotVariant'); break;
         case 'rabbit': set(13, 'rabbitType'); break;
-        case 'villager': set(13, 'profession'); break;
+        case 'villager': if(!e.villagerData)set(13, 'profession'); break;
         case 'horse': set(15, 'horseVariant'); set(16, 'horseArmor'); break;
-        case 'llama': set(16, 'llamaStrength'); set(17, 'llamaCarpet'); set(18, 'llamaVariant'); break;
+        case 'llama': case 'trader_llama': set(16, 'llamaStrength'); set(17, 'llamaCarpet'); set(18, 'llamaVariant'); break;
         case 'polar_bear': set(13, 'standing'); break;
         case 'snow_golem': bit(12, 16, 'hasPumpkin'); break;
         case 'iron_golem': bit(12, 1, 'playerCreated'); break;

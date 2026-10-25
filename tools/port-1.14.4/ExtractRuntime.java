@@ -14,8 +14,28 @@ public class ExtractRuntime {
   }output.put("tabs",catalog);
   Class<?> block=c("bmv"),state=c("bvt"),access=c("bhb"),pos=c("ew");Object origin=pos.getConstructor(int.class,int.class,int.class).newInstance(0,0,0),air=block.getMethod("a",int.class).invoke(null,0);final Object[] current={air};
   Object world=Proxy.newProxyInstance(access.getClassLoader(),new Class[]{access},(o,m,a)->{Object s=a!=null&&a.length>0&&origin.equals(a[0])?current[0]:air;if(m.getReturnType()==state)return s;if(m.getReturnType().getName().equals("clk"))return state.getMethod("p").invoke(s);if(m.getReturnType()==int.class)return 256;if(m.getReturnType()==boolean.class)return false;return null;});
-  List<Object> selections=new ArrayList<>(),collisions=new ArrayList<>();List<String> errors=new ArrayList<>();
-  for(int id=0;id<11271;id++){Object s=block.getMethod("a",int.class).invoke(null,id);current[0]=s;try{Object shape=state.getMethod("h",access,pos).invoke(s,world,origin);boolean empty=(boolean)call(shape,"b",new Class[]{});selections.add(empty?null:box(call(shape,"a",new Class[]{})));Object col=state.getMethod("i",access,pos).invoke(s,world,origin);List<Object> boxes=new ArrayList<>();for(Object b:(List<?>)call(col,"d",new Class[]{}))boxes.add(box(b));collisions.add(boxes);}catch(Exception e){selections.add(null);collisions.add(null);errors.add(id+":"+e.toString());}}
-  output.put("selections",selections);output.put("collisions",collisions);output.put("errors",errors);Files.writeString(Path.of(args[0]),new Gson().toJson(output));
+  List<Object> selections=new ArrayList<>(),collisions=new ArrayList<>(),rendering=new ArrayList<>();List<String> errors=new ArrayList<>();
+  for(int id=0;id<11271;id++){Object s=block.getMethod("a",int.class).invoke(null,id);current[0]=s;try{Object shape=state.getMethod("h",access,pos).invoke(s,world,origin);boolean empty=(boolean)call(shape,"b",new Class[]{});selections.add(empty?null:box(call(shape,"a",new Class[]{})));Object col=state.getMethod("i",access,pos).invoke(s,world,origin);List<Object> boxes=new ArrayList<>();for(Object b:(List<?>)call(col,"d",new Class[]{}))boxes.add(box(b));collisions.add(boxes);
+    Map<String,Object> render=new LinkedHashMap<>();
+    render.put("renderType",((Enum<?>)state.getMethod("k").invoke(s)).ordinal());
+    render.put("viewBlocking",state.getMethod("m",access,pos).invoke(s,world,origin));
+    render.put("solid",state.getMethod("g",access,pos).invoke(s,world,origin));
+    render.put("occludes",state.getMethod("o").invoke(s));
+    render.put("lightBlock",state.getMethod("b",access,pos).invoke(s,world,origin));
+    render.put("shade",state.getMethod("d",access,pos).invoke(s,world,origin));
+    render.put("emission",state.getMethod("h").invoke(s));
+    render.put("collisionFull",state.getMethod("o",access,pos).invoke(s,world,origin));
+    Object occlusion=state.getMethod("j",access,pos).invoke(s,world,origin);List<Object> ob=new ArrayList<>();
+    for(Object b:(List<?>)call(occlusion,"d",new Class[]{}))ob.add(box(b));render.put("occlusion",ob);
+    rendering.add(render);
+  }catch(Exception e){selections.add(null);collisions.add(null);errors.add(id+":"+e.toString());}}
+  output.put("selections",selections);output.put("collisions",collisions);Map<String,Object> metadata=new LinkedHashMap<>();
+  for(String[] pair:new String[][]{{"cat","arb"},{"fox","arh"},{"panda","arl"},{"villager","avt"},{"zombie_villager","avn"}}){
+    Map<String,Object> fields=new LinkedHashMap<>();
+    for(Class<?> cls=c(pair[1]);cls!=null;cls=cls.getSuperclass())for(Field f:cls.getDeclaredFields())if(Modifier.isStatic(f.getModifiers())&&f.getType()==c("qk")){f.setAccessible(true);fields.put(cls.getName()+"."+f.getName(),c("qk").getMethod("a").invoke(f.get(null)));}
+    metadata.put(pair[0],fields);
+  }
+  output.put("entityMetadata",metadata);
+  output.put("rendering",rendering);output.put("errors",errors);Files.writeString(Path.of(args[0]),new Gson().toJson(output));
  }
 }

@@ -17,6 +17,15 @@ The title uses the native full-resolution CubeMap renderer and overlay, and
 stale extracted asset folders are rejected by version/hash identity. See the
 [asset/panorama milestone](indexed-assets-panorama-1.14.4.md) for the cause and tests.
 
+## Native block properties and visible entity coverage
+
+All block states now use jar-derived rendering/light/view-blocking properties;
+new mobs have native geometry and texture routing, villagers have native layers,
+and shadows project onto ground cells. Builds validate state-property provenance,
+living model/texture coverage and explicit object classification. See the
+[visual property milestone](native-visual-properties-1.14.4.md) for checks and
+remaining animation limits.
+
 ## Native workstations and block interactions
 
 The added workstation screens, native merchant offers, lectern book controls,

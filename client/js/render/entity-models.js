@@ -1,4 +1,4 @@
-// Entity models (1.13.2). Their boxes come from the Minecraft client jar at build time (lib/modelextract.js runs the
+// Entity models (native 1.14.4). Their boxes come from the Minecraft client jar at build time (lib/modelextract.js runs the
 // game's model constructors and records every part: bundles/entity-models.json); this file names the parts and holds
 // the animation (ports of setRotationAngles / setLivingAnimations).
 import { Part } from './boxmodel.js';
@@ -60,7 +60,7 @@ function animationArgs(args = {}) {
 function jarAdapter(name, names, pose, options = {}) {
   const p = J(name, names);
   if (JAR[name].fields.length !== names.length) {
-    throw new Error(`${name}: unexpected jar field layout; rebuild the 1.13.2 assets`);
+    throw new Error(`${name}: unexpected jar field layout; rebuild the assets for this Minecraft version`);
   }
   const all = new Set(), children = new Set();
   const visit = (part) => {
@@ -287,23 +287,30 @@ export function enderman() {
 
 export function villager(tw = 64, th = 64, witch = false) {
   void tw; void th;
-  const p = J(witch ? 'witch' : 'villager', ['head', 'body', 'arms', 'rightLeg', 'leftLeg', 'nose', ...(witch ? ['mole', 'hat'] : [])]);
-  return {
-    parts: p, roots: [p.head, p.body, p.arms, p.rightLeg, p.leftLeg],
-    animate: (m, a) => {
-      const q = m.parts;
-      q.head.ry = a.yaw * PI / 180; q.head.rx = a.pitch * PI / 180;
-      q.arms.py = 3; q.arms.pz = -1; q.arms.rx = -0.75;
-      q.rightLeg.rx = cos(a.ls * 0.6662) * 1.4 * a.lsa * 0.5;
-      q.leftLeg.rx = cos(a.ls * 0.6662 + PI) * 1.4 * a.lsa * 0.5;
-      q.rightLeg.ry = 0; q.leftLeg.ry = 0;
-      if (witch) {
-        q.nose.px = 0; q.nose.py = -2; q.nose.pz = 0;
-        if (a.witchDrinking) { q.nose.py = -2 + sin(a.age * 0.8) * 1.5; }
-      }
-    },
-  };
+  return jarAdapter(witch?'witch':'villager', ['head','hat','hatRim','body','jacket','arms','rightLeg','leftLeg','nose',...(witch?['mole']:[])], (m,a)=>{
+    const p=m.parts;p.head.ry=a.yaw*D2R;p.head.rx=a.pitch*D2R;
+    p.arms.py=3;p.arms.pz=-1;p.arms.rx=-.75;
+    p.rightLeg.rx=cos(a.ls*.6662)*1.4*a.lsa*.5;p.leftLeg.rx=cos(a.ls*.6662+PI)*1.4*a.lsa*.5;
+    if(a.hideHat){p.hat.visible=false;p.hatRim.visible=false;}
+    if(witch&&a.witchDrinking){p.nose.py=-2+sin(a.age*.8)*1.5;}
+  });
 }
+
+export function cat(){
+  const animate=ocelot().animate;
+  return jarAdapter('cat',['backLeft','backRight','frontLeft','frontRight','tail','tail2','head','body'],(m,a)=>animate(m,a),{modelScale:.8});
+}
+export function fox(){
+  return jarAdapter('fox',['head','leftEar','rightEar','nose','body','rightHindLeg','leftHindLeg','rightFrontLeg','leftFrontLeg','tail'],(m,a)=>{
+    const p=m.parts;p.head.rx=a.pitch*D2R;p.head.ry=a.yaw*D2R;
+    for(const [key,phase] of [['rightHindLeg',0],['leftHindLeg',PI],['rightFrontLeg',PI],['leftFrontLeg',0]])p[key].rx=cos(a.ls*.6662+phase)*1.4*a.lsa;
+  });
+}
+export function panda(){return jarAdapter('panda',QUADRUPED,(m,a)=>animateQuadruped(m,a),{quadruped:true,childY:8,childZ:4});}
+export function ravager(){return jarAdapter('ravager',['head','mouth','body','leg1','leg2','leg3','leg4','neck'],(m,a)=>{
+  const p=m.parts;p.head.rx=a.pitch*D2R;p.head.ry=a.yaw*D2R;
+  for(const [key,phase] of [['leg1',0],['leg2',PI],['leg3',PI],['leg4',0]])p[key].rx=cos(a.ls*.6662+phase)*.4*a.lsa;
+});}
 
 // ---------------------------------------------------------------- Quadrupeds
 
@@ -551,7 +558,7 @@ export function vex() {
 
 // pose: crossed (default), attacking, spellcasting, bow. Illusioners show the constructor-hidden hat.
 export function illager(kind = 'evoker') {
-  if (!['evoker', 'vindicator', 'illusioner'].includes(kind)) kind = 'evoker';
+  if (!['evoker', 'vindicator', 'illusioner','pillager'].includes(kind)) kind = 'evoker';
   return jarAdapter('illager', ['head', 'hat', 'body', 'arms', 'rightLeg', 'leftLeg', 'nose', 'rightArm', 'leftArm'], (m, a) => {
     const p = m.parts;
     const pose = a.pose || (a.spellcasting ? 'spellcasting' : a.attacking ? 'attacking' : a.aimedBow ? 'bow' : 'crossed');

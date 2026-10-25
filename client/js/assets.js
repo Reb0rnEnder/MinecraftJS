@@ -1,5 +1,6 @@
 // Asset manager: base game assets (an assets/ folder next to the page, or the zip embedded in a single-file build)
 // layered under user resource packs.
+import {VILLAGER_HATS} from './game/villager-data.js';
 import { setJarModels } from './render/entity-models.js';
 import { platform } from './platform/platform.js';
 import { defaultAssetSource } from './asset-source.js';
@@ -199,6 +200,11 @@ export class Assets {
     this.textures.clear();
     this.images.clear();
     const packsLowFirst = [...this.packs].reverse();
+    this.villagerHats={...VILLAGER_HATS};
+    for(const pack of packsLowFirst)for(const path of pack.list('textures/entity/')){
+      if(!/\/(villager|zombie_villager)\/.*\.png\.mcmeta$/.test(path))continue;
+      try{this.villagerHats[path.slice(9,-7)]=JSON.parse(decodeUtf8(pack.read(path))).villager?.hat||'none';}catch{}
+    }
 
     step('Loading block models...', 15);
     const models = await this.source.models();
@@ -309,6 +315,11 @@ export class Assets {
     code = String(code || 'en_us').toLowerCase();
     if (!this.languages[code]) code = 'en_us';
     const packsLowFirst = [...this.packs].reverse();
+    this.villagerHats={...VILLAGER_HATS};
+    for(const pack of packsLowFirst)for(const path of pack.list('textures/entity/')){
+      if(!/\/(villager|zombie_villager)\/.*\.png\.mcmeta$/.test(path))continue;
+      try{this.villagerHats[path.slice(9,-7)]=JSON.parse(decodeUtf8(pack.read(path))).villager?.hat||'none';}catch{}
+    }
     const lang = { ...MINECRAFTJS_EN };
     const own = {};
     const parse = (text, into) => Object.assign(into, JSON.parse(text));

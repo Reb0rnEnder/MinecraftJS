@@ -9,13 +9,13 @@ test('indexed default resources override jar leftovers; unindexed resources stil
  assert.deepEqual(indexedClientAssets({objects:{'minecraft/textures/gui/title/background/panorama_0.png':{},'minecraft/sounds/test.ogg':{},'minecraft/resourcepacks/programmer_art.zip':{},'realms/lang/en.json':{}}}),['minecraft/textures/gui/title/background/panorama_0.png','minecraft/sounds/test.ogg']);
 });
 test('stale or unversioned extracted assets cannot shadow the native asset index',()=>{
- assert.equal(builtAssetsMatch({},'1.14.4','hash','1.14'),false);assert.equal(builtAssetsMatch({layoutVersion:2,minecraftVersion:'1.13.2',clientJarSha1:'hash',assetIndex:'1.14'},'1.14.4','hash','1.14'),false);
- assert.equal(builtAssetsMatch({layoutVersion:2,minecraftVersion:'1.14.4',clientJarSha1:'hash',assetIndex:'1.14'},'1.14.4','hash','1.14'),true);
+ assert.equal(builtAssetsMatch({},'1.14.4','hash','1.14'),false);assert.equal(builtAssetsMatch({layoutVersion:3,minecraftVersion:'1.13.2',clientJarSha1:'hash',assetIndex:'1.14'},'1.14.4','hash','1.14'),false);
+ assert.equal(builtAssetsMatch({layoutVersion:3,minecraftVersion:'1.14.4',clientJarSha1:'hash',assetIndex:'1.14'},'1.14.4','hash','1.14'),true);
 });
 test('folder asset requests use a new cache identity for corrected indexed textures and bundles',async()=>{
  const urls=[];setPlatform({fetchBytes:async u=>{urls.push(u);return new Uint8Array();},fetchJson:async u=>{urls.push(u);return {};}});
  const source=new FolderSource();await source.bytes('minecraft/textures/gui/title/background/panorama_0.png');await source.models();await source.recipes();await source.entityModels();
- assert.ok(urls.every(u=>u.endsWith('?v=1.14.4-indexed-v2')));
+ assert.ok(urls.every(u=>u.endsWith('?v=1.14.4-native-v3')));
 });
 test('native 1.14 panorama renders full resolution with four passes and 85-degree projection',()=>{
  const draws=[],globals=[],requests=[],device={createMesh:(_f,data)=>({data}),beginFrame(){},setGlobals:g=>globals.push(g),draw:d=>draws.push({...d,alpha:d.params[3]})};

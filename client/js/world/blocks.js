@@ -10,6 +10,7 @@ export const OPPOSITE = [1, 0, 3, 2, 5, 4];
 export const blocks = [];
 export const blocksByName = {};
 export const states = [];
+const renderBlocks = [];
 export const stateById = states;
 
 const STAIRS = (name) => name.endsWith('_stairs');
@@ -56,6 +57,7 @@ export function initBlocks(blocksJson, shapesJson) {
   shapesData = shapesJson;
   blocks.length = 0;
   states.length = 0;
+  renderBlocks.length = 0;
   for (const k of Object.keys(blocksByName)) delete blocksByName[k];
   for (const b of blocksJson) {
     const name = b.name;
@@ -119,6 +121,23 @@ export function initBlocks(blocksJson, shapesJson) {
     if (b.name.endsWith('_slab') || b.isStairs || b.name === 'farmland') { b.filterLight = 15; b.useNeighborBrightness = true; }
   }
   if(blocksByName.grass_path){blocksByName.grass_path.filterLight=15;blocksByName.grass_path.useNeighborBrightness=true;}
+  // Registry metadata's broad "block" category is not an opaque/full-cube test.
+  // Native state properties cover new and existing blocks without name lists.
+  const rendering = shapesJson?.render;
+  if (rendering) {
+    if (rendering.states.length !== states.length) throw new Error('Incomplete native block render properties; regenerate runtime data');
+    for (const info of states) {
+      const value = rendering.values[rendering.states[info.id]];
+      if (!value) throw new Error('Missing block render properties for state '+info.id);
+      const def = blocks[info.blockId];
+      const overrides = {renderType:value.renderType,opaque:value.solid,suffocates:value.viewBlocking,canOcclude:value.occludes,aoLight:value.shade,filterLight:value.lightBlock,
+        emitLight:value.emission,collisionFull:value.collisionFull,occlusionBoxes:value.occlusion,
+        useNeighborBrightness:!value.solid&&!value.collisionFull&&!def.isLiquid};
+      renderBlocks[info.id] = Object.assign(Object.create(def),overrides);
+      if(info.id===def.defaultState)Object.assign(def,overrides);
+    }
+  }
+
 }
 
 function propertyValues(prop) {
@@ -141,7 +160,7 @@ function decodeProperties(def, state) {
 }
 
 export function getBlockById(id) { return blocks[id] || blocks[0]; }
-export function getBlock(state) { const s = states[state]; return s ? getBlockById(s.blockId) : blocks[0]; }
+export function getBlock(state) { const s = states[state]; return renderBlocks[state] || (s ? getBlockById(s.blockId) : blocks[0]); }
 export function getStateProperties(state) { return states[state] ? states[state].properties : {}; }
 export function getStateInfo(state) { return states[state] || states[0] || { id: 0, blockId: 0, name: 'air', properties: {} }; }
 export function findState(name, properties = {}) {
