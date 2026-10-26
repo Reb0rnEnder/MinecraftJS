@@ -1,3 +1,4 @@
+import {pushLocalPlayer} from './entity-pushing.js';
 import {ShaderPackFinal} from '../render/shader-pack.js';
 import {CameraEye} from '../render/camera-eye.js';
 import {MENUS_498} from './menus-1.14.4.js';
@@ -1503,6 +1504,7 @@ export class Game {
     }
 
     this.entities.tick();
+    pushLocalPlayer(this);
     // World.updateEntityWithOptionalForce: passengers update after their vehicle, so a server-driven vehicle
     // (minecart, pig, someone else's boat) has moved before we are put back on it (Entity.updatePassenger)
     if (this.player.ridingEntity) {

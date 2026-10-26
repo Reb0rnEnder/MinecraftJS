@@ -85,7 +85,7 @@ export class Scoreboard {
       const style = { color: TEAM_COLORS[p.color] };
       t.displayName = chatToLegacy(p.displayName);
       t.prefix = chatToLegacy(p.prefix, { style }); t.suffix = chatToLegacy(p.suffix, { style });
-      t.friendlyFire = p.friendlyFire; t.nameTagVisibility = p.nameTagVisibility; t.color = p.color;
+      t.collisionRule = p.collisionRule || 'always'; t.friendlyFire = p.friendlyFire; t.nameTagVisibility = p.nameTagVisibility; t.color = p.color;
     }
     if (p.mode === 0 || p.mode === 3) for (const n of p.players) { t.players.add(n); this.playerTeam.set(n, t); }
     if (p.mode === 4) for (const n of p.players) { t.players.delete(n); if (this.playerTeam.get(n) === t) this.playerTeam.delete(n); }
