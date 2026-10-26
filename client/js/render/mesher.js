@@ -28,10 +28,10 @@ class VBuf {
     this.u8 = new Uint8Array(buf);
     this.cap = verts;
   }
-  push10(x, y, z, u, v, r, g, b, sky, blk) {
+  push10(x, y, z, u, v, r, g, b, sky, blk, animation = 0) {
     if (this.n >= this.cap) this._alloc(this.cap * 2);
     const w = this.n * 10, by = this.n * 20, U = this.u16, B = this.u8;
-    U[w] = (x + 8) * 2048 + 0.5; U[w + 1] = (y + 8) * 2048 + 0.5; U[w + 2] = (z + 8) * 2048 + 0.5;
+    U[w] = (x + 8) * 2048 + 0.5; U[w + 1] = (y + 8) * 2048 + 0.5; U[w + 2] = (z + 8) * 2048 + 0.5; U[w + 3] = animation;
     U[w + 4] = u * 65535 + 0.5; U[w + 5] = v * 65535 + 0.5;
     B[by + 12] = (r > 1 ? 1 : r) * 255 + 0.5; B[by + 13] = (g > 1 ? 1 : g) * 255 + 0.5; B[by + 14] = (b > 1 ? 1 : b) * 255 + 0.5; B[by + 15] = 255;
     B[by + 16] = sky * 17 + 0.5; B[by + 17] = blk * 17 + 0.5;
@@ -333,6 +333,7 @@ export class Mesher {
         const tr = ((tint >> 16) & 255) / 255, tg = ((tint >> 8) & 255) / 255, tb = (tint & 255) / 255;
         const shade = q.shade ? FACE_SHADE[q.dir] : 1;
         const p = q.pos, uv = q.uv;
+        const middleV=(Math.min(uv[1],uv[3],uv[5],uv[7])+Math.max(uv[1],uv[3],uv[5],uv[7]))*.5;
         // Is this quad axis-aligned to its face dir?
         const axis = q.dir >> 1; // 0:y 1:z 2:x
         const ci = axis === 0 ? 1 : axis === 1 ? 2 : 0;
@@ -356,7 +357,7 @@ export class Mesher {
             const sky = corners[0][1] * w0 + corners[1][1] * w1 + corners[2][1] * w2 + corners[3][1] * w3;
             const blk = corners[0][2] * w0 + corners[1][2] * w1 + corners[2][2] * w2 + corners[3][2] * w3;
             const f = shade * ao;
-            buf.push10(lx + vx + ox, ly + vy + oy, lz + vz + oz, uv[v * 2], uv[v * 2 + 1], tr * f, tg * f, tb * f, sky, blk);
+            buf.push10(lx + vx + ox, ly + vy + oy, lz + vz + oz, uv[v * 2], uv[v * 2 + 1], tr * f, tg * f, tb * f, sky, blk, state | (uv[v*2+1]<middleV?32768:0));
           }
         } else {
           let l = ownLight;
@@ -368,7 +369,7 @@ export class Mesher {
           if (l === null) l = w.getLight(x, y, z);
           const sky = l >> 4, blk = l & 15;
           for (let v = 0; v < 4; v++) {
-            buf.push10(lx + p[v * 3] + ox, ly + p[v * 3 + 1] + oy, lz + p[v * 3 + 2] + oz, uv[v * 2], uv[v * 2 + 1], tr * shade, tg * shade, tb * shade, sky, blk);
+            buf.push10(lx + p[v * 3] + ox, ly + p[v * 3 + 1] + oy, lz + p[v * 3 + 2] + oz, uv[v * 2], uv[v * 2 + 1], tr * shade, tg * shade, tb * shade, sky, blk, state | (uv[v*2+1]<middleV?32768:0));
           }
         }
       }

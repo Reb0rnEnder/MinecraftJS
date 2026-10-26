@@ -50,7 +50,7 @@
 // [name, components, byteOffset, type] with type 'unorm16' | 'unorm8' (normalised to 0..1 in shaders).
 export const FORMAT = {
   // Section meshes, 20 bytes/vertex (like Sodium's compact format):
-  //   pos  unorm16 x4: (p + 8) * 2048 (1/2048 block grid, integer positions exact), w unused
+  //   pos  unorm16 x4: (p + 8) * 2048 (1/2048 block grid, integer positions exact), w = state ID + top-vertex bit (optional pack animation)
   //   uv   unorm16 x2: atlas uv * 65535
   //   col  unorm8 x4:  r g b (a unused)
   //   light unorm8 x2: sky / 15, block / 15

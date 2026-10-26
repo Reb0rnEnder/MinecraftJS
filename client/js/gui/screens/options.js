@@ -160,6 +160,7 @@ class VideoScreen extends OptionsBase {
       { slider: true, label: (v) => { const k = Math.round(v * 31); return tr('minecraftjs.options.lodDistance') + ': ' + (k >= 31 ? tr('options.off') : (16 + k * 16) + ' blocks'); },
         value: () => s.lodDistance <= 0 ? 1 : Math.min(30, Math.max(0, (s.lodDistance - 16) / 16)) / 31,
         set: (v) => { const k = Math.round(v * 31); s.lodDistance = k >= 31 ? 0 : 16 + k * 16; } },
+      { label: () => 'Shader Packs…', click: () => import('./shaders.js').then(m=>g.screens.open(new m.ShaderPacksScreen(g,this))) },
       // MinecraftJS: which graphics API the renderer uses
       { label: () => {
           const names = { webgl2: 'WebGL 2', webgpu: 'WebGPU', software: tr('minecraftjs.options.graphicsApi.software') };
