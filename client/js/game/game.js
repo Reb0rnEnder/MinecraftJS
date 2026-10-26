@@ -1,3 +1,4 @@
+import {CameraEye} from '../render/camera-eye.js';
 import { RegistryTags } from './tags.js';
 import { CommandTree } from './commands.js';
 import { startSleeping, sleepingCamera } from './bed-sleep.js';
@@ -124,6 +125,7 @@ export class Game {
     this.world = new World();
     this.world.selectionProvider = (state, x, y, z) => this.selectionBox(state, x, y, z);
     this.player = new LocalPlayer();
+    this.cameraEye = new CameraEye();
     this.player.onStep = (x, y, z, state) => this.sound.playStep(x, y, z, state, [this.player.x, this.player.y, this.player.z]);
     this.player.onFall = (dmg, state) => this.sound.playFall(dmg, this.player.x, this.player.y, this.player.z, state);
     this.player.onWaterEnter = () => this._waterSplash();
@@ -669,6 +671,7 @@ export class Game {
       this.tileRenderer.clear();
     this.pistons.clear();
     }
+    this.cameraEye?.reset();
     this.entityId = p.entityId;
     if (this.gameMode !== (p.gameMode & 7)) this.previousGameMode = this.gameMode;
     this.gameMode = p.gameMode & 7;
@@ -1483,6 +1486,7 @@ export class Game {
     this.pistons.tick();
     this.entityRenderer.tick();
     this.handRenderer.tick();
+    this.cameraEye.tick(this.cameraEntity == null ? pl.eyeHeight() : (this.entities.get(this.cameraEntity)?.eyeHeight ?? pl.eyeHeight()));
     this.portalTick();
 
     // FOV modifier (AbstractClientPlayer.getFovModifier)
@@ -1742,6 +1746,12 @@ export class Game {
     return [x, y + pl.eyeHeight(), z]; // EntityPlayer.getEyeHeight
   }
 
+  cameraPosition(partial=this.partial){
+    const position=this.eyePosition(partial),target=this.cameraEntity==null?this.player.eyeHeight():(this.entities.get(this.cameraEntity)?.eyeHeight??this.player.eyeHeight());
+    position[1]+=this.cameraEye.height(partial,target)-target;
+    return position;
+  }
+
   lookVector(partial = this.partial) {
     const pl = this.player;
     const yaw = pl.prevYaw + (pl.yaw - pl.prevYaw) * partial;
@@ -1766,7 +1776,7 @@ export class Game {
       return;
     }
     const pl = this.player;
-    let [ex, ey, ez] = this.eyePosition(partial);
+    let [ex, ey, ez] = this.cameraPosition(partial);
     const yaw = pl.prevYaw + (pl.yaw - pl.prevYaw) * partial;
     const pitch = pl.prevPitch + (pl.pitch - pl.prevPitch) * partial;
     let camYaw = yaw, camPitch = pitch, roll = 0;
