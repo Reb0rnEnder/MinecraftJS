@@ -78,7 +78,7 @@ export class Scoreboard {
     if (!t) return;
     if (p.mode === 0 || p.mode === 2) {
       t.displayName = p.displayName; t.prefix = p.prefix; t.suffix = p.suffix;
-      t.friendlyFire = p.friendlyFire; t.nameTagVisibility = p.nameTagVisibility; t.color = p.color;
+      t.collisionRule = p.collisionRule || 'always'; t.friendlyFire = p.friendlyFire; t.nameTagVisibility = p.nameTagVisibility; t.color = p.color;
     }
     if (p.mode === 0 || p.mode === 3) for (const n of p.players) { t.players.add(n); this.playerTeam.set(n, t); }
     if (p.mode === 4) for (const n of p.players) { t.players.delete(n); if (this.playerTeam.get(n) === t) this.playerTeam.delete(n); }
