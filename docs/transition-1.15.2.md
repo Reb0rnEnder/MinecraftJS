@@ -2,8 +2,9 @@
 
 Created before implementation. Branch: `1.15.2`, worktree:
 `/home/ender/minecraftjs-1.15.2`. Base: `4b7e1d1` (1.14.4 with corrected world
-entity shader lighting and fence-knot alignment). The inherited runtime is
-still explicitly 1.14.4/protocol 498; no 1.15 server compatibility is claimed.
+entity shader lighting and fence-knot alignment). The branch now selects native
+1.15.2 data and protocol 578. The inherited entity-model bundle is still used
+until the packaged-class extractor is ported.
 
 ## Milestones and completion gates
 
@@ -70,7 +71,11 @@ shader-pack compatibility. No claim of artifact-free shadows is made.
   768 recipes, resource-pack format 5; 93 clientbound/46 serverbound packets.
   Seven clientbound layouts change; serverbound layouts are unchanged in the
   pinned schema. See [preparation details](../tools/port-1.15.2/README.md).
-- Milestones 2–5 and shadow implementation: pending.
+- Milestone 2: complete for login/play framing, packet-ID migration, changed
+  layouts, chunk biomes, particles, light updates, and live join probes.
+  Milestone 3: native registries/tables and indexed assets are active; native
+  1.15 model extraction remains pending. Milestones 4–5 and shadow
+  implementation remain pending.
 
 ## Source references
 

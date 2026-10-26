@@ -932,11 +932,11 @@ export class Game {
   }
 
   on_map_chunk(p) {
-    this.world.loadChunk498(p);
+    this.world.loadChunk578(p);
     for (const nbt of p.blockEntities) this.applyBlockEntity(nbt);
   }
 
-  on_update_light(p) { this.world.updateLight498(p); }
+  on_update_light(p) { this.world.updateLight578(p); }
 
   on_unload_chunk(p) { this.world.unloadChunk(p.chunkX, p.chunkZ); }
 
@@ -1033,6 +1033,7 @@ export class Game {
       case 7: this.world.rainStrength = p.value; this.world.prevRain = p.value; break;
       case 8: this.world.thunderStrength = p.value; break;
       case 10: this.sound.playAtPlayer('entity.elder_guardian.curse', 1, 1); this.hud.elderGuardianTime = 60; break;
+      case 11: this.dead = false; if (this.screens.current instanceof DeathScreen) this.screens.close(); break;
       default: break;
     }
   }

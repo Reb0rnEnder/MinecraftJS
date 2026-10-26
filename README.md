@@ -1,6 +1,6 @@
 # MinecraftJS
 
-> **1.15.2 transition branch:** [plan and milestones](docs/transition-1.15.2.md).
+> **1.15.2 runtime branch:** [plan and milestones](docs/transition-1.15.2.md).
 > Milestone 1 stages verified protocol-578 inputs, native reports and packet IDs.
 > The active browser/proxy runtime below still targets 1.14.4 until the codec,
 > registries and assets pass the transition gates.

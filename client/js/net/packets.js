@@ -1,15 +1,15 @@
-// Native Java 1.14.4 play-state packet encoders (protocol 498).
-import {Writer498,C498,decodePacket498} from './protocol-1.14.4.js';
-import {SERVERBOUND_498 as OUT} from './protocol-1.14.4-ids.js';
-export const PROTOCOL_VERSION=498;
-export const decodePacket=decodePacket498;
-const packet=name=>new Writer498().varint(OUT[name]);
+// Native Java 1.15.2 play-state packet encoders (protocol 578).
+import {Writer578,C578,decodePacket578} from './protocol-1.15.2.js';
+import {SERVERBOUND_578 as OUT} from './protocol-1.15.2-ids.js';
+export const PROTOCOL_VERSION=578;
+export const decodePacket=decodePacket578;
+const packet=name=>new Writer578().varint(OUT[name]);
 function payloadChannel(channel){
  if(!/^[a-z0-9_.-]+:[a-z0-9/._-]+$/.test(channel))throw new Error('Invalid custom payload channel: '+channel);
  return channel;
 }
 export const C={
- ...C498,
+ ...C578,
  settings:(locale,viewDistance,chatFlags,chatColors,skinParts,mainHand=1)=>packet('settings').string(locale).i8(viewDistance).varint(chatFlags).bool(chatColors).u8(skinParts).varint(mainHand).build(),
  tabComplete:(text,_position=null,transactionId=0)=>packet('tab_complete').varint(transactionId).string(text).build(),
  chat:msg=>packet('chat').string(msg.slice(0,256)).build(),
@@ -50,4 +50,4 @@ export const C={
  spectate:uuid=>packet('spectate').uuid(uuid).build(),
  useItem:(hand=0)=>packet('use_item').varint(hand).build(),
 };
-export const mcStringBytes=s=>new Writer498().string(s).build();
+export const mcStringBytes=s=>new Writer578().string(s).build();

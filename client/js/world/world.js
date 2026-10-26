@@ -1,5 +1,5 @@
 import {scaffoldingCollision} from './scaffolding.js';
-import {decodeChunkData498} from './chunk-1.14.4.js';
+import {decodeChunkData578} from './chunk-1.15.2.js';
 import { getFluidState, fluidHeightAt } from './fluids.js';
 // Client world: chunk storage, block access, light propagation, collision and raycasting.
 import { biomeInfo } from './biomes.js';
@@ -83,8 +83,8 @@ export class World {
     return light;
   }
 
-  loadChunk498(packet) {
-    const decoded=decodeChunkData498(packet),{x,z,groundUp,bitMap}=packet;
+  loadChunk578(packet) {
+    const decoded=decodeChunkData578(packet),{x,z,groundUp,bitMap}=packet;
     let c=this.getChunk(x,z);
     if(!c){c=new Chunk(x,z,this.hasSky);this.chunks.set(World.key(x,z),c);this._gen++;}
     c.nativeLight=this._lightColumn(x,z);c.heightmaps=packet.heightmaps;
@@ -104,7 +104,7 @@ export class World {
     return c;
   }
 
-  updateLight498(packet) {
+  updateLight578(packet) {
     const light=this._lightColumn(packet.chunkX,packet.chunkZ),changed=new Set();
     for(const [name,arrays,empty] of [['sky',packet.skyLight,packet.emptySkyLightMask],['block',packet.blockLight,packet.emptyBlockLightMask]]) {
       for(let i=0;i<18;i++) {

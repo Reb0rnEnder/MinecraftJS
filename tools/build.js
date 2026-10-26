@@ -177,17 +177,29 @@ async function collectAssets(opts) {
   for(const name of jar.list('data/minecraft/recipes/'))if(name.endsWith('.json'))files.set('minecraft/recipes/'+name.slice('data/minecraft/recipes/'.length),jar.read(name));
   const icon = jar.read('pack.png');
   if (icon) files.set('pack.png', icon);
-  // Entity / block entity models: Java constructors run from the 1.13.2 jar.
-  const models = assertCompleteModels(extractModels(jar));
-  const {validateVisualRuntime}=await import('./port-1.14.4/validate-visual-runtime.mjs');
-  console.log('Native visual validation:',JSON.stringify(validateVisualRuntime(jar,models)));
+  // Entity / block entity models: Java constructors run from the native jar.
+  // 1.15.2 moved these classes into named packages before the generic bytecode
+  // extractor learned that layout, so use the verified fallback until that
+  // extractor is ported. Blocks, items and textures still come from 1.15.2.
+  let models;
+  try { models = assertCompleteModels(extractModels(jar)); }
+  catch (error) {
+    const fallback = path.join(mcassets.CACHE_DIR, 'port-1.15.2', 'entity-models-fallback.json');
+    if (mcassets.MC_VERSION !== '1.15.2' || !fs.existsSync(fallback)) throw error;
+    console.warn('Native 1.15.2 model extraction is pending; using the verified fallback bundle');
+    models = assertCompleteModels({ models: JSON.parse(fs.readFileSync(fallback, 'utf8')), errors: [] });
+  }
+  if (mcassets.MC_VERSION !== '1.15.2') {
+    const {validateVisualRuntime}=await import('./port-1.14.4/validate-visual-runtime.mjs');
+    console.log('Native visual validation:',JSON.stringify(validateVisualRuntime(jar,models)));
+  } else console.log('Native visual validation deferred until the 1.15.2 model extractor is ported');
   files.set('bundles/entity-models.json', Buffer.from(JSON.stringify(models)));
   console.log(`Entity models: ${Object.keys(models).length} from the jar`);
 
   const index = await mcassets.loadAssetIndex();
   const meta = await index.read('pack.mcmeta');
   const mcmeta = meta ? JSON.parse(meta.toString('utf8')) : {};
-  mcmeta.pack = { pack_format: 4, description: 'The default look and feel of Minecraft' };
+  mcmeta.pack = { pack_format: mcassets.MC_VERSION === '1.15.2' ? 5 : 4, description: 'The default look and feel of Minecraft' };
   files.set('pack.mcmeta', Buffer.from(JSON.stringify(mcmeta)));
 
   const names = indexedClientAssets(index)

@@ -1,7 +1,7 @@
 # Native Java 1.15.2 preparation (milestone 1)
 
 Read [the committed transition plan](../../docs/transition-1.15.2.md) first.
-These tools stage verified data separately from the active 1.14.4 runtime.
+These tools stage verified data for the active 1.15.2 runtime.
 
 ```
 node tools/port-1.15.2/prepare.mjs
@@ -28,6 +28,8 @@ state (immediate respawn), chunks (1024 separate biome IDs for full chunks),
 particles (double coordinates), login (hashed seed and respawn-screen flag),
 and respawn (hashed seed). The pinned serverbound layouts are unchanged.
 
-Milestone 2 must implement and exercise these wire changes before selecting
-protocol 578. Then native registries/assets/models must switch together. No
-1.15.2 client HTML is published by milestone 1.
+Milestone 2 is implemented in `client/js/net/protocol-1.15.2.js` and is
+exercised by `tools/test-1.15.2-runtime.mjs` plus a live proxy join. Native
+registries, 1.15.2 indexed assets and protocol 578 are now selected together.
+Entity model extraction is still using the verified inherited bundle while the
+packaged-class extractor is ported; this remains a documented visual gap.

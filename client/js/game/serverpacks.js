@@ -125,7 +125,7 @@ export class ServerPacks {
     screen.resetProgressAndMessage(tr('resourcepack.downloading'));
     screen.displayLoadingString(tr('resourcepack.requesting'));
     const g = this.game;
-    const headers = { 'X-Minecraft-Username': g.username || '', 'X-Minecraft-UUID': (g.playerUuid || '').replace(/-/g, ''), 'X-Minecraft-Version': '1.14.4' };
+    const headers = { 'X-Minecraft-Username': g.username || '', 'X-Minecraft-UUID': (g.playerUuid || '').replace(/-/g, ''), 'X-Minecraft-Version': '1.15.2' };
     const route = proxyRoute('/pack?url=' + encodeURIComponent(url));
     let res = null;
     if (route) { try { res = await fetch(route, { headers }); } catch (e) { res = null; } }
