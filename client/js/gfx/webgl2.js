@@ -315,6 +315,36 @@ export class WebGL2Device {
     };
   }
 
+  // Isolated GLSL ES final pass; regular scene pipelines and vertex formats stay intact.
+  createFinalShaderPass(fragment){
+    const gl=this.gl,shaders=[];let program;
+    const compile=(type,source)=>{const shader=gl.createShader(type);shaders.push(shader);gl.shaderSource(shader,source);gl.compileShader(shader);if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))throw Error('Shader pack: '+gl.getShaderInfoLog(shader));return shader;};
+    try{
+      program=gl.createProgram();
+      gl.attachShader(program,compile(gl.VERTEX_SHADER,`#version 300 es
+      out vec2 texCoord;
+      void main(){vec2 p=vec2(float((gl_VertexID<<1)&2),float(gl_VertexID&2));texCoord=p;gl_Position=vec4(p*2.0-1.0,0.0,1.0);}`));
+      gl.attachShader(program,compile(gl.FRAGMENT_SHADER,fragment));gl.linkProgram(program);
+      if(!gl.getProgramParameter(program,gl.LINK_STATUS))throw Error('Shader pack: '+gl.getProgramInfoLog(program));
+      const uniforms=[];const supported=new Set(['viewWidth','viewHeight','aspectRatio','frameTimeCounter','frameTime','worldTime','frameCounter','isEyeInWater','screenBrightness']);
+      for(let i=0;i<gl.getProgramParameter(program,gl.ACTIVE_UNIFORMS);i++){
+        const u=gl.getActiveUniform(program,i);if(u.size!==1)throw Error('Final-pass uniform arrays are unsupported: '+u.name);
+        if(u.type===gl.SAMPLER_2D){if(!['colortex0','colortex1','gcolor','composite'].includes(u.name))throw Error('Final pass needs an unavailable scene buffer: '+u.name);}
+        else if(!supported.has(u.name)||![gl.FLOAT,gl.INT,gl.BOOL].includes(u.type))throw Error('Unsupported final-pass uniform: '+u.name);
+        uniforms.push({name:u.name,type:u.type,location:gl.getUniformLocation(program,u.name)});
+      }
+      const vao=gl.createVertexArray();
+      return {destroy:()=>{gl.deleteProgram(program);gl.deleteVertexArray(vao);},draw:(scene,frame)=>{
+        gl.useProgram(program);gl.bindVertexArray(vao);gl.disable(gl.DEPTH_TEST);gl.depthMask(false);gl.disable(gl.CULL_FACE);gl.disable(gl.BLEND);gl.disable(gl.SCISSOR_TEST);gl.colorMask(true,true,true,true);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,scene.tex);
+        const values={viewWidth:this.width,viewHeight:this.height,aspectRatio:this.width/this.height,frameTimeCounter:frame.time,frameTime:frame.delta,worldTime:frame.worldTime,frameCounter:frame.frame,isEyeInWater:frame.underwater?1:0,screenBrightness:frame.gamma};
+        for(const u of uniforms){const v=u.type===gl.SAMPLER_2D?0:values[u.name];if(u.type===gl.FLOAT)gl.uniform1f(u.location,v);else gl.uniform1i(u.location,v);}
+        gl.drawArrays(gl.TRIANGLES,0,3);
+        this.curProgram=null;this.curVao=null;this.curState='';this.curStateObj=null;this.boundTex[0]=null;
+      }};
+    }catch(e){if(program)gl.deleteProgram(program);throw e;}
+    finally{for(const shader of shaders)gl.deleteShader(shader);}
+  }
+
   _ensureQuads(quads) {
     if (quads <= this.quadCapacity) return;
     const gl = this.gl;
