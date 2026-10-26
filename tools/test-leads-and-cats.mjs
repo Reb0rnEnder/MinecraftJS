@@ -33,3 +33,12 @@ test('attached leads render independently of their mob and are removed immediate
  const entities={all:()=>[mob],get:()=>undefined,interp:e=>({x:e.x,y:e.y,z:e.z})},g={entities,entityId:0,player,assets:{},settings:{renderDistance:8},renderer:{entityRoot:new Node(),camPos:[0,0,0],boxVisible:()=>true},device:{createMesh:()=>({}),updateMesh:()=>updates++,destroyMesh:()=>destroyed++}};
  const effects=new EntityEffects(g);effects.update(.5);assert.ok(effects.entries.has('leash:4'));assert.equal(updates,1);mob.leashHolder=-1;effects.update(.5);assert.equal(effects.entries.size,0);assert.equal(destroyed,1);mob.leashHolder=42;effects.update(.5);assert.equal(effects.entries.size,0);
 });
+
+test('fence knot spawn/teleport centres packet block positions, bounds and rope anchors, including negative coordinates',async()=>{
+ const{EntityManager}=await import('../client/js/game/entities.js');const OBJECT_TYPES=existsSync(new URL('../client/js/game/entity-types.js',import.meta.url))?(await import('../client/js/game/entity-types.js')).OBJECT_TYPES:null;
+ const type=OBJECT_TYPES?Number(Object.keys(OBJECT_TYPES).find(k=>OBJECT_TYPES[k].kind==='leash')):77,manager=new EntityManager({entityRenderer:{remove(){}}});
+ assert.ok(Number.isFinite(type));manager.spawnObject({entityId:42,type,x:-2,y:64,z:3,yaw:0,pitch:0,objectData:0,velocity:{x:0,y:0,z:0}});const e=manager.get(42);
+ assert.deepEqual([e.x,e.y,e.z],[-1.5,64.5,3.5]);assert.deepEqual(manager.interp(e,.5),{x:-1.5,y:64.5,z:3.5});assert.equal(e.eyeHeight,-.0625);assert.equal(e.width,.375);assert.deepEqual(e.box,[-1.6875,64.375,3.3125,-1.3125,64.875,3.6875]);
+ manager.teleport({entityId:42,x:8,y:65,z:-4,yaw:0,pitch:0,onGround:false});assert.deepEqual([e.x,e.y,e.z],[8.5,65.5,-3.5]);assert.equal(e.inc,0);
+ const endpoints=leashEndpoints({x:10,y:64,z:-3,width:.9,height:1.4},e,.5);assert.equal(endpoints.end[0],8.5);assert.equal(endpoints.end[2],-3.5);assert.ok(Math.abs(endpoints.end[1]-(65.5+.25-.0625*.7))<1e-9);
+});
