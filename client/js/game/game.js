@@ -671,6 +671,7 @@ export class Game {
   on_keep_alive(p) { this.send(C.keepAlive(p.keepAliveId)); }
 
   on_login(p) {
+    this.interaction?.predictedBlocks?.clear();
     // handleJoinGame always starts a new WorldClient (proxies may send another Join Game on server switch)
     if (this.inWorld) {
       this.world.clear();
@@ -751,6 +752,7 @@ export class Game {
   }
 
   on_respawn(p) {
+    this.interaction?.predictedBlocks?.clear();
     if (p.dimension !== this.dimension) {
       this.world.clear();
       this._resetMeshing();
