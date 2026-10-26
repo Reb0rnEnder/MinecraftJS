@@ -675,6 +675,8 @@ export class Game {
     this.pistons.clear();
     }
     this.entityId = p.entityId;
+    this.selfMetadata = {};
+    this.maxHealth = 20;
     if (this.gameMode !== (p.gameMode & 7)) this.previousGameMode = this.gameMode;
     this.gameMode = p.gameMode & 7;
     this.hardcore = !!(p.gameMode & 8);
@@ -754,7 +756,7 @@ export class Game {
     }
     this.dimension = p.dimension;
     this.world.setDimension(p.dimension);
-    this.difficulty = p.difficulty;
+    if(p.difficulty!==undefined)this.difficulty = p.difficulty;
     if (this.gameMode !== (p.gamemode)) this.previousGameMode = this.gameMode;
     this.gameMode = p.gamemode;
     this.levelType = p.levelType;

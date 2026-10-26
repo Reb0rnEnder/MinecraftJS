@@ -1,3 +1,4 @@
+import {NATIVE_METADATA} from '../game/entity-metadata-1.14.4.js';
 import { debugTargets } from './debug-targets.js';
 import {drawEffectIcon} from './effect-icons.js';
 import { getStateProperties } from '../world/blocks.js';
@@ -494,7 +495,7 @@ export class Hud {
     const left = W / 2 - 91, right = W / 2 + 91;
     const top = H - 39;
     const maxHealth = g.maxHealth || 20;
-    const absorption = (g.selfMetadata && g.selfMetadata[17]) || 0;
+    const absorption = (g.selfMetadata && g.selfMetadata[NATIVE_METADATA.player.DATA_PLAYER_ABSORPTION_ID]) || 0;
     const rows = Math.ceil((maxHealth + absorption) / 2 / 10);
     const rowH = Math.max(10 - (rows - 2), 3);
     const armorY = top - (rows - 1) * rowH - 10;

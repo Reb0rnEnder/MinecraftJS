@@ -55,7 +55,7 @@ const decoders={
   statistics:r=>({entries:array(r,r=>({categoryId:r.varint(),statisticId:r.varint(),value:r.varint()}))}),
   declare_commands:r=>readCommandTree(r),
   login:r=>({entityId:r.i32(),gameMode:r.u8(),dimension:r.i32(),maxPlayers:r.u8(),levelType:r.string(),viewDistance:r.varint(),reducedDebugInfo:r.bool()}),
-  respawn:r=>({dimension:r.i32(),gameMode:r.u8(),levelType:r.string()}),
+  respawn:r=>({dimension:r.i32(),gamemode:r.u8(),levelType:r.string()}),
   difficulty:r=>({difficulty:r.u8(),difficultyLocked:r.bool()}),
   keep_alive:r=>({keepAliveId:r.i64()}),
   kick_disconnect:r=>({reason:r.string()}),

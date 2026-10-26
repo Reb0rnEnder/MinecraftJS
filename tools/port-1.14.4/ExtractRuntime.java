@@ -50,7 +50,7 @@ public class ExtractRuntime {
     rendering.add(render);
   }catch(Exception e){selections.add(null);collisions.add(null);errors.add(id+":"+e.toString());}}
   output.put("selections",selections);output.put("collisions",collisions);Map<String,Object> metadata=new LinkedHashMap<>();
-  for(String[] pair:new String[][]{{"cat","arb"},{"fox","arh"},{"panda","arl"},{"villager","avt"},{"zombie_villager","avn"}}){
+  for(String[] pair:new String[][]{{"player","awg"},{"cat","arb"},{"fox","arh"},{"panda","arl"},{"villager","avt"},{"zombie_villager","avn"}}){
     Map<String,Object> fields=new LinkedHashMap<>();
     for(Class<?> cls=c(pair[1]);cls!=null;cls=cls.getSuperclass())for(Field f:cls.getDeclaredFields())if(Modifier.isStatic(f.getModifiers())&&f.getType()==c("qk")){f.setAccessible(true);fields.put(cls.getName()+"."+f.getName(),c("qk").getMethod("a").invoke(f.get(null)));}
     metadata.put(pair[0],fields);
