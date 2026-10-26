@@ -168,7 +168,7 @@ class VideoScreen extends OptionsBase {
           const cur = g.device.name === 'WebGPU' ? 'webgpu' : g.device.name === 'Software' ? 'software' : 'webgl2';
           return trOption('minecraftjs.options.graphicsApi', (names[s.graphicsApi] || 'WebGL 2') + (s.graphicsApi !== cur ? (g.device.graphicsSelection?.requested===s.graphicsApi?' (using '+names[cur]+')':' '+tr('minecraftjs.options.restart')) : ''));
         },
-        tip:()=>g.device.graphicsSelection?.requested===s.graphicsApi?g.device.graphicsSelection.errors.join('\n'):'',
+        tip:()=>g.device.graphicsSelection?.requested===s.graphicsApi?g.device.graphicsSelection.errors.map(error=>'§c'+error.replace(/^[a-z0-9_-]+:\s*/i,'')).join('\n'):'',
         click: () => { const order = ['webgl2', 'webgpu', 'software']; s.graphicsApi = order[(order.indexOf(s.graphicsApi) + 1) % order.length]; } },
       // MinecraftJS: Super Potato Mode trades quality for speed on any graphics API (lower internal resolution, a
       // single-pass menu panorama); always on with the CPU rasteriser
