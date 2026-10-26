@@ -1,3 +1,4 @@
+import {ShaderPackFinal} from '../render/shader-pack.js';
 import { startSleeping, sleepingCamera } from './bed-sleep.js';
 import { jarSelectionBox } from '../world/blocks.js';
 import { sectionLod, lodDistance } from '../render/lod.js';
@@ -110,6 +111,7 @@ export class Game {
     this.pistons = new Pistons(this);
     this.serverPacks = new ServerPacks(this);
     this.postEffects = new PostEffects(this);
+    this.shaderPack = new ShaderPackFinal(this);
     this.particles = new Particles(this);
     this.debugLines = new DebugLines(this);
     this.weather = new Weather(this);
@@ -664,6 +666,8 @@ export class Game {
     this.pistons.clear();
     }
     this.entityId = p.entityId;
+    this.selfMetadata = {};
+    this.maxHealth = 20;
     if (this.gameMode !== (p.gameMode & 7)) this.previousGameMode = this.gameMode;
     this.gameMode = p.gameMode & 7;
     this.hardcore = !!(p.gameMode & 8);
@@ -1825,7 +1829,10 @@ export class Game {
     // EntityRenderer.loadEntityShader: spectating a creeper, spider or enderman in first person
     const viewed = this.cameraEntity != null && this.thirdPerson === 0 ? this.entities.get(this.cameraEntity) : null;
     const post = viewed && this.device.createRenderTarget ? this.postEffects.get(entityShaderName(viewed)) : null;
-    r.render(hand, post);
+    const packPost = !post && this.shaderPack.active ? this.shaderPack : null;
+    this.shaderPack.prepareTerrain(r.camPos,this.eyePosition(partial));
+    r.render(hand, post || packPost);
+    if(packPost)packPost.render();
     if (post) post.render(r.lightmap, ((this.ticks + partial) % 20) / 20);
     this.profiler.endStart('gui');
     gui.begin();
