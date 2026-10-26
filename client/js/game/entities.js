@@ -44,6 +44,15 @@ const MOB_NAMES = {
   97: 'SnowMan', 98: 'Ozelot', 99: 'VillagerGolem', 100: 'EntityHorse', 101: 'Rabbit', 120: 'Villager',
 };
 
+// The 1.15.2 entity registry is data-driven.  Keep the inherited table only
+// as a fallback for older or incomplete asset sets; wire IDs must resolve from
+// the active version's native registry or adjacent mobs can change identity.
+export function nativeEntityDefinition(game, id) {
+  const native = game?.assets?.data?.entities?.find(e => e.id === id);
+  if (!native) return ENTITY_TYPES[id];
+  return { ...native, eyeHeight: native.eyeHeight ?? native.height * 0.85, mob: native.type === 'mob' };
+}
+
 const wrap = (a) => { a %= 360; if (a >= 180) a -= 360; if (a < -180) a += 360; return a; };
 
 // EntityHanging.updateBoundingBox: hanging block centre pushed 0.46875 towards the wall, shifted half a
@@ -128,7 +137,7 @@ export class EntityManager {
 
   spawnMob(p) {
     const e = this._base(p.entityId, p.x, p.y, p.z, p.yaw, p.pitch);
-    const def = ENTITY_TYPES[p.type];
+    const def = nativeEntityDefinition(this.game, p.type);
     e.entityType = p.type; // the unmodified wire ID, never an internal family
     e.entityNamespace = 'entity';
     e.entityName = def ? def.name : null;
