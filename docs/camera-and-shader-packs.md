@@ -16,7 +16,9 @@ removes it. WebGL 2 is required. The imported bytes and selection persist across
 reloads. Compilation happens before replacing a working pack, and an unavailable
 backend or a failed dimension variant does not take down the game loop.
 
-This is **final-stage compatibility only**, not full OptiFine or BSL support.
+The original implementation below covered final-stage compatibility only.
+[Vegetation support and the backport audit](shader-pack-vegetation.md) now add
+BSL waving functions on all four targets; full OptiFine/BSL support remains open.
 It executes the pack's actual final fragment program against the completed
 MinecraftJS scene, before the GUI. The source loader expands root/relative
 includes, selects world0/world-1/world1 variants and adapts basic GLSL 120 syntax
@@ -26,7 +28,7 @@ requirements are rejected rather than populated with misleading fake data.
 The standard scene pipelines and vertex formats are retained.
 
 The supplied BSL v10.1.8 final shader compiles and renders in all three dimensions;
-this includes its final sharpening/image effects. **BSL's lighting, shadows,
+this includes its final sharpening/image effects. The follow-up also runs its vegetation functions. **BSL's lighting, shadows,
 reflections, volumetrics, bloom/composite history, TAA and material pipeline do
 not run.** That needs a substantially larger gbuffer/depth/shadow/composite
 integration. Current final-pass support does not establish arbitrary pack

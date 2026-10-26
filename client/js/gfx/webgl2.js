@@ -315,6 +315,30 @@ export class WebGL2Device {
     };
   }
 
+  // Optional terrain position hook. Reuses the existing terrain program/format and its unused position.w.
+  createTerrainAnimation(source,lookup){
+    const ids=this.createTexture({...lookup,filter:'nearest'});let program;
+    try{
+      const declaration=`
+${source}
+uniform sampler2D uWaveIds;
+vec3 mcjsWave(vec3 p){
+ int packed=int(aPos.w*65535.0+0.5);
+ int state=packed&32767;
+ vec2 id=texelFetch(uWaveIds,ivec2(state&255,state>>8),0).rg;
+ int category=int(floor((id.r*255.0+id.g*65280.0+0.5)/100.0));
+ if(category<100||category>108)return p;
+ vec3 world=(uModel*vec4(p,1.0)).xyz;
+ return p+WavingBlocks(world-cameraPosition,category,(packed&32768)!=0?1.0:0.0)-(world-cameraPosition);
+}
+`;
+      const vs=SHADERS.terrain.vs.replace('void main() {',declaration+'void main() {').replace('  vec4 mv =','  p=mcjsWave(p);\n  vec4 mv =');
+      program=this._program('pack terrain animation',{vs,fs:SHADERS.terrain.fs});
+      const gl=this.gl;return {program,ids,frame:null,uIds:gl.getUniformLocation(program.p,'uWaveIds'),uFrame:gl.getUniformLocation(program.p,'uWaveFrame'),uCamera:gl.getUniformLocation(program.p,'cameraPosition'),uEye:gl.getUniformLocation(program.p,'relativeEyePosition'),destroy:()=>{if(this.terrainAnimation?.program===program)this.terrainAnimation=null;gl.deleteProgram(program.p);this.destroyTexture(ids);}};
+    }catch(e){this.destroyTexture(ids);throw e;}
+  }
+  setTerrainAnimation(animation,frame){this.terrainAnimation=animation;if(animation)animation.frame=frame;}
+
   // Isolated GLSL ES final pass; regular scene pipelines and vertex formats stay intact.
   createFinalShaderPass(fragment){
     const gl=this.gl,shaders=[];let program;
@@ -569,7 +593,8 @@ export class WebGL2Device {
     const gl = this.gl;
     const m = d.mesh;
     if (!m || !m.vertexCount) return;
-    const prog = this.programs[d.pipeline];
+    const animation=d.pipeline==='terrain'?this.terrainAnimation:null;
+    const prog = animation ? animation.program : this.programs[d.pipeline];
     if (this.curProgram !== prog) { gl.useProgram(prog.p); this.curProgram = prog; }
     if (prog.globalsVersion !== this.globalsVersion) {
       const G = this.globals;
@@ -590,6 +615,11 @@ export class WebGL2Device {
     if (this.boundTex[0] !== t0) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, t0); this.boundTex[0] = t0; }
     const lm = (this.globals.lightmap || this.white).tex;
     if (this.boundTex[1] !== lm) { gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, lm); gl.activeTexture(gl.TEXTURE0); this.boundTex[1] = lm; }
+    if(animation){
+      const f=animation.frame,c=f.camera,e=f.eye;
+      gl.uniform1i(animation.uIds,2);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,animation.ids.tex);gl.activeTexture(gl.TEXTURE0);
+      gl.uniform4f(animation.uFrame,f.time,f.worldTime,0,0);gl.uniform3fv(animation.uCamera,c);gl.uniform3f(animation.uEye,c[0]-e[0],c[1]-e[1],c[2]-e[2]);
+    }
     this._applyState(d.state || EMPTY_STATE);
     if (this.curVao !== m.vao) { gl.bindVertexArray(m.vao); this.curVao = m.vao; }
     const mode = d.primitive === 'lines' ? gl.LINES : gl.TRIANGLES;

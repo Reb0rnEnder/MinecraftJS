@@ -1887,6 +1887,7 @@ export class Game {
     const viewed = this.cameraEntity != null && this.thirdPerson === 0 ? this.entities.get(this.cameraEntity) : null;
     const post = viewed && this.device.createRenderTarget ? this.postEffects.get(entityShaderName(viewed)) : null;
     const packPost = !post && this.shaderPack.active ? this.shaderPack : null;
+    this.shaderPack.prepareTerrain(r.camPos,this.eyePosition(partial));
     r.render(hand, post || packPost);
     if(packPost)packPost.render();
     if (post) post.render(r.lightmap, ((this.ticks + partial) % 20) / 20);

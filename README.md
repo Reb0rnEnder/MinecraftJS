@@ -5,7 +5,7 @@
 > The [content milestone](docs/workstations-content-1.14.4.md) records workstation/block support and its limits.
 > The [runtime milestone](docs/runtime-1.14.4-milestone.md) records browser join/reconnect validation and remaining work.
 > The [complete feature audit](docs/feature-audit-1.14.4.md) covers every 1.14 additions/change topic and target patch changes, including confirmed gaps and unexecuted gameplay checks. The [1.14.1–1.14.4 patch review](docs/patch-audit-1.14.1-1.14.4.md) inventories all requested patch topics and bug tickets. Asset coverage does not imply full parity.
-> Experimental [shader-pack final-stage support](docs/camera-and-shader-packs.md) is available in Video Settings with WebGL 2. This runs final image effects only; full BSL lighting/shadows are not implemented.
+> Experimental [shader-pack image effects and vegetation support](docs/camera-and-shader-packs.md) is available in Video Settings with WebGL 2. This runs final image effects and BSL vegetation animation; full BSL lighting/shadows are not implemented.
 
 
 A Minecraft 1.14.4 client that runs in the browser (WebGL 2 or WebGPU). It joins vanilla 1.14.4 servers through a
