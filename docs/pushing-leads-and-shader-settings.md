@@ -55,3 +55,7 @@ an overlapping player from x=0.5 to x=0.997485 without input or browser errors.
 The real UI imported the supplied BSL ZIP, changed WAVING_GRASS, applied and
 persisted it, then reloaded with both terrain stages compiled and no browser
 errors. This is scoped validation, not a claim of complete game/shader parity.
+
+Follow-up: [world entity lighting, corrected sky/block coordinates and fence
+knot alignment](entity-lighting-and-fence-knots.md) supersedes the terrain-only
+lighting limitation above and records the shadow implementation scope.

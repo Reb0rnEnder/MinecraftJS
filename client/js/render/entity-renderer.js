@@ -781,7 +781,7 @@ export class EntityRenderer {
         v = { root: new Node(), kind: 'leash', materials: [] };
         const mat = this._mat(v, 'entity/lead_knot.png');
         const p = M.blockModel('leash', ['knot']).knot; // ModelLeashKnot
-        const g = new Node(); g.add(p.build()); p.setMaterial(mat); g.scale.set(-1 / 16, -1 / 16, 1 / 16); g.position.y = 0.5;
+        const g = new Node(); g.add(p.build()); p.setMaterial(mat); g.scale.set(-1 / 16, -1 / 16, 1 / 16); // Native knot is centred at the entity position.
         v.root.add(g);
         break;
       }
