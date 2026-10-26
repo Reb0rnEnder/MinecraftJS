@@ -501,6 +501,12 @@ export class Interaction {
         if (e.kind === 'minecart' && e.cartType === 6 && g.canUseCommandBlock()) { g.screens.open(new CommandMinecartScreen(g, e, 12, 13)); return; }
         if (g.entities.isInteractive(e, stack)) return;
       } else if (t && t.type === 'block') {
+        // ItemFirework is an elytra-use item, not a block-use item. If the
+        // crosshair hits terrain, send TryUseItem instead of consuming the
+        // click as TryUseItemOnBlock.
+        if (stack && g.items.name(stack.id) === 'firework_rocket' && this.player.elytraFlying) {
+          if (this.sendUseItem(stack, hand)) { this.resetEquipped(hand); return; }
+        }
         const b = getBlock(g.world.getState(t.x, t.y, t.z));
         if (b && b.id !== 0) {
           const before = stack ? stack.count : 0;
@@ -658,7 +664,9 @@ export class Interaction {
       case 'minecart': case 'chest_minecart': case 'furnace_minecart': case 'tnt_minecart': case 'hopper_minecart': case 'command_block_minecart': case 'spawner_minecart':
         return !!(b && /rail$/.test(b.name));
       case 'armor_stand': return t.face !== 0;
-      case 'firework_rocket': return true;
+      // ItemFirework succeeds while gliding; a dry rocket must fall through
+      // to the normal use-item path instead of consuming a block click.
+      case 'firework_rocket': return !!this.player.elytraFlying;
       case 'painting': case 'item_frame': case 'glow_item_frame': return t.face >= 2;
       case 'wooden_hoe': case 'stone_hoe': case 'iron_hoe': case 'diamond_hoe': case 'golden_hoe':
         return t.face !== 0 && air(above(t.y + 1)) && !!(b && (b.name === 'grass' || b.name === 'dirt'));
@@ -709,6 +717,7 @@ export class Interaction {
       if (g.items.damage(held) >= g.items.maxDurability(held.id)) return false;
       if (g.items.enchantLevel(held, 'riptide') > 0 && !this._wetForRiptide()) return false;
     }
+    if (name === 'firework_rocket' && this.player.elytraFlying) return true;
     const action = g.items.useAction(held);
     if (name === 'crossbow' && g.items.crossbowCharged(held)) return true; // Server fires and clears Charged NBT.
     if (action === 'bow' || action === 'crossbow') {
