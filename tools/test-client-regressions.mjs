@@ -661,3 +661,11 @@ test(version + ': renderer damage stages keep model scale, reuse geometry and cl
  assert.equal(first.tex,(native?'block/':'blocks/')+'destroy_stage_2.png');r.setBreakProgress({x:3,y:64,z:3},99,state('oak_stairs'));assert.equal(r.breakState.mesh,first.mesh);assert.ok(r.breakState.tex.endsWith('destroy_stage_9.png'));
  r.setBreakProgress(null,-1);assert.equal(r.breakState,null);r.clearSections();assert.equal(r.breaking.mesh,null);
 });
+
+// GPU animation reuses padding in the packed position; worker/world snapshots keep the existing stride.
+test(version + ': packed terrain preserves block identity and native top-UV flags without changing geometry layout',()=>{
+ const w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);c.biomes.fill(1);const plant=state(native?'grass':'tallgrass'),stone=state('stone');c.setState(2,1,2,plant);c.setState(4,1,2,stone);
+ const mesh=new Mesher(null,assets.modelStore),result=mesh.buildSection(new SliceWorld(buildSlice(w,0,0,0)),0,0,0);let seenPlant=0,seenStone=0;
+ for(const key of ['solid','cutout','translucent']){const bytes=result[key],view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);assert.equal(bytes.length%80,0);for(let q=0;q<bytes.length;q+=80){const vv=Array.from({length:4},(_,i)=>view.getUint16(q+i*20+10,true)),mid=(Math.min(...vv)+Math.max(...vv))*.5;for(let i=0;i<4;i++){const tag=view.getUint16(q+i*20+6,true),id=tag&32767;assert.ok(id===plant||id===stone);if(id===plant)seenPlant++;else seenStone++;assert.equal(!!(tag&32768),vv[i]<mid);}}}
+ assert.ok(seenPlant>0);assert.ok(seenStone>0);
+});

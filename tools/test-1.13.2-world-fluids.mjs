@@ -90,6 +90,8 @@ test('grass-block overlay and leaves retain their intended tints', () => {
   assert.equal(m.tintFor(state('stone'), -1, 8, 8, 8), 0xffffff);
 });
 
+// State identity differs for wet/dry blocks; compare every geometry/UV/light byte and retain the top-UV flag.
+const geometryOnly=bytes=>{const copy=bytes.slice();for(let i=0;i<copy.length;i+=20){copy[i+6]=0;copy[i+7]&=128;}return copy;};
 const logged = ['oak_slab', 'oak_stairs', 'oak_fence', 'glass_pane', 'ladder', 'oak_trapdoor', 'sign', 'chest'];
 test('waterlogged blocks emit water in addition to their unchanged block geometry/collision', () => {
   for (const name of logged) {
@@ -101,8 +103,8 @@ test('waterlogged blocks emit water in addition to their unchanged block geometr
     const d = mesh([at(dry)]), w = mesh([at(wet)]);
     assert.equal(d.translucent.byteLength, 0, name + ': dry block has no fluid');
     assert.ok(w.translucent.byteLength > 0, name + ': source water mesh');
-    assert.deepEqual(w.solid, d.solid, name + ': solid model preserved');
-    assert.deepEqual(w.cutout, d.cutout, name + ': cutout model preserved');
+    assert.deepEqual(geometryOnly(w.solid), geometryOnly(d.solid), name + ': solid model preserved');
+    assert.deepEqual(geometryOnly(w.cutout), geometryOnly(d.cutout), name + ': cutout model preserved');
     assert.deepEqual(staticCollisionBoxes(wet), staticCollisionBoxes(dry), name + ': collision preserved');
   }
 });

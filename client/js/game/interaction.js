@@ -691,7 +691,7 @@ export class Interaction {
     if (action !== 'none') {
       // ItemFood.onItemRightClick -> EntityPlayer.canEat(alwaysEdible): hungry (golden apples and chorus fruit always) and
       // not invulnerable, so nothing is eaten in creative or spectator
-      const canEat = (name === 'golden_apple' || name === 'enchanted_golden_apple' || name === 'golden_carrot' || g.food < 20) && !this.player.invulnerable;
+      const canEat = (name === 'golden_apple' || name === 'enchanted_golden_apple' || name === 'chorus_fruit' || g.food < 20) && !this.player.invulnerable;
       const food = action === 'eat' && !canEat;
       if (!food) {
         this.player.usingItem = true;

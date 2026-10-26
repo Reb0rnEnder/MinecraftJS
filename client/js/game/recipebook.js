@@ -1,12 +1,14 @@
 // Recipe book (1.12): RecipeBook (known / new recipes, open and filtering flags), RecipeBookClient (recipe lists per
 // tab, grouped by the recipe's "group") and RecipeList craftability against the player's items.
 import { creativeTabOf } from '../gui/screens/containers.js';
+import {DEFAULT_TAGS} from './default-tags.js';
 
 export const FIRST_JSON_ID = 11; // CraftingManager: ids 0 - 10 are the special (dynamic) recipes
 export const BOOK_TABS = ['search', 'tools', 'buildingBlocks', 'misc', 'redstone'];
 
 // "minecraft:planks" + data -> { id, data } (data 32767 = any)
 function stackOf(game, j) {
+  if(typeof j==='string')j={item:j};
   const name = String(j.item || '').replace(/^minecraft:/, '');
   const def = game.assets.itemsByName.get(name);
   if (!def) return null;
@@ -29,13 +31,16 @@ export class RecipeBook {
   _parse() {
     if (this.recipes) return;
     const g = this.game;
-    this.recipes = [];
+    this.recipes = {};
     (g.assets.recipes || []).forEach((r, i) => {
-      const id = FIRST_JSON_ID + i;
-      const ing = (v) => (Array.isArray(v) ? v : [v]).map((x) => stackOf(g, x)).filter(Boolean);
+      const id = r.name.includes(':') ? r.name : 'minecraft:' + r.name;
+      const ing = (v) => (Array.isArray(v) ? v : [v]).flatMap(x=>{
+        if(x?.tag){const ids=g.tags?.registries.items.get(x.tag)||DEFAULT_TAGS.items[x.tag]||[];return ids.map(id=>({id,data:0,count:1}));}
+        const item=x&&stackOf(g,x);return item?[item]:[];
+      });
       const result = stackOf(g, r.result || {});
       if (!result) return;
-      const rec = { id, name: r.name, group: r.group || '', result, shaped: r.type === 'crafting_shaped' };
+      const rec = { id, name: r.name, group: r.group || '', result, shaped: r.type.replace(/^minecraft:/,'') === 'crafting_shaped' };
       if (rec.shaped) {
         rec.height = r.pattern.length;
         rec.width = Math.max(...r.pattern.map((row) => row.length));
@@ -47,7 +52,7 @@ export class RecipeBook {
           }
         }
       } else {
-        rec.cells = (r.ingredients || []).map(ing);
+        rec.cells = (r.ingredients || (r.ingredient?[r.ingredient]:[])).map(ing);
         rec.width = rec.height = Math.ceil(Math.sqrt(rec.cells.length));
       }
       this.recipes[id] = rec;
@@ -56,7 +61,7 @@ export class RecipeBook {
     this.lists = {};
     for (const t of BOOK_TABS) this.lists[t] = [];
     const groups = new Map();
-    for (const rec of this.recipes) {
+    for (const rec of Object.values(this.recipes)) {
       if (!rec) continue;
       const tab = this.categoryOf(rec);
       let list = rec.group ? groups.get(tab + '|' + rec.group) : null;

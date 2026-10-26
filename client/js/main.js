@@ -38,6 +38,7 @@ async function boot() {
     if (assets.data.recipes) initRecipes(assets.data.recipes);
     const game = new Game(assets, settings, device);
     game.proxies = proxies;
+    try { const bytes=await P.files.get('shaderpacks/final-stage'); if(bytes?.length){const meta=JSON.parse(P.loadSetting('shaderpacks/final-stage.meta')||'{}');game.shaderPack.load(meta.name||'Shader pack',bytes);game.shaderPack.enabled=meta.enabled!==false;} } catch(e) { game.shaderPack.error=e.message; console.warn('Shader pack unavailable',e.message); }
     globalThis.game = game; // debugging handle
     const params = P.launchParams ? P.launchParams() : {};
     if (params.connect) {

@@ -51,8 +51,8 @@ function buildBundle(kind) {
   } else if (kind === 'recipes.json') {
     // recipe ids: the reverse of the jar's entry order (see tools/build.js)
     const list = [];
-    for (const f of jar.list(P + 'recipes/')) {
-      if (f.endsWith('.json')) list.push({ name: f.slice((P + 'recipes/').length, -5), ...jarJson(f) });
+    for (const f of jar.list('data/minecraft/recipes/')) {
+      if (f.endsWith('.json')) list.push({ name: f.slice('data/minecraft/recipes/'.length, -5), ...jarJson(f) });
     }
     raw = Buffer.from(JSON.stringify(list.reverse()));
   } else if (kind === 'textures.bin') {
