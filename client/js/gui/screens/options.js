@@ -39,6 +39,7 @@ class OptionsBase extends Screen {
 function makeOption(id, x, y, it) {
   const w = it.wide ? 310 : 150; // wide controls span both columns (e.g. master volume)
   const b = it.slider ? new Slider(id, x, y, w, 20, it.label, it.value(), it.set) : new Button(id, x, y, w, 20, it.label, it.click);
+  b.tip=it.tip;
   if (it.enabled === false) b.enabled = false;
   return b;
 }
@@ -165,8 +166,9 @@ class VideoScreen extends OptionsBase {
       { label: () => {
           const names = { webgl2: 'WebGL 2', webgpu: 'WebGPU', software: tr('minecraftjs.options.graphicsApi.software') };
           const cur = g.device.name === 'WebGPU' ? 'webgpu' : g.device.name === 'Software' ? 'software' : 'webgl2';
-          return trOption('minecraftjs.options.graphicsApi', (names[s.graphicsApi] || 'WebGL 2') + (s.graphicsApi !== cur ? ' ' + tr('minecraftjs.options.restart') : ''));
+          return trOption('minecraftjs.options.graphicsApi', (names[s.graphicsApi] || 'WebGL 2') + (s.graphicsApi !== cur ? (g.device.graphicsSelection?.requested===s.graphicsApi?' (using '+names[cur]+')':' '+tr('minecraftjs.options.restart')) : ''));
         },
+        tip:()=>g.device.graphicsSelection?.requested===s.graphicsApi?g.device.graphicsSelection.errors.join('\n'):'',
         click: () => { const order = ['webgl2', 'webgpu', 'software']; s.graphicsApi = order[(order.indexOf(s.graphicsApi) + 1) % order.length]; } },
       // MinecraftJS: Super Potato Mode trades quality for speed on any graphics API (lower internal resolution, a
       // single-pass menu panorama); always on with the CPU rasteriser
@@ -207,6 +209,7 @@ class VideoScreen extends OptionsBase {
     this.list.render(gui, mx, my);
     gui.textCentered(tr(this.titleKey), this.width / 2, 5, 0xffffff);
     for (const b of this.buttons) b.render(gui, mx, my);
+    if(my>=32&&my<this.height-32){const b=this.rows.flat().find(b=>b.tip&&b.hovered(mx,my)),tip=b?.tip();if(tip)gui.tooltip(gui.font.wrap(tip,Math.min(300,this.width-20)),mx,my);}
   }
   mouseDown(mx, my, button, e) { return super.mouseDown(mx, my, button) || this.list.mouseDown(mx, my, button, e); }
   mouseUp(mx, my, button) {

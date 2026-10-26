@@ -21,8 +21,6 @@ async function boot() {
   try {
     const assets = new Assets();
     const device = await P.createGraphicsDevice(settings.graphicsApi);
-    const api = device.name === 'WebGPU' ? 'webgpu' : device.name === 'Software' ? 'software' : 'webgl2';
-    if (api !== settings.graphicsApi) { settings.graphicsApi = api; settings.save(); }
     // Super Potato Mode: the setting, and always with the CPU rasteriser
     if (P.setPotato) P.setPotato(!!settings.superPotato || device.name === 'Software');
     assets.setDevice(device);

@@ -1,3 +1,4 @@
+import {placeLeashKnot} from './leash-knot.js';
 import { tickFallingBlock } from './falling-block.js';
 import { tickEntityEffects, tickDragonDeath, isDragon } from '../render/entity-effects.js';
 // Client-side entity tracking (positions, interpolation, metadata, animation state).
@@ -78,6 +79,7 @@ export class EntityManager {
   }
 
   add(e) {
+    if(e.kind==='leash')placeLeashKnot(e);
     const old = this.map.get(e.id);
     if (old) this.game.entityRenderer.remove(old);
     this.map.set(e.id, e);
@@ -203,6 +205,7 @@ export class EntityManager {
 
   _setTarget(e, x, y, z, yaw, pitch, inc = 3, teleport = false) {
     if (e.kind === 'painting') return;
+    if(e.kind==='leash'){placeLeashKnot(e,x,y,z);return;}
     // EntityBoat.setPositionAndRotation2: the boat we ride only follows a teleport (game/vehicle.js)
     if (e.controlled) {
       if (teleport && e.onServerTeleport) e.onServerTeleport(x, y, z, yaw);

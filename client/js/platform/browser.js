@@ -402,6 +402,7 @@ export class BrowserPlatform extends Emitter {
         if (api === 'webgpu') this.device = await WebGPUDevice.create(this.canvas);
         else if (api === 'webgl2') this.device = new WebGL2Device(this.canvas);
         else this.device = new SoftwareDevice(this.canvas);
+        this.device.graphicsSelection={requested:preference,active:api,errors:[...errors]};
         this._resize();
         return this.device;
       } catch (e) {
