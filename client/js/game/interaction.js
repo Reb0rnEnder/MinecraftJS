@@ -1,3 +1,5 @@
+import {staticCollisionBoxes} from '../world/blocks.js';
+import {placementIntersects} from './placement-collision.js';
 // Player interaction (port of PlayerControllerMP + Minecraft.clickMouse/rightClickMouse).
 import { C } from '../net/packets.js';
 import { blocks, blocksByName } from '../world/blocks.js';
@@ -524,8 +526,9 @@ export class Interaction {
     if (p.y < 0 || p.y > 255) return false;
     if (!this._replaceable(w.getState(p.x, p.y, p.z))) return false;
     // entities in the way of a block with a collision box (EntityLivingBase, boats, minecarts, TNT, falling blocks)
-    if (nb.boundingBox === 'block') {
-      const hit = (b) => b[3] > p.x && b[0] < p.x + 1 && b[4] > p.y && b[1] < p.y + 1 && b[5] > p.z && b[2] < p.z + 1;
+    const boxes=staticCollisionBoxes(nb.id,held.damage&15);
+    if(boxes.length){
+      const hit=b=>placementIntersects(boxes,p,b);
       if (hit(this.player.bb())) return false;
       for (const e of g.entities.all()) {
         if(e.kind==='falling'&&w.getState(Math.floor(e.x),Math.floor(e.y),Math.floor(e.z))===e.blockState)continue;
