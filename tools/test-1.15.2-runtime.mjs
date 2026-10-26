@@ -1,12 +1,16 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
 import {C578,Writer578,decodePacket578} from '../client/js/net/protocol-1.15.2.js';
 import {EntityManager,nativeEntityDefinition} from '../client/js/game/entities.js';
 import {ENTITIES_BY_NAME} from '../client/js/game/entity-types.js';
 import {bee} from '../client/js/render/entity-models.js';
-import {FOOD_NAMES} from '../client/js/game/items.js';
+import {FOOD_NAMES,Items} from '../client/js/game/items.js';
 import {honeyFallMultiplier,honeyMovementFactor} from '../client/js/game/physics.js';
 import {ModelStore} from '../client/js/render/models.js';
+import {Interaction} from '../client/js/game/interaction.js';
+import {LocalPlayer} from '../client/js/game/physics.js';
+import {nbt} from '../client/js/net/nbt.js';
 
 const uuid=Buffer.from('00112233445566778899aabbccddeeff','hex');
 const login=new Writer578().varint(38).i32(7).u8(0).i32(0).i64(0n).u8(20).string('default').varint(8).bool(false).bool(true).build();
@@ -55,4 +59,25 @@ test('1.15.2 honey bottle is food and honey blocks use vanilla movement fall fac
 test('1.15.2 item model gui_light is inherited and exposed to icon rendering',()=>{
   const store=new ModelStore({'item/generated':{gui_light:'front'},'item/test':{parent:'item/generated'}},{},{uv:()=>null});
   assert.equal(store.resolveModel('item/test').guiLight,'front');
+});
+test('1.15.2 creative search uses current item IDs for fireworks and tridents',()=>{
+  const creative=JSON.parse(readFileSync(new URL('../client/data/creative.json',import.meta.url)));
+  const items=JSON.parse(readFileSync(new URL('../client/data/items.json',import.meta.url)));
+  const names=new Map(items.map(i=>[i.id,i.name]));
+  const search=creative.tabs.find(t=>t.label==='search'),brewing=creative.tabs.find(t=>t.label==='brewing'),combat=creative.tabs.find(t=>t.label==='combat');
+  assert.equal(search.items.filter(([id])=>names.get(id)==='firework_star').length,1);
+  assert.equal(search.items.filter(([id])=>names.get(id)==='enchanted_book').length,107);
+  assert.equal(brewing.items.some(([id])=>names.get(id)==='trident'),false);
+  assert.equal(combat.items.some(([id])=>names.get(id)==='trident'),true);
+});
+test('tridents release and elytra fireworks use the protocol-578 item-use flow',()=>{
+  const itemData=JSON.parse(readFileSync(new URL('../client/data/items.json',import.meta.url)));
+  const assets={data:{items:itemData,creative:{effects:{},eggs:{}},enchantments:[]},translate:k=>k};
+  const items=new Items(assets),player=new LocalPlayer(),sent=[];
+  const trident={id:items.byName.get('trident').id,count:1,nbt:nbt.compound({Enchantments:nbt.list(10,[{id:nbt.string('minecraft:riptide'),lvl:nbt.short(3)}])})};
+  player.inWater=true;
+  const game={items,player,gameMode:0,food:20,cooldownFraction:()=>0,inventory:{getHand:()=>trident},send:p=>sent.push(p),sound:{playAtPlayer(){}}};
+  const interaction=new Interaction(game);
+  assert.equal(interaction.sendUseItem(trident),true);interaction.useTicks=10;interaction.stopUsingItem();assert.equal(player.riptide,true);assert.equal(player.motionZ,3);
+  const rocket={id:items.byName.get('firework_rocket').id,count:1};player.elytraFlying=true;assert.equal(interaction.sendUseItem(rocket),true);assert.equal(sent.length,3);
 });
