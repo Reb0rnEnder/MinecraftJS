@@ -54,6 +54,7 @@ export class ModelStore {
     const textures = {};
     let elements = null;
     let ao = true;
+    let guiLight = 'side';
     let display = {};
     let builtin = null;
     for (let i = chain.length - 1; i >= 0; i--) {
@@ -62,6 +63,7 @@ export class ModelStore {
       if (j.textures) Object.assign(textures, j.textures);
       if (j.elements) elements = j.elements;
       if (j.ambientocclusion === false) ao = false;
+      if (j.gui_light) guiLight = j.gui_light;
       if (j.display) display = Object.assign({}, display, j.display);
     }
     const resolveTex = (t) => {
@@ -71,7 +73,7 @@ export class ModelStore {
     };
     // item model overrides (1.9+) belong to the model file itself, not its parents
     const overrides = chain.length && !chain[0].builtin ? chain[0].overrides || null : null;
-    const res = { name, textures, elements, ao, display, builtin, resolveTex, overrides };
+    const res = { name, textures, elements, ao, guiLight, display, builtin, resolveTex, overrides };
     this.resolved.set(name, res);
     return res;
   }

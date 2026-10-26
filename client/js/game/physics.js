@@ -21,6 +21,10 @@ const F = {
 
 const f32 = Math.fround;
 
+// HoneyBlock.onFallenUpon and the movement slowdown used by the 1.15 client.
+export const honeyFallMultiplier = (blockName) => blockName === 'honey_block' ? 0.2 : 1;
+export const honeyMovementFactor = (blockName) => blockName === 'honey_block' ? 0.4 : 1;
+
 // MathHelper.fastInvSqrt (double bit trick + one Newton step)
 const _fis = new DataView(new ArrayBuffer(8));
 function fastInvSqrt(n) {
@@ -452,7 +456,7 @@ export class LocalPlayer {
     if (this.onGround) {
       if (this.fallDistance > 0 && this.onFall && !this.allowFlying) {
         // EntityLivingBase.fall(distance, multiplier): ceil((distance - 3 - jump boost) * multiplier); beds halve the distance
-        const mult = lb && lb.name === 'slime' && !this.sneaking ? 0 : lb && lb.name === 'hay_block' ? 0.2 : 1;
+        const mult = lb && lb.name === 'slime' && !this.sneaking ? 0 : lb && lb.name === 'hay_block' ? 0.2 : honeyFallMultiplier(lb?.name);
         const dist = lb && lb.name === 'bed' ? this.fallDistance * 0.5 : this.fallDistance;
         const dmg = Math.ceil((dist - 3 - (this.jumpBoost >= 0 ? this.jumpBoost + 1 : 0)) * mult);
         if (dmg > 0) this.onFall(dmg, lst);
@@ -571,12 +575,18 @@ export class LocalPlayer {
       const b = getBlock(world.getState(x, y, z));
       if (!b || b.id === 0) continue;
       if (b.name === 'web') this.inWeb = true;
+      else if (b.name === 'honey_block') {
+        // HoneyBlock.isSlidingDown: a horizontal collision while descending
+        // turns a fall into a slow slide and damps lateral motion.
+        if (this.collidedH && !this.onGround && this.motionY < 0) this.motionY = Math.max(this.motionY, -0.05);
+        this.motionX *= honeyMovementFactor(b.name); this.motionZ *= honeyMovementFactor(b.name);
+      }
       else if (b.name === 'soul_sand') { this.motionX *= 0.4; this.motionZ *= 0.4; }
     }
     // Slime: walking on it slows you
     const below = getBlock(world.getState(Math.floor(this.x), Math.floor(this.y - 0.20000000298023224), Math.floor(this.z)));
-    if (below && below.name === 'slime' && this.onGround && Math.abs(this.motionY) < 0.1 && !this.sneaking) {
-      const d = 0.4 + Math.abs(this.motionY) * 0.2;
+    if (below && (below.name === 'slime' || below.name === 'honey_block') && this.onGround && Math.abs(this.motionY) < 0.1 && !this.sneaking) {
+      const d = below.name === 'honey_block' ? 0.4 : 0.4 + Math.abs(this.motionY) * 0.2;
       this.motionX *= d; this.motionZ *= d;
     }
   }

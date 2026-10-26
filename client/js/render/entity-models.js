@@ -309,6 +309,23 @@ export function cat(){
   const animate=ocelot().animate;
   return jarAdapter('cat',['backLeft','backRight','frontLeft','frontRight','tail','tail2','head','body'],(m,a)=>animate(m,a),{modelScale:.8});
 }
+
+// Compact 1.15.2 bee fallback while the packaged-class model extractor is
+// being ported. It keeps the entity visible and preserves the native wing,
+// nectar and stinger state transitions.
+export function bee(){
+  const body=new Part(64,32).tex(0,0).box(-4,-4,-6,8,8,12).pivot(0,12,0);
+  const head=new Part(64,32).tex(0,16).box(-3,-3,-8,6,6,4).pivot(0,12,0);
+  const stinger=new Part(64,32).tex(24,0).box(-1,-1,6,2,2,2).pivot(0,12,0);
+  const leftWing=new Part(64,32).tex(0,20).box(0,-1,-3,7,0,5).pivot(4,8,-1);
+  const rightWing=new Part(64,32).tex(0,20).box(-7,-1,-3,7,0,5).pivot(-4,8,-1);
+  const roots=[body,head,stinger,leftWing,rightWing];
+  return {parts:{body,head,stinger,leftWing,rightWing},roots,modelScale:1.15,animate(m,a={}){
+    const flap=Math.sin((a.age||0)*2.2)*.35;
+    m.parts.head.ry=(a.yaw||0)*D2R;m.parts.head.rx=(a.pitch||0)*D2R;
+    m.parts.leftWing.rz=flap;m.parts.rightWing.rz=-flap;m.parts.stinger.visible=!a.hasStung;
+  }};
+}
 export function fox(){
   return jarAdapter('fox',['head','leftEar','rightEar','nose','body','rightHindLeg','leftHindLeg','rightFrontLeg','leftFrontLeg','tail'],(m,a)=>{
     const p=m.parts;p.head.rx=a.pitch*D2R;p.head.ry=a.yaw*D2R;

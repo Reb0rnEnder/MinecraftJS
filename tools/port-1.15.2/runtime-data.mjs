@@ -23,6 +23,8 @@ for(const [file,registry] of [['blocks','block'],['items','item'],['entities','e
 }
 const blockData=JSON.parse(await readFile(join(root,'client/data','blocks.json')));
 for(const b of blockData){const states=blocksReport['minecraft:'+b.name]?.states;if(!states||states[0].id!==b.minStateId||states.at(-1).id!==b.maxStateId||states.find(s=>s.default)?.id!==b.defaultState)throw new Error('State mismatch '+b.name);}
+const entityData=JSON.parse(await readFile(join(root,'client/data','entities.json')));
+await writeFile(join(root,'client/js/game/entity-registry-1.15.2.js'),'// Native 1.15.2 entity registry and dimensions, generated from client/data/entities.json.\nexport const ENTITY_REGISTRY_1152='+JSON.stringify(entityData.map(e=>[e.name,e.width,e.height]))+';\n');
 const jar=new ZipFile(join(cache,'client.jar')),tags={source:{version:'1.15.2',clientJarSha1:target.downloads.client.sha1}};
 const particleSprites={};for(const name of jar.list('assets/minecraft/particles/'))if(name.endsWith('.json'))particleSprites[name.slice('assets/minecraft/particles/'.length,-5)]=JSON.parse(jar.read(name));
 await writeFile(join(root,'client/data/particleSprites.json'),JSON.stringify(particleSprites)+'\n');

@@ -7,7 +7,7 @@ import { chatToLegacy } from '../gui/chat.js';
 const FOOD_NAMES = new Set(`apple mushroom_stew bread porkchop cooked_porkchop golden_apple enchanted_golden_apple
   cod salmon tropical_fish pufferfish cooked_cod cooked_salmon cookie melon_slice beef cooked_beef chicken cooked_chicken
   rotten_flesh spider_eye carrot potato baked_potato poisonous_potato golden_carrot pumpkin_pie rabbit cooked_rabbit
-  rabbit_stew mutton cooked_mutton chorus_fruit beetroot beetroot_soup dried_kelp`.split(/\s+/));
+  rabbit_stew mutton cooked_mutton chorus_fruit beetroot beetroot_soup dried_kelp honey_bottle`.split(/\s+/));
 const SWORDS = new Set(['iron_sword', 'wooden_sword', 'stone_sword', 'diamond_sword', 'golden_sword']);
 const POTIONS = new Set(['potion', 'splash_potion', 'lingering_potion', 'tipped_arrow']);
 const RARITY_UNCOMMON = new Set(`experience_bottle nether_star enchanted_book elytra dragon_breath totem_of_undying

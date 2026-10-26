@@ -316,6 +316,7 @@ export class EntityRenderer {
       case 'tropical_fish': return 'entity/fish/tropical_' + (fishShape(e) ? 'b' : 'a') + '.png';
       case 'dolphin': return 'entity/dolphin.png';
       case 'turtle': return 'entity/turtle/big_sea_turtle.png';
+      case 'bee': return 'entity/bee/' + (e.angry ? (e.hasNectar ? 'bee_angry_nectar' : 'bee_angry') : (e.hasNectar ? 'bee_nectar' : 'bee')) + '.png';
       case 'phantom': return 'entity/phantom.png';
       default: return null;
     }
@@ -376,6 +377,7 @@ export class EntityRenderer {
       case 'dolphin': return M.dolphin();
       case 'turtle': return M.turtle();
       case 'phantom': return M.phantom(e.phantomSize || 0);
+      case 'bee': return M.bee();
       default: return null;
     }
   }
@@ -1244,7 +1246,7 @@ export class EntityRenderer {
       charging: !!e.charging, attacking: !!e.armsRaised, spellcasting: !!e.spell,
       aimedBow: e.type === 'illusioner' && !!e.armsRaised,
       throwing: e.type === 'drowned' && !!e.armsRaised && !!held && g.items.name(held.id) === 'trident',
-      hasEgg: !!e.hasEgg, layingEgg: !!e.layingEgg,
+      hasEgg: !!e.hasEgg, layingEgg: !!e.layingEgg, hasNectar: !!e.hasNectar, hasStung: !!e.hasStung,
     };
     if (e.type === 'illusioner' && !e.spell && e.armsRaised) args.pose = 'bow';
     if (e.kind === 'armorstand') {

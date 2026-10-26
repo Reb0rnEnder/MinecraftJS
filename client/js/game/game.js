@@ -78,7 +78,7 @@ function attributeValue(prop) {
 // SPacketUpdateTileEntity action per block entity id (signs are handled by applyBlockEntity)
 const BLOCK_ENTITY_ACTIONS = {
   mob_spawner: 1, command_block: 2, beacon: 3, skull: 4, flower_pot: 5, banner: 6, structure_block: 7, end_gateway: 8,
-  shulker_box: 10, bed: 11, jigsaw:12, campfire:13,
+  shulker_box: 10, bed: 11, jigsaw:12, campfire:13, beehive:14, bee_nest:14,
 };
 
 const TICK_MS = 50;

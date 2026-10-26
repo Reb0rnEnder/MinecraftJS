@@ -81,18 +81,18 @@ export class ItemRenderer {
         const t = res.resolveTex('#layer' + i);
         if (t) layers.push(t);
       }
-      m = { kind: 'generated', layers, display: res.display, name: mname };
+      m = { kind: 'generated', layers, display: res.display, guiLight: res.guiLight, name: mname };
     } else if (res.builtin === 'builtin/entity') {
-      m = { kind: 'builtin', name: mname, display: res.display };
+      m = { kind: 'builtin', name: mname, display: res.display, guiLight: res.guiLight };
     } else if (res.elements) {
       const baked = this.store.bakeModel(path);
-      m = { kind: 'block', baked, display: res.display, name: mname };
+      m = { kind: 'block', baked, display: res.display, guiLight: res.guiLight, name: mname };
     } else {
       // Fallback: block item with no item model -> try block model by name
       const b = g.items.blockFor(item.id);
       const bm = b ? this.store.resolveModel('block/' + b.name) : null;
-      if (bm && bm.elements) m = { kind: 'block', baked: this.store.bakeModel('block/' + b.name), display: {}, name: b.name };
-      else m = { kind: 'generated', layers: ['block/stone'], display: {}, name: 'missing' };
+      if (bm && bm.elements) m = { kind: 'block', baked: this.store.bakeModel('block/' + b.name), display: {}, guiLight: bm.guiLight, name: b.name };
+      else m = { kind: 'generated', layers: ['block/stone'], display: {}, guiLight: 'front', name: 'missing' };
     }
     m.itemName = name;
     m.path = path;
@@ -297,7 +297,7 @@ export class ItemRenderer {
     const data = new Float32Array(quads.length * 4 * 9);
     let o = 0;
     for (const q of quads) {
-      const sh = q.shade ? SHADE_GUI[q.dir] : 1;
+      const sh = q.shade && m.guiLight !== 'front' ? SHADE_GUI[q.dir] : 1;
       const [r, g, b] = rgbOf(q.tint >= 0 ? this._defaultTint(m.itemName || m.name) : 0xffffff);
       for (let i = 0; i < 4; i++) {
         data[o] = q.pos[i * 3]; data[o + 1] = q.pos[i * 3 + 1]; data[o + 2] = q.pos[i * 3 + 2];

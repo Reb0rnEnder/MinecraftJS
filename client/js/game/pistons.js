@@ -28,12 +28,14 @@ const TILE = new Set([
   'enchanting_table', 'ender_chest', 'standing_sign', 'wall_sign', 'mob_spawner', 'noteblock', 'jukebox', 'standing_banner',
   'wall_banner', 'skull', 'flower_pot', 'unpowered_comparator', 'powered_comparator', 'daylight_detector',
   'daylight_detector_inverted', 'command_block', 'repeating_command_block', 'chain_command_block', 'structure_block',
-  'end_gateway', 'end_portal', 'bed', 'moving_piston',
+  'end_gateway', 'end_portal', 'bed', 'moving_piston', 'bee_nest', 'beehive',
 ]);
 
 const name = (st) => getBlock(st).name;
 const isAir = (st) => st === 0;
 const mobility = (n) => (n.endsWith('_shulker_box') || DESTROY.has(n) ? 'destroy' : BLOCK.has(n) ? 'block' : n.endsWith('_glazed_terracotta') ? 'push_only' : 'normal');
+const isStickyBlock = (n) => n === 'slime' || n === 'honey_block';
+const canStick = (a, b) => !isStickyBlock(a) || !isStickyBlock(b) || a === b;
 const isPiston = (n) => n === 'piston' || n === 'sticky_piston';
 const key = (x, y, z) => x + ',' + y + ',' + z;
 const off = (p, f, n = 1) => [p[0] + FACING[f][0] * n, p[1] + FACING[f][1] * n, p[2] + FACING[f][2] * n];
@@ -78,7 +80,7 @@ class Structure {
     }
     if (!this.addBlockLine(this.blockToMove, this.moveDirection)) return false;
     for (let i = 0; i < this.toMove.length; i++) {
-      if (name(this.st(this.toMove[i])) === 'slime' && !this.addBranchingBlocks(this.toMove[i])) return false;
+      if (isStickyBlock(name(this.st(this.toMove[i]))) && !this.addBranchingBlocks(this.toMove[i])) return false;
     }
     return true;
   }
@@ -90,9 +92,10 @@ class Structure {
     let i = 1;
     if (i + this.toMove.length > 12) return false;
     const back = OPPOSITE[this.moveDirection];
-    while (name(st) === 'slime') {
+    while (isStickyBlock(name(st))) {
       const p = off(origin, back, i);
       st = this.st(p);
+      if (!canStick(name(this.st(origin)), name(st))) break;
       if (isAir(st) || !canPush(this.world, st, p, this.moveDirection, false, back) || this.isPistonPos(p)) break;
       i++;
       if (i + this.toMove.length > 12) return false;
@@ -124,7 +127,12 @@ class Structure {
     this.toMove = [...m.slice(0, b), ...m.slice(m.length - a), ...m.slice(b, m.length - a)];
   }
   addBranchingBlocks(p) {
-    for (let f = 0; f < 6; f++) if (AXIS[f] !== AXIS[this.moveDirection] && !this.addBlockLine(off(p, f), f)) return false;
+    const center = name(this.st(p));
+    for (let f = 0; f < 6; f++) {
+      if (AXIS[f] === AXIS[this.moveDirection]) continue;
+      const q = off(p, f);
+      if (!canStick(center, name(this.st(q))) || !this.addBlockLine(q, f)) return false;
+    }
     return true;
   }
 }

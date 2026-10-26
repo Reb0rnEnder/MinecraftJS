@@ -496,6 +496,19 @@ export class Particles {
     return this.add(p);
   }
 
+  honeyDrip(x, y, z, falling = false) {
+    const p = { x, y, z, sprite: falling ? 'falling_honey' : 'dripping_honey', mx: 0, my: 0, mz: 0, scale: 1, maxAge: Math.floor(64 / (rand() * 0.8 + 0.2)) };
+    p.r = 1; p.g = 0.72; p.b = 0.12; p.delay = falling ? 0 : 40;
+    p.update = (q) => {
+      if (q.delay-- > 0) q.mx *= 0.02, q.my *= 0.02, q.mz *= 0.02;
+      else { q.sprite = 'falling_honey'; q.my -= 0.03; }
+      this.move(q, this.game.world);
+      q.mx *= 0.98; q.my *= 0.98; q.mz *= 0.98;
+      if (q.onGround) { q.sprite = 'landing_honey'; q.maxAge = q.age + 4; q.update = () => q.age < q.maxAge; }
+    };
+    return this.add(p);
+  }
+
   explosion(x, y, z, radius) {
     this.add({ x, y, z, explosionFrame: 0, maxAge: 6 + Math.floor(rand() * 4), scale: 2 + radius * 0.5, collide: false, important: true, update: () => {} });
     for (let i = 0; i < 16; i++) this.smoke(x + (rand() - 0.5) * radius, y + (rand() - 0.5) * radius, z + (rand() - 0.5) * radius, (rand() - 0.5) * 0.2, rand() * 0.1, (rand() - 0.5) * 0.2, 2.5);
@@ -728,6 +741,9 @@ export class Particles {
       case 'witch': emit((x, y, z, mx, my, mz) => this.spell(x, y, z, mx, my, mz, 1, 1, 1, false, true)); break;
       case 'dripping_water': emit((x, y, z) => this.drip(x, y, z, false)); break;
       case 'dripping_lava': emit((x, y, z) => this.drip(x, y, z, true)); break;
+      case 'dripping_honey': emit((x, y, z) => this.honeyDrip(x, y, z)); break;
+      case 'falling_honey': emit((x, y, z) => this.honeyDrip(x, y, z, true)); break;
+      case 'landing_honey': emit((x, y, z) => this.add({ x, y, z, sprite: 'landing_honey', scale: 1, maxAge: 4, collide: false, update: () => {} })); break;
       case 'falling_lava':emit((x,y,z)=>this.fallingDrop(x,y,z,true));break;
       case 'falling_water':emit((x,y,z)=>this.fallingDrop(x,y,z,false));break;
       case 'landing_lava':emit((x,y,z)=>this.fallingDrop(x,y,z,true,true));break;
@@ -898,6 +914,9 @@ export class Particles {
         }
         if (rand() * 200 < 1) this.game.sound.play('block.lava.ambient', x, y, z, 0.2 + rand() * 0.2, 0.9 + rand() * 0.15);
       }
+    } else if ((n === 'bee_nest' || n === 'beehive') && m >= 5) {
+      const below = getBlock(this.game.world.getState(x, y - 1, z));
+      if (below && below.id === 0 && rand() < 0.08) this.honeyDrip(x + 0.5, y - 0.05, z + 0.5);
     } else if (n === 'end_portal_frame' || n === 'dragon_egg') {
       // no-op
     } else if (n === 'leaves' || n === 'leaves2') {

@@ -50,7 +50,7 @@ const MOB_NAMES = {
 export function nativeEntityDefinition(game, id) {
   const native = game?.assets?.data?.entities?.find(e => e.id === id);
   if (!native) return ENTITY_TYPES[id];
-  return { ...native, eyeHeight: native.eyeHeight ?? native.height * 0.85, mob: native.type === 'mob' };
+  return { ...native, eyeHeight: native.eyeHeight ?? native.height * 0.85, mob: native.type === 'mob' || native.name === 'bee' };
 }
 
 const wrap = (a) => { a %= 360; if (a >= 180) a -= 360; if (a < -180) a += 360; return a; };
@@ -362,6 +362,14 @@ export class EntityManager {
       for(const [field,key] of Object.entries(assignments))if(native[ids[field]]!==undefined)e[key]=native[ids[field]];
     }
     if(name==='mooshroom')e.mooshroomType=Object.values(native).find(v=>v==='brown'||v==='red')||e.mooshroomType||'red';
+    if(name==='bee'){
+      // Bee's own 1.15.2 accessors are the byte at 13 and anger-time int at
+      // 14. Read the native snapshot; `m` below is the compatibility view
+      // with the inherited 1.14.4 living-index shift applied.
+      const flags=native[13];
+      if(flags!==undefined){e.hasNectar=!!(flags&1);e.hasStung=!!(flags&2);}
+      if(native[14]!==undefined){e.angerTime=native[14];e.angry=e.angerTime>0;}
+    }
     const set = (index, key) => { if (m[index] !== undefined) e[key] = m[index]; };
     const bit = (index, mask, key) => { if (m[index] !== undefined) e[key] = !!(m[index] & mask); };
     if (m[0] !== undefined) {
