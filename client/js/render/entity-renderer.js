@@ -285,7 +285,7 @@ export class EntityRenderer {
       case 96: return 'entity/cow/'+(e.mooshroomType==='brown'?'brown':'red')+'_mooshroom.png';
       case 97: return 'entity/snow_golem.png';
       case 98: return 'entity/cat/' + (CAT_TEX[e.catType || 0] || 'ocelot') + '.png';
-      case 99: return 'entity/iron_golem.png';
+      case 99: return 'entity/iron_golem/iron_golem.png';
       case 100: {
         const ht = e.horseType || 0;
         if (ht === 1) return 'entity/horse/donkey.png';

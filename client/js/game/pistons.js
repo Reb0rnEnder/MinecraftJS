@@ -2,10 +2,12 @@
 // the moved blocks into piston_extension blocks that carry a TileEntityPiston (state, direction, extending, head).
 // Those slide over two ticks (progress += 0.5 per tick, interpolated when drawn) and then become their block again;
 // the server's block changes agree with the result. Drawing is in TileEntityRenderer (TileEntityPistonRenderer).
-import { blocks, blocksByName, getBlock, getBlockById, getStateProperties } from '../world/blocks.js';
+import { blocks, blocksByName, getBlock, getBlockById, getStateProperties, findState } from '../world/blocks.js';
 
 // EnumFacing index order: down, up, north, south, west, east
 export const FACING = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]];
+const FACE_NAMES=['down','up','north','south','west','east'];
+const pistonState=(name,facing,sticky=false,extended=false)=>findState(name,name==='piston'||name==='sticky_piston'?{facing:FACE_NAMES[facing],extended:String(extended)}:name==='piston_head'?{facing:FACE_NAMES[facing],type:sticky?'sticky':'normal',short:'false'}:{facing:FACE_NAMES[facing],type:sticky?'sticky':'normal'});
 const OPPOSITE = [1, 0, 3, 2, 5, 4];
 const AXIS = [1, 1, 2, 2, 0, 0];
 
@@ -34,7 +36,7 @@ const TILE = new Set([
 const name = (st) => getBlock(st).name;
 const isAir = (st) => st === 0;
 const mobility = (n) => (n.endsWith('_shulker_box') || DESTROY.has(n) ? 'destroy' : BLOCK.has(n) ? 'block' : n.endsWith('_glazed_terracotta') ? 'push_only' : 'normal');
-const isStickyBlock = (n) => n === 'slime' || n === 'honey_block';
+const isStickyBlock = (n) => n === 'slime_block' || n === 'honey_block';
 const canStick = (a, b) => !isStickyBlock(a) || !isStickyBlock(b) || a === b;
 const isPiston = (n) => n === 'piston' || n === 'sticky_piston';
 const key = (x, y, z) => x + ',' + y + ',' + z;
@@ -109,7 +111,7 @@ class Structure {
         this.reorder(i1, k);
         for (let l = 0; l <= k + i1; l++) {
           const p2 = this.toMove[l];
-          if (name(this.st(p2)) === 'slime' && !this.addBranchingBlocks(p2)) return false;
+          if (isStickyBlock(name(this.st(p2))) && !this.addBranchingBlocks(p2)) return false;
         }
         return true;
       }
@@ -236,13 +238,13 @@ export class Pistons {
     const extId = blocksByName.moving_piston.id;
     if (id === 0) {
       if (!this._doMove(p, facing, true, sticky)) return;
-      this._set(p, (blockId << 4) | facing | 8);
+      this._set(p, pistonState(sticky?'sticky_piston':'piston',facing,sticky,true));
     } else if (id === 1) {
       const front = off(p, facing);
       const t = this.moving.get(key(...front));
       if (t) this._clearTile(t);
-      this._set(p, (extId << 4) | facing | (sticky ? 8 : 0));
-      this._tile(p, (blockId << 4) | facing, facing, false, true);
+      this._set(p, pistonState('moving_piston',facing,sticky));
+      this._tile(p, pistonState(sticky?'sticky_piston':'piston',facing,sticky), facing, false, true);
       if (sticky) {
         const p2 = off(p, facing, 2);
         const st = w.getState(...p2);
@@ -273,13 +275,13 @@ export class Pistons {
       for (let l = list.length - 1; l >= 0; l--) {
         this._set(list[l], 0);
         const dst = off(list[l], moveDir);
-        this._set(dst, (extId << 4) | dir);
+        this._set(dst, pistonState('moving_piston',dir));
         this._tile(dst, states[l], dir, extending, false);
       }
       if (extending) {
         const front = off(p, dir);
-        this._set(front, (extId << 4) | dir | (sticky ? 8 : 0));
-        this._tile(front, (blocksByName.piston_head.id << 4) | dir | (sticky ? 8 : 0), dir, true, true);
+        this._set(front, pistonState('moving_piston',dir,sticky));
+        this._tile(front, pistonState('piston_head',dir,sticky), dir, true, true);
       }
     } finally { w.endBatch(); }
     return true;

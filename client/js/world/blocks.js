@@ -130,7 +130,7 @@ export function initBlocks(blocksJson, shapesJson) {
       const value = rendering.values[rendering.states[info.id]];
       if (!value) throw new Error('Missing block render properties for state '+info.id);
       const def = blocks[info.blockId];
-      const overrides = {renderType:value.renderType,opaque:value.solid,suffocates:value.viewBlocking,canOcclude:value.occludes,aoLight:value.shade,filterLight:value.lightBlock,
+      const overrides = {renderType:value.renderType,opaque:value.solid,suffocates:value.suffocates??value.viewBlocking,canOcclude:value.occludes,aoLight:value.shade,filterLight:value.lightBlock,
         emitLight:value.emission,collisionFull:value.collisionFull,occlusionBoxes:value.occlusion,soundType:value.sound,
         useNeighborBrightness:!value.solid&&!value.collisionFull&&!def.isLiquid};
       renderBlocks[info.id] = Object.assign(Object.create(def),overrides);

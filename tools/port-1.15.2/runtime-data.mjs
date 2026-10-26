@@ -4,9 +4,10 @@
 import {readFile,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {createHash} from 'node:crypto';
-import {root,cache,target} from './prepare.mjs';
+import {prepare,root,cache,target} from './prepare.mjs';
 import {ZipFile} from '../../lib/zip.js';
 
+await prepare();
 const revision=target.minecraftData.revision;
 const base='https://raw.githubusercontent.com/PrismarineJS/minecraft-data/'+revision+'/data/';
 const paths=(await (await fetch(base+'dataPaths.json')).json()).pc['1.15.2'];
@@ -37,3 +38,6 @@ for(const [kind,registry] of [['blocks','block'],['items','item'],['fluids','flu
 await writeFile(join(root,'client/js/game/default-tags.js'),'// Extracted native 1.15.2 tags.\nexport const DEFAULT_TAGS = '+JSON.stringify(tags)+';\n');
 await writeFile(join(root,'client/data','runtime-source-1.15.2.json'),JSON.stringify({version:'1.15.2',protocol:578,clientJarSha1:target.downloads.client.sha1,serverJarSha1:target.downloads.server.sha1,minecraftDataRevision:revision,sources},null,2)+'\n');
 console.log(`Imported native 1.15.2 tables: ${blockData.length} blocks, ${JSON.parse(await readFile(join(root,'client/data','items.json'))).length} items`);
+
+// Never publish raw tables without target-native mechanics, rendering and shapes.
+await import('./finalize-runtime-data.mjs');

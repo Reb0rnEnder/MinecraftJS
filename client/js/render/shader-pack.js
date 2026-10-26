@@ -3,7 +3,7 @@ import {packLighting,lightingFrame,lightingOption,basicLightingGLSL} from './sha
 import {selectGLSLFunctions,shaderBlockRules,animationLookup,glslFloatLiterals} from './glsl-functions.js';
 import {getBlock,getStateProperties} from '../world/blocks.js';
 import {ZipArchive} from '../util/zip.js';
-const MC_VERSION=11404;
+const MC_VERSION=11502;
 
 function normalize(path){
  const out=[];for(const p of path.split('/')){if(p==='..'){if(!out.length)throw Error('Shader include escapes shaders folder');out.pop();}else if(p&&p!=='.')out.push(p);}return out.join('/');

@@ -1,6 +1,7 @@
+import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.15.2.js';
 import {placeLeashKnot} from './leash-knot.js';
 import {NATIVE_METADATA} from './entity-metadata-1.14.4.js';
-import {PLAYER_POSES} from './player-poses-1.14.4.js';
+import {PLAYER_POSES} from './player-poses-1.15.2.js';
 import { tickFallingBlock } from './falling-block.js';
 import { tickEntityEffects, tickDragonDeath, isDragon } from '../render/entity-effects.js';
 // Client-side entity tracking (positions, interpolation, metadata, animation state).
@@ -44,13 +45,11 @@ const MOB_NAMES = {
   97: 'SnowMan', 98: 'Ozelot', 99: 'VillagerGolem', 100: 'EntityHorse', 101: 'Rabbit', 120: 'Villager',
 };
 
-// The 1.15.2 entity registry is data-driven.  Keep the inherited table only
-// as a fallback for older or incomplete asset sets; wire IDs must resolve from
-// the active version's native registry or adjacent mobs can change identity.
+// Resolve wire identities from the target registry; retain its special eye heights.
 export function nativeEntityDefinition(game, id) {
-  const native = game?.assets?.data?.entities?.find(e => e.id === id);
-  if (!native) return ENTITY_TYPES[id];
-  return { ...native, eyeHeight: native.eyeHeight ?? native.height * 0.85, mob: native.type === 'mob' || native.name === 'bee' };
+  const definition=ENTITY_TYPES[id],supplied=game?.assets?.data?.entities?.find(e=>e.id===id);
+  if(supplied&&definition&&supplied.name!==definition.name)throw Error('Entity registry does not match runtime: '+id);
+  return definition;
 }
 
 const wrap = (a) => { a %= 360; if (a >= 180) a -= 360; if (a < -180) a += 360; return a; };
@@ -340,7 +339,9 @@ export class EntityManager {
   _applyMeta(e, m = e.metadata) {
     // Preserve native metadata on e.metadata. Adapt the unchanged consumers below
     // around 1.14's base pose and living sleeping-position insertions.
-    const native=m,living498=e.kind==='mob'||e.kind==='player'||e.kind==='armorstand';
+    const wire=m,living498=e.kind==='mob'||e.kind==='player'||e.kind==='armorstand';
+    const native=living498?Object.fromEntries(Object.entries(wire).filter(([i])=>Number(i)!==12).map(([i,v])=>[Number(i)>12?Number(i)-1:Number(i),v])):wire;
+    if(living498&&wire[12]!==undefined)e.stingerCount=wire[12];
     if(native[6]!==undefined){
       e.pose=native[6];
       if(e.kind==='player'){
@@ -363,12 +364,12 @@ export class EntityManager {
     }
     if(name==='mooshroom')e.mooshroomType=Object.values(native).find(v=>v==='brown'||v==='red')||e.mooshroomType||'red';
     if(name==='bee'){
-      // Bee's own 1.15.2 accessors are the byte at 13 and anger-time int at
-      // 14. Read the native snapshot; `m` below is the compatibility view
+      // Bee's own 1.15.2 accessors are the byte at 16 and anger-time int at
+      // 17. Read the native snapshot; `m` below is the compatibility view
       // with the inherited 1.14.4 living-index shift applied.
-      const flags=native[13];
-      if(flags!==undefined){e.hasNectar=!!(flags&1);e.hasStung=!!(flags&2);}
-      if(native[14]!==undefined){e.angerTime=native[14];e.angry=e.angerTime>0;}
+      const flags=wire[WIRE_METADATA.bee.DATA_FLAGS_ID];
+      if(flags!==undefined){e.hasNectar=!!(flags&8);e.hasStung=!!(flags&4);}
+      if(wire[WIRE_METADATA.bee.ANGER_TIME]!==undefined){e.angerTime=wire[WIRE_METADATA.bee.ANGER_TIME];e.angry=e.angerTime>0;}
     }
     const set = (index, key) => { if (m[index] !== undefined) e[key] = m[index]; };
     const bit = (index, mask, key) => { if (m[index] !== undefined) e[key] = !!(m[index] & mask); };
@@ -469,7 +470,7 @@ export class EntityManager {
         set(14, 'ownerUuid');
         if (name === 'donkey' || name === 'mule' || name === 'llama' || name === 'trader_llama') set(15, 'horseChest');
         if (m[13] !== undefined || m[15] !== undefined) {
-          const f = e.metadata[15] || 0;
+          const f = native[15] || 0;
           // Preserve the existing renderer's horse flag layout at this boundary.
           e.horseFlags = (f & 2) | (f & 4) | (e.horseChest ? 8 : 0) | (f & 16 ? 32 : 0) | (f & 32 ? 64 : 0) | (f & 64 ? 128 : 0);
         }
@@ -719,7 +720,7 @@ export class EntityManager {
     s.motionX = pl.motionX; s.motionY = pl.motionY; s.motionZ = pl.motionZ;
     s.hurtTime = g.hurtTime; s.deathTime = g.dead ? Math.min(20, (s.deathTime || 0) + 1) : 0;
     s.metadata = g.selfMetadata || s.metadata;
-    if (s.metadata && s.metadata[15] !== undefined) s.skinFlags = s.metadata[15]; else s.skinFlags = g.settings.skinParts;
+    if (s.metadata && s.metadata[WIRE_METADATA.player.DATA_PLAYER_MODE_CUSTOMISATION] !== undefined) s.skinFlags = s.metadata[WIRE_METADATA.player.DATA_PLAYER_MODE_CUSTOMISATION]; else s.skinFlags = g.settings.skinParts;
     s.invisible = !!(g.selfMetadata && (g.selfMetadata[0] & 32)) || g.effects.has(14);
     s.onFire = g.selfMetadata ? !!(g.selfMetadata[0] & 1) : false;
     // LayerCape's sway from the view bobbing of the local player

@@ -55,7 +55,7 @@ import { loadParticleSprites } from '../client/js/render/particle-sprites.js';
 import { Particles } from '../client/js/render/particles.js';
 import { Weather } from '../client/js/render/weather.js';
 import { sectionLod, poseInterval } from '../client/js/render/lod.js';
-const version = mcassets.MC_VERSION, native = ['1.13.2','1.14.4'].includes(version), target14=version==='1.14.4';
+const version = mcassets.MC_VERSION, native = ['1.13.2','1.14.4','1.15.2'].includes(version), target14=['1.14.4','1.15.2'].includes(version);
 const jar = new ZipFile(await mcassets.locateJar());
 const data = Object.fromEntries(['blocks','items','creative','blockCollisionShapes','enchantments','particles','foods','materials']
   .map(n => [n, JSON.parse(readFileSync(new URL('../client/data/' + n + '.json', import.meta.url)))]));
@@ -264,7 +264,7 @@ test(version + ': guardian and elder beams follow metadata, charge, local target
   const g=fixture(),e=g.entities._base(30,-20,64,0),t=g.entities._base(40,20,64,0);
   Object.assign(e,{kind:'mob',type:68,entityType:version==='1.12.2'?4:68,entityName:'elder_guardian',elder:true,width:1.9975,height:1.9975});
   Object.assign(t,{kind:'mob',type:90,entityType:90,entityName:'pig',width:0.9,height:0.9});g.entities.add(e);g.entities.add(t);
-  const idx=version==='1.8.9'?17:target14?15:13;
+  const idx=version==='1.8.9'?17:version==='1.15.2'?16:target14?15:13;
   g.entities.setMetadata(e.id,{[idx]:t.id});assert.equal(e.guardianTarget,t.id);assert.equal(e.guardianBeamTicks,0);
   for(let i=0;i<100;i++)tickEntityEffects(e,g.entities);assert.equal(e.guardianBeamTicks,60);
   g.renderer.frustum=[];g.renderer.boxVisible=(x,y,z,X)=>X-x>10;
@@ -640,6 +640,12 @@ test(version + ': chest cracks follow the live lid and include both halves of a 
  const t=tiles.tiles.get('3,64,3');t.prevLid=0;t.lid=1;tiles.render(1);const open=overlay.update(context,pos,st).mesh.vertices;
  assert.notDeepEqual(open,closed,'damage geometry follows the animated lid');assert.ok(open.some((n,i)=>i%9===1&&n>1),'open lid extends above a unit selection box');
  tiles.clear();c.setState(4,64,3,st);tiles.scanChunk(c);tiles.render(0);
+ if(version==='1.15.2'){
+   // From 1.15 each half has its own geometry and damage pass.
+   const left=findState('chest',{facing:'north',type:'left',waterlogged:'false'}),right=findState('chest',{facing:'north',type:'right',waterlogged:'false'});
+   tiles.clear();c.setState(3,64,3,left);c.setState(4,64,3,right);tiles.scanChunk(c);tiles.render(0);
+   const first=tiles.breakingModel(pos,left),second=tiles.breakingModel({x:4,y:64,z:3},right);assert.ok(first.root);assert.ok(second.root);assert.notEqual(first.root,second.root);overlay.clear();tiles.clear();return;
+ }
  const primary=overlay.update(context,pos,st),a=new Float32Array(primary.mesh.vertices);const secondaryPos={x:4,y:64,z:3},secondary=overlay.update(context,secondaryPos,st),b=secondary.mesh.vertices;
  assert.equal(a.length,b.length);for(let i=0;i<a.length;i+=9){assert.ok(Math.abs(a[i]+pos.x-b[i]-secondaryPos.x)<1e-6);assert.ok(Math.abs(a[i+1]-b[i+1])<1e-6);assert.ok(Math.abs(a[i+2]-b[i+2])<1e-6);}
  overlay.clear();tiles.clear();

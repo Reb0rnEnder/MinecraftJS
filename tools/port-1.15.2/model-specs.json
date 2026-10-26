@@ -1,0 +1,2872 @@
+{
+  "creeper": {
+    "class": "net.minecraft.client.model.CreeperModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.CreeperModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.CreeperModel",
+        "name": "hair"
+      },
+      {
+        "owner": "net.minecraft.client.model.CreeperModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.CreeperModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.CreeperModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.CreeperModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.CreeperModel",
+        "name": "leg3"
+      }
+    ]
+  },
+  "creeperArmor": {
+    "class": "net.minecraft.client.model.CreeperModel",
+    "descriptor": "(F)V",
+    "args": [
+      2
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.CreeperModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.CreeperModel",
+        "name": "hair"
+      },
+      {
+        "owner": "net.minecraft.client.model.CreeperModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.CreeperModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.CreeperModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.CreeperModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.CreeperModel",
+        "name": "leg3"
+      }
+    ]
+  },
+  "skeleton": {
+    "class": "net.minecraft.client.model.SkeletonModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftLeg"
+      }
+    ]
+  },
+  "strayOverlay": {
+    "class": "net.minecraft.client.model.SkeletonModel",
+    "descriptor": "(FZ)V",
+    "args": [
+      0.25,
+      1
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftLeg"
+      }
+    ]
+  },
+  "spider": {
+    "class": "net.minecraft.client.model.SpiderModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.SpiderModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.SpiderModel",
+        "name": "body0"
+      },
+      {
+        "owner": "net.minecraft.client.model.SpiderModel",
+        "name": "body1"
+      },
+      {
+        "owner": "net.minecraft.client.model.SpiderModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.SpiderModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.SpiderModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.SpiderModel",
+        "name": "leg3"
+      },
+      {
+        "owner": "net.minecraft.client.model.SpiderModel",
+        "name": "leg4"
+      },
+      {
+        "owner": "net.minecraft.client.model.SpiderModel",
+        "name": "leg5"
+      },
+      {
+        "owner": "net.minecraft.client.model.SpiderModel",
+        "name": "leg6"
+      },
+      {
+        "owner": "net.minecraft.client.model.SpiderModel",
+        "name": "leg7"
+      }
+    ]
+  },
+  "zombie": {
+    "class": "net.minecraft.client.model.GiantZombieModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftLeg"
+      }
+    ]
+  },
+  "drowned": {
+    "class": "net.minecraft.client.model.DrownedModel",
+    "descriptor": "(FFII)V",
+    "args": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftLeg"
+      }
+    ]
+  },
+  "drownedOuter": {
+    "class": "net.minecraft.client.model.DrownedModel",
+    "descriptor": "(FFII)V",
+    "args": [
+      0.25,
+      0,
+      64,
+      64
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftLeg"
+      }
+    ]
+  },
+  "zombieVillager": {
+    "class": "net.minecraft.client.model.ZombieVillagerModel",
+    "descriptor": "(FZ)V",
+    "args": [
+      0,
+      false
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.ZombieVillagerModel",
+        "name": "hatRim"
+      }
+    ]
+  },
+  "slime": {
+    "class": "net.minecraft.client.model.SlimeModel",
+    "descriptor": "(I)V",
+    "args": [
+      16
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.SlimeModel",
+        "name": "cube"
+      },
+      {
+        "owner": "net.minecraft.client.model.SlimeModel",
+        "name": "eye0"
+      },
+      {
+        "owner": "net.minecraft.client.model.SlimeModel",
+        "name": "eye1"
+      },
+      {
+        "owner": "net.minecraft.client.model.SlimeModel",
+        "name": "mouth"
+      }
+    ]
+  },
+  "slimeOuter": {
+    "class": "net.minecraft.client.model.SlimeModel",
+    "descriptor": "(I)V",
+    "args": [
+      0
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.SlimeModel",
+        "name": "cube"
+      },
+      {
+        "owner": "net.minecraft.client.model.SlimeModel",
+        "name": "eye0"
+      },
+      {
+        "owner": "net.minecraft.client.model.SlimeModel",
+        "name": "eye1"
+      },
+      {
+        "owner": "net.minecraft.client.model.SlimeModel",
+        "name": "mouth"
+      }
+    ]
+  },
+  "ghast": {
+    "class": "net.minecraft.client.model.GhastModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.GhastModel",
+        "name": "parts",
+        "index": 0
+      },
+      {
+        "owner": "net.minecraft.client.model.GhastModel",
+        "name": "tentacles"
+      }
+    ]
+  },
+  "enderman": {
+    "class": "net.minecraft.client.model.EndermanModel",
+    "descriptor": "(F)V",
+    "args": [
+      0
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftLeg"
+      }
+    ]
+  },
+  "silverfish": {
+    "class": "net.minecraft.client.model.SilverfishModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.SilverfishModel",
+        "name": "bodyParts"
+      },
+      {
+        "owner": "net.minecraft.client.model.SilverfishModel",
+        "name": "bodyLayers"
+      }
+    ]
+  },
+  "blaze": {
+    "class": "net.minecraft.client.model.BlazeModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.BlazeModel",
+        "name": "upperBodyParts"
+      },
+      {
+        "owner": "net.minecraft.client.model.BlazeModel",
+        "name": "head"
+      }
+    ]
+  },
+  "magmaCube": {
+    "class": "net.minecraft.client.model.LavaSlimeModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.LavaSlimeModel",
+        "name": "bodyCubes"
+      },
+      {
+        "owner": "net.minecraft.client.model.LavaSlimeModel",
+        "name": "insideCube"
+      }
+    ]
+  },
+  "wither": {
+    "class": "net.minecraft.client.model.WitherBossModel",
+    "descriptor": "(F)V",
+    "args": [
+      0
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.WitherBossModel",
+        "name": "upperBodyParts"
+      },
+      {
+        "owner": "net.minecraft.client.model.WitherBossModel",
+        "name": "heads"
+      }
+    ]
+  },
+  "witherSkull": {
+    "class": "net.minecraft.client.model.SkullModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.SkullModel",
+        "name": "head"
+      }
+    ]
+  },
+  "bat": {
+    "class": "net.minecraft.client.model.BatModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.BatModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.BatModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.BatModel",
+        "name": "rightWing"
+      },
+      {
+        "owner": "net.minecraft.client.model.BatModel",
+        "name": "leftWing"
+      },
+      {
+        "owner": "net.minecraft.client.model.BatModel",
+        "name": "rightWingTip"
+      },
+      {
+        "owner": "net.minecraft.client.model.BatModel",
+        "name": "leftWingTip"
+      }
+    ]
+  },
+  "witch": {
+    "class": "net.minecraft.client.model.WitchModel",
+    "descriptor": "(F)V",
+    "args": [
+      0
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "hatRim"
+      },
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "jacket"
+      },
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "arms"
+      },
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "nose"
+      },
+      {
+        "owner": "net.minecraft.client.model.WitchModel",
+        "name": "mole"
+      }
+    ]
+  },
+  "endermite": {
+    "class": "net.minecraft.client.model.EndermiteModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.EndermiteModel",
+        "name": "bodyParts"
+      }
+    ]
+  },
+  "guardian": {
+    "class": "net.minecraft.client.model.GuardianModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.GuardianModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.GuardianModel",
+        "name": "eye"
+      },
+      {
+        "owner": "net.minecraft.client.model.GuardianModel",
+        "name": "spikeParts"
+      },
+      {
+        "owner": "net.minecraft.client.model.GuardianModel",
+        "name": "tailParts"
+      }
+    ]
+  },
+  "shulker": {
+    "class": "net.minecraft.client.model.ShulkerModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.ShulkerModel",
+        "name": "base"
+      },
+      {
+        "owner": "net.minecraft.client.model.ShulkerModel",
+        "name": "lid"
+      },
+      {
+        "owner": "net.minecraft.client.model.ShulkerModel",
+        "name": "head"
+      }
+    ]
+  },
+  "pig": {
+    "class": "net.minecraft.client.model.PigModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg3"
+      }
+    ]
+  },
+  "pigSaddle": {
+    "class": "net.minecraft.client.model.PigModel",
+    "descriptor": "(F)V",
+    "args": [
+      0.5
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg3"
+      }
+    ]
+  },
+  "sheep": {
+    "class": "net.minecraft.client.model.SheepModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg3"
+      }
+    ]
+  },
+  "sheepWool": {
+    "class": "net.minecraft.client.model.SheepFurModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg3"
+      }
+    ]
+  },
+  "cow": {
+    "class": "net.minecraft.client.model.CowModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg3"
+      }
+    ]
+  },
+  "chicken": {
+    "class": "net.minecraft.client.model.ChickenModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.ChickenModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.ChickenModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.ChickenModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.ChickenModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.ChickenModel",
+        "name": "wing0"
+      },
+      {
+        "owner": "net.minecraft.client.model.ChickenModel",
+        "name": "wing1"
+      },
+      {
+        "owner": "net.minecraft.client.model.ChickenModel",
+        "name": "beak"
+      },
+      {
+        "owner": "net.minecraft.client.model.ChickenModel",
+        "name": "redThing"
+      }
+    ]
+  },
+  "squid": {
+    "class": "net.minecraft.client.model.SquidModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.SquidModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.SquidModel",
+        "name": "tentacles"
+      }
+    ]
+  },
+  "cod": {
+    "class": "net.minecraft.client.model.CodModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.CodModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.CodModel",
+        "name": "topFin"
+      },
+      {
+        "owner": "net.minecraft.client.model.CodModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.CodModel",
+        "name": "nose"
+      },
+      {
+        "owner": "net.minecraft.client.model.CodModel",
+        "name": "sideFin0"
+      },
+      {
+        "owner": "net.minecraft.client.model.CodModel",
+        "name": "sideFin1"
+      },
+      {
+        "owner": "net.minecraft.client.model.CodModel",
+        "name": "tailFin"
+      }
+    ]
+  },
+  "salmon": {
+    "class": "net.minecraft.client.model.SalmonModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.SalmonModel",
+        "name": "bodyFront"
+      },
+      {
+        "owner": "net.minecraft.client.model.SalmonModel",
+        "name": "bodyBack"
+      },
+      {
+        "owner": "net.minecraft.client.model.SalmonModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.SalmonModel",
+        "name": "bodyFront",
+        "children": [
+          0
+        ]
+      },
+      {
+        "owner": "net.minecraft.client.model.SalmonModel",
+        "name": "bodyBack",
+        "children": [
+          1
+        ]
+      },
+      {
+        "owner": "net.minecraft.client.model.SalmonModel",
+        "name": "bodyBack",
+        "children": [
+          0
+        ]
+      },
+      {
+        "owner": "net.minecraft.client.model.SalmonModel",
+        "name": "sideFin0"
+      },
+      {
+        "owner": "net.minecraft.client.model.SalmonModel",
+        "name": "sideFin1"
+      }
+    ]
+  },
+  "pufferfishSmall": {
+    "class": "net.minecraft.client.model.PufferfishSmallModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.PufferfishSmallModel",
+        "name": "cube"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishSmallModel",
+        "name": "eye0"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishSmallModel",
+        "name": "eye1"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishSmallModel",
+        "name": "fin0"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishSmallModel",
+        "name": "fin1"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishSmallModel",
+        "name": "finBack"
+      }
+    ]
+  },
+  "pufferfishMedium": {
+    "class": "net.minecraft.client.model.PufferfishMidModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.PufferfishMidModel",
+        "name": "cube"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishMidModel",
+        "name": "finBlue0"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishMidModel",
+        "name": "finBlue1"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishMidModel",
+        "name": "finTop0"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishMidModel",
+        "name": "finTop1"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishMidModel",
+        "name": "finSide0"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishMidModel",
+        "name": "finSide1"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishMidModel",
+        "name": "finSide2"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishMidModel",
+        "name": "finSide3"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishMidModel",
+        "name": "finBottom0"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishMidModel",
+        "name": "finBottom1"
+      }
+    ]
+  },
+  "pufferfishBig": {
+    "class": "net.minecraft.client.model.PufferfishBigModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.PufferfishBigModel",
+        "name": "cube"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishBigModel",
+        "name": "blueFin0"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishBigModel",
+        "name": "blueFin1"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishBigModel",
+        "name": "topFrontFin"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishBigModel",
+        "name": "topMidFin"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishBigModel",
+        "name": "topBackFin"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishBigModel",
+        "name": "sideFrontFin0"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishBigModel",
+        "name": "sideFrontFin1"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishBigModel",
+        "name": "bottomFrontFin"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishBigModel",
+        "name": "bottomBackFin"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishBigModel",
+        "name": "bottomMidFin"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishBigModel",
+        "name": "sideBackFin0"
+      },
+      {
+        "owner": "net.minecraft.client.model.PufferfishBigModel",
+        "name": "sideBackFin1"
+      }
+    ]
+  },
+  "tropicalFishA": {
+    "class": "net.minecraft.client.model.TropicalFishModelA",
+    "descriptor": "(F)V",
+    "args": [
+      0
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelA",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelA",
+        "name": "tail"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelA",
+        "name": "leftFin"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelA",
+        "name": "rightFin"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelA",
+        "name": "topFin"
+      }
+    ]
+  },
+  "tropicalFishB": {
+    "class": "net.minecraft.client.model.TropicalFishModelB",
+    "descriptor": "(F)V",
+    "args": [
+      0
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelB",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelB",
+        "name": "tail"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelB",
+        "name": "leftFin"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelB",
+        "name": "rightFin"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelB",
+        "name": "topFin"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelB",
+        "name": "bottomFin"
+      }
+    ]
+  },
+  "tropicalFishPatternA": {
+    "class": "net.minecraft.client.model.TropicalFishModelA",
+    "descriptor": "(F)V",
+    "args": [
+      0.00800000037997961
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelA",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelA",
+        "name": "tail"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelA",
+        "name": "leftFin"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelA",
+        "name": "rightFin"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelA",
+        "name": "topFin"
+      }
+    ]
+  },
+  "tropicalFishPatternB": {
+    "class": "net.minecraft.client.model.TropicalFishModelB",
+    "descriptor": "(F)V",
+    "args": [
+      0.00800000037997961
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelB",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelB",
+        "name": "tail"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelB",
+        "name": "leftFin"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelB",
+        "name": "rightFin"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelB",
+        "name": "topFin"
+      },
+      {
+        "owner": "net.minecraft.client.model.TropicalFishModelB",
+        "name": "bottomFin"
+      }
+    ]
+  },
+  "dolphin": {
+    "class": "net.minecraft.client.model.DolphinModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.DolphinModel",
+        "name": "body",
+        "children": [
+          4
+        ]
+      },
+      {
+        "owner": "net.minecraft.client.model.DolphinModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.DolphinModel",
+        "name": "tail"
+      },
+      {
+        "owner": "net.minecraft.client.model.DolphinModel",
+        "name": "tailFin"
+      }
+    ]
+  },
+  "turtle": {
+    "class": "net.minecraft.client.model.TurtleModel",
+    "descriptor": "(F)V",
+    "args": [
+      0
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg3"
+      },
+      {
+        "owner": "net.minecraft.client.model.TurtleModel",
+        "name": "eggBelly"
+      }
+    ]
+  },
+  "phantom": {
+    "class": "net.minecraft.client.model.PhantomModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.PhantomModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.PhantomModel",
+        "name": "leftWingBase"
+      },
+      {
+        "owner": "net.minecraft.client.model.PhantomModel",
+        "name": "leftWingTip"
+      },
+      {
+        "owner": "net.minecraft.client.model.PhantomModel",
+        "name": "rightWingBase"
+      },
+      {
+        "owner": "net.minecraft.client.model.PhantomModel",
+        "name": "rightWingTip"
+      },
+      {
+        "owner": "net.minecraft.client.model.PhantomModel",
+        "name": "body",
+        "children": [
+          1
+        ]
+      },
+      {
+        "owner": "net.minecraft.client.model.PhantomModel",
+        "name": "tailBase"
+      },
+      {
+        "owner": "net.minecraft.client.model.PhantomModel",
+        "name": "tailTip"
+      }
+    ]
+  },
+  "wolf": {
+    "class": "net.minecraft.client.model.WolfModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.WolfModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.WolfModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.WolfModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.WolfModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.WolfModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.WolfModel",
+        "name": "leg3"
+      },
+      {
+        "owner": "net.minecraft.client.model.WolfModel",
+        "name": "tail"
+      },
+      {
+        "owner": "net.minecraft.client.model.WolfModel",
+        "name": "upperBody"
+      }
+    ]
+  },
+  "snowman": {
+    "class": "net.minecraft.client.model.SnowGolemModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.SnowGolemModel",
+        "name": "piece1"
+      },
+      {
+        "owner": "net.minecraft.client.model.SnowGolemModel",
+        "name": "piece2"
+      },
+      {
+        "owner": "net.minecraft.client.model.SnowGolemModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.SnowGolemModel",
+        "name": "arm1"
+      },
+      {
+        "owner": "net.minecraft.client.model.SnowGolemModel",
+        "name": "arm2"
+      }
+    ]
+  },
+  "ocelot": {
+    "class": "net.minecraft.client.model.OcelotModel",
+    "descriptor": "(F)V",
+    "args": [
+      0
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.OcelotModel",
+        "name": "backLegL"
+      },
+      {
+        "owner": "net.minecraft.client.model.OcelotModel",
+        "name": "backLegR"
+      },
+      {
+        "owner": "net.minecraft.client.model.OcelotModel",
+        "name": "frontLegL"
+      },
+      {
+        "owner": "net.minecraft.client.model.OcelotModel",
+        "name": "frontLegR"
+      },
+      {
+        "owner": "net.minecraft.client.model.OcelotModel",
+        "name": "tail1"
+      },
+      {
+        "owner": "net.minecraft.client.model.OcelotModel",
+        "name": "tail2"
+      },
+      {
+        "owner": "net.minecraft.client.model.OcelotModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.OcelotModel",
+        "name": "body"
+      }
+    ]
+  },
+  "ironGolem": {
+    "class": "net.minecraft.client.model.IronGolemModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.IronGolemModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.IronGolemModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.IronGolemModel",
+        "name": "arm0"
+      },
+      {
+        "owner": "net.minecraft.client.model.IronGolemModel",
+        "name": "arm1"
+      },
+      {
+        "owner": "net.minecraft.client.model.IronGolemModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.IronGolemModel",
+        "name": "leg1"
+      }
+    ]
+  },
+  "horse": {
+    "class": "net.minecraft.client.model.HorseModel",
+    "descriptor": "(F)V",
+    "args": [
+      0
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "headParts"
+      },
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "leg3"
+      },
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "leg4"
+      },
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "tail"
+      },
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "saddleParts"
+      },
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "ridingParts"
+      }
+    ]
+  },
+  "donkey": {
+    "class": "net.minecraft.client.model.ChestedHorseModel",
+    "descriptor": "(F)V",
+    "args": [
+      0
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "headParts"
+      },
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "leg3"
+      },
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "leg4"
+      },
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "tail"
+      },
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "saddleParts"
+      },
+      {
+        "owner": "net.minecraft.client.model.HorseModel",
+        "name": "ridingParts"
+      },
+      {
+        "owner": "net.minecraft.client.model.ChestedHorseModel",
+        "name": "boxL"
+      },
+      {
+        "owner": "net.minecraft.client.model.ChestedHorseModel",
+        "name": "boxR"
+      }
+    ]
+  },
+  "rabbit": {
+    "class": "net.minecraft.client.model.RabbitModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.RabbitModel",
+        "name": "rearFootLeft"
+      },
+      {
+        "owner": "net.minecraft.client.model.RabbitModel",
+        "name": "rearFootRight"
+      },
+      {
+        "owner": "net.minecraft.client.model.RabbitModel",
+        "name": "haunchLeft"
+      },
+      {
+        "owner": "net.minecraft.client.model.RabbitModel",
+        "name": "haunchRight"
+      },
+      {
+        "owner": "net.minecraft.client.model.RabbitModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.RabbitModel",
+        "name": "frontLegLeft"
+      },
+      {
+        "owner": "net.minecraft.client.model.RabbitModel",
+        "name": "frontLegRight"
+      },
+      {
+        "owner": "net.minecraft.client.model.RabbitModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.RabbitModel",
+        "name": "earRight"
+      },
+      {
+        "owner": "net.minecraft.client.model.RabbitModel",
+        "name": "earLeft"
+      },
+      {
+        "owner": "net.minecraft.client.model.RabbitModel",
+        "name": "tail"
+      },
+      {
+        "owner": "net.minecraft.client.model.RabbitModel",
+        "name": "nose"
+      }
+    ]
+  },
+  "cat": {
+    "class": "net.minecraft.client.model.CatModel",
+    "descriptor": "(F)V",
+    "args": [
+      0
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.OcelotModel",
+        "name": "backLegL"
+      },
+      {
+        "owner": "net.minecraft.client.model.OcelotModel",
+        "name": "backLegR"
+      },
+      {
+        "owner": "net.minecraft.client.model.OcelotModel",
+        "name": "frontLegL"
+      },
+      {
+        "owner": "net.minecraft.client.model.OcelotModel",
+        "name": "frontLegR"
+      },
+      {
+        "owner": "net.minecraft.client.model.OcelotModel",
+        "name": "tail1"
+      },
+      {
+        "owner": "net.minecraft.client.model.OcelotModel",
+        "name": "tail2"
+      },
+      {
+        "owner": "net.minecraft.client.model.OcelotModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.OcelotModel",
+        "name": "body"
+      }
+    ]
+  },
+  "fox": {
+    "class": "net.minecraft.client.model.FoxModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.FoxModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.FoxModel",
+        "name": "earL"
+      },
+      {
+        "owner": "net.minecraft.client.model.FoxModel",
+        "name": "earR"
+      },
+      {
+        "owner": "net.minecraft.client.model.FoxModel",
+        "name": "nose"
+      },
+      {
+        "owner": "net.minecraft.client.model.FoxModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.FoxModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.FoxModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.FoxModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.FoxModel",
+        "name": "leg3"
+      },
+      {
+        "owner": "net.minecraft.client.model.FoxModel",
+        "name": "tail"
+      }
+    ]
+  },
+  "panda": {
+    "class": "net.minecraft.client.model.PandaModel",
+    "descriptor": "(IF)V",
+    "args": [
+      9,
+      0
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg3"
+      }
+    ]
+  },
+  "ravager": {
+    "class": "net.minecraft.client.model.RavagerModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.RavagerModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.RavagerModel",
+        "name": "mouth"
+      },
+      {
+        "owner": "net.minecraft.client.model.RavagerModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.RavagerModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.RavagerModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.RavagerModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.RavagerModel",
+        "name": "leg3"
+      },
+      {
+        "owner": "net.minecraft.client.model.RavagerModel",
+        "name": "neck"
+      }
+    ]
+  },
+  "villager": {
+    "class": "net.minecraft.client.model.VillagerModel",
+    "descriptor": "(F)V",
+    "args": [
+      0
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "hatRim"
+      },
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "jacket"
+      },
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "arms"
+      },
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.VillagerModel",
+        "name": "nose"
+      }
+    ]
+  },
+  "dragon": {
+    "class": "net.minecraft.client.renderer.entity.EnderDragonRenderer$DragonModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.renderer.entity.EnderDragonRenderer$DragonModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.entity.EnderDragonRenderer$DragonModel",
+        "name": "neck"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.entity.EnderDragonRenderer$DragonModel",
+        "name": "jaw"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.entity.EnderDragonRenderer$DragonModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.entity.EnderDragonRenderer$DragonModel",
+        "name": "leftRearLeg"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.entity.EnderDragonRenderer$DragonModel",
+        "name": "leftFrontLeg"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.entity.EnderDragonRenderer$DragonModel",
+        "name": "leftRearLegTip"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.entity.EnderDragonRenderer$DragonModel",
+        "name": "leftFrontLegTip"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.entity.EnderDragonRenderer$DragonModel",
+        "name": "leftRearFoot"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.entity.EnderDragonRenderer$DragonModel",
+        "name": "leftFrontFoot"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.entity.EnderDragonRenderer$DragonModel",
+        "name": "leftWing"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.entity.EnderDragonRenderer$DragonModel",
+        "name": "leftWingTip"
+      }
+    ]
+  },
+  "polarBear": {
+    "class": "net.minecraft.client.model.PolarBearModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg3"
+      }
+    ]
+  },
+  "llama": {
+    "class": "net.minecraft.client.model.LlamaModel",
+    "descriptor": "(F)V",
+    "args": [
+      0
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg3"
+      },
+      {
+        "owner": "net.minecraft.client.model.LlamaModel",
+        "name": "chest1"
+      },
+      {
+        "owner": "net.minecraft.client.model.LlamaModel",
+        "name": "chest2"
+      }
+    ]
+  },
+  "llamaDecor": {
+    "class": "net.minecraft.client.model.LlamaModel",
+    "descriptor": "(F)V",
+    "args": [
+      0.5
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg0"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg1"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg2"
+      },
+      {
+        "owner": "net.minecraft.client.model.QuadrupedModel",
+        "name": "leg3"
+      },
+      {
+        "owner": "net.minecraft.client.model.LlamaModel",
+        "name": "chest1"
+      },
+      {
+        "owner": "net.minecraft.client.model.LlamaModel",
+        "name": "chest2"
+      }
+    ]
+  },
+  "parrot": {
+    "class": "net.minecraft.client.model.ParrotModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.ParrotModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.ParrotModel",
+        "name": "tail"
+      },
+      {
+        "owner": "net.minecraft.client.model.ParrotModel",
+        "name": "wingLeft"
+      },
+      {
+        "owner": "net.minecraft.client.model.ParrotModel",
+        "name": "wingRight"
+      },
+      {
+        "owner": "net.minecraft.client.model.ParrotModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.ParrotModel",
+        "name": "head2"
+      },
+      {
+        "owner": "net.minecraft.client.model.ParrotModel",
+        "name": "beak1"
+      },
+      {
+        "owner": "net.minecraft.client.model.ParrotModel",
+        "name": "beak2"
+      },
+      {
+        "owner": "net.minecraft.client.model.ParrotModel",
+        "name": "feather"
+      },
+      {
+        "owner": "net.minecraft.client.model.ParrotModel",
+        "name": "legLeft"
+      },
+      {
+        "owner": "net.minecraft.client.model.ParrotModel",
+        "name": "legRight"
+      }
+    ]
+  },
+  "vex": {
+    "class": "net.minecraft.client.model.VexModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.VexModel",
+        "name": "leftWing"
+      },
+      {
+        "owner": "net.minecraft.client.model.VexModel",
+        "name": "rightWing"
+      }
+    ]
+  },
+  "illager": {
+    "class": "net.minecraft.client.model.IllagerModel",
+    "descriptor": "(FFII)V",
+    "args": [
+      0,
+      0,
+      64,
+      64
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.IllagerModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.IllagerModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.IllagerModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.IllagerModel",
+        "name": "arms"
+      },
+      {
+        "owner": "net.minecraft.client.model.IllagerModel",
+        "name": "leftLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.IllagerModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.IllagerModel",
+        "name": "head",
+        "children": [
+          0
+        ]
+      },
+      {
+        "owner": "net.minecraft.client.model.IllagerModel",
+        "name": "rightArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.IllagerModel",
+        "name": "leftArm"
+      }
+    ]
+  },
+  "armorStand": {
+    "class": "net.minecraft.client.model.ArmorStandModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.ArmorStandModel",
+        "name": "bodyStick1"
+      },
+      {
+        "owner": "net.minecraft.client.model.ArmorStandModel",
+        "name": "bodyStick2"
+      },
+      {
+        "owner": "net.minecraft.client.model.ArmorStandModel",
+        "name": "shoulderStick"
+      },
+      {
+        "owner": "net.minecraft.client.model.ArmorStandModel",
+        "name": "basePlate"
+      }
+    ]
+  },
+  "elytra": {
+    "class": "net.minecraft.client.model.ElytraModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.ElytraModel",
+        "name": "rightWing"
+      },
+      {
+        "owner": "net.minecraft.client.model.ElytraModel",
+        "name": "leftWing"
+      }
+    ]
+  },
+  "boat": {
+    "class": "net.minecraft.client.model.BoatModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.BoatModel",
+        "name": "parts"
+      },
+      {
+        "owner": "net.minecraft.client.model.BoatModel",
+        "name": "paddles"
+      },
+      {
+        "owner": "net.minecraft.client.model.BoatModel",
+        "name": "waterPatch"
+      }
+    ]
+  },
+  "minecart": {
+    "class": "net.minecraft.client.model.MinecartModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.MinecartModel",
+        "name": "cubes"
+      }
+    ]
+  },
+  "enderCrystal": {
+    "class": "net.minecraft.client.renderer.entity.EndCrystalRenderer",
+    "descriptor": "(Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;)V",
+    "args": [
+      null
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.renderer.entity.EndCrystalRenderer",
+        "name": "cube"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.entity.EndCrystalRenderer",
+        "name": "glass"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.entity.EndCrystalRenderer",
+        "name": "base"
+      }
+    ]
+  },
+  "enderCrystalNoBase": {
+    "class": "net.minecraft.client.renderer.entity.EndCrystalRenderer",
+    "descriptor": "(Lnet/minecraft/client/renderer/entity/EntityRenderDispatcher;)V",
+    "args": [
+      null
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.renderer.entity.EndCrystalRenderer",
+        "name": "cube"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.entity.EndCrystalRenderer",
+        "name": "glass"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.entity.EndCrystalRenderer",
+        "name": "base"
+      }
+    ]
+  },
+  "leash": {
+    "class": "net.minecraft.client.model.LeashKnotModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.LeashKnotModel",
+        "name": "knot"
+      }
+    ]
+  },
+  "evokerFangs": {
+    "class": "net.minecraft.client.model.EvokerFangsModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.EvokerFangsModel",
+        "name": "base"
+      },
+      {
+        "owner": "net.minecraft.client.model.EvokerFangsModel",
+        "name": "upperJaw"
+      },
+      {
+        "owner": "net.minecraft.client.model.EvokerFangsModel",
+        "name": "lowerJaw"
+      }
+    ]
+  },
+  "llamaSpit": {
+    "class": "net.minecraft.client.model.LlamaSpitModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.LlamaSpitModel",
+        "name": "main"
+      }
+    ]
+  },
+  "shulkerBullet": {
+    "class": "net.minecraft.client.model.ShulkerBulletModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.ShulkerBulletModel",
+        "name": "main"
+      }
+    ]
+  },
+  "trident": {
+    "class": "net.minecraft.client.model.TridentModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.TridentModel",
+        "name": "pole"
+      }
+    ]
+  },
+  "chest": {
+    "class": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+    "descriptor": "(Lnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;)V",
+    "args": [
+      null
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "name": "lid"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "name": "bottom"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "name": "lock"
+      }
+    ]
+  },
+  "largeChest": {
+    "class": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+    "descriptor": "(Lnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;)V",
+    "args": [
+      null
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "name": "doubleLeftLid"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "name": "doubleLeftBottom"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "name": "doubleLeftLock"
+      }
+    ]
+  },
+  "sign": {
+    "class": "net.minecraft.client.renderer.blockentity.SignRenderer$SignModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.SignRenderer$SignModel",
+        "name": "sign"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.SignRenderer$SignModel",
+        "name": "stick"
+      }
+    ]
+  },
+  "book": {
+    "class": "net.minecraft.client.model.BookModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.BookModel",
+        "name": "leftLid"
+      },
+      {
+        "owner": "net.minecraft.client.model.BookModel",
+        "name": "rightLid"
+      },
+      {
+        "owner": "net.minecraft.client.model.BookModel",
+        "name": "leftPages"
+      },
+      {
+        "owner": "net.minecraft.client.model.BookModel",
+        "name": "rightPages"
+      },
+      {
+        "owner": "net.minecraft.client.model.BookModel",
+        "name": "flipPage1"
+      },
+      {
+        "owner": "net.minecraft.client.model.BookModel",
+        "name": "flipPage2"
+      },
+      {
+        "owner": "net.minecraft.client.model.BookModel",
+        "name": "seam"
+      }
+    ]
+  },
+  "bed": {
+    "class": "net.minecraft.client.renderer.blockentity.BedRenderer",
+    "descriptor": "(Lnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;)V",
+    "args": [
+      null
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.BedRenderer",
+        "name": "headPiece"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.BedRenderer",
+        "name": "footPiece"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.BedRenderer",
+        "name": "legs"
+      }
+    ]
+  },
+  "skull": {
+    "class": "net.minecraft.client.model.SkullModel",
+    "descriptor": "(IIII)V",
+    "args": [
+      0,
+      0,
+      64,
+      32
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.SkullModel",
+        "name": "head"
+      }
+    ]
+  },
+  "dragonHead": {
+    "class": "net.minecraft.client.model.dragon.DragonHeadModel",
+    "descriptor": "(F)V",
+    "args": [
+      0
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.SkullModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.dragon.DragonHeadModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.dragon.DragonHeadModel",
+        "name": "jaw"
+      }
+    ]
+  },
+  "humanoidHead": {
+    "class": "net.minecraft.client.model.HumanoidHeadModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.SkullModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidHeadModel",
+        "name": "hat"
+      }
+    ]
+  },
+  "banner": {
+    "class": "net.minecraft.client.renderer.blockentity.BannerRenderer",
+    "descriptor": "(Lnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;)V",
+    "args": [
+      null
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.BannerRenderer",
+        "name": "flag"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.BannerRenderer",
+        "name": "pole"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.BannerRenderer",
+        "name": "bar"
+      }
+    ]
+  },
+  "shield": {
+    "class": "net.minecraft.client.model.ShieldModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.ShieldModel",
+        "name": "plate"
+      },
+      {
+        "owner": "net.minecraft.client.model.ShieldModel",
+        "name": "handle"
+      }
+    ]
+  },
+  "biped": {
+    "class": "net.minecraft.client.model.HumanoidModel",
+    "descriptor": "(F)V",
+    "args": [
+      0
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftLeg"
+      }
+    ]
+  },
+  "armorInner": {
+    "class": "net.minecraft.client.model.HumanoidModel",
+    "descriptor": "(F)V",
+    "args": [
+      0.5
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftLeg"
+      }
+    ]
+  },
+  "armorOuter": {
+    "class": "net.minecraft.client.model.HumanoidModel",
+    "descriptor": "(F)V",
+    "args": [
+      1
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftLeg"
+      }
+    ]
+  },
+  "player": {
+    "class": "net.minecraft.client.model.PlayerModel",
+    "descriptor": "(FZ)V",
+    "args": [
+      0,
+      0
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "leftSleeve"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "rightSleeve"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "leftPants"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "rightPants"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "jacket"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "cloak"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "ear"
+      }
+    ]
+  },
+  "playerSlim": {
+    "class": "net.minecraft.client.model.PlayerModel",
+    "descriptor": "(FZ)V",
+    "args": [
+      0,
+      1
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "leftSleeve"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "rightSleeve"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "leftPants"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "rightPants"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "jacket"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "cloak"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "ear"
+      }
+    ]
+  },
+  "bee": {
+    "class": "net.minecraft.client.model.BeeModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.BeeModel",
+        "name": "bone"
+      },
+      {
+        "owner": "net.minecraft.client.model.BeeModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.BeeModel",
+        "name": "rightWing"
+      },
+      {
+        "owner": "net.minecraft.client.model.BeeModel",
+        "name": "leftWing"
+      },
+      {
+        "owner": "net.minecraft.client.model.BeeModel",
+        "name": "frontLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.BeeModel",
+        "name": "midLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.BeeModel",
+        "name": "backLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.BeeModel",
+        "name": "stinger"
+      },
+      {
+        "owner": "net.minecraft.client.model.BeeModel",
+        "name": "leftAntenna"
+      },
+      {
+        "owner": "net.minecraft.client.model.BeeModel",
+        "name": "rightAntenna"
+      }
+    ]
+  },
+  "chestLeft": {
+    "class": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+    "descriptor": "(Lnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;)V",
+    "args": [
+      null
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "name": "doubleLeftLid"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "name": "doubleLeftBottom"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "name": "doubleLeftLock"
+      }
+    ]
+  },
+  "chestRight": {
+    "class": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+    "descriptor": "(Lnet/minecraft/client/renderer/blockentity/BlockEntityRenderDispatcher;)V",
+    "args": [
+      null
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "name": "doubleRightLid"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "name": "doubleRightBottom"
+      },
+      {
+        "owner": "net.minecraft.client.renderer.blockentity.ChestRenderer",
+        "name": "doubleRightLock"
+      }
+    ]
+  }
+}

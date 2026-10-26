@@ -671,6 +671,7 @@ export class Game {
   on_keep_alive(p) { this.send(C.keepAlive(p.keepAliveId)); }
 
   on_login(p) {
+    this.interaction?.predictedBlocks?.clear();
     // handleJoinGame always starts a new WorldClient (proxies may send another Join Game on server switch)
     if (this.inWorld) {
       this.world.clear();
@@ -751,6 +752,7 @@ export class Game {
   }
 
   on_respawn(p) {
+    this.interaction?.predictedBlocks?.clear();
     if (p.dimension !== this.dimension) {
       this.world.clear();
       this._resetMeshing();
@@ -1865,11 +1867,11 @@ export class Game {
 
     r.renderDistance = this.settings.renderDistance;
     r.setCamera(ex, ey, ez, camYaw, camPitch, roll, fov, pre);
-    const temp = biomeInfo(this.world.getBiome(Math.floor(ex), Math.floor(ez))).temperature;
+    const temp = biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).temperature;
     const rain = this.world.prevRain !== undefined ? this.world.prevRain + (this.world.rainStrength - this.world.prevRain) * partial : this.world.rainStrength;
     r.updateEnvironment({
       worldTime: this.world.timeOfDay, partial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,
-      camPos: [ex, ey, ez], lookDir: look, dimension: this.dimension, underwater, inLava, biomeId:this.world.getBiome(Math.floor(ex),Math.floor(ez)), waterVision:pl.waterVision(), conduitPower:this.effects.has(29),
+      camPos: [ex, ey, ez], lookDir: look, dimension: this.dimension, underwater, inLava, biomeId:this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey)), waterVision:pl.waterVision(), conduitPower:this.effects.has(29),
       blindness: this.effects.has(15), nightVision: this.effects.has(16) ? 1 : 0, clouds: this.settings.clouds,
       horizon: String(this.levelType).toLowerCase() === 'flat' ? 0 : 63,
     });

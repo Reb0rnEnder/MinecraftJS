@@ -14,7 +14,7 @@ This audit compares the active branch with the requested [1.15](https://minecraf
 
 | Wiki topic | Status | Evidence / remaining work |
 | --- | --- | --- |
-| Bees | **partial** | The native registry, living-mob classification, anger/nectar/stinger metadata, state textures, winged model and stinger visibility are wired. Bee AI, pollen/hive occupancy, breeding, stinging damage and native model extraction remain gaps. |
+| Bees | **partial** | The native registry, living-mob classification, anger/nectar/stinger metadata, state textures, winged model and stinger visibility are wired. Native model extraction is complete. Bee AI, hive occupancy, breeding and stinging damage are server-owned; client-visible acceptance remains open. |
 | Bee nests and beehives | **partial** | Blocks, states, models, tags, recipes and collision data exist. Honey levels, block entities, bee storage, harvesting, campfire suppression and comparator output are not implemented end to end. |
 | Honey blocks | **partial** | Native block/item data and models exist. Fall-damage reduction, movement damping, side sliding and slime/honey piston separation are wired; jump/collision edge cases and live checks remain. |
 | Honeycomb, honey bottles and bee spawn egg | **partial** | Items and creative entries exist and honey bottles are recognized as food. Bottle/shears use, poison removal, crafting remainders and spawn-egg behavior need checks. |
@@ -27,11 +27,11 @@ This audit compares the active branch with the requested [1.15](https://minecraf
 | 1.15.2 effect stacking | **partial** | Effects are displayed and received, but replacement/restore sequencing needs a live amplifier test. |
 | 1.15.2 `gui_light` item models | **partial** | Model inheritance now carries `gui_light` into item rendering and front-lit icons suppress side shading; held/builtin lighting still needs visual acceptance tests. |
 | 1.15.2 multiplayer disclaimer and session-specific title | **missing** | The browser client retains the inherited menu flow and does not implement the Java disclaimer/title behavior. |
-| 1.15.2 rendering and bug fixes | **partial** | Bees have a target-specific fallback model, but the packaged-class model extractor is not yet ported and the branch still uses the verified inherited bundle for other entities. The listed wiki fixes require individual acceptance tests. |
+| 1.15.2 rendering and bug fixes | **partial** | Native 1.15.2 constructors now extract 90 model variants, including BeeModel, with native quad UVs. Visual validation covers all mob adapters and texture references. Animation comparison remains open. The listed wiki fixes require individual acceptance tests. |
 
 ## Conclusion
 
-The zombie identity bug is fixed, and the first client-side bee/honey slice is implemented, but the requested full parity claim would still be false. The largest remaining release-specific gap is bee AI and hive behavior, followed by native 1.15 model extraction and the 1.15.2 UI/model changes. The next implementation milestone should be hive harvesting/block-entity behavior and live bee acceptance tests before closing these rows.
+The zombie identity bug is fixed, and the first client-side bee/honey slice is implemented, but the requested full parity claim would still be false. Bee AI, hive storage, world generation, predicates and gamerules are server responsibilities. The remaining client work is visual and interaction acceptance for these server outcomes, precise entity animation, honey movement/adhesion and the 1.15 UI changes. Native model extraction is complete; full parity is still unverified. See [the repair review](repair-review-2026-10-27.md) for current evidence and outstanding checks.
 
 ## Reproduce
 

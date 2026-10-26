@@ -104,11 +104,15 @@ export class Part {
 
 // Cached mesh for a list of boxes (identical part shapes share one mesh)
 export function boxesMesh(boxes, texW, texH) {
-  const key = texW + 'x' + texH + ':' + boxes.map((b) => [b.x, b.y, b.z, b.dx, b.dy, b.dz, b.inflate, b.mirror ? 1 : 0, b.u, b.v].join(',')).join(';');
+  const key = texW + 'x' + texH + ':' + boxes.map((b) => [b.x, b.y, b.z, b.dx, b.dy, b.dz, b.inflate, b.mirror ? 1 : 0, b.u, b.v, ...(b.quads || [])].join(',')).join(';');
   let m = boxCache.get(key);
   if (m) return m;
   const pos = [], uv = [], nor = [];
-  for (const b of boxes) addBox(pos, uv, nor, b, texW, texH);
+  for (const b of boxes) {
+    if (b.quads) for (let i=0;i<b.quads.length;i+=8) {
+      pos.push(...b.quads.slice(i,i+3));uv.push(...b.quads.slice(i+3,i+5));nor.push(...b.quads.slice(i+5,i+8));
+    } else addBox(pos, uv, nor, b, texW, texH);
+  }
   const v = entityVertices(pos, uv, nor, null);
   m = device.createMesh(FORMAT.entity, v, { quads: true });
   m.cpu = v;

@@ -223,7 +223,7 @@ export class Mesher {
     const radius = Math.max(0, Math.min(7, this.options.biomeBlendRadius ?? 2)), samples = (radius * 2 + 1) ** 2;
     for (let dz = -radius; dz <= radius; dz++) {
       for (let dx = -radius; dx <= radius; dx++) {
-        const c = fn(this.world.getBiome(x + dx, z + dz), y);
+        const c = fn(this.world.getBiome(x + dx, z + dz,y), y);
         r += (c >> 16) & 255; g += (c >> 8) & 255; b += c & 255;
       }
     }

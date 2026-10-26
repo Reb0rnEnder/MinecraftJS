@@ -4,7 +4,7 @@ import {readFileSync} from 'node:fs';
 import {C578,Writer578,decodePacket578} from '../client/js/net/protocol-1.15.2.js';
 import {EntityManager,nativeEntityDefinition} from '../client/js/game/entities.js';
 import {ENTITIES_BY_NAME} from '../client/js/game/entity-types.js';
-import {bee} from '../client/js/render/entity-models.js';
+import {bee,setJarModels} from '../client/js/render/entity-models.js';
 import {FOOD_NAMES,Items} from '../client/js/game/items.js';
 import {honeyFallMultiplier,honeyMovementFactor} from '../client/js/game/physics.js';
 import {ModelStore} from '../client/js/render/models.js';
@@ -44,11 +44,11 @@ test('1.15.2 bee registry entries are treated as living mobs',()=>{
 test('bee metadata keeps native nectar, stinger and anger fields',()=>{
   const manager=new EntityManager({});
   const entity=manager._base(1,0,0,0); entity.kind='mob'; entity.entityName='bee';
-  manager._applyMeta(entity,{13:3,14:40});
+  manager._applyMeta(entity,{16:12,17:40});
   assert.equal(entity.hasNectar,true);assert.equal(entity.hasStung,true);assert.equal(entity.angry,true);assert.equal(entity.angerTime,40);
 });
 test('bee renderer has body, wings and a removable stinger',()=>{
-  const model=bee();assert.equal(model.roots.length,5);assert.ok(model.parts.leftWing);assert.equal(model.parts.stinger.visible,true);
+  setJarModels(JSON.parse(readFileSync(new URL('../client/assets/bundles/entity-models.json',import.meta.url))));const model=bee();assert.equal(model.roots.length,1);assert.ok(model.parts.leftWing);assert.equal(model.parts.stinger.visible,true);
   model.animate(model,{age:4,hasStung:true});assert.equal(model.parts.stinger.visible,false);
 });
 test('1.15.2 honey bottle is food and honey blocks use vanilla movement fall factors',()=>{
@@ -73,7 +73,7 @@ test('1.15.2 creative search uses current item IDs for fireworks and tridents',(
 });
 test('tridents release and elytra fireworks use the protocol-578 item-use flow',()=>{
   const itemData=JSON.parse(readFileSync(new URL('../client/data/items.json',import.meta.url)));
-  const assets={data:{items:itemData,creative:{effects:{},eggs:{}},enchantments:[]},translate:k=>k};
+  const assets={data:{items:itemData,creative:JSON.parse(readFileSync(new URL('../client/data/creative.json',import.meta.url))),enchantments:[]},translate:k=>k};
   const items=new Items(assets),player=new LocalPlayer(),sent=[];
   const trident={id:items.byName.get('trident').id,count:1,nbt:nbt.compound({Enchantments:nbt.list(10,[{id:nbt.string('minecraft:riptide'),lvl:nbt.short(3)}])})};
   player.inWater=true;
@@ -89,7 +89,7 @@ test('lag-tolerant placement predicts ordinary blocks and accepts the server cor
   const world={getState:(x,y,z)=>states.get(x+','+y+','+z)||0,setState:(x,y,z,s)=>states.set(x+','+y+','+z,s)};
   const game={world,items:{isBlockItem:()=>true},player:{},entities:{all:()=>[]}};
   const interaction=new Interaction(game);
-  interaction._predictPlace({x:1,y:64,z:1},{id:1},{name:'glass'});
+  interaction._predictPlace({x:1,y:64,z:1},{id:1},{name:'glass',defaultState:glass,stateProperties:[]});
   assert.equal(world.getState(1,64,1),glass);
   assert.equal(interaction.predictedBlocks.size,1);
   interaction.onBlockChange({x:1,y:64,z:1},0);

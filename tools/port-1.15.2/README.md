@@ -33,3 +33,10 @@ exercised by `tools/test-1.15.2-runtime.mjs` plus a live proxy join. Native
 registries, 1.15.2 indexed assets and protocol 578 are now selected together.
 Entity model extraction is still using the verified inherited bundle while the
 packaged-class extractor is ported; this remains a documented visual gap.
+
+Runtime finalization runs the native target constructors for creative catalogs,
+item mechanics and every block shape/render record. `npm run assets` also runs
+`ExtractModels.java` against the verified client jar and official mappings; its
+quad vertices retain native UVs, normals and inflation. Java and the prepared
+client/server jars are required. Extraction and visual validation errors stop
+the build; no previous-version model bundle is accepted.

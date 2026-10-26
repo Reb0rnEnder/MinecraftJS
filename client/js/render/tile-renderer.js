@@ -406,29 +406,15 @@ export class TileEntityRenderer {
       case 'chest': {
         const id = getBlock(st).id;
         const isEnder = getBlock(st).name === 'ender_chest';
-        const same = (x, z) => getBlock(w.getState(x, t.y, z)).id === id && !isEnder;
-        t.secondary = same(t.x - 1, t.z) || same(t.x, t.z - 1);
-        if (t.secondary) { t.obj = null; return; }
-        const xPos = same(t.x + 1, t.z), zPos = same(t.x, t.z + 1);
-        const large = xPos || zPos;
-        const texName = isEnder ? 'entity/chest/ender.png' : id === 146 ? (large ? 'entity/chest/trapped_double.png' : 'entity/chest/trapped.png') : (large ? 'entity/chest/normal_double.png' : 'entity/chest/normal.png');
-        mat = entityMaterial(texName, { alphaTest: 0.1 });
-        // ModelChest / ModelLargeChest
-        const { lid, below, knob } = blockModel(large ? 'largeChest' : 'chest', ['lid', 'below', 'knob']);
-        const model = new Node();
-        for (const p of [lid, knob, below]) { model.add(p.build()); p.setMaterial(mat); }
-        model.scale.set(1 / 16, 1 / 16, 1 / 16);
-        // translate(x, y+1, z+1); scale(1,-1,-1); translate(.5,.5,.5); rotate; translate(-.5,-.5,-.5)
-        const a = new Node(); a.position.set(0, 1, 1); a.scale.set(1, -1, -1);
-        const b2 = new Node(); b2.position.set(0.5, 0.5, 0.5);
-         const facing = ['down', 'up', 'north', 'south', 'west', 'east'].indexOf(props.facing);
-         const rot = facing === 2 ? 180 : facing === 3 ? 0 : facing === 4 ? 90 : facing === 5 ? -90 : 0;
-        const c = new Node();
-        if (facing === 2 && xPos) c.position.x = 1;
-        if (facing === 5 && zPos) c.position.z = -1;
-        c.rotation.y = rot * D2R;
-        const d = new Node(); d.position.set(-0.5, -0.5, -0.5);
-        d.add(model); c.add(d); b2.add(c); a.add(b2); obj.add(a);
+        const type=isEnder?'single':(props.type||'single');
+        const prefix=isEnder?'ender':getBlock(st).name==='trapped_chest'?'trapped':'normal';
+        mat=entityMaterial('entity/chest/'+prefix+(type==='single'?'':'_'+type)+'.png',{alphaTest:.1});
+        const {lid,below,knob}=blockModel(type==='single'?'chest':type==='left'?'chestRight':'chestLeft',['lid','below','knob']);
+        const model=new Node();model.scale.set(1/16,1/16,1/16);
+        for(const part of [lid,knob,below]){model.add(part.build());part.setMaterial(mat);}
+        const rotation=new Node();rotation.position.set(.5,.5,.5);
+        rotation.rotation.y=({south:0,west:-90,north:-180,east:-270}[props.facing]||0)*D2R;
+        const offset=new Node();offset.position.set(-.5,-.5,-.5);offset.add(model);rotation.add(offset);obj.add(rotation);
         t.lidParts = [lid, knob];
         break;
       }

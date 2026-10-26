@@ -11,7 +11,7 @@ export function buildSlice(world, cx, sy, cz, tileProps, biomeBlendRadius = 2) {
   const light = new Uint8Array(SLICE_VOLUME); // sky << 4 | block
   const biomeMargin = Math.max(SLICE_MARGIN, Math.max(0, Math.min(7, Math.round(biomeBlendRadius)))), biomeSize = 16 + biomeMargin * 2;
   const biomeOx = cx * 16 - biomeMargin, biomeOz = cz * 16 - biomeMargin;
-  const biomes = new Uint8Array(biomeSize * biomeSize);
+  const biomes = new Uint8Array(SLICE * biomeSize * biomeSize);
   const ox = cx * 16 - SLICE_MARGIN, oy = sy * 16 - SLICE_MARGIN, oz = cz * 16 - SLICE_MARGIN;
   const chunks = [];
   for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) chunks.push(world.getChunk(cx + dx, cz + dz) || null);
@@ -51,12 +51,12 @@ export function buildSlice(world, cx, sy, cz, tileProps, biomeBlendRadius = 2) {
     }
   }
   // Biome sampling has its own horizontal margin; block/light slices stay compact.
-  for (let lz = 0; lz < biomeSize; lz++) {
+  for(let ly=0;ly<SLICE;ly++)for (let lz = 0; lz < biomeSize; lz++) {
     const z = biomeOz + lz, czOff = (z >> 4) - cz;
     for (let lx = 0; lx < biomeSize; lx++) {
       const x = biomeOx + lx, cxOff = (x >> 4) - cx;
       const c = chunks[(czOff + 1) * 3 + cxOff + 1];
-      biomes[lz * biomeSize + lx] = c ? c.biomes[((z & 15) << 4) | (x & 15)] : 1;
+      biomes[(ly*biomeSize+lz)*biomeSize+lx] = c ? (world.getBiome?world.getBiome(x,z,oy+ly):c.biomes[((z&15)<<4)|(x&15)]) : 1;
     }
   }
   let props = null;
@@ -66,7 +66,7 @@ export function buildSlice(world, cx, sy, cz, tileProps, biomeBlendRadius = 2) {
       if (x >> 4 === cx && y >> 4 === sy && z >> 4 === cz) (props ||= []).push([x, y, z, v]);
     }
   }
-  return { x: cx, y: sy, z: cz, ox, oy, oz, hasSky, states, light, biomes, biomeOx, biomeOz, biomeSize, props };
+  return { x: cx, y: sy, z: cz, ox, oy, oz, hasSky, states, light, biomes, biomeOx, biomeOz, biomeSize, biomeLayers:SLICE, props };
 }
 
 // World-like accessors over a slice (used by the mesher). Coordinates are world coordinates.
@@ -96,11 +96,12 @@ export class SliceWorld {
     return this.light[ly * SLICE_AREA + lz * SLICE + lx];
   }
 
-  getBiome(x, z) {
+  getBiome(x, z, y = this.oy+SLICE_MARGIN) {
     const size = this.sl.biomeSize || SLICE;
     let lx = x - (this.sl.biomeOx ?? this.ox), lz = z - (this.sl.biomeOz ?? this.oz);
     lx = Math.max(0, Math.min(size - 1, lx)); lz = Math.max(0, Math.min(size - 1, lz));
-    return this.biomes[lz * size + lx];
+    const layer=this.sl.biomeLayers?Math.max(0,Math.min(this.sl.biomeLayers-1,Math.floor(y-this.oy))):0;
+    return this.biomes[(layer*size+lz)*size+lx];
   }
 
   // Raw states of the section itself (16^3, vanilla index order y, z, x)

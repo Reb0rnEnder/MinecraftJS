@@ -25,7 +25,7 @@ export function J(name, names) {
     const p = new Part(q.tw, q.th);
     p.mirror = q.mirror;
     p.visible = q.show;
-    for (const b of q.boxes) p.boxes.push({ u: b[0], v: b[1], x: b[2], y: b[3], z: b[4], dx: b[5], dy: b[6], dz: b[7], inflate: b[8], mirror: b[9] });
+    for (const b of q.boxes) p.boxes.push({ u: b[0], v: b[1], x: b[2], y: b[3], z: b[4], dx: b[5], dy: b[6], dz: b[7], inflate: b[8], mirror: b[9], quads: b[10] || null });
     p.px = q.p[0]; p.py = q.p[1]; p.pz = q.p[2];
     p.rx = q.r[0]; p.ry = q.r[1]; p.rz = q.r[2];
     made.set(i, p);
@@ -310,21 +310,13 @@ export function cat(){
   return jarAdapter('cat',['backLeft','backRight','frontLeft','frontRight','tail','tail2','head','body'],(m,a)=>animate(m,a),{modelScale:.8});
 }
 
-// Compact 1.15.2 bee fallback while the packaged-class model extractor is
-// being ported. It keeps the entity visible and preserves the native wing,
-// nectar and stinger state transitions.
+// Geometry, hierarchy and UVs come from the target BeeModel constructor.
 export function bee(){
-  const body=new Part(64,32).tex(0,0).box(-4,-4,-6,8,8,12).pivot(0,12,0);
-  const head=new Part(64,32).tex(0,16).box(-3,-3,-8,6,6,4).pivot(0,12,0);
-  const stinger=new Part(64,32).tex(24,0).box(-1,-1,6,2,2,2).pivot(0,12,0);
-  const leftWing=new Part(64,32).tex(0,20).box(0,-1,-3,7,0,5).pivot(4,8,-1);
-  const rightWing=new Part(64,32).tex(0,20).box(-7,-1,-3,7,0,5).pivot(-4,8,-1);
-  const roots=[body,head,stinger,leftWing,rightWing];
-  return {parts:{body,head,stinger,leftWing,rightWing},roots,modelScale:1.15,animate(m,a={}){
-    const flap=Math.sin((a.age||0)*2.2)*.35;
-    m.parts.head.ry=(a.yaw||0)*D2R;m.parts.head.rx=(a.pitch||0)*D2R;
-    m.parts.leftWing.rz=flap;m.parts.rightWing.rz=-flap;m.parts.stinger.visible=!a.hasStung;
-  }};
+  return jarAdapter('bee',['bone','body','rightWing','leftWing','frontLeg','midLeg','backLeg','stinger','leftAntenna','rightAntenna'],(m,a={})=>{
+    const p=m.parts;p.stinger.visible=!a.hasStung;
+    const flap=Math.cos((a.age||0)*2.1)*Math.PI*.15;
+    p.rightWing.rz=flap;p.leftWing.rz=-flap;
+  });
 }
 export function fox(){
   return jarAdapter('fox',['head','leftEar','rightEar','nose','body','rightHindLeg','leftHindLeg','rightFrontLeg','leftFrontLeg','tail'],(m,a)=>{

@@ -141,16 +141,17 @@ export class World {
 
   getBlockDef(x, y, z) { return getBlock(this.getState(x, y, z)); }
 
-  getBiome(x, z) {
+  getBiome(x, z, y = 64) {
     const c = this._chunk(x >> 4, z >> 4);
-    return c ? c.biomes[((z & 15) << 4) | (x & 15)] : 1;
+    if(!c)return 1;
+    return c.biomes.length===1024?c.biomes[(Math.max(0,Math.min(63,Math.floor(y/4)))<<4)|((z&15)>>2)<<2|((x&15)>>2)]:c.biomes[((z&15)<<4)|(x&15)];
   }
 
   // World.isRainingAt: rain, an exposed position, and a biome with rain precipitation.
   isRainingAt(x, y, z) {
     x = Math.floor(x); y = Math.floor(y); z = Math.floor(z);
     if (!this.hasSky || this.rainStrength <= 0.2 || !this.isLoaded(x, z)) return false;
-    if (biomeInfo(this.getBiome(x, z)).precipitation !== 'rain') return false;
+    if (biomeInfo(this.getBiome(x,z,y)).precipitation !== 'rain') return false;
     for (let above = Math.max(0, y); above < 256; above++) {
       const b = getBlock(this.getState(x, above, z));
       if (b.boundingBox === 'block' || b.isLiquid) return false;

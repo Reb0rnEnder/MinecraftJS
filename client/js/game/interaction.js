@@ -1,6 +1,7 @@
+import {placementIntersects} from './placement-collision.js';
 // Player interaction (port of PlayerControllerMP + Minecraft.clickMouse/rightClickMouse).
 import { C } from '../net/packets.js';
-import { blocks, blocksByName, findState, getBlock, getStateProperties } from '../world/blocks.js';
+import { blocks, blocksByName, findState, getBlock, getStateProperties, staticCollisionBoxes } from '../world/blocks.js';
 import { isPointInFluid } from '../world/fluids.js';
 import { rayBox } from '../world/world.js';
 import { armorType, copy, stackable } from './container.js';
@@ -135,11 +136,7 @@ export class Interaction {
   tick(presses) {
     const g = this.game;
     this.tickNumber++;
-    for (const [k, p] of this.predictedBlocks) if (p.expires <= this.tickNumber) {
-      const [x, y, z] = k.split(',').map(Number);
-      if (this.game.world.getState(x, y, z) === p.predicted) this.game.world.setState(x, y, z, p.previous);
-      this.predictedBlocks.delete(k);
-    }
+    for(const [key,p] of this.predictedBlocks)if(p.dimension!==g.dimension)this.predictedBlocks.delete(key);
     const input = g.input;
     this.updateEquip();
     if (this.rightClickDelay > 0) this.rightClickDelay--;
@@ -607,6 +604,13 @@ export class Interaction {
     return { p, face };
   }
 
+  _placementState(t,held,block){
+    const props={...getStateProperties(block.defaultState)};
+    if('axis' in props)props.axis=['y','y','z','z','x','x'][t.face]||'y';
+    if('type' in props&&block.name.endsWith('_slab'))props.type=t.face===0||t.face!==1&&t.hit[1]-t.y>.5?'top':'bottom';
+    return findState(block.name,props);
+  }
+
   _canPlaceBlockOnSide(t, held) {
     const g = this.game, w = g.world;
     const nb = this._placedBlock(held);
@@ -615,8 +619,9 @@ export class Interaction {
     if (p.y < 0 || p.y > 255) return false;
     if (!this._replaceable(w.getState(p.x, p.y, p.z))) return false;
     // entities in the way of a block with a collision box (EntityLivingBase, boats, minecarts, TNT, falling blocks)
-    if (nb.collisionFull) {
-      const hit = (b) => b[3] > p.x && b[0] < p.x + 1 && b[4] > p.y && b[1] < p.y + 1 && b[5] > p.z && b[2] < p.z + 1;
+    const placed=this._placementState(t,held,nb),boxes=staticCollisionBoxes(placed);
+    if (boxes.length) {
+      const hit = b => placementIntersects(boxes,p,b);
       if (hit(this.player.bb())) return false;
       for (const e of g.entities.all()) {
         if(e.kind==='falling'&&w.getState(Math.floor(e.x),Math.floor(e.y),Math.floor(e.z))===e.blockState)continue;
@@ -693,15 +698,16 @@ export class Interaction {
   // ItemBlock.onItemUse sets the block on the client right away; only for blocks whose placed state is just
   // the item damage (no facing / orientation logic), the server's block change follows either way
   _predictPlace(p, held, nb) {
-    if (!nb) return;
-    // Vanilla MultiPlayerGameMode invokes ItemStack.useOn locally before the
-    // server reply. Predict every ordinary block item, not only the old
-    // SIMPLE list; the authoritative block change below confirms or corrects
-    // this state when latency is visible.
-    const previous = this.game.world.getState(p.x, p.y, p.z), predicted = findState(nb.name);
-    if (predicted === undefined || predicted === previous) return;
-    this.predictedBlocks.set(p.x + ',' + p.y + ',' + p.z, { previous, predicted, expires: this.tickNumber + 40 });
-    this.game.world.setState(p.x, p.y, p.z, predicted);
+    // Only predict states whose native placement can be resolved here. A
+    // default-state guess for doors, beds, stairs, fluids or multipart blocks
+    // can create colliders inside players and overwrite legitimate neighbours.
+    if(!nb||nb.stateProperties?.some(p=>p.name!=='axis'))return;
+    const previous=this.game.world.getState(p.x,p.y,p.z),axis=nb.stateProperties?.some(p=>p.name==='axis');
+    const t=this.target, predicted=axis&&t?.type==='block'?this._placementState(t,held,nb):nb.defaultState;
+    if(predicted===undefined||predicted===previous)return;
+    const key=p.x+','+p.y+','+p.z,old=this.predictedBlocks.get(key);
+    this.predictedBlocks.set(key,{previous:old?.previous??previous,predicted,dimension:this.game.dimension});
+    this.game.world.setState(p.x,p.y,p.z,predicted);
   }
 
   // Doors, trapdoors and gates toggle instantly client-side in vanilla
@@ -731,7 +737,7 @@ export class Interaction {
     g.send(C.useItem(hand)); // CPacketPlayerTryUseItem
     if (g.cooldownFraction(held.id, 0) > 0) return false; // CooldownTracker: still cooling down
     if (name === 'trident') {
-      if (g.items.damage(held) >= g.items.maxDurability(held.id)) return false;
+      if (g.items.damage(held) >= g.items.maxDurability(held.id)-1) return false;
       if (g.items.enchantLevel(held, 'riptide') > 0 && !this._wetForRiptide()) return false;
     }
     if (name === 'firework_rocket' && this.player.elytraFlying) return true;
@@ -781,8 +787,13 @@ export class Interaction {
     // Match TridentItem's isInWaterOrRain check. Refresh the body-fluid
     // contact instead of relying only on the previous movement tick; this is
     // important when a delayed chunk/block update puts the player in water.
-    const bodyWet = p.inWater || !!(w && p.handleWaterMovement?.(w)) || !!(w && p.isEyeInWater?.(w));
-    return !!bodyWet || !!(w?.isRainingAt?.(p.x, p.y, p.z) || w?.isRainingAt?.(p.x, p.y + p.height, p.z));
+    // Eligibility must not call handleWaterMovement: that applies currents.
+    let bodyWet=!!p.inWater;
+    if(w&&typeof w.getState==='function'&&typeof p.bb==='function'&&!(p.ridingEntity&&p.ridingBoat)){
+      const bb=p.bb();
+      for(let x=Math.floor(bb[0]);!bodyWet&&x<Math.ceil(bb[3]);x++)for(let z=Math.floor(bb[2]);!bodyWet&&z<Math.ceil(bb[5]);z++)for(let y=Math.floor(bb[1]);!bodyWet&&y<Math.ceil(bb[4]);y++)bodyWet=isPointInFluid(w,x+.5,Math.max(y,bb[1]),z+.5);
+    }
+    return bodyWet||!!(w?.isRainingAt?.(p.x,p.y,p.z)||w?.isRainingAt?.(p.x,p.y+p.height,p.z));
   }
 
   stopUsingItem() {

@@ -1,4 +1,4 @@
-import {NATIVE_METADATA} from '../game/entity-metadata-1.14.4.js';
+import {NATIVE_METADATA} from '../game/entity-metadata-1.15.2.js';
 import { debugTargets } from './debug-targets.js';
 import {drawEffectIcon} from './effect-icons.js';
 import { getStateProperties } from '../world/blocks.js';
@@ -960,7 +960,7 @@ export class Hud {
     lines.push(`Chunk: ${bx & 15} ${by & 15} ${bz & 15} in ${bx >> 4} ${by >> 4} ${bz >> 4}`);
     lines.push(`Facing: ${facing} (${towards}) (${f(wrapDeg(pl.yaw), 1)} / ${f(wrapDeg(pl.pitch), 1)})`);
     if (by >= 0 && by < 256 && g.world.getChunk && g.world.getChunk(bx >> 4, bz >> 4)) {
-      const biome = biomeInfo(g.world.getBiome(bx, bz));
+      const biome = biomeInfo(g.world.getBiome(bx,bz,by));
       const sky = g.world.getSkyLight(bx, by, bz), blk = g.world.getBlockLight(bx, by, bz);
       lines.push(`Biome: minecraft:${biome.name}`);
       lines.push(`Light: ${Math.max(sky, blk)} (${sky} sky, ${blk} block)`);
