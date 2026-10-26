@@ -316,8 +316,8 @@ export class WebGL2Device {
   }
 
   // Optional terrain position hook. Reuses the existing terrain program/format and its unused position.w.
-  createTerrainAnimation(source,lookup){
-    const ids=this.createTexture({...lookup,filter:'nearest'});let program;
+  createTerrainAnimation(source,lookup,lighting=''){
+    const ids=this.createTexture({...lookup||{width:1,height:1,data:new Uint8Array(4)},filter:'nearest'});let program;
     try{
       const declaration=`
 ${source}
@@ -332,9 +332,9 @@ vec3 mcjsWave(vec3 p){
  return p+WavingBlocks(world-cameraPosition,category,(packed&32768)!=0?1.0:0.0)-(world-cameraPosition);
 }
 `;
-      const vs=SHADERS.terrain.vs.replace('void main() {',declaration+'void main() {').replace('  vec4 mv =','  p=mcjsWave(p);\n  vec4 mv =');
-      program=this._program('pack terrain animation',{vs,fs:SHADERS.terrain.fs});
-      const gl=this.gl;return {program,ids,frame:null,uIds:gl.getUniformLocation(program.p,'uWaveIds'),uFrame:gl.getUniformLocation(program.p,'uWaveFrame'),uCamera:gl.getUniformLocation(program.p,'cameraPosition'),uEye:gl.getUniformLocation(program.p,'relativeEyePosition'),destroy:()=>{if(this.terrainAnimation?.program===program)this.terrainAnimation=null;gl.deleteProgram(program.p);this.destroyTexture(ids);}};
+      const vs=source?SHADERS.terrain.vs.replace('void main() {',declaration+'void main() {').replace('  vec4 mv =','  p=mcjsWave(p);\n  vec4 mv ='):SHADERS.terrain.vs;
+      program=this._program('pack terrain animation',{vs,fs:lighting?lighting+SHADERS.terrain.fs.replace('lightmap(vLight)','mcjsPackLight(vLight)'):SHADERS.terrain.fs});
+      const gl=this.gl;return {program,ids,frame:null,uLighting:['Ambient','Direct','Block','Minimum','Dimension'].map(n=>gl.getUniformLocation(program.p,'uPack'+n)),uIds:gl.getUniformLocation(program.p,'uWaveIds'),uFrame:gl.getUniformLocation(program.p,'uWaveFrame'),uCamera:gl.getUniformLocation(program.p,'cameraPosition'),uEye:gl.getUniformLocation(program.p,'relativeEyePosition'),destroy:()=>{if(this.terrainAnimation?.program===program)this.terrainAnimation=null;gl.deleteProgram(program.p);this.destroyTexture(ids);}};
     }catch(e){this.destroyTexture(ids);throw e;}
   }
   setTerrainAnimation(animation,frame){this.terrainAnimation=animation;if(animation)animation.frame=frame;}
@@ -617,6 +617,7 @@ vec3 mcjsWave(vec3 p){
     if (this.boundTex[1] !== lm) { gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, lm); gl.activeTexture(gl.TEXTURE0); this.boundTex[1] = lm; }
     if(animation){
       const f=animation.frame,c=f.camera,e=f.eye;
+      if(f.lighting){const l=f.lighting;for(const [i,key]of ['ambient','direct','block','minimum'].entries())gl.uniform3fv(animation.uLighting[i],l[key]);gl.uniform1f(animation.uLighting[4],l.dimension);}
       gl.uniform1i(animation.uIds,2);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,animation.ids.tex);gl.activeTexture(gl.TEXTURE0);
       gl.uniform4f(animation.uFrame,f.time,f.worldTime,0,0);gl.uniform3fv(animation.uCamera,c);gl.uniform3f(animation.uEye,c[0]-e[0],c[1]-e[1],c[2]-e[2]);
     }

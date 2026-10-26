@@ -28,7 +28,7 @@ requirements are rejected rather than populated with misleading fake data.
 The standard scene pipelines and vertex formats are retained.
 
 The supplied BSL v10.1.8 final shader compiles and renders in all three dimensions;
-this includes its final sharpening/image effects. The follow-up also runs its vegetation functions. **BSL's lighting, shadows,
+this includes its final sharpening/image effects. The follow-up also runs its vegetation functions. **Full BSL lighting, shadows,
 reflections, volumetrics, bloom/composite history, TAA and material pipeline do
 not run.** That needs a substantially larger gbuffer/depth/shadow/composite
 integration. Current final-pass support does not establish arbitrary pack
@@ -51,3 +51,7 @@ Run the optional GPU checks with PLAYWRIGHT_MODULE pointing to Playwright's
 index.mjs. BSL_SHADER_PACK can point to a local pack ZIP; the BSL-specific test is
 skipped when no archive is supplied. The original small fixture remains in the
 repository so baseline final-stage compilation does not depend on BSL assets.
+
+The follow-up adds saved shader options and basic terrain lighting; see
+[pushing, leads and shader settings](pushing-leads-and-shader-settings.md) for
+current support and validation.
