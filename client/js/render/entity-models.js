@@ -2,6 +2,7 @@
 // game's model constructors and records every part: bundles/entity-models.json); this file names the parts and holds
 // the animation (ports of setRotationAngles / setLivingAnimations).
 import { Part } from './boxmodel.js';
+import { animateOcelot } from './ocelot-pose.js';
 
 const PI = Math.PI;
 const cos = Math.cos, sin = Math.sin, abs = Math.abs, sqrt = Math.sqrt;
@@ -288,21 +289,7 @@ export function wolf() {
 
 export function ocelot() {
   const p = J('ocelot', ['backLeft', 'backRight', 'frontLeft', 'frontRight', 'tail', 'tail2', 'head', 'body']);
-  return {
-    parts: p, roots: [p.head, p.body, p.tail, p.tail2, p.backLeft, p.backRight, p.frontLeft, p.frontRight], childY: 10, childZ: 4,
-    animate: (m, a) => {
-      const q = m.parts;
-      q.head.rx = a.pitch * PI / 180; q.head.ry = a.yaw * PI / 180;
-      if (!a.sitting) {
-        q.body.rx = PI / 2;
-        q.backLeft.rx = cos(a.ls * 0.6662) * a.lsa; q.backRight.rx = cos(a.ls * 0.6662 + 0.3) * a.lsa;
-        q.frontLeft.rx = cos(a.ls * 0.6662 + PI + 0.3) * a.lsa; q.frontRight.rx = cos(a.ls * 0.6662 + PI) * a.lsa;
-        q.tail2.rx = 1.7278761 + PI / 10 * cos(a.ls) * a.lsa;
-      } else {
-        q.body.rx = PI / 4; q.body.py += 0;
-      }
-    },
-  };
+  return {parts:p, roots:Object.values(p), childY:10, childZ:4, animate:animateOcelot};
 }
 
 export function rabbit() {

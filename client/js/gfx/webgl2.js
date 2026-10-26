@@ -12,7 +12,8 @@ uniform vec3 uFogColor;
 uniform sampler2D uTex0;
 uniform sampler2D uLightmap;
 float fogFactor(float d) {
-  if (uFog.w > 1.5) return 0.0;
+  if (uFog.w > 1.5 && uFog.w < 2.5) return 0.0;
+  if (uFog.w > 2.5) return 1.0 - clamp(exp(-pow(uFog.z * d, 2.0)), 0.0, 1.0);
   if (uFog.w < 0.5) return clamp((d - uFog.x) / max(0.0001, uFog.y - uFog.x), 0.0, 1.0);
   return 1.0 - clamp(exp(-uFog.z * d), 0.0, 1.0);
 }
@@ -95,25 +96,24 @@ void main() {
   o = vec4(c, t.a);
 }`,
   },
-  // TileEntityEndPortalRenderer (1.8) layer
+  // TileEntityEndPortalRenderer layer: texgen EYE_LINEAR times projection * modelview = the fragment's NDC, then the
+  // layer's scale, rotation and drift; uv = 0.5 + 0.5 * that
   endportal: {
     vs: `
 layout(location=0) in vec3 aPos; layout(location=1) in vec2 aUv; layout(location=2) in vec4 aCol;
-out vec3 vLocal; out float vDepth;
-void main() { vLocal = aPos; vec4 mv = uView * uModel * vec4(aPos, 1.0); vDepth = length(mv.xyz); gl_Position = uProj * mv; }`,
+out float vDepth;
+void main() { vec4 mv = uView * uModel * vec4(aPos, 1.0); vDepth = length(mv.xyz); gl_Position = uProj * mv; }`,
     fs: `
-in vec3 vLocal; in float vDepth; out vec4 o;
+in float vDepth; out vec4 o;
 void main() {
-  // the camera's ray through this point of the surface, continued 'depth' blocks down, in world x / z (negated)
-  float h = uP[2].y - uP[2].w;
-  float k = (h + uP[1].w) / h;
-  vec2 rel = vec2(uP[3].x + vLocal.x - uP[2].x, uP[3].y + vLocal.z - uP[2].z);
-  vec2 q = -(rel * k + uP[2].xz) - 0.5;
+  vec2 ndc = gl_FragCoord.xy / uP[2].xy * 2.0 - 1.0;
+  vec2 s = ndc * uP[1].x;
   float c = cos(uP[1].y), sn = sin(uP[1].y);
-  vec2 uv = (vec2(q.x * c - q.y * sn, q.x * sn + q.y * c) + 0.5) * uP[1].x + vec2(0.0, uP[1].z);
-  vec4 t = texture(uTex0, fract(uv));
+  vec2 r = vec2(s.x * c - s.y * sn, s.x * sn + s.y * c) + uP[1].zw;
+  vec4 t = texture(uTex0, fract(0.5 + 0.5 * r));
   vec3 col = t.rgb * uP[0].rgb;
   float f = fogFactor(vDepth);
+  // the sky pass blends with the scene; the portal passes add up, fogging towards black (setupFogColor(true))
   o = uP[0].w < 0.5 ? vec4(mix(col, uFogColor, f), t.a) : vec4(col * (1.0 - f), 1.0);
 }`,
   },
@@ -316,8 +316,8 @@ export class WebGL2Device {
   }
 
   // Optional terrain position hook. Reuses the existing terrain program/format and its unused position.w.
-  createTerrainAnimation(source,lookup){
-    const ids=this.createTexture({...lookup,filter:'nearest'});let program;
+  createTerrainAnimation(source,lookup,lighting=''){
+    const ids=this.createTexture({...lookup||{width:1,height:1,data:new Uint8Array(4)},filter:'nearest'});let program;
     try{
       const declaration=`
 ${source}
@@ -332,9 +332,9 @@ vec3 mcjsWave(vec3 p){
  return p+WavingBlocks(world-cameraPosition,category,(packed&32768)!=0?1.0:0.0)-(world-cameraPosition);
 }
 `;
-      const vs=SHADERS.terrain.vs.replace('void main() {',declaration+'void main() {').replace('  vec4 mv =','  p=mcjsWave(p);\n  vec4 mv =');
-      program=this._program('pack terrain animation',{vs,fs:SHADERS.terrain.fs});
-      const gl=this.gl;return {program,ids,frame:null,uIds:gl.getUniformLocation(program.p,'uWaveIds'),uFrame:gl.getUniformLocation(program.p,'uWaveFrame'),uCamera:gl.getUniformLocation(program.p,'cameraPosition'),uEye:gl.getUniformLocation(program.p,'relativeEyePosition'),destroy:()=>{if(this.terrainAnimation?.program===program)this.terrainAnimation=null;gl.deleteProgram(program.p);this.destroyTexture(ids);}};
+      const vs=source?SHADERS.terrain.vs.replace('void main() {',declaration+'void main() {').replace('  vec4 mv =','  p=mcjsWave(p);\n  vec4 mv ='):SHADERS.terrain.vs;
+      program=this._program('pack terrain animation',{vs,fs:lighting?lighting+SHADERS.terrain.fs.replace('lightmap(vLight)','mcjsPackLight(vLight)'):SHADERS.terrain.fs});
+      const gl=this.gl;return {program,ids,frame:null,uLighting:['Ambient','Direct','Block','Minimum','Dimension'].map(n=>gl.getUniformLocation(program.p,'uPack'+n)),uIds:gl.getUniformLocation(program.p,'uWaveIds'),uFrame:gl.getUniformLocation(program.p,'uWaveFrame'),uCamera:gl.getUniformLocation(program.p,'cameraPosition'),uEye:gl.getUniformLocation(program.p,'relativeEyePosition'),destroy:()=>{if(this.terrainAnimation?.program===program)this.terrainAnimation=null;gl.deleteProgram(program.p);this.destroyTexture(ids);}};
     }catch(e){this.destroyTexture(ids);throw e;}
   }
   setTerrainAnimation(animation,frame){this.terrainAnimation=animation;if(animation)animation.frame=frame;}
@@ -617,6 +617,7 @@ vec3 mcjsWave(vec3 p){
     if (this.boundTex[1] !== lm) { gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, lm); gl.activeTexture(gl.TEXTURE0); this.boundTex[1] = lm; }
     if(animation){
       const f=animation.frame,c=f.camera,e=f.eye;
+      if(f.lighting){const l=f.lighting;for(const [i,key]of ['ambient','direct','block','minimum'].entries())gl.uniform3fv(animation.uLighting[i],l[key]);gl.uniform1f(animation.uLighting[4],l.dimension);}
       gl.uniform1i(animation.uIds,2);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,animation.ids.tex);gl.activeTexture(gl.TEXTURE0);
       gl.uniform4f(animation.uFrame,f.time,f.worldTime,0,0);gl.uniform3fv(animation.uCamera,c);gl.uniform3f(animation.uEye,c[0]-e[0],c[1]-e[1],c[2]-e[2]);
     }

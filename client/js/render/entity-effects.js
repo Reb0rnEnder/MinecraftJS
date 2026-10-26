@@ -3,6 +3,7 @@
 import { Node, material } from '../gfx/scene.js';
 import { FORMAT, colorParams } from '../gfx/device.js';
 import { mat4, D2R } from '../gfx/math.js';
+import {leashEndpoints,leashGeometry} from './leash.js';
 import { JavaRandom } from '../util/jrandom.js';
 
 const TAU = Math.PI * 2;
@@ -108,11 +109,11 @@ export class EntityEffects {
     this.beamTexture=game.assets.data?.items?.some(i=>i.name==='trident')?'entity/end_crystal/end_crystal_beam.png':'entity/endercrystal/endercrystal_beam.png';}
   remove(id) {for(const [key,v] of this.entries)if(v.id===id){this.root.remove(v.node);this.game.device.destroyMesh(v.mesh);this.entries.delete(key);}}
   reset(){for(const v of this.entries.values()){this.root.remove(v.node);this.game.device.destroyMesh(v.mesh);}this.entries.clear();}
-  _set(key,id,vertices,texture,state={blend:'none',cull:false},order=1) {
+  _set(key,id,vertices,texture,state={blend:'none',cull:false},order=1,fog=0) {
     let v=this.entries.get(key);const g=this.game;
     if(!v){const node=new Node(),mesh=g.device.createMesh(FORMAT.color,new Float32Array(0),{quads:true,dynamic:true});
       const tex=texture?()=>g.assets.texture(texture,{wrap:'repeat'}):null;
-      node.addDrawable(mesh,material('color',tex,colorParams(1,1,1,1,texture ? 0.1 : 0,0),state),{order});this.root.add(node);v={id,node,mesh};this.entries.set(key,v);}
+      node.addDrawable(mesh,material('color',tex,colorParams(1,1,1,1,texture ? 0.1 : 0,fog),state),{order});this.root.add(node);v={id,node,mesh};this.entries.set(key,v);}
     v.node.visible=true;v.used=true;g.device.updateMesh(v.mesh,vertices,{quads:true});
   }
   update(partial) {
@@ -127,6 +128,10 @@ export class EntityEffects {
     const beamTex=this.beamTexture;
     for(const e of entities.all()) {
       const age=(e.ticks||0)+partial,p=entities.interp(e,partial);
+      if(Number.isInteger(e.leashHolder)&&e.leashHolder>=0&&!e.dead){
+        const holder=e.leashHolder===g.entityId?{...g.player,eyeHeight:typeof g.player.eyeHeight==='function'?g.player.eyeHeight():(g.player.sleeping?.2:g.player.sneaking?1.54:1.62)}:entities.get(e.leashHolder);
+        if(holder&&!holder.dead){const rope=leashEndpoints(e,holder,partial);if(visible(rope.start,rope.end,2))this._set('leash:'+e.id,e.id,leashGeometry(rope),null,{blend:'none',cull:false},1,1);}
+      }
       if(isDragon(e)) {
         const c=entities.get(e.healingCrystal);
         if(c && !c.dead) {

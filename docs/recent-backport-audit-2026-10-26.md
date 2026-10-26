@@ -42,3 +42,12 @@ using both an original fixture and the locally supplied BSL archive. The BSL
 archive remains local and is not redistributed. Six existing shared audit probes
 also pass across all older refs. Live arbitrary-server gameplay and full BSL
 lighting are not certified by these checks.
+
+
+Follow-up: nearby entity/player pushing now applies to 1.14.4/1.13.2/1.12.2,
+with native team rules. 1.8.9 keeps native pre-1.9 behaviour. Lead strings, native
+sitting cat/tame-ocelot pivots, saved shader options and basic terrain lighting
+are fixed/added across all four versions. Native packed-state helpers are
+retained on 1.12.2/1.8.9. Current totals are 167/256/91/83 passing checks,
+respectively, plus the live collision and shader-settings reload checks.
+See [details and limits](pushing-leads-and-shader-settings.md).
