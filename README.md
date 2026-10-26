@@ -1,5 +1,10 @@
 # MinecraftJS
 
+> **1.15.2 transition branch:** [plan and milestones](docs/transition-1.15.2.md).
+> Milestone 1 stages verified protocol-578 inputs, native reports and packet IDs.
+> The active browser/proxy runtime below still targets 1.14.4 until the codec,
+> registries and assets pass the transition gates.
+
 > **1.14.4 development branch:** the browser and proxy now use protocol 498 with native terrain data and independent light updates. Native workstations, trading, lectern controls, bell rendering and scaffolding movement are implemented; jar-derived block properties and visible models for the new mobs are in place; native crossbow use, fitting poses, colored signs, campfire contents, particle sprite lists, effect icons and Accessibility/Mouse settings are implemented. Remaining special animations, recipe-book and visual parity work is ongoing.
 > Follow the [1.14.4 transition plan](docs/transition-1.14.4.md) before publishing a 1.14.4 client.
 > The [content milestone](docs/workstations-content-1.14.4.md) records workstation/block support and its limits.

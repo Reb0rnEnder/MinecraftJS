@@ -1,0 +1,610 @@
+{
+  "minecraftVersion": "1.15.2",
+  "protocol": 578,
+  "sources": {
+    "metadata": "e9d0adb8f642abe422909ede50f651b2b58a3573",
+    "client": "e3f78cd16f9eb9a52307ed96ebec64241cc5b32d",
+    "client_mappings": "1fbf9f0bc9c326af859b3ccf71c2a8f5edc47ef8",
+    "server": "bb2b6b1aefcd70dfd1892149ac3a215f6c636b07",
+    "server_mappings": "8ccf85df7a3a1f1119352b21e9a2f6894f6c3f3a",
+    "report_blocks": "ab5226ddc8709c3b4db6be54cee9871c96d4598c",
+    "report_registries": "6e6d47aa1a2236a5a9edf27a80a7a926fec28445",
+    "report_commands": "fb6777c99d7fe59ca94531927d02ad08beeffd67",
+    "minecraftDataRevision": "5e063fa99cfe8ded065ec6788b66696b7e4ef143"
+  },
+  "blocks": 680,
+  "blockStates": 11337,
+  "lastBlockState": 11336,
+  "registries": {
+    "minecraft:sound_event": 810,
+    "minecraft:fluid": 5,
+    "minecraft:mob_effect": 32,
+    "minecraft:block": 680,
+    "minecraft:enchantment": 37,
+    "minecraft:entity_type": 103,
+    "minecraft:item": 884,
+    "minecraft:potion": 43,
+    "minecraft:carver": 5,
+    "minecraft:surface_builder": 12,
+    "minecraft:feature": 65,
+    "minecraft:decorator": 38,
+    "minecraft:biome": 75,
+    "minecraft:block_state_provider_type": 4,
+    "minecraft:block_placer_type": 3,
+    "minecraft:foliage_placer_type": 4,
+    "minecraft:tree_decorator_type": 5,
+    "minecraft:particle_type": 62,
+    "minecraft:biome_source_type": 4,
+    "minecraft:block_entity_type": 33,
+    "minecraft:chunk_generator_type": 5,
+    "minecraft:dimension_type": 3,
+    "minecraft:motive": 26,
+    "minecraft:custom_stat": 71,
+    "minecraft:chunk_status": 13,
+    "minecraft:structure_feature": 15,
+    "minecraft:structure_piece": 55,
+    "minecraft:rule_test": 6,
+    "minecraft:structure_processor": 6,
+    "minecraft:structure_pool_element": 4,
+    "minecraft:menu": 23,
+    "minecraft:recipe_type": 6,
+    "minecraft:recipe_serializer": 20,
+    "minecraft:stat_type": 9,
+    "minecraft:villager_type": 7,
+    "minecraft:villager_profession": 15,
+    "minecraft:point_of_interest_type": 20,
+    "minecraft:memory_module_type": 28,
+    "minecraft:sensor_type": 10,
+    "minecraft:schedule": 4,
+    "minecraft:activity": 10
+  },
+  "commands": [
+    "advancement",
+    "ban",
+    "ban-ip",
+    "banlist",
+    "bossbar",
+    "clear",
+    "clone",
+    "data",
+    "datapack",
+    "debug",
+    "defaultgamemode",
+    "deop",
+    "difficulty",
+    "effect",
+    "enchant",
+    "execute",
+    "experience",
+    "fill",
+    "forceload",
+    "function",
+    "gamemode",
+    "gamerule",
+    "give",
+    "help",
+    "kick",
+    "kill",
+    "list",
+    "locate",
+    "loot",
+    "me",
+    "msg",
+    "op",
+    "pardon",
+    "pardon-ip",
+    "particle",
+    "playsound",
+    "publish",
+    "recipe",
+    "reload",
+    "replaceitem",
+    "save-all",
+    "save-off",
+    "save-on",
+    "say",
+    "schedule",
+    "scoreboard",
+    "seed",
+    "setblock",
+    "setidletimeout",
+    "setworldspawn",
+    "spawnpoint",
+    "spectate",
+    "spreadplayers",
+    "stop",
+    "stopsound",
+    "summon",
+    "tag",
+    "team",
+    "teammsg",
+    "teleport",
+    "tell",
+    "tellraw",
+    "time",
+    "title",
+    "tm",
+    "tp",
+    "trigger",
+    "w",
+    "weather",
+    "whitelist",
+    "worldborder",
+    "xp"
+  ],
+  "protocolChanges": {
+    "toClient": {
+      "beforeCount": 93,
+      "afterCount": 93,
+      "added": [],
+      "removed": [],
+      "moved": [
+        {
+          "name": "acknowledge_player_digging",
+          "from": 92,
+          "to": 8
+        },
+        {
+          "name": "block_break_animation",
+          "from": 8,
+          "to": 9
+        },
+        {
+          "name": "tile_entity_data",
+          "from": 9,
+          "to": 10
+        },
+        {
+          "name": "block_action",
+          "from": 10,
+          "to": 11
+        },
+        {
+          "name": "block_change",
+          "from": 11,
+          "to": 12
+        },
+        {
+          "name": "boss_bar",
+          "from": 12,
+          "to": 13
+        },
+        {
+          "name": "difficulty",
+          "from": 13,
+          "to": 14
+        },
+        {
+          "name": "chat",
+          "from": 14,
+          "to": 15
+        },
+        {
+          "name": "multi_block_change",
+          "from": 15,
+          "to": 16
+        },
+        {
+          "name": "tab_complete",
+          "from": 16,
+          "to": 17
+        },
+        {
+          "name": "declare_commands",
+          "from": 17,
+          "to": 18
+        },
+        {
+          "name": "transaction",
+          "from": 18,
+          "to": 19
+        },
+        {
+          "name": "close_window",
+          "from": 19,
+          "to": 20
+        },
+        {
+          "name": "window_items",
+          "from": 20,
+          "to": 21
+        },
+        {
+          "name": "craft_progress_bar",
+          "from": 21,
+          "to": 22
+        },
+        {
+          "name": "set_slot",
+          "from": 22,
+          "to": 23
+        },
+        {
+          "name": "set_cooldown",
+          "from": 23,
+          "to": 24
+        },
+        {
+          "name": "custom_payload",
+          "from": 24,
+          "to": 25
+        },
+        {
+          "name": "named_sound_effect",
+          "from": 25,
+          "to": 26
+        },
+        {
+          "name": "kick_disconnect",
+          "from": 26,
+          "to": 27
+        },
+        {
+          "name": "entity_status",
+          "from": 27,
+          "to": 28
+        },
+        {
+          "name": "explosion",
+          "from": 28,
+          "to": 29
+        },
+        {
+          "name": "unload_chunk",
+          "from": 29,
+          "to": 30
+        },
+        {
+          "name": "game_state_change",
+          "from": 30,
+          "to": 31
+        },
+        {
+          "name": "open_horse_window",
+          "from": 31,
+          "to": 32
+        },
+        {
+          "name": "keep_alive",
+          "from": 32,
+          "to": 33
+        },
+        {
+          "name": "map_chunk",
+          "from": 33,
+          "to": 34
+        },
+        {
+          "name": "world_event",
+          "from": 34,
+          "to": 35
+        },
+        {
+          "name": "world_particles",
+          "from": 35,
+          "to": 36
+        },
+        {
+          "name": "update_light",
+          "from": 36,
+          "to": 37
+        },
+        {
+          "name": "login",
+          "from": 37,
+          "to": 38
+        },
+        {
+          "name": "map",
+          "from": 38,
+          "to": 39
+        },
+        {
+          "name": "trade_list",
+          "from": 39,
+          "to": 40
+        },
+        {
+          "name": "rel_entity_move",
+          "from": 40,
+          "to": 41
+        },
+        {
+          "name": "entity_move_look",
+          "from": 41,
+          "to": 42
+        },
+        {
+          "name": "entity_look",
+          "from": 42,
+          "to": 43
+        },
+        {
+          "name": "entity",
+          "from": 43,
+          "to": 44
+        },
+        {
+          "name": "vehicle_move",
+          "from": 44,
+          "to": 45
+        },
+        {
+          "name": "open_book",
+          "from": 45,
+          "to": 46
+        },
+        {
+          "name": "open_window",
+          "from": 46,
+          "to": 47
+        },
+        {
+          "name": "open_sign_entity",
+          "from": 47,
+          "to": 48
+        },
+        {
+          "name": "craft_recipe_response",
+          "from": 48,
+          "to": 49
+        },
+        {
+          "name": "abilities",
+          "from": 49,
+          "to": 50
+        },
+        {
+          "name": "combat_event",
+          "from": 50,
+          "to": 51
+        },
+        {
+          "name": "player_info",
+          "from": 51,
+          "to": 52
+        },
+        {
+          "name": "face_player",
+          "from": 52,
+          "to": 53
+        },
+        {
+          "name": "position",
+          "from": 53,
+          "to": 54
+        },
+        {
+          "name": "unlock_recipes",
+          "from": 54,
+          "to": 55
+        },
+        {
+          "name": "entity_destroy",
+          "from": 55,
+          "to": 56
+        },
+        {
+          "name": "remove_entity_effect",
+          "from": 56,
+          "to": 57
+        },
+        {
+          "name": "resource_pack_send",
+          "from": 57,
+          "to": 58
+        },
+        {
+          "name": "respawn",
+          "from": 58,
+          "to": 59
+        },
+        {
+          "name": "entity_head_rotation",
+          "from": 59,
+          "to": 60
+        },
+        {
+          "name": "select_advancement_tab",
+          "from": 60,
+          "to": 61
+        },
+        {
+          "name": "world_border",
+          "from": 61,
+          "to": 62
+        },
+        {
+          "name": "camera",
+          "from": 62,
+          "to": 63
+        },
+        {
+          "name": "held_item_slot",
+          "from": 63,
+          "to": 64
+        },
+        {
+          "name": "update_view_position",
+          "from": 64,
+          "to": 65
+        },
+        {
+          "name": "update_view_distance",
+          "from": 65,
+          "to": 66
+        },
+        {
+          "name": "scoreboard_display_objective",
+          "from": 66,
+          "to": 67
+        },
+        {
+          "name": "entity_metadata",
+          "from": 67,
+          "to": 68
+        },
+        {
+          "name": "attach_entity",
+          "from": 68,
+          "to": 69
+        },
+        {
+          "name": "entity_velocity",
+          "from": 69,
+          "to": 70
+        },
+        {
+          "name": "entity_equipment",
+          "from": 70,
+          "to": 71
+        },
+        {
+          "name": "experience",
+          "from": 71,
+          "to": 72
+        },
+        {
+          "name": "update_health",
+          "from": 72,
+          "to": 73
+        },
+        {
+          "name": "scoreboard_objective",
+          "from": 73,
+          "to": 74
+        },
+        {
+          "name": "set_passengers",
+          "from": 74,
+          "to": 75
+        },
+        {
+          "name": "teams",
+          "from": 75,
+          "to": 76
+        },
+        {
+          "name": "scoreboard_score",
+          "from": 76,
+          "to": 77
+        },
+        {
+          "name": "spawn_position",
+          "from": 77,
+          "to": 78
+        },
+        {
+          "name": "update_time",
+          "from": 78,
+          "to": 79
+        },
+        {
+          "name": "title",
+          "from": 79,
+          "to": 80
+        },
+        {
+          "name": "entity_sound_effect",
+          "from": 80,
+          "to": 81
+        },
+        {
+          "name": "sound_effect",
+          "from": 81,
+          "to": 82
+        },
+        {
+          "name": "stop_sound",
+          "from": 82,
+          "to": 83
+        },
+        {
+          "name": "playerlist_header",
+          "from": 83,
+          "to": 84
+        },
+        {
+          "name": "nbt_query_response",
+          "from": 84,
+          "to": 85
+        },
+        {
+          "name": "collect",
+          "from": 85,
+          "to": 86
+        },
+        {
+          "name": "entity_teleport",
+          "from": 86,
+          "to": 87
+        },
+        {
+          "name": "advancements",
+          "from": 87,
+          "to": 88
+        },
+        {
+          "name": "entity_update_attributes",
+          "from": 88,
+          "to": 89
+        },
+        {
+          "name": "entity_effect",
+          "from": 89,
+          "to": 90
+        },
+        {
+          "name": "declare_recipes",
+          "from": 90,
+          "to": 91
+        },
+        {
+          "name": "tags",
+          "from": 91,
+          "to": 92
+        }
+      ],
+      "changed": [
+        "spawn_entity_living",
+        "named_entity_spawn",
+        "game_state_change",
+        "map_chunk",
+        "world_particles",
+        "login",
+        "respawn"
+      ]
+    },
+    "toServer": {
+      "beforeCount": 46,
+      "afterCount": 46,
+      "added": [],
+      "removed": [],
+      "moved": [],
+      "changed": []
+    }
+  },
+  "sharedTypeChanges": [],
+  "resources": {
+    "beeTextures": [
+      "assets/minecraft/textures/entity/bee/bee_nectar.png",
+      "assets/minecraft/textures/entity/bee/bee_angry.png",
+      "assets/minecraft/textures/entity/bee/bee.png",
+      "assets/minecraft/textures/entity/bee/bee_angry_nectar.png",
+      "assets/minecraft/textures/entity/bee/bee_stinger.png"
+    ],
+    "honeyBlocks": [
+      "assets/minecraft/blockstates/bee_nest.json",
+      "assets/minecraft/blockstates/honey_block.json",
+      "assets/minecraft/blockstates/honeycomb_block.json",
+      "assets/minecraft/blockstates/beehive.json"
+    ],
+    "recipes": 768,
+    "packMetadata": {
+      "pack": {
+        "description": "The default data for Minecraft",
+        "pack_format": 5
+      }
+    }
+  }
+}

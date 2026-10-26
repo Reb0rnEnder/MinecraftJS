@@ -64,7 +64,12 @@ shader-pack compatibility. No claim of artifact-free shadows is made.
 ## Status
 
 - Plan committed before implementation.
-- Milestone 1: pending.
+- Milestone 1: complete. Verified inputs, native reports/resource inventory,
+  staged packet IDs and regression checks are in `tools/port-1.15.2`.
+  Native baseline: 680 blocks, 11,337 states, 884 items, 103 entity types,
+  768 recipes, resource-pack format 5; 93 clientbound/46 serverbound packets.
+  Seven clientbound layouts change; serverbound layouts are unchanged in the
+  pinned schema. See [preparation details](../tools/port-1.15.2/README.md).
 - Milestones 2–5 and shadow implementation: pending.
 
 ## Source references
