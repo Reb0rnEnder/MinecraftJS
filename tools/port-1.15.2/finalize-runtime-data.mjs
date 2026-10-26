@@ -15,7 +15,7 @@ const items=JSON.parse(await readFile(path('items'))),itemsById=new Map(items.ma
 creative.itemMechanics=native.itemMechanics;
 creative.source.version='1.15.2';creative.source.nativeRuntimeSha1=target.downloads.client.sha1;
 await writeFile(join(root,'client/js/game/panda-variants-1.15.2.js'),'// Panda.Gene.getVariantFromGenes, indexed by main/hidden gene IDs in the pinned jar.\nexport const PANDA_VARIANTS='+JSON.stringify(native.pandaVariants)+';\n');
-await writeFile(join(root,'client/js/game/player-poses-1.15.2.js'),'// Player.POSES dimensions extracted from the pinned native 1.15.2 jar.\nexport const PLAYER_POSES='+JSON.stringify(native.playerPoses)+';\n');
+await writeFile(join(root,'client/js/game/player-poses-1.15.2.js'),'// Player.POSES dimensions extracted from the pinned native 1.15.2 jar.\nexport const PLAYER_POSES='+JSON.stringify(native.playerPoses)+';\n'+"export function playerPoseDimensions(pose){return PLAYER_POSES[pose==='sneaking'?'crouching':pose];}\n");
 await writeFile(join(root,'client/js/game/block-entity-data-1.15.2.js'),'// DyeColor text colors extracted from the pinned native 1.15.2 jar.\nexport const DYE_TEXT_COLORS='+JSON.stringify(native.dyeTextColors)+';\n');
 creative.eggs=Object.fromEntries(Object.entries(native.eggs).map(([id,colors])=>{const name=itemsById.get(Number(id)).name.replace(/_spawn_egg$/,'');return ['minecraft:'+name,[...colors,name]];}));
 creative.effects=Object.fromEntries(Object.entries(native.effects).map(([id,e])=>[id,{...old.effects[id],...e,key:e.name.replace('effect.minecraft.','minecraft:'),modifiers:old.effects[id]?.modifiers||[]}]));

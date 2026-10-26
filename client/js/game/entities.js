@@ -1,7 +1,7 @@
 import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.15.2.js';
 import {placeLeashKnot} from './leash-knot.js';
 import {NATIVE_METADATA} from './entity-metadata-1.14.4.js';
-import {PLAYER_POSES} from './player-poses-1.15.2.js';
+import {playerPoseDimensions} from './player-poses-1.15.2.js';
 import { tickFallingBlock } from './falling-block.js';
 import { tickEntityEffects, tickDragonDeath, isDragon } from '../render/entity-effects.js';
 // Client-side entity tracking (positions, interpolation, metadata, animation state).
@@ -346,7 +346,7 @@ export class EntityManager {
       e.pose=native[6];
       if(e.kind==='player'){
         const pose=['standing','fall_flying','sleeping','swimming','spin_attack','sneaking','dying'][e.pose];
-        const size=PLAYER_POSES[pose];
+        const size=playerPoseDimensions(pose);
         if(size){e.width=Math.fround(size[0]);e.height=Math.fround(size[1]);}
         e.visuallySwimming=pose==='swimming';
         e.eyeHeight=pose==='sneaking'?1.27:['swimming','fall_flying','spin_attack'].includes(pose)?.4:pose==='sleeping'?.2:1.62;

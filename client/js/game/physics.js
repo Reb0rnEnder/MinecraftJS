@@ -1,7 +1,7 @@
 // Port of vanilla 1.13.2 player movement physics (EntityPlayerSP / EntityPlayer / EntityLivingBase / Entity).
 import { getBlock, getStateProperties } from '../world/blocks.js';
 import { getFluidState, fluidHeightAt } from '../world/fluids.js';
-import { PLAYER_POSES } from './player-poses-1.15.2.js';
+import { playerPoseDimensions } from './player-poses-1.15.2.js';
 
 const SPRINT_UUID = '662a6b8d-da3e-4c1c-8813-96ea6097278d';
 
@@ -157,7 +157,7 @@ export class LocalPlayer {
   }
 
   canEnterPose(world, pose) {
-    const [width,height] = PLAYER_POSES[pose].map(f32), r = width / 2, eps = 1e-7;
+    const [width,height] = playerPoseDimensions(pose).map(f32), r = width / 2, eps = 1e-7;
     return !world.getCollisions([this.x-r+eps,this.y+eps,this.z-r+eps,this.x+r-eps,this.y+height-eps,this.z+r-eps],this).length;
   }
 
@@ -167,7 +167,7 @@ export class LocalPlayer {
     let pose = this.elytraFlying ? 'fall_flying' : this.sleeping ? 'sleeping' : this.swimming ? 'swimming' : this.riptide ? 'spin_attack' : this.sneaking && !this.flying ? 'sneaking' : 'standing';
     if (!this.spectator && !this.ridingEntity && !this.canEnterPose(world,pose)) pose = this.canEnterPose(world,'sneaking') ? 'sneaking' : 'swimming';
     this.pose = pose; this.crouching = pose === 'sneaking';
-    const [w,h] = PLAYER_POSES[pose].map(f32);
+    const [w,h] = playerPoseDimensions(pose).map(f32);
     if (w === this.width && h === this.height) return;
     this.width = w; this.height = h;
     this._bb = null; // Native dimensions stay centered on the entity's feet.
