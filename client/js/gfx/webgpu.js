@@ -260,7 +260,8 @@ const GLOBAL_STRIDE = 256;
 
 export class WebGPUDevice {
   static async create(canvas) {
-    if (typeof navigator === 'undefined' || !navigator.gpu) throw new Error('WebGPU is not available');
+    if(globalThis.isSecureContext===false)throw new Error('WebGPU requires HTTPS or localhost; this page uses an insecure connection');
+    if (typeof navigator === 'undefined' || !navigator.gpu) throw new Error('This browser does not expose WebGPU');
     const adapter = await navigator.gpu.requestAdapter();
     if (!adapter) throw new Error('No WebGPU adapter');
     const device = await adapter.requestDevice();
