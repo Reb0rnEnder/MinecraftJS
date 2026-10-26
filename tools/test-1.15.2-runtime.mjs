@@ -11,6 +11,7 @@ import {ModelStore} from '../client/js/render/models.js';
 import {Interaction} from '../client/js/game/interaction.js';
 import {LocalPlayer} from '../client/js/game/physics.js';
 import {nbt} from '../client/js/net/nbt.js';
+import {initBlocks,findState} from '../client/js/world/blocks.js';
 
 const uuid=Buffer.from('00112233445566778899aabbccddeeff','hex');
 const login=new Writer578().varint(38).i32(7).u8(0).i32(0).i64(0n).u8(20).string('default').varint(8).bool(false).bool(true).build();
@@ -80,4 +81,17 @@ test('tridents release and elytra fireworks use the protocol-578 item-use flow',
   const interaction=new Interaction(game);
   assert.equal(interaction.sendUseItem(trident),true);interaction.useTicks=10;interaction.stopUsingItem();assert.equal(player.riptide,true);assert.equal(player.motionZ,3);
   const rocket={id:items.byName.get('firework_rocket').id,count:1};player.elytraFlying=true;assert.equal(interaction.sendUseItem(rocket),true);assert.equal(sent.length,3);
+});
+test('lag-tolerant placement predicts ordinary blocks and accepts the server correction',()=>{
+  const read=n=>JSON.parse(readFileSync(new URL('../client/data/'+n+'.json',import.meta.url)));
+  initBlocks(read('blocks'),read('blockCollisionShapes'));
+  const states=new Map(),glass=findState('glass');
+  const world={getState:(x,y,z)=>states.get(x+','+y+','+z)||0,setState:(x,y,z,s)=>states.set(x+','+y+','+z,s)};
+  const game={world,items:{isBlockItem:()=>true},player:{},entities:{all:()=>[]}};
+  const interaction=new Interaction(game);
+  interaction._predictPlace({x:1,y:64,z:1},{id:1},{name:'glass'});
+  assert.equal(world.getState(1,64,1),glass);
+  assert.equal(interaction.predictedBlocks.size,1);
+  interaction.onBlockChange({x:1,y:64,z:1},0);
+  assert.equal(interaction.predictedBlocks.size,0);
 });

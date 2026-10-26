@@ -49,6 +49,8 @@ export class Interaction {
     this.activeHand = 0; // hand of the item in use
     this.ticksSinceLastSwing = 0;
     this.lastHeld = null;
+    this.predictedBlocks = new Map();
+    this.tickNumber = 0;
   }
 
   // ---------------------------------------------------------------- attack cooldown (1.9+)
@@ -132,6 +134,12 @@ export class Interaction {
 
   tick(presses) {
     const g = this.game;
+    this.tickNumber++;
+    for (const [k, p] of this.predictedBlocks) if (p.expires <= this.tickNumber) {
+      const [x, y, z] = k.split(',').map(Number);
+      if (this.game.world.getState(x, y, z) === p.predicted) this.game.world.setState(x, y, z, p.previous);
+      this.predictedBlocks.delete(k);
+    }
     const input = g.input;
     this.updateEquip();
     if (this.rightClickDelay > 0) this.rightClickDelay--;
@@ -468,7 +476,11 @@ export class Interaction {
     }
   }
 
-  onBlockChange(pos, state) { /* authoritative block changes arrive independently of digging acknowledgements */ }
+  onBlockChange(pos, state) {
+    // The server's block update is the correction/confirmation for an
+    // optimistic placement. Never overwrite it with the prediction again.
+    this.predictedBlocks.delete(pos.x + ',' + pos.y + ',' + pos.z);
+  }
 
   _extinguishFire(pos, face) {
     const g = this.game;
@@ -681,12 +693,15 @@ export class Interaction {
   // ItemBlock.onItemUse sets the block on the client right away; only for blocks whose placed state is just
   // the item damage (no facing / orientation logic), the server's block change follows either way
   _predictPlace(p, held, nb) {
-    if (!this._itemBlock(held)) return;
-    const SIMPLE = /^(stone|grass|dirt|cobblestone|planks|sand|gravel|gold_ore|iron_ore|coal_ore|sponge|glass|lapis_ore|lapis_block|sandstone|wool|gold_block|iron_block|brick_block|tnt|bookshelf|mossy_cobblestone|obsidian|diamond_ore|diamond_block|crafting_table|snow|ice|clay|netherrack|soul_sand|glowstone|stonebrick|melon_block|mycelium|nether_brick|end_stone|redstone_lamp|emerald_ore|emerald_block|redstone_block|quartz_ore|stained_hardened_clay|stained_glass|slime|barrier|prismarine|sea_lantern|hardened_clay|coal_block|packed_ice|red_sandstone|noteblock)$/;
-    if (!SIMPLE.test(nb.name)) return;
-    let meta = held.damage & 15;
-    if (/^(stone|dirt|planks|sand|sandstone|wool|stonebrick|stained_hardened_clay|stained_glass|prismarine|red_sandstone|sponge)$/.test(nb.name) === false) meta = 0;
-    this.game.world.setState(p.x, p.y, p.z, findState(nb.name));
+    if (!nb) return;
+    // Vanilla MultiPlayerGameMode invokes ItemStack.useOn locally before the
+    // server reply. Predict every ordinary block item, not only the old
+    // SIMPLE list; the authoritative block change below confirms or corrects
+    // this state when latency is visible.
+    const previous = this.game.world.getState(p.x, p.y, p.z), predicted = findState(nb.name);
+    if (predicted === undefined || predicted === previous) return;
+    this.predictedBlocks.set(p.x + ',' + p.y + ',' + p.z, { previous, predicted, expires: this.tickNumber + 40 });
+    this.game.world.setState(p.x, p.y, p.z, predicted);
   }
 
   // Doors, trapdoors and gates toggle instantly client-side in vanilla
@@ -763,7 +778,11 @@ export class Interaction {
 
   _wetForRiptide() {
     const p = this.player, w = this.game.world;
-    return !!p.inWater || !!(w?.isRainingAt?.(p.x, p.y, p.z) || w?.isRainingAt?.(p.x, p.y + p.height, p.z));
+    // Match TridentItem's isInWaterOrRain check. Refresh the body-fluid
+    // contact instead of relying only on the previous movement tick; this is
+    // important when a delayed chunk/block update puts the player in water.
+    const bodyWet = p.inWater || !!(w && p.handleWaterMovement?.(w)) || !!(w && p.isEyeInWater?.(w));
+    return !!bodyWet || !!(w?.isRainingAt?.(p.x, p.y, p.z) || w?.isRainingAt?.(p.x, p.y + p.height, p.z));
   }
 
   stopUsingItem() {
