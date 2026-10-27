@@ -1,3 +1,4 @@
+import {nameUuid} from '../util/uuid-md5.js';
 import {shadowGeometry} from './shadows.js';
 import { EntityEffects, dragonCorpseMatrix } from './entity-effects.js';
 import { poseInterval } from './lod.js';
@@ -164,6 +165,23 @@ export class EntityRenderer {
       if(e.uuid&&e.uuid===this.game.playerUuid)this._sessionTextures(s,e.uuid);
     }
     return s;
+  }
+
+  // Decorative player-head blocks/items carry a full GameProfile in SkullOwner.
+  skullTexture(owner) {
+    let url=null;
+    try {
+      const property=owner?.Properties?.textures?.[0];
+      const value=property?.Value??property?.value;
+      if(value)url=JSON.parse(decodeUtf8(decodeBase64(value))).textures?.SKIN?.url;
+    }catch{ /* Malformed profiles use the default head. */ }
+    if(typeof url!=='string'||!/^https?:\/\//i.test(url))return ()=>this.game.assets.texture('entity/steve.png');
+    const key=nameUuid(new TextEncoder().encode('EaglercraftSkinURL:'+url));
+    return ()=>{
+      let skin=this.game.eaglerTextures?.requestUrl(url);
+      if(!skin){skin=this.skins.get(key);if(!skin){skin={path:'entity/steve.png',slim:false,texture:null};this.skins.set(key,skin);this._loadSkin(skin,key,url);}}
+      return skin.texture||this.game.assets.texture(skin.path);
+    };
   }
 
   _sessionTextures(s, uuid) {

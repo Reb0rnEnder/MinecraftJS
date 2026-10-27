@@ -14,6 +14,9 @@ const msauth = require('./lib/msauth');
 const mcassets = require('./lib/mcassets');
 const { extractModels } = require('./lib/modelextract');
 
+const {proxyOptions,resolveTarget,openPack}=require('./lib/proxy-options');
+const options=proxyOptions();
+if(options.help){console.log('Usage: npm start -- [--proxy-only] [--allow-loopback]\nPROXY_ONLY=1 disables client/assets hosting. Loopback targets are blocked unless ALLOW_LOOPBACK=1.');process.exit(0);}
 const PORT = parseInt(process.env.PORT, 10) || 3000;
 const CLIENT_DIR = path.join(__dirname, 'client');
 const PROXY_VERSION = require('./package.json').version || '';
@@ -104,7 +107,8 @@ async function readAsset(rel) {
 // ---------------------------------------------------------------------------
 
 const app = express();
-app.use(express.static(CLIENT_DIR));
+const serveClient=express.static(CLIENT_DIR);
+app.use((req,res,next)=>options.proxyOnly?next():serveClient(req,res,next));
 
 // Pages on other sites (static hosting, the single-file build) use this proxy for sign in and skins
 app.use(['/auth', '/skin', '/profile', '/pack'], (req, res, next) => {
@@ -133,6 +137,7 @@ app.post('/auth/join', express.json(), authRoute(async (b) => {
 
 // assets/ (only reached when client/assets/ was not built)
 app.get(/^\/assets\/(.+)$/, async (req, res) => {
+  if(options.proxyOnly)return res.status(404).end();
   if (!jar) return res.status(503).send('Assets not loaded yet');
   const rel = req.params[0];
   if (rel.includes('..')) return res.status(400).end();
@@ -171,20 +176,20 @@ app.get('/pack', async (req, res) => {
   let url;
   try { url = new URL(String(req.query.url || '')); } catch (e) { return res.status(400).end(); }
   if (url.protocol !== 'http:' && url.protocol !== 'https:') return res.status(400).end();
-  if (/^(localhost|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|\[?::1\]?$|\[?f[cd])/i.test(url.hostname)) return res.status(403).end();
+  if (!options.allowLoopback&&/^(localhost|127\.|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.|0\.|\[?::1\]?$|\[?f[cd])/i.test(url.hostname)) return res.status(403).end();
   const headers = {};
   for (const h of ['x-minecraft-username', 'x-minecraft-uuid', 'x-minecraft-version']) if (req.get(h)) headers[h] = String(req.get(h)).slice(0, 64);
   const abort = new AbortController();
-  req.on('close', () => abort.abort());
+  res.on('close', () => abort.abort());
   try {
-    const up = await fetch(url, { headers, redirect: 'follow', signal: abort.signal });
-    if (!up.ok || !up.body) return res.status(502).send('HTTP ' + up.status);
-    const len = Number(up.headers.get('content-length')) || 0;
+    const up = await openPack(url,headers,options,abort.signal);
+    if(up.statusCode<200||up.statusCode>=300){up.resume();return res.status(502).send('HTTP '+up.statusCode);}
+    const len = Number(up.headers['content-length']) || 0;
     if (len > PACK_LIMIT) return res.status(413).end();
     res.set('Content-Type', 'application/zip');
     if (len) res.set('Content-Length', String(len));
     let got = 0;
-    for await (const chunk of up.body) {
+    for await (const chunk of up) {
       got += chunk.length;
       if (got > PACK_LIMIT) { abort.abort(); return res.destroy(); }
       if (!res.write(chunk)) await new Promise((r) => res.once('drain', r));
@@ -262,8 +267,10 @@ function frame(payload, threshold) {
 }
 
 // Resolve _minecraft._tcp SRV records like the vanilla client does (only for default port + hostnames)
-function resolveServer(host, port) {
-  return new Promise((resolve) => {
+async function resolveServer(host, port) {
+  if(typeof host!=='string'||!host||/[\s\0/\\]/.test(host))throw new Error('Invalid target hostname');
+  if(!Number.isInteger(port)||port<1||port>65535)throw new Error('Invalid target port');
+  const target=await new Promise((resolve) => {
     if (port !== 25565 || net.isIP(host) || host === 'localhost') return resolve({ host, port });
     dns.resolveSrv('_minecraft._tcp.' + host, (err, records) => {
       if (err || !records || !records.length) return resolve({ host, port });
@@ -271,6 +278,7 @@ function resolveServer(host, port) {
       resolve({ host: records[0].name, port: records[0].port });
     });
   });
+  return {...await resolveTarget(target.host,target.port,options),serverHost:target.host};
 }
 
 function handshake(host, port, nextState) {
@@ -323,7 +331,7 @@ async function pingServer(host, port) {
     let status = null;
     const timer = setTimeout(() => { sock.destroy(); reject(new Error('Timed out')); }, 5000);
     sock.on('connect', () => {
-      sock.write(frame(handshake(target.host, target.port, 1), -1));
+      sock.write(frame(handshake(target.serverHost, target.port, 1), -1));
       sock.write(frame(writeVarInt(0x00), -1));
     });
     sock.on('data', (chunk) => {
@@ -395,11 +403,14 @@ wss.on('connection', (ws) => {
       console.log(`[ws] connecting to ${host}:${port} as ${username}${auth ? ' (Microsoft account)' : ''}`);
       sendJson({ type: 'status', key: 'connect.connecting', message: `Connecting to ${host}:${port}...` });
 
-      const target = await resolveServer(host, port);
+      let target;
+      try{target=await resolveServer(host,port);}catch(e){sendJson({type:'error',message:e.message});ws.close();return;}
+      if(ws.readyState!==1)return;
+      if(mc)mc.destroy();
       mc = net.createConnection({ host: target.host, port: target.port }, () => {
         mc.setNoDelay(true);
         sendJson({ type: 'status', key: 'connect.authorizing', message: 'Logging in...' });
-        writeMc(frame(handshake(target.host, target.port, 2), -1));
+        writeMc(frame(handshake(target.serverHost, target.port, 2), -1));
         writeMc(frame(Buffer.concat([writeVarInt(0x00), mcString(username)]), -1));
         state = 'login';
       });
@@ -486,6 +497,7 @@ wss.on('connection', (ws) => {
 // ---------------------------------------------------------------------------
 
 (async () => {
+  if(!options.proxyOnly){
   const built = fs.existsSync(path.join(CLIENT_DIR, 'assets', 'pack.mcmeta'));
   try {
     jar = new ZipFile(await mcassets.locateJar());
@@ -500,7 +512,10 @@ wss.on('connection', (ws) => {
   } catch (e) {
     console.error('Could not load sound asset index (sounds disabled):', e.message);
   }
+  }
   server.listen(PORT, () => {
-    console.log(`MinecraftJS web client running at http://localhost:${PORT}`);
+    console.log(options.proxyOnly?'MinecraftJS proxy-only mode (client/assets hosting disabled)':'MinecraftJS client and proxy');
+    console.log('Loopback connections: '+(options.allowLoopback?'allowed':'blocked'));
+    console.log(`MinecraftJS server running at http://localhost:${PORT}`);
   });
 })();

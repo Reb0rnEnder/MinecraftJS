@@ -4,6 +4,8 @@ const {encodeBase85}=require('../lib/packed-html');
 //
 //   node tools/build.js assets         extract the game assets into client/assets/ (for running client/ as is)
 //   node tools/build.js html           dist/minecraftjs.html: one file with the code, game data and assets
+//   npm run build -- --static --out=dist/site  complete static website folder
+//   --format=directory is an alias for --static; --proxy / --server / --config work in both formats.
 //   node tools/build.js html --no-assets   same, but the page loads assets/ and data/ next to it instead
 //
 // Options: --audio=opus|vorbis|copy (default opus)  --sfx-kbps=N (32)  --music-kbps=N (48)  --no-music (leave out music and records)
@@ -341,6 +343,23 @@ async function buildHtml(opts) {
   console.log(`Wrote ${path.relative(ROOT, out)} (${(html.length / 1048576).toFixed(1)} MB)`);
 }
 
+// Upload this complete directory to any static HTTP(S) host; no Node server is required there.
+async function buildStatic(opts) {
+  const out=opts.out?path.resolve(opts.out):path.join(ROOT,'dist','site');
+  if(opts['no-assets'])throw new Error('Static builds include assets; omit --no-assets');
+  if(out===ROOT||out===CLIENT||out===path.parse(out).root)throw new Error('Choose a separate output directory');
+  const config={proxies:[],servers:[],skinProxy:'',...buildConfig(opts)};
+  const files=await collectAssets(opts);
+  for(const [name,bytes] of Object.entries(buildBundles(files)))files.set(name,bytes);
+  writeFolder(path.join(out,'assets'),files);
+  fs.mkdirSync(path.join(out,'js'),{recursive:true});
+  fs.writeFileSync(path.join(out,'js','main.js'),await bundleJs());
+  fs.cpSync(path.join(CLIENT,'data'),path.join(out,'data'),{recursive:true});
+  for(const name of ['index.html','style.css','favicon.ico','favicon.svg','apple-touch-icon.png'])fs.copyFileSync(path.join(CLIENT,name),path.join(out,name));
+  fs.writeFileSync(path.join(out,'config.json'),JSON.stringify(config,null,2)+'\n');
+  console.log('Wrote static website '+out+' (upload the entire directory)');
+}
+
 async function buildAssets(opts) {
   const out = opts.out ? path.resolve(opts.out) : path.join(CLIENT, 'assets');
   const files = await collectAssets(opts);
@@ -354,11 +373,14 @@ async function buildAssets(opts) {
 
 (async () => {
   const opts = parseArgs(process.argv.slice(2));
+  if(opts.help){console.log('MinecraftJS '+mcassets.MC_VERSION+' build\n  npm run build -- [--out=client.html]\n  npm run build -- --static [--out=dist/site]\n  --format=directory is an alias for --static\n  --proxy=type,url[,name] --server=address[,name] --config=config.json\nUpload the entire static directory. Configure an external WebSocket proxy for Java servers.');return;}
   const task = opts._[0] || 'html';
-  if (task === 'assets') await buildAssets(opts);
+  if(task==='static'||opts.static||opts.format==='directory')await buildStatic(opts);
+  else if(opts.format&&opts.format!=='html')throw new Error('Unknown format '+opts.format+' (html or directory)');
+  else if (task === 'assets') await buildAssets(opts);
   else if (task === 'html') await buildHtml(opts);
   else if (task === 'config') {
     if (!buildConfig(opts)) throw new Error('config: give --config=file and / or --proxy / --server options');
     writeConfig(opts, null);
-  } else throw new Error('Unknown task ' + task + ' (expected "assets", "html" or "config")');
+  } else throw new Error('Unknown task ' + task + ' (expected "assets", "html", "static" or "config")');
 })().catch((e) => { console.error(e.message); process.exit(1); });

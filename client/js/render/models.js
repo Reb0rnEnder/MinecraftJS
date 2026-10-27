@@ -1,3 +1,4 @@
+import {resourceName} from '../resource-models.js';
 // Block/item model resolution and baking (port of vanilla FaceBakery). Worker-safe.
 // Baked quad: { pos: Float32Array(12) [0..1 block space], uv: Float32Array(8) [atlas],
 //   dir, cull, tint, shade, alpha (texture has transparency), ao }
@@ -40,6 +41,7 @@ export class ModelStore {
   }
 
   resolveModel(name) {
+    name=resourceName(name);
     if (this.resolved.has(name)) return this.resolved.get(name);
     const chain = [];
     let cur = name;
@@ -49,7 +51,7 @@ export class ModelStore {
       const j = this.models[cur] || this.models['block/' + cur];
       if (!j) break;
       chain.push(j);
-      cur = j.parent;
+      cur = resourceName(j.parent);
     }
     const textures = {};
     let elements = null;
@@ -67,7 +69,7 @@ export class ModelStore {
     const resolveTex = (t) => {
       let g = 0;
       while (t && t.startsWith('#') && g++ < 16) t = textures[t.slice(1)];
-      return t || null;
+      return resourceName(t) || null;
     };
     const res = { name, textures, elements, ao, display, builtin, resolveTex };
     this.resolved.set(name, res);
