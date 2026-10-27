@@ -1,3 +1,4 @@
+import {EaglerTextures} from '../net/eagler-textures.js';
 import {zoomFov,smoothCameraActive} from './zoom.js';
 import {captureText} from '../debug/text-capture.js';
 import {pushLocalPlayer} from './entity-pushing.js';
@@ -107,6 +108,7 @@ export class Game {
     this.tutorial = new Tutorial(this);
     this.itemRenderer = new ItemRenderer(this);
     this.entityRenderer = new EntityRenderer(this);
+    this.eaglerTextures = new EaglerTextures(this);
     this.handRenderer = new HandRenderer(this);
     this.tileRenderer = new TileEntityRenderer(this);
     this.renderer.breakContext=()=>({world:this.world,tileRenderer:this.tileRenderer,tileProps:this.tileProps,alternatives:this.settings.blockAlternatives!==false,fancy:!!this.settings.fancyGraphics});
@@ -350,6 +352,7 @@ export class Game {
   // Rebuild everything that depends on resource packs (textures, models, sounds, fonts)
   async reloadResources(progress) {
     await this.assets.loadResources(progress);
+    this.eaglerTextures?.clear();
     this.applyLanguage();
     this.itemRenderer.reset();
     this.entityRenderer.reset();
@@ -364,6 +367,7 @@ export class Game {
     this.applyGraphicsSettings(true);
     // Rebuild every loaded section with the new models / atlas
     this.renderer.clearSections();
+    if(this._meshUploads)this._meshUploads.length=0;
     for (const c of this.world.chunks.values()) {
       for (let y = 0; y < 16; y++) if (c.sections[y]) this.dirty.add(c.x + ',' + y + ',' + c.z);
       this.tileRenderer.scanChunk(c);
@@ -378,6 +382,7 @@ export class Game {
     this.inFlight = new Map();
     this.buildTokens = new Map(); this.buildSerial = 0;
     this.maxInFlight = 3 * (this.worker.size || 1) + 2;
+    this._meshUploads=[];
     this.meshedChunks = new Set();
     this._chunkWaitStart = new Map();
     this.meshGen = (this.meshGen || 0) + 1;
@@ -387,18 +392,32 @@ export class Game {
       if (m.type !== 'built') return;
       const key = m.x + ',' + m.y + ',' + m.z;
       if (m.gen !== this.meshGen || m.token !== this.buildTokens.get(key)) return;
-      this.inFlight.delete(key);
-      if (!this.world.getChunk(m.x,m.z) || this.dirty.has(key)) return; // unloaded or invalidated while the snapshot was built
-      this.meshStats.builds++; this.meshStats.ms += m.ms || 0;
-      this._chunkUpdatesCount = (this._chunkUpdatesCount || 0) + 1;
-      this.renderer.setSectionMesh(m.x, m.y, m.z, m);
-      this._lodKey = null; // A delayed worker result may have used a previous camera position.
+      if (!this.world.getChunk(m.x,m.z) || this.dirty.has(key)){this.inFlight.delete(key);return;}
+      this._meshUploads.push(m);
+
     };
     this.meshStats = { builds: 0, ms: 0 };
   }
 
+  // Apply completed worker meshes within a per-frame upload budget. Keep each
+  // lease until it is consumed so workers cannot flood the main thread queue.
+  _uploadMeshes(){
+    const start=platform().now();let applied=0;
+    while(this._meshUploads?.length){
+      if(applied&&platform().now()-start>=2)break;
+      const m=this._meshUploads.shift(),key=m.x+','+m.y+','+m.z;
+      if(m.gen!==this.meshGen||m.token!==this.buildTokens.get(key))continue;
+      this.inFlight.delete(key);
+      if(!this.world.getChunk(m.x,m.z)||this.dirty.has(key))continue;
+      this.meshStats.builds++;this.meshStats.ms+=m.ms||0;
+      this._chunkUpdatesCount=(this._chunkUpdatesCount||0)+1;
+      this.renderer.setSectionMesh(m.x,m.y,m.z,m);this._lodKey=null;applied++;
+    }
+  }
+
   // Forget all meshing state (world change)
   _resetMeshing() {
+    if(this._meshUploads)this._meshUploads.length=0;
     this.renderer.clearSections();
     this.dirty.clear(); this.inFlight.clear(); this.meshedChunks.clear();
     this.buildTokens.clear();
@@ -496,6 +515,8 @@ export class Game {
   }
 
   _scheduleMeshes() {
+    if(this._meshUploads?.length)this._uploadMeshes();
+    const started=platform().now();let posted=0;
     this._updateLod();
     if (!this.dirty.size || this.inFlight.size >= this.maxInFlight) return;
     const camera = this._lodCamera();
@@ -523,7 +544,7 @@ export class Game {
     }
     candidates.sort((a, b) => a[0] - b[0]);
     for (const [, key, cx, sy, cz] of candidates) {
-      if (this.inFlight.size >= this.maxInFlight) break;
+      if (this.inFlight.size >= this.maxInFlight || posted&&platform().now()-started>=2) break;
       this.dirty.delete(key);
       this.inFlight.set(key, platform().now());
       this.meshedChunks.add(cx + ',' + cz);
@@ -532,6 +553,7 @@ export class Game {
       const slice = buildSlice(this.world, cx, sy, cz, this.tileProps);
       const token=++this.buildSerial;this.buildTokens.set(key,token);
       this.worker.postMessage({ type: 'build', gen: this.meshGen, token, slice, lod: this._lodFor(cx, cz, sy) }, [slice.states.buffer, slice.light.buffer, slice.biomes.buffer]);
+      posted++;
     }
     // Recover from lost builds
     for (const [k, t] of this.inFlight) if (platform().now() - t > 10000) this.inFlight.delete(k);
@@ -596,6 +618,7 @@ export class Game {
   leaveWorld() {
     this.structureBlocks.clear();
     if (this.tutorial) this.tutorial.stop();
+    this.eaglerTextures?.clear();
     this.inWorld = false;
     this.connected = false;
     this.world.clear();
@@ -660,6 +683,7 @@ export class Game {
   on_keep_alive(p) { this.send(C.keepAlive(p.keepAliveId)); }
 
   on_login(p) {
+    this.eaglerTextures?.clear();
     // handleJoinGame always starts a new WorldClient (proxies may send another Join Game on server switch)
     if (this.inWorld) {
       this.world.clear();
@@ -702,6 +726,8 @@ export class Game {
   }
 
   captureText(options) { return captureText(this,options); }
+
+  on_custom_payload(p) { this.eaglerTextures?.handle(p.channel,p.data); }
 
   on_chat(p) {
     const text = chatToLegacy(p.message);
@@ -1081,7 +1107,10 @@ export class Game {
   on_player_info(p) {
     this.scoreboard.onPlayerInfo(p);
     // skins and capes follow the tab list's textures property (it can arrive after the player is first drawn)
-    for (const d of p.data || []) if (d.uuid && d.properties) this.entityRenderer.skinFor({ uuid: d.uuid });
+    for (const d of p.data || []) if (d.uuid) {
+      if(p.action===4)this.eaglerTextures?.drop(d.uuid);
+      else if(d.properties&&!this.eaglerTextures?.active)this.entityRenderer.skinFor({uuid:d.uuid});
+    }
   }
 
   on_abilities(p) {
