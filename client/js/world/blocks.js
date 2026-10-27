@@ -15,6 +15,8 @@ export const stateById = states;
 
 const STAIRS = (name) => name.endsWith('_stairs');
 
+const HEAD_BLOCKS = new Set(['skeleton_skull','wither_skeleton_skull','zombie_head','player_head','creeper_head','dragon_head'].flatMap(name=>[name,name.replace(/_(head|skull)$/,'_wall_$1')]));
+
 const SHULKER_BOXES = new Set(['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'light_gray',
   'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black'].map((c) => c + '_shulker_box'));
 
@@ -36,7 +38,7 @@ const TRANSLUCENT = new Set(['water', 'lava', 'ice', 'frosted_ice', 'slime_block
 // Blocks without a block model (rendered by special renderers or invisible)
 const NO_MODEL = new Set([
   'air', 'water', 'lava', 'chest', 'trapped_chest', 'ender_chest', 'sign', 'wall_sign', 'skull', 'white_bed',
-  'white_banner', 'white_wall_banner', 'piston_head', 'moving_piston', 'barrier', 'end_portal', 'structure_void',
+  'white_banner', 'white_wall_banner', 'moving_piston', 'barrier', 'end_portal', 'structure_void',
   'end_gateway', ...SHULKER_BOXES,
 ]);
 
@@ -81,7 +83,7 @@ export function initBlocks(blocksJson, shapesJson) {
       opaque: b.boundingBox === 'block' && !b.transparent && !NOT_OPAQUE.has(name) && b.id !== 0,
       translucent: TRANSLUCENT.has(name) || name.endsWith('_stained_glass') || name.endsWith('_stained_glass_pane'),
       hasModel: !NO_MODEL.has(name) && !name.endsWith('_bed') && !name.endsWith('_banner') && !name.endsWith('_wall_banner') &&
-        !name.endsWith('_skull') && !name.endsWith('_wall_skull') && !name.endsWith('_head') && !name.endsWith('_wall_head') &&
+        !HEAD_BLOCKS.has(name) &&
         !name.endsWith('_shulker_box') && name !== 'conduit' &&
         name !== 'bubble_column' && name !== 'void_air' && name !== 'cave_air',
       isStairs: stairs,
@@ -130,7 +132,7 @@ export function initBlocks(blocksJson, shapesJson) {
       const value = rendering.values[rendering.states[info.id]];
       if (!value) throw new Error('Missing block render properties for state '+info.id);
       const def = blocks[info.blockId];
-      const overrides = {renderType:value.renderType,opaque:value.solid,suffocates:value.viewBlocking,canOcclude:value.occludes,aoLight:value.shade,filterLight:value.lightBlock,
+      const overrides = {hasModel:value.renderType===2,renderType:value.renderType,opaque:value.solid,suffocates:value.viewBlocking,canOcclude:value.occludes,aoLight:value.shade,filterLight:value.lightBlock,
         emitLight:value.emission,collisionFull:value.collisionFull,occlusionBoxes:value.occlusion,soundType:value.sound,
         useNeighborBrightness:!value.solid&&!value.collisionFull&&!def.isLiquid};
       renderBlocks[info.id] = Object.assign(Object.create(def),overrides);
