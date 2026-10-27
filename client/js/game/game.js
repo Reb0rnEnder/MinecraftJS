@@ -1,3 +1,6 @@
+import {NbtQueries,copyInspect} from './nbt-queries.js';
+import {replaceServerRecipes,resetServerRecipes} from './server-recipes.js';
+import {tickPortal,portalWarp} from './portal.js';
 import {EaglerTextures} from '../net/eagler-textures.js';
 import {zoomFov,smoothCameraActive} from './zoom.js';
 import {captureText} from '../debug/text-capture.js';
@@ -141,6 +144,7 @@ export class Game {
     this.scoreboard = new Scoreboard(this);
     this.advancements = new Advancements(this);
     this.recipeBook = new RecipeBook(this);
+    this.nbtQueries=new NbtQueries(this);
     this.inventory = new Inventory(this);
     this.interaction = new Interaction(this);
     this.conn = null;
@@ -277,6 +281,8 @@ export class Game {
   _debugCombo(e) {
     const s = this.settings;
     switch (e.code) {
+      case 'KeyI':copyInspect(this,!!e.shift);return true;
+      case 'KeyC':platform().setClipboard(`/execute in ${this.dimension===-1?'minecraft:the_nether':this.dimension===1?'minecraft:the_end':'minecraft:overworld'} run tp @s ${this.player.x.toFixed(2)} ${this.player.y.toFixed(2)} ${this.player.z.toFixed(2)} ${this.player.yaw.toFixed(2)} ${this.player.pitch.toFixed(2)}`);this.debugFeedback('debug.copy_location.message');return true;
       case 'KeyA': // RenderGlobal.loadRenderers
         for (const c of this.world.chunks.values()) for (let y = 0; y < 16; y++) if (c.sections[y]) this.dirty.add(c.x + ',' + y + ',' + c.z);
         this.debugFeedback('debug.reload_chunks.message');
@@ -623,6 +629,7 @@ export class Game {
   canUseCommandBlock() { return this.gameMode === 1 && (this.permissionLevel | 0) >= 2; }
 
   leaveWorld() {
+    resetServerRecipes(this);this.nbtQueries?.clear();
     this.structureBlocks.clear();
     if (this.tutorial) this.tutorial.stop();
     this.eaglerTextures?.clear();
@@ -691,6 +698,7 @@ export class Game {
   on_keep_alive(p) { this.send(C.keepAlive(p.keepAliveId)); }
 
   on_login(p) {
+    resetServerRecipes(this);this.nbtQueries?.clear();
     this.eaglerTextures?.clear();
     this.interaction?.predictedBlocks?.clear();
     // handleJoinGame always starts a new WorldClient (proxies may send another Join Game on server switch)
@@ -1034,7 +1042,12 @@ export class Game {
       case 1: this.world.raining = true; this.world.rainStrength = this.world.prevRain = 0; break;
       case 2: this.world.raining = false; this.world.rainStrength = this.world.prevRain = 1; break;
       case 3: { const gm = Math.floor(p.value + 0.5); if (gm !== this.gameMode) this.previousGameMode = this.gameMode; this.gameMode = gm; this.applyGameMode(); break; }
-      case 4: import('../gui/screens/credits.js').then((m) => this.screens.open(new m.CreditsScreen(this))); break; // GuiWinGame
+      case 4: {
+        const value=Math.floor(p.value+.5);
+        if(value===0){this.send(C.clientCommand(0));this.screens.open(new DownloadingTerrainScreen(this));}
+        else if(value===1){const conn=this.conn;import('../gui/screens/credits.js').then(m=>{if(this.conn===conn&&this.inWorld)this.screens.open(new m.CreditsScreen(this));});}
+        break;
+      }
       case 5: this.onDemoMessage(p.value); break;
       case 6: this.sound.playAtPlayer('entity.arrow.hit_player', 0.18, 0.45); break;
       case 7: this.world.rainStrength = p.value; this.world.prevRain = p.value; break;
@@ -1049,6 +1062,10 @@ export class Game {
     this.entities.spawnLightning(p);
     // thunder / explosion sounds arrive from the server (EntityLightningBolt plays them through playSoundEffect)
   }
+
+  on_nbt_query_response(p) { this.nbtQueries?.handle(p); }
+
+  on_declare_recipes(p) { replaceServerRecipes(this,p.recipes); }
 
   on_open_window(p) {
     const win = new ContainerWindow(this, p.windowId, p.inventoryType, chatToLegacy(p.windowTitle), p.slotCount, p.entityId);
@@ -1556,15 +1573,7 @@ export class Game {
     }
   }
 
-  portalTick() {
-    const s = this.world.getState(Math.floor(this.player.x), Math.floor(this.player.y + 0.5), Math.floor(this.player.z));
-    const inPortal = getBlock(s).name === 'nether_portal';
-    this.prevPortalTime = this.portalTime;
-    if (inPortal) {
-      if (this.portalTime === 0) this.sound.playAtPlayer('block.portal.trigger', 1, Math.random() * 0.4 + 0.8);
-      this.portalTime = Math.min(1, this.portalTime + 0.0125);
-    } else this.portalTime = Math.max(0, this.portalTime - 0.05);
-  }
+  portalTick() { tickPortal(this); }
 
   // The vehicle the local player steers itself (1.9+: boats, saddled horses), or null
   _vehicleController(v) {
@@ -1869,12 +1878,11 @@ export class Game {
     if (underwater || inLava) fov = fov * 60 / 70;
     if (this.dead) fov /= (1 - 500 / (500 + 20)) * 2 + 1;
     // Portal nausea warp
-    const portal = this.prevPortalTime + (this.portalTime - this.prevPortalTime) * partial;
-    if (portal > 0) fov += portal * 10 * Math.sin(this.ticks * 0.15);
+    const portal = (this.prevPortalTime||0) + ((this.portalTime||0) - (this.prevPortalTime||0)) * partial;
 
     fov = zoomFov(this,fov);
     r.renderDistance = this.settings.renderDistance;
-    r.setCamera(ex, ey, ez, camYaw, camPitch, roll, fov, pre);
+    r.setCamera(ex, ey, ez, camYaw, camPitch, roll, fov, pre,portalWarp(portal,this.ticks+partial,this.effects.has(9)));
     const temp = biomeInfo(this.world.getBiome(Math.floor(ex), Math.floor(ez))).temperature;
     const rain = this.world.prevRain !== undefined ? this.world.prevRain + (this.world.rainStrength - this.world.prevRain) * partial : this.world.rainStrength;
     r.updateEnvironment({

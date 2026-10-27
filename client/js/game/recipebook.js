@@ -1,3 +1,4 @@
+import {serverRecipe} from './server-recipes.js';
 // Recipe book (1.12): RecipeBook (known / new recipes, open and filtering flags), RecipeBookClient (recipe lists per
 // tab, grouped by the recipe's "group") and RecipeList craftability against the player's items.
 import { creativeTabOf } from '../gui/screens/containers.js';
@@ -23,6 +24,7 @@ export class RecipeBook {
     this.fresh = new Set(); // RecipeBook.newRecipes (highlighted until seen)
     this.open = false;
     this.filtering = false;
+    this.cookingStates={smelting:{open:false,filtering:false},blasting:{open:false,filtering:false},smoking:{open:false,filtering:false}};
     this.recipes = null;   // parsed, by id
     this.lists = null;     // tab -> [RecipeList]
   }
@@ -32,7 +34,8 @@ export class RecipeBook {
     if (this.recipes) return;
     const g = this.game;
     this.recipes = {};
-    (g.assets.recipes || []).forEach((r, i) => {
+    if(Array.isArray(g.serverRecipes)){for(const record of g.serverRecipes){const rec=serverRecipe(record);if(rec)this.recipes[rec.id]=rec;}}
+    else (g.assets.recipes || []).forEach((r, i) => {
       const id = r.name.includes(':') ? r.name : 'minecraft:' + r.name;
       const ing = (v) => (Array.isArray(v) ? v : [v]).flatMap(x=>{
         if(x?.tag){const ids=g.tags?.registries.items.get(x.tag)||DEFAULT_TAGS.items[x.tag]||[];return ids.map(id=>({id,data:0,count:1}));}
@@ -40,7 +43,7 @@ export class RecipeBook {
       });
       const result = stackOf(g, r.result || {});
       if (!result) return;
-      const rec = { id, name: r.name, group: r.group || '', result, shaped: r.type.replace(/^minecraft:/,'') === 'crafting_shaped' };
+      const rec = { id, type:r.type, name: r.name, group: r.group || '', result, shaped: r.type.replace(/^minecraft:/,'') === 'crafting_shaped' };
       if (rec.shaped) {
         rec.height = r.pattern.length;
         rec.width = Math.max(...r.pattern.map((row) => row.length));
@@ -59,7 +62,7 @@ export class RecipeBook {
     });
     // RecipeBookClient.rebuildTable: lists per tab, one per group (or per ungrouped recipe), in id order
     this.lists = {};
-    for (const t of BOOK_TABS) this.lists[t] = [];
+    for (const t of [...BOOK_TABS,'food']) this.lists[t] = [];
     const groups = new Map();
     for (const rec of Object.values(this.recipes)) {
       if (!rec) continue;
@@ -76,7 +79,10 @@ export class RecipeBook {
   }
 
   // RecipeBookClient.getItemCategory: tools / building blocks / redstone, combat with tools, the rest misc
+  stateFor(kind='crafting'){return kind==='crafting'?this:this.cookingStates[kind];}
+
   categoryOf(rec) {
+    if(['smelting','blasting','smoking'].includes(rec.type?.replace(/^minecraft:/,''))){if(this.game.items?.isFood(rec.result))return 'food';if(this.game.items?.isBlockItem(rec.result.id))return 'buildingBlocks';return 'misc';}
     const t = creativeTabOf(this.game, rec.result.id);
     if (t === 'buildingBlocks' || t === 'tools' || t === 'redstone') return t;
     return t === 'combat' ? 'tools' : 'misc';
@@ -90,8 +96,10 @@ export class RecipeBook {
     this._parse();
     this.open = p.craftingBookOpen;
     this.filtering = p.filteringCraftable;
+    this.cookingStates.smelting.open=!!p.smeltingBookOpen;this.cookingStates.smelting.filtering=!!p.filteringSmeltable;
     if (p.action === 2) for (const id of p.recipes) this.known.delete(id);
     else if (p.action === 0) {
+      this.known.clear();this.fresh.clear();
       for (const id of p.recipes) this.known.add(id);
       for (const id of p.recipesToHighlight || []) this.fresh.add(id);
     } else if (p.action === 1) {
@@ -113,23 +121,16 @@ export class RecipeBook {
     return counts;
   }
 
-  // RecipeItemHelper.canCraft (greedy: ingredients with the fewest alternatives take their items first)
+  // Match all ingredient alternatives; a greedy choice can consume another cell's only item.
   canCraft(rec, counts) {
-    const left = new Map(counts);
-    const cells = rec.cells.filter(Boolean).sort((a, b) => a.length - b.length);
-    for (const alts of cells) {
-      let ok = false;
-      for (const s of alts) {
-        for (const [k, n] of left) {
-          if (n <= 0) continue;
-          const [id, dmg] = k.split(':').map(Number);
-          if (id === s.id && (s.data === 32767 || s.data === dmg)) { left.set(k, n - 1); ok = true; break; }
-        }
-        if (ok) break;
-      }
-      if (!ok) return false;
-    }
-    return true;
+    const left=new Map(counts),cells=rec.cells.filter(Boolean).sort((a,b)=>a.length-b.length);
+    const search=index=>{
+      if(index===cells.length)return true;
+      for(const [key,count]of left){if(count<=0)continue;const [id,damage]=key.split(':').map(Number);
+        if(!cells[index].some(s=>s.id===id&&(s.data===32767||s.data===damage)))continue;
+        left.set(key,count-1);if(search(index+1))return true;left.set(key,count);
+      }return false;
+    };return search(0);
   }
 
   // RecipeList.canCraft for a grid: per recipe whether it is known, fits and can be made now

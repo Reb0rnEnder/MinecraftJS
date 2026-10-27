@@ -1,3 +1,4 @@
+import {readRecipes} from './recipes.js';
 import {technicalPackets} from './technical-packets.js';
 import { readCommandTree, readTags } from './command-tree.js';
 // Minecraft 1.13.2 (protocol 404) play-state packet codec.
@@ -347,6 +348,8 @@ const decoders404 = {
   0x48: decoders[0x45], 0x49: decoders[0x46], 0x4a: decoders[0x47], 0x4b: decoders[0x48],
   0x4c: decoders[0x50], 0x4d: decoders[0x49], 0x4e: decoders[0x4a], 0x4f: decoders[0x4b],
   0x50: decoders[0x4c], 0x51: decoders[0x4d], 0x52: decoders[0x4e], 0x53: decoders[0x4f],
+  0x1d:r=>({name:'nbt_query_response',transactionId:r.varint(),nbt:r.optionalNbt()}),
+  0x54:r=>({name:'declare_recipes',recipes:readRecipes(r,404)}),
   0x55: r => ({name:'tags',tags:readTags(r)}),
 };
 
@@ -392,6 +395,8 @@ function customPayloadChannel(channel) {
 }
 
 export const C = {
+  queryBlockNbt:(id,pos)=>pkt(0x01).varint(id).position(pos.x,pos.y,pos.z).build(),
+  queryEntityNbt:(id,entityId)=>pkt(0x0c).varint(id).varint(entityId).build(),
   ...technicalPackets(name=>pkt({update_command_block:0x22,update_command_block_minecart:0x23,update_structure_block:0x25}[name])),
   editBook:(item,sign,hand=0)=>pkt(0x0b).slot(item).bool(sign).varint(hand).build(),
   teleportConfirm: (teleportId) => pkt(0x00).varint(teleportId).build(),
@@ -437,7 +442,7 @@ export const C = {
   placeRecipe: (windowId, recipe, all) => pkt(0x16).i8(windowId).string(String(recipe)).bool(all).build(),
   // CPacketRecipeInfo: a new recipe was seen / the book's open and filtering flags
   recipeInfoShown: (recipe) => pkt(0x1b).varint(0).string(String(recipe)).build(),
-  recipeInfoSettings: (open, filtering) => pkt(0x1b).varint(1).bool(open).bool(filtering).bool(false).bool(false).build(),
+  recipeInfoSettings:(open,filtering,states={})=>pkt(0x1b).varint(1).bool(open).bool(filtering).bool(!!states.smelting?.open).bool(!!states.smelting?.filtering).build(),
   // CPacketSeenAdvancements: opened a tab (id) / closed the screen (null)
   seenAdvancements: (tab) => (tab ? pkt(0x1e).varint(0).string(tab).build() : pkt(0x1e).varint(1).build()),
   heldItemSlot: (slot) => pkt(0x21).i16(slot).build(),

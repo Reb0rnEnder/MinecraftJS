@@ -183,7 +183,7 @@ export class TileEntityRenderer {
     if (t) { t.lines = lines; this._rebuild(t); }
   }
 
-  setTileEntity(pos, action, data) {
+  setTileEntity(pos, action, data, nbt = null) {
     const w = this.game.world;
     const st = w.getState(pos.x, pos.y, pos.z);
     if (!data) return;
@@ -200,6 +200,7 @@ export class TileEntityRenderer {
     const t = this._ensure(pos.x, pos.y, pos.z, st);
     if (!t) return;
     t.data = data;
+    if(nbt)t.nbt=nbt;
     if (t.type === 'sign' && data.Text1 !== undefined) {
       // Signs can also arrive as tile entity NBT
     }
