@@ -36,7 +36,7 @@ export function shaderBlockRules(source,version){
   if(d){const [,op,expr]=d;if(op==='if'){const yes=condition(expr);stack.push({parent:active,taken:yes});active=active&&yes;}else{const top=stack.at(-1);if(!top)throw Error('Unmatched block.properties '+op);if(op==='endif'){active=top.parent;stack.pop();}else{const yes=op==='else'||condition(expr);active=top.parent&&!top.taken&&yes;top.taken||=yes;}}continue;}
   if(!active)continue;const rule=/^\s*block\.(\d+)\s*=\s*(.*)$/.exec(line);if(!rule)continue;
   const id=Number(rule[1]);if(id>65535)throw Error('Block animation ID exceeds packed lookup range');
-  for(const selector of rule[2].split(/\s+/).filter(Boolean)){const parts=selector.split(':');const name=parts[0]==='minecraft'?parts[1]:parts[0],properties={};for(const p of parts.slice(parts[0]==='minecraft'?2:1)){const [key,value]=p.split('=');if(!key||!value)throw Error('Unsupported block selector: '+selector);properties[key]=value.split(',');}rules.push({id,name,properties});}
+  for(const selector of rule[2].split(/\s+/).filter(Boolean)){const parts=selector.split(':');if(parts[1]&&!parts[1].includes('=')&&parts[0]!=='minecraft')continue;const name=parts[0]==='minecraft'?parts[1]:parts[0],properties={};for(const p of parts.slice(parts[0]==='minecraft'?2:1)){const [key,value]=p.split('=');if(!key||!value)throw Error('Unsupported block selector: '+selector);properties[key]=value.split(',');}rules.push({id,name,properties});}
  }
  if(stack.length)throw Error('Unclosed block.properties conditional');return rules;
 }

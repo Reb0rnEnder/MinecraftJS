@@ -1,3 +1,4 @@
+import {ShaderLibrary} from './render/shader-library.js';
 // MinecraftJS boot: pick the platform + graphics device, load assets, then start at the title screen.
 import { buildCrashReport, showCrashScreen } from './crash.js';
 import { setPlatform, platform } from './platform/platform.js';
@@ -36,7 +37,8 @@ async function boot() {
     if (assets.data.recipes) initRecipes(assets.data.recipes);
     const game = new Game(assets, settings, device);
     game.proxies = proxies;
-    try { const bytes=await P.files.get('shaderpacks/final-stage'); if(bytes?.length){const meta=JSON.parse(P.loadSetting('shaderpacks/final-stage.meta')||'{}');game.shaderPack.load(meta.name||'Shader pack',bytes,meta.options||{});game.shaderPack.enabled=meta.enabled!==false;} } catch(e) { game.shaderPack.error=e.message; console.warn('Shader pack unavailable',e.message); }
+    game.shaderLibrary=new ShaderLibrary(game.shaderPack);
+    try { await game.shaderLibrary.load(); } catch(e) { game.shaderPack.error=e.message; console.warn('Shader pack unavailable',e.message); }
     globalThis.game = game; // debugging handle
     const params = P.launchParams ? P.launchParams() : {};
     if (params.connect) {
