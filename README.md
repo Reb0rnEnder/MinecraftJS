@@ -197,3 +197,8 @@ ender:password@wss://play.example.com:8081/server
 | `client/js/net/` | protocol, proxy and Eaglercraft connections, address parsing |
 | `client/js/game/`, `render/`, `gui/`, `world/`, `audio/`, `gfx/` | game logic, rendering, screens, world, sound, graphics devices |
 | `client/data/` | game data tables (blocks, items, entities, ...) |
+
+Static website output: `npm run build -- --static --out=dist/site`. Separate backend:
+`npm start -- --proxy-only`. Outbound loopback is blocked by default; use
+`--allow-loopback` for a Minecraft server on the same machine. See
+[static hosting, proxy flags and resource fixes](docs/static-hosting-and-proxy.md).
