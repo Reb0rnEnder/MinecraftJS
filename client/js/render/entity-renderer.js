@@ -1,3 +1,5 @@
+import {foxAnimationArgs} from '../game/fox.js';
+import {scaleFoxChild} from './fox-pose.js';
 import {nameUuid} from '../util/uuid-md5.js';
 import {shadowGeometry} from './shadows.js';
 import {PANDA_VARIANTS} from '../game/panda-variants-1.14.4.js';
@@ -318,7 +320,7 @@ export class EntityRenderer {
       case 'wandering_trader': return 'entity/wandering_trader.png';
       case 'trader_llama': return 'entity/llama/' + (LLAMA_TEX[e.llamaVariant] || LLAMA_TEX[0]) + '.png';
       case 'cat': return 'entity/cat/'+(['tabby','black','red','siamese','british_shorthair','calico','persian','ragdoll','white','jellie','all_black'][e.catType||0]||'tabby')+'.png';
-      case 'fox': return 'entity/fox/'+(e.foxType===1?'snow_fox':'fox')+'.png';
+      case 'fox': return 'entity/fox/'+(e.foxType===1?'snow_fox':'fox')+(e.foxSleeping?'_sleep':'')+'.png';
       case 'panda': {
         const variant=PANDA_VARIANTS[e.pandaGene||0]?.[e.pandaHiddenGene||0]||'normal';
         return 'entity/panda/'+(variant==='normal'?'':variant+'_')+'panda.png';
@@ -403,7 +405,7 @@ export class EntityRenderer {
   // size, fish patterns, phantom size, horse markings). Don't leave stale models.
   _livingKey(e) {
     return [e.type, this._texFor(e), e.puffState || 0, e.fishVariant || 0, e.phantomSize || 0,
-      e.horseVariant || 0, e.horseType || 0,e.villagerType??2,e.profession??0,e.villagerLevel??1,!!e.child].join('|');
+      e.horseVariant || 0, e.horseType || 0,!!e.foxSleeping,e.villagerType??2,e.profession??0,e.villagerLevel??1,!!e.child].join('|');
   }
 
   _visualKey(e) {
@@ -418,7 +420,8 @@ export class EntityRenderer {
 
   _makeModelObject(model, mat) {
     const g = new Node();
-    for (const r of model.roots) g.add(r.build());
+    if(model.foxAgeable){const head=new Node(),body=new Node();g.add(head);g.add(body);model.childGroups={head,body};for(const r of model.roots)(r===model.parts.head?head:body).add(r.build());}
+    else for (const r of model.roots) g.add(r.build());
     for (const r of model.roots) r.setMaterial(mat);
     return g;
   }
@@ -556,6 +559,7 @@ export class EntityRenderer {
       }
     }
     v.atlasMat = this._mat(v, this.atlasTex, { alphaTest: 0.1, transparent: true }); // RenderItem blends
+    if(model.foxAgeable){v.foxMouth=new Node();model.childGroups.head.add(v.foxMouth);}
     // Held item holders (LayerHeldItem: one per arm)
     v.itemHolder = null; v.leftHolder = null;
     if (model.parts && model.parts.rightArm && model.parts.rightArm.obj) {
@@ -1219,9 +1223,11 @@ export class EntityRenderer {
       }
     }
     v.scaleGroup.scale.set(-sx, -sy, sz);
+    if(e.entityName==='fox'){v.yawGroup.rotation.order='YXZ';if(e.foxPouncing||e.foxFaceplanted)v.yawGroup.rotation.x=-pitch*D2R;}
     v.scaleGroup.position.set(0, 0, 0);
     v.modelGroup.position.set(0, -1.5078125 + (model.modelTranslateY || 0), model.modelTranslateZ || 0);
-    if (e.child) v.scaleGroup.scale.multiplyScalar(model.childScale || 0.5);
+    if(model.foxAgeable)scaleFoxChild(model.childGroups,!!e.child);
+    else if (e.child) v.scaleGroup.scale.multiplyScalar(model.childScale || 0.5);
     // Animate
     const held = e.equipment[0];
     // RenderPlayer.setModelVisibilities / RenderBiped: arm poses from both hands (main hand on the primary side)
@@ -1242,7 +1248,7 @@ export class EntityRenderer {
     const skeletonAim = (e.kind === 'mob' && e.type === 51 && e.armsRaised && held && g.items.name(held.id) === 'bow');
     const speedSq = (e.motionX || 0) ** 2 + (e.motionY || 0) ** 2 + (e.motionZ || 0) ** 2;
     const args = {
-      ls, lsa, age, yaw: head - body, pitch, swing: swing > 0 ? swing : -9999, partial,
+      ...foxAnimationArgs(e,partial),ls, lsa, age, yaw: head - body, pitch, swing: swing > 0 ? swing : -9999, partial,
       sneak: !!e.sneaking, riding: e.riding >= 0,
       useTicks:e.useTicks||0,crossbowChargeDuration:held&&g.items.name(held.id)==='crossbow'?g.items.crossbowChargeDuration(held):25,
       rightPose: skeletonAim ? 'bow' : primaryRight ? mainPose : offPose, leftPose: primaryRight ? offPose : mainPose,
@@ -1396,10 +1402,32 @@ export class EntityRenderer {
 
   // LayerHeldItem (1.9+): main hand item in the primary arm, off hand item in the other
   _updateHeld(e, v, held, args) {
+    if(v.foxMouth){this._foxHeld(e,v,held,args);return;}
     const primaryRight = e.kind === 'player' ? e.mainHand !== 0 : !e.leftHanded;
     const right = primaryRight ? held : e.offhand, left = primaryRight ? e.offhand : held;
     this._heldIn(v, 'r', v.itemHolder, right, false, args, e);
     this._heldIn(v, 'l', v.leftHolder, left, true, args, e);
+  }
+
+  // FoxHeldItemLayer: follow the head pivot and carry the stack in the mouth.
+  _foxHeld(e,v,stack,args){
+    const holder=v.foxMouth,key=stack?this.game.itemRenderer.iconKey(stack,true,e)+':'+stack.id:null;
+    if(v.foxHeldKey!==key){
+      holder.clear();v.foxHeldKey=key;v.foxHeldOffset=null;v.foxHeldGlint=null;
+      if(stack){const io=this.game.itemRenderer.objectFor(stack,v.atlasMat,true,e);if(io){
+        const offset=new Node(),turn=new Node(),display=new Node();turn.add(display);offset.add(turn);holder.add(offset);
+        applyTransform(display,(io.model.display||{}).ground);display.add(io.obj);v.foxHeldOffset=offset;v.foxHeldTurn=turn;
+        if(io.obj.userData.glint)v.foxHeldGlint=io.obj;
+      }else v.foxHeldKey=undefined;}
+    }
+    const head=v.model.parts.head;holder.position.set(head.px,head.py,head.pz);holder.scale.set(16,16,16);
+    holder.rotation.set(args.pitch*D2R,args.yaw*D2R,args.foxHeadRoll||0,'ZYX');
+    if(v.foxHeldOffset){
+      const asleep=e.foxSleeping,child=e.child;
+      v.foxHeldOffset.position.set(asleep?(child?.4:.46):.06,child||asleep?.26:.27,asleep?(child?.15:.22):-.5);
+      v.foxHeldTurn.rotation.set(Math.PI/2,0,asleep?Math.PI/2:0,'XYZ');
+    }
+    if(v.foxHeldGlint)this.glints.push(v.foxHeldGlint);
   }
 
   // renderHeldItem: (sneaking: +0.2 y) arm transform, rotate -90 X and 180 Y, translate (+-1/16, 0.125, -0.625),
