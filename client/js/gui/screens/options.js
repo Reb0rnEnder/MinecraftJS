@@ -290,6 +290,7 @@ const KEY_BINDINGS = {
   chat: ['key.chat', 'key.categories.multiplayer'], playerlist: ['key.playerlist', 'key.categories.multiplayer'],
   pickItem: ['key.pickItem', 'key.categories.gameplay'], command: ['key.command', 'key.categories.multiplayer'],
   screenshot: ['key.screenshot', 'key.categories.misc'], perspective: ['key.togglePerspective', 'key.categories.misc'],
+  zoom: ['minecraftjs.key.zoom', 'key.categories.misc'],
   smoothCamera: ['key.smoothCamera', 'key.categories.misc'],
   streamStartStop: ['key.streamStartStop', 'key.categories.stream'], streamPauseUnpause: ['key.streamPauseUnpause', 'key.categories.stream'],
   streamCommercial: ['key.streamCommercial', 'key.categories.stream'], streamToggleMic: ['key.streamToggleMic', 'key.categories.stream'],

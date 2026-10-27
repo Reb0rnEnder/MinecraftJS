@@ -31,7 +31,7 @@ export class TitleScreen extends Screen {
       else if (d.getMonth() === 0 && d.getDate() === 1) this.splash = 'Happy new year!';
       else this.splash = splashes[Math.floor(Math.random() * splashes.length)];
     }
-    const cx = this.width / 2;
+    const cx = Math.floor(this.width / 2);
     const y = this.height / 4 + 48;
     const sp = new Button(1, cx - 100, y, 200, 20, tr('menu.singleplayer'));
     sp.enabled = false;
@@ -142,7 +142,7 @@ export class MultiplayerScreen extends Screen {
 
   init() {
     const g = this.game;
-    const cx = this.width / 2;
+    const cx = Math.floor(this.width / 2);
     this.servers = g.settings.servers;
     const prevScroll = this.list ? this.list.amountScrolled : 0;
     this.list = new ServerList(this);
@@ -386,7 +386,7 @@ export class ServerEditScreen extends Screen {
 
   init() {
     const g = this.game;
-    const cx = this.width / 2;
+    const cx = Math.floor(this.width / 2);
     const srv = this.index !== null ? g.settings.servers[this.index] : null;
     const last = g.settings.lastServer;
     if (!this.direct) {
@@ -404,9 +404,9 @@ export class ServerEditScreen extends Screen {
         this.resourceMode = modes[(modes.indexOf(this.resourceMode) + 1) % modes.length];
       }));
     }
-    this.doneBtn = new Button(0, cx - 100, this.height / 4 + 96 + 18, 200, 20, this.direct ? tr('selectServer.select') : tr('addServer.add'), () => this.done());
+    this.doneBtn = new Button(0, cx - 100, this.height / 4 + 96 + (this.direct ? 12 : 18), 200, 20, this.direct ? tr('selectServer.select') : tr('addServer.add'), () => this.done());
     this.buttons.push(this.doneBtn);
-    this.buttons.push(new Button(1, cx - 100, this.height / 4 + 120 + 18, 200, 20, tr('gui.cancel'), () => g.screens.open(this.parent)));
+    this.buttons.push(new Button(1, cx - 100, this.height / 4 + 120 + (this.direct ? 12 : 18), 200, 20, tr('gui.cancel'), () => g.screens.open(this.parent)));
   }
 
   // Vanilla "host[:port]", or an Eaglercraft ws:// / wss:// address (stored as typed, port 0)
@@ -435,7 +435,7 @@ export class ServerEditScreen extends Screen {
 
   renderContent(gui) {
     this.doneBtn.enabled = !!this.parse();
-    gui.textCentered(this.direct ? tr('selectServer.direct') : tr('addServer.title'), this.width / 2, 17, 0xffffff);
+    gui.textCentered(this.direct ? tr('selectServer.direct') : tr('addServer.title'), this.width / 2, this.direct ? 20 : 17, 0xffffff);
     if (!this.direct) gui.text(tr('addServer.enterName'), this.width / 2 - 100, 53, 0xa0a0a0);
     gui.text(tr('addServer.enterIp'), this.width / 2 - 100, this.direct ? 100 : 94, 0xa0a0a0);
     const a = parseAddress(this.addrField.text);

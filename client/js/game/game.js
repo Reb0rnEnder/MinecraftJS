@@ -1,3 +1,5 @@
+import {zoomFov,smoothCameraActive} from './zoom.js';
+import {captureText} from '../debug/text-capture.js';
 import {ShaderPackFinal} from '../render/shader-pack.js';
 import { startSleeping, sleepingCamera } from './bed-sleep.js';
 import { jarSelectionBox } from '../world/blocks.js';
@@ -643,6 +645,8 @@ export class Game {
     if (gm === 0 || gm === 2) p.flying = false;
   }
 
+  captureText(options) { return captureText(this,options); }
+
   on_chat(p) {
     this.hud.checkAchievement(p.message);
     const text = chatToLegacy(p.message);
@@ -710,8 +714,8 @@ export class Game {
     if (p.flags & 1) x += pl.x; else pl.motionX = 0;
     if (p.flags & 2) y += pl.y; else pl.motionY = 0;
     if (p.flags & 4) z += pl.z; else pl.motionZ = 0;
-    if (p.flags & 8) pitch = Math.fround(pitch + pl.pitch);
-    if (p.flags & 16) yaw = Math.fround(yaw + pl.yaw);
+    if (p.flags & 8) yaw = Math.fround(yaw + pl.yaw);
+    if (p.flags & 16) pitch = Math.fround(pitch + pl.pitch);
     // Entity.setPositionAndRotation: setRotation keeps angle % 360
     pl.setPosition(x, y, z);
     pl.prevX = x; pl.prevY = y; pl.prevZ = z;
@@ -1226,7 +1230,7 @@ export class Game {
 
   tick() {
     this.ticks++;
-    if (this.smoothCamera && this._smoothCam) {
+    if (smoothCameraActive(this) && this._smoothCam) {
       // EntityRenderer.updateRenderer: MouseFilter.smooth(accumulated, 0.05 * f)
       const sc = this._smoothCam;
       const s = this.settings.sensitivity * 0.6 + 0.2, f = s * s * s * 8;
@@ -1501,7 +1505,7 @@ export class Game {
       const s = this.settings.sensitivity * 0.6 + 0.2;
       const f = s * s * s * 8;
       let dx = mdx * f * 0.15, dy = mdy * f * 0.15 * (this.settings.invertMouse ? -1 : 1);
-      if (this.smoothCamera) {
+      if (smoothCameraActive(this)) {
         // EntityRenderer: accumulate input, filtered once per tick and spread over the frames of that tick
         const sc = this._smoothCam || (this._smoothCam = { yaw: 0, pitch: 0, fx: 0, fy: 0, partial: 0 });
         sc.yaw += mdx * f; sc.pitch += mdy * f * (this.settings.invertMouse ? -1 : 1);
@@ -1659,6 +1663,7 @@ export class Game {
     const portal = this.prevPortalTime + (this.portalTime - this.prevPortalTime) * partial;
     if (portal > 0) fov += portal * 10 * Math.sin(this.ticks * 0.15);
 
+    fov = zoomFov(this,fov);
     r.renderDistance = this.settings.renderDistance;
     r.setCamera(ex, ey, ez, camYaw, camPitch, roll, fov, pre);
     const temp = biomeInfo(this.world.getBiome(Math.floor(ex), Math.floor(ez))).temperature;
@@ -1694,9 +1699,7 @@ export class Game {
     if (post) post.render(r.lightmap, ((this.ticks + partial) % 20) / 20);
     this.profiler.endStart('gui');
     gui.begin();
-    if (!this.hideGui || this.screens.current) {
-      this.hud.render(gui, partial, { underwater, inLava, portal });
-    }
+    this.hud.render(gui,partial,{underwater,inLava,portal});
     this.screens.render(gui, partial);
     gui.end();
     this.profiler.end();

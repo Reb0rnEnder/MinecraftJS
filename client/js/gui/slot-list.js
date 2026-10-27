@@ -35,13 +35,13 @@ export class SlotList {
 
   contentHeight() { return this.size() * this.slotHeight + this.headerPadding; }
   maxScroll() { return Math.max(0, this.contentHeight() - (this.bottom - this.top - 4)); }
-  scrollBarX() { return this.left + this.width / 2 + 124 + this.scrollBarOffset; }
-  slotLeft() { return this.left + this.width / 2 - this.listWidth / 2 + 2; }
+  scrollBarX() { return this.left + Math.floor(this.width / 2) + 124 + this.scrollBarOffset; }
+  slotLeft() { return this.left + Math.floor(this.width / 2) - Math.floor(this.listWidth / 2) + 2; }
   slotTop(i) { return this.top + 4 - Math.floor(this.amountScrolled) + i * this.slotHeight + this.headerPadding; }
   clamp() { this.amountScrolled = Math.max(0, Math.min(this.maxScroll(), this.amountScrolled)); }
 
   slotAt(x, y) {
-    const i0 = this.left + this.width / 2 - this.listWidth / 2, i1 = this.left + this.width / 2 + this.listWidth / 2;
+    const i0 = this.left + Math.floor(this.width / 2) - Math.floor(this.listWidth / 2), i1 = this.left + Math.floor(this.width / 2) + Math.floor(this.listWidth / 2);
     const k = y - this.top - this.headerPadding + Math.floor(this.amountScrolled) - 4;
     const l = Math.floor(k / this.slotHeight);
     return x < this.scrollBarX() && x >= i0 && x <= i1 && l >= 0 && k >= 0 && l < this.size() ? l : -1;
@@ -67,7 +67,7 @@ export class SlotList {
       const k1 = y + i * this.slotHeight + this.headerPadding, l1 = this.slotHeight - 4;
       if (k1 > this.bottom || k1 + l1 < this.top) continue;
       if (this.showSelectionBox && this.isSelected(i)) {
-        const i1 = this.left + (this.width / 2 - lw / 2), j1 = this.left + this.width / 2 + lw / 2;
+        const i1 = this.left + (Math.floor(this.width / 2) - Math.floor(lw / 2)), j1 = this.left + Math.floor(this.width / 2) + Math.floor(lw / 2);
         gui.rect(i1, k1 - 2, j1, k1 + l1 + 2, 0xff808080);
         gui.rect(i1 + 1, k1 - 1, j1 - 1, k1 + l1 + 1, 0xff000000);
       }
@@ -98,7 +98,7 @@ export class SlotList {
   mouseDown(mx, my, button, e) {
     if (button !== 0) return false;
     if (!this.inside(my, mx)) { this.initialClickY = -2; return false; }
-    const i0 = this.left + this.width / 2 - this.listWidth / 2, i1 = this.left + this.width / 2 + this.listWidth / 2;
+    const i0 = this.left + Math.floor(this.width / 2) - Math.floor(this.listWidth / 2), i1 = this.left + Math.floor(this.width / 2) + Math.floor(this.listWidth / 2);
     const k = my - this.top - this.headerPadding + Math.floor(this.amountScrolled) - 4;
     let handled = false, drag = true;
     const i = this.slotAt(mx, my);

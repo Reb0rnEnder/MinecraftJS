@@ -136,6 +136,7 @@ class WebAudio {
       stop: () => { try { src.stop(); } catch (e) { /* already stopped */ } },
       ended: false,
       setVolume: (v) => { gain.gain.value = v; },
+      setPitch: (v) => { src.playbackRate.value = v; },
       setPosition: (pos) => { if (!panner) return; if (panner.positionX) { panner.positionX.value = pos[0]; panner.positionY.value = pos[1]; panner.positionZ.value = pos[2]; } else panner.setPosition(...pos); },
     };
     src.onended = () => { voice.ended = true; if (opts.onEnd) opts.onEnd(); };

@@ -218,43 +218,46 @@ export class FontRenderer {
     return this.draw(text, cx - Math.floor(this.width(text) / 2), y, color, shadow); // int maths like vanilla
   }
 
-  // Splits text into lines no wider than maxWidth, preserving colour codes
+  // Formatting pairs are indivisible. Carry the style at the actual line break,
+  // including when a component changes colour partway through a long word.
   wrap(text, maxWidth) {
-    const out = [];
-    for (const para of text.split('\n')) {
-      let line = '';
-      let lineW = 0;
-      let fmt = '';
-      for (const word of para.split(/(\s+)/)) {
-        const ww = this.width(word);
-        if (lineW + ww > maxWidth && line.trim().length) {
-          out.push(line);
-          line = fmt + word.replace(/^\s+/, '');
-          lineW = this.width(line);
-        } else {
-          line += word;
-          lineW += ww;
-        }
-        const m = word.match(/§[0-9a-fk-or]/gi);
-        if (m) for (const c of m) { if (/§[0-9a-fr]/i.test(c)) fmt = c; else fmt += c; }
-        while (this.width(line) > maxWidth && line.length > 1) {
-          let cut = line.length - 1;
-          while (cut > 1 && this.width(line.slice(0, cut)) > maxWidth) cut--;
-          out.push(line.slice(0, cut));
-          line = fmt + line.slice(cut);
-          lineW = this.width(line);
-        }
+    const out = []; let start = 0, prefix = '';
+    const format = value => {
+      let active = '';
+      for (const match of value.matchAll(/§[0-9a-fk-or]/gi)) {
+        const code = match[0].toLowerCase();
+        active = /§[0-9a-fr]/.test(code) ? code : active + code;
       }
-      out.push(line);
+      return active;
+    };
+    while (start < text.length) {
+      let end = start, space = -1;
+      while (end < text.length && text[end] !== '\n') {
+        if (text[end] === '§' && end + 1 < text.length) { end += 2; continue; }
+        const next = end + (text.codePointAt(end) > 0xffff ? 2 : 1);
+        if (this.width(prefix + text.slice(start, next)) > maxWidth) {
+          if (space >= start) end = space;
+          else if (!this.width(prefix + text.slice(start, end))) end = next;
+          break;
+        }
+        if (text[end] === ' ') space = end;
+        end = next;
+      }
+      const line = prefix + text.slice(start, end);
+      out.push(line); prefix = format(line);
+      start = end;
+      if (text[start] === '\n' || text[start] === ' ') start++;
     }
+    if (!text.length || text.endsWith('\n')) out.push(prefix);
     return out;
   }
 
   trimToWidth(text, w) {
     let s = '';
-    for (const ch of text) {
+    for (let i = 0; i < text.length;) {
+      const ch = text[i] === '§' && i + 1 < text.length ? text.slice(i, i + 2) : String.fromCodePoint(text.codePointAt(i));
       if (this.width(s + ch) > w) break;
-      s += ch;
+      s += ch; i += ch.length;
     }
     return s;
   }

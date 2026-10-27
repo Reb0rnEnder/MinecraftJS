@@ -12,7 +12,7 @@ test('failed shader compilation leaves the currently loaded pack and resources i
 });
 
 test('shader settings and vegetation lookup use this client version and real block states',()=>{
- const version={'1.14.4':11404,'1.13.2':11302,'1.12.2':11202,'1.8.9':10809}[mcassets.MC_VERSION];assert.ok(finalShaderSource(bytes).includes('#define MC_VERSION '+version+'\n'));
+ const version={'1.15.2':11502,'1.14.4':11404,'1.13.2':11302,'1.12.2':11202,'1.8.9':10809}[mcassets.MC_VERSION];assert.ok(finalShaderSource(bytes).includes('#define MC_VERSION '+version+'\n'));
  const read=n=>JSON.parse(readFileSync(new URL('../client/data/'+n+'.json',import.meta.url))),blocks=read('blocks');initBlocks(blocks,read('blockCollisionShapes'));let lookup;
  const device={createFinalShaderPass:()=>({destroy(){}}),createTerrainAnimation:(source,table)=>{lookup=table;return{destroy(){}};}},pack=new ShaderPackFinal({device,dimension:0,assets:{data:{blocks}}});pack.load('fixture.zip',bytes);assert.ok(pack.waving,pack.wavingError);
  const flattened=version>=11300,grass=blocks.find(b=>b.name===(flattened?'grass':'tallgrass')),ground=blocks.find(b=>b.name===(flattened?'grass_block':'grass')),state=b=>flattened?b.defaultState:b.id<<4,id=b=>lookup.data[state(b)*4]+lookup.data[state(b)*4+1]*256;assert.equal(id(grass),10000);assert.equal(id(ground),0);pack.clear();
