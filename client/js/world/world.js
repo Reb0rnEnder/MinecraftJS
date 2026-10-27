@@ -79,7 +79,7 @@ export class World {
   // Light columns have their own lifecycle: Update Light may precede terrain.
   _lightColumn(x, z) {
     const key=World.key(x,z);let light=this.lightColumns.get(key);
-    if(!light){light={sky:new Array(18),block:new Array(18)};this.lightColumns.set(key,light);}
+    if(!light){light={sky:new Array(18),block:new Array(18),skyKnown:false,skyDataMask:0};this.lightColumns.set(key,light);}
     return light;
   }
 
@@ -110,7 +110,7 @@ export class World {
       for(let i=0;i<18;i++) {
         const bytes=arrays?.[i-1];if(!bytes&&!(empty&(1<<i)))continue;
         if(bytes?.length!==2048&&bytes)throw new Error('Invalid light section');
-        light[name][i]=bytes?bytes.slice():new Uint8Array(2048);changed.add(i-1);
+        light[name][i]=bytes?bytes.slice():new Uint8Array(2048);if(name==='sky'){light.skyKnown=true;light.skyDataMask=bytes?(light.skyDataMask||0)|(1<<i):(light.skyDataMask||0)&~(1<<i); }changed.add(i-1);
       }
     }
     const c=this.getChunk(packet.chunkX,packet.chunkZ);if(!c)return;

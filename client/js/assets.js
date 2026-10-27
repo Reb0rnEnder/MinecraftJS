@@ -112,8 +112,8 @@ export class Assets {
   async readJson(rel) { const t = await this.readText(rel); return t ? JSON.parse(t) : null; }
 
   async readSound(rel) {
-    for (const p of this.packs) if (p.has('sounds/' + rel)) return p.read('sounds/' + rel);
-    return this.source.bytes('minecraft/sounds/' + rel);
+    const colon = rel.indexOf(':'), namespace = colon < 0 ? 'minecraft' : rel.slice(0, colon), path = colon < 0 ? rel : rel.slice(colon + 1);
+    return this.readResourceBytes(namespace + ':sounds/' + path);
   }
 
   // sounds.json: packs add events, or replace them when "replace": true
@@ -121,14 +121,18 @@ export class Assets {
     let defs = {};
     try { defs = JSON.parse(decodeUtf8(await this.source.bytes('minecraft/sounds.json'))); } catch (e) { defs = {}; }
     for (const p of [...this.packs].reverse()) {
-      if (!p.has('sounds.json')) continue;
-      try {
-        const add = JSON.parse(decodeUtf8(p.read('sounds.json')));
-        for (const [ev, d] of Object.entries(add)) {
-          if (d.replace || !defs[ev]) defs[ev] = { ...d };
-          else defs[ev] = { ...defs[ev], sounds: [...(defs[ev].sounds || []), ...(d.sounds || [])] };
-        }
-      } catch (e) { console.warn('Bad sounds.json in', p.id); }
+      for (const path of p.zip.list(p.prefix + 'assets/')) {
+        const match = /^assets\/([^/]+)\/sounds\.json$/.exec(path.slice(p.prefix.length));
+        if (!match) continue;
+        try {
+          const add = JSON.parse(decodeUtf8(p.zip.read(path)));
+          for (const [name, d] of Object.entries(add)) {
+            const ev = (name.includes(':') ? name : match[1] + ':' + name).replace(/^minecraft:/, '');
+            if (d.replace || !defs[ev]) defs[ev] = { ...d };
+            else defs[ev] = { ...defs[ev], ...d, sounds: [...(defs[ev].sounds || []), ...(d.sounds || [])] };
+          }
+        } catch (e) { console.warn('Bad sounds.json in', p.id, path); }
+      }
     }
     return defs;
   }

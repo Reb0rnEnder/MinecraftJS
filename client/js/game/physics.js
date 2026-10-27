@@ -452,8 +452,8 @@ export class LocalPlayer {
     if (this.onGround) {
       if (this.fallDistance > 0 && this.onFall && !this.allowFlying) {
         // EntityLivingBase.fall(distance, multiplier): ceil((distance - 3 - jump boost) * multiplier); beds halve the distance
-        const mult = lb && lb.name === 'slime' && !this.sneaking ? 0 : lb && lb.name === 'hay_block' ? 0.2 : 1;
-        const dist = lb && lb.name === 'bed' ? this.fallDistance * 0.5 : this.fallDistance;
+        const mult = lb && lb.name === 'slime_block' && !this.sneaking ? 0 : lb && lb.name === 'hay_block' ? 0.2 : 1;
+        const dist = lb && lb.name ?.endsWith('_bed') ? this.fallDistance * 0.5 : this.fallDistance;
         const dmg = Math.ceil((dist - 3 - (this.jumpBoost >= 0 ? this.jumpBoost + 1 : 0)) * mult);
         if (dmg > 0) this.onFall(dmg, lst);
       }
@@ -464,9 +464,9 @@ export class LocalPlayer {
     if (dz0 !== z) this.motionZ = 0;
     // Block.onLanded: slime bounces back fully, beds (1.12) at 66%, unless sneaking; everything else stops
     if (d4 !== y) {
-      const bouncy = lb && (lb.name === 'slime' || lb.name === 'bed');
+      const bouncy = lb && (lb.name === 'slime_block' || lb.name ?.endsWith('_bed'));
       if (!bouncy || this.sneaking) this.motionY = 0;
-      else if (this.motionY < 0) this.motionY = lb.name === 'slime' ? -this.motionY : -this.motionY * f32(0.66);
+      else if (this.motionY < 0) this.motionY = lb.name === 'slime_block' ? -this.motionY : -this.motionY * f32(0.66);
     }
 
     // Entity.moveEntity: walked distance (view bobbing) and step distance (sounds). Counted in the air too,
@@ -570,12 +570,12 @@ export class LocalPlayer {
     for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) for (let z = z0; z <= z1; z++) {
       const b = getBlock(world.getState(x, y, z));
       if (!b || b.id === 0) continue;
-      if (b.name === 'web') this.inWeb = true;
+      if (b.name === 'cobweb') this.inWeb = true;
       else if (b.name === 'soul_sand') { this.motionX *= 0.4; this.motionZ *= 0.4; }
     }
     // Slime: walking on it slows you
     const below = getBlock(world.getState(Math.floor(this.x), Math.floor(this.y - 0.20000000298023224), Math.floor(this.z)));
-    if (below && below.name === 'slime' && this.onGround && Math.abs(this.motionY) < 0.1 && !this.sneaking) {
+    if (below && below.name === 'slime_block' && this.onGround && Math.abs(this.motionY) < 0.1 && !this.sneaking) {
       const d = 0.4 + Math.abs(this.motionY) * 0.2;
       this.motionX *= d; this.motionZ *= d;
     }

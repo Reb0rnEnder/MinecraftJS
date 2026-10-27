@@ -1,3 +1,4 @@
+import {fireOverlayVertices,fireOverlayProjection} from '../render/fire-overlay.js';
 import {NATIVE_METADATA} from '../game/entity-metadata-1.14.4.js';
 import { debugTargets } from './debug-targets.js';
 import {drawEffectIcon} from './effect-icons.js';
@@ -305,9 +306,9 @@ export class Hud {
     const survival = g.gameMode === 0 || g.gameMode === 2;
 
     // First person overlays (rendered before GUI in vanilla)
-    if (g.thirdPerson === 0 && !g.hideGui) {
+    if (g.thirdPerson === 0 && g.gameMode !== 3) {
       if (env.underwater) this.renderUnderwater(gui, partial);
-      if (this._isBurning() && !g.player.creative) this.renderFire(gui);
+      if (this._isBurning()) this.renderFire(gui);
     }
     if (g.hideGui) return;
 
@@ -791,15 +792,15 @@ export class Hud {
 
   // ItemRenderer.renderFireInFirstPerson (as two screen-space sprites)
   renderFire(gui) {
-    const A = this.game.assets;
-    const e = A.atlas.entries.get('block/fire_1');
-    if (!e) return;
-    const W = gui.width, H = gui.height;
-    const s = H * 0.5;
-    const [u0, v0, u1, v1] = e.uv;
-    const c = [1, 1, 1, 0.9];
-    gui.quad(A.atlasTexture, -s * 0.15, H - s * 0.85, -s * 0.15 + s, H - s * 0.85 + s, u0, v0, u1, v1, c);
-    gui.quad(A.atlasTexture, W + s * 0.15 - s, H - s * 0.85, W + s * 0.15, H - s * 0.85 + s, u1, v0, u0, v1, c);
+    const A=this.game.assets,e=A.atlas.entries.get('block/fire_1');
+    if(!e)return;
+    const key=e.uv.join(',');
+    if(!this._fireMesh||this._fireUV!==key){
+      if(this._fireMesh)this.game.device.destroyMesh(this._fireMesh);
+      this._fireMesh=this.game.device.createMesh(FORMAT.color,fireOverlayVertices(e.uv),{quads:true});this._fireUV=key;
+    }
+    this._fireParams ||= colorParams(1,1,1,1,0,0);
+    gui.drawMesh({mesh:this._fireMesh,pipeline:'color',textures:[A.atlasTexture],params:this._fireParams,state:{blend:'alpha',depthTest:false,depthWrite:false,cull:false}},fireOverlayProjection(platform().width/gui.scale,platform().height/gui.scale));
   }
 
   renderSidebar(gui) {
