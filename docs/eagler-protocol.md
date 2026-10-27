@@ -40,6 +40,9 @@ Implemented for the existing V2/V3 handshake path:
 
 This is not complete Eaglercraft extension parity. V4/V5 negotiation and their
 multiplexed extensions, voice, cookies, web views, custom mesh skins and the full
-set of authentication/texture-URL extensions remain outside this implementation.
+set of authentication extensions remain outside this implementation.
 The negotiated Java protocol must also match the native version of this checkout;
 this change does not add an automatic 1.8-to-1.15 packet translator.
+
+Foreign player-head URL lookups are now implemented through V3 request 0x06.
+See [deployment and resource fixes](static-hosting-and-proxy.md) for details.

@@ -464,7 +464,7 @@ export class TileEntityRenderer {
         const name = getBlock(st).name;
         const type = skullType(name) ?? 0;
         const tex = ['entity/skeleton/skeleton.png', 'entity/skeleton/wither_skeleton.png', 'entity/zombie/zombie.png', 'entity/steve.png', 'entity/creeper/creeper.png', 'entity/enderdragon/dragon.png'][type] || 'entity/skeleton/skeleton.png';
-        mat = entityMaterial(tex, { alphaTest: 0.1 });
+        mat = entityMaterial(type===3&&t.data?.SkullOwner?this.game.entityRenderer.skullTexture(t.data.SkullOwner):tex, { alphaTest: 0.1 });
         const model = skullModel(type, mat);
         const outer = new Node();
         if (!name.includes('_wall_')) {

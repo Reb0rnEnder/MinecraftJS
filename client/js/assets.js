@@ -1,3 +1,4 @@
+import {applyPackModels,applyPackTextures} from './resource-models.js';
 // Asset manager: base game assets (an assets/ folder next to the page, or the zip embedded in a single-file build)
 // layered under user resource packs.
 import { setJarModels } from './render/entity-models.js';
@@ -213,22 +214,11 @@ export class Assets {
     const models = await this.source.models();
     this.models = models.models;
     this.blockstates = models.blockstates;
-    for (const p of packsLowFirst) {
-      for (const f of p.list('models/')) if (f.endsWith('.json')) { try { this.models[f.slice(7, -5)] = JSON.parse(decodeUtf8(p.read(f))); } catch (e) { /* skip bad json */ } }
-      for (const f of p.list('blockstates/')) if (f.endsWith('.json')) { try { this.blockstates[f.slice(12, -5)] = JSON.parse(decodeUtf8(p.read(f))); } catch (e) { /* skip */ } }
-    }
+    applyPackModels(packsLowFirst,this.models,this.blockstates);
 
     step('Loading textures...', 35);
     const { files, mcmeta } = await this.source.blockTextures();
-    for (const p of packsLowFirst) {
-      for (const dir of ['textures/block/', 'textures/item/']) {
-        for (const f of p.list(dir)) {
-          const rel = f.slice('textures/'.length);
-          if (f.endsWith('.png')) files.set(rel.slice(0, -4), () => p.read(f));
-          else if (f.endsWith('.png.mcmeta')) { try { mcmeta[rel.slice(0, -11)] = JSON.parse(decodeUtf8(p.read(f))); } catch (e) { /* skip */ } }
-        }
-      }
-    }
+    applyPackTextures(packsLowFirst,files,mcmeta,this.models);
     step('Building texture atlas...', 50);
     const textures = [];
     for (const [name, get] of files) {

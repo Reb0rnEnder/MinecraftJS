@@ -1,0 +1,12 @@
+import{test}from'node:test';import assert from'node:assert/strict';import{applyPackModels,applyPackTextures}from'../client/js/resource-models.js';import{ModelStore}from'../client/js/render/models.js';
+function pack(entries){const files=new Map(Object.entries(entries).map(([k,v])=>['wrapper/assets/'+k,typeof v==='string'?new TextEncoder().encode(v):new TextEncoder().encode(JSON.stringify(v))]));return{prefix:'wrapper/',zip:{list:p=>[...files.keys()].filter(k=>k.startsWith(p)),read:k=>files.get(k)}};}
+test('pack models resolve vanilla-qualified parents and custom namespace models/textures',()=>{
+ const files=new Map(),meta={},models={'block/cube':{elements:[{from:[0,0,0],to:[16,16,16],faces:{up:{texture:'#all'}}}]}},states={};
+ const p=pack({'minecraft/blockstates/stone.json':{variants:{'':{model:'arch:block/decor'}}},'arch/models/block/decor.json':{parent:'minecraft:block/cube',textures:{all:'arch:decor/stone',particle:'minecraft:block/stone'}},'arch/textures/decor/stone.png':'custom PNG','arch/textures/decor/stone.png.mcmeta':{animation:{frametime:2}},'arch/textures/entity/unused.png':'not atlas content'});
+ applyPackModels([p],models,states);applyPackTextures([p],files,meta,models);assert.equal(states.stone.variants[''].model,'arch:block/decor');assert.equal(new TextDecoder().decode(files.get('arch:decor/stone')()),'custom PNG');assert.equal(meta['arch:decor/stone'].animation.frametime,2);assert.equal(files.has('arch:entity/unused'),false);
+ const atlas={uv:name=>{assert.equal(name,'arch:decor/stone');return[0,0,1,1];},hasAlpha:()=>false},store=new ModelStore(models,states,atlas);const model=store.resolveModel('arch:block/decor');assert.equal(model.resolveTex('#particle'),'block/stone');assert.equal(store.bakeModel('arch:block/decor').quads.length,1);
+ assert.equal(store.resolveModel('minecraft:block/cube').elements.length,1);
+});
+test('pack priority preserves separate namespaces and overlays the same texture',()=>{
+ const low=pack({'foo/models/block/same.json':{textures:{all:'foo:block/same'}},'minecraft/models/block/same.json':{textures:{all:'minecraft:block/same'}},'foo/textures/block/same.png':'low'}),high=pack({'foo/textures/block/same.png':'high'}),models={},states={},files=new Map();applyPackModels([low,high],models,states);applyPackTextures([low,high],files,{},models);assert.ok(models['foo:block/same']);assert.ok(models['block/same']);assert.equal(new TextDecoder().decode(files.get('foo:block/same')()),'high');
+});
