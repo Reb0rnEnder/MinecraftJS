@@ -8,9 +8,7 @@ import { BOOK_TABS } from '../game/recipebook.js';
 
 const TEX = 'gui/recipe_book.png';
 // GuiButtonRecipeTab icons: [main, second] (tools shows the combat icon too, misc the food icon)
-const TAB_ICONS = {
-  search: [{ id: 345 }], tools: [{ id: 258 }, { id: 283 }], buildingBlocks: [{ id: 45 }], misc: [{ id: 327 }, { id: 260 }], redstone: [{ id: 331 }],
-};
+const TAB_ICONS={search:['compass'],tools:['iron_axe','golden_sword'],buildingBlocks:['bricks'],misc:['lava_bucket','apple'],redstone:['redstone'],food:['cooked_porkchop']};
 
 export class RecipeBookGui {
   // opts: { gridW, gridH, slots: [result, ...grid slot indices], windowId, button: { x(guiLeft, width, height), y(...), u, v, tex } }
@@ -19,6 +17,7 @@ export class RecipeBookGui {
     this.game = screen.game;
     this.book = this.game.recipeBook;
     this.opts = opts;
+    this.state=this.book.stateFor(opts.kind||'crafting');this.tabs=opts.tabs||BOOK_TABS;
     this.tab = 'search';
     this.page = 0;
     this.time = 0;
@@ -27,7 +26,7 @@ export class RecipeBookGui {
     this.search = new TextField(0, 0, 80, 14, { maxLength: 50, background: false, onChange: () => this.update(true) });
   }
 
-  get visible() { return this.book.open; }
+  get visible() { return this.state.open; }
   get narrow() { return this.screen.width < 379; }
 
   // GuiRecipeBook.initVisuals / updateScreenPosition
@@ -45,26 +44,28 @@ export class RecipeBookGui {
   }
 
   toggle() {
-    this.book.open = !this.book.open;
-    if (!this.book.open) this.overlay = null;
+    this.state.open = !this.state.open;
+    if (!this.state.open) this.overlay = null;
     this._sendSettings();
   }
-  _sendSettings() { this.game.send(C.recipeInfoSettings(this.book.open, this.book.filtering)); }
+  _sendSettings() { this.game.send(C.recipeInfoSettings(this.book.open,this.book.filtering,this.book.cookingStates)); }
 
   _gridItems() { return this.opts.slots.slice(1).map((i) => this.screen.container.get(i)); }
+
+  contextLists(tab){const allowed=this.opts.kind?[this.opts.kind]:['crafting_shaped','crafting_shapeless'];return this.book.tabLists(tab).map(list=>({...list,recipes:list.recipes.filter(r=>allowed.includes(r.type?.replace(/^minecraft:/,'')))}));}
 
   // GuiRecipeBook.updateCollections
   update(resetPage) {
     const counts = this.book.stackedContents(this._gridItems());
     const q = this.search.text.trim().toLowerCase();
     this.tabsVisible = {};
-    for (const t of BOOK_TABS) {
-      this.tabsVisible[t] = t === 'search' || this.book.tabLists(t).some((l) => this.book.evaluate(l, counts, this.opts.gridW, this.opts.gridH).valid.length > 0);
+    for (const t of this.tabs) {
+      this.tabsVisible[t] = t === 'search' || this.contextLists(t).some((l) => this.book.evaluate(l, counts, this.opts.gridW, this.opts.gridH).valid.length > 0);
     }
     if (!this.tabsVisible[this.tab]) this.tab = 'search';
-    let lists = this.book.tabLists(this.tab).map((l) => this.book.evaluate(l, counts, this.opts.gridW, this.opts.gridH)).filter((l) => l.valid.length > 0);
-    if (q) lists = lists.filter((l) => l.valid.some((r) => this.game.items.displayName({ id: r.result.id, damage: r.result.data === 32767 ? 0 : r.result.data, count: 1 }).toLowerCase().includes(q)));
-    if (this.book.filtering) lists = lists.filter((l) => l.craftable.length > 0);
+    let lists = this.contextLists(this.tab).map((l) => this.book.evaluate(l, counts, this.opts.gridW, this.opts.gridH)).filter((l) => l.valid.length > 0);
+    if (q) lists = lists.filter((l) => l.valid.some((r) => this.game.items.displayName(this._stack(r)).toLowerCase().includes(q)));
+    if (this.state.filtering) lists = lists.filter((l) => l.craftable.length > 0);
     this.lists = lists;
     this.pages = Math.max(1, Math.ceil(lists.length / 20));
     if (resetPage || this.page >= this.pages) this.page = 0;
@@ -74,9 +75,9 @@ export class RecipeBookGui {
   tick() { this.time++; if (this.visible) this.update(false); }
 
   // GuiButtonRecipe.getOrderedRecipes: craftable first (only craftable when filtering)
-  _ordered(l) { return this.book.filtering ? l.craftable.slice() : [...l.craftable, ...l.valid.filter((r) => !l.craftable.includes(r))]; }
+  _ordered(l) { return this.state.filtering ? l.craftable.slice() : [...l.craftable, ...l.valid.filter((r) => !l.craftable.includes(r))]; }
   _shown(l) { const o = this._ordered(l); return o.length ? o[Math.floor(this.time / 30) % o.length] : null; }
-  _stack(rec) { return { id: rec.result.id, damage: rec.result.data === 32767 ? 0 : rec.result.data, count: rec.result.count }; }
+  _stack(rec) { return {...structuredClone(rec.result),damage:rec.result.damage??(rec.result.data===32767?0:rec.result.data??0)}; }
 
   _buttons() {
     const out = [];
@@ -86,7 +87,7 @@ export class RecipeBookGui {
   _tabs() {
     const out = [];
     let k = 0;
-    for (const t of BOOK_TABS) if (this.tabsVisible && this.tabsVisible[t]) out.push({ t, x: this.left - 30, y: this.top + 3 + 27 * k++ });
+    for (const t of this.tabs) if (this.tabsVisible && this.tabsVisible[t]) out.push({ t, x: this.left - 30, y: this.top + 3 + 27 * k++ });
     return out;
   }
 
@@ -98,13 +99,13 @@ export class RecipeBookGui {
     for (const tb of this._tabs()) {
       const sel = tb.t === this.tab;
       gui.blit(TEX, tb.x - (sel ? 2 : 0), tb.y, sel ? 188 : 153, 2, 35, 27);
-      const ic = TAB_ICONS[tb.t], dx = sel ? -2 : 0;
+      const ic = TAB_ICONS[tb.t].map(name=>({id:g.items.byName.get(name)?.id||1})), dx = sel ? -2 : 0;
       if (ic.length === 2) { g.itemRenderer.drawItem(gui, { ...ic[0], count: 1, damage: 0 }, tb.x + 3 + dx, tb.y + 5, false); g.itemRenderer.drawItem(gui, { ...ic[1], count: 1, damage: 0 }, tb.x + 14 + dx, tb.y + 5, false); }
       else g.itemRenderer.drawItem(gui, { ...ic[0], count: 1, damage: 0 }, tb.x + 9 + dx, tb.y + 5, false);
     }
     // toggle (152, 41): +28 when filtering, +18 when hovered
     const tx = L + 110, ty = T + 12, th = mx >= tx && mx < tx + 26 && my >= ty && my < ty + 16;
-    gui.blit(TEX, tx, ty, 152 + (this.book.filtering ? 28 : 0), 41 + (th ? 18 : 0), 26, 16);
+    gui.blit(TEX, tx, ty, 152 + (this.state.filtering ? 28 : 0), 41 + (th ? 18 : 0), 26, 16);
     // RecipeBookPage.render
     if (this.pages > 1) {
       const s = (this.page + 1) + '/' + this.pages;
@@ -113,7 +114,7 @@ export class RecipeBookGui {
     const shownRecipes = [];
     for (const b of this._buttons()) {
       const u = 29 + (b.l.craftable.length ? 0 : 25);
-      const v = 206 + ((this.book.filtering ? b.l.craftable : b.l.valid).length > 1 ? 25 : 0);
+      const v = 206 + ((this.state.filtering ? b.l.craftable : b.l.valid).length > 1 ? 25 : 0);
       gui.blit(TEX, b.x, b.y, u, v, 25, 25);
       const rec = this._shown(b.l);
       if (rec) { g.itemRenderer.drawItem(gui, this._stack(rec), b.x + 4, b.y + 4, true); shownRecipes.push(...this._ordered(b.l)); }
@@ -160,7 +161,7 @@ export class RecipeBookGui {
       return;
     }
     const tx = this.left + 110, ty = this.top + 12;
-    if (mx >= tx && mx < tx + 26 && my >= ty && my < ty + 16) { gui.tooltip([tr(this.book.filtering ? 'gui.recipebook.toggleRecipes.craftable' : 'gui.recipebook.toggleRecipes.all')], mx, my); return; }
+    if (mx >= tx && mx < tx + 26 && my >= ty && my < ty + 16) { gui.tooltip([tr(this.state.filtering ? 'gui.recipebook.toggleRecipes.craftable' : 'gui.recipebook.toggleRecipes.all')], mx, my); return; }
     for (const b of this._buttons()) {
       if (mx >= b.x && mx < b.x + 25 && my >= b.y && my < b.y + 25) {
         const rec = this._shown(b.l);
@@ -183,7 +184,7 @@ export class RecipeBookGui {
       const x = guiLeft + pos[1], y = guiTop + pos[2];
       if (i === 0) gui.rect(x - 4, y - 4, x + 20, y + 20, 0x30ff0000); else gui.rect(x, y, x + 16, y + 16, 0x30ff0000);
       const alt = ing.alts[Math.floor(this.time / 30) % ing.alts.length];
-      this.game.itemRenderer.drawItem(gui, { id: alt.id, damage: alt.data === 32767 ? 0 : alt.data, count: i === 0 ? ing.count : 1 }, x, y, i === 0);
+      this.game.itemRenderer.drawItem(gui, {...this._stack({result:alt}),count:i===0?ing.count:1}, x, y, i === 0);
       gui.rect(x, y, x + 16, y + 16, 0x30ffffff);
     });
   }
@@ -224,7 +225,7 @@ export class RecipeBookGui {
     if (mx >= L + 25 && mx < L + 105 && my >= T + 14 && my < T + 28) { this.search.focused = true; return true; }
     this.search.focused = false;
     if (mx >= L + 110 && mx < L + 136 && my >= T + 12 && my < T + 28) {
-      this.book.filtering = !this.book.filtering;
+      this.state.filtering = !this.state.filtering;
       this._sendSettings();
       this.update(true);
       return true;

@@ -1,3 +1,4 @@
+import {RecipeBook} from '../client/js/game/recipebook.js';
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
 import {readFileSync} from 'node:fs';
@@ -19,7 +20,7 @@ function fixture(){
  const sent=[],defs=data('items'),byId=new Map(defs.map(d=>[d.id,d]));
  const g={send:b=>sent.push(b),player:{creative:false},gameMode:0,gui:{width:480,height:320},settings:{},assets:{itemsByName:new Map(defs.map(d=>[d.name,d])),translate:k=>k,textures:new Map()},
  items:{def:id=>byId.get(id),name:id=>byId.get(id)?.name,nbt:i=>i?._tag||{},isBlockItem:id=>!!data('blocks').find(b=>b.name===byId.get(id)?.name),maxStack:()=>64,maps:new Map()},screens:{open(s){this.current=s;s.init();}},sound:{playUi(){}},input:{lock(){}},sent};
- g.inventory=new Inventory(g);return g;
+ g.inventory=new Inventory(g);g.recipeBook=new RecipeBook(g);return g;
 }
 const stack=(g,name,count=1)=>({id:g.assets.itemsByName.get(name).id,count,nbt:null});
 test('native menu routing preserves furnace variants and opens every added workstation with native slots',()=>{

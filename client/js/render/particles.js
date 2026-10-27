@@ -1,3 +1,4 @@
+import {moveParticle} from './particle-collision.js';
 // Particle system (port of EffectRenderer + common EntityFX subclasses), batched into one buffer per texture.
 import { getBlock, getStateProperties } from '../world/blocks.js';
 import { getFluidState,isPointInFluid } from '../world/fluids.js';
@@ -124,17 +125,7 @@ export class Particles {
     this.list.length = alive;
   }
 
-  move(p, w) {
-    let nx = p.x + p.mx, ny = p.y + p.my, nz = p.z + p.mz;
-    p.onGround = false;
-    if (p.collide) {
-      const solid = (x, y, z) => { const b = getBlock(w.getState(Math.floor(x), Math.floor(y), Math.floor(z))); return b && b.boundingBox === 'block' && b.id !== 0 && !b.isLiquid; };
-      if (solid(p.x, ny, p.z)) { if (p.my < 0) { p.onGround = true; ny = Math.floor(ny) + 1.001; } else ny = p.y; p.my = 0; }
-      if (solid(nx, ny, p.z)) { nx = p.x; p.mx = 0; }
-      if (solid(nx, ny, nz)) { nz = p.z; p.mz = 0; }
-    }
-    p.x = nx; p.y = ny; p.z = nz;
-  }
+  move(p, w) { moveParticle(p,w); }
 
   render(partial, cx, cy, cz) {
     const cr = this.game.renderer.camRot;

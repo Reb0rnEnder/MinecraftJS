@@ -1,3 +1,4 @@
+import {readRecipes} from './recipes.js';
 // Native Java 1.14.4 protocol 498 codec.
 import {Reader,Writer} from './buffer.js';
 import {technicalPackets} from './technical-packets.js';
@@ -100,16 +101,8 @@ const decoders={
     for(let i=0;i<count;i++)trades.push({a:r.slot(),out:r.slot(),b:r.bool()?r.slot():null,disabled:r.bool(),uses:r.i32(),max:r.i32(),xp:r.i32(),specialPrice:r.i32(),priceMultiplier:r.f32(),demand:r.i32()});
     return {windowId,trades,villagerLevel:r.varint(),experience:r.varint(),isRegularVillager:r.bool(),canRestock:r.bool()};
   },
-  declare_recipes:r=>({recipes:array(r,r=>{
-    const type=r.string(),recipeId=r.string(),data={},kind=type.replace(/^minecraft:/,'');
-    const ingredient=()=>array(r,r=>r.slot());
-    if(kind==='crafting_shaped'){data.width=r.varint();data.height=r.varint();if(data.width<1||data.width>3||data.height<1||data.height>3)throw new Error('Invalid recipe size');data.group=r.string();data.ingredients=Array.from({length:data.width*data.height},ingredient);data.result=r.slot();}
-    else if(kind==='crafting_shapeless'){data.group=r.string();data.ingredients=array(r,ingredient);data.result=r.slot();}
-    else if(['smelting','blasting','smoking','campfire_cooking'].includes(kind)){data.group=r.string();data.ingredient=ingredient();data.result=r.slot();data.experience=r.f32();data.cookingTime=r.varint();}
-    else if(kind==='stonecutting'){data.group=r.string();data.ingredient=ingredient();data.result=r.slot();}
-    else if(!kind.startsWith('crafting_special_'))throw new Error('Unsupported recipe serializer '+type);
-    return {type,recipeId,data};
-  })}),
+  declare_recipes:r=>({recipes:readRecipes(r,498)}),
+  nbt_query_response:r=>({transactionId:r.varint(),nbt:r.optionalNbt()}),
   tags:r=>{
     const tags={};for(const kind of ['blocks','items','fluids','entities'])tags[kind]=Object.fromEntries(array(r,r=>[r.string(),array(r,r=>r.varint())]));
     return {tags};
@@ -126,6 +119,8 @@ export function decodePacket498(bytes) {
 }
 const packet=name=>new Writer498().varint(OUT[name]);
 export const C498={
+  queryBlockNbt:(id,pos)=>packet('query_block_nbt').varint(id).position(pos.x,pos.y,pos.z).build(),
+  queryEntityNbt:(id,entityId)=>packet('query_entity_nbt').varint(id).varint(entityId).build(),
   ...technicalPackets(packet),
   editBook:(item,sign,hand)=>packet('edit_book').slot(item).bool(sign).varint(hand).build(),
   teleportConfirm:id=>packet('teleport_confirm').varint(id).build(),

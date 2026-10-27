@@ -1,3 +1,4 @@
+import {serverCraftResult} from './server-recipes.js';
 // Client-side crafting result computation (vanilla 1.8 computes this on the client too).
 
 let recipesByResult = null;
@@ -37,6 +38,7 @@ const matchIng = (ing, item) => {
 
 // grid: array of items (row-major), size n x n
 export function craftResult(grid, n, items) {
+  if(Array.isArray(items?.serverRecipes))return serverCraftResult(grid,n,items.serverRecipes);
   // Bounding box of non-empty cells
   let minX = n, minY = n, maxX = -1, maxY = -1, count = 0;
   for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) {
