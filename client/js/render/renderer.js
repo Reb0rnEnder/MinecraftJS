@@ -332,7 +332,7 @@ export class Renderer {
 
   // pre: optional view-space transform applied before orienting the camera (vanilla's hurt shake / view
   // bobbing, which are GL ops issued before orientCamera)
-  setCamera(x, y, z, yawDeg, pitchDeg, rollDeg, fov, pre = null) {
+  setCamera(x, y, z, yawDeg, pitchDeg, rollDeg, fov, pre = null, projectionWarp = null) {
     this.camPos = [x, y, z];
     this.fov = fov;
     this.aspect = platform().width / platform().height;
@@ -347,6 +347,7 @@ export class Renderer {
     const far = Math.max(256, this.renderDistance * 16 * 2);
     mat4.perspective(this.proj, fov * D2R, this.aspect, 0.05, far);
     mat4.perspective(this.skyProj, fov * D2R, this.aspect, 0.05, 1000);
+    if(projectionWarp){mat4.multiply(this.proj,this.proj,projectionWarp);mat4.multiply(this.skyProj,this.skyProj,projectionWarp);}
     mat4.multiply(this.viewProj, this.proj, this.view);
     this.frustum = frustumPlanes(this.viewProj);
   }

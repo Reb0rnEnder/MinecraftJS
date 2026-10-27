@@ -169,21 +169,21 @@
         {
           "id": "skull-profiles",
           "pass": true
-        }
-      ],
-      "gaps": [
+        },
         {
           "id": "protocol.nbt_query_response",
-          "status": "missing",
-          "actual": "unknown",
-          "evidence": "client/js/net/packets.js:decodePacket"
+          "pass": true,
+          "actual": "nbt_query_response",
+          "expected": "nbt_query_response"
         },
         {
           "id": "protocol.declare_recipes",
-          "status": "missing",
-          "actual": "unknown",
-          "evidence": "client/js/net/packets.js:decodePacket"
-        },
+          "pass": true,
+          "actual": "declare_recipes",
+          "expected": "declare_recipes"
+        }
+      ],
+      "gaps": [
         {
           "id": "integrated-singleplayer",
           "status": "outside-client-scope",

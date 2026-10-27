@@ -34,7 +34,7 @@ block rows; entity tables can include aliases/non-mob entries.
 | --- | ---: | ---: | ---: | ---: | --- |
 | 1.8.9 | 47 | 198 | 336 | 52 | Not certified. Baseline multiplayer behavior exists; no exhaustive visual/interaction or wiki-fix acceptance record. |
 | 1.12.2 | 340 | 254 | 410 | 66 | Not certified. Content/UI support exists; every 1.9–1.12 interaction, mob state and patch regression has not been accepted. |
-| 1.13.2 | 404 | 598 | 789 | 83 | Confirmed missing incoming recipe synchronization and NBT-query replies; other aquatic interaction/presentation acceptance remains open. |
+| 1.13.2 | 404 | 598 | 789 | 83 | Recipe synchronization and NBT queries are now implemented; other aquatic interaction/presentation acceptance remains open. |
 | 1.14.4 | 498 | 676 | 876 | 87 | Partial. Existing detailed topic/patch review has 197 open acceptance topics; its 58 narrow runtime probes pass. |
 | 1.15.2 | 578 | 680 | 883 | 90 | Partial. Bee/honey client behavior exists; broader interaction outcomes, particle fidelity and entity visual acceptance remain open. |
 
@@ -44,8 +44,7 @@ model loader and skull-profile handling are present on all five branches. These
 are narrow positive controls, not a parity percentage.
 
 The 1.13.2 diagnostic actually calls its production decoder with packet IDs 0x54
-(Declare Recipes) and 0x1d (NBT Query Response); both currently return `unknown`.
-This prevents a full protocol/data-pack compatibility claim. Dedicated editor
+(Declare Recipes) and 0x1d (NBT Query Response); both were missing in the initial review and are now implemented and covered by native wire regression fixtures. See [the follow-up repairs](portal-recipe-nbt-particle-fixes.md). Dedicated editor
 packets and skull-profile rendering have since been added, so older audit prose
 claiming those are wholly absent is historical and should not be reused as a
 current defect list. Further work must use fresh reproductions.
@@ -78,8 +77,8 @@ indices and extracted model bundles; browser pose captures provide a visual chec
 
 ## Next acceptance priorities
 
-1. Implement/test the confirmed 1.13.2 recipe and NBT-query gaps with actual server
-   payloads, then audit remaining decoded-but-unhandled play packets.
+1. Recipe/NBT packet and handler gaps are repaired; expand live data-pack acceptance
+   and audit remaining decoded-but-unhandled play packets.
 2. Compare all entity state transitions, baby proportions and held/equipment
    layers with native rendering; foxes demonstrate why mesh presence is insufficient.
 3. Exercise each workstation and server-driven item-use outcome on an isolated

@@ -799,7 +799,7 @@ export function openContainerScreen(game, win) {
       if (!win.title) win.title = game.assets.translate('container.crafting');
       break;
     }
-    case 'minecraft:blast_furnace': case 'minecraft:smoker': case 'minecraft:furnace': s = new FurnaceScreen(game, win); break;
+    case 'minecraft:blast_furnace': case 'minecraft:smoker': case 'minecraft:furnace': s = new FurnaceScreen(game, win); {const kind=win.type==='minecraft:smoker'?'smoking':win.type==='minecraft:blast_furnace'?'blasting':'smelting';withRecipeBook(s,{kind,tabs:kind==='smoking'?['search','food']:kind==='blasting'?['search','buildingBlocks','misc']:['search','food','buildingBlocks','misc'],slots:[2,0],gridW:1,gridH:1,button:[20,-49,0,0,'gui/recipe_button.png']});} break;
     case 'minecraft:dispenser': case 'minecraft:dropper': {
       const slots = [];
       for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) slots.push([j + i * 3, 62 + j * 18, 17 + i * 18]);

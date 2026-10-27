@@ -37,7 +37,7 @@ export const C={
  resourcePackStatus:result=>packet('resource_pack_receive').varint(result).build(),
  placeRecipe:(windowId,recipe,all)=>packet('craft_recipe_request').u8(windowId).string(String(recipe)).bool(all).build(),
  recipeInfoShown:recipe=>packet('crafting_book_data').varint(0).string(String(recipe)).build(),
- recipeInfoSettings:(open,filtering)=>packet('crafting_book_data').varint(1).bool(open).bool(filtering).bool(false).bool(false).bool(false).bool(false).bool(false).bool(false).build(),
+ recipeInfoSettings:(open,filtering,states={})=>{const w=packet('crafting_book_data').varint(1).bool(open).bool(filtering);for(const k of ['smelting','blasting','smoking'])w.bool(!!states[k]?.open).bool(!!states[k]?.filtering);return w.build();},
  seenAdvancements:tab=>(tab?packet('advancement_tab').varint(0).string(tab):packet('advancement_tab').varint(1)).build(),
  selectTrade:index=>packet('select_trade').varint(index).build(),
  nameItem:name=>packet('name_item').string(name).build(),
