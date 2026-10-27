@@ -12,9 +12,10 @@ export class ShaderPacksScreen extends Screen {
  init(){
   const p=this.game.shaderPack,width=this.width-140,right=this.width-130,folderWidth=Math.min(150,Math.floor(width/2)-10),folderX=Math.floor(width/4)-Math.floor(folderWidth/2);
   this.list=new ShaderPackList(this);
+  const gl=this.game.device.gl;this.graphicsInfo=gl?'OpenGL: '+[gl.getParameter(gl.VERSION),gl.getParameter(gl.VENDOR),gl.getParameter(gl.RENDERER)].join(', '):(this.game.device.name||'WebGL 2');
   const unavailable=['Antialiasing: OFF','Normal Map: OFF','Specular Map: OFF','Render Quality: 1x','Shadow Quality: 1x','Hand Depth: 1x','Old Hand Light: Default','Old Lighting: Default'];
   unavailable.forEach((label,i)=>{const button=new Button(10+i,right,30+i*20,120,20,label);button.enabled=false;button.description='This renderer setting is not implemented';this.buttons.push(button);});
-  const settings=new Button(4,right,this.height-25,120,20,'Shader Options...',()=>this.game.screens.open(new ShaderOptionsScreen(this.game,this)));settings.enabled=!!p.bytes&&!!p.availableOptions.length;this.buttons.push(settings);
+  const settings=new Button(4,right,this.height-25,120,20,'Shader Options...',()=>this.game.screens.open(new ShaderOptionsScreen(this.game,this)));settings.enabled=!!p.bytes&&p.enabled&&!!p.availableOptions.length;this.buttons.push(settings);
   this.buttons.push(new Button(0,folderX,this.height-25,folderWidth-21,20,'Shaders Folder',()=>this.importPack()));this.buttons.at(-1).description='Import shader ZIPs into the browser shader library';this.buttons.at(-1).enabled=!!this.game.device.createFinalShaderPass;
   this.buttons.push(new Button(210,folderX+folderWidth-23,this.height-25,22,20,'↓',()=>platform().openUrl('https://optifine.net/shaderPacks')));this.buttons.at(-1).description='Download shader packs';
   this.buttons.push(new Button(3,Math.floor(width/4)*3-Math.floor(folderWidth/2),this.height-25,folderWidth,20,tr('gui.done'),()=>this.game.screens.open(this.parent)));
@@ -42,6 +43,8 @@ export class ShaderPacksScreen extends Screen {
   gui.textCentered('Shaders',Math.floor(this.width/2),15,0xffffff,true);
   if(!this.game.device.createFinalShaderPass)gui.textCentered('Shader packs require WebGL 2.',this.width/2,this.height-40,0xffaaaa,false);
   else if(this.message)gui.textCentered(gui.font.trimToWidth(this.message,this.width-20),this.width/2,this.height-40,0xffffaa,false);
+  else if(gui.textWidth(this.graphicsInfo)<this.width-5)gui.textCentered(this.graphicsInfo,Math.floor(this.width/2),this.height-40,0x808080,false);
+  else gui.text(this.graphicsInfo,5,this.height-40,0x808080,false);
  }
 }
 class ShaderPackList extends SlotList {

@@ -1,3 +1,4 @@
+import {decodeBase85} from '../util/base85.js';
 // Browser implementation of the platform contract (platform.js).
 import { WebGL2Device } from '../gfx/webgl2.js';
 import { WebGPUDevice } from '../gfx/webgpu.js';
@@ -355,7 +356,8 @@ export class BrowserPlatform extends Emitter {
     if (el) {
       const text = el.textContent.trim();
       el.remove();
-      if (Uint8Array.fromBase64) this._embedded = Uint8Array.fromBase64(text);
+      if(el.dataset.encoding==='base85')this._embedded=decodeBase85(text,Number(el.dataset.bytes));
+      else if (Uint8Array.fromBase64) this._embedded = Uint8Array.fromBase64(text);
       else {
         const bin = atob(text);
         const out = new Uint8Array(bin.length);
