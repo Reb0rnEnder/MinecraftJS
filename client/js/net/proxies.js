@@ -32,7 +32,7 @@ export function normalizeProxy(p) {
 
 // Default list: config.json "proxies", else this page's own server when it is served over http(s)
 export function defaultProxies(config) {
-  if (config && Array.isArray(config.proxies) && config.proxies.length) return config.proxies.map(normalizeProxy).filter(Boolean);
+  if (config && Array.isArray(config.proxies)) return config.proxies.map(normalizeProxy).filter(Boolean);
   const origin = platform().originSocketUrl ? platform().originSocketUrl() : null;
   return origin ? [{ name: 'This website', url: origin, type: 'minecraftjs' }] : [];
 }
