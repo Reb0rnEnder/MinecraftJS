@@ -13,11 +13,13 @@ test('shader setting changes compile before replacing the running pack',()=>{
  const bytes=readFileSync(new URL('fixtures/shader-pack-final-test.zip',import.meta.url));let fail=false,destroyed=0;
  const device={createFinalShaderPass:()=>{if(fail)throw Error('compile');return{destroy(){destroyed++;}};}},pack=new ShaderPackFinal({device,dimension:0});pack.load('good',bytes);fail=true;assert.throws(()=>pack.load('bad',bytes),/compile/);assert.equal(pack.name,'good');assert.equal(destroyed,0);pack.clear();
 });
-test('settings UI pages options, updates slider/toggle values, resets and cancels without changing the pack',()=>{
+test('native shader options use automatic columns, cycle/reset values, and apply on Done',async()=>{
  const options=Array.from({length:30},(_,i)=>({name:'OPTION'+i,label:'Option '+i,values:i===0?Array.from({length:10},(_,n)=>''+n):['false','true'],default:i===0?'5':'false',toggle:i!==0}));let opened;
- const parent={},game={gui:{width:400,height:240},shaderPack:{options:{},availableOptions:options},screens:{open:s=>opened=s}};
- const screen=new ShaderOptionsScreen(game,parent);screen.init();assert.ok(screen.pages>1);screen.buttons[0].onChange(1);assert.equal(screen.values.OPTION0,'9');screen.buttons[1].onClick();assert.equal(screen.values.OPTION1,'true');screen.buttons.find(b=>b.id===101).onClick();assert.equal(screen.page,1);screen.buttons.find(b=>b.id===102).onClick();assert.deepEqual(screen.values,{});screen.close();assert.equal(opened,parent);assert.deepEqual(game.shaderPack.options,{});
+ const parent={persist:async()=>{}},game={gui:{width:400,height:240},shaderPack:{options:{},availableOptions:options,load(name,bytes,values){this.options={...values};}},screens:{open:s=>opened=s}};
+ const screen=new ShaderOptionsScreen(game,parent);screen.init();assert.equal(screen.pages,1);assert.equal(screen.buttons[0].x,5);assert.equal(screen.buttons[0].y,30);assert.equal(screen.buttons[0].w,90);assert.equal(screen.buttons[1].x,105);
+ screen.buttons[0].onChange(1);assert.equal(screen.values.OPTION0,'9');screen.buttons[1].onClick();assert.equal(screen.values.OPTION1,'true');screen.mouseDown(106,31,2,{});assert.equal(screen.values.OPTION1,'false');screen.buttons.find(b=>b.id===102).onClick();assert.deepEqual(screen.values,{});await screen.close();assert.equal(opened,parent);assert.deepEqual(game.shaderPack.options,{});
 });
+
 const file=process.env.BSL_SHADER_PACK||new URL('../BSL_v10.1.8.zip',import.meta.url);
 test('BSL exposes working stages only and light colours respond to settings, time and dimensions',{skip:!existsSync(file)},()=>{
  const bytes=readFileSync(file),options=supportedShaderOptions(bytes),names=options.map(o=>o.name);for(const key of ['WAVING_GRASS','ANIMATION_SPEED','SHARPEN','BLOCKLIGHT_I','LIGHT_DI'])assert.ok(names.includes(key),key);for(const key of ['SHADOW','REFLECTION','TAA','FSH','NETHER','WAVING_LAVA','WAVING_FIRE','WAVING_LANTERN'])assert.ok(!names.includes(key),key);
