@@ -1,3 +1,4 @@
+import {tickPortal,portalWarp} from './portal.js';
 import {EaglerTextures} from '../net/eagler-textures.js';
 import {zoomFov,smoothCameraActive} from './zoom.js';
 import {captureText} from '../debug/text-capture.js';
@@ -1018,7 +1019,12 @@ export class Game {
       case 1: this.world.raining = true; this.world.rainStrength = this.world.prevRain = 0; break;
       case 2: this.world.raining = false; this.world.rainStrength = this.world.prevRain = 1; break;
       case 3: { const gm = Math.floor(p.value + 0.5); if (gm !== this.gameMode) this.previousGameMode = this.gameMode; this.gameMode = gm; this.applyGameMode(); break; }
-      case 4: import('../gui/screens/credits.js').then((m) => this.screens.open(new m.CreditsScreen(this))); break; // GuiWinGame
+      case 4: {
+        const value=Math.floor(p.value+.5);
+        if(value===0){this.send(C.clientCommand(0));this.screens.open(new DownloadingTerrainScreen(this));}
+        else if(value===1){const conn=this.conn;import('../gui/screens/credits.js').then(m=>{if(this.conn===conn&&this.inWorld)this.screens.open(new m.CreditsScreen(this));});}
+        break;
+      }
       case 5: this.onDemoMessage(p.value); break;
       case 6: this.sound.playAtPlayer('entity.arrow.hit_player', 0.18, 0.45); break;
       case 7: this.world.rainStrength = p.value; this.world.prevRain = p.value; break;
@@ -1527,15 +1533,7 @@ export class Game {
     }
   }
 
-  portalTick() {
-    const s = this.world.getState(Math.floor(this.player.x), Math.floor(this.player.y + 0.5), Math.floor(this.player.z));
-    const inPortal = blocks[s >> 4] && blocks[s >> 4].name === 'portal';
-    this.prevPortalTime = this.portalTime;
-    if (inPortal) {
-      if (this.portalTime === 0) this.sound.playAtPlayer('block.portal.trigger', 1, Math.random() * 0.4 + 0.8);
-      this.portalTime = Math.min(1, this.portalTime + 0.0125);
-    } else this.portalTime = Math.max(0, this.portalTime - 0.05);
-  }
+  portalTick() { tickPortal(this); }
 
   // The vehicle the local player steers itself (1.9+: boats, saddled horses), or null
   _vehicleController(v) {
@@ -1835,12 +1833,11 @@ export class Game {
     if (underwater || inLava) fov = fov * 60 / 70;
     if (this.dead) fov /= (1 - 500 / (500 + 20)) * 2 + 1;
     // Portal nausea warp
-    const portal = this.prevPortalTime + (this.portalTime - this.prevPortalTime) * partial;
-    if (portal > 0) fov += portal * 10 * Math.sin(this.ticks * 0.15);
+    const portal = (this.prevPortalTime||0) + ((this.portalTime||0) - (this.prevPortalTime||0)) * partial;
 
     fov = zoomFov(this,fov);
     r.renderDistance = this.settings.renderDistance;
-    r.setCamera(ex, ey, ez, camYaw, camPitch, roll, fov, pre);
+    r.setCamera(ex, ey, ez, camYaw, camPitch, roll, fov, pre,portalWarp(portal,this.ticks+partial,this.effects.has(9)));
     const temp = biomeInfo(this.world.getBiome(Math.floor(ex), Math.floor(ez))).temperature;
     const rain = this.world.prevRain !== undefined ? this.world.prevRain + (this.world.rainStrength - this.world.prevRain) * partial : this.world.rainStrength;
     r.updateEnvironment({
