@@ -1,3 +1,4 @@
+import {applyFoxFlags,tickFox} from './fox.js';
 import {tickBeeSound,stopBeeSound} from './bee-sound.js';
 import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.15.2.js';
 import {placeLeashKnot} from './leash-knot.js';
@@ -365,6 +366,7 @@ export class EntityManager {
       const assignments={cat:{DATA_TYPE_ID:'catType',IS_LYING:'catLying',RELAX_STATE_ONE:'catRelaxing',DATA_COLLAR_COLOR:'collar'},fox:{DATA_TYPE_ID:'foxType'},panda:{MAIN_GENE_ID:'pandaGene',HIDDEN_GENE_ID:'pandaHiddenGene'},villager:{DATA_UNHAPPY_COUNTER:'unhappyCounter'}}[name]||{};
       for(const [field,key] of Object.entries(assignments))if(native[ids[field]]!==undefined)e[key]=native[ids[field]];
     }
+    if(name==='fox'&&wire[WIRE_METADATA.fox.DATA_FLAGS_ID]!==undefined)applyFoxFlags(e,wire[WIRE_METADATA.fox.DATA_FLAGS_ID]);
     if(name==='mooshroom')e.mooshroomType=Object.values(native).find(v=>v==='brown'||v==='red')||e.mooshroomType||'red';
     if(name==='bee'){
       // Bee's own 1.15.2 accessors are the byte at 16 and anger-time int at
@@ -896,6 +898,7 @@ export class EntityManager {
       e.prevLimbSwingAmount = e.limbSwingAmount;
       e.prevSwingProgress = e.swingProgress;
       e.ticks++;
+      if(e.entityName==='fox')tickFox(e);
       if(e.entityName==='bee'){tickBeeSound(this,e);e.prevBeeRoll=e.beeRoll||0;e.beeRoll=Math.fround(e.beeRolling?Math.min(1,Math.fround(e.prevBeeRoll+Math.fround(.2))):Math.max(0,Math.fround(e.prevBeeRoll-Math.fround(.24))));}
       if (e.boostedId && e.boostedId === g.entityId) this._fireworkBoost(e);
       if (e.entityName === 'firework_rocket') this._fireworkTick(e);

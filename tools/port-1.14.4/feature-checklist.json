@@ -663,9 +663,12 @@
         "client/js/render/entity-renderer.js",
         "client/js/render/entity-models.js",
         "client/js/render/villager-layers.js",
-        "tools/test-1.14.4-visual-properties.mjs"
+        "tools/test-1.14.4-visual-properties.mjs",
+        "client/js/render/fox-pose.js",
+        "client/js/game/fox.js",
+        "tools/test-fox-poses.mjs"
       ],
-      "observation": "Native model and red/snow variants render; sleeping/crouching/pouncing and held-item poses need testing.",
+      "observation": "Standing/sitting/sleeping/crouching/faceplant poses, pounce rotation, red/snow sleeping textures, native baby scaling and mouth-held item transforms are wired and regression-tested. Full server-driven eating/trust/breeding outcome acceptance remains open.",
       "acceptance": "Observe both types sleeping, pouncing, carrying/eating items and breeding; test trusted babies."
     },
     {

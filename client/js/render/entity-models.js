@@ -1,3 +1,4 @@
+import {animateFox} from './fox-pose.js';
 // Entity models (native 1.14.4). Their boxes come from the Minecraft client jar at build time (lib/modelextract.js runs the
 // game's model constructors and records every part: bundles/entity-models.json); this file names the parts and holds
 // the animation (ports of setRotationAngles / setLivingAnimations).
@@ -323,10 +324,7 @@ export function bee(){
   });
 }
 export function fox(){
-  return jarAdapter('fox',['head','leftEar','rightEar','nose','body','rightHindLeg','leftHindLeg','rightFrontLeg','leftFrontLeg','tail'],(m,a)=>{
-    const p=m.parts;p.head.rx=a.pitch*D2R;p.head.ry=a.yaw*D2R;
-    for(const [key,phase] of [['rightHindLeg',0],['leftHindLeg',PI],['rightFrontLeg',PI],['leftFrontLeg',0]])p[key].rx=cos(a.ls*.6662+phase)*1.4*a.lsa;
-  });
+  return jarAdapter('fox',['head','leftEar','rightEar','nose','body','rightHindLeg','leftHindLeg','rightFrontLeg','leftFrontLeg','tail'],animateFox,{foxAgeable:true});
 }
 export function panda(){return jarAdapter('panda',QUADRUPED,(m,a)=>animateQuadruped(m,a),{quadruped:true,childY:8,childZ:4});}
 export function ravager(){return jarAdapter('ravager',['head','mouth','body','leg1','leg2','leg3','leg4','neck'],(m,a)=>{

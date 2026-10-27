@@ -1,0 +1,327 @@
+{
+  "reviewedOn": "2026-10-27",
+  "method": "Wiki release index plus read-only runtime/data probes across the existing worktrees. No claim of exhaustive gameplay, rendering, server AI or every wiki fix.",
+  "wiki": {
+    "pages": 35,
+    "topics": 1095,
+    "bugIds": 3071
+  },
+  "versions": [
+    {
+      "version": "1.8.9",
+      "fullParity": false,
+      "protocol": 47,
+      "content": {
+        "blocks": 198,
+        "items": 336,
+        "entities": 58,
+        "entityModels": 52,
+        "flattenedStates": null
+      },
+      "assetManifest": null,
+      "extractorWarnings": [
+        "strayOverlay: no model for textures/entity/skeleton/stray_overlay.png",
+        "shulker: no model for textures/entity/shulker/shulker_white.png",
+        "polarBear: no model for textures/entity/bear/polarbear.png",
+        "llama: no model for textures/entity/llama/llama_creamy.png",
+        "parrot: no model for textures/entity/parrot/parrot_red_blue.png",
+        "vex: no model for textures/entity/illager/vex.png",
+        "illager: no model for textures/entity/illager/evoker.png",
+        "elytra: no model for textures/entity/elytra.png",
+        "evokerFangs: no model for textures/entity/illager/fangs.png",
+        "llamaSpit: no model for textures/entity/llama/spit.png",
+        "shulkerBullet: no model for textures/entity/shulker/spark.png",
+        "bed: no model for textures/entity/bed/",
+        "dragonHead: no model for textures/entity/skeleton/wither_skeleton.png"
+      ],
+      "probes": [
+        {
+          "id": "client-jar",
+          "pass": true,
+          "expected": "3870888a6c3d349d3771a3e9d16c9bf5e076b908",
+          "actual": "3870888a6c3d349d3771a3e9d16c9bf5e076b908"
+        },
+        {
+          "id": "collision-data-for-all-blocks",
+          "pass": true,
+          "missing": []
+        },
+        {
+          "id": "static-host-empty-proxies",
+          "pass": true
+        },
+        {
+          "id": "custom-model-loader",
+          "pass": true
+        },
+        {
+          "id": "skull-profiles",
+          "pass": true
+        }
+      ],
+      "gaps": [
+        {
+          "id": "integrated-singleplayer",
+          "status": "outside-client-scope",
+          "evidence": "client/js/gui/screens/menus.js"
+        },
+        {
+          "id": "exhaustive-wiki-behavior",
+          "status": "not-certified",
+          "reason": "No acceptance record covers every release topic and listed vanilla fix."
+        },
+        {
+          "id": "entity-animation-visual-acceptance",
+          "status": "partial",
+          "reason": "Native model presence does not verify every state transition or layer."
+        }
+      ]
+    },
+    {
+      "version": "1.12.2",
+      "fullParity": false,
+      "protocol": 340,
+      "content": {
+        "blocks": 254,
+        "items": 410,
+        "entities": 110,
+        "entityModels": 66,
+        "flattenedStates": null
+      },
+      "assetManifest": null,
+      "extractorWarnings": [],
+      "probes": [
+        {
+          "id": "client-jar",
+          "pass": true,
+          "expected": "0f275bc1547d01fa5f56ba34bdc87d981ee12daf",
+          "actual": "0f275bc1547d01fa5f56ba34bdc87d981ee12daf"
+        },
+        {
+          "id": "collision-data-for-all-blocks",
+          "pass": true,
+          "missing": []
+        },
+        {
+          "id": "static-host-empty-proxies",
+          "pass": true
+        },
+        {
+          "id": "custom-model-loader",
+          "pass": true
+        },
+        {
+          "id": "skull-profiles",
+          "pass": true
+        }
+      ],
+      "gaps": [
+        {
+          "id": "integrated-singleplayer",
+          "status": "outside-client-scope",
+          "evidence": "client/js/gui/screens/menus.js"
+        },
+        {
+          "id": "exhaustive-wiki-behavior",
+          "status": "not-certified",
+          "reason": "No acceptance record covers every release topic and listed vanilla fix."
+        },
+        {
+          "id": "entity-animation-visual-acceptance",
+          "status": "partial",
+          "reason": "Native model presence does not verify every state transition or layer."
+        }
+      ]
+    },
+    {
+      "version": "1.13.2",
+      "fullParity": false,
+      "protocol": 404,
+      "content": {
+        "blocks": 598,
+        "items": 789,
+        "entities": 123,
+        "entityModels": 83,
+        "flattenedStates": 8599
+      },
+      "assetManifest": null,
+      "extractorWarnings": [],
+      "probes": [
+        {
+          "id": "client-jar",
+          "pass": true,
+          "expected": "30bfe37a8db404db11c7edf02cb5165817afb4d9",
+          "actual": "30bfe37a8db404db11c7edf02cb5165817afb4d9"
+        },
+        {
+          "id": "collision-data-for-all-blocks",
+          "pass": true,
+          "missing": []
+        },
+        {
+          "id": "static-host-empty-proxies",
+          "pass": true
+        },
+        {
+          "id": "custom-model-loader",
+          "pass": true
+        },
+        {
+          "id": "skull-profiles",
+          "pass": true
+        }
+      ],
+      "gaps": [
+        {
+          "id": "protocol.nbt_query_response",
+          "status": "missing",
+          "actual": "unknown",
+          "evidence": "client/js/net/packets.js:decodePacket"
+        },
+        {
+          "id": "protocol.declare_recipes",
+          "status": "missing",
+          "actual": "unknown",
+          "evidence": "client/js/net/packets.js:decodePacket"
+        },
+        {
+          "id": "integrated-singleplayer",
+          "status": "outside-client-scope",
+          "evidence": "client/js/gui/screens/menus.js"
+        },
+        {
+          "id": "exhaustive-wiki-behavior",
+          "status": "not-certified",
+          "reason": "No acceptance record covers every release topic and listed vanilla fix."
+        },
+        {
+          "id": "entity-animation-visual-acceptance",
+          "status": "partial",
+          "reason": "Native model presence does not verify every state transition or layer."
+        }
+      ]
+    },
+    {
+      "version": "1.14.4",
+      "fullParity": false,
+      "protocol": 498,
+      "content": {
+        "blocks": 676,
+        "items": 876,
+        "entities": 102,
+        "entityModels": 87,
+        "flattenedStates": 11271
+      },
+      "assetManifest": {
+        "layoutVersion": 4,
+        "minecraftVersion": "1.14.4",
+        "clientJarSha1": "8c325a0c5bd674dd747d6ebaa4c791fd363ad8a9",
+        "assetIndex": "1.14"
+      },
+      "extractorWarnings": [],
+      "probes": [
+        {
+          "id": "client-jar",
+          "pass": true,
+          "expected": "8c325a0c5bd674dd747d6ebaa4c791fd363ad8a9",
+          "actual": "8c325a0c5bd674dd747d6ebaa4c791fd363ad8a9"
+        },
+        {
+          "id": "collision-data-for-all-blocks",
+          "pass": true,
+          "missing": []
+        },
+        {
+          "id": "static-host-empty-proxies",
+          "pass": true
+        },
+        {
+          "id": "custom-model-loader",
+          "pass": true
+        },
+        {
+          "id": "skull-profiles",
+          "pass": true
+        }
+      ],
+      "gaps": [
+        {
+          "id": "integrated-singleplayer",
+          "status": "outside-client-scope",
+          "evidence": "client/js/gui/screens/menus.js"
+        },
+        {
+          "id": "exhaustive-wiki-behavior",
+          "status": "not-certified",
+          "reason": "No acceptance record covers every release topic and listed vanilla fix."
+        },
+        {
+          "id": "entity-animation-visual-acceptance",
+          "status": "partial",
+          "reason": "Native model presence does not verify every state transition or layer."
+        }
+      ]
+    },
+    {
+      "version": "1.15.2",
+      "fullParity": false,
+      "protocol": 578,
+      "content": {
+        "blocks": 680,
+        "items": 883,
+        "entities": 103,
+        "entityModels": 90,
+        "flattenedStates": 11337
+      },
+      "assetManifest": {
+        "layoutVersion": 4,
+        "minecraftVersion": "1.15.2",
+        "clientJarSha1": "e3f78cd16f9eb9a52307ed96ebec64241cc5b32d",
+        "assetIndex": "1.15"
+      },
+      "extractorWarnings": [],
+      "probes": [
+        {
+          "id": "client-jar",
+          "pass": true,
+          "expected": "e3f78cd16f9eb9a52307ed96ebec64241cc5b32d",
+          "actual": "e3f78cd16f9eb9a52307ed96ebec64241cc5b32d"
+        },
+        {
+          "id": "collision-data-for-all-blocks",
+          "pass": true,
+          "missing": []
+        },
+        {
+          "id": "static-host-empty-proxies",
+          "pass": true
+        },
+        {
+          "id": "custom-model-loader",
+          "pass": true
+        },
+        {
+          "id": "skull-profiles",
+          "pass": true
+        }
+      ],
+      "gaps": [
+        {
+          "id": "integrated-singleplayer",
+          "status": "outside-client-scope",
+          "evidence": "client/js/gui/screens/menus.js"
+        },
+        {
+          "id": "exhaustive-wiki-behavior",
+          "status": "not-certified",
+          "reason": "No acceptance record covers every release topic and listed vanilla fix."
+        },
+        {
+          "id": "entity-animation-visual-acceptance",
+          "status": "partial",
+          "reason": "Native model presence does not verify every state transition or layer."
+        }
+      ]
+    }
+  ]
+}
