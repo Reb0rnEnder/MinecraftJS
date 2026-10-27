@@ -188,3 +188,6 @@ Static website output: `npm run build -- --static --out=dist/site`. Separate bac
 `npm start -- --proxy-only`. Outbound loopback is blocked by default; use
 `--allow-loopback` for a Minecraft server on the same machine. See
 [static hosting, proxy flags and resource fixes](docs/static-hosting-and-proxy.md).
+
+Parity status: [supported-version wiki/runtime audit](docs/supported-version-parity-audit.md).
+No branch is certified as implementing every vanilla feature or patch fix.
