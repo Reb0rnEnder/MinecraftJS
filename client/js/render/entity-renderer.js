@@ -1246,7 +1246,7 @@ export class EntityRenderer {
       charging: !!e.charging, attacking: !!e.armsRaised, spellcasting: !!e.spell,
       aimedBow: e.type === 'illusioner' && !!e.armsRaised,
       throwing: e.type === 'drowned' && !!e.armsRaised && !!held && g.items.name(held.id) === 'trident',
-      hasEgg: !!e.hasEgg, layingEgg: !!e.layingEgg, hasNectar: !!e.hasNectar, hasStung: !!e.hasStung,
+      hasEgg: !!e.hasEgg, layingEgg: !!e.layingEgg, hasNectar: !!e.hasNectar, hasStung: !!e.hasStung,beeRoll:(e.prevBeeRoll||0)+((e.beeRoll||0)-(e.prevBeeRoll||0))*partial,
     };
     if (e.type === 'illusioner' && !e.spell && e.armsRaised) args.pose = 'bow';
     if (e.kind === 'armorstand') {

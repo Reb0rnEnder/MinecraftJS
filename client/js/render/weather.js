@@ -81,7 +81,7 @@ export class Weather {
       const x = px + Math.floor(Math.random() * 21) - 10, z = pz + Math.floor(Math.random() * 21) - 10;
       const top = this.precipHeight(x, z);
       if (top > py + 10 || top < py - 10) continue;
-      if (biomeRainType(w.getBiome(x, z), top) !== 'rain') continue;
+      if (biomeRainType(w.getBiome(x, z, top), top) !== 'rain') continue;
       const below = getBlock(w.getState(x, top - 1, z));
       const rx = Math.random(), rz = Math.random();
       if (below && below.isLava) g.particles.smoke(x + rx, top + 0.1, z + rz, 0, 0, 0);
@@ -130,7 +130,7 @@ export class Weather {
         if (y0 < top) y0 = top;
         if (y1 < top) y1 = top;
         if (y0 === y1) continue;
-        const type = biomeRainType(w.getBiome(x, z), Math.max(top, by));
+        const type = biomeRainType(w.getBiome(x, z, Math.max(top, by)), Math.max(top, by));
         if (type === 'none') continue;
         const kind = type === 'snow' ? 'snow' : 'rain';
         const L = this.layers[kind];

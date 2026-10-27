@@ -1,3 +1,4 @@
+import {BiomeZoom} from './biome-zoom.js';
 import {scaffoldingCollision} from './scaffolding.js';
 import {decodeChunkData578} from './chunk-1.15.2.js';
 import { getFluidState, fluidHeightAt } from './fluids.js';
@@ -56,6 +57,7 @@ export class World {
     for (const c of this.chunks.values()) this.emit('chunkUnloaded', c);
     this.chunks.clear();
     this.lightColumns.clear();
+    this.biomeZoom=null;
     this._gen++;
     this.raining = false;
     this.rainStrength = this.prevRain = 0;
@@ -79,7 +81,7 @@ export class World {
   // Light columns have their own lifecycle: Update Light may precede terrain.
   _lightColumn(x, z) {
     const key=World.key(x,z);let light=this.lightColumns.get(key);
-    if(!light){light={sky:new Array(18),block:new Array(18)};this.lightColumns.set(key,light);}
+    if(!light){light={sky:new Array(18),block:new Array(18),skyKnown:false,skyDataMask:0};this.lightColumns.set(key,light);}
     return light;
   }
 
@@ -110,7 +112,7 @@ export class World {
       for(let i=0;i<18;i++) {
         const bytes=arrays?.[i-1];if(!bytes&&!(empty&(1<<i)))continue;
         if(bytes?.length!==2048&&bytes)throw new Error('Invalid light section');
-        light[name][i]=bytes?bytes.slice():new Uint8Array(2048);changed.add(i-1);
+        light[name][i]=bytes?bytes.slice():new Uint8Array(2048);if(name==='sky'){light.skyKnown=true;light.skyDataMask=bytes?(light.skyDataMask||0)|(1<<i):(light.skyDataMask||0)&~(1<<i); }changed.add(i-1);
       }
     }
     const c=this.getChunk(packet.chunkX,packet.chunkZ);if(!c)return;
@@ -141,7 +143,12 @@ export class World {
 
   getBlockDef(x, y, z) { return getBlock(this.getState(x, y, z)); }
 
+  setBiomeSeed(seed){this.biomeZoom=seed===undefined?null:new BiomeZoom(seed);}
+
   getBiome(x, z, y = 64) {
+    if(this.biomeZoom){const biome=this.biomeZoom.sample(Math.floor(x),Math.floor(y),Math.floor(z),(qx,qy,qz)=>{const chunk=this._chunk(qx>>2,qz>>2);return chunk?.biomes.length===1024?chunk.biomes[(Math.max(0,Math.min(63,qy))<<4)|((qz&3)<<2)|(qx&3)]:null;});if(biome!==null)return biome;}
+
+
     const c = this._chunk(x >> 4, z >> 4);
     if(!c)return 1;
     return c.biomes.length===1024?c.biomes[(Math.max(0,Math.min(63,Math.floor(y/4)))<<4)|((z&15)>>2)<<2|((x&15)>>2)]:c.biomes[((z&15)<<4)|(x&15)];

@@ -74,8 +74,10 @@ shader-pack compatibility. No claim of artifact-free shadows is made.
 - Milestone 2: complete for login/play framing, packet-ID migration, changed
   layouts, chunk biomes, particles, light updates, and live join probes.
   Milestone 3: native registries/tables and indexed assets are active; native
-  1.15 model extraction remains pending. Milestones 4–5 and shadow
-  implementation remain pending. See the [1.15.2 feature audit](feature-audit-1.15.2.md);
+  1.15 model extraction is complete with native quad UVs and provenance checks.
+  Native seeded biome zoom, bee/honey movement/animation/audio and the multiplayer
+  warning/title are implemented. Milestones 4–5 still need broader interaction
+  and visual acceptance; shadow implementation remains pending. See the [1.15.2 feature audit](feature-audit-1.15.2.md);
   full parity is not claimed.
 
 ## Source references

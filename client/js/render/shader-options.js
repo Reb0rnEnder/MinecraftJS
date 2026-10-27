@@ -23,9 +23,10 @@ export function validateShaderOptions(options,values={}){
  const out={};for(const [name,value]of Object.entries(values)){const o=options.find(o=>o.name===name);if(!o||!o.values.includes(String(value)))throw Error('Invalid shader option: '+name);out[name]=String(value);}return out;
 }
 export function applyShaderOptions(source,values){
+ if(!Object.keys(values).length)return source;
  const options=parseShaderOptions(source),valid=validateShaderOptions(options,Object.fromEntries(Object.entries(values).filter(([name])=>options.some(o=>o.name===name))));
  const changed=new Set();return source.replace(/^([^\n]*)$/gm,line=>{
-  for(const o of options){if(changed.has(o.name)||valid[o.name]===undefined)continue;
+  for(const o of options.filter(o=>valid[o.name]!==undefined)){if(changed.has(o.name)||valid[o.name]===undefined)continue;
    const re=o.constant?new RegExp('^(\\s*const\\s+(?:int|float)\\s+'+o.name+'\\s*=\\s*)[^;]+(;.*)$'):new RegExp('^\\s*(?://\\s*)?#define\\s+'+o.name+'(?:\\s|$)');
    if(!re.test(line))continue;changed.add(o.name);
    if(o.constant)return line.replace(re,(_,a,b)=>a+valid[o.name]+b);

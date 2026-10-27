@@ -1,6 +1,6 @@
 // Particle system (port of EffectRenderer + common EntityFX subclasses), batched into one buffer per texture.
 import { getBlock, getStateProperties } from '../world/blocks.js';
-import { isPointInFluid } from '../world/fluids.js';
+import { getFluidState,isPointInFluid } from '../world/fluids.js';
 import { resolveState } from '../world/blockstates.js';
 import { FORMAT, litParams } from '../gfx/device.js';
 import { particleSprite } from './particle-sprites.js';
@@ -496,15 +496,24 @@ export class Particles {
     return this.add(p);
   }
 
-  honeyDrip(x, y, z, falling = false) {
-    const p = { x, y, z, sprite: falling ? 'falling_honey' : 'dripping_honey', mx: 0, my: 0, mz: 0, scale: 1, maxAge: Math.floor(64 / (rand() * 0.8 + 0.2)) };
-    p.r = 1; p.g = 0.72; p.b = 0.12; p.delay = falling ? 0 : 40;
-    p.update = (q) => {
-      if (q.delay-- > 0) q.mx *= 0.02, q.my *= 0.02, q.mz *= 0.02;
-      else { q.sprite = 'falling_honey'; q.my -= 0.03; }
-      this.move(q, this.game.world);
-      q.mx *= 0.98; q.my *= 0.98; q.mz *= 0.98;
-      if (q.onGround) { q.sprite = 'landing_honey'; q.maxAge = q.age + 4; q.update = () => q.age < q.maxAge; }
+  honeyBlockEffect(entity,count){
+    const state=resolveState('honey_block');
+    for(let i=0;i<count;i++)this.digging(entity.x,entity.y,entity.z,0,0,0,state);
+  }
+
+  honeyDrip(x,y,z,falling=false,landing=false){
+    const phase=landing?'landing':falling?'falling':'dripping',colors={dripping:[.622,.508,.082],falling:[.582,.448,.082],landing:[.522,.408,.082]};
+    const p={x,y,z,mx:0,my:0,mz:0,scale:1,phase,sprite:phase+'_honey',maxAge:phase==='dripping'?100:Math.floor((phase==='landing'?128:64)/(rand()*.8+.2))};
+    [p.r,p.g,p.b]=colors[phase].map(Math.fround);
+    const change=(q,next)=>{q.phase=next;q.sprite=next+'_honey';q.age=0;q.maxAge=Math.floor((next==='landing'?128:64)/(rand()*.8+.2));[q.r,q.g,q.b]=colors[next].map(Math.fround);};
+    p.update=q=>{
+      if(q.phase==='landing')return;
+      if(q.phase==='dripping'&&q.age>=100){change(q,'falling');return;}
+      q.my-=q.phase==='dripping'?Math.fround(Math.fround(Math.fround(.06)*Math.fround(.02))*Math.fround(.01)):Math.fround(.01);
+      this.move(q,this.game.world);
+      if(q.phase==='dripping'){q.mx*=.02;q.my*=.02;q.mz*=.02;}
+      else if(q.onGround){change(q,'landing');q.mx=q.my=q.mz=0;this.game.sound.play('block.beehive.drip',q.x+.5,q.y,q.z+.5,.3+rand()*2/3,1);return;}
+      q.mx*=Math.fround(.98);q.my*=Math.fround(.98);q.mz*=Math.fround(.98);
     };
     return this.add(p);
   }
@@ -743,7 +752,7 @@ export class Particles {
       case 'dripping_lava': emit((x, y, z) => this.drip(x, y, z, true)); break;
       case 'dripping_honey': emit((x, y, z) => this.honeyDrip(x, y, z)); break;
       case 'falling_honey': emit((x, y, z) => this.honeyDrip(x, y, z, true)); break;
-      case 'landing_honey': emit((x, y, z) => this.add({ x, y, z, sprite: 'landing_honey', scale: 1, maxAge: 4, collide: false, update: () => {} })); break;
+      case 'landing_honey': emit((x,y,z)=>this.honeyDrip(x,y,z,false,true));break;
       case 'falling_lava':emit((x,y,z)=>this.fallingDrop(x,y,z,true));break;
       case 'falling_water':emit((x,y,z)=>this.fallingDrop(x,y,z,false));break;
       case 'landing_lava':emit((x,y,z)=>this.fallingDrop(x,y,z,true,true));break;
@@ -914,9 +923,9 @@ export class Particles {
         }
         if (rand() * 200 < 1) this.game.sound.play('block.lava.ambient', x, y, z, 0.2 + rand() * 0.2, 0.9 + rand() * 0.15);
       }
-    } else if ((n === 'bee_nest' || n === 'beehive') && m >= 5) {
+    } else if ((n === 'bee_nest' || n === 'beehive') && Number(getStateProperties(state).honey_level)>=5) {
       const below = getBlock(this.game.world.getState(x, y - 1, z));
-      if (below && below.id === 0 && rand() < 0.08) this.honeyDrip(x + 0.5, y - 0.05, z + 0.5);
+      if(below&&!below.collisionFull&&!getFluidState(this.game.world.getState(x,y-1,z))&&rand()>=.3)this.honeyDrip(x+rand(),y-.05,z+rand());
     } else if (n === 'end_portal_frame' || n === 'dragon_egg') {
       // no-op
     } else if (n === 'leaves' || n === 'leaves2') {

@@ -23,6 +23,7 @@ const f32 = Math.fround;
 
 // HoneyBlock.onFallenUpon and the movement slowdown used by the 1.15 client.
 export const honeyFallMultiplier = (blockName) => blockName === 'honey_block' ? 0.2 : 1;
+export const honeyJumpFactor = name => name === 'honey_block' ? Math.fround(.5) : 1;
 export const honeyMovementFactor = (blockName) => blockName === 'honey_block' ? 0.4 : 1;
 
 // MathHelper.fastInvSqrt (double bit trick + one Newton step)
@@ -456,8 +457,8 @@ export class LocalPlayer {
     if (this.onGround) {
       if (this.fallDistance > 0 && this.onFall && !this.allowFlying) {
         // EntityLivingBase.fall(distance, multiplier): ceil((distance - 3 - jump boost) * multiplier); beds halve the distance
-        const mult = lb && lb.name === 'slime' && !this.sneaking ? 0 : lb && lb.name === 'hay_block' ? 0.2 : honeyFallMultiplier(lb?.name);
-        const dist = lb && lb.name === 'bed' ? this.fallDistance * 0.5 : this.fallDistance;
+        const mult = lb && lb.name === 'slime_block' && !this.sneaking ? 0 : lb && lb.name === 'hay_block' ? 0.2 : honeyFallMultiplier(lb?.name);
+        const dist = lb && lb.name ?.endsWith('_bed') ? this.fallDistance * 0.5 : this.fallDistance;
         const dmg = Math.ceil((dist - 3 - (this.jumpBoost >= 0 ? this.jumpBoost + 1 : 0)) * mult);
         if (dmg > 0) this.onFall(dmg, lst);
       }
@@ -468,9 +469,9 @@ export class LocalPlayer {
     if (dz0 !== z) this.motionZ = 0;
     // Block.onLanded: slime bounces back fully, beds (1.12) at 66%, unless sneaking; everything else stops
     if (d4 !== y) {
-      const bouncy = lb && (lb.name === 'slime' || lb.name === 'bed');
+      const bouncy = lb && (lb.name === 'slime_block' || lb.name ?.endsWith('_bed'));
       if (!bouncy || this.sneaking) this.motionY = 0;
-      else if (this.motionY < 0) this.motionY = lb.name === 'slime' ? -this.motionY : -this.motionY * f32(0.66);
+      else if (this.motionY < 0) this.motionY = lb.name === 'slime_block' ? -this.motionY : -this.motionY * f32(0.66);
     }
 
     // Entity.moveEntity: walked distance (view bobbing) and step distance (sounds). Counted in the air too,
@@ -574,25 +575,30 @@ export class LocalPlayer {
     for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) for (let z = z0; z <= z1; z++) {
       const b = getBlock(world.getState(x, y, z));
       if (!b || b.id === 0) continue;
-      if (b.name === 'web') this.inWeb = true;
+      if (b.name === 'cobweb') this.inWeb = true;
       else if (b.name === 'honey_block') {
-        // HoneyBlock.isSlidingDown: a horizontal collision while descending
-        // turns a fall into a slow slide and damps lateral motion.
-        if (this.collidedH && !this.onGround && this.motionY < 0) this.motionY = Math.max(this.motionY, -0.05);
-        this.motionX *= honeyMovementFactor(b.name); this.motionZ *= honeyMovementFactor(b.name);
+        const edge=.4375+this.width/2;
+        if(!this.onGround&&this.y<=y+.9375-1e-7&&this.motionY<-.08&&(Math.abs(x+.5-this.x)+1e-7>edge||Math.abs(z+.5-this.z)+1e-7>edge)){
+          if(this.motionY<-.13){const factor=-.05/this.motionY;this.motionX*=factor;this.motionZ*=factor;}
+          this.motionY=-.05;this.fallDistance=0;
+        }
       }
       else if (b.name === 'soul_sand') { this.motionX *= 0.4; this.motionZ *= 0.4; }
     }
     // Slime: walking on it slows you
     const below = getBlock(world.getState(Math.floor(this.x), Math.floor(this.y - 0.20000000298023224), Math.floor(this.z)));
-    if (below && (below.name === 'slime' || below.name === 'honey_block') && this.onGround && Math.abs(this.motionY) < 0.1 && !this.sneaking) {
-      const d = below.name === 'honey_block' ? 0.4 : 0.4 + Math.abs(this.motionY) * 0.2;
+    if (below && below.name === 'slime_block' && this.onGround && Math.abs(this.motionY) < 0.1 && !this.sneaking) {
+      const d = 0.4 + Math.abs(this.motionY) * 0.2;
       this.motionX *= d; this.motionZ *= d;
     }
+    const feet=getBlock(world.getState(Math.floor(this.x),Math.floor(this.y),Math.floor(this.z))),under=getBlock(world.getState(Math.floor(this.x),Math.floor(this.y-.5000001),Math.floor(this.z)));
+    const honeyFactor=honeyMovementFactor(feet?.name==='honey_block'?feet.name:under?.name);
+    this.motionX*=honeyFactor;this.motionZ*=honeyFactor;
   }
 
-  jump() {
-    this.motionY = 0.41999998688697815; // getJumpUpwardsMotion() = 0.42F
+  jump(world) {
+    const at=world&&getBlock(world.getState(Math.floor(this.x),Math.floor(this.y),Math.floor(this.z))),under=world&&getBlock(world.getState(Math.floor(this.x),Math.floor(this.y-.5000001),Math.floor(this.z)));
+    this.motionY = Math.fround(0.41999998688697815*honeyJumpFactor(at?.name==='honey_block'?at.name:under?.name)); // getJumpUpwardsMotion() = 0.42F
     if (this.jumpBoost >= 0) this.motionY += Math.fround((this.jumpBoost + 1) * F.p01);
     if (this.sprinting) {
       const f = Math.fround(Math.fround(this.yaw) * F.deg);
@@ -824,7 +830,7 @@ export class LocalPlayer {
     if(this.inWater&&sneakKey&&!this.flying)this.motionY-=f32(0.04);
     if (jump) {
       if (this.inWater || this.isInLava(world)) this.motionY += 0.03999999910593033; // handleJumpWater / Lava: 0.04F
-      else if (this.onGround && this.jumpTicks === 0) { this.jump(); this.jumpTicks = 10; }
+      else if (this.onGround && this.jumpTicks === 0) { this.jump(world); this.jumpTicks = 10; }
     } else {
       this.jumpTicks = 0;
     }

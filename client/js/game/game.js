@@ -1,3 +1,5 @@
+import {zoomFov,smoothCameraActive} from './zoom.js';
+import {captureText} from '../debug/text-capture.js';
 import {pushLocalPlayer} from './entity-pushing.js';
 import {ShaderPackFinal} from '../render/shader-pack.js';
 import {CameraEye} from '../render/camera-eye.js';
@@ -602,11 +604,17 @@ export class Game {
   // EntityPlayer.canUseCommandBlock: creative and op level 2
   canUseCommandBlock() { return this.gameMode === 1 && (this.permissionLevel | 0) >= 2; }
 
+  updateWindowTitle(){
+    const base=this.assets.translate('minecraftjs.version');
+    platform().setTitle?.(base+(this.inWorld?' - '+this.assets.translate('title.multiplayer.other'):''));
+  }
+
   leaveWorld() {
     this.structureBlocks.clear();
     this.jigsawBlocks.clear();
     if (this.tutorial) this.tutorial.stop();
     this.inWorld = false;
+    this.updateWindowTitle?.();
     this.connected = false;
     this.world.clear();
     this._resetMeshing();
@@ -693,8 +701,10 @@ export class Game {
     this.levelType = p.levelType;
     this.reducedDebug = p.reducedDebugInfo;
     this.world.setDimension(p.dimension);
+    this.world.setBiomeSeed?.(p.hashedSeed);
     this.applyGameMode();
     this.inWorld = true;
+    this.updateWindowTitle?.();
     this.sendSettings();
     this.send(C.customPayload('minecraft:brand', new Writer().string('vanilla').build()));
   }
@@ -713,6 +723,8 @@ export class Game {
     if (gm === 3) p.flying = true;
     if (gm === 0 || gm === 2) p.flying = false;
   }
+
+  captureText(options) { return captureText(this,options); }
 
   on_chat(p) {
     const text = chatToLegacy(p.message);
@@ -764,6 +776,7 @@ export class Game {
     }
     this.dimension = p.dimension;
     this.world.setDimension(p.dimension);
+    this.world.setBiomeSeed?.(p.hashedSeed);
     if(p.difficulty!==undefined)this.difficulty = p.difficulty;
     if (this.gameMode !== (p.gamemode)) this.previousGameMode = this.gameMode;
     this.gameMode = p.gamemode;
@@ -782,8 +795,8 @@ export class Game {
     if (p.flags & 1) x += pl.x; else pl.motionX = 0;
     if (p.flags & 2) y += pl.y; else pl.motionY = 0;
     if (p.flags & 4) z += pl.z; else pl.motionZ = 0;
-    if (p.flags & 8) pitch = Math.fround(pitch + pl.pitch);
-    if (p.flags & 16) yaw = Math.fround(yaw + pl.yaw);
+    if (p.flags & 8) yaw = Math.fround(yaw + pl.yaw);
+    if (p.flags & 16) pitch = Math.fround(pitch + pl.pitch);
     // Entity.setPositionAndRotation: x / z clamped to the world, pitch to +-90, then setRotation keeps angle % 360
     x = Math.max(-3e7, Math.min(3e7, x)); z = Math.max(-3e7, Math.min(3e7, z));
     pitch = Math.max(-90, Math.min(90, pitch));
@@ -856,6 +869,7 @@ export class Game {
   on_entity_status(p) {
     if (p.entityId === this.entityId) {
       if (p.entityStatus === 2) { this.hurtTime = 10; this.sound.playAtPlayer('entity.player.hurt', 1, 1); }
+      else if(p.entityStatus===53||p.entityStatus===54)this.particles.honeyBlockEffect(this.player,p.entityStatus===53?5:10);
       else if (p.entityStatus === 9) this.player.usingItem = false; // item use finished
       else if (p.entityStatus === 22) this.reducedDebug = true;
       else if (p.entityStatus === 23) this.reducedDebug = false;
@@ -1419,7 +1433,7 @@ export class Game {
 
   tick() {
     this.ticks++;
-    if (this.smoothCamera && this._smoothCam) {
+    if (smoothCameraActive(this) && this._smoothCam) {
       // EntityRenderer.updateRenderer: MouseFilter.smooth(accumulated, 0.05 * f)
       const sc = this._smoothCam;
       const s = this.settings.sensitivity * 0.6 + 0.2, f = s * s * s * 8;
@@ -1724,7 +1738,7 @@ export class Game {
       const s = this.settings.sensitivity * 0.6 + 0.2;
       const f = s * s * s * 8;
       let dx = mdx * f * 0.15, dy = mdy * f * 0.15 * (this.settings.invertMouse ? -1 : 1);
-      if (this.smoothCamera) {
+      if (smoothCameraActive(this)) {
         // EntityRenderer: accumulate input, filtered once per tick and spread over the frames of that tick
         const sc = this._smoothCam || (this._smoothCam = { yaw: 0, pitch: 0, fx: 0, fy: 0, partial: 0 });
         sc.yaw += mdx * f; sc.pitch += mdy * f * (this.settings.invertMouse ? -1 : 1);
@@ -1865,6 +1879,7 @@ export class Game {
     const portal = this.prevPortalTime + (this.portalTime - this.prevPortalTime) * partial;
     if (portal > 0) fov += portal * 10 * Math.sin(this.ticks * 0.15);
 
+    fov = zoomFov(this,fov);
     r.renderDistance = this.settings.renderDistance;
     r.setCamera(ex, ey, ez, camYaw, camPitch, roll, fov, pre);
     const temp = biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).temperature;
@@ -1899,9 +1914,7 @@ export class Game {
     this.profiler.endStart('gui');
     gui.begin();
     this._drawSuperSecret(gui);
-    if (!this.hideGui || this.screens.current) {
-      this.hud.render(gui, partial, { underwater, inLava, portal });
-    }
+    this.hud.render(gui,partial,{underwater,inLava,portal});
     this.screens.render(gui, partial);
     if (!this.hideGui) this.hud.renderToast(gui); // GuiToast.drawToast: on top of every screen
     gui.end();

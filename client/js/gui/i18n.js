@@ -57,6 +57,7 @@ export const MINECRAFTJS_EN = {
   'minecraftjs.packs.defaultName': 'Default',
   'minecraftjs.packs.defaultDescription': 'The default look of MinecraftJS',
   'minecraftjs.loading': 'Loading...',
+  'minecraftjs.key.zoom': 'Zoom',
   'minecraftjs.key.hideGui': 'Hide GUI',
   'minecraftjs.deathScreen.spectate': 'Spectate world',
   'options.advancedTooltips': 'Advanced Tooltips',

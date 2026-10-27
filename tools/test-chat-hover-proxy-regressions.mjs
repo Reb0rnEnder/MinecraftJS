@@ -47,8 +47,8 @@ test('typed hover SNBT preserves enchantment lists, escaped JSON names and legac
 });
 
 test('show_item uses the existing item tooltip, including enchantments and lore, and handles invalid data',()=>{
- const g=game(),enchant=['1.13.2','1.14.4'].includes(version)?'Enchantments:[{id:"minecraft:sharpness",lvl:3s}]':'ench:[{id:16s,lvl:3s}]';
- const lore=version==='1.14.4'?JSON.stringify(JSON.stringify('Hover description')):JSON.stringify('Hover description');
+ const g=game(),enchant=['1.13.2','1.14.4','1.15.2'].includes(version)?'Enchantments:[{id:"minecraft:sharpness",lvl:3s}]':'ench:[{id:16s,lvl:3s}]';
+ const lore=['1.14.4','1.15.2'].includes(version)?JSON.stringify(JSON.stringify('Hover description')):JSON.stringify('Hover description');
  const tooltip=chatHoverTooltip(g,{hover:{action:'show_item',value:{text:'{id:"minecraft:diamond_sword",Count:1b,tag:{'+enchant+',display:{Lore:['+lore+']}}}'}}});
  assert.ok(tooltip.some(s=>s.includes('Diamond Sword')),tooltip.join('\n'));assert.ok(tooltip.some(s=>s.includes('Sharpness III')),tooltip.join('\n'));assert.ok(tooltip.some(s=>s.includes('Hover description')));
  assert.deepEqual(chatHoverTooltip(g,{hover:{action:'show_item',value:'{id:"minecraft:missing"}'}}),['§cInvalid Item!']);

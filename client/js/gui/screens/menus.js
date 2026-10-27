@@ -25,6 +25,7 @@ export class TitleScreen extends Screen {
 
   init() {
     const g = this.game;
+    g.updateWindowTitle?.();
     const splashes = g.assets.splashes;
     if (!this.splash && splashes && splashes.length) {
       const d = new Date();
@@ -32,12 +33,12 @@ export class TitleScreen extends Screen {
       else if (d.getMonth() === 0 && d.getDate() === 1) this.splash = 'Happy new year!';
       else this.splash = splashes[Math.floor(Math.random() * splashes.length)];
     }
-    const cx = this.width / 2;
+    const cx = Math.floor(this.width / 2);
     const y = this.height / 4 + 48;
     const sp = new Button(1, cx - 100, y, 200, 20, tr('menu.singleplayer'));
     sp.enabled = false;
     this.buttons.push(sp);
-    this.buttons.push(new Button(2, cx - 100, y + 24, 200, 20, tr('menu.multiplayer'), () => g.screens.open(new MultiplayerScreen(g, this))));
+    this.buttons.push(new Button(2, cx - 100, y + 24, 200, 20, tr('menu.multiplayer'), () => openMultiplayer(g,this)));
     const realms = new Button(14, cx - 100, y + 48, 200, 20, tr('menu.online'));
     realms.enabled = false;
     this.buttons.push(realms);
@@ -136,6 +137,21 @@ export class TitleScreen extends Screen {
   key(e) { return false; }
 }
 
+// Java 1.15.2 SafetyScreen, using the target translations and checkbox sheet.
+export function openMultiplayer(game,parent){game.screens.open(game.settings.skipMultiplayerWarning?new MultiplayerScreen(game,parent):new MultiplayerSafetyScreen(game,parent));}
+export class MultiplayerSafetyScreen extends Screen {
+ constructor(game,parent){super(game);this.parent=parent;this.background='dirt';this.skip=false;}
+ init(){
+  this.lines=this.gui.font.wrap(tr('multiplayerWarning.message'),this.width-50);const offset=(this.lines.length+1)*9,left=this.width/2-155;
+  this.buttons.push(new Button(0,left,100+offset,150,20,tr('gui.proceed'),()=>{if(this.skip){this.game.settings.skipMultiplayerWarning=true;this.game.settings.save();}this.game.screens.open(new MultiplayerScreen(this.game,this.parent));}));
+  this.buttons.push(new Button(1,left+160,100+offset,150,20,tr('gui.back'),()=>this.close()));
+  const checkbox=new Button(2,left+80,76+offset,150,20,tr('multiplayerWarning.check'),()=>{this.skip=!this.skip;});
+  checkbox.render=(gui)=>{gui.blit('gui/checkbox.png',checkbox.x,checkbox.y,0,this.skip?20:0,20,20,32,64);gui.text(tr('multiplayerWarning.check'),checkbox.x+24,checkbox.y+6,0xe0e0e0,true);};this.buttons.push(checkbox);
+ }
+ renderContent(gui){gui.textCentered('§l'+tr('multiplayerWarning.header'),this.width/2,30,0xffffff,true);this.lines.forEach((line,i)=>gui.textCentered(line,this.width/2,70+i*9,0xffffff,true));}
+ close(){this.game.screens.open(this.parent);}
+}
+
 // GuiMultiplayer + ServerSelectionList (GuiListExtended) + ServerListEntryNormal / ServerListEntryLanScan
 export class MultiplayerScreen extends Screen {
   constructor(game, parent) {
@@ -149,7 +165,7 @@ export class MultiplayerScreen extends Screen {
 
   init() {
     const g = this.game;
-    const cx = this.width / 2;
+    const cx = Math.floor(this.width / 2);
     this.servers = g.settings.servers;
     const prevScroll = this.list ? this.list.amountScrolled : 0;
     this.list = new ServerList(this);
@@ -395,7 +411,7 @@ export class ServerEditScreen extends Screen {
 
   init() {
     const g = this.game;
-    const cx = this.width / 2;
+    const cx = Math.floor(this.width / 2);
     const srv = this.index !== null ? g.settings.servers[this.index] : null;
     const last = g.settings.lastServer;
     if (!this.direct) {
@@ -413,9 +429,9 @@ export class ServerEditScreen extends Screen {
         this.resourceMode = modes[(modes.indexOf(this.resourceMode) + 1) % modes.length];
       }));
     }
-    this.doneBtn = new Button(0, cx - 100, this.height / 4 + 96 + 18, 200, 20, this.direct ? tr('selectServer.select') : tr('addServer.add'), () => this.done());
+    this.doneBtn = new Button(0, cx - 100, this.height / 4 + 96 + (this.direct ? 12 : 18), 200, 20, this.direct ? tr('selectServer.select') : tr('addServer.add'), () => this.done());
     this.buttons.push(this.doneBtn);
-    this.buttons.push(new Button(1, cx - 100, this.height / 4 + 120 + 18, 200, 20, tr('gui.cancel'), () => g.screens.open(this.parent)));
+    this.buttons.push(new Button(1, cx - 100, this.height / 4 + 120 + (this.direct ? 12 : 18), 200, 20, tr('gui.cancel'), () => g.screens.open(this.parent)));
   }
 
   // Vanilla "host[:port]", or an Eaglercraft ws:// / wss:// address (stored as typed, port 0)
@@ -444,7 +460,7 @@ export class ServerEditScreen extends Screen {
 
   renderContent(gui) {
     this.doneBtn.enabled = !!this.parse();
-    gui.textCentered(this.direct ? tr('selectServer.direct') : tr('addServer.title'), this.width / 2, 17, 0xffffff);
+    gui.textCentered(this.direct ? tr('selectServer.direct') : tr('addServer.title'), this.width / 2, this.direct ? 20 : 17, 0xffffff);
     if (!this.direct) gui.text(tr('addServer.enterName'), this.width / 2 - 100, 53, 0xa0a0a0);
     gui.text(tr('addServer.enterIp'), this.width / 2 - 100, this.direct ? 100 : 94, 0xa0a0a0);
     const a = parseAddress(this.addrField.text);

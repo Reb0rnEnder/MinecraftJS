@@ -1,3 +1,4 @@
+import {tickBeeSound,stopBeeSound} from './bee-sound.js';
 import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.15.2.js';
 import {placeLeashKnot} from './leash-knot.js';
 import {NATIVE_METADATA} from './entity-metadata-1.14.4.js';
@@ -87,6 +88,7 @@ export class EntityManager {
   clear() {
     for (const e of this.map.values()) {
       this.game.entityRenderer.remove(e);
+      stopBeeSound(e);
       if (e.rollSound) e.rollSound.stop();
       if (e.insideSound) e.insideSound.stop();
     }
@@ -115,7 +117,7 @@ export class EntityManager {
   add(e) {
     if(e.kind==='leash')placeLeashKnot(e);
     const old = this.map.get(e.id);
-    if (old) this.game.entityRenderer.remove(old);
+    if (old) { stopBeeSound(old); this.game.entityRenderer.remove(old); }
     this.map.set(e.id, e);
   }
 
@@ -253,6 +255,7 @@ export class EntityManager {
       if (!e) continue;
       this.game.entityRenderer.remove(e);
       this.map.delete(id);
+      stopBeeSound(e);
       if (e.rollSound) e.rollSound.stop();
       if (e.insideSound) e.insideSound.stop();
       if (e.kind === 'fishhook') this.fishingCast = false;
@@ -368,7 +371,7 @@ export class EntityManager {
       // 17. Read the native snapshot; `m` below is the compatibility view
       // with the inherited 1.14.4 living-index shift applied.
       const flags=wire[WIRE_METADATA.bee.DATA_FLAGS_ID];
-      if(flags!==undefined){e.hasNectar=!!(flags&8);e.hasStung=!!(flags&4);}
+      if(flags!==undefined){e.hasNectar=!!(flags&8);e.hasStung=!!(flags&4);e.beeRolling=!!(flags&2);}
       if(wire[WIRE_METADATA.bee.ANGER_TIME]!==undefined){e.angerTime=wire[WIRE_METADATA.bee.ANGER_TIME];e.angry=e.angerTime>0;}
     }
     const set = (index, key) => { if (m[index] !== undefined) e[key] = m[index]; };
@@ -583,6 +586,7 @@ export class EntityManager {
       case 13: g.particles.entityEffect(e, 'angryVillager'); break;
       case 14: g.particles.entityEffect(e, 'happyVillager'); break;
       case 15: g.particles.entityEffect(e, 'witchMagic'); break;
+      case 53:case 54:g.particles.honeyBlockEffect(e,p.entityStatus===53?5:10);break;
       case 17: g.particles.fireworkExplode && g.particles.fireworkExplode(e); break;
       default: break;
     }
@@ -892,6 +896,7 @@ export class EntityManager {
       e.prevLimbSwingAmount = e.limbSwingAmount;
       e.prevSwingProgress = e.swingProgress;
       e.ticks++;
+      if(e.entityName==='bee'){tickBeeSound(this,e);e.prevBeeRoll=e.beeRoll||0;e.beeRoll=Math.fround(e.beeRolling?Math.min(1,Math.fround(e.prevBeeRoll+Math.fround(.2))):Math.max(0,Math.fround(e.prevBeeRoll-Math.fround(.24))));}
       if (e.boostedId && e.boostedId === g.entityId) this._fireworkBoost(e);
       if (e.entityName === 'firework_rocket') this._fireworkTick(e);
       if (e.pickup) {

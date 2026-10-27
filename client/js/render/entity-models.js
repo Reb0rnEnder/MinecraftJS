@@ -313,9 +313,13 @@ export function cat(){
 // Geometry, hierarchy and UVs come from the target BeeModel constructor.
 export function bee(){
   return jarAdapter('bee',['bone','body','rightWing','leftWing','frontLeg','midLeg','backLeg','stinger','leftAntenna','rightAntenna'],(m,a={})=>{
-    const p=m.parts;p.stinger.visible=!a.hasStung;
-    const flap=Math.cos((a.age||0)*2.1)*Math.PI*.15;
-    p.rightWing.rz=flap;p.leftWing.rz=-flap;
+    const p=m.parts,age=a.age||0,grounded=a.onGround&&(a.speedSq||0)<1e-7;
+    p.stinger.visible=!a.hasStung;p.rightWing.rx=0;p.leftWing.rx=0;p.leftAntenna.rx=p.rightAntenna.rx=0;p.bone.rx=0;p.bone.py=19;
+    if(grounded){p.rightWing.ry=-.2618;p.rightWing.rz=0;p.leftWing.ry=.2618;p.leftWing.rz=0;p.frontLeg.rx=p.midLeg.rx=p.backLeg.rx=0;}
+    else{p.rightWing.ry=p.leftWing.ry=0;p.rightWing.rz=Math.cos(age*2.1)*Math.PI*.15;p.leftWing.rz=-p.rightWing.rz;p.frontLeg.rx=p.midLeg.rx=p.backLeg.rx=.7853982;p.bone.ry=p.bone.rz=0;}
+    if(!a.angry){p.bone.rx=p.bone.ry=p.bone.rz=0;if(!grounded){const bob=Math.cos(age*.18);p.bone.rx=.1+bob*Math.PI*.025;p.leftAntenna.rx=p.rightAntenna.rx=bob*Math.PI*.03;p.frontLeg.rx=-bob*Math.PI*.1+.3926991;p.backLeg.rx=-bob*Math.PI*.05+.7853982;p.bone.py=19-bob*.9;}}
+    if(a.beeRoll>0)p.bone.rx+=(3.0915928-p.bone.rx)*a.beeRoll;
+
   });
 }
 export function fox(){

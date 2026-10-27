@@ -1,3 +1,4 @@
+import {nativeSkyLight} from './native-light.js';
 import {AIR_STATES_498} from './chunk-1.14.4.js';
 // Chunk storage: 16 sections of 16^3 flattened global block-state ids (1.13+),
 // nibble arrays for block light and sky light, and a 16x16 biome array.
@@ -74,7 +75,7 @@ export class Chunk {
   }
 
   getSkyLight(x, y, z) {
-    if(this.nativeLight){const a=this.nativeLight.sky[(y>>4)+1],i=((y&15)<<8)|(z<<4)|x;return a?(a[i>>1]>>((i&1)<<2))&15:y>255&&this.hasSky?15:0;}
+    if(this.nativeLight)return nativeSkyLight(this.nativeLight,x,y,z,this.hasSky);
     if(y<0)return 0;if(y>255)return this.hasSky?15:0;
     const s=this.sections[y>>4];return s?s.getSky(((y&15)<<8)|(z<<4)|x):this.hasSky?15:0;
   }
