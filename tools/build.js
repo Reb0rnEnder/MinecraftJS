@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+const {encodeBase85}=require('../lib/packed-html');
 // MinecraftJS build.
 //
 //   node tools/build.js assets         extract the game assets into client/assets/ (for running client/ as is)
@@ -250,8 +251,9 @@ function writeZip(files) {
   let offset = 0;
   for (const [name, data] of files) {
     const nameBuf = Buffer.from(name, 'utf8');
-    const store = /\.(ogg|png|bin)$/.test(name);
-    const body = store ? data : zlib.deflateRawSync(data, { level: 9 });
+    const candidate = /\.ogg$/.test(name)?data:zlib.deflateRawSync(data,{level:9});
+    const store = candidate===data || candidate.length+16>=data.length;
+    const body = store ? data : candidate;
     const crc = zlib.crc32(data);
     const lh = Buffer.alloc(30);
     lh.writeUInt32LE(0x04034b50, 0); lh.writeUInt16LE(20, 4); lh.writeUInt16LE(0x0800, 6);
@@ -298,6 +300,8 @@ async function buildHtml(opts) {
   const out = opts.out ? path.resolve(opts.out) : path.join(ROOT, 'dist', 'minecraftjs.html');
   console.log('Bundling code...');
   const js = await bundleJs();
+  const packedCode=zlib.gzipSync(Buffer.from(js),{level:9});
+  const bootstrap=(await require('esbuild').build({bundle:true,minify:true,write:false,target:'es2022',format:'esm',entryPoints:[path.join(CLIENT,'js/packed-bootstrap.js')],legalComments:'none'})).outputFiles[0].text;
   const css = fs.readFileSync(path.join(CLIENT, 'style.css'), 'utf8');
   const config = buildConfig(opts);
 
@@ -309,7 +313,7 @@ async function buildHtml(opts) {
     }
     const zip = writeZip(new Map([...files].sort((a, b) => (a[0] < b[0] ? -1 : 1))));
     console.log(`Embedded assets: ${(zip.length / 1048576).toFixed(1)} MB (${files.size} files)`);
-    assetsTag = `<script id="minecraftjs-assets" type="application/octet-stream">${zip.toString('base64')}</script>\n`;
+    assetsTag = `<script id="minecraftjs-assets" type="application/octet-stream" data-encoding="base85" data-bytes="${zip.length}">${encodeBase85(zip)}</script>\n`;
   }
 
   else {
@@ -331,7 +335,7 @@ async function buildHtml(opts) {
     .replace(/<script type="module" src="js\/main.js"><\/script>/, () =>
       (config ? `<script id="minecraftjs-config" type="application/json">${scriptSafe(JSON.stringify(config))}</script>\n` : '') +
       assetsTag +
-      `<script type="module">\n${scriptSafe(js)}\n</script>`);
+      `<script id="minecraftjs-code" type="application/octet-stream" data-bytes="${packedCode.length}">${encodeBase85(packedCode)}</script>\n<script type="module">\n${scriptSafe(bootstrap)}\n</script>`);
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, html);
   console.log(`Wrote ${path.relative(ROOT, out)} (${(html.length / 1048576).toFixed(1)} MB)`);
