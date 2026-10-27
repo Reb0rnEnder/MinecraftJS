@@ -122,18 +122,35 @@ export class SoundManager {
     return s.masterVolume * v;
   }
 
-  _pick(name) {
-    if (!this.defs) return null;
-    const d = this.defs[name];
-    if (!d || !d.sounds || !d.sounds.length) return null;
-    let total = 0;
-    const entries = d.sounds.map((s) => (typeof s === 'string' ? { name: s } : s));
-    for (const e of entries) total += e.weight || 1;
-    let r = Math.random() * total;
-    let pick = entries[0];
-    for (const e of entries) { r -= e.weight || 1; if (r < 0) { pick = e; break; } }
-    if (pick.type === 'event') return this._pick(pick.name);
-    return { file: pick.name, volume: pick.volume !== undefined ? pick.volume : 1, pitch: pick.pitch !== undefined ? pick.pitch : 1, stream: !!pick.stream };
+  _weight(name, seen = new Set()) {
+    name = String(name || '').replace(/^minecraft:/, '');
+    if (seen.has(name)) return 0;
+    const next = new Set(seen).add(name);
+    return (this.defs?.[name]?.sounds || []).reduce((sum, raw) => {
+      const e = typeof raw === 'string' ? { name: raw } : raw;
+      return sum + (e.type === 'event' ? this._weight(e.name, next) : e.weight ?? 1);
+    }, 0);
+  }
+
+  _pick(name, seen = new Set()) {
+    name = String(name || '').replace(/^minecraft:/, '');
+    if (seen.has(name)) return null;
+    const entries = this.defs?.[name]?.sounds;
+    if (!entries?.length) return null;
+    const next = new Set(seen).add(name), weighted = entries.map(raw => {
+      const e = typeof raw === 'string' ? { name: raw } : raw;
+      return [e, e.type === 'event' ? this._weight(e.name, next) : e.weight ?? 1];
+    });
+    const total = weighted.reduce((sum, [, weight]) => sum + weight, 0);
+    if (!total) return null;
+    let choice = Math.random() * total, pick;
+    for (const [entry, weight] of weighted) { choice -= weight; if (choice < 0) { pick = entry; break; } }
+    if (!pick) return null;
+    if (pick.type === 'event') {
+      const sound = this._pick(pick.name, next);
+      return sound ? { ...sound, volume: sound.volume * (pick.volume ?? 1), pitch: sound.pitch * (pick.pitch ?? 1), stream: sound.stream || !!pick.stream } : null;
+    }
+    return { file: pick.name, volume: pick.volume ?? 1, pitch: pick.pitch ?? 1, stream: !!pick.stream };
   }
 
   async _buffer(file) {
@@ -153,8 +170,9 @@ export class SoundManager {
     const cat = typeof opts.category === 'number' ? CATEGORIES[opts.category] || 'master' : opts.category || CATEGORY_OF(name);
     const catVol = this.volumeFor(cat);
     if (catVol <= 0) return null;
+    const generation = this.generation;
     const buf = await this._buffer(def.file);
-    if (!buf) return null;
+    if (!buf || generation !== this.generation) return null;
     const handle = { name, category: cat, onEnd: null };
     const voice = this.audio.play(buf, {
       volume: Math.min(1, volume) * def.volume * catVol,
@@ -189,6 +207,7 @@ export class SoundManager {
   }
 
   stopAll() {
+    this.generation = (this.generation || 0) + 1;
     for (const h of this.playing) h.voice.stop();
     this.playing.clear();
     if (this.music) { this.music.voice.stop(); this.music = null; }
@@ -225,12 +244,13 @@ export class SoundManager {
     const def = this._pick(name);
     if (!def) return null;
     const cat = opts.category || CATEGORY_OF(name);
+    const generation = this.generation;
     const buf = await this._buffer(def.file);
-    if (!buf) return null;
+    if (!buf || generation !== this.generation) return null;
     const base = def.volume * this.volumeFor(cat);
     const voice = this.audio.play(buf, { volume: 0, pitch: def.pitch, pos: opts.global ? null : [x, y, z], maxDistance: 16, loop: true });
     if (!voice) return null;
-    const handle = { name, category: cat, voice, base, stop: () => { voice.stop(); this.playing.delete(handle); }, setVolume: (v) => voice.setVolume && voice.setVolume(Math.min(1, v) * base), setPosition: (p) => voice.setPosition && voice.setPosition(p) };
+    const handle = { name, category: cat, voice, base, stop: () => { voice.stop(); this.playing.delete(handle); }, setVolume: (v) => voice.setVolume && voice.setVolume(Math.min(1, v) * base), setPosition: (p) => voice.setPosition && voice.setPosition(p), setPitch: (v) => voice.setPitch?.(Math.max(0.5, Math.min(2, v * def.pitch))) };
     this.playing.add(handle);
     return handle;
   }

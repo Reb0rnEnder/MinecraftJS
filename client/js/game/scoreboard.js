@@ -13,6 +13,7 @@ export class Scoreboard {
     this.teams = new Map(); // name -> { prefix, suffix, players:Set, color, nameTagVisibility, friendlyFire }
     this.playerTeam = new Map(); // player name -> team
     this.list = null; this.sidebar = null; this.belowName = null;
+    this.teamSidebars = Array(16).fill(null);
     this.header = ''; this.footer = '';
   }
 
@@ -37,7 +38,8 @@ export class Scoreboard {
     if (p.action === 0) this.objectives.set(p.objective, { displayName: p.displayText, type: p.type, scores: new Map() });
     else if (p.action === 1) {
       this.objectives.delete(p.objective);
-      if (this.sidebar === p.objective) this.sidebar = null;
+      if (this.defaultSidebar === p.objective) this.sidebar = null;
+      this.teamSidebars = this.teamSidebars.map(name => name === p.objective ? null : name);
       if (this.list === p.objective) this.list = null;
       if (this.belowName === p.objective) this.belowName = null;
     } else if (p.action === 2) {
@@ -61,8 +63,11 @@ export class Scoreboard {
     if (p.position === 0) this.list = name;
     else if (p.position === 1) this.sidebar = name;
     else if (p.position === 2) this.belowName = name;
-    else if (p.position >= 3) { if (p.position - 3 === this._myTeamColor()) this.sidebar = name; }
+    else if (p.position >= 3 && p.position < 19) this.teamSidebars[p.position - 3] = name;
   }
+
+  get sidebar() { return this.teamSidebars?.[this._myTeamColor()] || this.defaultSidebar; }
+  set sidebar(name) { this.defaultSidebar = name; }
 
   _myTeamColor() {
     const t = this.playerTeam.get(this.game.username);
@@ -72,6 +77,7 @@ export class Scoreboard {
   onTeam(p) {
     let t = this.teams.get(p.team);
     if (p.mode === 0) {
+      if (t) for (const n of t.players) if (this.playerTeam.get(n) === t) this.playerTeam.delete(n);
       t = { name: p.team, players: new Set() };
       this.teams.set(p.team, t);
     }
@@ -80,7 +86,7 @@ export class Scoreboard {
       t.displayName = p.displayName; t.prefix = p.prefix; t.suffix = p.suffix;
       t.collisionRule = p.collisionRule || 'always'; t.friendlyFire = p.friendlyFire; t.nameTagVisibility = p.nameTagVisibility; t.color = p.color;
     }
-    if (p.mode === 0 || p.mode === 3) for (const n of p.players) { t.players.add(n); this.playerTeam.set(n, t); }
+    if (p.mode === 0 || p.mode === 3) for (const n of p.players) { this.playerTeam.get(n)?.players.delete(n); t.players.add(n); this.playerTeam.set(n, t); }
     if (p.mode === 4) for (const n of p.players) { t.players.delete(n); if (this.playerTeam.get(n) === t) this.playerTeam.delete(n); }
     if (p.mode === 1) {
       for (const n of t.players) if (this.playerTeam.get(n) === t) this.playerTeam.delete(n);

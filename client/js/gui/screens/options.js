@@ -295,6 +295,7 @@ const KEY_BINDINGS = {
   chat: ['key.chat', 'key.categories.multiplayer'], playerlist: ['key.playerlist', 'key.categories.multiplayer'],
   pickItem: ['key.pickItem', 'key.categories.gameplay'], command: ['key.command', 'key.categories.multiplayer'],
   screenshot: ['key.screenshot', 'key.categories.misc'], perspective: ['key.togglePerspective', 'key.categories.misc'],
+  zoom: ['minecraftjs.key.zoom', 'key.categories.misc'],
   smoothCamera: ['key.smoothCamera', 'key.categories.misc'],
   swapHands: ['key.swapHands', 'key.categories.inventory'], advancements: ['key.advancements', 'key.categories.misc'],
   saveToolbarActivator: ['key.saveToolbarActivator', 'key.categories.creative'], loadToolbarActivator: ['key.loadToolbarActivator', 'key.categories.creative'],
