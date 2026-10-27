@@ -19,7 +19,7 @@ import { PROTOCOL_VERSION as GAME_PROTOCOL } from './packets.js';
 
 const BRAND = 'MinecraftJS';
 const VERSION = '1.14.4';
-const AUTH_NONE = 0, AUTH_PLAINTEXT = 3;
+const AUTH_NONE = 0, AUTH_PLAINTEXT = 255;
 
 class Emitter {
   constructor() { this.handlers = {}; }
@@ -75,6 +75,7 @@ const chatJson = (text) => JSON.stringify({ text });
 export class EaglerSocket extends Emitter {
   constructor(address) {
     super();
+    this.isEagler = true;
     this.address = address; // parseAddress() result with kind 'eagler'
     this.state = 'idle';    // idle -> version -> login -> profile -> finish -> play | closed
     this.sock = null;
@@ -156,6 +157,7 @@ export class EaglerSocket extends Emitter {
           if (this.password === null) { this._fail('This server needs a password: add it to the address as name:password@wss://...'); return; }
           if (auth !== AUTH_PLAINTEXT) { this._fail('This server uses an Eaglercraft password method MinecraftJS does not support yet'); return; }
           pass = encodeUtf8(this.password);
+          if(pass.length>255){this._fail('Eaglercraft password is too long (maximum 255 UTF-8 bytes)');return;}
         }
         this.state = 'login';
         this.sock.sendBinary(new Writer().byte(0x04).str8(this.username).str8('default').byte(pass.length).bytes(pass).done());
