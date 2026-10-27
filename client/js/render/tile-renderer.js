@@ -4,7 +4,7 @@ import { composeBanner, bannerLayers, buildBanner, bannerSwing } from './banner.
 import { Part, entityMaterial, entityMesh } from './boxmodel.js';
 import { blockModel } from './entity-models.js';
 import { buildTextMeshes, destroyTextMeshes } from './text-mesh.js';
-import { blocks, blocksByName, getBlock, getStateProperties } from '../world/blocks.js';
+import { blocks, blocksByName, getBlock, getStateProperties, findState } from '../world/blocks.js';
 import { colorParams, FORMAT } from '../gfx/device.js';
 import { D2R, aabbInFrustum } from '../gfx/math.js';
 import { Node, material } from '../gfx/scene.js';
@@ -634,8 +634,8 @@ export class TileEntityRenderer {
       else if (t.head && !t.extending) {
         // retracting base: the head slides in (short from half way), the base stays put, drawn extended
         const sticky = n === 'sticky_piston';
-        parts.push([(blocksByName.piston_head.id << 4) | t.facing | (sticky ? 8 : 0), { short: f >= 0.5 }, true]);
-        parts.push([t.state | 8, null, false]);
+        parts.push([findState('piston_head',{facing:['down','up','north','south','west','east'][t.facing],type:sticky?'sticky':'normal',short:'false'}), { short: f >= 0.5 }, true]);
+        parts.push([findState(n,{...getStateProperties(t.state),extended:'true'}),null,false]);
       } else parts.push([t.state, null, true]);
       const mk = parts.map((p) => p[0] + ':' + JSON.stringify(p[1])).join('|');
       if (o.key !== mk) {

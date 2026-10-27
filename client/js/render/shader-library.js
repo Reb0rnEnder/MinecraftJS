@@ -22,13 +22,14 @@ export class ShaderLibrary {
  }
  async select(id,{enabled=true}={}){
   if(id===null){++this.revision;this.pack.enabled=false;this.enabled=false;this.saveCurrent();return;}
+  if(id==='(internal)'){++this.revision;this.saveCurrent();this.pack.clear();this.selected=id;this.enabled=true;this.saveCurrent();return;}
   const entry=this.entries.find(e=>e.id===id);if(!entry)throw Error('Shader pack is no longer in the library');
   this.saveCurrent();const revision=++this.revision,bytes=await platform().files.get(entry.id);if(revision!==this.revision)return;
   if(!bytes?.length)throw Error('The saved shader ZIP is missing; import it again');
   this.pack.load(entry.name,bytes,entry.options,{restore:true});this.pack.enabled=enabled;this.selected=id;this.enabled=enabled;this.saveCurrent();
  }
- async remove(){
-  const id=this.selected;if(!id)return;const entry=this.entries.find(e=>e.id===id);if(!entry)return;
-  ++this.revision;await platform().files.delete(id);this.entries=this.entries.filter(e=>e.id!==id);this.selected=null;this.enabled=false;this.pack.clear();this.saveCurrent();
+ async remove(id=this.selected){
+  if(!id)return;const entry=this.entries.find(e=>e.id===id);if(!entry)return;
+  ++this.revision;await platform().files.delete(id);this.entries=this.entries.filter(e=>e.id!==id);if(this.selected===id){this.selected=null;this.enabled=false;this.pack.clear();}this.saveCurrent();
  }
 }

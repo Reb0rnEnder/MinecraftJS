@@ -38,7 +38,7 @@ export function decodePacket578(bytes){
   const oldId=IN498[name];
   if(oldId===undefined)return {name:'unsupported',packetName:name,id,data:r.rest()};
   const prefix=encodeVarInt(oldId),rest=bytes.subarray(r.offset),legacy=new Uint8Array(prefix.length+rest.length);legacy.set(prefix);legacy.set(rest,prefix.length);
-  const decoded=decodePacket498(legacy);return {...decoded,id,name};
+  const decoded=decodePacket498(legacy);return {...decoded,id};
 }
 
 function remapOutgoing(bytes){

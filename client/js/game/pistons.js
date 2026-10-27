@@ -148,7 +148,7 @@ export class Pistons {
 
   // TileEntityPiston.getCollisionRelatedBlockState: a retracting head collides as the piston head
   _collisionState(t) {
-    if (!t.extending && t.head) return blocksByName.piston_head.defaultState;
+    if (!t.extending && t.head) return pistonState('piston_head',t.facing,name(t.state)==='sticky_piston');
     return t.state;
   }
 
