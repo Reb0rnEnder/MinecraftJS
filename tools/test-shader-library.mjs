@@ -13,3 +13,10 @@ test('the previous single-pack save migrates without deleting its ZIP or duplica
  const library=make();await library.load();assert.equal(library.pack.name,'Existing.zip');assert.equal(library.entries.length,1);assert.equal(files.has('shaderpacks/final-stage'),true);
  const again=make();await again.load();assert.equal(again.entries.length,1);assert.equal(again.selected,library.selected);
 });
+test('internal renderer survives restart without requiring a ZIP or losing imported packs',async()=>{
+ const{make}=fixture(),library=make();const imported=await library.add('Saved.zip',bytes);await library.select('(internal)');assert.equal(library.enabled,true);assert.equal(library.pack.bytes,null);assert.equal(library.entries.length,1);
+ const restored=make();await restored.load();assert.equal(restored.selected,'(internal)');assert.equal(restored.enabled,true);assert.equal(restored.entries.length,1);await restored.select(imported.id);assert.equal(restored.pack.name,'Saved.zip');
+});
+test('removing an unselected imported ZIP does not stop or replace the active pack',async()=>{
+ const{make,files}=fixture(),library=make();const first=await library.add('First.zip',bytes),second=await library.add('Second.zip',bytes);await library.remove(first.id);assert.equal(library.pack.name,'Second.zip');assert.equal(library.selected,second.id);assert.equal(library.enabled,true);assert.equal(files.has(first.id),false);
+});

@@ -18,5 +18,5 @@ for(const name of readdirSync(new URL('../',import.meta.url)).filter(n=>/Sildur|
 });
 
 test('shader list keeps multiple packs and skips dirt overlays while a world is visible',()=>{
- for(const inWorld of [false,true]){const g=game();g.inWorld=inWorld;g.assets={texture:()=>null};g.shaderLibrary={entries:[{id:'a',name:'A.zip'},{id:'b',name:'B.zip'}],selected:'a',enabled:true};const s=new ShaderPacksScreen(g,{});s.init();assert.equal(s.list.size(),3);assert.equal(s.list.isSelected(1),true);let dirt=0;s.list._dirt({rect(){dirt++;}},32,60,32,0);assert.equal(dirt,inWorld?0:1);}
+ for(const inWorld of [false,true]){const g=game();g.inWorld=inWorld;g.assets={texture:()=>null};g.shaderLibrary={entries:[{id:'a',name:'A.zip'},{id:'b',name:'B.zip'}],selected:'a',enabled:true};const s=new ShaderPacksScreen(g,{});s.init();assert.equal(s.list.size(),4);assert.equal(s.list.isSelected(2),true);let dirt=0;s.list._dirt({rect(){dirt++;}},32,60,32,0);assert.equal(dirt,inWorld?0:1);}
 });
