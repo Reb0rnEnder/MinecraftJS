@@ -57,3 +57,9 @@ test('external config overrides embedded defaults and reaches the skin fetcher; 
   await fetchSkin(texture, uuid);
   assert.equal(requests.pop(), 'https://embedded.example/' + texture);
 });
+
+test('an explicit empty proxy list on a static site does not invent a proxy at that origin',async()=>{
+ const{defaultProxies}=await import('../client/js/net/proxies.js');setPlatform({originSocketUrl:()=> 'wss://static.example'});
+ assert.deepEqual(defaultProxies({proxies:[]}),[]);
+ assert.equal(defaultProxies({})[0].url,'wss://static.example');
+});

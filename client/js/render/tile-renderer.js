@@ -453,7 +453,7 @@ export class TileEntityRenderer {
         const type = t.data && t.data.SkullType !== undefined ? t.data.SkullType : 0;
         const rotN = t.data && t.data.Rot !== undefined ? t.data.Rot : 0;
         const tex = ['entity/skeleton/skeleton.png', 'entity/skeleton/wither_skeleton.png', 'entity/zombie/zombie.png', 'entity/steve.png', 'entity/creeper/creeper.png', 'entity/enderdragon/dragon.png'][type] || 'entity/skeleton/skeleton.png';
-        mat = entityMaterial(tex, { alphaTest: 0.1 });
+        mat = entityMaterial(type===3&&t.data?.SkullOwner?this.game.entityRenderer.skullTexture(t.data.SkullOwner):tex, { alphaTest: 0.1 });
         const model = skullModel(type, mat);
         const outer = new Node();
         if (meta === 1) { outer.position.set(0.5, 0, 0.5); outer.rotation.y = -(rotN * 360 / 16) * D2R; }

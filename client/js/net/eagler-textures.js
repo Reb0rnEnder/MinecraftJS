@@ -1,3 +1,4 @@
+import {nameUuid} from '../util/uuid-md5.js';
 import {EAGLER_SKINS,EAGLER_CAPES} from './eagler-presets.js';
 import {decodeBase64} from '../util/base64.js';
 import {decodePng} from '../util/png.js';
@@ -17,11 +18,11 @@ export function capePixelsV3(bytes){
  for(let y=0;y<11;y++)pixel(22,y+11,((y+6)*23+22)*3);return out;
 }
 export class EaglerTextures {
- constructor(game){this.game=game;this.records=new Map();this.presets=new Map();}
+ constructor(game){this.game=game;this.records=new Map();this.presets=new Map();this.urls=new Map();}
  get active(){return !!this.game.conn?.ws?.isEagler;}
  _dispose(uuid,record){for(const type of ['skin','cape']){const key='eagler-'+type+':'+uuid,texture=this.game.assets.textures?.get(key);if(texture){this.game.assets.device?.destroyTexture(texture);this.game.assets.textures.delete(key);}}}
- clear(){for(const [uuid,record]of this.records)this._dispose(uuid,record);this.records.clear();for(const key of this.presets.keys()){const texture=this.game.assets.textures?.get(key);if(texture){this.game.assets.device?.destroyTexture(texture);this.game.assets.textures.delete(key);}}this.presets.clear();}
- drop(uuid){const record=this.records.get(uuid);if(record){this._dispose(uuid,record);this.records.delete(uuid);}}
+ clear(){for(const [uuid,record]of this.records){this._dispose(uuid,record);this.game.entityRenderer._rebuild(uuid);}this.records.clear();this.urls.clear();this.game.handRenderer?.invalidateSkin();for(const key of this.presets.keys()){const texture=this.game.assets.textures?.get(key);if(texture){this.game.assets.device?.destroyTexture(texture);this.game.assets.textures.delete(key);}}this.presets.clear();}
+ drop(uuid){const record=this.records.get(uuid);if(record){this._dispose(uuid,record);this.records.delete(uuid);this.game.entityRenderer._rebuild(uuid);}}
  _preset(type,id){
   const entry=(type==='skin'?EAGLER_SKINS:EAGLER_CAPES).find(p=>p.id===id);if(!entry)return null;
   const key='eagler-preset-'+type+':'+id;let cached=this.presets.get(key);if(cached)return cached;
@@ -31,12 +32,21 @@ export class EaglerTextures {
  }
  request(uuid){
   if(!this.active||!validUuid(uuid))return null;uuid=uuid.toLowerCase();let record=this.records.get(uuid);if(record)return record;
-  if(this.records.size>=512){const [old,value]=this.records.entries().next().value;this._dispose(old,value);this.records.delete(old);}
+  if(this.records.size>=512){const [old,value]=this.records.entries().next().value;this._dispose(old,value);this.records.delete(old);this.game.entityRenderer._rebuild(old);}
   record={path:'entity/steve.png',slim:false,texture:null,legacy:false};this.records.set(uuid,record);
   const bytes=new Writer().u8(3).uuid(uuid).build();
   this.game.send(C.customPayload(PROTOCOL_VERSION>=393?'eagler:skins-1-8':'EAG|Skins-1.8',bytes));
   this.game.send(C.customPayload(PROTOCOL_VERSION>=393?'eagler:capes-1-8':'EAG|Capes-1.8',bytes));
   return record;
+ }
+ requestUrl(url){
+  if(!this.active||typeof url!=='string'||url.length>65535||/[^\x20-\x7e]/.test(url))return null;
+  try{if(!['http:','https:'].includes(new URL(url).protocol))return null;}catch{return null;}
+  let uuid=this.urls.get(url);if(!uuid){uuid=nameUuid(new TextEncoder().encode('EaglercraftSkinURL:'+url));if(this.urls.size>=512)this.urls.delete(this.urls.keys().next().value);this.urls.set(url,uuid);}let record=this.records.get(uuid);if(record)return record;
+  if(this.records.size>=512){const old=this.records.keys().next().value;this.drop(old);}
+  record={path:'entity/steve.png',slim:false,texture:null,legacy:false};this.records.set(uuid,record);
+  const bytes=new TextEncoder().encode(url),packet=new Writer().u8(6).uuid(uuid).u16(bytes.length).raw(bytes).build();
+  this.game.send(C.customPayload(PROTOCOL_VERSION>=393?'eagler:skins-1-8':'EAG|Skins-1.8',packet));return record;
  }
  handle(channel,bytes){
   const skin=channel==='EAG|Skins-1.8'||channel==='eagler:skins-1-8',cape=channel==='EAG|Capes-1.8'||channel==='eagler:capes-1-8';

@@ -150,6 +150,7 @@ export class ItemRenderer {
       const tag = this.game.items.nbt(item);
       k += ':' + JSON.stringify((tag && tag.BlockEntityTag) || null);
     }
+    if(item.id===397)k+=':'+JSON.stringify(this.game.items.nbt(item)?.SkullOwner||null);
     return k;
   }
 
@@ -336,7 +337,7 @@ export class ItemRenderer {
       const type = { skeleton: 0, wither: 1, zombie: 2, char: 3, creeper: 4, dragon: 5 }[which];
       // the skull node is in scale(-1, -1, 1) 1/16 units; this item space flips z instead of x
       const g = new Node();
-      const sk = skullModel(type, mat(texPath));
+      const sk = skullModel(type, mat(type===3&&this.game.items.nbt(item)?.SkullOwner?this.game.entityRenderer.skullTexture(this.game.items.nbt(item).SkullOwner):texPath));
       sk.scale.set(1, 1, 1); g.add(sk);
       g.scale.set(1 / 16, -1 / 16, -1 / 16);
       g.position.set(0.5, 0, 0.5);
