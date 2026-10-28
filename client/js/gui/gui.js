@@ -1,3 +1,4 @@
+import {VANILLA_UI} from './vanilla-layout.js';
 // 2D GUI layer rendered through the graphics device (vanilla-like drawing helpers).
 // Quads are accumulated for the whole frame and drawn in order at end() (one vertex upload per frame).
 import { FontRenderer } from './font.js';
@@ -274,7 +275,7 @@ export class Gui {
     const half = Math.floor(w / 2);
     this.blit('gui/widgets.png', x, y, 0, v, half, h);
     this.blit('gui/widgets.png', x + half, y, 200 - half, v, half, h);
-    const color = !enabled ? 0xa0a0a0 : hovered ? 0xffffa0 : 0xe0e0e0;
+    const color = !enabled ? 0xa0a0a0 : hovered ? VANILLA_UI.buttonText.hover : VANILLA_UI.buttonText.normal;
     this.textCentered(label, x + Math.floor(w / 2), y + Math.floor((h - 8) / 2), color, true);
   }
 }

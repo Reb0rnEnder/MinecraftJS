@@ -113,6 +113,7 @@ export class Game {
     this.screens = new ScreenManager(this);
     this.hud = new Hud(this);
     this.narrator = new Narrator(this);
+    this.gui.narrator=this.narrator;
     this.tutorial = new Tutorial(this);
     this.itemRenderer = new ItemRenderer(this);
     this.entityRenderer = new EntityRenderer(this);

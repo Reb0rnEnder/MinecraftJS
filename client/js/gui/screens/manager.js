@@ -39,7 +39,6 @@ export class Screen {
       if(!widgets.length)return false;
       const i=widgets.findIndex(w=>w.focused),next=(i+(e.shift?-1:1)+widgets.length)%widgets.length;
       widgets.forEach(w=>{w.focused=false;});this.focusedWidget=widgets[next];this.focusedWidget.focused=true;
-      if([1,3].includes(this.game.settings.narrator)){const w=this.focusedWidget,label=w.narration?.()||(typeof w.label==='function'?w.label():w.label)||w.text;this.game.narrator?.say(label);}
       return true;
     }
     for (const f of this.fields) if (f.key(e)) return true;
@@ -111,6 +110,8 @@ export class ScreenManager {
     if (size !== this.lastSize) { this.lastSize = size; s.onResize(); }
     const [mx, my] = this._mouse();
     s.render(gui, mx, my, partial);
+    for(const b of s.buttons)gui.narrator?.widget(b,b.hovered?.(mx,my)??false,typeof b.label==='function'?b.label():b.label);
+    for(const field of s.fields)gui.narrator?.widget(field,false,field.label||field.narrationLabel||'', 'editBox');
   }
 
   onKey(e) { if (this.current) this.current.key(e); }

@@ -50,10 +50,11 @@ export class TitleScreen extends Screen {
     const lang = new Button(5, cx - 124, y + 72 + 12, 20, 20, '', () => {
       import('./options.js').then((m) => g.screens.open(new m.LanguageScreen(g, this)));
     });
+    lang.narration=()=>tr('narrator.button.language');
     lang.render = (gui, mx, my) => gui.blit('gui/widgets.png', lang.x, lang.y, 0, lang.hovered(mx, my) ? 126 : 106, 20, 20);
     this.buttons.push(lang);
     const accessibility=new Button(6,cx+104,y+84,20,20,'',()=>import('./options.js').then(m=>g.screens.open(new m.AccessibilityScreen(g,this))));
-    accessibility.narration=()=>tr('options.accessibility.title');
+    accessibility.narration=()=>tr('narrator.button.accessibility');
     accessibility.render=(gui,mx,my)=>gui.blit('gui/accessibility.png',accessibility.x,accessibility.y,0,accessibility.focused||accessibility.hovered(mx,my)?20:0,20,20,32,64);
     this.buttons.push(accessibility);
     // Account manager (top right): current account's face and name
@@ -187,7 +188,9 @@ export class MultiplayerScreen extends Screen {
   }
 
   select(i) {
+    const changed=this.selected!==i;
     this.selected = i;
+    if(changed&&this.servers[i])this.game.narrator?.saySystem(tr('narrator.select',this.servers[i].name));
   }
 
   join() {
