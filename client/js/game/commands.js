@@ -1,3 +1,5 @@
+import {PROTOCOL_VERSION} from '../net/packets.js';
+import {parseSnbt} from '../net/snbt.js';
 // Client-side parsing of the server's Brigadier tree. Execution and permission checks stay on the server.
 const COLORS=['§b','§e','§a','§d','§6'];
 const COLOR_NAMES=['black','dark_blue','dark_green','dark_aqua','dark_red','dark_purple','gold','gray','dark_gray','blue','green','aqua','red','light_purple','yellow','white'];
@@ -24,6 +26,37 @@ function balanced(text,start) {
   if(quote||stack.length)return fail(start,'parsing.expected',[quote||stack.at(-1)]);
   return {end,value:text.slice(start,end)};
 }
+function nativeSnbt(value){
+ if(PROTOCOL_VERSION<477){let quoted=false,escaped=false;for(const c of value){if(quoted){if(escaped)escaped=false;else if(c==='\\')escaped=true;else if(c==='"')quoted=false;}else if(c==='"')quoted=true;else if(c==="'")throw Error('Single quotes require 1.14 SNBT');}}
+ return parseSnbt(value);
+}
+function splitOptions(value){
+ const out=[];let start=0,depth=0,quote=null,escape=false;
+ for(let i=0;i<value.length;i++){
+  const c=value[i];if(quote){if(escape)escape=false;else if(c==='\\')escape=true;else if(c===quote)quote=null;continue;}
+  if(c==='"'||c==="'"){quote=c;continue;}if(c==='{'||c==='[')depth++;else if(c==='}'||c===']')depth--;
+  else if(c===','&&!depth){out.push(value.slice(start,i));start=i+1;}
+ }out.push(value.slice(start));return out;
+}
+function selectorOptions(value){
+ const raw=value.includes('[')?value.slice(value.indexOf('[')+1,-1):'',options={};
+ for(const part of splitOptions(raw)){
+  if(!part.trim())continue;
+  const at=part.indexOf('='),key=part.slice(0,at).trim(),v=part.slice(at+1).trim();
+  if(key==='predicate'&&PROTOCOL_VERSION<573)return null;
+  if(at<0||!['x','y','z','dx','dy','dz','distance','x_rotation','y_rotation','limit','sort','level','gamemode','name','team','type','tag','nbt','scores','advancements','predicate'].includes(key)||!v)return null;
+  if(options[key]&&!['tag','nbt','predicate'].includes(key)&&!(['name','team','type','gamemode'].includes(key)&&options[key].every(p=>p.startsWith('!'))))return null;
+  if(key==='limit'&&(!/^\d+$/.test(v)||Number(v)<1||Number(v)>2147483647))return null;
+  if(key==='sort'&&!['nearest','furthest','random','arbitrary'].includes(v))return null;
+  if(key==='gamemode'&&!['survival','creative','adventure','spectator'].includes(v.replace(/^!/,'')))return null;
+  if(['x','y','z','dx','dy','dz'].includes(key)&&!numeric(v))return null;
+  if(['distance','level','x_rotation','y_rotation'].includes(key)){
+   const range=v.split('..');if(range.length>2||range.every(n=>!n)||range.some(n=>n&&!numeric(n,key==='level'))||range.length===2&&range.every(Boolean)&&Number(range[0])>Number(range[1]))return null;
+   if(['distance','level'].includes(key)&&range.some(n=>n&&Number(n)<0))return null;
+  }
+  (options[key]||=[]).push(v);
+ }return options;
+}
 const numeric=(value,integer=false)=>integer?/^-?\d+$/.test(value):/^-?(?:\d+(?:\.\d*)?|\.\d+)$/.test(value);
 export class CommandTree {
   constructor(packet,game) { this.nodes=packet.nodes;this.root=packet.root;this.game=game; }
@@ -45,6 +78,15 @@ export class CommandTree {
       if(p.mode===1){if(value.startsWith('"')){try{JSON.parse(value);}catch{return fail(start,'parsing.quote.expected.end');}}else if(!/^[0-9A-Za-z_+.-]+$/.test(value))return fail(start);}
       return {end};
     }
+    if(['minecraft:nbt','minecraft:nbt_compound_tag','minecraft:nbt_tag'].includes(parser)){
+      try{const tag=nativeSnbt(value);if(parser!=='minecraft:nbt_tag'&&tag.t!==10)return fail(start);}catch{return fail(start,'argument.nbt.invalid');}
+    }
+    if(parser==='minecraft:time'){
+      const match=value.match(/^(-?(?:\d+(?:\.\d*)?|\.\d+))([dst]?)$/);
+      if(!match)return fail(start,'argument.time.invalid_unit');
+      const ticks=Math.round(Number(match[1])*({d:24000,s:20,t:1,'':1}[match[2]]));
+      if(ticks<0)return fail(start,'argument.time.invalid_tick_count',[ticks]);
+    }
     if(parser==='minecraft:component'){try{if(JSON.parse(value)===null)return fail(start);}catch{return fail(start,'argument.component.invalid',[value]);}}
     if(['brigadier:integer','brigadier:float','brigadier:double'].includes(parser)) {
       const integer=parser==='brigadier:integer',type=integer?'int':parser.slice(10),number=Number(value);
@@ -63,15 +105,18 @@ export class CommandTree {
         const relative=/^[~^]/.test(value),n=relative?value.slice(1):value;
         if((value.startsWith('^')!==local)||(local&&parser!=='minecraft:vec3'&&parser!=='minecraft:block_pos')||n!==''&&!numeric(n,parser==='minecraft:block_pos'&&!relative))return fail(start,'argument.pos.mixed');
         if(!relative&&!n)return fail(start);
+        if(parser==='minecraft:block_pos'&&!relative&&(Number(n)<-2147483648||Number(n)>2147483647))return fail(start);
       }
       return {end};
     }
     if(parser==='minecraft:entity'||parser==='minecraft:game_profile'||parser==='minecraft:score_holder') {
       if(value.startsWith('@')){
         if(!/^@[pares](?:\[.*\])?$/.test(value))return fail(start,'argument.entity.selector.unknown',[value.slice(0,2)]);
-        if(parser==='minecraft:entity'&&(p.flags&1)&&/^@[ae]/.test(value)&&!/(?:^|,)limit=1(?:,|\])/.test(value.slice(3)))return fail(start,'argument.entity.toomany');
-        if(parser==='minecraft:entity'&&(p.flags&2)&&/^@e/.test(value)&&!/(?:\[|,)type=(?:minecraft:)?player(?:,|\])/.test(value))return fail(start,'argument.player.entities');
-      } else if(/\s/.test(value)||!value)return fail(start);
+        const options=selectorOptions(value);if(!options)return fail(start,'argument.entity.options.invalid');
+        const limit=Number(options.limit?.[0]??(/^@[ae]/.test(value)?Infinity:1));
+        if(parser==='minecraft:entity'&&(p.flags&1)&&limit>1)return fail(start,'argument.entity.toomany');
+        if(parser==='minecraft:entity'&&(p.flags&2)&&/^@e/.test(value)&&!['player','minecraft:player'].includes(options.type?.[0]))return fail(start,'argument.player.entities');
+      } else if(!(parser==='minecraft:score_holder'&&value==='*')&&!/^[0-9A-Za-z_+.-]+$/.test(value))return fail(start);
       return {end};
     }
     if(parser==='minecraft:int_range'||parser==='minecraft:float_range') {
@@ -84,9 +129,35 @@ export class CommandTree {
       'minecraft:scoreboard_slot':['list','sidebar','belowName',...COLOR_NAMES.map(n=>'sidebar.team.'+n)],
     }[parser];
     if(choices&&!choices.includes(value))return fail(start,{'minecraft:color':'argument.color.invalid','minecraft:entity_anchor':'argument.anchor.invalid','minecraft:operation':'arguments.operation.invalid','minecraft:scoreboard_slot':'argument.scoreboardDisplaySlot.invalid'}[parser],[value]);
+    if(parser==='minecraft:item_slot'){
+      const fixed=['weapon','weapon.mainhand','weapon.offhand','armor.head','armor.chest','armor.legs','armor.feet','horse.saddle','horse.armor','horse.chest'];
+      const match=value.match(/^(container|hotbar|inventory|enderchest|villager|horse)\.(\d+)$/),sizes={container:54,hotbar:9,inventory:27,enderchest:27,villager:8,horse:15};
+      if(!fixed.includes(value)&&(!match||Number(match[2])>=sizes[match[1]]))return fail(start,'slot.unknown',[value]);
+    }
+    if(parser==='minecraft:objective_criteria'){
+      const names=['dummy','trigger','deathCount','playerKillCount','totalKillCount','health','food','air','armor','xp','level',...COLOR_NAMES.flatMap(c=>['teamkill.'+c,'killedByTeam.'+c])];
+      if(!names.includes(value)&&!/^minecraft\.(?:mined|crafted|used|broken|picked_up|dropped|killed|killed_by|custom):[a-z0-9_.]+(?:\.[a-z0-9_]+)+$/.test(value))return fail(start,'argument.criteria.invalid',[value]);
+    }
+    if(parser==='minecraft:nbt_path'){
+      let quote=null;
+      for(let i=0;i<value.length;i++){
+        if(quote){if(value[i]==='\\')i++;else if(value[i]===quote)quote=null;continue;}
+        if(value[i]==='"'||value[i]==="'"){quote=value[i];continue;}
+        if(value[i]==='['){let end=i+1,depth=1,q=null;
+          for(;end<value.length;end++){const c=value[end];if(q){if(c==='\\')end++;else if(c===q)q=null;}else if(c==='"'||c==="'")q=c;else if(c==='[')depth++;else if(c===']'&&!--depth)break;}
+          const part=value.slice(i+1,end).trim();
+          if(PROTOCOL_VERSION<477&&!/^-?\d+$/.test(part))return fail(start);
+          if(/^-?\d+$/.test(part)&&(Number(part)<-2147483648||Number(part)>2147483647))return fail(start);
+          if(part&&!/^-?\d+$/.test(part)){try{if(nativeSnbt(part).t!==10)return fail(start);}catch{return fail(start);}}
+          i=end;
+        }
+      }
+    }
     if(parser==='minecraft:swizzle'&&(!/^[xyz]+$/.test(value)||new Set(value).size!==value.length))return fail(start,'arguments.swizzle.invalid');
     const kind={ 'minecraft:block_state':'blocks','minecraft:block_predicate':'blocks','minecraft:item_stack':'items','minecraft:item_predicate':'items','minecraft:entity_summon':'entities','minecraft:mob_effect':'effects','minecraft:item_enchantment':'enchantments'}[parser];
     if(kind) {
+      const nbt=value.indexOf('{');if(nbt>=0){try{if(nativeSnbt(value.slice(nbt)).t!==10)return fail(start);}catch{return fail(start);}}
+
       const id=value.split(/[\[{]/,1)[0],tag=id.startsWith('#'),name=normalize(tag?id.slice(1):id),registry=this.registry(kind);
       if(!/^(?:[a-z0-9_.-]+:)?[a-z0-9_./-]+$/.test(tag?id.slice(1):id))return fail(start);
       if(tag){if(!parser.endsWith('_predicate')||!this.game.tags?.names(kind).includes(name))return fail(start,'arguments.block.tag.unknown',[name]);}
@@ -105,7 +176,9 @@ export class CommandTree {
       const id=value.startsWith('#')?value.slice(1):value;if(!/^(?:[a-z0-9_.-]+:)?[a-z0-9_./-]+$/.test(id))return fail(start);
     }
     if(parser==='minecraft:particle') {
-      const id=normalize(value),extra=id==='minecraft:dust'?['brigadier:float','brigadier:float','brigadier:float','brigadier:float']:['minecraft:block','minecraft:falling_dust'].includes(id)?['minecraft:block_state']:id==='minecraft:item'?['minecraft:item_stack']:[];
+      const id=normalize(value),particles=this.registry('particles');
+      if(particles.length&&!particles.includes(id))return fail(start,'particle.notFound',[id]);
+      const extra=id==='minecraft:dust'?['brigadier:float','brigadier:float','brigadier:float','brigadier:float']:['minecraft:block','minecraft:falling_dust'].includes(id)?['minecraft:block_state']:id==='minecraft:item'?['minecraft:item_stack']:[];
       for(const parser of extra){if(text[end]!==' ')return fail(start);while(text[end]===' ')end++;const part=this.argument({parser},text,end);if(part.error)return part;end=part.end;}
     }
     return {end};
@@ -121,17 +194,26 @@ export class CommandTree {
       const literal=children.find(i=>this.nodes[i]?.type===1&&word(text,pos).value===this.nodes[i].name);
       const choices=literal===undefined?children.filter(i=>this.nodes[i]?.type===2):[literal];
       let best={cursor:pos,spans,edges,node:target,error:{start:pos,key:target===this.root?'command.unknown.command':'command.unknown.argument',args:[]},completion:context};
+      const potentials=[];
       for(const childId of choices) {
         const child=this.nodes[childId],part=child.type===1?{end:pos+child.name.length}:this.argument(child,text,pos);
         if(part.error){if(part.error.key!=='command.unknown.argument')best={...best,error:part.error};continue;}
         const nextSpans=child.type===2?[...spans,{start:pos,end:part.end,color:COLORS[color%COLORS.length]}]:spans;
         const nextEdges=[...edges,{parent:target,start:pos,end:part.end,node:childId}];
         if(part.end<text.length&&text[part.end]!==' ')continue;
-        const next=part.end<text.length?part.end+1:part.end;
-        const candidate=visit(childId,next,nextSpans,nextEdges,depth+1,child.redirect!==undefined?0:color+(child.type===2?1:0));
-        if(candidate.cursor>best.cursor||candidate.cursor===best.cursor&&(!candidate.error&&best.error||!candidate.incomplete&&best.incomplete))best=candidate;
+        const remaining=text.length-part.end;
+        if(remaining>=(child.redirect===undefined?2:1)){
+          potentials.push(visit(childId,part.end+1,nextSpans,nextEdges,depth+1,child.redirect!==undefined?0:color+(child.type===2?1:0)));
+        } else {
+          const candidate={cursor:part.end,spans:nextSpans,edges:nextEdges,node:childId,incomplete:!child.executable,hasExceptions:false};
+          if(remaining)Object.assign(candidate,{error:{start:part.end,key:'command.unknown.argument',args:[]},completion:{node:childId,start:part.end+1}});
+          potentials.push(candidate);
+        }
       }
-      return best;
+      // Brigadier compares consumed input, then empty exception maps, and keeps
+      // insertion order for ties. It does not choose the furthest failed branch.
+      potentials.sort((a,b)=>(a.cursor<text.length)-(b.cursor<text.length)||(!!a.hasExceptions)-(!!b.hasExceptions));
+      return potentials[0]||{...best,hasExceptions:true};
     };
     const result=visit(this.root,start,[],[],0,0);
     if(result.error)result.cursor=result.error.start;

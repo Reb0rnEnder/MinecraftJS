@@ -985,7 +985,7 @@ export class EntityRenderer {
     const list = [...g.entities.all()];
     const self = g.entities.self;
     if (self) {
-      if (g.thirdPerson > 0 && g.cameraEntity == null) list.push(self);
+      if ((g.thirdPerson > 0 || g.sleeping) && g.cameraEntity == null) list.push(self);
       else { const sv = this.visuals.get(-1); if (sv) sv.root.visible = false; }
     }
     this.glints = [];

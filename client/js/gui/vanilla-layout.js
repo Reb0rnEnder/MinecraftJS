@@ -89,5 +89,24 @@ export const VANILLA_UI = {
     "listTop": 43,
     "bottomMargin": 32,
     "rowHeight": 20
+  },
+  "chatOptions": [
+    "options.chat.visibility",
+    "options.chat.color",
+    "options.chat.links",
+    "options.chat.links.prompt",
+    "options.chat.opacity",
+    "options.accessibility.text_background_opacity",
+    "options.chat.scale",
+    "options.chat.width",
+    "options.chat.height.focused",
+    "options.chat.height.unfocused",
+    "options.reducedDebugInfo",
+    "options.autoSuggestCommands",
+    "options.narrator"
+  ],
+  "buttonText": {
+    "normal": 16777215,
+    "hover": 16777215
   }
 };

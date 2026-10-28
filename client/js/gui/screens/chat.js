@@ -38,6 +38,7 @@ export class ChatScreen extends Screen {
       focused: true,
       onChange: () => { if (!this.applyingTab) this.requestSuggestions(); },
     });
+    f.narrationLabel=tr('chat.editBox');
     this.input = f;
     this.fields.push(f);
     f.formatter = (text,offset) => this.game.commands ? this.game.commands.format(text,offset,this.input.text,!this.commandOnly) : text;
@@ -62,7 +63,7 @@ export class ChatScreen extends Screen {
       const moved = mx !== this.tabMouseX || my !== this.tabMouseY;
       this.tabMouseX = mx; this.tabMouseY = my;
       const hoverRow = this._suggestionRow(mx, my);
-      if (moved && hoverRow >= 0) { this.tabIndex = hoverRow; this.tabApplied = false; }
+      if (moved && hoverRow >= 0) { if(this.tabIndex!==hoverRow)this._selectTab(hoverRow);this.tabApplied = false; }
       gui.rect(x, y, x + width, y + rows * 12, 0xd0000000);
       if (this.tabOffset > 0 || this.tabOffset + rows < this.tabMatches.length) {
         gui.rect(x, y - 1, x + width, y, 0xd0000000);
@@ -114,6 +115,7 @@ export class ChatScreen extends Screen {
 
   _selectTab(index) {
     this.tabIndex = (index + this.tabMatches.length) % this.tabMatches.length;
+    this._narrateSuggestion();
     const rows = Math.min(10, this.tabMatches.length);
     if (this.tabIndex < this.tabOffset) this.tabOffset = this.tabIndex;
     if (this.tabIndex >= this.tabOffset + rows) this.tabOffset = this.tabIndex - rows + 1;
@@ -181,6 +183,7 @@ export class ChatScreen extends Screen {
     this.waitingTab = false;
     const isCommand = this.commandOnly || text.startsWith('/');
     this.commandState = isCommand && g.commands ? g.commands.parse(this.input.text,!this.commandOnly) : null;
+    if(!fromTab&&g.settings.autoSuggestCommands===false)return;
     if (!isCommand) {
       if (fromTab) {
         const result=playerSuggestions(g,this.input.text,this.input.cursor);
@@ -226,9 +229,16 @@ export class ChatScreen extends Screen {
     this._showMatches(matches);
   }
 
+  _narrateSuggestion(){
+    const suggestion=this.tabMatches?.[this.tabIndex];if(!suggestion)return;
+    const tooltip=suggestion.tooltip?chatToPlain(suggestion.tooltip):null;
+    this.game.narrator?.saySystem(tr(tooltip?'narration.suggestion.tooltip':'narration.suggestion',this.tabIndex+1,this.tabMatches.length,this._matchText(this.tabIndex),...(tooltip?[tooltip]:[])));
+  }
+
   _showMatches(matches) {
     this.tabMatches = matches.length ? matches : null;
     this.tabIndex=0;this.tabOffset=0;
+    this._narrateSuggestion();
     this.tabMouseX=this.tabMouseY=undefined;
     this.tabApplied=false;
   }
@@ -253,6 +263,9 @@ export class ChatScreen extends Screen {
       if (comp && comp.click) {
         const c = comp.click;
         if (c.action === 'open_url') {
+          if(this.game.settings.chatLinks===false)return false;
+          if(!/^https?:\/\//i.test(c.value))return false;
+          if(this.game.settings.chatLinksPrompt===false){platform().openUrl(c.value);return true;}
           this.game.screens.open(new ConfirmLinkScreen(this.game, this, c.value));
         } else if (c.action === 'run_command') {
           this.game.send(C.chat(c.value));
