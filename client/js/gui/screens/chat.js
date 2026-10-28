@@ -106,6 +106,9 @@ export class ChatScreen extends Screen {
       if (comp && comp.click) {
         const c = comp.click;
         if (c.action === 'open_url') {
+          if(this.game.settings.chatLinks===false)return false;
+          if(!/^https?:\/\//i.test(c.value))return false;
+          if(this.game.settings.chatLinksPrompt===false){platform().openUrl(c.value);return true;}
           this.game.screens.open(new ConfirmLinkScreen(this.game, this, c.value));
         } else if (c.action === 'run_command') {
           this.game.send(C.chat(c.value));

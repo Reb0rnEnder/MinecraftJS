@@ -14,6 +14,10 @@ export function startSleeping(game, pos) {
   pl.prevX=pl.x;pl.prevY=pl.y;pl.prevZ=pl.z;
   pl.motionX=pl.motionY=pl.motionZ=0;
 }
+export function stopSleeping(game){
+  game.sleeping=false;game.bedPos=null;const p=game.player;
+  p.sleeping=false;p.width=Math.fround(.6);p.height=Math.fround(1.8);p._bb=null;
+}
 export function sleepingCamera(game, partial) {
   if(!game.sleeping || game.cameraEntity!=null || game.debugCam)return null;
   const pl=game.player,facing=bedFacing(game),angle={south:0,west:90,north:180,east:270}[facing]||0;

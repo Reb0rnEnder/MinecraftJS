@@ -37,6 +37,8 @@ const DEFAULTS = {
   chatWidth: 1,
   chatVisibility: 0, // 0 shown, 1 commands only, 2 hidden
   chatColors: true,
+  chatLinks: true,
+  chatLinksPrompt: true,
   masterVolume: 1,
   soundVolumes: { music: 0, record: 1, weather: 1, block: 1, hostile: 1, neutral: 1, player: 1, ambient: 1, voice: 1 },
   showSubtitles: false,

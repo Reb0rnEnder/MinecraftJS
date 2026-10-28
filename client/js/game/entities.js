@@ -589,6 +589,7 @@ export class EntityManager {
     s.prevYaw = s.yaw; s.prevPitch = s.pitch; s.prevHeadYaw = s.headYaw; s.prevBodyYaw = s.bodyYaw;
     s.prevLimbSwingAmount = s.limbSwingAmount;
     s.x = pl.x; s.y = pl.y; s.z = pl.z;
+    s.sleeping=!!pl.sleeping;s.bedPos=g.bedPos;s.width=pl.width;s.height=pl.height;s.eyeHeight=pl.eyeHeight();
     s.yaw = pl.yaw; s.pitch = pl.pitch; s.headYaw = pl.yaw;
     s.sneaking = pl.sneaking && !pl.flying; s.onGround = pl.onGround;
     s.usingItem = pl.usingItem;
