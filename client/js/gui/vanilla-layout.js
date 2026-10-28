@@ -81,5 +81,11 @@ export const VANILLA_UI = {
     "options.accessibility.text_background",
     "options.chat.opacity",
     "options.autoJump"
-  ]
+  ],
+  "controlsLayout": {
+    "extraWidth": 45,
+    "listTop": 43,
+    "bottomMargin": 32,
+    "rowHeight": 20
+  }
 };
