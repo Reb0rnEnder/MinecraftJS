@@ -89,6 +89,7 @@ export class Settings {
     let saved = {};
     try { saved = JSON.parse((platform().loadSetting('minecraftjs.settings') || platform().loadSetting('minekampf.settings')) || '{}'); } catch (e) { saved = {}; }
     const defaults = JSON.parse(JSON.stringify(DEFAULTS));
+    defaults.touchscreen = platform().hasTouchscreen === true;
     if (Array.isArray(config.servers)) defaults.servers = configServers(config.servers);
     if (typeof config.skinProxy === 'string') defaults.skinProxy = config.skinProxy.trim();
     Object.assign(this, defaults, saved);
