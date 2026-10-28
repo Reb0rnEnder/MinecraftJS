@@ -1192,7 +1192,7 @@ export class EntityRenderer {
       const facing=bedFacing(g,e.bedPos || e.sleepingPosition);
       const dirs={south:[0,1,90],west:[-1,0,0],north:[0,-1,270],east:[1,0,180]};
       const d=dirs[facing],m=mat4.create();
-      if(d){const offset=(e.kind==='player'?1.62:e.height*.85)-.1;mat4.translate(m,m,-d[0]*offset,0,-d[1]*offset);}
+      if(d){const offset=(e.kind==='player'?1.62:(e.eyeHeight ?? e.height*.85))-.1;mat4.translate(m,m,-d[0]*offset,0,-d[1]*offset);}
       mat4.rotateY(m,m,(d?d[2]:body)*D2R);
       mat4.rotateZ(m,m,90*D2R);mat4.rotateY(m,m,270*D2R);
       v.yawGroup.matrix=m;
