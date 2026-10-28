@@ -1,3 +1,4 @@
+import {bedFacing} from '../game/bed-sleep.js';
 import {nameUuid} from '../util/uuid-md5.js';
 import {shadowGeometry} from './shadows.js';
 import { updateRiptide } from './riptide-layer.js';
@@ -955,7 +956,7 @@ export class EntityRenderer {
     const list = [...g.entities.all()];
     const self = g.entities.self;
     if (self) {
-      if (g.thirdPerson > 0 && g.cameraEntity == null) list.push(self);
+      if ((g.thirdPerson > 0 || g.sleeping) && g.cameraEntity == null) list.push(self);
       else { const sv = this.visuals.get(-1); if (sv) sv.root.visible = false; }
     }
     this.glints = [];
@@ -1085,7 +1086,7 @@ export class EntityRenderer {
     const age = e.ticks + partial;
     // riders get no limb swing; children swing three times as fast
     let ls = 0, lsa = 0;
-    if (e.riding < 0) {
+    if (e.riding < 0 && !e.sleeping) {
       lsa = Math.min(1, e.prevLimbSwingAmount + (e.limbSwingAmount - e.prevLimbSwingAmount) * partial);
       ls = e.limbSwing - e.limbSwingAmount * (1 - partial);
       if (e.child) ls *= 3;
@@ -1159,8 +1160,15 @@ export class EntityRenderer {
       mat4.rotateY(m, m, -75 * ((e.ticks || 0) + partial) * D2R);
       v.yawGroup.matrix = m;
     }
+    // Legacy RenderPlayer: a sleeping model is translated -1.8 along the
+    // bed before its horizontal rotation (modern LivingRenderer uses eye height).
+    if(e.sleeping){
+      const facing=bedFacing(g,e.bedPos),d={south:[0,1,90],west:[-1,0,0],north:[0,-1,270],east:[1,0,180]}[facing],m=mat4.create();
+      if(d)mat4.translate(m,m,-d[0]*1.8,0,-d[1]*1.8);
+      mat4.rotateY(m,m,(d?d[2]:body)*D2R);mat4.rotateZ(m,m,90*D2R);mat4.rotateY(m,m,270*D2R);v.yawGroup.matrix=m;
+    }
     let yOffset = 0;
-    if (e.kind === 'player' && e.sneaking) yOffset = -0.125;
+    if (e.kind === 'player' && e.sneaking && !e.sleeping) yOffset = -0.125;
     v.root.position.y += yOffset;
     v.scaleGroup.rotation.set(0, 0, -deathRot * D2R * (e.kind === 'mob' && (e.type === 52 || e.type === 59) ? 2 : 1));
     // Pre-render scaling
@@ -1219,7 +1227,7 @@ export class EntityRenderer {
     const speedSq = (e.motionX || 0) ** 2 + (e.motionY || 0) ** 2 + (e.motionZ || 0) ** 2;
     const args = {
       ls, lsa, age, yaw: head - body, pitch, swing: swing > 0 ? swing : -9999, partial,
-      sneak: !!e.sneaking, riding: e.riding >= 0,
+      sneak: !e.sleeping && !!e.sneaking, riding: e.riding >= 0,
       rightPose: skeletonAim ? 'bow' : primaryRight ? mainPose : offPose, leftPose: primaryRight ? offPose : mainPose,
       swingSide: ((e.swingHand || 0) === 0) === primaryRight ? 1 : -1,
       elytra: (e.elytraTicks || 0) > 4, speedSq,

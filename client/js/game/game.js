@@ -9,7 +9,7 @@ import {ShaderPackFinal} from '../render/shader-pack.js';
 import {CameraEye} from '../render/camera-eye.js';
 import { RegistryTags } from './tags.js';
 import { CommandTree } from './commands.js';
-import { startSleeping, sleepingCamera } from './bed-sleep.js';
+import { startSleeping, stopSleeping, sleepingCamera } from './bed-sleep.js';
 import { jarSelectionBox } from '../world/blocks.js';
 import { sectionLod, lodDistance } from '../render/lod.js';
 // MinecraftJS game core: networking, world sync, ticking, input, camera.
@@ -785,6 +785,8 @@ export class Game {
   }
 
   on_respawn(p) {
+    stopSleeping(this);
+    if(this.screens.current instanceof SleepScreen)this.screens.close();
     this.interaction?.predictedBlocks?.clear();
     if (p.dimension !== this.dimension) {
       this.world.clear();
@@ -849,9 +851,7 @@ export class Game {
 
   on_animation(p) {
     if (p.entityId === this.entityId && p.animation === 2) {
-      this.sleeping = false;
-      this.player.sleeping = false;
-      this.bedPos = null;
+      stopSleeping(this);
       if (this.screens.current instanceof SleepScreen) this.screens.close();
       return;
     }

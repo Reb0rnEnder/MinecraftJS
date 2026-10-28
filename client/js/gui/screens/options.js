@@ -1,3 +1,4 @@
+import {chatOption} from '../chat-options.js';
 import { VANILLA_UI } from '../vanilla-layout.js';
 // GuiOptions and its sub-screens, laid out like 1.13.2 (video, controls, sounds, chat, skin, language, snooper).
 // Scrolling lists are GuiSlot / GuiListExtended ports (ListOf): drag the list or its scrollbar, or use the wheel.
@@ -248,27 +249,16 @@ class SoundScreen extends OptionsBase {
 }
 
 // ScreenChatOptions (GuiNewChat.calculateChatboxWidth / Height)
-class ChatOptionsScreen extends OptionsBase {
-  constructor(game, parent) { super(game, parent, 'options.chat.title'); }
-  init() {
-    const s = this.s;
-    const px = (v, a, b) => Math.floor(v * a + b) + 'px';
-    this.grid([
-      { label: () => trOption('options.chat.visibility', tr('options.chat.visibility.' + ['full', 'system', 'hidden'][s.chatVisibility])), click: () => { s.chatVisibility = (s.chatVisibility + 1) % 3; } },
-      { label: () => trOption('options.chat.color', onOff(s.chatColors)), click: () => { s.chatColors = !s.chatColors; } },
-      { label: () => trOption('options.chat.links', onOff(true)), click: () => {} },
-      { slider: true, label: (v) => trOption('options.chat.opacity', Math.round((v * 0.9 + 0.1) * 100) + '%'), value: () => s.chatOpacity, set: (v) => { s.chatOpacity = v; } },
-      { label: () => trOption('options.chat.links.prompt', onOff(true)), click: () => {} },
-      { slider: true, label: (v) => trOption('options.chat.scale', Math.round(v * 100) + '%'), value: () => s.chatScale, set: (v) => { s.chatScale = v; } },
-      { slider: true, label: (v) => trOption('options.chat.height.focused', px(v, 160, 20)), value: () => s.chatHeightFocused, set: (v) => { s.chatHeightFocused = v; } },
-      { slider: true, label: (v) => trOption('options.chat.height.unfocused', px(v, 160, 20)), value: () => s.chatHeightUnfocused, set: (v) => { s.chatHeightUnfocused = v; } },
-      { slider: true, label: (v) => trOption('options.chat.width', px(v, 280, 40)), value: () => s.chatWidth, set: (v) => { s.chatWidth = v; } },
-      { label: () => trOption('options.reducedDebugInfo', onOff(s.reducedDebugInfo)), click: () => { s.reducedDebugInfo = !s.reducedDebugInfo; } },
-      { label: () => this.game.narrator.label(), click: () => this.game.narrator.cycle() },
-    ]);
-    this.doneButton(this.height / 6 + 144);
+export class ChatOptionsScreen extends OptionsBase {
+  constructor(game,parent){super(game,parent,'options.chat.title');}
+  init(){
+    const options=VANILLA_UI.chatOptions;
+    this.grid(options.map(key=>chatOption(this.game,key)),Math.floor(this.height/6));
+    this.buttons.forEach((b,i)=>b.optionKey=options[i]);
+    this.doneButton(Math.floor(this.height/6)+144);
   }
-  done() { if (this.game.inWorld) this.game.sendSettings(); super.done(); }
+  renderContent(gui){gui.textCentered(tr(this.titleKey),Math.floor(this.width/2),20,0xffffff);}
+  done(){if(this.game.inWorld)this.game.sendSettings();super.done();}
 }
 
 class SkinScreen extends OptionsBase {

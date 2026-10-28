@@ -1,3 +1,4 @@
+import {VANILLA_UI} from './vanilla-layout.js';
 // GUI widgets: Button, TextField, Slider (vanilla look & behaviour)
 import { platform } from '../platform/platform.js';
 
@@ -37,7 +38,7 @@ export class Slider extends Button {
     const kx = this.x + Math.floor(this.value * (this.w - 8));
     gui.blit('gui/widgets.png', kx, this.y, 0, 66, 4, 20);
     gui.blit('gui/widgets.png', kx + 4, this.y, 196, 66, 4, 20);
-    gui.textCentered(this.labelFn(this.value), this.x + this.w / 2, this.y + (this.h - 8) / 2, (this.focused||this.hovered(mx, my)) ? 0xffffa0 : 0xe0e0e0);
+    gui.textCentered(this.labelFn(this.value), this.x + this.w / 2, this.y + (this.h - 8) / 2, !this.enabled?0xa0a0a0:(this.focused||this.hovered(mx,my))?VANILLA_UI.buttonText.hover:VANILLA_UI.buttonText.normal);
   }
   key(e,game) {
     if(this.enabled&&this.visible&&['ArrowLeft','ArrowRight'].includes(e.code)){

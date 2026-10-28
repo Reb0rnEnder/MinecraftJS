@@ -669,3 +669,23 @@ test(version + ': packed terrain preserves block identity and native top-UV flag
  for(const key of ['solid','cutout','translucent']){const bytes=result[key],view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);assert.equal(bytes.length%80,0);for(let q=0;q<bytes.length;q+=80){const vv=Array.from({length:4},(_,i)=>view.getUint16(q+i*20+10,true)),mid=(Math.min(...vv)+Math.max(...vv))*.5;for(let i=0;i<4;i++){const tag=view.getUint16(q+i*20+6,true),id=tag&32767;assert.ok(id===plant||id===stone);if(id===plant)seenPlant++;else seenStone++;assert.equal(!!(tag&32768),vv[i]<mid);}}}
  assert.ok(seenPlant>0);assert.ok(seenStone>0);
 });
+
+
+test(version + ': first-person sleepers render their own horizontal body, then hide it after waking',()=>{
+ const g=fixture(),pos={x:4,y:64,z:8};g.playerUuid='00000000-0000-0000-0000-000000000000';g.username='Sleeper';
+ g.world.getState=()=>native?findState('red_bed',{facing:'south',part:'head'}):state('bed')|8;
+ startSleeping(g,pos);g.entities.updateSelf();g.thirdPerson=0;g.entityRenderer.render(.5);
+ const v=g.entityRenderer.visuals.get(-1);assert.ok(v?.root.visible,'sleeping body is drawn in first person');assert.ok(Math.abs(v.yawGroup.matrix[5])<1e-6,'body lies horizontally');
+ g.sleeping=false;g.player.sleeping=false;g.entities.updateSelf();g.entityRenderer.render(.5);assert.equal(v.root.visible,false);
+});
+
+test(version + ': wake animation restores standing dimensions as well as hiding the sleep body',()=>{
+ const g=fixture();g.screens={current:null,close(){}};
+ startSleeping(g,{x:4,y:64,z:8});Game.prototype.on_animation.call(g,{entityId:g.entityId,animation:2});
+ assert.equal(g.sleeping,false);assert.equal(g.player.sleeping,false);assert.equal(g.player.width,Math.fround(.6));assert.equal(g.player.height,Math.fround(1.8));assert.equal(g.bedPos,null);
+});
+
+test(version + ': fire overlay resolves the target-version atlas sprite and submits its two planes',()=>{
+ const g=fixture(),hud=Object.create(Hud.prototype);hud.game=g;let draws=0;
+ hud.renderFire({scale:1,drawMesh:()=>draws++});assert.ok(hud._fireMesh);assert.equal(draws,1);assert.equal(hud._fireMesh.vertices.length,8*9);
+});
