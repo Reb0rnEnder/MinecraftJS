@@ -37,7 +37,15 @@ export class Slider extends Button {
     const kx = this.x + Math.floor(this.value * (this.w - 8));
     gui.blit('gui/widgets.png', kx, this.y, 0, 66, 4, 20);
     gui.blit('gui/widgets.png', kx + 4, this.y, 196, 66, 4, 20);
-    gui.textCentered(this.labelFn(this.value), this.x + this.w / 2, this.y + (this.h - 8) / 2, this.hovered(mx, my) ? 0xffffa0 : 0xe0e0e0);
+    gui.textCentered(this.labelFn(this.value), this.x + this.w / 2, this.y + (this.h - 8) / 2, (this.focused||this.hovered(mx, my)) ? 0xffffa0 : 0xe0e0e0);
+  }
+  key(e,game) {
+    if(this.enabled&&this.visible&&['ArrowLeft','ArrowRight'].includes(e.code)){
+      const value=Math.max(0,Math.min(1,this.value+(e.code==='ArrowRight'?1:-1)/(this.w-8)));
+      if(value!==this.value){this.value=value;this.onChange(value);}
+      return true;
+    }
+    return false;
   }
   _set(mx) {
     let v = (mx - (this.x + 4)) / (this.w - 8);
