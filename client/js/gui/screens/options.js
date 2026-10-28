@@ -1,3 +1,4 @@
+import {focusOptionWidgets} from '../option-focus.js';
 import { VANILLA_UI } from '../vanilla-layout.js';
 // GuiOptions and its sub-screens, laid out like 1.14.4 (video, controls, sounds, chat, skin, language, snooper).
 // Scrolling lists are GuiSlot / GuiListExtended ports (ListOf): drag the list or its scrollbar, or use the wheel.
@@ -90,6 +91,10 @@ function nativeOption(screen,key) {
     case 'options.narrator':return {label:()=>g.narrator.label(),enabled:g.narrator.active,click:()=>g.narrator.cycle()};
     case 'options.showSubtitles':return toggle(key,'showSubtitles');
     case 'options.autoJump':return toggle(key,'autoJump');
+    case 'key.sneak':case 'key.sprint':{
+      const field=key==='key.sneak'?'toggleCrouch':'toggleSprint';
+      return {label:()=>trOption(key,tr(s[field]?'options.key.toggle':'options.key.hold')),click:()=>{s[field]=!s[field];}};
+    }
     case 'options.invertMouse':return toggle(key,'invertMouse');
     case 'options.touchscreen':return toggle(key,'touchscreen');
     case 'options.discrete_mouse_scroll':return toggle(key,'discreteMouseScroll');
@@ -104,11 +109,33 @@ function nativeOption(screen,key) {
 
 export class AccessibilityScreen extends OptionsBase {
   constructor(game,parent){super(game,parent,'options.accessibility.title');}
-  init(){this.grid(VANILLA_UI.accessibilityOptions.map(k=>nativeOption(this,k)));this.doneButton();}
+  init(){this.grid(VANILLA_UI.accessibilityOptions.map(k=>nativeOption(this,k)),Math.floor(this.height/6));this.doneButton(Math.floor(this.height/6)+144);}
+  renderContent(gui){gui.textCentered(tr(this.titleKey),Math.floor(this.width/2),20,0xffffff);}
 }
 export class MouseSettingsScreen extends OptionsBase {
   constructor(game,parent){super(game,parent,'options.mouse_settings.title');}
-  init(){this.grid(VANILLA_UI.mouseOptions.map(k=>nativeOption(this,k)));this.doneButton();}
+  init(){
+    this.rows=[];
+    VANILLA_UI.mouseOptions.forEach((key,i)=>{
+      const b=makeOption(i,Math.floor(this.width/2)-155+(i%2)*160,0,nativeOption(this,key));
+      b.optionKey=key;b.optionRow=Math.floor(i/2);
+      if(i%2===0)this.rows.push([]);this.rows.at(-1).push(b);
+    });
+    this.doneButton(this.height-27);
+    const old=this.list;
+    this.list=new ListOf(this,32,this.height-32,25,{
+      size:()=>this.rows.length,
+      draw:(gui,i,x,y,h,mx,my,rawX,rawY)=>{for(const b of this.rows[i]){b.y=y;b.render(gui,b.dragging?rawX:mx,b.dragging?rawY:my);}},
+      click:(i,dbl,mx,my)=>this.rows[i].some(b=>b.mouseDown(mx,my,this.game)),
+    },{listWidth:400,scrollBarOffset:32,selectionBox:false,scrollbarDragOnly:true});
+    if(old){this.list.amountScrolled=old.amountScrolled;this.list.clamp();}
+  }
+  render(gui,mx,my){this.list.render(gui,mx,my);gui.textCentered(tr(this.titleKey),Math.floor(this.width/2),5,0xffffff);for(const b of this.buttons)b.render(gui,mx,my);}
+  key(e){return focusOptionWidgets(this,e,[...this.rows.flat(),...this.buttons])||super.key(e);}
+  mouseDown(mx,my,button,e){return super.mouseDown(mx,my,button,e)||this.list.mouseDown(mx,my,button,e);}
+  mouseMove(mx,my){this.list.mouseMove(mx,my);}
+  mouseUp(mx,my,button){super.mouseUp(mx,my,button);for(const b of this.rows.flat())b.mouseUp?.();this.list.mouseUp();}
+  wheel(d){this.list.wheel(d);}
 }
 
 // GuiLanguage + GuiLanguage.List (GuiSlot, 18 high, centred names, the current language selected)
@@ -211,6 +238,7 @@ class VideoScreen extends OptionsBase {
       if (!item) throw new Error('Missing video option: ' + key);
       return item;
     });
+    for(const it of vanillaItems)if(it.key==='options.biomeBlendRadius')it.wide=true;
     const orderedItems = [...vanillaItems, ...items.filter(it => !it.key)];
     // GuiOptionsRowList: GuiListExtended(32, height - 32, 25), list width 400, scrollbar 32 further right
     this.rows = [];
@@ -222,13 +250,14 @@ class VideoScreen extends OptionsBase {
       if (col === 0) this.rows.push([b]); else this.rows[this.rows.length - 1].push(b);
       col = it.wide ? 0 : 1 - col;
     });
+    this.rows.forEach((row,i)=>row.forEach(b=>b.optionRow=i));
     this.buttons.push(new Button(200, this.width / 2 - 100, this.height - 27, 200, 20, tr('gui.done'), () => this.done()));
     const old = this.list;
     this.list = new ListOf(this, 32, this.height - 32, 25, {
       size: () => this.rows.length,
       draw: (gui, i, x, y, h, mx, my, rmx, rmy) => { for (const b of this.rows[i]) { b.y = y; b.render(gui, b.dragging ? rmx : mx, b.dragging ? rmy : my); } },
       click: (i, dbl, mx, my) => this.rows[i].some((b) => b.mouseDown(mx, my, this.game)),
-    }, { listWidth: 400, scrollBarOffset: 32, selectionBox: false });
+    }, { listWidth: 400, scrollBarOffset: 32, selectionBox: false, scrollbarDragOnly:true });
     if (old) { this.list.amountScrolled = old.amountScrolled; this.list.clamp(); }
   }
   render(gui, mx, my) {
@@ -237,6 +266,7 @@ class VideoScreen extends OptionsBase {
     for (const b of this.buttons) b.render(gui, mx, my);
     if(my>=32&&my<this.height-32){const b=this.rows.flat().find(b=>b.tip&&b.hovered(mx,my)),tip=b?.tip();if(tip)gui.tooltip(gui.font.wrap(tip,Math.min(300,this.width-20)),mx,my);}
   }
+  key(e){return focusOptionWidgets(this,e,[...this.rows.flat(),...this.buttons])||super.key(e);}
   mouseDown(mx, my, button, e) { return super.mouseDown(mx, my, button) || this.list.mouseDown(mx, my, button, e); }
   mouseUp(mx, my, button) {
     super.mouseUp(mx, my, button);
@@ -334,18 +364,18 @@ for (const binding of Object.values(KEY_BINDINGS)) binding[1] = VANILLA_UI.bindi
 const compareText = (a,b) => a < b ? -1 : a > b ? 1 : 0; // Java String.compareTo, not locale collation.
 
 
-// GuiControls + GuiKeyBindingList (GuiListExtended(width + 45, 63, height - 32, 20)): bindings under category
-// headers, sorted like KeyBinding.compareTo; list width 252, scrollbar 15 further right
+// Native ControlsScreen and ControlList. Geometry is extracted from the pinned jar;
+// categories have no focus target, while each binding/reset is a real widget.
 class ControlsScreen extends OptionsBase {
   constructor(game, parent) { super(game, parent, 'controls.title'); this.binding = null; }
   init() {
     const s = this.s;
-    const cx = this.width / 2;
-    this.buttons.push(new Button(200, cx - 155 + 160, this.height - 29, 150, 20, tr('gui.done'), () => this.done()));
-    this.resetAll = new Button(201, cx - 155, this.height - 29, 150, 20, tr('controls.resetAll'), () => { s.keys = { ...DEFAULT_KEYS }; });
-    this.buttons.push(this.resetAll);
+    const cx = Math.floor(this.width / 2);
     this.buttons.push(new Button(202,cx-155,18,150,20,tr('options.mouse_settings'),()=>this.game.screens.open(new MouseSettingsScreen(this.game,this))));
     this.buttons.push(new Button(203,cx+5,18,150,20,()=>trOption('options.autoJump',onOff(s.autoJump)),()=>{s.autoJump=!s.autoJump;}));
+    this.resetAll = new Button(201, cx - 155, this.height - 29, 150, 20, tr('controls.resetAll'), () => { s.keys = { ...DEFAULT_KEYS }; });
+    this.buttons.push(this.resetAll);
+    this.buttons.push(new Button(200, cx + 5, this.height - 29, 150, 20, tr('gui.done'), () => this.done()));
     const keys = Object.keys(KEY_BINDINGS).sort((a, b) => {
       const ca=KEY_BINDINGS[a][1], cb=KEY_BINDINGS[b][1];
       const order=VANILLA_UI.categoryOrder;
@@ -361,22 +391,34 @@ class ControlsScreen extends OptionsBase {
     const gui = this.game.gui;
     this.maxLabel = Math.max(...keys.map((k) => gui.textWidth(tr(KEY_BINDINGS[k][0]))));
     const old = this.list;
-    this.list = new ListOf(this, 63, this.height - 32, 20, {
+    const layout=VANILLA_UI.controlsLayout;
+    this.list = new ListOf(this, layout.listTop, this.height - layout.bottomMargin, layout.rowHeight, {
       size: () => this.entries.length,
       draw: (g2, i, x, y, h, mx, my) => this._drawEntry(g2, this.entries[i], x, y, h, mx, my),
       click: (i, dbl, mx, my) => this._clickEntry(this.entries[i], mx, my),
-    }, { left: 0, width: this.width + 45, listWidth: 252, scrollBarOffset: 15 });
+    }, { left: 0, width: this.width + layout.extraWidth, listWidth: 252, scrollBarOffset: 15, selectionBox:false, scrollbarDragOnly:true });
     if (old) { this.list.amountScrolled = old.amountScrolled; this.list.clamp(); }
+    this.entries.forEach((entry,i)=>{
+      if(entry.header)return;
+      entry.changeButton=new Button(0,0,0,75,20,'',()=>{this.binding=entry.key;});
+      entry.resetButton=new Button(1,0,0,50,20,tr('controls.reset'),()=>{s.keys[entry.key]=DEFAULT_KEYS[entry.key];});
+      entry.changeButton.optionRow=entry.resetButton.optionRow=i;
+    });
+    this._updateResets();
+  }
+  _updateResets(){
+    for(const e of this.entries)if(e.resetButton)e.resetButton.enabled=this.s.keys[e.key]!==DEFAULT_KEYS[e.key];
+    this.resetAll.enabled=this.entries.some(e=>e.key&&this.s.keys[e.key]!==DEFAULT_KEYS[e.key]);
   }
   _drawEntry(gui, e, x, y, h, mx, my) {
     if (e.header) {
       // KeyBindingList.CategoryEntry
       const label = tr(e.header);
-      gui.text(label, this.width / 2 - gui.textWidth(label) / 2, y + h - 9 - 1, 0xffffff, false);
+      gui.text(label, Math.floor(this.width / 2) - Math.floor(gui.textWidth(label) / 2), y + h - 9 - 1, 0xffffff, false);
       return;
     }
     const k = e.key, s = this.s;
-    gui.text(tr(KEY_BINDINGS[k][0]), x + 90 - this.maxLabel, y + h / 2 - 9 / 2, 0xffffff, false);
+    gui.text(tr(KEY_BINDINGS[k][0]), x + 90 - this.maxLabel, y + Math.floor(h / 2) - 4, 0xffffff, false);
     const code = s.keys[k];
     const dup = !!code && Object.keys(KEY_BINDINGS).some((o) => o !== k && s.keys[o] === code);
     let label = s.keyName(code);
@@ -384,14 +426,16 @@ class ControlsScreen extends OptionsBase {
     else if (dup) label = '§c' + label;
     const isDefault = code === DEFAULT_KEYS[k];
     e.kx = x + 105; e.rx = x + 190; e.y = y;
-    gui.button(e.rx, y, 50, 20, tr('controls.reset'), !isDefault && mx >= e.rx && mx < e.rx + 50 && my >= y && my < y + 20, !isDefault);
-    gui.button(e.kx, y, 75, 20, label, mx >= e.kx && mx < e.kx + 75 && my >= y && my < y + 20);
+    Object.assign(e.resetButton,{x:e.rx,y,enabled:!isDefault});
+    Object.assign(e.changeButton,{x:e.kx,y,label});
+    e.resetButton.render(gui,mx,my);e.changeButton.render(gui,mx,my);
   }
   _clickEntry(e, mx, my) {
     if (!e || e.header || e.y === undefined || my < e.y || my >= e.y + 20) return false;
-    const s = this.s;
-    if (mx >= e.kx && mx < e.kx + 75) { this.binding = e.key; this.game.sound.playUi('ui.button.click', 1); return true; }
-    if (mx >= e.rx && mx < e.rx + 50 && s.keys[e.key] !== DEFAULT_KEYS[e.key]) { s.keys[e.key] = DEFAULT_KEYS[e.key]; this.game.sound.playUi('ui.button.click', 1); return true; }
+    for(const b of [e.changeButton,e.resetButton])if(b.mouseDown(mx,my,this.game)){
+      if(this.focusedWidget)this.focusedWidget.focused=false;
+      this.focusedWidget=b;b.focused=true;this._updateResets();return true;
+    }
     return false;
   }
   render(gui, mx, my) {
@@ -399,7 +443,7 @@ class ControlsScreen extends OptionsBase {
     this.list.render(gui, mx, my);
     gui.textCentered(tr(this.titleKey), this.width / 2, 8, 0xffffff);
     // GuiControls.drawScreen: "Reset Keys" only while something differs from the defaults
-    this.resetAll.enabled = Object.keys(KEY_BINDINGS).some((k) => this.s.keys[k] !== DEFAULT_KEYS[k]);
+    this._updateResets();
     for (const b of this.buttons) b.render(gui, mx, my);
   }
   mouseDown(mx, my, button, e) {
@@ -415,7 +459,9 @@ class ControlsScreen extends OptionsBase {
       this.binding = null;
       return true;
     }
-    return super.key(e);
+    this._updateResets();
+    const rows=this.entries.flatMap(e=>e.header?[]:[e.changeButton,e.resetButton]);
+    return focusOptionWidgets(this,e,[...this.buttons.slice(0,2),...rows,...this.buttons.slice(2)])||super.key(e);
   }
   wheel(d) { this.list.wheel(d); }
 }

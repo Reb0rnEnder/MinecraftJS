@@ -13,6 +13,7 @@ export class SlotList {
     this.right = screen.width;
     this.headerPadding = opts.header || 0;
     this.showSelectionBox = opts.selectionBox !== false;
+    this.scrollbarDragOnly=!!opts.scrollbarDragOnly;
     this.listWidth = opts.listWidth || 220;
     this.scrollBarOffset = opts.scrollBarOffset || 0;
     if (opts.left !== undefined) { this.left = opts.left; this.right = opts.left + opts.width; }
@@ -132,6 +133,7 @@ export class SlotList {
       this.scrollMultiplier = -1 / ((h - thumb) / max);
       handled = true;
     } else this.scrollMultiplier = 1;
+    if(this.scrollbarDragOnly && !(mx>=sb && mx<=sb+6))drag=false;
     this.initialClickY = drag ? my : -2;
     return handled || this.maxScroll() > 0;
   }

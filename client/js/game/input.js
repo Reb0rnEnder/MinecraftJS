@@ -6,6 +6,7 @@ export class Input {
     const P = platform();
     this.settings = settings;
     this.down = new Set();
+    this.toggled = {};
     this.pressed = []; // queued presses for the next tick: codes
     this.dx = 0;
     this.dy = 0;
@@ -20,7 +21,7 @@ export class Input {
 
     P.on('pointerlock', (locked) => {
       this.locked = locked;
-      if (locked) { this.justLocked = true; this.dx = 0; this.dy = 0; } else this.down.clear();
+      if (locked) { this.justLocked = true; this.dx = 0; this.dy = 0; } else {this.down.clear();this.toggled={};}
       this.emit('lock', locked);
     });
     P.on('mousemove', (e) => {
@@ -38,7 +39,7 @@ export class Input {
     P.on('mousedown', (e) => {
       const code = 'mouse' + e.button;
       this.rawX = e.x; this.rawY = e.y;
-      if (this.locked) { this.down.add(code); this.pressed.push(code); }
+      if (this.locked) { this.togglePress(code); this.down.add(code); this.pressed.push(code); }
       this.emit('mouse', { code, button: e.button, down: true, shift: e.shift });
     });
     P.on('mouseup', (e) => {
@@ -52,7 +53,7 @@ export class Input {
       if (this.locked){if(Math.sign(d)!==Math.sign(this.wheelCarry||0))this.wheelCarry=0;this.wheelCarry=(this.wheelCarry||0)+d;const steps=Math.trunc(this.wheelCarry);this.wheel+=steps;this.wheelCarry-=steps;}
     });
     P.on('keydown', (e) => {
-      if (!e.repeat) { this.down.add(e.code); this.pressed.push(e.code); }
+      if (!e.repeat) { if(this.locked)this.togglePress(e.code); this.down.add(e.code); this.pressed.push(e.code); }
       this.emit('key', { ...e, down: true });
     });
     P.on('char', (text) => {
@@ -65,13 +66,22 @@ export class Input {
       this.down.delete(e.code);
       this.emit('key', { ...e, down: false });
     });
-    P.on('blur', () => this.down.clear());
+    P.on('blur', () => {this.down.clear();this.toggled={};});
   }
 
   on(ev, fn) { this.listeners[ev].push(fn); }
   emit(ev, a) { for (const fn of this.listeners[ev]) fn(a); }
 
+  togglePress(code){
+    for(const [bind,field] of [['sneak','toggleCrouch'],['sprint','toggleSprint']]){
+      if(this.settings[field]&&this.settings.keys[bind]===code)this.toggled[bind]=!this.toggled[bind];
+    }
+  }
+
   isDown(bind) {
+    const field=bind==='sneak'?'toggleCrouch':bind==='sprint'?'toggleSprint':null;
+    if(field&&this.settings[field])return !!this.toggled[bind];
+    if(field)delete this.toggled[bind];
     const code = this.settings.keys[bind];
     return !!code && this.down.has(code);
   }

@@ -4,6 +4,7 @@ export const VANILLA_UI = {
   "clientJarSha1": "e3f78cd16f9eb9a52307ed96ebec64241cc5b32d",
   "packFormat": 5,
   "videoOptions": [
+    "options.biomeBlendRadius",
     "options.graphics",
     "options.renderDistance",
     "options.ao",
@@ -17,8 +18,7 @@ export const VANILLA_UI = {
     "options.fullscreen",
     "options.particles",
     "options.mipmapLevels",
-    "options.entityShadows",
-    "options.biomeBlendRadius"
+    "options.entityShadows"
   ],
   "controlOptions": [
     "options.autoJump"
@@ -80,6 +80,14 @@ export const VANILLA_UI = {
     "options.accessibility.text_background_opacity",
     "options.accessibility.text_background",
     "options.chat.opacity",
-    "options.autoJump"
-  ]
+    "options.autoJump",
+    "key.sneak",
+    "key.sprint"
+  ],
+  "controlsLayout": {
+    "extraWidth": 45,
+    "listTop": 43,
+    "bottomMargin": 32,
+    "rowHeight": 20
+  }
 };

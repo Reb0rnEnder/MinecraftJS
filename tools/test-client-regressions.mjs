@@ -472,7 +472,7 @@ if(native)test('1.13.2: biome blend averages the selected radius with complete b
   slider.onChange(1);assert.equal(g.settings.biomeBlendRadius,7);assert.equal(rebuilt,1);
   slider.onChange(1);assert.equal(rebuilt,1,'unchanged radius does not rebuild terrain');
   slider.onChange(0);assert.equal(g.settings.biomeBlendRadius,0);assert.equal(rebuilt,2);
-  assert.equal(VANILLA_UI.videoOptions.at(-1),'options.biomeBlendRadius');
+  assert.equal(VANILLA_UI.videoOptions[version==='1.15.2'?0:VANILLA_UI.videoOptions.length-1],'options.biomeBlendRadius');
 });
 
 if(native)test('1.13.2: F3 traces block and any-fluid targets separately at 20 blocks, including flowing and waterlogged fluid', () => {
