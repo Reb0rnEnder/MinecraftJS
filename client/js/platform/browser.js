@@ -157,6 +157,8 @@ class WebAudio {
 // ---------------------------------------------------------------- platform
 
 export class BrowserPlatform extends Emitter {
+  // Used for the initial Touchscreen Mode default; explicit user preferences win.
+  get hasTouchscreen() { return (navigator.maxTouchPoints || 0) > 0 || !!globalThis.matchMedia?.('(any-pointer: coarse)').matches; }
   constructor() {
     super();
     this.name = 'browser';

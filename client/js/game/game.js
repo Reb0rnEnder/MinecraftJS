@@ -10,7 +10,7 @@ import {CameraEye} from '../render/camera-eye.js';
 import {MENUS_498} from './menus-1.14.4.js';
 import { RegistryTags } from './tags.js';
 import { CommandTree } from './commands.js';
-import { startSleeping, sleepingCamera } from './bed-sleep.js';
+import { startSleeping, stopSleeping, updateSleeping, sleepingCamera } from './bed-sleep.js';
 import { jarSelectionBox } from '../world/blocks.js';
 import { sectionLod, lodDistance } from '../render/lod.js';
 // MinecraftJS game core: networking, world sync, ticking, input, camera.
@@ -798,6 +798,8 @@ export class Game {
   }
 
   on_respawn(p) {
+    stopSleeping(this);
+    if(this.screens.current instanceof SleepScreen)this.screens.close();
     this.interaction?.predictedBlocks?.clear();
     if (p.dimension !== this.dimension) {
       this.world.clear();
@@ -863,9 +865,7 @@ export class Game {
 
   on_animation(p) {
     if (p.entityId === this.entityId && p.animation === 2) {
-      this.sleeping = false;
-      this.player.sleeping = false;
-      this.bedPos = null;
+      stopSleeping(this);
       if (this.screens.current instanceof SleepScreen) this.screens.close();
       return;
     }
@@ -938,6 +938,9 @@ export class Game {
   on_entity_metadata(p) {
     if (p.entityId === this.entityId) {
       this.selfMetadata = Object.assign(this.selfMetadata || {}, p.metadata);
+      const sleepChange=updateSleeping(this,p.metadata,13);
+      if(sleepChange==='start')this.screens.open(new SleepScreen(this));
+      else if(sleepChange==='stop' && this.screens.current instanceof SleepScreen)this.screens.close();
       if (p.metadata[7] !== undefined) {
         this.player.riptide = !!(p.metadata[7] & 4);
         if (this.player.riptide && !this.player.riptideTicks) this.player.riptideTicks = 20;
@@ -1898,7 +1901,7 @@ export class Game {
       const lx = -look[0] * dir, ly = -look[1] * dir, lz = -look[2] * dir;
       for (let i = 0; i < 8; i++) {
         const ox = ((i & 1) * 2 - 1) * 0.1, oy = (((i >> 1) & 1) * 2 - 1) * 0.1, oz = (((i >> 2) & 1) * 2 - 1) * 0.1;
-        const hit = this.world.raycast(ex + ox, ey + oy, ez + oz, lx, ly, lz, dist);
+        const hit = this.world.raycast(ex + ox, ey + oy, ez + oz, lx, ly, lz, dist, false, true);
         if (hit && hit.dist < dist) dist = hit.dist;
       }
       ex += lx * dist; ey += ly * dist; ez += lz * dist;

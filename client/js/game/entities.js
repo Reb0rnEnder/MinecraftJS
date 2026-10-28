@@ -358,7 +358,9 @@ export class EntityManager {
     }
     const villagerData=Object.values(native).find(v=>v&&typeof v==='object'&&Number.isInteger(v.villagerProfession));
     if(villagerData){e.villagerData=villagerData;e.profession=villagerData.villagerProfession;e.villagerProfession=e.profession;e.villagerType=villagerData.villagerType;e.villagerLevel=villagerData.level;}
-    if(living498&&native[12]!==undefined)e.sleepingPosition=native[12];
+    if(living498&&Object.hasOwn(native,12)){
+      e.sleepingPosition=native[12];e.bedPos=native[12];e.sleeping=!!native[12];
+    } else if(native[6]!==undefined&&native[6]!==2){e.sleeping=false;e.bedPos=null;e.sleepingPosition=null;}
     m={};for(const [key,value] of Object.entries(native)){const i=Number(key);if(i===6||living498&&i===12)continue;m[i-(i>=7?living498&&i>=13?2:1:0)]=value;}
     const name = e.entityName;
     const ids=NATIVE_METADATA[name];
@@ -710,6 +712,8 @@ export class EntityManager {
     s.prevLimbSwingAmount = s.limbSwingAmount;
     s.x = pl.x; s.y = pl.y; s.z = pl.z;
     s.yaw = pl.yaw; s.pitch = pl.pitch; s.headYaw = pl.yaw;
+    s.sleeping=!!pl.sleeping;s.bedPos=g.bedPos;s.sleepingPosition=g.bedPos;
+    s.width=pl.width;s.height=pl.height;s.eyeHeight=pl.eyeHeight();
     s.sneaking = !!pl.crouching; s.swimming = pl.swimming; s.visuallySwimming = pl.pose === 'swimming'; s.pose = pl.pose;
     s.inWater = !!pl.inWater; s.onGround = pl.onGround;
     s.usingItem = pl.usingItem; s.riptide = !!pl.riptide;

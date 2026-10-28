@@ -1,3 +1,4 @@
+import {bedFacing} from '../game/bed-sleep.js';
 import {foxAnimationArgs} from '../game/fox.js';
 import {scaleFoxChild} from './fox-pose.js';
 import {nameUuid} from '../util/uuid-md5.js';
@@ -1114,7 +1115,7 @@ export class EntityRenderer {
     const age = e.ticks + partial;
     // riders get no limb swing; children swing three times as fast
     let ls = 0, lsa = 0;
-    if (e.riding < 0) {
+    if (e.riding < 0 && !e.sleeping) {
       lsa = Math.min(1, e.prevLimbSwingAmount + (e.limbSwingAmount - e.prevLimbSwingAmount) * partial);
       ls = e.limbSwing - e.limbSwingAmount * (1 - partial);
       if (e.child) ls *= 3;
@@ -1187,8 +1188,19 @@ export class EntityRenderer {
       mat4.rotateY(m, m, -75 * ((e.ticks || 0) + partial) * D2R);
       v.yawGroup.matrix = m;
     }
+    // LivingEntityRenderer.setupRotations: translate along the bed before
+    // rotating the model onto its side. Fox curled sleep is a separate pose.
+    if(e.sleeping){
+      const facing=bedFacing(g,e.bedPos || e.sleepingPosition);
+      const dirs={south:[0,1,90],west:[-1,0,0],north:[0,-1,270],east:[1,0,180]};
+      const d=dirs[facing],m=mat4.create();
+      if(d){const offset=(e.kind==='player'?1.62:e.height*.85)-.1;mat4.translate(m,m,-d[0]*offset,0,-d[1]*offset);}
+      mat4.rotateY(m,m,(d?d[2]:body)*D2R);
+      mat4.rotateZ(m,m,90*D2R);mat4.rotateY(m,m,270*D2R);
+      v.yawGroup.matrix=m;
+    }
     let yOffset = 0;
-    if (e.kind === 'player' && e.sneaking) yOffset = -0.125;
+    if (e.kind === 'player' && e.sneaking && !e.sleeping) yOffset = -0.125;
     v.root.position.y += yOffset;
     v.scaleGroup.rotation.set(0, 0, -deathRot * D2R * (e.kind === 'mob' && (e.type === 52 || e.type === 59) ? 2 : 1));
     // Pre-render scaling
@@ -1251,7 +1263,7 @@ export class EntityRenderer {
     const speedSq = (e.motionX || 0) ** 2 + (e.motionY || 0) ** 2 + (e.motionZ || 0) ** 2;
     const args = {
       ...foxAnimationArgs(e,partial),ls, lsa, age, yaw: head - body, pitch, swing: swing > 0 ? swing : -9999, partial,
-      sneak: !!e.sneaking, riding: e.riding >= 0,
+      sneak: !e.sleeping && !!e.sneaking, riding: e.riding >= 0,
       useTicks:e.useTicks||0,crossbowChargeDuration:held&&g.items.name(held.id)==='crossbow'?g.items.crossbowChargeDuration(held):25,
       rightPose: skeletonAim ? 'bow' : primaryRight ? mainPose : offPose, leftPose: primaryRight ? offPose : mainPose,
       swingSide: ((e.swingHand || 0) === 0) === primaryRight ? 1 : -1,
@@ -1264,7 +1276,7 @@ export class EntityRenderer {
       peek: e.type === 69 ? (e.prevPeek || 0) + ((e.peek || 0) - (e.prevPeek || 0)) * partial : 0,
       entityId: e.id, child: !!e.child, leftHanded: !!e.leftHanded,
       inWater: isPointInFluid(g.world, e.x, e.y + e.height / 2, e.z),
-      swimming: !!e.swimming, swimAmount, armsRaised: !!e.armsRaised,
+      swimming: !e.sleeping && !!e.swimming, swimAmount: e.sleeping ? 0 : swimAmount, armsRaised: !!e.armsRaised,
       rearing: e.type === 'polar_bear' ? (e.standing ? 1 : 0) : (e.horseFlags & 64 ? 1 : 0),
       grazing: e.horseFlags & 32 ? 1 : 0, mouthOpen: e.horseFlags & 128 ? 1 : 0,
       chested: !!e.horseChest, hasRider: e.passenger >= 0, tailWag: !!e.tailWag,
