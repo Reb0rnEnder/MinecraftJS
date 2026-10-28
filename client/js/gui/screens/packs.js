@@ -133,7 +133,7 @@ export class ResourcePacksScreen extends Screen {
     if (incompatible) gui.rect(x - 1, y - 1, x + ENTRY_W - 9, y + ENTRY_H - 3, 0xff770000);
     const icon = gui.tex(this._icon(pack));
     if (icon) gui.drawImage(icon, 0, 0, icon.width, icon.height, x, y, 32, 32);
-    const overEntry = mx >= x && mx < x + ENTRY_W && my >= y && my < y + ENTRY_H;
+    const overEntry = (!L.list || L.list.inside(my,mx)) && mx >= x && mx < x + ENTRY_W && my >= y && my < y + ENTRY_H;
     const overIcon = overEntry && mx < x + 32 && my < y + 32;
     if (pack && (overEntry || this.game.settings.touchscreen)) {
       gui.rect(x, y, x + 32, y + 32, 0xa0909090);
