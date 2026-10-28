@@ -1,3 +1,4 @@
+import {FORMAT,colorParams} from '../gfx/device.js';
 import {fireOverlayVertices,fireOverlayProjection} from '../render/fire-overlay.js';
 // In-game overlay (port of GuiIngame / GuiNewChat / GuiPlayerTabOverlay / GuiOverlayDebug).
 import { tr } from './i18n.js';
@@ -70,7 +71,7 @@ export class Hud {
     this.chat.unshift(entry);
     if (this.chat.length > 100) this.chat.pop();
     const width = this.chatWidth();
-    const lines = g.gui.font.wrap(text, Math.floor(width / this.chatScale()));
+    const lines = g.gui.font.wrap(text, Math.floor(width / (this.chatScale() || 1)));
     const comps = wrapChatSegments(raw ? chatSegments(raw) : null,lines);
     // GuiNewChat.setChatLine: each wrapped line is pushed to the front in order, so the message's last
     // line ends up at the bottom and its first line above it
@@ -82,8 +83,8 @@ export class Hud {
     void local;
   }
 
-  chatScale() { return this.game.settings.chatScale || 1; }
-  chatWidth() { return Math.floor((this.game.settings.chatWidth || 1) * 280 + 40); }
+  chatScale() { return this.game.settings.chatScale ?? 1; }
+  chatWidth() { return Math.floor((this.game.settings.chatWidth ?? 1) * 280 + 40); }
   chatOpen() { return !!this.game.screens.current?.isChatScreen; }
   // GuiNewChat.getChatHeight / getLineCount: height = f * 160 + 20 pixels, 9 pixels per line
   chatLinesVisible() {
@@ -175,6 +176,7 @@ export class Hud {
     if (!this.chatOpen()) return null;
     const gui = this.gui;
     const scale = this.chatScale();
+    if(scale<=0)return null;
     const baseY = gui.height - 28;
     const x = (mx - 2) / scale;
     const y = (baseY - my) / scale;
@@ -200,6 +202,7 @@ export class Hud {
     const lines = this.chatLinesVisible();
     const opacity = (g.settings.chatOpacity ?? 1) * 0.9 + 0.1;
     const scale = this.chatScale();
+    if(scale<=0)return;
     const w = Math.ceil(this.chatWidth() / scale);
     gui.pushMatrix();
     gui.translate(2, gui.height - 28);
@@ -319,8 +322,19 @@ export class Hud {
   }
 
   _isBurning() {
-    const m = this.game.selfMetadata;
-    return m && (m[0] & 1) === 1;
+    const g=this.game,p=g.player;
+    if(g.gameMode===3||p?.spectator)return false;
+    if(g.selfMetadata?.[0]&1)return true;
+    if(p?.inLava)return true;
+    if(!p?.bb||!g.world?.getState)return false;
+    const bb=p.bb(),epsilon=.001;
+    for(let x=Math.floor(bb[0]+epsilon);x<Math.ceil(bb[3]-epsilon);x++)
+      for(let y=Math.floor(bb[1]+epsilon);y<Math.ceil(bb[4]-epsilon);y++)
+        for(let z=Math.floor(bb[2]+epsilon);z<Math.ceil(bb[5]-epsilon);z++){
+          const state=g.world.getState(x,y,z),block=blocks[state >> 4];
+          if(block?.name==='fire')return true;
+        }
+    return false;
   }
 
   // Crosshair, drawn with vanilla's inverting blend (ONE_MINUS_DST_COLOR, ONE_MINUS_SRC_COLOR)
@@ -549,7 +563,7 @@ export class Hud {
 
   // ItemRenderer.renderFireInFirstPerson (as two screen-space sprites)
   renderFire(gui) {
-    const A=this.game.assets,e=A.atlas.entries.get('block/fire_1');
+    const A=this.game.assets,e=A.atlas.entries.get('blocks/fire_layer_1');
     if(!e)return;
     const key=e.uv.join(',');
     if(!this._fireMesh||this._fireUV!==key){

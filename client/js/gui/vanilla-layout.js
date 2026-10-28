@@ -61,5 +61,21 @@ export const VANILLA_UI = {
     "key.hotbar.7": "key.categories.inventory",
     "key.hotbar.8": "key.categories.inventory",
     "key.hotbar.9": "key.categories.inventory"
+  },
+  "chatOptions": [
+    "options.chat.visibility",
+    "options.chat.color",
+    "options.chat.links",
+    "options.chat.opacity",
+    "options.chat.links.prompt",
+    "options.chat.scale",
+    "options.chat.height.focused",
+    "options.chat.height.unfocused",
+    "options.chat.width",
+    "options.reducedDebugInfo"
+  ],
+  "buttonText": {
+    "normal": 14737632,
+    "hover": 16777120
   }
 };
