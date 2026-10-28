@@ -507,7 +507,7 @@ export class World {
   }
 
   // Returns { x, y, z, face, hit: [x,y,z], state } or null
-  raycast(ox, oy, oz, dx, dy, dz, maxDist, hitLiquids = false) {
+  raycast(ox, oy, oz, dx, dy, dz, maxDist, hitLiquids = false, collider = false) {
     let x = Math.floor(ox), y = Math.floor(oy), z = Math.floor(oz);
     const stepX = dx > 0 ? 1 : dx < 0 ? -1 : 0;
     const stepY = dy > 0 ? 1 : dy < 0 ? -1 : 0;
@@ -525,8 +525,8 @@ export class World {
         let box = null;
         if (b.isLiquid) {
           if (hitLiquids && Number(getStateProperties(state).level || 0) === 0) box = [0, 0, 0, 1, 0.875, 1];
-        } else box = this.selectionBox(state, x, y, z);
-        const boxes = box ? [box] : [];
+        } else if(!collider) box = this.selectionBox(state, x, y, z);
+        const boxes = collider ? staticCollisionBoxes(state) : box ? [box] : [];
         if (hitLiquids === 'any' && getFluidState(state)) boxes.push([0,0,0,1,fluidHeightAt(this,x,y,z),1]);
         let nearest = null, hitBox = null;
         for (const candidate of boxes) {

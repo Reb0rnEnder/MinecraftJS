@@ -16,7 +16,7 @@ import { buildSlice, SliceWorld } from '../client/js/world/slice.js';
 import { Hud } from '../client/js/gui/hud.js';
 import { createHash } from 'node:crypto';
 import { jarSelectionBox, getBlock, findState } from '../client/js/world/blocks.js';
-import { startSleeping, sleepingCamera } from '../client/js/game/bed-sleep.js';
+import { startSleeping, stopSleeping, updateSleeping, sleepingCamera } from '../client/js/game/bed-sleep.js';
 import { TileEntityRenderer } from '../client/js/render/tile-renderer.js';
 import { World } from '../client/js/world/world.js';
 import { Chunk } from '../client/js/world/chunk.js';
@@ -352,9 +352,9 @@ test(version + ': sleeping anchors the player and camera to each bed direction a
     g.player.yaw=61;g.player.pitch=37;g.player.motionX=1;
     startSleeping(g,pos);const view=sleepingCamera(g,0.5),d=[[0,1],[-1,0],[0,-1],[1,0]][i];
     assert.equal(g.player.sleeping,true);assert.equal(g.player.width,Math.fround(0.2));
-    assert.ok(Math.abs(g.player.x-(4.5+d[0]*0.4))<1e-7);assert.ok(Math.abs(g.player.z-(8.5+d[1]*0.4))<1e-7);
-    assert.equal(g.player.y,64.6875);assert.equal(g.player.motionX,0);assert.equal(view.yaw,i*90+180);assert.equal(view.pitch,0);
-    assert.ok(Math.abs(view.y-65.5875)<1e-7);assert.deepEqual([view.x,view.z],[g.player.x,g.player.z]);
+    assert.ok(Math.abs(g.player.x-(4.5+d[0]*(target14?0:0.4)))<1e-7);assert.ok(Math.abs(g.player.z-(8.5+d[1]*(target14?0:0.4)))<1e-7);
+    assert.equal(g.player.y,64.6875);assert.equal(g.player.motionX,0);assert.equal(view.yaw,i*90+(target14?-180:180));assert.equal(view.pitch,0);
+    assert.ok(Math.abs(view.y-(target14?65.1875:65.5875))<1e-7);assert.deepEqual([view.x,view.z],[g.player.x,g.player.z]);
     g.player.yaw=-120;g.player.pitch=-45;assert.deepEqual(sleepingCamera(g,0.5),view);
   }
   g.sleeping=false;assert.equal(sleepingCamera(g,0.5),null);
@@ -670,4 +670,58 @@ test(version + ': packed terrain preserves block identity and native top-UV flag
  const mesh=new Mesher(null,assets.modelStore),result=mesh.buildSection(new SliceWorld(buildSlice(w,0,0,0)),0,0,0);let seenPlant=0,seenStone=0;
  for(const key of ['solid','cutout','translucent']){const bytes=result[key],view=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);assert.equal(bytes.length%80,0);for(let q=0;q<bytes.length;q+=80){const vv=Array.from({length:4},(_,i)=>view.getUint16(q+i*20+10,true)),mid=(Math.min(...vv)+Math.max(...vv))*.5;for(let i=0;i<4;i++){const tag=view.getUint16(q+i*20+6,true),id=tag&32767;assert.ok(id===plant||id===stone);if(id===plant)seenPlant++;else seenStone++;assert.equal(!!(tag&32768),vv[i]<mid);}}}
  assert.ok(seenPlant>0);assert.ok(seenStone>0);
+});
+
+
+test(version + ': sleeping metadata enters bed, remains still, and wakes on a null position',()=>{
+ const g=fixture(),pos={x:4,y:64,z:8};g.world.getState=()=>findState('red_bed',{facing:'east',part:'head'});
+ const index=12;
+ assert.equal(updateSleeping(g,{6:2},index),null);
+ assert.equal(updateSleeping(g,{[index]:pos},index),'start');
+ assert.equal(g.player.pose,'sleeping');assert.equal(g.player.x,4.5);assert.equal(g.player.z,8.5);
+ const before=[g.player.x,g.player.y,g.player.z];
+ for(let i=0;i<20;i++)g.player.tick(g.world,{forward:true,jump:true,sneak:true});
+ assert.deepEqual([g.player.x,g.player.y,g.player.z],before);
+ assert.equal(updateSleeping(g,{0:0},index),null);assert.equal(g.sleeping,true);
+ g.thirdPerson=1;assert.equal(sleepingCamera(g,.5),null);g.thirdPerson=0;
+ assert.equal(updateSleeping(g,{[index]:null},index),'stop');assert.equal(g.player.sleeping,false);assert.equal(g.player.pose,'standing');
+ assert.equal(g.player.height,Math.fround(1.8));assert.equal(sleepingCamera(g,.5),null);
+ const m=new EntityManager(g),e=m._base(42,4.5,64.6875,8.5);e.kind='player';e.entityName='player';
+ m._applyMeta(e,{6:2,[index]:pos});assert.equal(e.sleeping,true);assert.deepEqual(e.bedPos,pos);
+ m._applyMeta(e,{0:0});assert.equal(e.sleeping,true);
+ m._applyMeta(e,{[index]:null,6:0});assert.equal(e.sleeping,false);assert.equal(e.bedPos,null);
+});
+
+test(version + ': camera rays use collision shapes while selection still hits plants',()=>{
+ const w=new World(),plant=findState('tall_grass',{half:'lower'}),stone=findState('stone');
+ w.getState=(x,y,z)=>x===0&&y===64&&z===1?plant:x===0&&y===64&&z===3?stone:0;
+ assert.equal(w.raycast(.5,64.2,.5,0,0,1,4).z,1);
+ assert.equal(w.raycast(.5,64.2,.5,0,0,1,4,false,true).z,3);
+});
+
+
+test(version + ': local wire metadata opens the sleep screen once and closes it on waking',()=>{
+ const g=fixture(),pos={x:4,y:64,z:8};let opened=0,closed=0;
+ g.screens={current:null,open(s){this.current=s;opened++;},close(){this.current=null;closed++;}};
+ Game.prototype.on_entity_metadata.call(g,{entityId:g.entityId,metadata:{6:2,[12]:pos}});
+ assert.equal(g.sleeping,true);assert.equal(g.screens.current.constructor.name,'SleepScreen');
+ Game.prototype.on_entity_metadata.call(g,{entityId:g.entityId,metadata:{[12]:pos,0:0}});assert.equal(opened,1);
+ Game.prototype.on_entity_metadata.call(g,{entityId:g.entityId,metadata:{6:0,[12]:null}});
+ assert.equal(g.sleeping,false);assert.equal(closed,1);
+});
+
+test(version + ': rendered sleeping players lie along all four bed directions',()=>{
+ const g=fixture(),pos={x:4,y:64,z:8};
+ g.entities.spawnPlayer({entityId:42,x:4.5,y:64.6875,z:8.5,yaw:0,pitch:0,metadata:{},playerUUID:'00000000-0000-0000-0000-000000000000'});
+ const e=g.entities.get(42);
+ for(const [facing,dx,dz] of [['south',0,1],['west',-1,0],['north',0,-1],['east',1,0]]){
+  g.world.getState=()=>findState('red_bed',{facing,part:'head'});
+  g.entities.setMetadata(42,{6:2,[12]:pos});
+  g.entityRenderer.render(.5);
+  const v=g.entityRenderer.visuals.get(42),m=v.yawGroup.matrix;
+  assert.ok(m,'sleep pose uses native bed rotation');assert.ok(Math.abs(m[5])<1e-6,'model vertical axis becomes horizontal');
+  assert.ok(Math.abs(m[12]+dx*1.52)<1e-6);assert.ok(Math.abs(m[14]+dz*1.52)<1e-6);
+ }
+ g.entities.setMetadata(42,{6:0,[12]:null});g.entityRenderer.render(.5);
+ assert.equal(g.entityRenderer.visuals.get(42).yawGroup.matrix,null);
 });

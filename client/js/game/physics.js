@@ -159,8 +159,9 @@ export class LocalPlayer {
 
   // Player.updatePlayerPose: a blocked standing/crouching pose falls back to a fitting pose.
   updateSize(world) {
+    if(this.sleeping){this.pose='sleeping';this.width=this.height=f32(.2);this.crouching=false;this._bb=null;return;}
     if (!this.canEnterPose(world,'swimming')) return;
-    let pose = this.elytraFlying ? 'fall_flying' : this.sleeping ? 'sleeping' : this.swimming ? 'swimming' : this.riptide ? 'spin_attack' : this.sneaking && !this.flying ? 'sneaking' : 'standing';
+    let pose = this.elytraFlying ? 'fall_flying' : this.swimming ? 'swimming' : this.riptide ? 'spin_attack' : this.sneaking && !this.flying ? 'sneaking' : 'standing';
     if (!this.spectator && !this.ridingEntity && !this.canEnterPose(world,pose)) pose = this.canEnterPose(world,'sneaking') ? 'sneaking' : 'swimming';
     this.pose = pose; this.crouching = pose === 'sneaking';
     const [w,h] = PLAYER_POSES[pose].map(f32);
@@ -723,9 +724,10 @@ export class LocalPlayer {
     this.prevDistanceWalked = this.distanceWalked;
     this.prevCameraYaw = this.cameraYaw; this.prevCameraPitch = this.cameraPitch;
     const result = { abilitiesChanged: false };
+    this.ticksExisted++;
+    if(this.sleeping){this.motionX=this.motionY=this.motionZ=0;this.pitch=0;this.updateSize(world);return result;}
 
     // Entity.onEntityUpdate (before EntityPlayerSP.onLivingUpdate): water pushes and the in-water / in-lava state
-    this.ticksExisted++;
     this.handleWaterMovement(world);
     this.inLava = this.isInLava(world);
     this.eyesInWater = this.isEyeInWater(world);

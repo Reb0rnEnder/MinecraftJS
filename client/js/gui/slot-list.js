@@ -50,6 +50,7 @@ export class SlotList {
   clamp() { this.amountScrolled = Math.max(0, Math.min(this.maxScroll(), this.amountScrolled)); }
 
   slotAt(x, y) {
+    if (!this.inside(y,x)) return -1;
     const i0 = this.left + Math.floor(this.width / 2) - Math.floor(this.listWidth / 2), i1 = this.left + Math.floor(this.width / 2) + Math.floor(this.listWidth / 2);
     const k = y - this.top - this.headerPadding + Math.floor(this.amountScrolled) - 4;
     const l = Math.floor(k / this.slotHeight);
