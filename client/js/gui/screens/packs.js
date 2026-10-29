@@ -1,3 +1,4 @@
+import {ResourceLoadingScreen} from './loading.js';
 import { VANILLA_UI } from '../vanilla-layout.js';
 import { ConfirmScreen } from './menus.js';
 // GuiScreenResourcePacks: available / selected pack lists, adding packs from files.
@@ -77,7 +78,7 @@ export class ResourcePacksScreen extends Screen {
     if (ids.join('\n') === this.initial) { g.screens.open(this.parent); return; }
     g.settings.resourcePacks = ids;
     g.settings.save();
-    const loading = new ReloadingScreen(g);
+    const loading = new ResourceLoadingScreen(g, this.parent);
     g.screens.open(loading);
     try {
       await g.assets.activatePacks(ids);
@@ -86,6 +87,7 @@ export class ResourcePacksScreen extends Screen {
       console.error(e);
       this.message = '§c' + tr('minecraftjs.packs.failed', e.message);
     }
+    await loading.finish();
     g.screens.open(this.parent);
   }
 
@@ -199,16 +201,5 @@ export class ResourcePacksScreen extends Screen {
   wheel(d) {
     const [mx, my] = this.game.screens._mouse();
     for (const L of this.lists) if (L.list.inside(my, mx)) L.list.wheel(d);
-  }
-}
-
-class ReloadingScreen extends Screen {
-  constructor(game) { super(game); this.background = 'dirt'; this.status = tr('minecraftjs.packs.reloading'); this.pct = 0; }
-  key() { return true; }
-  renderContent(gui) {
-    gui.textCentered(this.status, this.width / 2, this.height / 2 - 10, 0xffffff);
-    const w = 200, x = this.width / 2 - w / 2, y = this.height / 2 + 4;
-    gui.rect(x, y, x + w, y + 2, 0xff808080);
-    gui.rect(x, y, x + w * (this.pct || 0) / 100, y + 2, 0xff80ff80);
   }
 }
