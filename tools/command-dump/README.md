@@ -30,3 +30,8 @@ particles, time and numeric bounds. `tools/test-command-oracle.mjs` compares
 client cursor positions, unread/error status, and every parsed argument range.
 1.13.2 retains its older single-quote/NBT-path restrictions. These cases are
 regressions, not a claim to exhaust every possible command string.
+
+For 1.16.5 the aliases are `vm dc pd nf`. The generator selects native
+`Commands.CommandSelection.ALL` instead of the older boolean constructor. The
+1.16.5 fixture has 94 cases, including relative spawn angles, UUID attribute
+modifiers, malformed values, Netherite items and dimension commands.

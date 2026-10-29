@@ -38,6 +38,9 @@ establish correct gameplay. The build validates 17,112 block states, extracts
   providers, biome ambience/music, Soul Sand slowdown and Soul Speed handling.
 - Riding: pig/strider steering, cold/warm and boost speeds, source-lava surface
   collision and submerged buoyancy have isolated collision/controller checks.
+- Commands: the complete native command tree decodes without unread bytes;
+  94 command cases match native Brigadier cursors, argument ranges and error
+  status. New angle and UUID arguments include native syntax checks.
 - Text: RGB component colors, named resource-pack fonts, modern hover contents,
   atomic wrapping/format inheritance and Unicode font regression checks.
 - GUI: option ordering is extracted from native arrays. Video, Chat and
@@ -63,8 +66,8 @@ multiplayer interaction or pixel-perfect rendering of every screen.
 - Compare remaining animation transitions, block ambience, particle offsets,
   sounds, entity poses and menu pixels against native rendering. Resource/model
   validation alone cannot resolve these differences.
-- Re-run the complete command-parser and packet-family audits for 1.16.5;
-  connection coverage is narrower than exhaustive protocol coverage.
+- Expand command cases and packet-family audits beyond the native 94-case
+  command fixture; neither commands nor protocol coverage are exhaustive.
 - Audit all release changes from 1.16 through 1.16.5, including uncommon fixes,
   before describing the client as fully compatible.
 

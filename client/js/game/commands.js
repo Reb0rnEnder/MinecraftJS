@@ -81,6 +81,16 @@ export class CommandTree {
     if(['minecraft:nbt','minecraft:nbt_compound_tag','minecraft:nbt_tag'].includes(parser)){
       try{const tag=nativeSnbt(value);if(parser!=='minecraft:nbt_tag'&&tag.t!==10)return fail(start);}catch{return fail(start,'argument.nbt.invalid');}
     }
+    if(parser==='minecraft:angle'){
+      const relative=value.startsWith('~'),offset=relative?1:0,match=value.slice(offset).match(/^-?(?:\d+(?:\.\d*)?|\.\d+)/);
+      if(!match){if(relative&&value.length===1)return {end};return fail(start,'parsing.float.invalid',[value]);}
+      return {end:start+offset+match[0].length};
+    }
+    if(parser==='minecraft:uuid'){
+      const match=value.match(/^[-A-Fa-f0-9]+/),uuid=match?.[0],groups=uuid?.split('-');
+      if(!uuid||uuid.length>36||groups.length!==5||groups.some(group=>!group||group.length>16))return fail(start,'argument.uuid.invalid');
+      return {end:start+uuid.length};
+    }
     if(parser==='minecraft:time'){
       const match=value.match(/^(-?(?:\d+(?:\.\d*)?|\.\d+))([dst]?)$/);
       if(!match)return fail(start,'argument.time.invalid_unit');

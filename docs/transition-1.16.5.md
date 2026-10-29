@@ -55,3 +55,8 @@ See [the parity audit](parity-1.16.5.md) for fixture coverage, applicable backpo
 and open issues. Next priorities are end-to-end Nether gameplay verification,
 remaining animation/ambient differences, command/protocol audit expansion and
 Fabulous/account-service gaps. Full parity remains an open milestone.
+
+The next native command-tree comparison exposed missing angle/UUID parser
+registrations. Both now decode and validate syntax, with 94 commands checked
+against Brigadier from the pinned 1.16.5 jar. The matching oracle generator
+supports the native Commands enum constructor without starting a server.
