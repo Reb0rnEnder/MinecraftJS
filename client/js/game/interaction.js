@@ -659,6 +659,8 @@ export class Interaction {
       if (held.count <= 0) return false;
       const { p } = this._placementPos(t, held);
       this._predictPlace(p, held, placer);
+      // Sound belongs to successful item use, including states left for the server to resolve.
+      g.sound.playBlockPlace(p.x, p.y, p.z, placer.defaultState);
       held.count--; // the server's slot update follows
       return true;
     }

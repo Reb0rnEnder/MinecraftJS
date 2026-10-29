@@ -1,3 +1,4 @@
+import {detachRemovedEntities} from './riding-lifecycle.js';
 import {applyFoxFlags,tickFox} from './fox.js';
 import {tickBeeSound,stopBeeSound} from './bee-sound.js';
 import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.15.2.js';
@@ -251,6 +252,7 @@ export class EntityManager {
   }
 
   destroy(ids) {
+    detachRemovedEntities(this, ids);
     for (const id of ids) {
       const e = this.map.get(id);
       if (!e) continue;
