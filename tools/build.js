@@ -196,16 +196,18 @@ async function collectAssets(opts) {
   const enc = new AudioEncoder(opts);
   console.log(`Sounds: ${sounds.length} files (${enc.codec === 'copy' ? 'original' : enc.codec + ` ${enc.sfxKbps}k mono / ${enc.musicKbps}k stereo music`})`);
   let done = 0, before = 0, after = 0;
-  await pool(names, Math.max(2, os.cpus().length), async (name) => {
-    let buf = await index.read(name);
-    if (name.startsWith('minecraft/sounds/') && name.endsWith('.ogg')) {
-      before += buf.length;
-      buf = await enc.encode(name.slice('minecraft/sounds/'.length), buf);
-      after += buf.length;
-      if (++done % 100 === 0) process.stdout.write(`  ${done}/${sounds.length}\r`);
-    }
-    if (name === 'minecraft/lang/en_us.lang' && files.has(name)) return; // the jar's copy is authoritative
-    files.set(name, buf);
+  await pool(names, Math.min(8, Math.max(2, os.cpus().length)), async (name) => {
+    try {
+      let buf = await index.read(name);
+      if (name.startsWith('minecraft/sounds/') && name.endsWith('.ogg')) {
+        before += buf.length;
+        buf = await enc.encode(name.slice('minecraft/sounds/'.length), buf);
+        after += buf.length;
+        if (++done % 100 === 0) process.stdout.write(`  ${done}/${sounds.length}\r`);
+      }
+      if (name === 'minecraft/lang/en_us.lang' && files.has(name)) return; // the jar's copy is authoritative
+      files.set(name, buf);
+    } catch (error) { throw new Error(`Asset ${name}: ${error.message || String(error)}`, {cause:error}); }
   });
   console.log(`  audio ${(before / 1048576).toFixed(1)} MB -> ${(after / 1048576).toFixed(1)} MB`);
   return files;
