@@ -676,6 +676,9 @@ export class LocalPlayer {
 
     // Entity.onEntityUpdate (before EntityPlayerSP.onLivingUpdate): water pushes and the in-water / in-lava state
     this.ticksExisted++;
+    // Player.tick establishes spectator collision/ground state before local input and travel.
+    this.noClip = this.spectator;
+    if (this.spectator) this.onGround = false;
     this.handleWaterMovement(world);
     this.inLava = this.isInLava(world);
 
@@ -759,7 +762,6 @@ export class LocalPlayer {
     moveStrafe = f32(moveStrafe * F.p098);
     moveForward = f32(moveForward * F.p098);
 
-    this.noClip = this.spectator;
     this.moveEntityWithHeading(world, moveStrafe, moveForward);
 
     if (this.onGround && this.flying && !this.spectator) {
