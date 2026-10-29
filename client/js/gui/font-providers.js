@@ -89,20 +89,21 @@ export class FontSet {
  }
 }
 export async function loadFontSets(assets) {
- const result={};
- for(const name of ['default','alt']){
-  const path='font/'+name+'.json',definitions=[];
-  for(const pack of assets.packs||[])if(pack.has(path))try{definitions.push(JSON.parse(decodeUtf8(pack.read(path))));}catch(e){console.warn('Bad font definition',pack.id,path);}
-  const base=await assets.source.bytes('minecraft/'+path);if(base)definitions.push(JSON.parse(decodeUtf8(base)));
+ const result={},fonts=new Set(['minecraft:default','minecraft:alt','minecraft:uniform']);
+ for(const pack of assets.packs||[])for(const path of pack.zip?.list(pack.prefix+'assets/')||[]){const match=/^([^/]+)\/font\/(.+)\.json$/.exec(path.slice((pack.prefix+'assets/').length));if(match)fonts.add(match[1]+':'+match[2]);}
+ for(const id of fonts){
+  const [namespace,...parts]=id.split(':'),name=parts.join(':'),path='font/'+name+'.json',definitions=[];
+  for(const pack of assets.packs||[])if(pack.zip?.has(pack.prefix+'assets/'+namespace+'/'+path)||namespace==='minecraft'&&pack.has(path))try{const bytes=pack.zip?.read(pack.prefix+'assets/'+namespace+'/'+path)||pack.read(path);definitions.push(JSON.parse(decodeUtf8(bytes)));}catch(e){console.warn('Bad font definition',pack.id,path);}
+  const base=['minecraft:default','minecraft:alt','minecraft:uniform'].includes(id)?await assets.source.bytes(namespace+'/'+path):null;if(base)definitions.push(JSON.parse(decodeUtf8(base)));
   const providers=[];
   for(const definition of definitions)for(const def of definition.providers||[])try{
-   const key='font:'+name+':'+providers.length;
+   const key='font:'+id+':'+providers.length;
    if(def.type==='bitmap'){const b=await fontBytes(assets,location(def.file,'textures/'));if(b)providers.push(bitmapProvider(assets,def,decodePng(b),key));}
    else if(def.type==='legacy_unicode'){const b=await fontBytes(assets,location(def.sizes));if(b)providers.push(legacyProvider(assets,def,b));}
    else if(def.type==='ttf'){const b=await fontBytes(assets,location(def.file,'font/'));if(b)providers.push(trueTypeProvider(assets,def,b,key));}
    else console.warn('Unsupported font provider',def.type);
   }catch(e){console.warn('Bad font provider',name,e.message);}
-  if(providers.length)result[name]=new FontSet(assets,providers);
+  if(providers.length){result[id]=new FontSet(assets,providers);if(namespace==='minecraft')result[name]=result[id];}
  }
  return result;
 }

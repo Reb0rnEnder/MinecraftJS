@@ -1,5 +1,4 @@
-// Initial 1.16.5 GUI baseline: inherited option layout, target pack format and identity.
-// Native option layout differences remain a later transition milestone.
+// Option arrays extracted from the pinned native 1.16.5 jar.
 export const VANILLA_UI = {
   "version": "1.16.5",
   "clientJarSha1": "37fd3c903861eeff3bc24b71eed48f828b5269c8",
@@ -19,7 +18,10 @@ export const VANILLA_UI = {
     "options.fullscreen",
     "options.particles",
     "options.mipmapLevels",
-    "options.entityShadows"
+    "options.entityShadows",
+    "options.screenEffectScale",
+    "options.entityDistanceScaling",
+    "options.fovEffectScale"
   ],
   "controlOptions": [
     "options.autoJump"
@@ -66,7 +68,8 @@ export const VANILLA_UI = {
     "key.hotbar.8": "key.categories.inventory",
     "key.hotbar.9": "key.categories.inventory",
     "key.saveToolbarActivator": "key.categories.creative",
-    "key.loadToolbarActivator": "key.categories.creative"
+    "key.loadToolbarActivator": "key.categories.creative",
+    "key.socialInteractions": "key.categories.multiplayer"
   },
   "mouseOptions": [
     "options.sensitivity",
@@ -81,9 +84,13 @@ export const VANILLA_UI = {
     "options.accessibility.text_background_opacity",
     "options.accessibility.text_background",
     "options.chat.opacity",
+    "options.chat.line_spacing",
+    "options.chat.delay_instant",
     "options.autoJump",
     "key.sneak",
-    "key.sprint"
+    "key.sprint",
+    "options.screenEffectScale",
+    "options.fovEffectScale"
   ],
   "controlsLayout": {
     "extraWidth": 45,
@@ -99,12 +106,15 @@ export const VANILLA_UI = {
     "options.chat.opacity",
     "options.accessibility.text_background_opacity",
     "options.chat.scale",
+    "options.chat.line_spacing",
+    "options.chat.delay_instant",
     "options.chat.width",
     "options.chat.height.focused",
     "options.chat.height.unfocused",
-    "options.reducedDebugInfo",
+    "options.narrator",
     "options.autoSuggestCommands",
-    "options.narrator"
+    "options.hideMatchedNames",
+    "options.reducedDebugInfo"
   ],
   "buttonText": {
     "normal": 16777215,

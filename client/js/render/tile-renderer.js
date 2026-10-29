@@ -137,7 +137,7 @@ export class TileEntityRenderer {
     else if (n.endsWith('_banner') || n.endsWith('_wall_banner')) type = 'banner';
     else if (n === 'enchanting_table') type = 'book';
     else if (n === 'bell') type = 'bell';
-    else if (n === 'campfire') type = 'campfire';
+    else if ((n === 'campfire'||n==='soul_campfire')) type = 'campfire';
     else if (n === 'lectern') type = 'lectern';
     else if (n === 'beacon') type = 'beacon';
     else if (n === 'end_portal' || n === 'end_gateway') type = 'endportal';
@@ -173,7 +173,7 @@ export class TileEntityRenderer {
       if (!s) continue;
        for (let i = 0; i < 4096; i++) {
          const state = s.blocks[i], name = getBlock(state).name;
-         if (name === 'chest' || name === 'trapped_chest' || name === 'ender_chest' || isSign(name) || name === 'campfire' || name === 'lectern' ||
+         if (name === 'chest' || name === 'trapped_chest' || name === 'ender_chest' || isSign(name) || (name === 'campfire'||name==='soul_campfire') || name === 'lectern' ||
             name.endsWith('_bed') || name.endsWith('_banner') || name.endsWith('_wall_banner') || skullType(name) !== undefined ||
             name === 'flower_pot' || name === 'end_portal' || name === 'end_gateway' || name.endsWith('_shulker_box') ||
            name === 'enchanting_table' || name === 'beacon' || name === 'bell') {

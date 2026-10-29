@@ -1,3 +1,4 @@
+import {smithingRecipe,smithingResult,smithingRecipes} from './workstations-1.16.5.js';
 // Inventory/container model with a faithful port of vanilla Container.slotClick and
 // per-container transferStackInSlot (1.8 servers don't echo accepted clicks back).
 import { C } from '../net/packets.js';
@@ -39,7 +40,7 @@ function tagsEqual(a, b) { return nbtEqual(stackTag(a), stackTag(b)); }
 export function stackable(a, b) { return sameItem(a, b) && tagsEqual(a, b); }
 
 const ARMOR_POINTS = {
-  leather: [1, 3, 2, 1], chainmail: [2, 5, 4, 1], iron: [2, 6, 5, 2], diamond: [3, 8, 6, 3], golden: [2, 5, 3, 1],
+  leather: [1, 3, 2, 1], chainmail: [2, 5, 4, 1], iron: [2, 6, 5, 2], diamond: [3, 8, 6, 3], netherite: [3, 8, 6, 3], golden: [2, 5, 3, 1],
 };
 const ARMOR_PARTS = ['helmet', 'chestplate', 'leggings', 'boots'];
 const HEADWEAR = new Set(['carved_pumpkin', 'skeleton_skull', 'wither_skeleton_skull', 'zombie_head', 'player_head', 'creeper_head', 'dragon_head']);
@@ -87,7 +88,7 @@ const isReagent = (it, items) => BREWING_INGREDIENTS.has(itemName(it, items));
 // ContainerBrewingStand.Potion.canHoldPotion: potions of the three kinds and glass bottles
 const BOTTLES = new Set(['potion', 'splash_potion', 'lingering_potion', 'glass_bottle']);
 const canHoldPotion = (it, items) => BOTTLES.has(itemName(it, items));
-const BEACON_PAYMENT = new Set(['emerald', 'diamond', 'gold_ingot', 'iron_ingot']);
+const BEACON_PAYMENT = new Set(['emerald', 'diamond', 'gold_ingot', 'iron_ingot', 'netherite_ingot']);
 const HORSE_ARMOR = new Set(['leather_horse_armor', 'iron_horse_armor', 'golden_horse_armor', 'diamond_horse_armor']);
 
 // Base container: slots with rules; also used for the player inventory (window 0)
@@ -526,7 +527,7 @@ export class ContainerWindow extends ContainerBase {
     this.type = type;
     this.title = title;
     this.entityId = entityId;
-    const fixed = { 'minecraft:crafting_table': 10, 'minecraft:enchanting_table': 2, 'minecraft:anvil': 3, 'minecraft:villager': 3, 'minecraft:beacon': 1 };
+    const fixed = { 'minecraft:crafting_table': 10, 'minecraft:enchanting_table': 2, 'minecraft:smithing': 3, 'minecraft:anvil': 3, 'minecraft:villager': 3, 'minecraft:beacon': 1 };
     this.size = fixed[type] !== undefined ? fixed[type] : slotCount;
     if (type === 'EntityHorse') this.size = slotCount;
     this.container = new Array(this.size).fill(null);
@@ -550,6 +551,7 @@ export class ContainerWindow extends ContainerBase {
 
   _configureSlot(i, slot) {
     switch (this.type) {
+      case 'minecraft:smithing': if(i===2){slot.output=true;slot.valid=()=>false;slot.canTake=()=>!!smithingRecipe(this.game,this.get(0),this.get(1));}break;
       case 'minecraft:crafting_table': if (i === 0) { slot.output = true; slot.valid = () => false; } break;
       case 'minecraft:blast_furnace': case 'minecraft:smoker': case 'minecraft:furnace':
         if (i === 2) { slot.output = true; slot.valid = () => false; }
@@ -593,6 +595,7 @@ export class ContainerWindow extends ContainerBase {
   }
 
   onSlotChanged(i) {
+    if(this.type==='minecraft:smithing'&&i<2)this.container[2]=smithingResult(this.game,this.get(0),this.get(1));
     if (this.type === 'minecraft:crafting_table' && i >= 1 && i <= 9) {
       this.container[0] = craftResult(this.container.slice(1, 10), 3, this.items);
     }
@@ -600,7 +603,7 @@ export class ContainerWindow extends ContainerBase {
 
   // ResultContainer and MerchantContainer remove the entire result even on right click.
   decr(i,n) {
-    if(this.slots[i]?.output && ['minecraft:stonecutter','minecraft:grindstone','minecraft:cartography','minecraft:villager'].includes(this.type))n=this.get(i)?.count||n;
+    if(this.slots[i]?.output && ['minecraft:smithing','minecraft:stonecutter','minecraft:grindstone','minecraft:cartography','minecraft:villager'].includes(this.type))n=this.get(i)?.count||n;
     return super.decr(i,n);
   }
 
@@ -610,7 +613,8 @@ export class ContainerWindow extends ContainerBase {
     const consume=(slot,count=1)=>{const it=this.get(slot);if(it)this.put(slot,it.count>count?{...it,count:it.count-count}:null);};
     // Accepted clicks do not echo these predicted input changes. Network setters
     // still replace every slot when the server changes/rejects the result.
-    if(this.type==='minecraft:stonecutter'){
+    if(this.type==='minecraft:smithing'){consume(0);consume(1);this.put(2,smithingResult(this.game,this.get(0),this.get(1)));
+    }else if(this.type==='minecraft:stonecutter'){
       const recipe=stonecutterRecipes(this.game,this.get(0))[this.properties[0]];
       consume(0);this.put(1,this.get(0)&&recipe?copy(recipe.data.result):null);
     }else if(this.type==='minecraft:loom'){
@@ -691,6 +695,12 @@ export class ContainerWindow extends ContainerBase {
           this.put(0, one);
           it.count--;
         }
+        return true;
+      }
+      if(t==='minecraft:smithing'){
+        if(i===2){if(!m(3,39,true))return false;}
+        else if(i<2){if(!m(3,39,false))return false;}
+        else {const start=smithingRecipes(this.game).some(r=>r.data.addition.some(s=>s?.id===it.id))?1:0;if(!m(start,2,false))return false;}
         return true;
       }
       if (t === 'minecraft:anvil' || t === 'minecraft:villager') {

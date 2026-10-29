@@ -210,8 +210,9 @@ export class Renderer {
     let fogR, fogG, fogB;
     let sky = [0, 0, 0];
     if (dimension === 0) {
-      sky = skyColor(angle, temperature, rain, thunder);
+      sky = skyColor(angle, temperature, rain, thunder,state.biomeSky);
       [fogR, fogG, fogB] = baseFogColor(angle);
+      if(state.biomeFog){const light=Math.max(0,Math.min(1,Math.cos(angle*Math.PI*2)*2+.5));[fogR,fogG,fogB]=state.biomeFog.map((v,i)=>v*(i===2?light*.91+.09:light*.94+.06));}
       if (this.renderDistance >= 4) {
         const sunDir = Math.sin(angle * Math.PI * 2) > 0 ? -1 : 1;
         let f5 = state.lookDir[0] * sunDir;
@@ -227,7 +228,7 @@ export class Renderer {
       if (rain > 0) { const f4 = 1 - rain * 0.5, f10 = 1 - rain * 0.4; fogR *= f4; fogG *= f4; fogB *= f10; }
       if (thunder > 0) { const f11 = 1 - thunder * 0.5; fogR *= f11; fogG *= f11; fogB *= f11; }
     } else if (dimension === -1) {
-      fogR = 0.2; fogG = 0.03; fogB = 0.03;
+      [fogR,fogG,fogB]=state.biomeFog||[.2,.03,.03];
     } else {
       fogR = 0.627 * 0.15; fogG = 0.5 * 0.15; fogB = 0.627 * 0.15;
     }
@@ -236,7 +237,7 @@ export class Renderer {
       const water=waterFog(state,this.waterFogState,platform().now());this.waterFogState=water.transition;
       [fogR,fogG,fogB]=water.color;fogMode=3;fogDensity=water.density;
     }
-    else if (state.inLava) { fogR = 0.6; fogG = 0.1; fogB = 0; fogMode = 1; fogDensity = 2.0; }
+    else if (state.inLava) { fogR = 0.6; fogG = 0.1; fogB = 0; fogMode = 0; fogStart=state.fireResistance?0:.25;fogEnd=state.fireResistance?3:1; }
     else if (dimension === -1) { fogStart = 0; fogEnd = renderDistBlocks * 0.5; }
     if(!state.underwater)this.waterFogState=null;
     if (state.blindness) { fogMode = 0; fogStart = 0; fogEnd = 5; fogR *= 0.1; fogG *= 0.1; fogB *= 0.1; }

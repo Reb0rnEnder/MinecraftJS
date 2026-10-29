@@ -5,7 +5,7 @@ export const WORKSTATIONS_498 = {
   'minecraft:stonecutter': {texture:'stonecutter',slots:[[0,20,33],[1,143,33]],titleY:4},
   'minecraft:loom': {texture:'loom',slots:[[0,13,26],[1,33,26],[2,23,45],[3,143,58]],titleY:4},
 };
-export const LOOM_PATTERNS = 'b bl br tl tr bs ts ls rs cs ms drs dls ss cr sc bt tt bts tts ld rd lud rud mc mr vh hh vhr hhb bo cbo gra gru bri glb cre sku flo moj'.split(' ');
+export const LOOM_PATTERNS = 'b bl br tl tr bs ts ls rs cs ms drs dls ss cr sc bt tt bts tts ld rd lud rud mc mr vh hh vhr hhb bo cbo gra gru bri glb cre sku flo moj pig'.split(' ');
 export function stonecutterRecipes(game, input) {
   if(!input)return [];
   const key=r=>(game.items.isBlockItem(r.data.result.id)?'block.minecraft.':'item.minecraft.')+game.items.name(r.data.result.id);

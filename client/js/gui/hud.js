@@ -58,6 +58,7 @@ export class Hud {
 
   tick() {
     this.updateCounter++;
+    this.processQueuedChat();
     if (this.actionBarTicks > 0) this.actionBarTicks--;
     if (this.titleTimer > 0) { this.titleTimer--; if (this.titleTimer <= 0) { this.title = ''; this.subtitle = ''; } }
     if (this.elderGuardianTime > 0) this.elderGuardianTime--;
@@ -98,7 +99,7 @@ export class Hud {
   chatLinesVisible() {
     const s = this.game.settings;
     const f = this.chatOpen() ? (s.chatHeightFocused ?? 1) : (s.chatHeightUnfocused ?? 0.44366196);
-    return Math.floor(Math.floor(f * 160 + 20) / 9);
+    return Math.floor(Math.floor(f/(1+(s.chatLineSpacing||0))*160+20)/9);
   }
 
   scrollChat(n) {
@@ -108,17 +109,30 @@ export class Hud {
     if (this.chatScroll < 0) this.chatScroll = 0;
   }
 
+  queueChatMessage(text,raw){
+    const delay=(this.game.settings.chatDelay||0)*1000,now=platform().now();
+    if(!delay||now-(this.lastQueuedChatAt??-Infinity)>=delay){this.addChat(text,raw);this.lastQueuedChatAt=now;}
+    else (this.queuedChat||=[]).push({text,raw});
+  }
+  processQueuedChat(force=false){
+    if(!this.queuedChat?.length)return false;
+    const now=platform().now(),delay=(this.game.settings.chatDelay||0)*1000;
+    if(force||now-(this.lastQueuedChatAt??-Infinity)>=delay){const message=this.queuedChat.shift();this.addChat(message.text,message.raw);this.lastQueuedChatAt=now;return true;}return false;
+  }
+  queuedChatClick(mx,my){const scale=this.chatScale(),y=this.gui.height-40;return this.queuedChat?.length&&this.chatOpen()&&mx>=2&&mx<=2+this.chatWidth()&&my>=y&&my<y+9*scale?this.processQueuedChat(true):false;}
+
   setActionBar(text) { this.actionBar = text; this.actionBarTicks = 60; }
 
   // F3+D (GuiNewChat.clearChatMessages)
   clearChat() {
     this.chat = [];
     this.chatLines = [];
-    this.chatScroll = 0;
+    this.chatScroll = 0;this.queuedChat=[];this.lastQueuedChatAt=-Infinity;
   }
 
   // Forget everything that belongs to the server we left (chat history stays, like vanilla)
   resetServerState() {
+    this.queuedChat=[];this.lastQueuedChatAt=-Infinity;
     this.actionBar = null; this.actionBarTicks = 0;
     this.title = ''; this.subtitle = ''; this.titleTimer = 0;
     this.titleFadeIn = 10; this.titleStay = 70; this.titleFadeOut = 20;
@@ -241,12 +255,12 @@ export class Hud {
     const gui = this.gui;
     const scale = this.chatScale();
     if(scale<=0)return null;
-    const baseY = gui.height - 28;
+    const baseY = gui.height - 40;
     const x = (mx - 2) / scale;
     const y = (baseY - my) / scale;
     if (x < 0 || y < 0) return null;
-    const idx = Math.floor(y / 9) + this.chatScroll;
-    if (idx >= this.chatLines.length || Math.floor(y / 9) >= this.chatLinesVisible()) return null;
+    const idx = Math.floor(y / (9*(1+(this.game.settings.chatLineSpacing||0)))) + this.chatScroll;
+    if (idx >= this.chatLines.length || Math.floor(y / (9*(1+(this.game.settings.chatLineSpacing||0)))) >= this.chatLinesVisible()) return null;
     const line = this.chatLines[idx];
     if (!line.comps) return null;
     // Find which component the x position lands on (components are sliced to each wrapped line)
@@ -269,7 +283,8 @@ export class Hud {
     if(scale<=0)return;
     const w = Math.ceil(this.chatWidth() / scale);
     gui.pushMatrix();
-    gui.translate(2, gui.height - 28);
+    gui.translate(2, gui.height - 40);
+    const lineHeight=9*(1+(g.settings.chatLineSpacing||0)),textOffset=-8-4*(g.settings.chatLineSpacing||0);
     gui.scaleBy(scale, scale);
     let drawn = 0;
     for (let i = 0; i + this.chatScroll < this.chatLines.length && i < lines; i++) {
@@ -281,21 +296,22 @@ export class Hud {
       let a = open ? 255 : Math.floor(255 * d);
       a = Math.floor(a * opacity);
       if (a <= 3) continue;
-      const y = -i * 9;
-      gui.rect(0, y - 9, w + 4, y, (Math.floor(255*(open?1:d)*(g.settings.textBackgroundOpacity??.5)) << 24) >>> 0);
-      gui.font.draw(line.text, 0, y - 8, 0xffffff, true, a / 255);
+      const y = Math.floor(-i*lineHeight);
+      gui.rect(0, y - lineHeight, w + 4, y, (Math.floor(255*(open?1:d)*(g.settings.textBackgroundOpacity??.5)) << 24) >>> 0);
+      gui.font.draw(line.text, 0, Math.floor(y+textOffset), 0xffffff, true, a / 255);
       drawn++;
     }
     if (open && this.chatLines.length > lines) {
       const total = this.chatLines.length;
-      const h = lines * 9;
-      const barH = h * h / (total * 9);
+      const h = lines * lineHeight;
+      const barH = h * h / (total * lineHeight);
       const barY = (this.chatScroll * h / total);
       const alpha = this.chatScroll > 0 ? 0xaa : 0x60;
       const color = this.chatScroll > 0 ? 0x3333aa : 0x333333;
       gui.rect(0, -barY, 2, -barY - barH, ((alpha << 24) | color) >>> 0);
       gui.rect(2, -barY, 1, -barY - barH, ((alpha << 24) | 0xcccccc) >>> 0);
     }
+    if(this.queuedChat?.length){gui.rect(0,0,w+4,9,0x80000000);gui.font.draw(this.game.assets.translate('chat.queue',[String(this.queuedChat.length)]),0,1,0xffffff,false);}
     gui.popMatrix();
     void drawn;
   }
@@ -312,6 +328,8 @@ export class Hud {
       if (env.underwater) this.renderUnderwater(gui, partial);
       if (this._isBurning()) this.renderFire(gui);
     }
+    const distortion=g.settings.screenEffectScale??1;
+    if(g.effects.has(9)&&distortion<1&&env.portal>0){const strength=env.portal*(1-distortion),size=2-strength,tex=gui.tex('misc/nausea.png');if(tex){gui.setBlend('add');gui.quad(tex,W*(1-size)/2,H*(1-size)/2,W*(1+size)/2,H*(1+size)/2,0,0,1,1,[.2*strength,.4*strength,.2*strength,1]);gui.setBlend('alpha');}}
     if (g.hideGui) return;
 
     if (g.settings.fancyGraphics) this.renderVignette(gui);
@@ -961,7 +979,7 @@ export class Hud {
       lines.push(`Chunk-relative: ${bx & 15} ${by & 15} ${bz & 15}`);
       return lines;
     }
-    const dimension = {0:'minecraft:overworld',[-1]:'minecraft:the_nether',1:'minecraft:the_end'}[g.dimension ?? g.world.dimension ?? 0];
+    const dimension = g.worldName || {0:'minecraft:overworld',[-1]:'minecraft:the_nether',1:'minecraft:the_end'}[g.dimension ?? g.world.dimension ?? 0];
     // FC is the server's force-loaded chunk count; multiplayer clients do not receive it.
     lines.splice(lines.length - 1, 0, (dimension || 'Unknown dimension (' + (g.dimension ?? g.world.dimension) + ')') + ' FC: n/a');
     const f = (n, d) => n.toFixed(d);

@@ -2868,5 +2868,195 @@
         "name": "doubleRightLock"
       }
     ]
+  },
+  "hoglin": {
+    "class": "net.minecraft.client.model.HoglinModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HoglinModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HoglinModel",
+        "name": "rightEar"
+      },
+      {
+        "owner": "net.minecraft.client.model.HoglinModel",
+        "name": "leftEar"
+      },
+      {
+        "owner": "net.minecraft.client.model.HoglinModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HoglinModel",
+        "name": "frontRightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HoglinModel",
+        "name": "frontLeftLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HoglinModel",
+        "name": "backRightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HoglinModel",
+        "name": "backLeftLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HoglinModel",
+        "name": "mane"
+      }
+    ]
+  },
+  "strider": {
+    "class": "net.minecraft.client.model.StriderModel",
+    "descriptor": "()V",
+    "args": [],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.StriderModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.StriderModel",
+        "name": "leftLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.StriderModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.StriderModel",
+        "name": "bristle0"
+      },
+      {
+        "owner": "net.minecraft.client.model.StriderModel",
+        "name": "bristle1"
+      },
+      {
+        "owner": "net.minecraft.client.model.StriderModel",
+        "name": "bristle2"
+      },
+      {
+        "owner": "net.minecraft.client.model.StriderModel",
+        "name": "bristle3"
+      },
+      {
+        "owner": "net.minecraft.client.model.StriderModel",
+        "name": "bristle4"
+      },
+      {
+        "owner": "net.minecraft.client.model.StriderModel",
+        "name": "bristle5"
+      }
+    ]
+  },
+  "piglin": {
+    "class": "net.minecraft.client.model.PiglinModel",
+    "descriptor": "(FII)V",
+    "args": [
+      0,
+      64,
+      64
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "leftSleeve"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "rightSleeve"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "leftPants"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "rightPants"
+      },
+      {
+        "owner": "net.minecraft.client.model.PlayerModel",
+        "name": "jacket"
+      },
+      {
+        "owner": "net.minecraft.client.model.PiglinModel",
+        "name": "earRight"
+      },
+      {
+        "owner": "net.minecraft.client.model.PiglinModel",
+        "name": "earLeft"
+      }
+    ]
+  },
+  "piglinArmorOuter": {
+    "class": "net.minecraft.client.model.HumanoidModel",
+    "descriptor": "(F)V",
+    "args": [
+      1.02
+    ],
+    "fields": [
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "head"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "hat"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "body"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftArm"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "rightLeg"
+      },
+      {
+        "owner": "net.minecraft.client.model.HumanoidModel",
+        "name": "leftLeg"
+      }
+    ]
   }
 }

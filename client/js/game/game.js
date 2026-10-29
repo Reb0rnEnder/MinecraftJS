@@ -1,3 +1,6 @@
+import {SocialInteractionsScreen} from '../gui/screens/social.js';
+import {GameModeSwitcherScreen} from '../gui/screens/gamemode-switcher.js';
+import {sampleBiomeFog} from '../world/biome-effects.js';
 import {NbtQueries,copyInspect} from './nbt-queries.js';
 import {replaceServerRecipes,resetServerRecipes} from './server-recipes.js';
 import {tickPortal,portalWarp} from './portal.js';
@@ -29,9 +32,9 @@ import { World } from '../world/world.js';
 import { getBlock, getBlockById, getStateProperties } from '../world/blocks.js';
 import { isPointInFluid } from '../world/fluids.js';
 import { resolveState } from '../world/blockstates.js';
-import { biomeInfo } from '../world/biomes.js';
+import { biomeInfo,setServerBiomes } from '../world/biomes.js';
 import { LocalPlayer } from './physics.js';
-import { BoatController, HorseController } from './vehicle.js';
+import { BoatController, HorseController, SteerableController } from './vehicle.js';
 import { Advancements } from './advancements.js';
 import { RecipeBook } from './recipebook.js';
 import { Input } from './input.js';
@@ -284,6 +287,7 @@ export class Game {
   _debugCombo(e) {
     const s = this.settings;
     switch (e.code) {
+      case 'F4':if((this.permissionLevel|0)>=2)this.screens.open(new GameModeSwitcherScreen(this));else this.debugFeedback('debug.gamemodes.error');return true;
       case 'KeyI':copyInspect(this,!!e.shift);return true;
       case 'KeyC':platform().setClipboard(`/execute in ${this.dimension===-1?'minecraft:the_nether':this.dimension===1?'minecraft:the_end':'minecraft:overworld'} run tp @s ${this.player.x.toFixed(2)} ${this.player.y.toFixed(2)} ${this.player.z.toFixed(2)} ${this.player.yaw.toFixed(2)} ${this.player.pitch.toFixed(2)}`);this.debugFeedback('debug.copy_location.message');return true;
       case 'KeyA': // RenderGlobal.loadRenderers
@@ -312,9 +316,7 @@ export class Game {
         return true;
       case 'KeyN': // creative <-> spectator, needs permission level 2
         if ((this.permissionLevel | 0) < 2) this.debugFeedback('debug.creative_spectator.error');
-        else if (this.gameMode === 1) this.send(C.chat('/gamemode spectator'));
-        else if (this.gameMode === 3) this.send(C.chat('/gamemode creative'));
-        else this.send(C.chat('/gamemode creative'));
+        else this.send(C.chat('/gamemode '+(this.gameMode===3?['survival','creative','adventure','spectator'][this.previousGameMode??1]:'spectator')));
         return true;
       case 'Escape':this.screens.open(new InvisiblePauseScreen(this));return true;
       case 'KeyP':
@@ -324,7 +326,7 @@ export class Game {
       case 'KeyQ':
         this.debugFeedback('debug.help.message');
         for (const k of ['reload_chunks', 'show_hitboxes', 'clear_chat', 'cycle_renderdistance', 'chunk_boundaries', 'advanced_tooltips',
-          'creative_spectator', 'pause_focus', 'help', 'reload_resourcepacks']) this.hud.addChat(this.assets.translate('debug.' + k + '.help'), null, true);
+          'creative_spectator','gamemodes', 'pause_focus', 'help', 'reload_resourcepacks']) this.hud.addChat(this.assets.translate('debug.' + k + '.help'), null, true);
         return true;
       case 'KeyT':
         this.debugFeedback('debug.reload_resourcepacks.message');
@@ -639,6 +641,7 @@ export class Game {
   }
 
   leaveWorld() {
+    setServerBiomes(null);
     resetServerRecipes(this);this.nbtQueries?.clear();
     this.structureBlocks.clear();
     this.jigsawBlocks.clear();
@@ -725,12 +728,12 @@ export class Game {
     this.entityId = p.entityId;
     this.selfMetadata = {};
     this.maxHealth = 20;
-    if (this.gameMode !== (p.gameMode & 7)) this.previousGameMode = this.gameMode;
+    this.previousGameMode=p.previousGameMode>=0?p.previousGameMode:null;
     this.gameMode = p.gameMode & 7;
     this.hardcore = p.isHardcore;
     this.dimension = p.dimension;
     this.worldName=p.worldName;this.dimensionData=p.dimensionData;
-    if(p.dimensionCodec)this.dimensionCodec=p.dimensionCodec;
+    if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));}
     if(p.difficulty!==undefined)this.difficulty = p.difficulty;
     this.maxPlayers = p.maxPlayers;
     this.levelType = p.levelType;
@@ -765,8 +768,11 @@ export class Game {
   on_custom_payload(p) { this.eaglerTextures?.handle(p.channel,p.data); }
 
   on_chat(p) {
+    if(this.hiddenPlayers?.has(p.sender)||this.blockedPlayers?.has(p.sender))return;
+    if(this.settings.hideMatchedNames){const name=chatToLegacy(p.message).replace(/§./g,'').match(/<([^>]+)>/)?.[1],id=[...(this.scoreboard?.players||[])].find(([,player])=>player.name===name)?.[0];if(id&&(this.hiddenPlayers?.has(id)||this.blockedPlayers?.has(id)))return;}
     const text = chatToLegacy(p.message);
     if (p.position === 2) this.hud.setActionBar(text);
+    else if(p.position===0)this.hud.queueChatMessage(text,p.message);
     else this.hud.addChat(text, p.message);
     this.narrator.onChat(p.position, p.message);
   }
@@ -816,12 +822,12 @@ export class Game {
     }
     this.dimension = p.dimension;
     this.worldName=p.worldName;this.dimensionData=p.dimensionData;
-    if(p.dimensionCodec)this.dimensionCodec=p.dimensionCodec;
+    if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));}
     this.world.setDimension(p.dimension);
     if(p.dimensionData)this.world.hasSky=!!p.dimensionData.has_skylight;
     this.world.setBiomeSeed?.(p.hashedSeed);
     if(p.difficulty!==undefined)this.difficulty = p.difficulty;
-    if (this.gameMode !== (p.gamemode)) this.previousGameMode = this.gameMode;
+    this.previousGameMode=p.previousGamemode>=0?p.previousGamemode:null;
     this.gameMode = p.gamemode;
     this.levelType = p.levelType;
     this.applyGameMode();
@@ -1112,10 +1118,9 @@ export class Game {
   on_open_window(p) {
     if(typeof p.inventoryType==='number'){
       const name=MENUS_754[p.inventoryType];
-      if(name==='minecraft:smithing'){this.send(C.closeWindow(p.windowId));return;} // Planned in the content milestone.
       const rows=/generic_9x([1-6])/.exec(name||'');
       const aliases={'minecraft:generic_3x3':['minecraft:dispenser',9],'minecraft:crafting':['minecraft:crafting_table',10],'minecraft:enchantment':['minecraft:enchanting_table',2],'minecraft:merchant':['minecraft:villager',3],'minecraft:blast_furnace':['minecraft:blast_furnace',3],'minecraft:smoker':['minecraft:smoker',3]};
-      const fixed={'minecraft:anvil':3,'minecraft:beacon':1,'minecraft:brewing_stand':5,'minecraft:furnace':3,'minecraft:hopper':5,'minecraft:shulker_box':27,'minecraft:grindstone':3,'minecraft:lectern':1,'minecraft:loom':4,'minecraft:cartography':3,'minecraft:stonecutter':2};
+      const fixed={'minecraft:smithing':3,'minecraft:anvil':3,'minecraft:beacon':1,'minecraft:brewing_stand':5,'minecraft:furnace':3,'minecraft:hopper':5,'minecraft:shulker_box':27,'minecraft:grindstone':3,'minecraft:lectern':1,'minecraft:loom':4,'minecraft:cartography':3,'minecraft:stonecutter':2};
       const [type,count]=rows?['minecraft:chest',Number(rows[1])*9]:aliases[name]||[name,fixed[name]];
       if(!type||count===undefined)throw new Error('Unknown 1.16.5 menu '+p.inventoryType);
       p={...p,inventoryType:type,slotCount:count};
@@ -1411,6 +1416,7 @@ export class Game {
       if (this._debugCombo(e)) return;
     }
     if (e.code === 'Escape') { this.screens.open(new PauseScreen(this)); return; }
+    if(e.code===k.socialInteractions){this.input.suppressNextChar=true;this.screens.open(new SocialInteractionsScreen(this));return;}
     if (e.code === k.chat) { this.input.suppressNextChar = true; this.screens.open(new ChatScreen(this, '')); return; }
     if (e.code === k.command) { this.input.suppressNextChar = true; this.screens.open(new ChatScreen(this, '/')); return; }
     if (e.code === k.inventory) { this.input.suppressNextChar = true; this.openInventory(); return; }
@@ -1568,6 +1574,11 @@ export class Game {
       tin.autoJump = this.settings.autoJump;
       tin.elytraUsable = !!(chest && this.items.name(chest.id) === 'elytra' && this.items.damage(chest) < this.items.maxDurability(chest.id) - 1);
       pl.depthStrider=this.items.enchantLevel(this.inventory.armor[0],'depth_strider');
+      pl.soulSpeed=this.items.enchantLevel(this.inventory.armor[0],'soul_speed');
+      if(pl.soulSpeed&&!pl.spectator&&this.ticks%5===0&&pl.motionX!==0&&pl.motionZ!==0){
+        const below=getBlock(world.getState(Math.floor(pl.x),Math.floor(pl.y-.2),Math.floor(pl.z)));
+        if(below&&['soul_sand','soul_soil'].includes(below.name))this.particles.nativeParticle('soul',pl.x+(Math.random()-.5)*pl.width,pl.y+.1,pl.z+(Math.random()-.5)*pl.width,-pl.motionX*.2,.1,-pl.motionZ*.2);
+      }
       pl.dolphinsGrace=this.effects.has(30);pl.slowFalling=this.effects.has(28);
       pl.sleeping = !!this.sleeping;
       const res = pl.tick(world, tin);
@@ -1628,10 +1639,13 @@ export class Game {
     const first = passengers.length ? passengers[0] : this.entityId;
     if (first !== this.entityId) return null; // only the first passenger steers
     const horse = v.kind === 'mob' && v.type === 100 && !!((v.horseFlags || 0) & 4);
-    if (v.kind !== 'boat' && !horse) return null;
+    const steerable=v.kind==='mob'&&v.saddled&&(v.entityName==='strider'||v.entityName==='pig');
+    const steeringItem=v.entityName==='strider'?'warped_fungus_on_a_stick':'carrot_on_a_stick';
+    const steering=steerable&&[this.inventory.held(),this.inventory.offhand].some(item=>item&&this.items.name(item.id)===steeringItem);
+    if (v.kind !== 'boat' && !horse && !steering) return null;
     if (!this.vehicle || this.vehicle.e !== v) {
       if (this.vehicle) this.vehicle.e.controlled = false;
-      this.vehicle = v.kind === 'boat' ? new BoatController(this.world, v) : new HorseController(this.world, v);
+      this.vehicle = v.kind === 'boat' ? new BoatController(this.world, v) : steering?new SteerableController(this.world,v):new HorseController(this.world, v);
       v.controlled = true;
     }
     return this.vehicle;
@@ -1683,7 +1697,7 @@ export class Game {
         const a = v.attributes || {};
         const val = (k, d) => (a[k] ? attributeValue(a[k]) : d);
         const jb = this.effects.get(8);
-        ctl.tick(pl, strafe, forward, { speed: val('generic.movementSpeed', 0.225), jumpStrength: val('horse.jumpStrength', 0.7), jumpBoost: jb ? jb.amplifier : -1 });
+        ctl.tick(pl, strafe, forward, { speed: val('generic.movementSpeed',v.entityName==='strider'?.175:v.entityName==='pig'?.25:.225), jumpStrength: val('horse.jumpStrength', 0.7), jumpBoost: jb ? jb.amplifier : -1 });
       }
       // the vehicle entity follows the simulation
       const b = ctl.body;
@@ -1918,7 +1932,7 @@ export class Game {
       if (this.thirdPerson === 2) { camYaw += 180; camPitch = -camPitch; }
     }
     let fov = this.settings.fov;
-    fov *= this.prevFovModifier + (this.fovModifier - this.prevFovModifier) * partial;
+    fov *= 1+((this.prevFovModifier+(this.fovModifier-this.prevFovModifier)*partial)-1)*(this.settings.fovEffectScale??1)**2;
     const underwater = isPointInFluid(this.world, ex, ey, ez);
     const inLava = isPointInFluid(this.world, ex, ey, ez, true);
     if (underwater || inLava) fov = fov * 60 / 70;
@@ -1928,11 +1942,11 @@ export class Game {
 
     fov = zoomFov(this,fov);
     r.renderDistance = this.settings.renderDistance;
-    r.setCamera(ex, ey, ez, camYaw, camPitch, roll, fov, pre,portalWarp(portal,this.ticks+partial,this.effects.has(9)));
+    r.setCamera(ex, ey, ez, camYaw, camPitch, roll, fov, pre,portalWarp(portal*(this.settings.screenEffectScale??1)**2,this.ticks+partial,this.effects.has(9)));
     const temp = biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).temperature;
     const rain = this.world.prevRain !== undefined ? this.world.prevRain + (this.world.rainStrength - this.world.prevRain) * partial : this.world.rainStrength;
     r.updateEnvironment({
-      worldTime: this.world.timeOfDay, partial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,
+      worldTime: this.world.timeOfDay, partial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,biomeFog:sampleBiomeFog(this.world,ex,ey,ez),biomeSky:biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).effects?.sky_color,fireResistance:this.effects.has(12),
       camPos: [ex, ey, ez], lookDir: look, dimension: this.dimension, underwater, inLava, biomeId:this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey)), waterVision:pl.waterVision(), conduitPower:this.effects.has(29),
       blindness: this.effects.has(15), nightVision: this.effects.has(16) ? 1 : 0, clouds: this.settings.clouds,
       horizon: String(this.levelType).toLowerCase() === 'flat' ? 0 : 63,

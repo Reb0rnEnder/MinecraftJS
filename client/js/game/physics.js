@@ -584,7 +584,7 @@ export class LocalPlayer {
           this.motionY=-.05;this.fallDistance=0;
         }
       }
-      else if (b.name === 'soul_sand') { this.motionX *= 0.4; this.motionZ *= 0.4; }
+
     }
     // Slime: walking on it slows you
     const below = getBlock(world.getState(Math.floor(this.x), Math.floor(this.y - 0.20000000298023224), Math.floor(this.z)));
@@ -594,7 +594,8 @@ export class LocalPlayer {
     }
     const feet=getBlock(world.getState(Math.floor(this.x),Math.floor(this.y),Math.floor(this.z))),under=getBlock(world.getState(Math.floor(this.x),Math.floor(this.y-.5000001),Math.floor(this.z)));
     const honeyFactor=honeyMovementFactor(feet?.name==='honey_block'?feet.name:under?.name);
-    this.motionX*=honeyFactor;this.motionZ*=honeyFactor;
+    const soulFactor=!this.soulSpeed&&(feet?.name==='soul_sand'||under?.name==='soul_sand') ? .4 : 1;
+    this.motionX*=honeyFactor*soulFactor;this.motionZ*=honeyFactor*soulFactor;
   }
 
   jump(world) {

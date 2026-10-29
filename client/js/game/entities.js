@@ -1,3 +1,4 @@
+import {applyNetherMetadata} from './nether-metadata.js';
 import {applyFoxFlags,tickFox} from './fox.js';
 import {tickBeeSound,stopBeeSound} from './bee-sound.js';
 import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.16.5.js';
@@ -363,6 +364,7 @@ export class EntityManager {
     } else if(native[6]!==undefined&&native[6]!==2){e.sleeping=false;e.bedPos=null;e.sleepingPosition=null;}
     m={};for(const [key,value] of Object.entries(native)){const i=Number(key);if(i===6||living498&&i===12)continue;m[i-(i>=7?living498&&i>=13?2:1:0)]=value;}
     const name = e.entityName;
+    applyNetherMetadata(e,wire);
     const ids=NATIVE_METADATA[name];
     if(ids){
       const assignments={cat:{DATA_TYPE_ID:'catType',IS_LYING:'catLying',RELAX_STATE_ONE:'catRelaxing',DATA_COLLAR_COLOR:'collar'},fox:{DATA_TYPE_ID:'foxType'},panda:{MAIN_GENE_ID:'pandaGene',HIDDEN_GENE_ID:'pandaHiddenGene'},villager:{DATA_UNHAPPY_COUNTER:'unhappyCounter'}}[name]||{};
@@ -507,7 +509,7 @@ export class EntityManager {
         case 'evoker': case 'illusioner': set(13, 'spell'); // fall through: AbstractIllager flags
         case 'vindicator': bit(12, 1, 'armsRaised'); set(12, 'illagerFlags'); break;
         case 'vex': bit(12, 1, 'charging'); break;
-        case 'pig': set(13, 'saddled'); set(14, 'boostTime'); break;
+        case 'pig': set(13, 'saddled');if(m[14]!==undefined){e.boostDuration=m[14];e.boostTicks=0;e.boosting=m[14]>0;}break;
         case 'sheep': if (m[13] !== undefined) { e.fleece = m[13] & 15; e.sheared = !!(m[13] & 16); } break;
         case 'wolf': bit(13, 2, 'angry'); set(15, 'wolfHealth'); set(16, 'begging'); set(17, 'collar'); break;
         case 'ocelot': set(15, 'catType'); break;
@@ -582,7 +584,8 @@ export class EntityManager {
     switch (p.entityStatus) {
       case 2: e.hurtTime = 10; g.sound.playEntityHurt(e); break;
       case 3: e.dead = true; e.health = 0; g.sound.playEntityDeath(e); break;
-      case 4: if (e.entityName === 'evoker_fangs') e.fangsActive = true; break;
+      case 4: if (e.entityName === 'evoker_fangs') e.fangsActive = true;
+        else if(['hoglin','zoglin'].includes(e.entityName)){e.attackTicks=10;g.sound.play('entity.'+e.entityName+'.attack',e.x,e.y,e.z,1,e.child?1.4:1);}break;
       case 6: g.particles.entityEffect(e, 'smoke'); break;
       case 7: g.particles.entityEffect(e, 'heart'); break;
       case 10: e.eatingGrass = 40; break;
@@ -666,6 +669,7 @@ export class EntityManager {
     if (v.kind === 'boat') return -0.1;     // EntityBoat.getMountedYOffset (1.9+)
     if (v.kind === 'minecart') return 0;    // EntityMinecart.getMountedYOffset (1.9+)
     if (v.kind === 'mob') {
+      if(v.entityName==='strider')return v.height-.19+.24*Math.cos((v.limbSwing||0)*1.5)*Math.min(.25,v.limbSwingAmount||0);
       if (v.type === 90) return 0.9 * 0.75 - 0.3;
       if (v.type === 100) return v.height * 0.75 - 0.25;
       if (v.type === 52 || v.type === 59) return v.height * 0.5 - 0.15;
@@ -682,7 +686,7 @@ export class EntityManager {
       if (e.entityName === 'sheep' && itemName === 'shears') return true;
       if (itemName === 'name_tag' || itemName === 'lead') return true;
       if (e.type === 95 || e.type === 98) return !!e.tamed;
-      if (e.type === 90 && e.saddled) return true;
+      if ((e.type === 90 || e.entityName==='strider') && (e.saddled||itemName==='saddle')) return true;
     }
     if (e.kind === 'itemframe' || e.kind === 'armorstand' || e.kind === 'minecart' || e.kind === 'boat') return true;
     return false;
@@ -986,6 +990,8 @@ export class EntityManager {
         }
         e.bodyYaw = e.prevBodyYaw = 180;
       }
+      if(e.attackTicks>0)e.attackTicks--;
+      if(e.boosting&&++e.boostTicks>e.boostDuration)e.boosting=false;
       if (e.hurtTime > 0) e.hurtTime--;
       if (e.dead) {
         e.deathTime++;

@@ -1,7 +1,8 @@
+import {biomeInfo} from '../world/biomes.js';
 import { WATER_BIOMES } from '../world/water-biomes.js';
 // FogRenderer in the pinned jar (ctx): 5-second biome transition and squared-exponential water fog.
 export function waterFog(state,previous,now) {
-  const id=state.biomeId??1,color=(WATER_BIOMES[id]||WATER_BIOMES[1])[1];
+  const id=state.biomeId??1,color=biomeInfo(id).effects?.water_fog_color??(WATER_BIOMES[id]||WATER_BIOMES[1])[1];
   let transition=previous||{target:color,from:color,time:now};
   const mix=Math.max(0,Math.min(1,(now-transition.time)/5000));
   const channels=[16,8,0].map(shift=>((transition.from>>shift)&255)*(1-mix)+((transition.target>>shift)&255)*mix);

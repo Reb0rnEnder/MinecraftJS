@@ -1,3 +1,4 @@
+import {netherParticle,NETHER_PARTICLES} from './nether-particles.js';
 import {moveParticle} from './particle-collision.js';
 // Particle system (port of EffectRenderer + common EntityFX subclasses), batched into one buffer per texture.
 import { getBlock, getStateProperties } from '../world/blocks.js';
@@ -689,6 +690,7 @@ export class Particles {
   }
 
   nativeParticle(type,x,y,z,mx=0,my=0,mz=0) {
+    if(NETHER_PARTICLES.has(type))return netherParticle(this,type,x,y,z,mx,my,mz);
     const p={x,y,z,mx,my,mz,sprite:type,scale:1,maxAge:20,drag:.96,collide:false};
     switch(type){
       case 'flash':p.maxAge=4;p.scale=7.1;p.update=()=>{};p.sizeFn=(q,t)=>71*Math.sin((q.age+t-1)*.25*Math.PI);p.alphaFn=(q,t)=>.6-(q.age+t-1)*.125;break;
@@ -749,6 +751,7 @@ export class Particles {
       case 'landing_lava':emit((x,y,z)=>this.fallingDrop(x,y,z,true,true));break;
       case 'campfire_cosy_smoke':case 'campfire_signal_smoke':emit((x,y,z)=>this.campfireSmoke(x,y,z,type==='campfire_signal_smoke'));break;
       case 'composter':emit((x,y,z)=>this.simpleRising(x,y,z,0,{sprite:'composter',scale:.5,my:0}));break;
+      case 'ash':case 'white_ash':case 'crimson_spore':case 'warped_spore':case 'soul':case 'soul_fire_flame':case 'reverse_portal':case 'dripping_obsidian_tear':case 'falling_obsidian_tear':case 'landing_obsidian_tear':
       case 'flash':case 'sneeze':case 'end_rod':case 'totem_of_undying':case 'damage_indicator':case 'dragon_breath':case 'spit':case 'squid_ink':case 'sweep_attack':case 'bubble_pop':case 'current_down':case 'bubble_column_up':case 'nautilus':case 'dolphin':
         emit((x,y,z,mx,my,mz)=>this.nativeParticle(type,x,y,z,mx,my,mz));break;
       case 'angry_villager': emit((x, y, z) => this.simpleRising(x, y, z, 81, { my: 0 })); break;
@@ -859,6 +862,13 @@ export class Particles {
     const b = getBlock(state);
     if (!b) return;
     const n = b.name;
+    if(n==='crying_obsidian'&&rand()<.2){
+      const direction=[[0,-1,0],[0,1,0],[0,0,-1],[0,0,1],[-1,0,0],[1,0,0]][Math.floor(rand()*6)];
+      if(direction[1]!==1&&!getBlock(this.game.world.getState(x+direction[0],y+direction[1],z+direction[2]))?.collisionFull){
+        const pos=direction.map((v,i)=>[x,y,z][i]+(v?.5+v*.6:rand()));this.nativeParticle('dripping_obsidian_tear',...pos);
+      }
+    }
+    if(n==='soul_torch'||n==='soul_wall_torch'||n==='soul_fire'){this.nativeParticle('soul_fire_flame',x+.5,y+.7,z+.5);this.smoke(x+.5,y+.7,z+.5);}
     if (n === 'barrier' && this.game.player.creative) {
       const held = this.game.inventory.held();
       if (held && this.game.items.name(held.id) === 'barrier') this.barrier(x, y, z);

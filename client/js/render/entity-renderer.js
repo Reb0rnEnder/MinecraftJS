@@ -1,3 +1,4 @@
+import {scaleHoglinChild,scalePiglinChild} from './nether-poses.js';
 import {bedFacing} from '../game/bed-sleep.js';
 import {foxAnimationArgs} from '../game/fox.js';
 import {scaleFoxChild} from './fox-pose.js';
@@ -29,7 +30,7 @@ import { fetchSkin, fetchSkinProfile, uuidSkinProxyAvailable } from '../net/prox
 import { EntityFire } from './entity-fire.js';
 import { decodeUtf8 } from '../util/utf8.js';
 
-const ARMOR_MATS = ['leather', 'chainmail', 'iron', 'diamond', 'gold', 'turtle'];
+const ARMOR_MATS = ['leather', 'chainmail', 'iron', 'diamond', 'gold', 'turtle', 'netherite'];
 
 // Vanilla 1.8.9 MapColor base colors (r, g, b). Index 0 = NONE (transparent).
 const MAP_BASE_COLORS = [
@@ -338,6 +339,9 @@ export class EntityRenderer {
       case 'tropical_fish': return 'entity/fish/tropical_' + (fishShape(e) ? 'b' : 'a') + '.png';
       case 'dolphin': return 'entity/dolphin.png';
       case 'turtle': return 'entity/turtle/big_sea_turtle.png';
+      case 'hoglin': case 'zoglin': return 'entity/hoglin/'+e.type+'.png';
+      case 'piglin': case 'piglin_brute': case 'zombified_piglin': return 'entity/piglin/'+e.type+'.png';
+      case 'strider': return 'entity/strider/strider'+(e.striderCold?'_cold':'')+'.png';
       case 'bee': return 'entity/bee/' + (e.angry ? (e.hasNectar ? 'bee_angry_nectar' : 'bee_angry') : (e.hasNectar ? 'bee_nectar' : 'bee')) + '.png';
       case 'phantom': return 'entity/phantom.png';
       default: return null;
@@ -400,6 +404,9 @@ export class EntityRenderer {
       case 'turtle': return M.turtle();
       case 'phantom': return M.phantom(e.phantomSize || 0);
       case 'bee': return M.bee();
+      case 'hoglin': case 'zoglin': return M.hoglin();
+      case 'piglin': case 'piglin_brute': case 'zombified_piglin': return M.piglin(e.type==='zombified_piglin');
+      case 'strider': return M.strider();
       default: return null;
     }
   }
@@ -423,7 +430,7 @@ export class EntityRenderer {
 
   _makeModelObject(model, mat) {
     const g = new Node();
-    if(model.foxAgeable){const head=new Node(),body=new Node();g.add(head);g.add(body);model.childGroups={head,body};for(const r of model.roots)(r===model.parts.head?head:body).add(r.build());}
+    if(model.foxAgeable||model.hoglinAgeable||model.piglinAgeable){const head=new Node(),body=new Node();g.add(head);g.add(body);model.childGroups={head,body};for(const r of model.roots)(r===model.parts.head||model.piglinAgeable&&r===model.parts.headwear?head:body).add(r.build());}
     else for (const r of model.roots) g.add(r.build());
     for (const r of model.roots) r.setMaterial(mat);
     return g;
@@ -513,6 +520,7 @@ export class EntityRenderer {
       if (e.type === 52 || e.type === 59) addLayer(M.spider(), 'entity/spider_eyes.png', { fullBright: true, transparent: true, additive: true, depthWrite: false, eyes: true });
       if (e.type === 58) addLayer(M.enderman(), 'entity/enderman/enderman_eyes.png', { fullBright: true, transparent: true, additive: true, depthWrite: false, eyes: true });
       if (e.type === 55) v.slimeOuter = addLayer(M.slime(true), 'entity/slime/slime.png', { transparent: true, depthWrite: true });
+      if (e.type === 'strider') v.saddle=addLayer(M.strider(),'entity/strider/strider_saddle.png');
       if (e.type === 90) v.saddle = addLayer(M.pig(), 'entity/pig/pig_saddle.png');
       if (e.type === 50) v.charge = addLayer(M.creeper(), () => this.game.assets.texture('entity/creeper/creeper_armor.png', { wrap: 'repeat' }), { transparent: true, additive: true, fullBright: true, depthWrite: false, charge: true });
       if (e.type === 100) {
@@ -528,7 +536,7 @@ export class EntityRenderer {
       }
       if (e.type === 'phantom') addLayer(M.phantom(e.phantomSize || 0), 'entity/phantom_eyes.png',
         { fullBright: true, transparent: true, additive: true, depthWrite: false, eyes: true, cull: false });
-      if (e.type === 51 || e.type === 53 || e.type === 54 || e.type === 57 || e.type === 'drowned') this._addArmorLayers(v, e);
+      if (e.type === 51 || e.type === 53 || e.type === 54 || e.type === 57 || e.type === 'drowned' || ['piglin','piglin_brute','zombified_piglin'].includes(e.type)) this._addArmorLayers(v, e);
       if (e.type === 96) v.mushroomLayer = true;
     }
     if (e.kind === 'player' || e.kind === 'armorstand') {
@@ -709,15 +717,16 @@ export class EntityRenderer {
 
   _addArmorLayers(v, e) {
     v.armor = [];
+    const piglin=['piglin','piglin_brute','zombified_piglin'].includes(e.type);
     for (let slot = 1; slot <= 4; slot++) {
       const inner = slot === 2;
-      const m = M.armorModel(inner ? 0.5 : 1.0);
+      const m = piglin&&!inner?M.biped('piglinArmorOuter'):M.armorModel(inner ? 0.5 : 1.0);m.piglinAgeable=piglin;
       const mat = this._mat(v, 'models/armor/iron_layer_1.png', { alphaTest: 0.1 });
       const obj = this._makeModelObject(m, mat);
       obj.visible = false;
       v.modelGroup.add(obj);
       const overlayMat = this._mat(v, 'models/armor/leather_layer_1_overlay.png', { alphaTest: 0.1 });
-      const m2 = M.armorModel(inner ? 0.5 : 1.0);
+      const m2 = piglin&&!inner?M.biped('piglinArmorOuter'):M.armorModel(inner ? 0.5 : 1.0);m2.piglinAgeable=piglin;
       const obj2 = this._makeModelObject(m2, overlayMat);
       obj2.visible = false;
       v.modelGroup.add(obj2);
@@ -990,7 +999,7 @@ export class EntityRenderer {
     }
     this.glints = [];
     this.frame = (this.frame || 0) + 1;
-    const far = (g.settings.renderDistance * 16) ** 2;
+    const viewScale=Math.max(1,Math.min(2.5,g.settings.renderDistance/8))*(g.settings.entityDistanceScaling??1);
     this.stats = { total: list.length, culled: 0, lod: 0 };
     const burning = [];
     for (const e of list) {
@@ -1003,7 +1012,8 @@ export class EntityRenderer {
       // how servers float text. Equipped items remain visible independently of the body.
       const floatingTag = e.kind === 'armorstand' && e.customName && e.nameVisible;
       const living = e.kind === 'mob' && e.type !== 63 || e.kind === 'player' || e.kind === 'armorstand';
-      if (dx * dx + dz * dz > far || (e.invisible && !living)) { if (v) v.root.visible = false; continue; }
+      const size=((e.width||.6)*2+(e.height||1.8))/3,far=(size*64*viewScale*(['arrow','spectral_arrow','trident'].includes(e.kind)?10:1))**2;
+      if (d2 > far || (e.invisible && !living)) { if (v) v.root.visible = false; continue; }
       // Entity culling: frustum + sections hidden behind terrain (never the camera's own entity)
       let tagOnly = false;
       if (CULLABLE.has(e.kind) && e.id !== -1) {
@@ -1131,7 +1141,8 @@ export class EntityRenderer {
       if (f > 1) f = 1;
       deathRot = f * 90;
     }
-    v.yawGroup.rotation.set(0, (180 - body) * D2R, 0);
+    const shaking=e.striderCold||e.converting;
+    v.yawGroup.rotation.set(0,(180-body+(shaking?Math.cos((e.ticks+partial)*3.25)*Math.PI*.4:0))*D2R,0);
     v.yawGroup.position.set(0, 0, 0);
     v.yawGroup.matrix = null;
     if (e.kind === 'mob' && e.type === 69 && e.attachFace) {
@@ -1241,6 +1252,8 @@ export class EntityRenderer {
     v.scaleGroup.position.set(0, 0, 0);
     v.modelGroup.position.set(0, -1.5078125 + (model.modelTranslateY || 0), model.modelTranslateZ || 0);
     if(model.foxAgeable)scaleFoxChild(model.childGroups,!!e.child);
+    else if(model.piglinAgeable)scalePiglinChild(model.childGroups,!!e.child);
+    else if(model.hoglinAgeable)scaleHoglinChild(model.childGroups,!!e.child);
     else if (e.child) v.scaleGroup.scale.multiplyScalar(model.childScale || 0.5);
     // Animate
     const held = e.equipment[0];
@@ -1274,6 +1287,7 @@ export class EntityRenderer {
       witchDrinking: e.kind === 'mob' && e.type === 66 && e.usingItem,
       squish: 0,
       peek: e.type === 69 ? (e.prevPeek || 0) + ((e.peek || 0) - (e.prevPeek || 0)) * partial : 0,
+      attackTicks:e.attackTicks||0,aggressive:!!e.aggressive,piglinPose:e.dancing?'dancing':(e.offhand&&(g.tags?.registries.items.get('minecraft:piglin_loved')||[]).includes(e.offhand.id))?'admiring':e.crossbowCharging?'crossbow_charge':e.aggressive&&held&&g.items.name(held.id)==='crossbow'?'crossbow_hold':e.aggressive?'attacking':'default',
       entityId: e.id, child: !!e.child, leftHanded: !!e.leftHanded,
       inWater: isPointInFluid(g.world, e.x, e.y + e.height / 2, e.z),
       swimming: !e.sleeping && !!e.swimming, swimAmount: e.sleeping ? 0 : swimAmount, armsRaised: !!e.armsRaised,
@@ -1402,6 +1416,7 @@ export class EntityRenderer {
         A.mat.params.setTint(((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255, 1);
       } else A.mat.params.setTint(1, 1, 1, 1);
       for (const M2 of [A.model, A.overlay.model]) {
+        if(M2.piglinAgeable)scalePiglinChild(M2.childGroups,!!e.child);
         M2.animate(M2, args);
         copyPose(model, M2);
         const pp = M2.parts;
@@ -2020,8 +2035,8 @@ function copyPose(from, to) {
 }
 
 function armorMaterialIndex(name) {
-  const match = /^(leather|chainmail|iron|diamond|golden|turtle)_(helmet|chestplate|leggings|boots)$/.exec(name);
-  return match ? ['leather', 'chainmail', 'iron', 'diamond', 'golden', 'turtle'].indexOf(match[1]) : -1;
+  const match = /^(leather|chainmail|iron|diamond|golden|turtle|netherite)_(helmet|chestplate|leggings|boots)$/.exec(name);
+  return match ? ['leather', 'chainmail', 'iron', 'diamond', 'golden', 'turtle', 'netherite'].indexOf(match[1]) : -1;
 }
 
 // RenderArrow geometry (in arrow pixel units; scaled by 0.05625 and offset -4 on x)

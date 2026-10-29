@@ -1,3 +1,4 @@
+import {compassProperty} from './compass.js';
 // Item rendering: GUI icons (2D sprites + 3D block icons), counts/durability/glint,
 // and 3D meshes for held/dropped items (port of ItemModelGenerator extrusion).
 import { bedPiece, shulkerBox, skullModel } from './tile-renderer.js';
@@ -126,7 +127,7 @@ export class ItemRenderer {
       case 'shield': pv.blocking = using ? 1 : 0; break;
       case 'fishing_rod': pv.cast = local && g.entities?.fishingCast && g.inventory.held() === item ? 1 : 0; break;
       case 'elytra': pv.broken = damage >= max - 1 ? 1 : 0; break;
-      case 'compass': pv.angle = g.compassAngle || 0; break;
+      case 'compass': pv.angle=compassProperty(g,item,holder,this.compassWobble||(this.compassWobble={}));break;
       case 'clock': pv.time = g.clockTime || 0; break;
       case 'trident': pv.throwing = using ? 1 : 0; break;
       default: break;

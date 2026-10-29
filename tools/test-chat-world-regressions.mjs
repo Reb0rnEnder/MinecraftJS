@@ -15,7 +15,7 @@ import {Interaction} from '../client/js/game/interaction.js';
 import {Mesher} from '../client/js/render/mesher.js';
 const data=Object.fromEntries(['items','blocks','creative','blockCollisionShapes','foods','materials','effects','enchantments'].map(n=>[n,JSON.parse(readFileSync(new URL('../client/data/'+n+'.json',import.meta.url)))]));
 initBlocks(data.blocks,data.blockCollisionShapes);
-const native=['1.13.2','1.14.4','1.15.2'].includes(mcassets.MC_VERSION),state=name=>native?blocksByName[name].defaultState:blocksByName[name].id<<4;
+const native=['1.13.2','1.14.4','1.15.2','1.16.5'].includes(mcassets.MC_VERSION),state=name=>native?blocksByName[name].defaultState:blocksByName[name].id<<4;
 const assets={data,lang:{},translate:Assets.prototype.translate,itemsById:new Map([...data.blocks,...data.items].map(d=>[d.id,d])),itemsByName:new Map([...data.blocks,...data.items].map(d=>[d.name,d]))};
 setTranslator((key,args)=>assets.translate(key,args));
 
@@ -35,7 +35,7 @@ test('expired chat stays in history and renders again when a chat screen with a 
 if(blocksByName.grass_path)test('path top faces use bright adjacent skylight immediately after chunk loading',()=>{
  const w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);c.setState(8,64,8,state('grass_path'));c.setSkyLight(8,64,8,0);c.setSkyLight(8,65,8,15);
  const m=Object.create(Mesher.prototype);m.world={getState:(x,y,z)=>w.getState(x,y,z),getLight:(x,y,z)=>(w.getSkyLight(x,y,z)<<4)|w.getBlockLight(x,y,z)};
- assert.equal(w.opacity(state('grass_path')),['1.14.4','1.15.2'].includes(mcassets.MC_VERSION)?0:15);
+ assert.equal(w.opacity(state('grass_path')),['1.14.4','1.15.2','1.16.5'].includes(mcassets.MC_VERSION)?0:15);
  assert.equal(m.lightAt(8,64,8)>>4,15);assert.equal(w.getState(8,64,8),state('grass_path'));
 });
 
@@ -54,9 +54,9 @@ if(blocksByName.grass_path)test('path block updates preserve target-version ligh
  const w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);
  for(let x=0;x<16;x++)for(let z=0;z<16;z++)for(let y=60;y<70;y++)c.setSkyLight(x,y,z,15);
  w.setState(8,64,8,state('grass_path'));
- if(['1.14.4','1.15.2'].includes(mcassets.MC_VERSION)){
+ if(['1.14.4','1.15.2','1.16.5'].includes(mcassets.MC_VERSION)){
   assert.equal(w.getSkyLight(8,64,8),15,'1.14 block updates do not replace independent server light');
-  (w.updateLight578||w.updateLight498).call(w,{chunkX:0,chunkZ:0,skyLight:{4:new Uint8Array(2048).fill(0xee)},blockLight:{},emptySkyLightMask:0,emptyBlockLightMask:0});
+  (w.updateLight754||w.updateLight578||w.updateLight498).call(w,{chunkX:0,chunkZ:0,skyLight:{4:new Uint8Array(2048).fill(0xee)},blockLight:{},emptySkyLightMask:0,emptyBlockLightMask:0});
   assert.equal(w.getSkyLight(8,64,8),14);assert.equal(w.getSkyLight(8,65,8),14);return;
  }
  assert.equal(w.getSkyLight(8,64,8),0);assert.equal(c.heightMap[(8<<4)|8],65);

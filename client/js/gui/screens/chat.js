@@ -257,6 +257,7 @@ export class ChatScreen extends Screen {
 
   mouseDown(mx, my, button) {
     if (button === 0) {
+      if(this.game.hud.queuedChatClick(mx,my))return true;
       const row = this._suggestionRow(mx, my);
       if (row >= 0) { this._selectTab(row); this._applyTab(); return true; }
       const comp = this.game.hud.chatComponentAt(mx, my);

@@ -42,6 +42,16 @@ The font sheet fix is backported to 1.13.2, 1.14.4 and 1.15.2, which already
 support font providers. Bounded asset-build concurrency and useful per-file errors
 apply to all supported branches. Version-specific wire changes remain here.
 
-Next: implement the six pending Nether mob renderers, smithing, new block/item
-mechanics and native GUI differences. Keep the existing pending-entity list
-explicit until each renderer has matching model/texture validation.
+## Nether content milestone
+
+The six Nether mob renderers, smithing interface, native biome effects and
+particles, tool-speed tables, Netherite equipment, lodestone compasses, strider
+steering, RGB/named-font text and native option lists are now implemented. The
+asset validator checks the new mobs without exemptions. Isolated browser scenes
+exercise twelve adult/child mob variants and the new screens; the live browser
+probe still verifies joining, terrain, movement and keepalives.
+
+See [the parity audit](parity-1.16.5.md) for fixture coverage, applicable backports
+and open issues. Next priorities are end-to-end Nether gameplay verification,
+remaining animation/ambient differences, command/protocol audit expansion and
+Fabulous/account-service gaps. Full parity remains an open milestone.

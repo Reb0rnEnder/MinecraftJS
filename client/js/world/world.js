@@ -145,6 +145,11 @@ export class World {
 
   setBiomeSeed(seed){this.biomeZoom=seed===undefined?null:new BiomeZoom(seed);}
 
+  getNoiseBiome(qx,qy,qz){
+    const chunk=this._chunk(qx>>2,qz>>2);
+    return chunk?.biomes.length===1024?chunk.biomes[(Math.max(0,Math.min(63,qy))<<4)|((qz&3)<<2)|(qx&3)]:1;
+  }
+
   getBiome(x, z, y = 64) {
     if(this.biomeZoom){const biome=this.biomeZoom.sample(Math.floor(x),Math.floor(y),Math.floor(z),(qx,qy,qz)=>{const chunk=this._chunk(qx>>2,qz>>2);return chunk?.biomes.length===1024?chunk.biomes[(Math.max(0,Math.min(63,qy))<<4)|((qz&3)<<2)|(qx&3)]:null;});if(biome!==null)return biome;}
 
@@ -361,6 +366,10 @@ export class World {
   // Collision boxes for the block at x,y,z in world coordinates
   // state: the block's collision boxes as if it were `state` (moving piston blocks ask for the block they carry)
   collisionBoxes(x, y, z, out, state = this.getState(x, y, z), mover = null) {
+    if(mover?.entity?.entityName==='strider'){
+      const fluid=getFluidState(state),above=getFluidState(this.getState(x,y+1,z));
+      if(fluid?.isLava&&fluid.source&&!above?.isLava){const top=y+.5;if(mover.bb()[1]>=top-1e-5)out.push([x,y,z,x+1,top,z+1]);}
+    }
     const def = getBlock(state);
     if (!def || def.id === 0) return;
     if (!def) return;

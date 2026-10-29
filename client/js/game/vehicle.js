@@ -232,3 +232,24 @@ export class HorseController {
 
   setFromServer(x, y, z, yaw) { this.body.setPosition(x, y, z); this.body.yaw = yaw; }
 }
+
+// ItemSteerable.travel (pig/strider): the steering item supplies a constant forward input.
+export class SteerableController extends HorseController {
+  tick(player,_strafe,_forward,attrs){
+    const b=this.body,e=this.e,strider=e.entityName==='strider';
+    b.prevX=b.x;b.prevY=b.y;b.prevZ=b.z;b.yaw=player.yaw;b.pitch=f32(player.pitch*.5);b.stepHeight=1;
+    b.jumpMovementFactor=f32(b.landMovementFactor*.1);
+    let speed=attrs.speed*(strider?(e.striderCold?.23:.55):.225);
+    if(e.boosting&&e.boostDuration>0)speed+=speed*1.15*Math.sin((e.boostTicks||0)/e.boostDuration*Math.PI);
+    b.landMovementFactor=f32(speed);b.handleWaterMovement(this.world);b.inLava=!strider&&b.isInLava(this.world);
+    b.moveEntityWithHeading(this.world,0,1);
+    if(strider){
+      const x=Math.floor(b.x),y=Math.floor(b.y),z=Math.floor(b.z),fluid=getFluidState(this.world.getState(x,y,z));
+      if(fluid?.isLava){
+        const top=y+.5,above=getFluidState(this.world.getState(x,y+1,z));
+        if(b.y>=top-1e-5&&!above?.isLava)b.onGround=true;
+        else {b.motionX*=.5;b.motionY=b.motionY*.5+.05;b.motionZ*=.5;}
+      }
+    }
+  }
+}

@@ -1,3 +1,4 @@
+import {formatCode,activeFormatting,rgbCode,fontCode} from './format-codes.js';
 // JSON chat component -> legacy formatted string (with section-sign codes)
 
 const COLOR_NAMES = {
@@ -16,6 +17,8 @@ function styleCodes(style) {
   // rendered inside an italic tooltip). Reapply the remaining effective style.
   let s = ['obfuscated', 'bold', 'strikethrough', 'underlined', 'italic'].some((k) => style[k] === false) ? '§r' : '';
   if (style.color && typeof COLOR_NAMES[style.color] === 'string') s += '§' + COLOR_NAMES[style.color];
+  if(/^#[0-9a-f]{6}$/i.test(style.color||''))s+=rgbCode(style.color);
+  if(/^[a-z0-9_.-]+:[a-z0-9_./-]+$/.test(style.font||''))s+=fontCode(style.font);
   if (style.obfuscated) s += '§k';
   if (style.bold) s += '§l';
   if (style.strikethrough) s += '§m';
@@ -26,9 +29,9 @@ function styleCodes(style) {
 
 function inherit(parent, c) {
   const st = { ...parent };
-  for (const k of ['color', 'bold', 'italic', 'underlined', 'strikethrough', 'obfuscated']) {
+  for (const k of ['font','color', 'bold', 'italic', 'underlined', 'strikethrough', 'obfuscated']) {
     // JSON null, like an absent style property, inherits; false explicitly clears it.
-    if (c[k] !== undefined && c[k] !== null) st[k] = k === 'color' ? c[k] : c[k] === true || c[k] === 'true';
+    if (c[k] !== undefined && c[k] !== null) st[k] = (k === 'color'||k==='font') ? c[k] : c[k] === true || c[k] === 'true';
   }
   return st;
 }
@@ -236,7 +239,7 @@ export function chatSegments(raw) {
     if(Array.isArray(c)){const first=c[0],base=first&&typeof first==='object'?{...events,click:first.clickEvent||events.click,hover:first.hoverEvent||events.hover}:events;c.forEach((x,i)=>walk(x,i?rootStyle(first,parent):parent,i?base:events));return;}
     if(typeof c!=='object'){out.push({text:styleCodes(parent)+String(c),...events,style:parent});return;}
     const style=inherit(parent,c),next={click:c.clickEvent||events.click,hover:c.hoverEvent||events.hover};
-    if(next.hover?.action==='show_text')next.hoverText=chatToLegacy(next.hover.value,{parsed:true});
+    if(next.hover?.action==='show_text')next.hoverText=chatToLegacy(next.hover.contents??next.hover.value,{parsed:true});
     const push=text=>{if(text)out.push({text:styleCodes(style)+text,...next,style});};
     if(c.translate!==undefined){
       const args=c.with||[],marked=translateFn(c.translate,args.map((_,i)=>'\u0000'+i+'\u0000'));
@@ -254,7 +257,7 @@ export function chatSegments(raw) {
 function sliceLegacySegment(text,start,end) {
   let at=0,active='',out='',started=false;
   for(let i=0;i<text.length&&at<end;i++) {
-    if(text[i]==='§'&&i+1<text.length){const code=text.slice(i,i+2);i++;active=/[0-9a-fr]/i.test(code[1])?code:active+code;if(started)out+=code;continue;}
+    const code=formatCode(text,i);if(code){i+=code.length-1;active=activeFormatting(active+code.raw);if(started)out+=code.raw;continue;}
     if(at>=start){if(!started){out=active;started=true;}out+=text[i];}at++;
   }
   return out;

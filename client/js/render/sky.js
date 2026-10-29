@@ -34,12 +34,13 @@ function hsbToRgb(h, s, v) {
   return table[i % 6];
 }
 
-export function skyColor(angle, temperature, rain, thunder) {
+export function skyColor(angle, temperature, rain, thunder, biomeSky) {
   let f1 = Math.cos(angle * Math.PI * 2) * 2 + 0.5;
   f1 = Math.min(1, Math.max(0, f1));
   let t = temperature / 3;
   t = Math.min(1, Math.max(-1, t));
   let [r, g, b] = hsbToRgb(0.62222224 - t * 0.05, 0.5 + t * 0.1, 1);
+  if(Number.isInteger(biomeSky))[r,g,b]=[16,8,0].map(shift=>(biomeSky>>shift&255)/255);
   r *= f1; g *= f1; b *= f1;
   if (rain > 0) {
     const f7 = (r * 0.3 + g * 0.59 + b * 0.11) * 0.6;

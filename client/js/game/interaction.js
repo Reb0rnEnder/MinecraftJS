@@ -9,7 +9,7 @@ import { COMMAND_BLOCKS, CommandBlockScreen, CommandMinecartScreen } from '../gu
 import { StructureBlockScreen } from '../gui/screens/structure.js';
 import { JigsawScreen } from '../gui/screens/jigsaw.js';
 
-const INTERACTIVE = new Set(['barrel', 'blast_furnace', 'smoker', 'stonecutter', 'loom', 'cartography_table', 'grindstone', 'lectern', 'bell', 'chest', 'trapped_chest', 'ender_chest', 'crafting_table', 'furnace', 'lit_furnace', 'dispenser', 'dropper',
+const INTERACTIVE = new Set(['smithing_table','respawn_anchor','soul_campfire','barrel', 'blast_furnace', 'smoker', 'stonecutter', 'loom', 'cartography_table', 'grindstone', 'lectern', 'bell', 'chest', 'trapped_chest', 'ender_chest', 'crafting_table', 'furnace', 'lit_furnace', 'dispenser', 'dropper',
   'hopper', 'brewing_stand', 'enchanting_table', 'anvil', 'beacon', 'wooden_door', 'spruce_door', 'birch_door', 'jungle_door',
   'acacia_door', 'dark_oak_door', 'trapdoor', 'fence_gate', 'spruce_fence_gate', 'birch_fence_gate', 'jungle_fence_gate',
   'dark_oak_fence_gate', 'acacia_fence_gate', 'lever', 'stone_button', 'wooden_button', 'bed', 'noteblock', 'jukebox',
@@ -269,7 +269,7 @@ export class Interaction {
 
   _holdingCreativeSword() {
     const g=this.game,held=g.inventory.held();
-    return !!(g.gameMode === 1 && held && ['wooden_sword', 'stone_sword', 'iron_sword', 'diamond_sword', 'golden_sword'].includes(g.items.name(held.id)));
+    return !!(g.gameMode === 1 && held && ['wooden_sword', 'stone_sword', 'iron_sword', 'diamond_sword', 'golden_sword','netherite_sword'].includes(g.items.name(held.id)));
   }
 
   // Do not ask the server to mine with a Creative sword. Adjacent fire still
@@ -687,7 +687,7 @@ export class Interaction {
       // the click without ever reaching the normal use-item path.
       case 'firework_rocket': return !!this.player.elytraFlying;
       case 'painting': case 'item_frame': case 'glow_item_frame': return t.face >= 2;
-      case 'wooden_hoe': case 'stone_hoe': case 'iron_hoe': case 'diamond_hoe': case 'golden_hoe':
+      case 'wooden_hoe': case 'stone_hoe': case 'iron_hoe': case 'diamond_hoe': case 'golden_hoe': case 'netherite_hoe':
         return t.face !== 0 && air(above(t.y + 1)) && !!(b && (b.name === 'grass' || b.name === 'dirt'));
       case 'bone_meal': return !!(b && /^(sapling|wheat|carrots|potatoes|pumpkin_stem|melon_stem|grass|tallgrass|double_plant|brown_mushroom|red_mushroom|cocoa)$/.test(b.name));
       case 'ender_eye': return !!(b && b.name === 'end_portal_frame' && !getStateProperties(st).eye);

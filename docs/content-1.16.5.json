@@ -1,0 +1,1090 @@
+{
+  "version": "1.16.5",
+  "protocol": 754,
+  "clientJarSha1": "37fd3c903861eeff3bc24b71eed48f828b5269c8",
+  "scope": "Native registry/resource coverage; gameplay verification is tracked separately in parity-1.16.5.md",
+  "categories": {
+    "blocks": {
+      "total": 763,
+      "added": [
+        {
+          "id": 34,
+          "name": "nether_gold_ore",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 144,
+          "name": "soul_fire",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 195,
+          "name": "soul_soil",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 196,
+          "name": "basalt",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 197,
+          "name": "polished_basalt",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 198,
+          "name": "soul_torch",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 199,
+          "name": "soul_wall_torch",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 242,
+          "name": "chain",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 679,
+          "name": "soul_lantern",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 681,
+          "name": "soul_campfire",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 683,
+          "name": "warped_stem",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 684,
+          "name": "stripped_warped_stem",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 685,
+          "name": "warped_hyphae",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 686,
+          "name": "stripped_warped_hyphae",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 687,
+          "name": "warped_nylium",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 688,
+          "name": "warped_fungus",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 689,
+          "name": "warped_wart_block",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 690,
+          "name": "warped_roots",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 691,
+          "name": "nether_sprouts",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 692,
+          "name": "crimson_stem",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 693,
+          "name": "stripped_crimson_stem",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 694,
+          "name": "crimson_hyphae",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 695,
+          "name": "stripped_crimson_hyphae",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 696,
+          "name": "crimson_nylium",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 697,
+          "name": "crimson_fungus",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 698,
+          "name": "shroomlight",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 699,
+          "name": "weeping_vines",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 700,
+          "name": "weeping_vines_plant",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 701,
+          "name": "twisting_vines",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 702,
+          "name": "twisting_vines_plant",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 703,
+          "name": "crimson_roots",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 704,
+          "name": "crimson_planks",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 705,
+          "name": "warped_planks",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 706,
+          "name": "crimson_slab",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 707,
+          "name": "warped_slab",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 708,
+          "name": "crimson_pressure_plate",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 709,
+          "name": "warped_pressure_plate",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 710,
+          "name": "crimson_fence",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 711,
+          "name": "warped_fence",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 712,
+          "name": "crimson_trapdoor",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 713,
+          "name": "warped_trapdoor",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 714,
+          "name": "crimson_fence_gate",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 715,
+          "name": "warped_fence_gate",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 716,
+          "name": "crimson_stairs",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 717,
+          "name": "warped_stairs",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 718,
+          "name": "crimson_button",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 719,
+          "name": "warped_button",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 720,
+          "name": "crimson_door",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 721,
+          "name": "warped_door",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 722,
+          "name": "crimson_sign",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 723,
+          "name": "warped_sign",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 724,
+          "name": "crimson_wall_sign",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 725,
+          "name": "warped_wall_sign",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 729,
+          "name": "target",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 734,
+          "name": "netherite_block",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 735,
+          "name": "ancient_debris",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 736,
+          "name": "crying_obsidian",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 737,
+          "name": "respawn_anchor",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 738,
+          "name": "potted_crimson_fungus",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 739,
+          "name": "potted_warped_fungus",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 740,
+          "name": "potted_crimson_roots",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 741,
+          "name": "potted_warped_roots",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 742,
+          "name": "lodestone",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 743,
+          "name": "blackstone",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 744,
+          "name": "blackstone_stairs",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 745,
+          "name": "blackstone_wall",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 746,
+          "name": "blackstone_slab",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 747,
+          "name": "polished_blackstone",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 748,
+          "name": "polished_blackstone_bricks",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 749,
+          "name": "cracked_polished_blackstone_bricks",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 750,
+          "name": "chiseled_polished_blackstone",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 751,
+          "name": "polished_blackstone_brick_slab",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 752,
+          "name": "polished_blackstone_brick_stairs",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 753,
+          "name": "polished_blackstone_brick_wall",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 754,
+          "name": "gilded_blackstone",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 755,
+          "name": "polished_blackstone_stairs",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 756,
+          "name": "polished_blackstone_slab",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 757,
+          "name": "polished_blackstone_pressure_plate",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 758,
+          "name": "polished_blackstone_button",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 759,
+          "name": "polished_blackstone_wall",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 760,
+          "name": "chiseled_nether_bricks",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 761,
+          "name": "cracked_nether_bricks",
+          "blockstates": true,
+          "nativeShapes": true
+        },
+        {
+          "id": 762,
+          "name": "quartz_bricks",
+          "blockstates": true,
+          "nativeShapes": true
+        }
+      ]
+    },
+    "items": {
+      "total": 975,
+      "added": [
+        {
+          "id": 12,
+          "name": "crimson_nylium",
+          "model": true
+        },
+        {
+          "id": 13,
+          "name": "warped_nylium",
+          "model": true
+        },
+        {
+          "id": 21,
+          "name": "crimson_planks",
+          "model": true
+        },
+        {
+          "id": 22,
+          "name": "warped_planks",
+          "model": true
+        },
+        {
+          "id": 36,
+          "name": "nether_gold_ore",
+          "model": true
+        },
+        {
+          "id": 43,
+          "name": "crimson_stem",
+          "model": true
+        },
+        {
+          "id": 44,
+          "name": "warped_stem",
+          "model": true
+        },
+        {
+          "id": 51,
+          "name": "stripped_crimson_stem",
+          "model": true
+        },
+        {
+          "id": 52,
+          "name": "stripped_warped_stem",
+          "model": true
+        },
+        {
+          "id": 59,
+          "name": "stripped_crimson_hyphae",
+          "model": true
+        },
+        {
+          "id": 60,
+          "name": "stripped_warped_hyphae",
+          "model": true
+        },
+        {
+          "id": 67,
+          "name": "crimson_hyphae",
+          "model": true
+        },
+        {
+          "id": 68,
+          "name": "warped_hyphae",
+          "model": true
+        },
+        {
+          "id": 126,
+          "name": "crimson_fungus",
+          "model": true
+        },
+        {
+          "id": 127,
+          "name": "warped_fungus",
+          "model": true
+        },
+        {
+          "id": 128,
+          "name": "crimson_roots",
+          "model": true
+        },
+        {
+          "id": 129,
+          "name": "warped_roots",
+          "model": true
+        },
+        {
+          "id": 130,
+          "name": "nether_sprouts",
+          "model": true
+        },
+        {
+          "id": 131,
+          "name": "weeping_vines",
+          "model": true
+        },
+        {
+          "id": 132,
+          "name": "twisting_vines",
+          "model": true
+        },
+        {
+          "id": 144,
+          "name": "crimson_slab",
+          "model": true
+        },
+        {
+          "id": 145,
+          "name": "warped_slab",
+          "model": true
+        },
+        {
+          "id": 197,
+          "name": "crimson_pressure_plate",
+          "model": true
+        },
+        {
+          "id": 198,
+          "name": "warped_pressure_plate",
+          "model": true
+        },
+        {
+          "id": 199,
+          "name": "polished_blackstone_pressure_plate",
+          "model": true
+        },
+        {
+          "id": 214,
+          "name": "crimson_fence",
+          "model": true
+        },
+        {
+          "id": 215,
+          "name": "warped_fence",
+          "model": true
+        },
+        {
+          "id": 220,
+          "name": "soul_soil",
+          "model": true
+        },
+        {
+          "id": 221,
+          "name": "basalt",
+          "model": true
+        },
+        {
+          "id": 222,
+          "name": "polished_basalt",
+          "model": true
+        },
+        {
+          "id": 223,
+          "name": "soul_torch",
+          "model": true
+        },
+        {
+          "id": 232,
+          "name": "crimson_trapdoor",
+          "model": true
+        },
+        {
+          "id": 233,
+          "name": "warped_trapdoor",
+          "model": true
+        },
+        {
+          "id": 248,
+          "name": "chain",
+          "model": true
+        },
+        {
+          "id": 258,
+          "name": "crimson_fence_gate",
+          "model": true
+        },
+        {
+          "id": 259,
+          "name": "warped_fence_gate",
+          "model": true
+        },
+        {
+          "id": 265,
+          "name": "cracked_nether_bricks",
+          "model": true
+        },
+        {
+          "id": 266,
+          "name": "chiseled_nether_bricks",
+          "model": true
+        },
+        {
+          "id": 283,
+          "name": "crimson_stairs",
+          "model": true
+        },
+        {
+          "id": 284,
+          "name": "warped_stairs",
+          "model": true
+        },
+        {
+          "id": 301,
+          "name": "blackstone_wall",
+          "model": true
+        },
+        {
+          "id": 302,
+          "name": "polished_blackstone_wall",
+          "model": true
+        },
+        {
+          "id": 303,
+          "name": "polished_blackstone_brick_wall",
+          "model": true
+        },
+        {
+          "id": 311,
+          "name": "crimson_button",
+          "model": true
+        },
+        {
+          "id": 312,
+          "name": "warped_button",
+          "model": true
+        },
+        {
+          "id": 313,
+          "name": "polished_blackstone_button",
+          "model": true
+        },
+        {
+          "id": 326,
+          "name": "quartz_bricks",
+          "model": true
+        },
+        {
+          "id": 426,
+          "name": "warped_wart_block",
+          "model": true
+        },
+        {
+          "id": 564,
+          "name": "crimson_door",
+          "model": true
+        },
+        {
+          "id": 565,
+          "name": "warped_door",
+          "model": true
+        },
+        {
+          "id": 581,
+          "name": "netherite_ingot",
+          "model": true
+        },
+        {
+          "id": 582,
+          "name": "netherite_scrap",
+          "model": true
+        },
+        {
+          "id": 608,
+          "name": "netherite_sword",
+          "model": true
+        },
+        {
+          "id": 609,
+          "name": "netherite_shovel",
+          "model": true
+        },
+        {
+          "id": 610,
+          "name": "netherite_pickaxe",
+          "model": true
+        },
+        {
+          "id": 611,
+          "name": "netherite_axe",
+          "model": true
+        },
+        {
+          "id": 612,
+          "name": "netherite_hoe",
+          "model": true
+        },
+        {
+          "id": 642,
+          "name": "netherite_helmet",
+          "model": true
+        },
+        {
+          "id": 643,
+          "name": "netherite_chestplate",
+          "model": true
+        },
+        {
+          "id": 644,
+          "name": "netherite_leggings",
+          "model": true
+        },
+        {
+          "id": 645,
+          "name": "netherite_boots",
+          "model": true
+        },
+        {
+          "id": 658,
+          "name": "crimson_sign",
+          "model": true
+        },
+        {
+          "id": 659,
+          "name": "warped_sign",
+          "model": true
+        },
+        {
+          "id": 778,
+          "name": "hoglin_spawn_egg",
+          "model": true
+        },
+        {
+          "id": 790,
+          "name": "piglin_spawn_egg",
+          "model": true
+        },
+        {
+          "id": 791,
+          "name": "piglin_brute_spawn_egg",
+          "model": true
+        },
+        {
+          "id": 807,
+          "name": "strider_spawn_egg",
+          "model": true
+        },
+        {
+          "id": 818,
+          "name": "zoglin_spawn_egg",
+          "model": true
+        },
+        {
+          "id": 822,
+          "name": "zombified_piglin_spawn_egg",
+          "model": true
+        },
+        {
+          "id": 843,
+          "name": "warped_fungus_on_a_stick",
+          "model": true
+        },
+        {
+          "id": 921,
+          "name": "music_disc_pigstep",
+          "model": true
+        },
+        {
+          "id": 934,
+          "name": "piglin_banner_pattern",
+          "model": true
+        },
+        {
+          "id": 947,
+          "name": "soul_lantern",
+          "model": true
+        },
+        {
+          "id": 950,
+          "name": "soul_campfire",
+          "model": true
+        },
+        {
+          "id": 951,
+          "name": "shroomlight",
+          "model": true
+        },
+        {
+          "id": 958,
+          "name": "lodestone",
+          "model": true
+        },
+        {
+          "id": 959,
+          "name": "netherite_block",
+          "model": true
+        },
+        {
+          "id": 960,
+          "name": "ancient_debris",
+          "model": true
+        },
+        {
+          "id": 961,
+          "name": "target",
+          "model": true
+        },
+        {
+          "id": 962,
+          "name": "crying_obsidian",
+          "model": true
+        },
+        {
+          "id": 963,
+          "name": "blackstone",
+          "model": true
+        },
+        {
+          "id": 964,
+          "name": "blackstone_slab",
+          "model": true
+        },
+        {
+          "id": 965,
+          "name": "blackstone_stairs",
+          "model": true
+        },
+        {
+          "id": 966,
+          "name": "gilded_blackstone",
+          "model": true
+        },
+        {
+          "id": 967,
+          "name": "polished_blackstone",
+          "model": true
+        },
+        {
+          "id": 968,
+          "name": "polished_blackstone_slab",
+          "model": true
+        },
+        {
+          "id": 969,
+          "name": "polished_blackstone_stairs",
+          "model": true
+        },
+        {
+          "id": 970,
+          "name": "chiseled_polished_blackstone",
+          "model": true
+        },
+        {
+          "id": 971,
+          "name": "polished_blackstone_bricks",
+          "model": true
+        },
+        {
+          "id": 972,
+          "name": "polished_blackstone_brick_slab",
+          "model": true
+        },
+        {
+          "id": 973,
+          "name": "polished_blackstone_brick_stairs",
+          "model": true
+        },
+        {
+          "id": 974,
+          "name": "cracked_polished_blackstone_bricks",
+          "model": true
+        },
+        {
+          "id": 975,
+          "name": "respawn_anchor",
+          "model": true
+        }
+      ]
+    },
+    "entities": {
+      "total": 108,
+      "added": [
+        {
+          "id": 32,
+          "name": "hoglin"
+        },
+        {
+          "id": 60,
+          "name": "piglin"
+        },
+        {
+          "id": 61,
+          "name": "piglin_brute"
+        },
+        {
+          "id": 83,
+          "name": "strider"
+        },
+        {
+          "id": 101,
+          "name": "zoglin"
+        },
+        {
+          "id": 105,
+          "name": "zombified_piglin"
+        }
+      ]
+    },
+    "biomes": {
+      "total": 79,
+      "added": [
+        {
+          "id": 170,
+          "name": "soul_sand_valley",
+          "nativeEffects": true
+        },
+        {
+          "id": 171,
+          "name": "crimson_forest",
+          "nativeEffects": true
+        },
+        {
+          "id": 172,
+          "name": "warped_forest",
+          "nativeEffects": true
+        },
+        {
+          "id": 173,
+          "name": "basalt_deltas",
+          "nativeEffects": true
+        }
+      ]
+    },
+    "particles": {
+      "total": 72,
+      "added": [
+        {
+          "id": 27,
+          "name": "soul_fire_flame",
+          "sprites": true
+        },
+        {
+          "id": 28,
+          "name": "soul",
+          "sprites": true
+        },
+        {
+          "id": 64,
+          "name": "ash",
+          "sprites": true
+        },
+        {
+          "id": 65,
+          "name": "crimson_spore",
+          "sprites": true
+        },
+        {
+          "id": 66,
+          "name": "warped_spore",
+          "sprites": true
+        },
+        {
+          "id": 67,
+          "name": "dripping_obsidian_tear",
+          "sprites": true
+        },
+        {
+          "id": 68,
+          "name": "falling_obsidian_tear",
+          "sprites": true
+        },
+        {
+          "id": 69,
+          "name": "landing_obsidian_tear",
+          "sprites": true
+        },
+        {
+          "id": 70,
+          "name": "reverse_portal",
+          "sprites": true
+        },
+        {
+          "id": 71,
+          "name": "white_ash",
+          "sprites": true
+        }
+      ]
+    }
+  }
+}

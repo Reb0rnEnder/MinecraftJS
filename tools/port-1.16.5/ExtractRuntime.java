@@ -1,3 +1,4 @@
+import com.mojang.serialization.Codec;import com.mojang.serialization.JsonOps;
 import java.lang.reflect.*;import java.nio.file.*;import java.util.*;import java.io.*;import com.google.gson.*;
 // Native 1.16.5 runtime tables. Reflection uses official member names and mappings.
 public class ExtractRuntime {
@@ -33,6 +34,14 @@ public class ExtractRuntime {
 
  static Class<?> c(String n)throws Exception{return Class.forName(classNames.getOrDefault(n,n));}static Object call(Object o,String n,Class<?>[] t,Object...a)throws Exception{return m(o.getClass(),n,t).invoke(o,a);}
  static List<Double> box(Object b)throws Exception{List<Double> v=new ArrayList<>();for(String n:new String[]{"minX","minY","minZ","maxX","maxY","maxZ"})v.add(f(b.getClass(),n).getDouble(b));return v;}
+ static Set<Object> blockTag(String id,Object registry,Map<String,Set<Object>> memo)throws Exception{
+  if(memo.containsKey(id))return memo.get(id);Set<Object> values=new LinkedHashSet<>();memo.put(id,values);
+  String[] key=id.split(":",2);String name="data/"+key[0]+"/tags/blocks/"+key[1]+".json";
+  try(InputStream input=ExtractRuntime.class.getClassLoader().getResourceAsStream(name)){
+   if(input==null)throw new FileNotFoundException(name);JsonObject definition=new JsonParser().parse(new InputStreamReader(input,java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
+   for(JsonElement el:definition.getAsJsonArray("values")){String value=el.isJsonObject()?el.getAsJsonObject().get("id").getAsString():el.getAsString();if(value.startsWith("#"))values.addAll(blockTag(value.substring(1),registry,memo));else values.add(m(c("net.minecraft.core.Registry"),"get",c("net.minecraft.resources.ResourceLocation")).invoke(registry,c("net.minecraft.resources.ResourceLocation").getConstructor(String.class).newInstance(value)));}
+  }return values;
+ }
  public static void main(String[] args)throws Exception{
   loadMappings(Path.of(args[1]));
   m(c("net.minecraft.server.Bootstrap"),"bootStrap").invoke(null);Class<?> tabs=c("net.minecraft.world.item.CreativeModeTab"),stack=c("net.minecraft.world.item.ItemStack"),item=c("net.minecraft.world.item.Item"),list=c("net.minecraft.core.NonNullList"),tag=c("net.minecraft.nbt.CompoundTag");
@@ -82,11 +91,27 @@ public class ExtractRuntime {
     rendering.add(render);
   }catch(Exception e){selections.add(null);collisions.add(null);errors.add(id+":"+e.toString());}}
   output.put("selections",selections);output.put("collisions",collisions);Map<String,Object> metadata=new LinkedHashMap<>();
-  for(String[] pair:new String[][]{{"player","net.minecraft.world.entity.player.Player"},{"cat","net.minecraft.world.entity.animal.Cat"},{"fox","net.minecraft.world.entity.animal.Fox"},{"panda","net.minecraft.world.entity.animal.Panda"},{"villager","net.minecraft.world.entity.npc.Villager"},{"zombie_villager","net.minecraft.world.entity.monster.ZombieVillager"},{"bee","net.minecraft.world.entity.animal.Bee"}}){
+  for(String[] pair:new String[][]{{"player","net.minecraft.world.entity.player.Player"},{"cat","net.minecraft.world.entity.animal.Cat"},{"fox","net.minecraft.world.entity.animal.Fox"},{"panda","net.minecraft.world.entity.animal.Panda"},{"villager","net.minecraft.world.entity.npc.Villager"},{"zombie_villager","net.minecraft.world.entity.monster.ZombieVillager"},{"bee","net.minecraft.world.entity.animal.Bee"},{"hoglin","net.minecraft.world.entity.monster.hoglin.Hoglin"},{"zoglin","net.minecraft.world.entity.monster.Zoglin"},{"piglin","net.minecraft.world.entity.monster.piglin.Piglin"},{"piglin_brute","net.minecraft.world.entity.monster.piglin.PiglinBrute"},{"strider","net.minecraft.world.entity.monster.Strider"},{"zombified_piglin","net.minecraft.world.entity.monster.ZombifiedPiglin"}}){
     Map<String,Object> fields=new LinkedHashMap<>();
     for(Class<?> cls=c(pair[1]);cls!=null;cls=cls.getSuperclass())for(Field f:cls.getDeclaredFields())if(Modifier.isStatic(f.getModifiers())&&f.getType()==c("net.minecraft.network.syncher.EntityDataAccessor")){f.setAccessible(true);fields.put(cls.getName()+"."+f.getName(),m(c("net.minecraft.network.syncher.EntityDataAccessor"),"getId").invoke(f.get(null)));}
     metadata.put(pair[0],fields);
   }
+  Object biomeRegistry=f(c("net.minecraft.data.BuiltinRegistries"),"BIOME").get(null);Map<String,Object> biomes=new LinkedHashMap<>();
+  Codec<Object> effectsCodec=(Codec<Object>)f(c("net.minecraft.world.level.biome.BiomeSpecialEffects"),"CODEC").get(null);
+  for(Object biome:(Iterable<?>)biomeRegistry){int id=((Number)m(c("net.minecraft.core.Registry"),"getId",Object.class).invoke(biomeRegistry,biome)).intValue();Object special=m(c("net.minecraft.world.level.biome.Biome"),"getSpecialEffects").invoke(biome);
+   biomes.put(""+id,effectsCodec.encodeStart(JsonOps.INSTANCE,special).result().orElseThrow());
+  }output.put("biomeEffects",biomes);
+  Object blocksRegistry=f(c("net.minecraft.core.Registry"),"BLOCK").get(null);Map<String,Object> toolSpeeds=new LinkedHashMap<>();
+  Map<String,Set<Object>> blockTags=new LinkedHashMap<>();
+  for(Object wrapper:(List<?>)m(c("net.minecraft.tags.BlockTags"),"getWrappers").invoke(null)){
+   String name=m(c("net.minecraft.tags.Tag$Named"),"getName").invoke(wrapper).toString();
+   f(wrapper.getClass(),"tag").set(wrapper,m(c("net.minecraft.tags.Tag"),"fromSet",Set.class).invoke(null,blockTag(name,blocksRegistry,blockTags)));
+  }
+  Method speed=m(item,"getDestroySpeed",stack,state),defaultStack=m(item,"getDefaultInstance"),defaultState=m(block,"defaultBlockState"),blockKey=m(c("net.minecraft.core.Registry"),"getKey",Object.class);
+  for(int id=0;id<976;id++){Object tool=m(item,"byId",int.class).invoke(null,id);if(!c("net.minecraft.world.item.DiggerItem").isInstance(tool)&&!c("net.minecraft.world.item.SwordItem").isInstance(tool)&&!c("net.minecraft.world.item.ShearsItem").isInstance(tool))continue;
+   Map<String,Object> speeds=new LinkedHashMap<>();Object toolStack=defaultStack.invoke(tool);
+   for(Object b:(Iterable<?>)blocksRegistry){float value=((Number)speed.invoke(tool,toolStack,defaultState.invoke(b))).floatValue();if(value!=1)speeds.put(blockKey.invoke(blocksRegistry,b).toString().replace("minecraft:",""),value);}toolSpeeds.put(""+id,speeds);
+  }output.put("toolSpeeds",toolSpeeds);
   output.put("entityMetadata",metadata);
   output.put("rendering",rendering);output.put("errors",errors);Files.writeString(Path.of(args[0]),new Gson().toJson(output));
  }

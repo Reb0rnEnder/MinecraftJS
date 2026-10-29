@@ -11,7 +11,7 @@ export const BANNER_CODES = {
   bts: 'triangles_bottom', tts: 'triangles_top', ld: 'diagonal_left', rd: 'diagonal_up_right', lud: 'diagonal_up_left',
   rud: 'diagonal_right', mc: 'circle', mr: 'rhombus', vh: 'half_vertical', hh: 'half_horizontal', vhr: 'half_vertical_right',
   hhb: 'half_horizontal_bottom', bo: 'border', cbo: 'curly_border', cre: 'creeper', gra: 'gradient', gru: 'gradient_up',
-  bri: 'bricks', glb: 'globe', sku: 'skull', flo: 'flower', moj: 'mojang',
+  bri: 'bricks', glb: 'globe', sku: 'skull', flo: 'flower', moj: 'mojang',pig:'piglin',
 };
 // EnumDyeColor map colours, indexed by dye damage (0 = black ... 15 = white)
 export const DYE_MAP_COLORS = [1644825, 10040115, 6717235, 6704179, 3361970, 8339378, 5013401, 10066329, 5000268, 15892389, 8375321, 15066419, 6724056, 11685080, 14188339, 16777215];

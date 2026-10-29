@@ -1,3 +1,4 @@
+import {formatCode,activeFormatting} from './format-codes.js';
 // Vanilla 1.13+ provider fonts, with the legacy renderer retained for older asset sets.
 // layout() produces glyph quads; the GUI draws them directly and world text builds meshes from them.
 
@@ -59,7 +60,9 @@ export class FontRenderer {
     this.cell = cell;
   }
 
-  _providerSet() { return this.assets.fontSets?.[this.texPath === 'font/ascii_sga.png' ? 'alt' : 'default']; }
+  _unicodeFor(fontId){return this.unicode&&this.texPath!=='font/ascii_sga.png'&&(!fontId||fontId==='minecraft:default');}
+
+  _providerSet(fontId) { if(fontId&&this.assets.fontSets?.[fontId])return this.assets.fontSets[fontId];return this.assets.fontSets?.[this.texPath === 'font/ascii_sga.png' ? 'alt' : 'default']; }
 
   _ready() {
     if (this.measuredVersion !== this.assets.version) this._widthBuckets = null;
@@ -68,11 +71,11 @@ export class FontRenderer {
     return this.measuredVersion === this.assets.version;
   }
 
-  charW(ch) {
+  charW(ch,fontId) {
     if (ch === ' ') return 4;
     if (ch === '§') return -1;
-    const set = this._providerSet();
-    if (set) return set.glyph(ch, this.unicode && this.texPath !== 'font/ascii_sga.png').advance;
+    const set = this._providerSet(fontId);
+    if (set) return set.glyph(ch, this._unicodeFor(fontId)).advance;
     const i = this.unicode ? undefined : CHAR_INDEX.get(ch);
     if (i !== undefined) return this.charWidth[i];
     const gw = this.glyphWidth[ch.charCodeAt(0)];
@@ -85,20 +88,22 @@ export class FontRenderer {
     this._ready();
     if (this.bidi) text = bidiReorder(text);
     let w = 0;
-    let bold = false;
+    let bold = false,fontId=null;
     for (let i = 0; i < text.length; i++) {
       const ch = String.fromCodePoint(text.codePointAt(i));
       if (ch.length === 2) i++;
+      const rgbToken=formatCode(text,i);if(rgbToken?.font){fontId=rgbToken.font;i+=rgbToken.length-1;continue;}if(rgbToken?.color!==undefined){bold=false;i+=rgbToken.length-1;continue;}
       if (ch === '§' && i + 1 < text.length) {
         const code = text[i + 1].toLowerCase();
         if (code === 'l') bold = true;
         else if (code === 'r' || '0123456789abcdef'.includes(code)) bold = false;
+        if(code==='r')fontId=null;
         i++;
         continue;
       }
-      const cw = this.charW(ch);
-      const set = this._providerSet();
-      const offset = set ? set.glyph(ch, this.unicode && this.texPath !== 'font/ascii_sga.png').boldOffset : 1;
+      const cw = this.charW(ch,fontId);
+      const set = this._providerSet(fontId);
+      const offset = set ? set.glyph(ch, this._unicodeFor(fontId)).boldOffset : 1;
       if (cw > 0) w += cw + (bold ? offset : 0);
     }
     return this._providerSet() ? Math.ceil(w) : w;
@@ -118,12 +123,13 @@ export class FontRenderer {
   _layout(out, text, x, y, baseColor, isShadow, alpha) {
     const shadowOf = (c) => (c & 0xfcfcfc) >> 2;
     let color = isShadow ? shadowOf(baseColor) : baseColor;
-    let bold = false, italic = false, underline = false, strike = false, obf = false;
+    let bold = false, italic = false, underline = false, strike = false, obf = false,fontId=null;
     const startX = x;
     const ascii = this.assets.texture(this.texPath);
     for (let i = 0; i < text.length; i++) {
       let ch = String.fromCodePoint(text.codePointAt(i));
       if (ch.length === 2) i++;
+      const rgbToken=formatCode(text,i);if(rgbToken?.font){fontId=rgbToken.font;i+=rgbToken.length-1;continue;}if(rgbToken?.color!==undefined){bold=italic=underline=strike=obf=false;color=isShadow?shadowOf(rgbToken.color):rgbToken.color;i+=rgbToken.length-1;continue;}
       if (ch === '§' && i + 1 < text.length) {
         const code = text[i + 1].toLowerCase();
         const idx = '0123456789abcdef'.indexOf(code);
@@ -133,7 +139,7 @@ export class FontRenderer {
         else if (code === 'm') strike = true;
         else if (code === 'n') underline = true;
         else if (code === 'o') italic = true;
-        else if (code === 'r') { bold = italic = underline = strike = obf = false; color = isShadow ? shadowOf(baseColor) : baseColor; }
+        else if (code === 'r') { fontId=null;bold = italic = underline = strike = obf = false; color = isShadow ? shadowOf(baseColor) : baseColor; }
         i++;
         continue;
       }
@@ -142,10 +148,10 @@ export class FontRenderer {
         if (cands.length) ch = cands[(Math.random() * cands.length) | 0];
       }
       const c = rgb(color, alpha);
-      const set = this._providerSet(), glyph = set?.glyph(ch, this.unicode && this.texPath !== 'font/ascii_sga.png');
+      const set = this._providerSet(fontId), glyph = set?.glyph(ch, this._unicodeFor(fontId));
       const shadowOffset = isShadow && set ? glyph.shadowOffset : 0, boldOffset = glyph?.boldOffset ?? 1;
-      const adv = this._glyph(out, ascii, ch, x + shadowOffset, y + shadowOffset, c, italic);
-      if (bold && adv > 0) this._glyph(out, ascii, ch, x + shadowOffset + boldOffset, y + shadowOffset, c, italic);
+      const adv = this._glyph(out, ascii, ch, x + shadowOffset, y + shadowOffset, c, italic,fontId);
+      if (bold && adv > 0) this._glyph(out, ascii, ch, x + shadowOffset + boldOffset, y + shadowOffset, c, italic,fontId);
       const total = adv + (bold && adv > 0 ? boldOffset : 0);
       if (strike) out.push({ tex: null, x0: x, y0: y + 4, x1: x + total, y1: y + 5, color: c });
       if (underline) out.push({ tex: null, x0: x - 1, y0: y + 8, x1: x + total, y1: y + 9, color: c });
@@ -167,11 +173,11 @@ export class FontRenderer {
     return this._widthBuckets.get(w) || [];
   }
 
-  _glyph(out, ascii, ch, x, y, color, italic) {
+  _glyph(out, ascii, ch, x, y, color, italic,fontId) {
     if (ch === ' ') return 4;
-    const set = this._providerSet();
+    const set = this._providerSet(fontId);
     if (set) {
-      const g = set.glyph(ch, this.unicode && this.texPath !== 'font/ascii_sga.png'), tex = g.texture();
+      const g = set.glyph(ch, this._unicodeFor(fontId)), tex = g.texture();
       if (tex) out.push({ tex, x0:x+g.x, y0:y+g.y, x1:x+g.x+g.width, y1:y+g.y+g.height,
         u0:g.u0, v0:g.v0, u1:g.u1, v1:g.v1, color, skew:italic?1:0, skewOrigin:y });
       return g.advance;
@@ -242,18 +248,11 @@ export class FontRenderer {
   // including when a component changes colour partway through a long word.
   wrap(text, maxWidth) {
     const out = []; let start = 0, prefix = '';
-    const format = value => {
-      let active = '';
-      for (const match of value.matchAll(/§[0-9a-fk-or]/gi)) {
-        const code = match[0].toLowerCase();
-        active = /§[0-9a-fr]/.test(code) ? code : active + code;
-      }
-      return active;
-    };
+    const format = activeFormatting;
     while (start < text.length) {
       let end = start, space = -1;
       while (end < text.length && text[end] !== '\n') {
-        if (text[end] === '§' && end + 1 < text.length) { end += 2; continue; }
+        const code=formatCode(text,end);if(code){end+=code.length;continue;}
         const next = end + (text.codePointAt(end) > 0xffff ? 2 : 1);
         if (this.width(prefix + text.slice(start, next)) > maxWidth) {
           if (space >= start) end = space;
@@ -275,7 +274,7 @@ export class FontRenderer {
   trimToWidth(text, w) {
     let s = '';
     for (let i = 0; i < text.length;) {
-      const ch = text[i] === '§' && i + 1 < text.length ? text.slice(i, i + 2) : String.fromCodePoint(text.codePointAt(i));
+      const ch = formatCode(text,i)?.raw || String.fromCodePoint(text.codePointAt(i));
       if (this.width(s + ch) > w) break;
       s += ch; i += ch.length;
     }

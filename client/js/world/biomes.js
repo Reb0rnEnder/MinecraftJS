@@ -2,6 +2,7 @@ import { WATER_BIOMES } from './water-biomes.js';
 // Biome colour helpers (ColorizerGrass / ColorizerFoliage + per-biome overrides). Worker-safe.
 
 let biomeTable = [];
+let serverBiomeTable=[];
 let grassMap = null; // Uint8ClampedArray 256*256*4
 let foliageMap = null;
 
@@ -12,7 +13,14 @@ export function initBiomes(biomesJson, grassPixels, foliagePixels) {
   foliageMap = foliagePixels;
 }
 
-export function biomeInfo(id) { return biomeTable[id] || biomeTable[1] || { temperature: 0.8, rainfall: 0.4, name: 'plains' }; }
+export function setServerBiomes(codec){
+ serverBiomeTable=[];
+ for(const entry of codec?.['minecraft:worldgen/biome']?.value||[]){
+  const b=entry.element,effects=b.effects||{};
+  serverBiomeTable[entry.id]={...(biomeTable[entry.id]||{}),...b,name:entry.name.replace(/^minecraft:/,''),rainfall:b.downfall,effects,waterColor:effects.water_color,waterFogColor:effects.water_fog_color};
+ }
+}
+export function biomeInfo(id) { return serverBiomeTable[id] || biomeTable[id] || biomeTable[1] || { temperature: 0.8, rainfall: 0.4, name: 'plains' }; }
 
 function sample(map, temp, rain) {
   if (!map) return 0x7fb238;
@@ -53,8 +61,9 @@ export function foliageColor(id, y) {
 }
 
 export function waterColor(id) {
-  if(WATER_BIOMES[id])return WATER_BIOMES[id][0];
   const b = biomeInfo(id);
+  if(typeof b.effects?.water_color==='number')return b.effects.water_color;
+  if(WATER_BIOMES[id])return WATER_BIOMES[id][0];
   // The 1.13 water sprites are grayscale: their blue comes from biome tint.
   if (typeof b.waterColor === 'number') return b.waterColor;
   return isSwamp(b.name) ? 0x617b64 : 0x3f76e4;

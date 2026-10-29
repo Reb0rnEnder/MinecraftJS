@@ -1,3 +1,4 @@
+import {ConfirmLinkScreen} from './chat.js';
 import {chatOption} from '../chat-options.js';
 import {focusOptionWidgets} from '../option-focus.js';
 import { VANILLA_UI } from '../vanilla-layout.js';
@@ -89,6 +90,9 @@ function nativeOption(screen,key) {
   const toggle=(name,field)=>({label:()=>trOption(name,onOff(s[field])),click:()=>{s[field]=!s[field];}});
   const slider=(name,field)=>({slider:true,label:v=>trOption(name,Math.round(v*100)+'%'),value:()=>s[field],set:v=>{s[field]=v;}});
   switch(key){
+    case 'options.chat.line_spacing':case 'options.chat.delay_instant':return chatOption(g,key);
+    case 'options.screenEffectScale':return {...slider(key,'screenEffectScale'),tip:()=>tr(key+'.tooltip')};
+    case 'options.fovEffectScale':return {...slider(key,'fovEffectScale'),tip:()=>tr(key+'.tooltip')};
     case 'options.narrator':return {label:()=>g.narrator.label(),enabled:g.narrator.active,click:()=>g.narrator.cycle()};
     case 'options.showSubtitles':return toggle(key,'showSubtitles');
     case 'options.autoJump':return toggle(key,'autoJump');
@@ -108,10 +112,28 @@ function nativeOption(screen,key) {
   }
 }
 
-export class AccessibilityScreen extends OptionsBase {
+class NativeOptionsListScreen extends OptionsBase {
+  optionKeys(){return [];}
+  makeOption(key){return nativeOption(this,key);}
+  footer(){this.doneButton(this.height-27);}
+  init(){
+    this.rows=[];
+    this.optionKeys().forEach((key,i)=>{const b=makeOption(i,Math.floor(this.width/2)-155+i%2*160,0,this.makeOption(key));b.optionKey=key;b.optionRow=i>>1;if(i%2===0)this.rows.push([]);this.rows.at(-1).push(b);});
+    this.footer();const old=this.list;
+    this.list=new ListOf(this,32,this.height-32,25,{size:()=>this.rows.length,draw:(gui,i,x,y,h,mx,my,rawX)=>{for(const b of this.rows[i]){b.y=y;b.render(gui,b.dragging?rawX:mx,my);}},click:(i,dbl,mx,my)=>this.rows[i].some(b=>b.mouseDown(mx,my,this.game))},{listWidth:400,scrollBarOffset:32,selectionBox:false,scrollbarDragOnly:true});
+    if(old){this.list.amountScrolled=old.amountScrolled;this.list.clamp();}
+  }
+  render(gui,mx,my){this.list.render(gui,mx,my);gui.textCentered(tr(this.titleKey),Math.floor(this.width/2),20,0xffffff);for(const b of this.buttons)b.render(gui,mx,my);if(my>=32&&my<this.height-32){const b=this.rows.flat().find(b=>b.tip&&b.hovered(mx,my));if(b)gui.tooltip(gui.font.wrap(b.tip(),Math.min(300,this.width-20)),mx,my);}}
+  key(e){return focusOptionWidgets(this,e,[...this.rows.flat(),...this.buttons])||super.key(e);}
+  mouseDown(mx,my,button,e){return super.mouseDown(mx,my,button,e)||this.list.mouseDown(mx,my,button,e);}
+  mouseMove(mx,my){this.list.mouseMove(mx,my);}
+  mouseUp(mx,my,button){super.mouseUp(mx,my,button);for(const b of this.rows.flat())b.mouseUp?.();this.list.mouseUp();}
+  wheel(d){this.list.wheel(d);}
+}
+export class AccessibilityScreen extends NativeOptionsListScreen {
   constructor(game,parent){super(game,parent,'options.accessibility.title');}
-  init(){this.grid(VANILLA_UI.accessibilityOptions.map(k=>nativeOption(this,k)),Math.floor(this.height/6));this.doneButton(Math.floor(this.height/6)+144);}
-  renderContent(gui){gui.textCentered(tr(this.titleKey),Math.floor(this.width/2),20,0xffffff);}
+  optionKeys(){return VANILLA_UI.accessibilityOptions;}
+  footer(){this.buttons.push(new Button(201,this.width/2-155,this.height-27,150,20,tr('options.accessibility.link'),()=>this.game.screens.open(new ConfirmLinkScreen(this.game,this,'https://aka.ms/MinecraftJavaAccessibility'))));this.buttons.push(new Button(200,this.width/2+5,this.height-27,150,20,tr('gui.done'),()=>this.done()));}
 }
 export class MouseSettingsScreen extends OptionsBase {
   constructor(game,parent){super(game,parent,'options.mouse_settings.title');}
@@ -193,6 +215,8 @@ class VideoScreen extends OptionsBase {
     const g = this.game, s = this.s;
     this.mipsBefore = s.mipmapLevels;
     const items = [
+      ...['options.screenEffectScale','options.fovEffectScale'].map(key=>({key,...nativeOption(this,key)})),
+      {key:'options.entityDistanceScaling',slider:true,label:v=>trOption('options.entityDistanceScaling',Math.round((.5+v*4.5)*100)+'%'),value:()=>((s.entityDistanceScaling??1)-.5)/4.5,set:v=>{s.entityDistanceScaling=Math.round((.5+v*4.5)*4)/4;}},
       { key: 'options.graphics', label: () => trOption('options.graphics', tr(s.fancyGraphics ? 'options.graphics.fancy' : 'options.graphics.fast')), click: () => { s.fancyGraphics = !s.fancyGraphics; } },
       { key: 'options.renderDistance', slider: true, label: (v) => trOption('options.renderDistance', Math.round(2 + v * 30) + ' chunks'), value: () => (s.renderDistance - 2) / 30, set: (v) => { s.renderDistance = Math.round(2 + v * 30); } },
       { key: 'options.ao', label: () => trOption('options.ao', tr('options.ao.' + ['off', 'min', 'max'][s.smoothLighting | 0])), click: () => { s.smoothLighting = ((s.smoothLighting | 0) + 1) % 3; } },
@@ -304,15 +328,10 @@ class SoundScreen extends OptionsBase {
 }
 
 // ScreenChatOptions (GuiNewChat.calculateChatboxWidth / Height)
-export class ChatOptionsScreen extends OptionsBase {
+export class ChatOptionsScreen extends NativeOptionsListScreen {
   constructor(game,parent){super(game,parent,'options.chat.title');}
-  init(){
-    const options=VANILLA_UI.chatOptions;
-    this.grid(options.map(key=>chatOption(this.game,key)),Math.floor(this.height/6));
-    this.buttons.forEach((b,i)=>b.optionKey=options[i]);
-    this.doneButton(Math.floor(this.height/6)+Math.floor(24*(options.length+1)/2));
-  }
-  renderContent(gui){gui.textCentered(tr(this.titleKey),Math.floor(this.width/2),20,0xffffff);}
+  optionKeys(){return VANILLA_UI.chatOptions;}
+  makeOption(key){return chatOption(this.game,key);}
   done(){if(this.game.inWorld)this.game.sendSettings();super.done();}
 }
 
@@ -340,6 +359,7 @@ const KEY_BINDINGS = {
   back: ['key.back', 'key.categories.movement'], right: ['key.right', 'key.categories.movement'],
   jump: ['key.jump', 'key.categories.movement'], sneak: ['key.sneak', 'key.categories.movement'], sprint: ['key.sprint', 'key.categories.movement'],
   drop: ['key.drop', 'key.categories.gameplay'], inventory: ['key.inventory', 'key.categories.inventory'],
+  socialInteractions:['key.socialInteractions','key.categories.multiplayer'],
   chat: ['key.chat', 'key.categories.multiplayer'], playerlist: ['key.playerlist', 'key.categories.multiplayer'],
   pickItem: ['key.pickItem', 'key.categories.gameplay'], command: ['key.command', 'key.categories.multiplayer'],
   screenshot: ['key.screenshot', 'key.categories.misc'], perspective: ['key.togglePerspective', 'key.categories.misc'],

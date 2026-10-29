@@ -8,7 +8,7 @@ const FOOD_NAMES = new Set(`apple mushroom_stew bread porkchop cooked_porkchop g
   cod salmon tropical_fish pufferfish cooked_cod cooked_salmon cookie melon_slice beef cooked_beef chicken cooked_chicken
   rotten_flesh spider_eye carrot potato baked_potato poisonous_potato golden_carrot pumpkin_pie rabbit cooked_rabbit
   rabbit_stew mutton cooked_mutton chorus_fruit beetroot beetroot_soup dried_kelp honey_bottle`.split(/\s+/));
-const SWORDS = new Set(['iron_sword', 'wooden_sword', 'stone_sword', 'diamond_sword', 'golden_sword']);
+const SWORDS = new Set(['iron_sword', 'wooden_sword', 'stone_sword', 'diamond_sword', 'golden_sword','netherite_sword']);
 const POTIONS = new Set(['potion', 'splash_potion', 'lingering_potion', 'tipped_arrow']);
 const RARITY_UNCOMMON = new Set(`experience_bottle nether_star enchanted_book elytra dragon_breath totem_of_undying
   heart_of_the_sea skeleton_skull wither_skeleton_skull player_head zombie_head creeper_head dragon_head`.split(/\s+/));
@@ -88,6 +88,7 @@ export class Items {
       if (owner) return this.assets.translate('block.minecraft.player_head.named', [owner]);
     }
     if (POTIONS.has(d.name)) return this.potionName(item);
+    if(d.name==='compass'&&tag&&(Object.hasOwn(tag,'LodestonePos')||Object.hasOwn(tag,'LodestoneDimension')))return this.assets.translate('item.minecraft.lodestone_compass');
     const key = translationKey(this.isBlockItem(item.id) ? 'block' : 'item', d.name);
     const translated = this.assets.translate(key);
     return translated === key ? d.displayName : translated;
@@ -205,6 +206,7 @@ export class Items {
   // lingering potions too)
   hasEffect(item) {
     if (!item) return false;
+    const tag=this.nbt(item);if(this.name(item.id)==='compass'&&tag&&(Object.hasOwn(tag,'LodestonePos')||Object.hasOwn(tag,'LodestoneDimension')))return true;
     if (['potion', 'splash_potion', 'lingering_potion'].includes(this.name(item.id)) && this.potionEffects(item).length) return true;
     return this.isEnchanted(item);
   }
@@ -259,7 +261,7 @@ export class Items {
     const weapon = { iron_sword: 6, wooden_sword: 4, stone_sword: 5, diamond_sword: 7, golden_sword: 4,
       iron_axe: 9, wooden_axe: 7, stone_axe: 9, diamond_axe: 9, golden_axe: 7,
       iron_shovel: 4.5, wooden_shovel: 2.5, stone_shovel: 3.5, diamond_shovel: 5.5, golden_shovel: 2.5,
-      iron_pickaxe: 4, wooden_pickaxe: 2, stone_pickaxe: 3, diamond_pickaxe: 5, golden_pickaxe: 2, trident: 9 };
+      iron_pickaxe: 4, wooden_pickaxe: 2, stone_pickaxe: 3, diamond_pickaxe: 5, netherite_sword:8,netherite_axe:10,netherite_pickaxe:6,netherite_shovel:6.5, golden_pickaxe: 2, trident: 9 };
     if (!(tag?.HideFlags & 2) && weapon[registryName] !== undefined) {
       const sharp = this.enchantLevel(item, 'sharpness');
       const dmg = weapon[registryName] + (sharp > 0 ? 0.5 * sharp + 0.5 : 0);
@@ -307,7 +309,8 @@ export class Items {
   // ItemTool.getStrVsBlock
   strVsBlock(item, blockDef) {
     if (!item) return 1;
-    const name = this.name(item.id);
+    const name = this.name(item.id),native=this.assets.data.creative.toolSpeeds?.[item.id];
+    if(native)return native[blockDef.name]??1;
     if (name === 'shears') {
       if (blockDef.name === 'cobweb' || blockDef.material === 'leaves') return 15;
       if (blockDef.material === 'wool') return 5;
@@ -320,9 +323,9 @@ export class Items {
       return 1;
     }
     // materials.json still has 1.12 numeric keys. Express the same tool/material rules by registry names.
-    const tool = /^(wooden|stone|iron|diamond|golden)_(pickaxe|axe|shovel)$/.exec(name);
+    const tool = /^(wooden|stone|iron|diamond|golden|netherite)_(pickaxe|axe|shovel)$/.exec(name);
     if (tool && ({ pickaxe: ['rock'], axe: ['wood', 'plant'], shovel: ['dirt'] }[tool[2]]).includes(blockDef.material)) {
-      return { wooden: 2, stone: 4, iron: 6, diamond: 8, golden: 12 }[tool[1]];
+      return { wooden: 2, stone: 4, iron: 6, diamond: 8, golden: 12, netherite: 9 }[tool[1]];
     }
     return 1;
   }

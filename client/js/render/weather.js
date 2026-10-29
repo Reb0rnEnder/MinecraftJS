@@ -1,6 +1,6 @@
 // Rain/snow rendering, rain splashes + sound, and random block display ticks (ambience).
 import { getBlock } from '../world/blocks.js';
-import { biomeRainType } from '../world/biomes.js';
+import { biomeRainType,biomeInfo } from '../world/biomes.js';
 import { FORMAT, litParams } from '../gfx/device.js';
 
 const RADIUS = 10;
@@ -110,6 +110,8 @@ export class Weather {
       const z = pz + Math.floor(Math.random() * r) - Math.floor(Math.random() * r);
       const st = w.getState(x, y, z);
       if (st !== 0) g.particles.randomDisplayTick(x, y, z, st);
+      const ambient=biomeInfo(w.getBiome(x,z,y)).effects?.particle;
+      if(ambient&&!getBlock(st)?.collisionFull&&Math.random()<ambient.probability)g.particles.nativeParticle(ambient.options.type.replace(/^minecraft:/,''),x+Math.random(),y+Math.random(),z+Math.random());
     }
   }
 

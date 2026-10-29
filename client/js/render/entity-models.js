@@ -1,3 +1,4 @@
+import {animateHoglin,animatePiglin,animateStrider} from './nether-poses.js';
 import {animateFox} from './fox-pose.js';
 // Entity models (native 1.14.4). Their boxes come from the Minecraft client jar at build time (lib/modelextract.js runs the
 // game's model constructors and records every part: bundles/entity-models.json); this file names the parts and holds
@@ -1109,3 +1110,11 @@ export function dragonParts() {
 
 // Block entity and small entity models, by jar model name and field names
 export function blockModel(name, names) { return J(name, names); }
+
+// Nether Update geometry is extracted from the target jar, including ears/bristles.
+export function hoglin(){return jarAdapter('hoglin',['head','rightEar','leftEar','body','frontRightLeg','frontLeftLeg','backRightLeg','backLeftLeg','mane'],animateHoglin,{hoglinAgeable:true});}
+export function strider(){return jarAdapter('strider',['rightLeg','leftLeg','body','bristle0','bristle1','bristle2','bristle3','bristle4','bristle5'],animateStrider);}
+export function piglin(zombified=false){
+ const m=jarAdapter('piglin',[...BIPED,'leftSleeve','rightSleeve','leftPants','rightPants','jacket','earRight','earLeft'],(model,args)=>{animatePiglin(model,{...args,zombified},animateBiped);if(zombified)model.parts.earLeft.visible=false;},{piglinAgeable:true});
+ return m;
+}

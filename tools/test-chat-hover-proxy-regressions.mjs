@@ -47,8 +47,8 @@ test('typed hover SNBT preserves enchantment lists, escaped JSON names and legac
 });
 
 test('show_item uses the existing item tooltip, including enchantments and lore, and handles invalid data',()=>{
- const g=game(),enchant=['1.13.2','1.14.4','1.15.2'].includes(version)?'Enchantments:[{id:"minecraft:sharpness",lvl:3s}]':'ench:[{id:16s,lvl:3s}]';
- const lore=['1.14.4','1.15.2'].includes(version)?JSON.stringify(JSON.stringify('Hover description')):JSON.stringify('Hover description');
+ const g=game(),enchant=['1.13.2','1.14.4','1.15.2','1.16.5'].includes(version)?'Enchantments:[{id:"minecraft:sharpness",lvl:3s}]':'ench:[{id:16s,lvl:3s}]';
+ const lore=['1.14.4','1.15.2','1.16.5'].includes(version)?JSON.stringify(JSON.stringify('Hover description')):JSON.stringify('Hover description');
  const tooltip=chatHoverTooltip(g,{hover:{action:'show_item',value:{text:'{id:"minecraft:diamond_sword",Count:1b,tag:{'+enchant+',display:{Lore:['+lore+']}}}'}}});
  assert.ok(tooltip.some(s=>s.includes('Diamond Sword')),tooltip.join('\n'));assert.ok(tooltip.some(s=>s.includes('Sharpness III')),tooltip.join('\n'));assert.ok(tooltip.some(s=>s.includes('Hover description')));
  assert.deepEqual(chatHoverTooltip(g,{hover:{action:'show_item',value:'{id:"minecraft:missing"}'}}),['§cInvalid Item!']);
@@ -60,7 +60,7 @@ test('translated announcements retain nested hover events and align hit regions 
  const segments=chatSegments(JSON.stringify(component));assert.ok(segments.some(s=>s.hover));
  g.hud.addChat(chatToLegacy(component,{parsed:true}),JSON.stringify(component));
  let found=0;for(let i=0;i<g.hud.chatLines.length;i++){
-  const line=g.hud.chatLines[i];let x=2;for(const segment of line.comps){const hit=g.hud.chatComponentAt(x+1,g.gui.height-28-i*9-4);assert.equal(hit?.hover,segment.hover);if(segment.hover){found++;assert.deepEqual(chatHoverTooltip(g,hit),['Title','Hover description']);}x+=font.width(segment.text);}
+  const line=g.hud.chatLines[i];let x=2;for(const segment of line.comps){const hit=g.hud.chatComponentAt(x+1,g.gui.height-(version==='1.16.5'?40:28)-i*9-4);assert.equal(hit?.hover,segment.hover);if(segment.hover){found++;assert.deepEqual(chatHoverTooltip(g,hit),['Title','Hover description']);}x+=font.width(segment.text);}
  }
  assert.ok(found>0);assert.ok(g.hud.chatLines.length>1,'covers wrapped hit regions');
  const literal='{"text":"literal"}';assert.deepEqual(chatHoverTooltip(g,{hover:{action:'show_text',value:literal}}),[literal]);

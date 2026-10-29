@@ -10,7 +10,7 @@ const native=JSON.parse(await readFile(join(cache,'runtime.json')));if(native.er
 const path=name=>join(root,'client/data',name+'.json');
 const old=JSON.parse(await readFile(path('creative')));
 const stack=s=>[s[0],0,s[2]?readNbtRoot(new Reader(Buffer.from(s[2],'base64'))).v:null];
-const creative={...old,version:'1.16.5',protocol:754,dataVersion:2586,source:{clientJarSha1:target.downloads.client.sha1},tabs:native.tabs.map(t=>({...t,scrollbar:t.scroll,right:t.column===5,items:t.items.map(stack)}))};
+const creative={...old,toolSpeeds:native.toolSpeeds,version:'1.16.5',protocol:754,dataVersion:2586,source:{clientJarSha1:target.downloads.client.sha1},tabs:native.tabs.map(t=>({...t,scrollbar:t.scroll,right:t.column===5,items:t.items.map(stack)}))};
 const items=JSON.parse(await readFile(path('items'))),itemsById=new Map(items.map(i=>[i.id,i]));
 creative.itemMechanics=native.itemMechanics;
 creative.source.version='1.16.5';creative.source.nativeRuntimeSha1=target.downloads.client.sha1;
@@ -57,3 +57,12 @@ for(const line of official.split('\n')){
 }
 const entityMetadata=Object.fromEntries(Object.entries(native.entityMetadata).map(([name,fields])=>[name,Object.fromEntries(Object.entries(fields).map(([key,index])=>{if(!names.has(key))throw new Error('Unmapped entity metadata '+key);return [names.get(key),index];}))]));
 await writeFile(join(root,'client/js/game/entity-metadata-1.16.5.js'),'// Entity metadata indices extracted from the pinned native jar and official mappings.\nexport const NATIVE_METADATA='+JSON.stringify(entityMetadata)+';\n');
+
+const biomeDefinitions=JSON.parse(await readFile(path('biomes')));
+for(const biome of biomeDefinitions){const effects=native.biomeEffects[biome.id];if(!effects)throw Error('Missing native biome effects: '+biome.name);biome.effects=effects;biome.waterColor=effects.water_color;biome.waterFogColor=effects.water_fog_color;}
+await writeFile(path('biomes'),JSON.stringify(biomeDefinitions)+'\n');
+
+execFileSync(process.env.JAVA||'java',['-cp',[join(cache,'client.jar'),join(cache,'server.jar')].join(delimiter),join(root,'tools/port-1.16.5/ExtractGui.java'),join(cache,'gui.json'),join(cache,'client.txt')],{cwd:cache,stdio:'pipe'});
+const guiModule=join(root,'client/js/gui/vanilla-layout.js'),previousGui=JSON.parse((await readFile(guiModule,'utf8')).split('export const VANILLA_UI = ')[1].replace(/;\s*$/,'')),nativeGui=JSON.parse(await readFile(join(cache,'gui.json')));
+const gui={...previousGui,...nativeGui,version:'1.16.5',clientJarSha1:target.downloads.client.sha1,videoOptions:['options.biomeBlendRadius',...nativeGui.videoOptions],bindingCategories:{...previousGui.bindingCategories,'key.socialInteractions':'key.categories.multiplayer'}};
+await writeFile(guiModule,'// Option arrays extracted from the pinned native 1.16.5 jar.\nexport const VANILLA_UI = '+JSON.stringify(gui,null,2)+';\n');

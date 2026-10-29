@@ -1,3 +1,4 @@
+import {WORKSTATIONS_754} from '../../game/workstations-1.16.5.js';
 import {WORKSTATIONS_498,LOOM_PATTERNS,stonecutterRecipes,tradeCost} from '../../game/workstations-1.14.4.js';
 import {C} from '../../net/packets.js';
 import {BookScreen} from './book.js';
@@ -8,13 +9,13 @@ const inside=(x,y,a,b,w,h)=>x>=a&&y>=b&&x<a+w&&y<b+h;
 
 // Base classes are supplied by the container router to avoid an inheritance import cycle.
 export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
-  const definition=WORKSTATIONS_498[win.type];
+  const definition=WORKSTATIONS_754[win.type];
   if(win.type==='minecraft:lectern')return new LecternScreen(game,win);
   if(win.type==='minecraft:villager')return createMerchantScreen(game,win);
   if(!definition)return null;
   class WorkstationScreen extends SimpleScreen {
     constructor(){
-      super(game,win,'gui/container/'+definition.texture+'.png',definition.slots,{titleX:8,titleY:definition.titleY});
+      super(game,win,'gui/container/'+definition.texture+'.png',definition.slots,{titleX:definition.titleX??8,titleY:definition.titleY});
       this.row=0;this.scrolling=false;this.inputId=null;
     }
     recipes(){
@@ -26,7 +27,7 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
       const banner=win.get(0),dye=win.get(1),pattern=win.get(2);
       if(!banner||!dye||(game.items.nbt(banner)?.BlockEntityTag?.Patterns?.length||0)>=6)return [];
       if(pattern){
-        const id={globe_banner_pattern:35,creeper_banner_pattern:36,skull_banner_pattern:37,flower_banner_pattern:38,mojang_banner_pattern:39}[game.items.name(pattern.id)];
+        const id={globe_banner_pattern:35,creeper_banner_pattern:36,skull_banner_pattern:37,flower_banner_pattern:38,mojang_banner_pattern:39,piglin_banner_pattern:40}[game.items.name(pattern.id)];
         return id?[id]:[];
       }
       return Array.from({length:34},(_,i)=>i+1);
@@ -45,7 +46,10 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
     drawBackground(gui,mx,my){
       super.drawBackground(gui);
       const x=this.guiLeft,y=this.guiTop;
-      if(win.type==='minecraft:grindstone'){
+      if(win.type==='minecraft:smithing'){
+        gui.blit(this.tex,x+59,y+20,0,this.ySize+(win.get(0)?16:0),110,16);
+        if((win.get(0)||win.get(1))&&!win.get(2))gui.blit(this.tex,x+99,y+45,this.xSize,0,28,21);
+      }else if(win.type==='minecraft:grindstone'){
         if((win.get(0)||win.get(1))&&!win.get(2))gui.blit(this.tex,x+92,y+31,176,0,28,21);
       }else if(win.type==='minecraft:cartography'){
         const second=win.get(1),name=second?game.items.name(second.id):'',input=win.get(0);

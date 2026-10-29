@@ -5,7 +5,7 @@ import { parseAddress } from '../net/address.js';
 
 export const DEFAULT_KEYS = {
   forward: 'KeyW', left: 'KeyA', back: 'KeyS', right: 'KeyD', jump: 'Space', sneak: 'ShiftLeft', sprint: 'ControlLeft',
-  inventory: 'KeyE', drop: 'KeyQ', chat: 'KeyT', command: 'Slash', playerlist: 'Tab', pickItem: 'mouse1',
+  inventory: 'KeyE', drop: 'KeyQ', chat: 'KeyT', socialInteractions:'KeyP', command: 'Slash', playerlist: 'Tab', pickItem: 'mouse1',
   attack: 'mouse0', use: 'mouse2', perspective: 'F5', zoom: 'KeyC', smoothCamera: '', screenshot: 'F2', hideGui: 'F1',
   hotbar1: 'Digit1', hotbar2: 'Digit2', hotbar3: 'Digit3', hotbar4: 'Digit4', hotbar5: 'Digit5',
   hotbar6: 'Digit6', hotbar7: 'Digit7', hotbar8: 'Digit8', hotbar9: 'Digit9', fullscreen: 'F11', spectatorOutlines: '',
@@ -15,6 +15,7 @@ export const DEFAULT_KEYS = {
 const DEFAULTS = {
   skipMultiplayerWarning: false,
   fov: 70,
+  fovEffectScale:1,screenEffectScale:1,entityDistanceScaling:1,chatLineSpacing:0,chatDelay:0,hideMatchedNames:true,
   sensitivity: 0.5,
   mouseWheelSensitivity: 1,
   discreteMouseScroll: false,

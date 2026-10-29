@@ -1,14 +1,15 @@
 # MinecraftJS 1.16.5 development client
 
 This branch targets Java **1.16.5, protocol 754**. Start with the
-[transition plan](docs/transition-1.16.5.md). The current milestone is native
-connection and terrain support; full Nether Update feature parity is pending.
+[transition plan](docs/transition-1.16.5.md). The client has native connection, terrain and Nether content support.
+The [parity audit](docs/parity-1.16.5.md) records checked features and remaining gaps;
+full Nether Update parity is still pending.
 
 The browser and proxy use the matching handshake, packet IDs, binary login UUID,
 dimension registries and padded terrain palettes. Block/item/entity IDs, block
 shapes, item mechanics, assets and common entity models come from verified native
-1.16.5 inputs. New mob renderers and the smithing interface are deferred to the
-content milestone; unsupported new mobs are tracked without a borrowed model.
+1.16.5 inputs. Nether mobs, smithing, biome effects and the native option lists are implemented
+and covered by isolated tests and browser probes.
 
 For the already-running local server, run the new proxy from this worktree:
 
