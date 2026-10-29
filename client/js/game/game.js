@@ -672,7 +672,6 @@ export class Game {
 
   captureText(options) { return captureText(this,options); }
 
-  on_custom_payload(p) { this.eaglerTextures?.handle(p.channel,p.data); }
 
   on_chat(p) {
     this.hud.checkAchievement(p.message);
@@ -1031,6 +1030,7 @@ export class Game {
   on_scoreboard_team(p) { this.scoreboard.onTeam(p); }
 
   on_custom_payload(p) {
+    this.eaglerTextures?.handle(p.channel,p.data);
     if (p.channel === 'MC|TrList') {
       if (this.screens.current && this.screens.current.onTradeList) this.screens.current.onTradeList(p.data);
       else this.pendingTrades = p.data;
@@ -1719,6 +1719,7 @@ export class Game {
     // (theShaderGroup: the entity's shader or a Super Secret Settings one; F4 turns it off)
     const shader = viewed ? entityShaderName(viewed) : this.superSecret;
     const post = shader && !this.shadersOff && this.device.createRenderTarget ? this.postEffects.get(shader) : null;
+    this.debugShaderName=post?'minecraft:shaders/post/'+shader+'.json':null;
     const packPost = !post && this.shaderPack.active ? this.shaderPack : null;
     this.shaderPack.prepareTerrain(r.camPos,this.eyePosition(partial));
     r.render(hand, post || packPost);

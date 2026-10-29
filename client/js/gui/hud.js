@@ -1,3 +1,4 @@
+import {debugLeft} from './debug-overlay.js';
 import {VANILLA_UI} from './vanilla-layout.js';
 import {FORMAT,colorParams} from '../gfx/device.js';
 import {fireOverlayVertices,fireOverlayProjection} from '../render/fire-overlay.js';
@@ -696,50 +697,7 @@ export class Hud {
     if (g.showProfiler) this._renderProfiler(gui);
   }
 
-  _debugLeft() {
-    const g = this.game, s = g.settings, r = g.renderer, pl = g.player;
-    const er = g.entityRenderer.stats || { total: 0, culled: 0 };
-    const cu = g.chunkUpdates || 0;
-    const fpsLine = `${g.fps} fps (${cu} chunk update${cu !== 1 ? 's' : ''}) T: ${s.maxFps ? s.maxFps : 'inf'}${s.enableVsync ? ' vsync' : ''}${s.fancyGraphics ? '' : ' fast'}`
-      + `${s.clouds === 0 || s.clouds === false ? '' : s.clouds === 1 ? ' fast-clouds' : ' fancy-clouds'}${s.useVbo !== false ? ' vbo' : ''}`;
-    const rendered = er.total - er.culled;
-    const entCount = g.entities.count ? g.entities.count() : 0;
-    const pool = g.assets.worker && g.assets.worker.workers;
-    const workers = pool ? pool.filter((w) => !w.busy).length : 1; // available builders
-    const lines = [
-      `MinecraftJS ${VANILLA_UI.version} (${VANILLA_UI.version}/vanilla)`,
-      fpsLine,
-      `C: ${r.visibleSections || 0}/${r.sections.size} (s) D: ${s.renderDistance}, pC: ${String(g.dirty.size).padStart(3, '0')}, pU: ${g.inFlight.size}, aB: ${workers}`,
-      `E: ${rendered}/${er.total}, B: ${er.culled}, I: ${Math.max(0, er.total - er.culled - rendered)}`,
-      `P: ${g.particles.count ? g.particles.count() : 0}. T: All: ${entCount}`,
-      `MultiplayerChunkCache: ${g.world.chunks.size}, ${g.world.chunks.size}`,
-      '',
-    ];
-    const bx = Math.floor(pl.x), by = Math.floor(pl.y), bz = Math.floor(pl.z);
-    if (g.reducedDebug || s.reducedDebugInfo) {
-      lines.push(`Chunk-relative: ${bx & 15} ${by & 15} ${bz & 15}`);
-      return lines;
-    }
-    const f = (n, d) => n.toFixed(d);
-    const dirIdx = Math.floor(pl.yaw * 4 / 360 + 0.5) & 3; // getHorizontalFacing
-    const facing = ['south', 'west', 'north', 'east'][dirIdx];
-    const towards = ['Towards positive Z', 'Towards negative X', 'Towards negative Z', 'Towards positive X'][dirIdx];
-    lines.push(`XYZ: ${f(pl.x, 3)} / ${f(pl.y, 5)} / ${f(pl.z, 3)}`);
-    lines.push(`Block: ${bx} ${by} ${bz}`);
-    lines.push(`Chunk: ${bx & 15} ${by & 15} ${bz & 15} in ${bx >> 4} ${by >> 4} ${bz >> 4}`);
-    lines.push(`Facing: ${facing} (${towards}) (${f(wrapDeg(pl.yaw), 1)} / ${f(wrapDeg(pl.pitch), 1)})`);
-    if (by >= 0 && by < 256 && g.world.getChunk && g.world.getChunk(bx >> 4, bz >> 4)) {
-      const biome = biomeInfo(g.world.getBiome(bx, bz));
-      const sky = g.world.getSkyLight(bx, by, bz), blk = g.world.getBlockLight(bx, by, bz);
-      lines.push(`Biome: ${biome.displayName || biome.name}`);
-      lines.push(`Light: ${Math.max(sky, blk)} (${sky} sky, ${blk} block)`);
-      const time = g.world.timeOfDay || 0;
-      lines.push(`Local Difficulty: ${f(localDifficulty(g.difficulty, time), 2)} (Day ${Math.trunc(time / 24000)})`);
-    } else lines.push('Waiting for chunk...');
-    const t = g.interaction.target;
-    if (t && t.type === 'block') lines.push(`Looking at: ${t.x} ${t.y} ${t.z}`);
-    return lines;
-  }
+  _debugLeft() { return debugLeft(this); }
 
   _debugRight(gui) {
     const g = this.game;
@@ -862,17 +820,6 @@ function lagColor(v) {
     return out >>> 0;
   };
   return v < 30 ? blend(0xff00ff00, 0xffffff00, v / 30) : blend(0xffffff00, 0xffff0000, (v - 30) / 30);
-}
-
-// DifficultyInstance.calculateAdditionalDifficulty (client chunks never know their inhabited time)
-function localDifficulty(difficulty, worldTime) {
-  if (!difficulty) return 0;
-  const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
-  const moon = [1, 0.75, 0.5, 0.25, 0, 0.25, 0.5, 0.75][(((Math.trunc(worldTime / 24000) % 8) + 8) % 8)];
-  const f1 = clamp((worldTime - 72000) / 1440000, 0, 1) * 0.25;
-  let f2 = clamp(moon * 0.25, 0, f1);
-  if (difficulty === 1) f2 *= 0.5;
-  return difficulty * (0.75 + f1 + f2);
 }
 
 function chatText(json) { return chatToLegacy(json); }
