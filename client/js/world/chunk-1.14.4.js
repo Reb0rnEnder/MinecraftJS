@@ -11,8 +11,8 @@ export function decodeChunkData498(packet,{stateCount=BLOCK_STATE_COUNT_498}={})
   for(let y=0;y<16;y++)if(bitMap&(1<<y)) {
     // 1.14.4's native recount also counts non-empty fluids (bxu.h), so the
     // transmitted count can exceed 4096. Recount actual occupied cells below.
-    const wireNonAir=r.u16(),bits=r.u8();
-    if(bits<4||bits>8&&bits!==globalBits)throw new Error('Invalid palette bit width');
+    const wireNonAir=r.u16(),wireBits=r.i8(),bits=wireBits<=4?4:wireBits<9?wireBits:globalBits;
+
     let palette=null;
     if(bits<=8) {
       const n=r.varint();if(n<1||n>1<<bits)throw new Error('Invalid local palette size');

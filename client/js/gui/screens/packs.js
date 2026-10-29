@@ -1,3 +1,4 @@
+import {ResourceLoadingScreen} from './loading.js';
 import { VANILLA_UI } from '../vanilla-layout.js';
 import { ConfirmScreen } from './menus.js';
 // GuiScreenResourcePacks: available / selected pack lists, adding packs from files.
@@ -35,13 +36,13 @@ export class ResourcePacksScreen extends Screen {
 
   init() {
     const cx = this.width / 2;
-    this.buttons.push(new Button(2, cx - 154, this.height - 48, 150, 20, tr('resourcePack.openFolder'), () => this._add()));
+    this.buttons.push(new Button(2, cx - 154, this.height - 48, 150, 20, tr('pack.openFolder'), () => this._add()));
     this.buttons.push(new Button(1, cx + 4, this.height - 48, 150, 20, tr('gui.done'), () => this.done()));
     // GuiResourcePackList: GuiListExtended(200 wide, 32, height - 55 + 4, 36) with a bold underlined header
     const old = this.lists;
     this.lists = [0, 1].map((side) => {
       const items = () => (side ? [...this.selected, null] : this.available);
-      const L = { side, title: tr(side ? 'resourcePack.selected.title' : 'resourcePack.available.title') };
+      const L = { side, title: tr(side ? 'pack.selected.title' : 'pack.available.title') };
       L.list = new ListOf(this, 32, this.height - 55 + 4, ENTRY_H, {
         size: () => (this.loaded ? items().length : 0),
         draw: (gui, i, x, y, h, mx, my) => this._entry(gui, L, items()[i], i, x, y, mx, my),
@@ -77,7 +78,7 @@ export class ResourcePacksScreen extends Screen {
     if (ids.join('\n') === this.initial) { g.screens.open(this.parent); return; }
     g.settings.resourcePacks = ids;
     g.settings.save();
-    const loading = new ReloadingScreen(g);
+    const loading = new ResourceLoadingScreen(g, this.parent);
     g.screens.open(loading);
     try {
       await g.assets.activatePacks(ids);
@@ -86,6 +87,7 @@ export class ResourcePacksScreen extends Screen {
       console.error(e);
       this.message = '§c' + tr('minecraftjs.packs.failed', e.message);
     }
+    await loading.finish();
     g.screens.open(this.parent);
   }
 
@@ -119,11 +121,12 @@ export class ResourcePacksScreen extends Screen {
   render(gui, mx, my) {
     gui.dirtBackground();
     for (const L of this.lists) L.list.render(gui, mx, my);
-    gui.textCentered(tr('resourcePack.title'), this.width / 2, 16, 0xffffff);
+    gui.textCentered(tr('resourcePack.title'), this.width / 2, 8, 0xffffff);
     if (!this.loaded) gui.textCentered(tr('minecraftjs.loading'), this.width / 2, this.height / 2, 0xa0a0a0);
     if (this.message) gui.textCentered(this.message, this.width / 2, this.height - 60, 0xffffff);
-    gui.textCentered(tr('resourcePack.folderInfo'), this.width / 2 - 77, this.height - 26, 0x808080);
+    gui.textCentered('§7'+tr('pack.dropInfo'), this.width/2, 20, 0xffffff);
     for (const b of this.buttons) b.render(gui, mx, my);
+    const open=this.buttons.find(b=>b.id===2);if(open?.hovered(mx,my))gui.tooltip(gui.font.wrap(tr('pack.folderInfo'),Math.min(300,this.width-20)),mx,my);
   }
 
   _entry(gui, L, pack, idx, x, y, mx, my) {
@@ -146,10 +149,10 @@ export class ResourcePacksScreen extends Screen {
       }
     }
     const warning = incompatible && (overEntry || this.game.settings.touchscreen);
-    let title = warning ? tr('resourcePack.incompatible') : name;
+    let title = warning ? tr('pack.incompatible') : name;
     if (gui.textWidth(title) > 157) title = gui.font.trimToWidth(title, 157 - gui.textWidth('...')) + '...';
     gui.text(title, x + 32 + 2, y + 1, 0xffffff, true);
-    const lines = gui.font.wrap(warning ? tr(pack.format > VANILLA_UI.packFormat ? 'resourcePack.incompatible.new' : 'resourcePack.incompatible.old') : desc, 157);
+    const lines = gui.font.wrap(warning ? tr(pack.format > VANILLA_UI.packFormat ? 'pack.incompatible.new' : 'pack.incompatible.old') : desc, 157);
     for (let i = 0; i < Math.min(2, lines.length); i++) gui.text(lines[i], x + 32 + 2, y + 12 + 10 * i, 0x808080, true);
   }
 
@@ -167,7 +170,7 @@ export class ResourcePacksScreen extends Screen {
         this.game.screens.open(new ConfirmScreen(this.game, yes => {
           if(yes)add();
           this.game.screens.open(this);
-        },tr('resourcePack.incompatible.confirm.title'),tr('resourcePack.incompatible.confirm.'+(pack.format>VANILLA_UI.packFormat?'new':'old'))));
+        },tr('pack.incompatible.confirm.title'),tr('pack.incompatible.confirm.'+(pack.format>VANILLA_UI.packFormat?'new':'old'))));
       } else add();
     } else {
       if (rx >= 32) return false;
@@ -199,16 +202,5 @@ export class ResourcePacksScreen extends Screen {
   wheel(d) {
     const [mx, my] = this.game.screens._mouse();
     for (const L of this.lists) if (L.list.inside(my, mx)) L.list.wheel(d);
-  }
-}
-
-class ReloadingScreen extends Screen {
-  constructor(game) { super(game); this.background = 'dirt'; this.status = tr('minecraftjs.packs.reloading'); this.pct = 0; }
-  key() { return true; }
-  renderContent(gui) {
-    gui.textCentered(this.status, this.width / 2, this.height / 2 - 10, 0xffffff);
-    const w = 200, x = this.width / 2 - w / 2, y = this.height / 2 + 4;
-    gui.rect(x, y, x + w, y + 2, 0xff808080);
-    gui.rect(x, y, x + w * (this.pct || 0) / 100, y + 2, 0xff80ff80);
   }
 }

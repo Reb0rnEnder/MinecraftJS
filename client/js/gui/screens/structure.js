@@ -166,7 +166,7 @@ export class StructureBlockScreen extends Screen {
   renderContent(gui) {
     const mode = this.tile.mode, cx = this.width / 2;
     const right = (s, y) => gui.text(s, cx + 154 - gui.textWidth(s), y, 0xa0a0a0, true);
-    gui.textCentered(tr('tile.structureBlock.name'), cx, 10, 0xffffff, true);
+    gui.textCentered(tr('block.minecraft.structure_block'), cx, 10, 0xffffff, true);
     if (mode !== 'DATA') gui.text(tr('structure_block.structure_name'), cx - 153, 30, 0xa0a0a0, true);
     if (mode === 'LOAD' || mode === 'SAVE') {
       gui.text(tr('structure_block.position'), cx - 153, 70, 0xa0a0a0, true);

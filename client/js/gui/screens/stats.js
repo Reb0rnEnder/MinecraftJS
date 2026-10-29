@@ -281,8 +281,8 @@ class MobsList extends SlotList {
   drawSlot(gui, i, x, y) {
     const r = this.rows[i];
     const name = tr('entity.' + r.name + '.name');
-    const s1 = r.kills === 0 ? tr('stat.entityKills.none', name) : tr('stat.entityKills', r.kills, name);
-    const s2 = r.killedBy === 0 ? tr('stat.entityKilledBy.none', name) : tr('stat.entityKilledBy', name, r.killedBy);
+    const s1 = r.kills === 0 ? tr('stat_type.minecraft.killed.none', name) : tr('stat_type.minecraft.killed', r.kills, name);
+    const s2 = r.killedBy === 0 ? tr('stat_type.minecraft.killed_by.none', name) : tr('stat_type.minecraft.killed_by', name, r.killedBy);
     gui.text(name, x + 2 - 10, y + 1, 0xffffff, true);
     gui.text(s1, x + 2, y + 1 + 9, r.kills === 0 ? 0x606060 : 0x909090, true);
     gui.text(s2, x + 2, y + 1 + 18, r.killedBy === 0 ? 0x606060 : 0x909090, true);

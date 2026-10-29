@@ -1,3 +1,4 @@
+import {ResourceLoadingScreen} from '../gui/screens/loading.js';
 import {SocialInteractionsScreen} from '../gui/screens/social.js';
 import {GameModeSwitcherScreen} from '../gui/screens/gamemode-switcher.js';
 import {sampleBiomeFog} from '../world/biome-effects.js';
@@ -371,6 +372,13 @@ export class Game {
 
   // Rebuild everything that depends on resource packs (textures, models, sounds, fonts)
   async reloadResources(progress) {
+    if(!progress){
+      const parent=this.screens.current,loading=new ResourceLoadingScreen(this,parent);
+      this.screens.open(loading);
+      try{await this.reloadResources((message,pct)=>{loading.pct=pct;});await loading.finish();}
+      finally{if(this.screens.current===loading){if(parent||this.inWorld)this.screens.open(parent);else this.screens.openMainMenu();}}
+      return;
+    }
     await this.assets.loadResources(progress);
     this.eaglerTextures?.clear();
     this.applyLanguage();

@@ -87,3 +87,12 @@ Flattened record lookup and missing conversion-event sounds apply to 1.13.2,
 1.15.2. New Nether content, protocol changes and 1.16 GUI changes remain on
 1.16.5. The previously pushed font/build-worker fixes remain on their applicable
 older branches.
+
+## Loading and terrain follow-up
+
+The login terrain fix accepts vanilla fluid-inclusive section counts above
+4096 and normalizes palette widths. A full fluid-heavy packet fixture, real
+server join and all wood-family empty-hand interaction fixtures pass. Resource
+pack labels use the native 1.16 `pack.*` keys, and startup/resource reloads now
+use the native loading overlay. See [loading-screen-parity.md](loading-screen-parity.md)
+for version-specific layouts and backport scope.
