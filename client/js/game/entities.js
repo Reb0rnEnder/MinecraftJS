@@ -380,7 +380,7 @@ export class EntityManager {
       // with the inherited 1.14.4 living-index shift applied.
       const flags=wire[WIRE_METADATA.bee.DATA_FLAGS_ID];
       if(flags!==undefined){e.hasNectar=!!(flags&8);e.hasStung=!!(flags&4);e.beeRolling=!!(flags&2);}
-      if(wire[WIRE_METADATA.bee.ANGER_TIME]!==undefined){e.angerTime=wire[WIRE_METADATA.bee.ANGER_TIME];e.angry=e.angerTime>0;}
+      if(wire[WIRE_METADATA.bee.DATA_REMAINING_ANGER_TIME]!==undefined){e.angerTime=wire[WIRE_METADATA.bee.DATA_REMAINING_ANGER_TIME];e.angry=e.angerTime>0;}
     }
     const set = (index, key) => { if (m[index] !== undefined) e[key] = m[index]; };
     const bit = (index, mask, key) => { if (m[index] !== undefined) e[key] = !!(m[index] & mask); };
