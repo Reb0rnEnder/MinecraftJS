@@ -97,6 +97,7 @@ class ContainerBase {
     this.game = game;
     this.slots = [];
     this.properties = {};
+    this.stateId = 0;
     this.dragEvent = 0;
     this.dragMode = -1;
     this.dragSlots = new Set();
@@ -373,9 +374,14 @@ class ContainerBase {
 
   // Perform a click and send it to the server
   click(slotId, button, mode) {
-    const clicked = this.slotClick(slotId, button, mode);
-    const action = this.inv.nextAction();
-    this.game.send(C.windowClick(this.windowId, slotId, button, action, mode, clicked));
+    const before=this.slots.map((_,index)=>copy(this.get(index)));
+    const clicked = this.slotClick(slotId, button, mode), changed=[];
+    for(let index=0;index<this.slots.length;index++){
+      const old=before[index],now=this.get(index);
+      if(!old&&!now||old&&now&&old.count===now.count&&stackable(old,now))continue;
+      changed.push({slot:index,item:now});
+    }
+    this.game.send(C.windowClick(this.windowId,slotId,button,this.stateId,mode,changed,this.inv.cursor));
     if (this.afterClick) this.afterClick();
     return clicked;
   }

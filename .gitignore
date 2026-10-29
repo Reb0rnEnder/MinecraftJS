@@ -1,4 +1,4 @@
-node_modules/
+node_modules
 # Mojang game files (the proxy downloads them at runtime)
 1.8.9/
 cache/
@@ -24,3 +24,7 @@ logs/
 # Native 1.16.5 local assets and test server
 1.16.5/
 server1165/
+
+# Native 1.17.1 local assets and test server
+1.17.1/
+server1171/

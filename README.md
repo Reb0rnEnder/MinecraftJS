@@ -1,28 +1,42 @@
-# MinecraftJS 1.16.5 development client
+# MinecraftJS 1.17.1 development client
 
-This branch targets Java **1.16.5, protocol 754**. Start with the
-[transition plan](docs/transition-1.16.5.md). The client has native connection, terrain and Nether content support.
-The [parity audit](docs/parity-1.16.5.md) records checked features and remaining gaps;
-full Nether Update parity is still pending.
+This branch targets Java **1.17.1, protocol 756**, with native 1.17 assets and
+resource-pack format 7. Follow the [transition plan](docs/transition-1.17.1.md)
+and [implementation ledger](docs/parity-1.17.1.md). Full parity is still pending.
 
-The browser and proxy use the matching handshake, packet IDs, binary login UUID,
-dimension registries and padded terrain palettes. Block/item/entity IDs, block
-shapes, item mechanics, assets and common entity models come from verified native
-1.16.5 inputs. Nether mobs, smithing, biome effects and the native option lists are implemented
-and covered by isolated tests and browser probes.
+The connection baseline is tested against the supplied local 1.17.1 server:
+login/compression, chunks/light, teleport confirmation, keepalives, movement,
+and server recovery from a stale inventory state. Native extraction includes
+898 blocks, 20,342 block states, 1,100 item registry entries, 113 entity types,
+1,190 sounds and 169 model layers. Goat, axolotl and glow-squid models render;
+new content behaviors and detailed animations remain work in progress.
 
-For the already-running local server, run the new proxy from this worktree:
+Start the proxy from **this worktree**:
 
 ```sh
-PORT=3001 ALLOW_LOOPBACK=1 npm start
+PORT=3002 ALLOW_LOOPBACK=1 npm start
 ```
 
-Open `http://localhost:3001/` and join `localhost:25565`. The explicit loopback
-option is required for a local game server; loopback targets remain blocked by
-default. This can coexist with an older-version proxy on port 3000.
+Open `http://localhost:3002/` and join `localhost:25565`. Loopback is explicitly
+allowed here for local testing; deployments block it by default. The older
+version proxies can remain running on their own ports.
+
+Reproduce the native inputs and assets (Java 16 or newer is needed for extraction):
+
+```sh
+node tools/port-1.17.1/reports.mjs --check
+node tools/port-1.17.1/packet-ids.mjs --check
+node tools/port-1.17.1/runtime-data.mjs
+npm run assets
+node tools/port-1.17.1/verify-protocol.mjs
+```
+
+`npm run build` creates a standalone HTML client; use
+`npm run build -- --static --out=dist/site` for static hosting. These are browser
+clients and require a compatible proxy to connect to ordinary Java TCP servers.
 
 MinecraftJS is not affiliated with Mojang or Microsoft. The repository contains no Mojang files: the game assets
-are taken from your own copy of Minecraft 1.16.5, or downloaded from Mojang's servers on first use. That includes the
+are taken from your own copy of Minecraft 1.17.1, or downloaded from Mojang's servers on first use. That includes the
 entity and block entity models (mobs, boats, chests, signs, skulls, beds, ...): the build runs the pinned
 native Java constructors through the official mappings and stores the resulting geometry in
 `bundles/entity-models.json`.
@@ -46,13 +60,13 @@ relays Microsoft account sign in and serves player skins.
 Game assets are found automatically, in this order:
 
 1. `client/assets/` if you have built it (see below)
-2. the 1.16.5 jar from `./1.16.5/`, `MC_JAR`, `MC_DIR`, or your launcher's `.minecraft` folder
+2. the 1.17.1 jar from `./1.17.1/`, `MC_JAR`, `MC_DIR`, or your launcher's `.minecraft` folder
 3. otherwise a download from Mojang into `cache/`
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `PORT` | `3000` | HTTP and WebSocket port |
-| `MC_JAR` | | path to a `1.16.5.jar` |
+| `MC_JAR` | | path to a `1.17.1.jar` |
 | `MC_DIR` | | a `.minecraft` folder to look in |
 
 ## Building

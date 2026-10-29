@@ -4,7 +4,7 @@ import {foxAnimationArgs} from '../game/fox.js';
 import {scaleFoxChild} from './fox-pose.js';
 import {nameUuid} from '../util/uuid-md5.js';
 import {shadowGeometry} from './shadows.js';
-import {PANDA_VARIANTS} from '../game/panda-variants-1.16.5.js';
+import {PANDA_VARIANTS} from '../game/panda-variants-1.17.1.js';
 import {villagerLayers} from './villager-layers.js';
 import { updateRiptide } from './riptide-layer.js';
 import { EntityEffects, dragonCorpseMatrix } from './entity-effects.js';
@@ -303,7 +303,10 @@ export class EntityRenderer {
       case 91: return 'entity/sheep/sheep.png';
       case 92: return 'entity/cow/cow.png';
       case 93: return 'entity/chicken.png';
-      case 94: return 'entity/squid.png';
+      case 94: return 'entity/squid/squid.png';
+      case 'goat': return 'entity/goat/goat.png';
+      case 'axolotl': return 'entity/axolotl/axolotl_'+(['lucy','wild','gold','cyan','blue'][e.axolotlVariant]||'lucy')+'.png';
+      case 'glow_squid': return 'entity/squid/glow_squid.png';
       case 95: return e.tamed ? 'entity/wolf/wolf_tame.png' : e.angry ? 'entity/wolf/wolf_angry.png' : 'entity/wolf/wolf.png';
       case 96: return 'entity/cow/'+(e.mooshroomType==='brown'?'brown':'red')+'_mooshroom.png';
       case 97: return 'entity/snow_golem.png';
@@ -377,6 +380,9 @@ export class EntityRenderer {
       case 92: case 96: return M.cow();
       case 93: return M.chicken();
       case 94: return M.squid();
+      case 'glow_squid': return M.glowSquid();
+      case 'goat': return M.goat();
+      case 'axolotl': return M.axolotl();
       case 95: return M.wolf();
       case 97: return M.snowman();
       case 98: return M.ocelot();
@@ -924,9 +930,9 @@ export class EntityRenderer {
       }
       case 'itemframe': {
         v = atlasOnly('itemframe');
-        const bm = this.game.assets.modelStore.bakeVariant('item_frame', { map: 'false' }, null, 0);
+        const bm = this.game.assets.modelStore.bakeVariant(e.entityName==='glow_item_frame'?'glow_item_frame':'item_frame', { map: 'false' }, null, 0);
         if (bm) {
-          const mesh = this.game.itemRenderer.blockMesh({ baked: bm, name: 'item_frame' });
+          const mesh = this.game.itemRenderer.blockMesh({ baked: bm, name:e.entityName==='glow_item_frame'?'glow_item_frame':'item_frame' });
           if (mesh) { v.frame = new Node().addDrawable(mesh, v.atlasMat); v.root.add(v.frame); }
         }
         v.itemGroup = new Node();
@@ -1042,7 +1048,8 @@ export class EntityRenderer {
       v.root.position.set(p.x, p.y, p.z);
       if (e.onFire) burning.push({ e, p });
       const light = this._light(p.x, p.y + (e.eyeHeight || 0.5), p.z);
-      for (const m of v.materials) m.params.setLight(light[0], light[1]);
+      const emitted=e.entityName==='glow_squid'?Math.floor(15*(1-Math.min(1,(e.darkTicks||0)/10))):e.entityName==='glow_item_frame'?15:0;
+      for (const m of v.materials) m.params.setLight(light[0], Math.max(light[1],emitted));
       try {
         switch (v.kind) {
           case 'living': this._renderLiving(e, v, p, partial); updateRiptide(e, v, partial); break;

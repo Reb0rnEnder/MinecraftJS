@@ -11,7 +11,7 @@ export class Splash{
  setProgress(percent){this.target=Math.max(0,Math.min(1,percent/100));}
  start(){this.running=true;const frame=()=>{if(!this.running)return;this.draw();platform().requestFrame(frame);};frame();}
  stop(){this.running=false;for(const t of[this.tex,this.white])if(t)this.device.destroyTexture(t);this.device.destroyMesh(this.mesh);this.device.destroyMesh(this.bar);}
- draw(){const P=platform(),d=this.device,scale=loadingScale(P.width,P.height,this.settings.guiScale),w=Math.ceil(P.width/scale),h=Math.ceil(P.height/scale),layout=loadingLayout(w,h);this.progress=loadingProgress(this.progress,this.target);d.beginFrame(layout.background);mat4.ortho(this.proj,0,w,h,0,-1,1);d.setGlobals({view:this.view,proj:this.proj,fogMode:2});
+ draw(){const P=platform(),d=this.device,scale=loadingScale(P.width,P.height,this.settings.guiScale),w=Math.ceil(P.width/scale),h=Math.ceil(P.height/scale),layout=loadingLayout(w,h,this.settings.darkMojangStudiosBackground);this.progress=loadingProgress(this.progress,this.target);d.beginFrame(layout.background);mat4.ortho(this.proj,0,w,h,0,-1,1);d.setGlobals({view:this.view,proj:this.proj,fogMode:2});
   if(this.tex){d.updateMesh(this.mesh,vertices(loadingLogoQuads(layout)),{quads:true});d.draw({mesh:this.mesh,pipeline:'color',textures:[this.tex],params:PARAMS,state:{...STATE,blend:LOADING_STYLE==='studios'?'add':'alpha'}});}
   const rects=loadingRects(layout,this.progress).filter(([x,y,r,b])=>r>x&&b>y).map(([x,y,r,b,c])=>[x,y,r-x,b-y,0,0,1,1,c]);
   if(rects.length){d.updateMesh(this.bar,vertices(rects),{quads:true});d.draw({mesh:this.bar,pipeline:'color',textures:[this.white],params:PARAMS,state:STATE});}d.endFrame();

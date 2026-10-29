@@ -1,0 +1,61 @@
+{
+  "version": "1.17.1",
+  "protocol": 756,
+  "clientJarSha1": "8d9b65467c7913fcf6f5b2e729d44a1e00fde150",
+  "serverJarSha1": "a16d67e5807f57fc4e550299cf20226194497dc2",
+  "minecraftDataRevision": "5e063fa99cfe8ded065ec6788b66696b7e4ef143",
+  "sources": {
+    "blocks": {
+      "path": "pc/1.17/blocks.json",
+      "sha1": "8c34271a390ef7784ac53e21bd761805e5a71692"
+    },
+    "items": {
+      "path": "pc/1.17/items.json",
+      "sha1": "d137cb5190bde8d05d8e524bb7d777cd8030d354"
+    },
+    "entities": {
+      "path": "pc/1.17/entities.json",
+      "sha1": "a3494c6efd31588b5cf2ac72087f06c709ce1518"
+    },
+    "blockCollisionShapes": {
+      "path": "pc/1.17/blockCollisionShapes.json",
+      "sha1": "7faa4f1cf592d92fe3ddbc181297aee11d40cddc"
+    },
+    "biomes": {
+      "path": "pc/1.17/biomes.json",
+      "sha1": "6b74bb1dd6bbc8dcf97eafd42fe85849532802f1"
+    },
+    "foods": {
+      "path": "pc/1.17/foods.json",
+      "sha1": "90533106e74e8b0c60350f1486786b2eb3a06ede"
+    },
+    "effects": {
+      "path": "pc/1.17/effects.json",
+      "sha1": "70505fabe01b679a81d17e3323aa303be2147bff"
+    },
+    "enchantments": {
+      "path": "pc/1.17/enchantments.json",
+      "sha1": "24f71740cec971446d0f573f21821d20f5b4135f"
+    },
+    "windows": {
+      "path": "pc/1.16.1/windows.json",
+      "sha1": "b742a8ab61b82aac67e5b203f08fc083c761db42"
+    },
+    "particles": {
+      "path": "pc/1.17/particles.json",
+      "sha1": "0c8fb4985d19fdf54073733255874d2432dd1efd"
+    },
+    "materials": {
+      "path": "pc/1.17/materials.json",
+      "sha1": "6fe40db722e1b9a9beb4c6134513d2acffbd769c"
+    },
+    "recipes": {
+      "path": "pc/1.17/recipes.json",
+      "sha1": "649760ff6422623b9fd16e484107938f554dd982"
+    },
+    "sounds": {
+      "path": "pc/1.17/sounds.json",
+      "sha1": "28998367c5b9844a2303f56a21484edd4a2e53e9"
+    }
+  }
+}

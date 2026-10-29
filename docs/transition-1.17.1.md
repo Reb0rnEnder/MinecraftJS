@@ -1,27 +1,25 @@
 # Transition plan: Java 1.17.1
 
-Status: **planned; implementation has not started**. The current client continues
-to report and connect as 1.16.5. Fixes were pushed before preparing this plan.
-The future runtime starts from the fixed 1.16.5 baseline in
-[transition-1.17.1.inputs.json](transition-1.17.1.inputs.json), not an older
-registry interpreted through new packet IDs. Existing parity gaps in
-[parity-1.16.5.md](parity-1.16.5.md) remain explicit carry-over work.
+Status: **native input extraction and default-height connection baseline implemented**
+on branch `1.17.1`, worktree `/home/ender/minecraftjs-1.17.1`, from fixed
+1.16.5 commit `307c4d2d38a733618438244a6ba2360f311c6717`. The browser and proxy now
+report 1.17.1/protocol 756. See [the ledger](parity-1.17.1.md) for evidence and
+remaining acceptance checks. Earlier parity gaps remain carry-over work.
 
 Target: Java 1.17.1, protocol **756**, resource-pack format **7**. Mojang's
 metadata requires Java **16** for the native game/tooling; the browser client
 continues to use the existing JavaScript/device adapters. The input snapshot
 pins official metadata, client/server jars, mappings and the 1.17 asset index,
-plus the upstream protocol revision. Metadata checksum was verified; the jars
-are pinned for later download/extraction, not yet imported into this client.
+plus the upstream protocol revision. All pinned inputs were downloaded and checksum verified; native reports,
+runtime shapes/mechanics, GUI arrays and model layers have been extracted.
 
 ## Branch and worktree discipline
 
-When implementation begins, use the existing `1.17.1` branch if it exists locally
-or remotely; otherwise create that exact branch from the recorded fixed baseline
-in a separate `/home/ender/minecraftjs-1.17.1` worktree. Keep 1.16.5 usable and
-keep all older target identities/assets intact. Do not create replacement
-branches for existing supported versions. This plan creates no runtime branch,
-changes no server configuration, and does not migrate a server world.
+The exact `1.17.1` branch uses a separate worktree and asset cache. Existing
+version branches and the supplied server configuration/world are preserved.
+The original input snapshot records the planning baseline; implementation began
+from the later fixed 1.16.5 commit above. Keep protocol/content changes on 1.17.1;
+backport shared fixes only where their version's schema supports them.
 
 ## Milestone 1: reproducible native inputs and inventory
 

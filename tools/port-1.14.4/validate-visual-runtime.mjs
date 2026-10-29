@@ -6,7 +6,7 @@ import {EntityRenderer} from '../../client/js/render/entity-renderer.js';
 import {ENTITY_TYPES,MOB_FAMILIES} from '../../client/js/game/entity-types.js';
 import {villagerLayers} from '../../client/js/render/villager-layers.js';
 const read=name=>JSON.parse(readFileSync(new URL('../../client/data/'+name+'.json',import.meta.url)));
-const NON_LIVING=new Set('area_effect_cloud armor_stand arrow boat dragon_fireball end_crystal evoker_fangs experience_orb eye_of_ender falling_block firework_rocket item item_frame fireball leash_knot llama_spit minecart chest_minecart command_block_minecart furnace_minecart hopper_minecart spawner_minecart tnt_minecart painting tnt shulker_bullet small_fireball snowball spectral_arrow egg ender_pearl experience_bottle potion trident wither_skull lightning_bolt player fishing_bobber'.split(' '));
+const NON_LIVING=new Set('marker glow_item_frame area_effect_cloud armor_stand arrow boat dragon_fireball end_crystal evoker_fangs experience_orb eye_of_ender falling_block firework_rocket item item_frame fireball leash_knot llama_spit minecart chest_minecart command_block_minecart furnace_minecart hopper_minecart spawner_minecart tnt_minecart painting tnt shulker_bullet small_fireball snowball spectral_arrow egg ender_pearl experience_bottle potion trident wither_skull lightning_bolt player fishing_bobber'.split(' '));
 export function validateVisualRuntime(jar,models,shapes=read('blockCollisionShapes'),{pendingEntities=new Set()}={}){
  const hash=createHash('sha1').update(jar.data).digest('hex'),definitions=read('blocks'),count=Math.max(...definitions.map(b=>b.maxStateId))+1;
  const props=shapes.render;

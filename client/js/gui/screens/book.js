@@ -95,7 +95,7 @@ export class BookScreen extends Screen {
     const root = { t: TAG.COMPOUND, name: '', v: tagObj };
     // The edit_book stack is writable even when signing; the server creates the written book.
     const item = { id:g.items.byName.get('writable_book').id,count:1,nbt:root };
-    g.send(C.editBook(item,sign,this.hand));
+    g.send(C.editBook(this.hand===1?40:g.heldSlot,this.pages,sign?this.title.trim():null));
     const held = g.inventory.getHand(this.hand);
     if (held && g.items.name(held.id) === 'writable_book') { held.nbt = root; held.nbtRaw = null; held._simple = null; }
     this.modified = false;

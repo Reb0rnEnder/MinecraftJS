@@ -348,7 +348,7 @@ export class Items {
     if (!m) { m = { colors: new Uint8Array(128 * 128), icons: [], scale: p.scale, version: 0 }; this.maps.set(p.itemDamage, m); }
     m.scale = p.scale;
     m.locked = !!p.locked;
-    m.icons = p.icons;
+    if(p.icons!==null)m.icons = p.icons;
     if (p.columns > 0 && p.data) {
       for (let i = 0; i < p.columns; i++) {
         for (let j = 0; j < p.rows; j++) {

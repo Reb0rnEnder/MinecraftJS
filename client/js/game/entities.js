@@ -2,10 +2,10 @@ import {detachRemovedEntities} from './riding-lifecycle.js';
 import {applyNetherMetadata} from './nether-metadata.js';
 import {applyFoxFlags,tickFox} from './fox.js';
 import {tickBeeSound,stopBeeSound} from './bee-sound.js';
-import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.16.5.js';
+import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.17.1.js';
 import {placeLeashKnot} from './leash-knot.js';
 import {NATIVE_METADATA} from './entity-metadata-1.14.4.js';
-import {playerPoseDimensions} from './player-poses-1.16.5.js';
+import {playerPoseDimensions} from './player-poses-1.17.1.js';
 import { tickFallingBlock } from './falling-block.js';
 import { tickEntityEffects, tickDragonDeath, isDragon } from '../render/entity-effects.js';
 // Client-side entity tracking (positions, interpolation, metadata, animation state).
@@ -180,7 +180,7 @@ export class EntityManager {
     e.pickable = ['boat', 'minecart', 'crystal', 'itemframe', 'leash', 'armorstand', 'shulker_bullet'].includes(e.kind) || e.entityName === 'fireball';
     // crd.a(iz) consumes velocity in constructors for spit/bullets and acceleration
     // for fireballs, then clears data for these and several immobile objects.
-    const ignoresVelocity = ['fishing_bobber', 'item_frame', 'leash_knot', 'potion', 'experience_bottle', 'falling_block'];
+    const ignoresVelocity = ['fishing_bobber', 'glow_item_frame', 'item_frame', 'leash_knot', 'potion', 'experience_bottle', 'falling_block'];
     if (p.velocity) {
       const v = [p.velocity.x / 8000, p.velocity.y / 8000, p.velocity.z / 8000];
       if (FIREBALLS.has(e.entityName)) {
@@ -197,7 +197,7 @@ export class EntityManager {
       case 'tnt': e.fuse = 80; break;
       case 'end_crystal': e.showBottom = true; break;
       case 'falling_block': e.blockState = p.objectData; break; // flattened direct state, not id/meta
-      case 'item_frame':
+      case 'glow_item_frame': case 'item_frame':
         e.facing = p.objectData;
         e.blockPos = { x: Math.floor(p.x), y: Math.floor(p.y), z: Math.floor(p.z) };
         e.box = itemFrameBox(p.x, p.y, p.z, e.facing);
@@ -346,9 +346,10 @@ export class EntityManager {
   _applyMeta(e, m = e.metadata) {
     // Preserve native metadata on e.metadata. Adapt the unchanged consumers below
     // around 1.14's base pose and living sleeping-position insertions.
-    const wire=m,living498=e.kind==='mob'||e.kind==='player'||e.kind==='armorstand';
-    const native=living498?Object.fromEntries(Object.entries(wire).filter(([i])=>Number(i)!==12).map(([i,v])=>[Number(i)>12?Number(i)-1:Number(i),v])):wire;
-    if(living498&&wire[12]!==undefined)e.stingerCount=wire[12];
+    const wire=m,compat=Object.fromEntries(Object.entries(wire).filter(([i])=>Number(i)!==7).map(([i,v])=>[Number(i)>7?Number(i)-1:Number(i),v])),living498=e.kind==='mob'||e.kind==='player'||e.kind==='armorstand';
+    const native=living498?Object.fromEntries(Object.entries(compat).filter(([i])=>Number(i)!==12).map(([i,v])=>[Number(i)>12?Number(i)-1:Number(i),v])):compat;
+    if(living498&&compat[12]!==undefined)e.stingerCount=compat[12];
+    if(wire[7]!==undefined)e.frozenTicks=wire[7];
     if(native[6]!==undefined){
       e.pose=native[6];
       if(e.kind==='player'){
@@ -380,7 +381,7 @@ export class EntityManager {
       // with the inherited 1.14.4 living-index shift applied.
       const flags=wire[WIRE_METADATA.bee.DATA_FLAGS_ID];
       if(flags!==undefined){e.hasNectar=!!(flags&8);e.hasStung=!!(flags&4);e.beeRolling=!!(flags&2);}
-      if(wire[WIRE_METADATA.bee.ANGER_TIME]!==undefined){e.angerTime=wire[WIRE_METADATA.bee.ANGER_TIME];e.angry=e.angerTime>0;}
+      if(wire[WIRE_METADATA.bee.DATA_REMAINING_ANGER_TIME]!==undefined){e.angerTime=wire[WIRE_METADATA.bee.DATA_REMAINING_ANGER_TIME];e.angry=e.angerTime>0;}
     }
     const set = (index, key) => { if (m[index] !== undefined) e[key] = m[index]; };
     const bit = (index, mask, key) => { if (m[index] !== undefined) e[key] = !!(m[index] & mask); };
@@ -441,7 +442,7 @@ export class EntityManager {
     }
     switch (name) {
       case 'item': case 'potion': set(6, 'item'); break;
-      case 'item_frame': set(6, 'item'); set(7, 'rotation'); break;
+      case 'glow_item_frame': case 'item_frame': set(6, 'item'); set(7, 'rotation'); break;
       case 'firework_rocket': set(6, 'item'); set(7, 'boostedId'); break;
       case 'fishing_bobber': if (m[6] !== undefined) e.hookedEntityId = m[6] - 1; break;
       case 'falling_block': set(6, 'origin'); break;
@@ -908,6 +909,7 @@ export class EntityManager {
       e.prevLimbSwingAmount = e.limbSwingAmount;
       e.prevSwingProgress = e.swingProgress;
       e.ticks++;
+      if(e.entityName==='glow_squid'&&e.darkTicks>0)e.darkTicks--;
       if(e.entityName==='fox')tickFox(e);
       if(e.entityName==='bee'){tickBeeSound(this,e);e.prevBeeRoll=e.beeRoll||0;e.beeRoll=Math.fround(e.beeRolling?Math.min(1,Math.fround(e.prevBeeRoll+Math.fround(.2))):Math.max(0,Math.fround(e.prevBeeRoll-Math.fround(.24))));}
       if (e.boostedId && e.boostedId === g.entityId) this._fireworkBoost(e);

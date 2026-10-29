@@ -777,10 +777,10 @@ export function bat() {
   };
 }
 
-export function squid() {
-  const p = J('squid', ['body', 'tentacles']);
+export function squid(name = 'squid') {
+  const p = J(name, ['body', 'tentacles']);
   return {
-    parts: p, roots: [p.body, ...p.tentacles],
+    parts: p, roots: [p.body, ...p.tentacles], jarModel:name,
     animate: (m, a) => { for (const t of m.parts.tentacles) t.rx = a.tentacleAngle !== undefined ? a.tentacleAngle : (sin(a.age * 0.2) + 1) * 0.3; },
   };
 }
@@ -1117,4 +1117,23 @@ export function strider(){return jarAdapter('strider',['rightLeg','leftLeg','bod
 export function piglin(zombified=false){
  const m=jarAdapter('piglin',[...BIPED,'leftSleeve','rightSleeve','leftPants','rightPants','jacket','earRight','earLeft'],(model,args)=>{animatePiglin(model,{...args,zombified},animateBiped);if(zombified)model.parts.earLeft.visible=false;},{piglinAgeable:true});
  return m;
+}
+
+export function glowSquid() { return squid('glowSquid'); }
+export function goat() {
+  return jarAdapter('goat', [...QUADRUPED, 'leftHorn', 'rightHorn', 'nose'], (m,a) => {
+    const rx=m.parts.body.rx;animateQuadruped(m,a);m.parts.body.rx=rx;
+    m.parts.leftHorn.visible = m.parts.rightHorn.visible = !a.child;
+  }, {quadruped:true});
+}
+export function axolotl() {
+  return jarAdapter('axolotl', ['body','head','tail','rightFrontLeg','leftFrontLeg','rightHindLeg','leftHindLeg','topGills','leftGills','rightGills'], (m,a) => {
+    const p=m.parts,phase=a.age*(a.inWater?.33:.11),move=a.inWater?.5:a.lsa;
+    p.head.ry=a.yaw*PI/180;p.head.rx=a.pitch*PI/180;
+    p.tail.ry=sin(phase)*move;
+    p.leftFrontLeg.ry=p.rightHindLeg.ry=sin(phase)*move;
+    p.rightFrontLeg.ry=p.leftHindLeg.ry=-sin(phase)*move;
+    p.topGills.rx=sin(phase)*.15;
+    p.leftGills.ry=-p.topGills.rx;p.rightGills.ry=p.topGills.rx;
+  });
 }

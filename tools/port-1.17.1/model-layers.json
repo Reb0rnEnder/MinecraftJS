@@ -1,0 +1,1199 @@
+{
+  "creeper": {
+    "layer": "minecraft:creeper#main",
+    "fields": [
+      "head",
+      null,
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg"
+    ]
+  },
+  "creeperArmor": {
+    "layer": "minecraft:creeper#armor",
+    "fields": [
+      "head",
+      null,
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg"
+    ]
+  },
+  "skeleton": {
+    "layer": "minecraft:skeleton#main",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
+  "strayOverlay": {
+    "layer": "minecraft:stray#outer",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
+  "spider": {
+    "layer": "minecraft:spider#main",
+    "fields": [
+      "head",
+      "body0",
+      "body1",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_middle_hind_leg",
+      "left_middle_hind_leg",
+      "right_middle_front_leg",
+      "left_middle_front_leg",
+      "right_front_leg",
+      "left_front_leg"
+    ]
+  },
+  "zombie": {
+    "layer": "minecraft:zombie#main",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
+  "drowned": {
+    "layer": "minecraft:drowned#main",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
+  "drownedOuter": {
+    "layer": "minecraft:drowned#outer",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
+  "zombieVillager": {
+    "layer": "minecraft:zombie_villager#main",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg",
+      "hat_rim"
+    ]
+  },
+  "slime": {
+    "layer": "minecraft:slime#main",
+    "fields": [
+      "cube",
+      "right_eye",
+      "left_eye",
+      "mouth"
+    ]
+  },
+  "slimeOuter": {
+    "layer": "minecraft:slime#outer",
+    "fields": [
+      "cube",
+      null,
+      null,
+      null
+    ]
+  },
+  "ghast": {
+    "layer": "minecraft:ghast#main",
+    "fields": [
+      "body",
+      [
+        "tentacle0",
+        "tentacle1",
+        "tentacle2",
+        "tentacle3",
+        "tentacle4",
+        "tentacle5",
+        "tentacle6",
+        "tentacle7",
+        "tentacle8"
+      ]
+    ]
+  },
+  "enderman": {
+    "layer": "minecraft:enderman#main",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
+  "silverfish": {
+    "layer": "minecraft:silverfish#main",
+    "fields": [
+      [
+        "segment0",
+        "segment1",
+        "segment2",
+        "segment3",
+        "segment4",
+        "segment5",
+        "segment6"
+      ],
+      [
+        "layer0",
+        "layer1",
+        "layer2"
+      ]
+    ]
+  },
+  "blaze": {
+    "layer": "minecraft:blaze#main",
+    "fields": [
+      [
+        "part0",
+        "part1",
+        "part2",
+        "part3",
+        "part4",
+        "part5",
+        "part6",
+        "part7",
+        "part8",
+        "part9",
+        "part10",
+        "part11"
+      ],
+      "head"
+    ]
+  },
+  "magmaCube": {
+    "layer": "minecraft:magma_cube#main",
+    "fields": [
+      [
+        "cube0",
+        "cube1",
+        "cube2",
+        "cube3",
+        "cube4",
+        "cube5",
+        "cube6",
+        "cube7"
+      ],
+      "inside_cube"
+    ]
+  },
+  "wither": {
+    "layer": "minecraft:wither#main",
+    "fields": [
+      [
+        "shoulders",
+        "ribcage",
+        "tail"
+      ],
+      [
+        "center_head",
+        "right_head",
+        "left_head"
+      ]
+    ]
+  },
+  "witherSkull": {
+    "layer": "minecraft:wither_skull#main",
+    "fields": [
+      "head"
+    ]
+  },
+  "bat": {
+    "layer": "minecraft:bat#main",
+    "fields": [
+      "head",
+      "body",
+      "right_wing",
+      "left_wing",
+      "right_wing_tip",
+      "left_wing_tip"
+    ]
+  },
+  "witch": {
+    "layer": "minecraft:witch#main",
+    "fields": [
+      "head",
+      "hat",
+      "hat_rim",
+      "body",
+      "jacket",
+      "arms",
+      "right_leg",
+      "left_leg",
+      "nose",
+      "mole"
+    ]
+  },
+  "endermite": {
+    "layer": "minecraft:endermite#main",
+    "fields": [
+      [
+        "segment0",
+        "segment1",
+        "segment2",
+        "segment3"
+      ]
+    ]
+  },
+  "guardian": {
+    "layer": "minecraft:guardian#main",
+    "fields": [
+      "head",
+      "eye",
+      [
+        "spike0",
+        "spike1",
+        "spike2",
+        "spike3",
+        "spike4",
+        "spike5",
+        "spike6",
+        "spike7",
+        "spike8",
+        "spike9",
+        "spike10",
+        "spike11"
+      ],
+      [
+        "tail0",
+        "tail1",
+        "tail2"
+      ]
+    ]
+  },
+  "shulker": {
+    "layer": "minecraft:shulker#main",
+    "fields": [
+      "base",
+      "lid",
+      "head"
+    ]
+  },
+  "pig": {
+    "layer": "minecraft:pig#main",
+    "fields": [
+      "head",
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg"
+    ]
+  },
+  "pigSaddle": {
+    "layer": "minecraft:pig#saddle",
+    "fields": [
+      "head",
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg"
+    ]
+  },
+  "sheep": {
+    "layer": "minecraft:sheep#main",
+    "fields": [
+      "head",
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg"
+    ]
+  },
+  "sheepWool": {
+    "layer": "minecraft:sheep#fur",
+    "fields": [
+      "head",
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg"
+    ]
+  },
+  "cow": {
+    "layer": "minecraft:cow#main",
+    "fields": [
+      "head",
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg"
+    ]
+  },
+  "chicken": {
+    "layer": "minecraft:chicken#main",
+    "fields": [
+      "head",
+      "body",
+      "right_leg",
+      "left_leg",
+      "right_wing",
+      "left_wing",
+      "beak",
+      "red_thing"
+    ]
+  },
+  "squid": {
+    "layer": "minecraft:squid#main",
+    "fields": [
+      "body",
+      [
+        "tentacle0",
+        "tentacle1",
+        "tentacle2",
+        "tentacle3",
+        "tentacle4",
+        "tentacle5",
+        "tentacle6",
+        "tentacle7"
+      ]
+    ]
+  },
+  "cod": {
+    "layer": "minecraft:cod#main",
+    "fields": [
+      "body",
+      "top_fin",
+      "head",
+      "nose",
+      "right_fin",
+      "left_fin",
+      "tail_fin"
+    ]
+  },
+  "salmon": {
+    "layer": "minecraft:salmon#main",
+    "fields": [
+      "body_front",
+      "body_back",
+      "head",
+      "top_front_fin",
+      "top_back_fin",
+      "back_fin",
+      "right_fin",
+      "left_fin"
+    ]
+  },
+  "pufferfishSmall": {
+    "layer": "minecraft:pufferfish_small#main",
+    "fields": [
+      "body",
+      "right_eye",
+      "left_eye",
+      "right_fin",
+      "left_fin",
+      "back_fin"
+    ]
+  },
+  "pufferfishMedium": {
+    "layer": "minecraft:pufferfish_medium#main",
+    "fields": [
+      "body",
+      "right_blue_fin",
+      "left_blue_fin",
+      "top_front_fin",
+      "top_back_fin",
+      "right_front_fin",
+      "right_back_fin",
+      "left_back_fin",
+      "left_front_fin",
+      "bottom_back_fin",
+      "bottom_front_fin"
+    ]
+  },
+  "pufferfishBig": {
+    "layer": "minecraft:pufferfish_big#main",
+    "fields": [
+      "body",
+      "right_blue_fin",
+      "left_blue_fin",
+      "top_front_fin",
+      "top_middle_fin",
+      "top_back_fin",
+      "right_front_fin",
+      "left_front_fin",
+      "bottom_front_fin",
+      "bottom_back_fin",
+      "bottom_middle_fin",
+      "right_back_fin",
+      "left_back_fin"
+    ]
+  },
+  "tropicalFishA": {
+    "layer": "minecraft:tropical_fish_small#main",
+    "fields": [
+      "body",
+      "tail",
+      "left_fin",
+      "right_fin",
+      "top_fin"
+    ]
+  },
+  "tropicalFishB": {
+    "layer": "minecraft:tropical_fish_large#main",
+    "fields": [
+      "body",
+      "tail",
+      "left_fin",
+      "right_fin",
+      "top_fin",
+      "bottom_fin"
+    ]
+  },
+  "tropicalFishPatternA": {
+    "layer": "minecraft:tropical_fish_small#pattern",
+    "fields": [
+      "body",
+      "tail",
+      "left_fin",
+      "right_fin",
+      "top_fin"
+    ]
+  },
+  "tropicalFishPatternB": {
+    "layer": "minecraft:tropical_fish_large#pattern",
+    "fields": [
+      "body",
+      "tail",
+      "left_fin",
+      "right_fin",
+      "top_fin",
+      "bottom_fin"
+    ]
+  },
+  "dolphin": {
+    "layer": "minecraft:dolphin#main",
+    "fields": [
+      "head",
+      "body",
+      "tail",
+      "tail_fin"
+    ]
+  },
+  "turtle": {
+    "layer": "minecraft:turtle#main",
+    "fields": [
+      "head",
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "egg_belly"
+    ]
+  },
+  "phantom": {
+    "layer": "minecraft:phantom#main",
+    "fields": [
+      "body",
+      "left_wing_base",
+      "left_wing_tip",
+      "right_wing_base",
+      "right_wing_tip",
+      "head",
+      "tail_base",
+      "tail_tip"
+    ]
+  },
+  "wolf": {
+    "layer": "minecraft:wolf#main",
+    "fields": [
+      "head",
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "tail",
+      "upper_body"
+    ]
+  },
+  "snowman": {
+    "layer": "minecraft:snow_golem#main",
+    "fields": [
+      "upper_body",
+      "lower_body",
+      "head",
+      "right_arm",
+      "left_arm"
+    ]
+  },
+  "ocelot": {
+    "layer": "minecraft:ocelot#main",
+    "fields": [
+      "left_hind_leg",
+      "right_hind_leg",
+      "left_front_leg",
+      "right_front_leg",
+      "tail1",
+      "tail2",
+      "head",
+      "body"
+    ]
+  },
+  "ironGolem": {
+    "layer": "minecraft:iron_golem#main",
+    "fields": [
+      "head",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
+  "horse": {
+    "layer": "minecraft:horse#main",
+    "fields": [
+      "body",
+      "head_parts",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "tail",
+      [
+        "saddle",
+        "head_saddle",
+        "mouth_saddle_wrap",
+        "left_saddle_mouth",
+        "right_saddle_mouth"
+      ],
+      [
+        "left_saddle_line",
+        "right_saddle_line"
+      ]
+    ]
+  },
+  "donkey": {
+    "layer": "minecraft:donkey#main",
+    "fields": [
+      "body",
+      "head_parts",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "tail",
+      [
+        "saddle",
+        "head_saddle",
+        "mouth_saddle_wrap",
+        "left_saddle_mouth",
+        "right_saddle_mouth"
+      ],
+      [
+        "left_saddle_line",
+        "right_saddle_line"
+      ],
+      "left_chest",
+      "right_chest"
+    ]
+  },
+  "rabbit": {
+    "layer": "minecraft:rabbit#main",
+    "fields": [
+      "left_hind_foot",
+      "right_hind_foot",
+      "left_haunch",
+      "right_haunch",
+      "body",
+      "left_front_leg",
+      "right_front_leg",
+      "head",
+      "right_ear",
+      "left_ear",
+      "tail",
+      "nose"
+    ]
+  },
+  "cat": {
+    "layer": "minecraft:cat#main",
+    "fields": [
+      "left_hind_leg",
+      "right_hind_leg",
+      "left_front_leg",
+      "right_front_leg",
+      "tail1",
+      "tail2",
+      "head",
+      "body"
+    ]
+  },
+  "fox": {
+    "layer": "minecraft:fox#main",
+    "fields": [
+      "head",
+      "left_ear",
+      "right_ear",
+      "nose",
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "tail"
+    ]
+  },
+  "panda": {
+    "layer": "minecraft:panda#main",
+    "fields": [
+      "head",
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg"
+    ]
+  },
+  "ravager": {
+    "layer": "minecraft:ravager#main",
+    "fields": [
+      "head",
+      "mouth",
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "neck"
+    ]
+  },
+  "villager": {
+    "layer": "minecraft:villager#main",
+    "fields": [
+      "head",
+      "hat",
+      "hat_rim",
+      "body",
+      "jacket",
+      "arms",
+      "right_leg",
+      "left_leg",
+      "nose"
+    ]
+  },
+  "dragon": {
+    "layer": "minecraft:ender_dragon#main",
+    "fields": [
+      "head",
+      "neck",
+      "jaw",
+      "body",
+      "left_hind_leg",
+      "left_front_leg",
+      "left_hind_leg_tip",
+      "left_front_leg_tip",
+      "left_hind_foot",
+      "left_front_foot",
+      "left_wing",
+      "left_wing_tip"
+    ]
+  },
+  "polarBear": {
+    "layer": "minecraft:polar_bear#main",
+    "fields": [
+      "head",
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg"
+    ]
+  },
+  "llama": {
+    "layer": "minecraft:llama#main",
+    "fields": [
+      "head",
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "right_chest",
+      "left_chest"
+    ]
+  },
+  "llamaDecor": {
+    "layer": "minecraft:llama#decor",
+    "fields": [
+      "head",
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "right_chest",
+      "left_chest"
+    ]
+  },
+  "parrot": {
+    "layer": "minecraft:parrot#main",
+    "fields": [
+      "body",
+      "tail",
+      "left_wing",
+      "right_wing",
+      "head",
+      "head2",
+      "beak1",
+      "beak2",
+      "feather",
+      "left_leg",
+      "right_leg"
+    ]
+  },
+  "vex": {
+    "layer": "minecraft:vex#main",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg",
+      "left_wing",
+      "right_wing"
+    ]
+  },
+  "illager": {
+    "layer": "minecraft:pillager#main",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "arms",
+      "left_leg",
+      "right_leg",
+      "head",
+      "right_arm",
+      "left_arm"
+    ]
+  },
+  "armorStand": {
+    "layer": "minecraft:armor_stand#main",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg",
+      "right_body_stick",
+      "left_body_stick",
+      "shoulder_stick",
+      "base_plate"
+    ]
+  },
+  "elytra": {
+    "layer": "minecraft:elytra#main",
+    "fields": [
+      "right_wing",
+      "left_wing"
+    ]
+  },
+  "boat": {
+    "layer": "minecraft:boat/oak#main",
+    "fields": [
+      [
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "minecart": {
+    "layer": "minecraft:minecart#main",
+    "fields": [
+      [
+        "bottom",
+        "front",
+        "back",
+        "left",
+        "right",
+        "contents"
+      ]
+    ]
+  },
+  "enderCrystal": {
+    "layer": "minecraft:end_crystal#main",
+    "fields": [
+      "cube",
+      "glass",
+      "base"
+    ]
+  },
+  "enderCrystalNoBase": {
+    "layer": "minecraft:end_crystal#main",
+    "fields": [
+      "cube",
+      "glass",
+      "base"
+    ]
+  },
+  "leash": {
+    "layer": "minecraft:leash_knot#main",
+    "fields": [
+      "knot"
+    ]
+  },
+  "evokerFangs": {
+    "layer": "minecraft:evoker_fangs#main",
+    "fields": [
+      "base",
+      "upper_jaw",
+      "lower_jaw"
+    ]
+  },
+  "llamaSpit": {
+    "layer": "minecraft:llama_spit#main",
+    "fields": [
+      "main"
+    ]
+  },
+  "shulkerBullet": {
+    "layer": "minecraft:shulker_bullet#main",
+    "fields": [
+      "main"
+    ]
+  },
+  "trident": {
+    "layer": "minecraft:trident#main",
+    "fields": [
+      "pole"
+    ]
+  },
+  "chest": {
+    "layer": "minecraft:chest#main",
+    "fields": [
+      "lid",
+      "bottom",
+      "lock"
+    ]
+  },
+  "largeChest": {
+    "layer": "minecraft:double_chest_left#main",
+    "fields": [
+      "lid",
+      "bottom",
+      "lock"
+    ]
+  },
+  "sign": {
+    "layer": "minecraft:sign/oak#main",
+    "fields": [
+      "sign",
+      "stick"
+    ]
+  },
+  "book": {
+    "layer": "minecraft:book#main",
+    "fields": [
+      "left_lid",
+      "right_lid",
+      "left_pages",
+      "right_pages",
+      "flip_page1",
+      "flip_page2",
+      "seam"
+    ]
+  },
+  "skull": {
+    "layer": "minecraft:skeleton_skull#main",
+    "fields": [
+      "head"
+    ]
+  },
+  "dragonHead": {
+    "layer": "minecraft:dragon_skull#main",
+    "fields": [
+      "head",
+      "jaw"
+    ]
+  },
+  "humanoidHead": {
+    "layer": "minecraft:player_head#main",
+    "fields": [
+      "head",
+      "hat"
+    ]
+  },
+  "banner": {
+    "layer": "minecraft:banner#main",
+    "fields": [
+      "flag",
+      "pole",
+      "bar"
+    ]
+  },
+  "shield": {
+    "layer": "minecraft:shield#main",
+    "fields": [
+      "plate",
+      "handle"
+    ]
+  },
+  "biped": {
+    "layer": "minecraft:player#main",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
+  "armorInner": {
+    "layer": "minecraft:player#inner_armor",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
+  "armorOuter": {
+    "layer": "minecraft:player#outer_armor",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
+  "player": {
+    "layer": "minecraft:player#main",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg",
+      "left_sleeve",
+      "right_sleeve",
+      "left_pants",
+      "right_pants",
+      "jacket",
+      "cloak",
+      "ear"
+    ]
+  },
+  "playerSlim": {
+    "layer": "minecraft:player_slim#main",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg",
+      "left_sleeve",
+      "right_sleeve",
+      "left_pants",
+      "right_pants",
+      "jacket",
+      "cloak",
+      "ear"
+    ]
+  },
+  "bee": {
+    "layer": "minecraft:bee#main",
+    "fields": [
+      "bone",
+      "body",
+      "right_wing",
+      "left_wing",
+      "front_legs",
+      "middle_legs",
+      "back_legs",
+      "stinger",
+      "left_antenna",
+      "right_antenna"
+    ]
+  },
+  "chestLeft": {
+    "layer": "minecraft:double_chest_left#main",
+    "fields": [
+      "lid",
+      "bottom",
+      "lock"
+    ]
+  },
+  "chestRight": {
+    "layer": "minecraft:double_chest_right#main",
+    "fields": [
+      "lid",
+      "bottom",
+      "lock"
+    ]
+  },
+  "hoglin": {
+    "layer": "minecraft:hoglin#main",
+    "fields": [
+      "head",
+      "right_ear",
+      "left_ear",
+      "body",
+      "right_front_leg",
+      "left_front_leg",
+      "right_hind_leg",
+      "left_hind_leg",
+      "mane"
+    ]
+  },
+  "strider": {
+    "layer": "minecraft:strider#main",
+    "fields": [
+      "right_leg",
+      "left_leg",
+      "body",
+      "right_bottom_bristle",
+      "right_middle_bristle",
+      "right_top_bristle",
+      "left_top_bristle",
+      "left_middle_bristle",
+      "left_bottom_bristle"
+    ]
+  },
+  "piglin": {
+    "layer": "minecraft:piglin#main",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg",
+      "left_sleeve",
+      "right_sleeve",
+      "left_pants",
+      "right_pants",
+      "jacket",
+      "right_ear",
+      "left_ear"
+    ]
+  },
+  "piglinArmorOuter": {
+    "layer": "minecraft:piglin#outer_armor",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
+  "bed": {
+    "headLayer": "minecraft:bed_head#main",
+    "footLayer": "minecraft:bed_foot#main"
+  },
+  "goat": {
+    "layer": "minecraft:goat#main",
+    "fields": [
+      "head",
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "left_horn",
+      "right_horn",
+      "nose"
+    ]
+  },
+  "axolotl": {
+    "layer": "minecraft:axolotl#main",
+    "fields": [
+      "body",
+      "head",
+      "tail",
+      "right_front_leg",
+      "left_front_leg",
+      "right_hind_leg",
+      "left_hind_leg",
+      "top_gills",
+      "left_gills",
+      "right_gills"
+    ]
+  },
+  "glowSquid": {
+    "layer": "minecraft:glow_squid#main",
+    "fields": [
+      "body",
+      [
+        "tentacle0",
+        "tentacle1",
+        "tentacle2",
+        "tentacle3",
+        "tentacle4",
+        "tentacle5",
+        "tentacle6",
+        "tentacle7"
+      ]
+    ]
+  }
+}

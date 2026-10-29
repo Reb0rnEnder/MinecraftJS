@@ -1,8 +1,8 @@
-// Option arrays extracted from the pinned native 1.16.5 jar.
+// Option arrays extracted from the pinned native 1.17.1 jar.
 export const VANILLA_UI = {
-  "version": "1.16.5",
-  "clientJarSha1": "37fd3c903861eeff3bc24b71eed48f828b5269c8",
-  "packFormat": 6,
+  "version": "1.17.1",
+  "clientJarSha1": "8d9b65467c7913fcf6f5b2e729d44a1e00fde150",
+  "packFormat": 7,
   "videoOptions": [
     "options.biomeBlendRadius",
     "options.graphics",
@@ -90,7 +90,8 @@ export const VANILLA_UI = {
     "key.sneak",
     "key.sprint",
     "options.screenEffectScale",
-    "options.fovEffectScale"
+    "options.fovEffectScale",
+    "options.darkMojangStudiosBackgroundColor"
   ],
   "controlsLayout": {
     "extraWidth": 45,

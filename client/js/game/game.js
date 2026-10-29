@@ -11,7 +11,7 @@ import {captureText} from '../debug/text-capture.js';
 import {pushLocalPlayer} from './entity-pushing.js';
 import {ShaderPackFinal} from '../render/shader-pack.js';
 import {CameraEye} from '../render/camera-eye.js';
-import {MENUS_754} from './menus-1.16.5.js';
+import {MENUS_756} from './menus-1.17.1.js';
 import { RegistryTags } from './tags.js';
 import { CommandTree } from './commands.js';
 import { startSleeping, stopSleeping, updateSleeping, sleepingCamera } from './bed-sleep.js';
@@ -846,6 +846,7 @@ export class Game {
   }
 
   on_position(p) {
+    if(p.dismountVehicle&&this.ridingEntityId>=0)this._ride(this.entityId,-1);
     const pl = this.player;
     // NetHandlerPlayClient.handlePlayerPosLook (relative flags add to the current values, float angles)
     let x = p.x, y = p.y, z = p.z, yaw = Math.fround(p.yaw), pitch = Math.fround(p.pitch);
@@ -959,11 +960,11 @@ export class Game {
   on_entity_metadata(p) {
     if (p.entityId === this.entityId) {
       this.selfMetadata = Object.assign(this.selfMetadata || {}, p.metadata);
-      const sleepChange=updateSleeping(this,p.metadata,13);
+      const sleepChange=updateSleeping(this,p.metadata,14);
       if(sleepChange==='start')this.screens.open(new SleepScreen(this));
       else if(sleepChange==='stop' && this.screens.current instanceof SleepScreen)this.screens.close();
-      if (p.metadata[7] !== undefined) {
-        this.player.riptide = !!(p.metadata[7] & 4);
+      if (p.metadata[8] !== undefined) {
+        this.player.riptide = !!(p.metadata[8] & 4);
         if (this.player.riptide && !this.player.riptideTicks) this.player.riptideTicks = 20;
         if (!this.player.riptide) this.player.riptideTicks = 0;
       }
@@ -1006,11 +1007,11 @@ export class Game {
   }
 
   on_map_chunk(p) {
-    this.world.loadChunk754(p);
+    this.world.loadChunk756(p);
     for (const nbt of p.blockEntities) this.applyBlockEntity(nbt);
   }
 
-  on_update_light(p) { this.world.updateLight754(p); }
+  on_update_light(p) { this.world.updateLight756(p); }
 
   on_unload_chunk(p) { this.world.unloadChunk(p.chunkX, p.chunkZ); }
 
@@ -1126,12 +1127,12 @@ export class Game {
 
   on_open_window(p) {
     if(typeof p.inventoryType==='number'){
-      const name=MENUS_754[p.inventoryType];
+      const name=MENUS_756[p.inventoryType];
       const rows=/generic_9x([1-6])/.exec(name||'');
       const aliases={'minecraft:generic_3x3':['minecraft:dispenser',9],'minecraft:crafting':['minecraft:crafting_table',10],'minecraft:enchantment':['minecraft:enchanting_table',2],'minecraft:merchant':['minecraft:villager',3],'minecraft:blast_furnace':['minecraft:blast_furnace',3],'minecraft:smoker':['minecraft:smoker',3]};
       const fixed={'minecraft:smithing':3,'minecraft:anvil':3,'minecraft:beacon':1,'minecraft:brewing_stand':5,'minecraft:furnace':3,'minecraft:hopper':5,'minecraft:shulker_box':27,'minecraft:grindstone':3,'minecraft:lectern':1,'minecraft:loom':4,'minecraft:cartography':3,'minecraft:stonecutter':2};
       const [type,count]=rows?['minecraft:chest',Number(rows[1])*9]:aliases[name]||[name,fixed[name]];
-      if(!type||count===undefined)throw new Error('Unknown 1.16.5 menu '+p.inventoryType);
+      if(!type||count===undefined)throw new Error('Unknown 1.17.1 menu '+p.inventoryType);
       p={...p,inventoryType:type,slotCount:count};
     }
     const win = new ContainerWindow(this, p.windowId, p.inventoryType, chatToLegacy(p.windowTitle), p.slotCount, p.entityId);
@@ -1158,6 +1159,8 @@ export class Game {
   }
 
   on_set_slot(p) {
+    if(p.windowId===0)this.inventory.stateId=p.stateId;
+    else if(this.window?.id===p.windowId)this.window.stateId=p.stateId;
     this.tutorial.handleSetSlot(p.item);
     if (p.windowId === -1 && p.slot === -1) { this.inventory.cursor = p.item; return; }
     if (p.windowId === 0 || p.windowId === -2) {
@@ -1170,6 +1173,9 @@ export class Game {
   }
 
   on_window_items(p) {
+    if(p.windowId===0)this.inventory.stateId=p.stateId;
+    else if(this.window?.id===p.windowId)this.window.stateId=p.stateId;
+    if(p.windowId===0||this.window?.id===p.windowId)this.inventory.cursor=p.carriedItem;
     if (p.windowId === 0) this.inventory.setAll(p.items);
     else if (this.window && this.window.id === p.windowId) this.window.setAll(p.items);
   }
@@ -1178,9 +1184,7 @@ export class Game {
     if (this.window && this.window.id === p.windowId) this.window.properties[p.property] = p.value;
   }
 
-  on_transaction(p) {
-    if (!p.accepted) this.send(C.transaction(p.windowId, p.action, true));
-  }
+  on_ping(p) { this.send(C.pong(p.pingId)); }
 
   on_map(p) { this.items.updateMap(p); }
 

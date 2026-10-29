@@ -11,7 +11,7 @@ export class ResourceLoadingScreen extends Screen{
   if((fadeIn<1||out>=1)&&this.parent)this.parent.render(gui,0,0,partial);
   this.progress=loadingProgress(this.progress,this.pct/100);
   const alpha=out>=1?Math.max(0,2-out):1;
-  renderLoadingOverlay(gui,this.progress,{backgroundAlpha:out>=1?alpha:Math.max(.15,fadeIn),logoAlpha:out>=1?alpha:fadeIn,barAlpha:out<0?1:Math.max(0,1-out)});
+  renderLoadingOverlay(gui,this.progress,{dark:this.game.settings.darkMojangStudiosBackground,backgroundAlpha:out>=1?alpha:Math.max(.15,fadeIn),logoAlpha:out>=1?alpha:fadeIn,barAlpha:out<0?1:Math.max(0,1-out)});
   if(out>=2&&this.resolve){const resolve=this.resolve;this.resolve=null;resolve();}
  }
  key(){return true;}mouseDown(){return true;}char(){return true;}close(){}
