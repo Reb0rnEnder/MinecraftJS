@@ -3,6 +3,8 @@
 This branch targets Java **1.17.1, protocol 756**, with native 1.17 assets and
 resource-pack format 7. Follow the [transition plan](docs/transition-1.17.1.md)
 and [implementation ledger](docs/parity-1.17.1.md). Full parity is still pending.
+The next target has a [1.18.2 transition plan](docs/transition-1.18.2.md); runtime
+implementation and version identity remain on 1.17.1.
 
 The connection baseline is tested against the supplied local 1.17.1 server:
 login/compression, chunks/light, teleport confirmation, keepalives, movement,

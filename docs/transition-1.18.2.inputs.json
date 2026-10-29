@@ -1,0 +1,60 @@
+{
+  "minecraftVersion": "1.18.2",
+  "protocol": 758,
+  "dataVersion": 2975,
+  "resourcePackFormat": 8,
+  "dataPackFormat": 9,
+  "javaVersion": {
+    "component": "java-runtime-beta",
+    "majorVersion": 17
+  },
+  "baselineVersion": "1.17.1",
+  "baselineCommit": "b0929cc969218e8f870c2b1d9000184bfa21a918",
+  "metadata": {
+    "url": "https://piston-meta.mojang.com/v1/packages/334b33fcba3c9be4b7514624c965256535bd7eba/1.18.2.json",
+    "sha1": "334b33fcba3c9be4b7514624c965256535bd7eba"
+  },
+  "downloads": {
+    "client": {
+      "sha1": "2e9a3e3107cca00d6bc9c97bf7d149cae163ef21",
+      "size": 20259661,
+      "url": "https://piston-data.mojang.com/v1/objects/2e9a3e3107cca00d6bc9c97bf7d149cae163ef21/client.jar"
+    },
+    "client_mappings": {
+      "sha1": "a661c6a55a0600bd391bdbbd6827654c05b2109c",
+      "size": 6716693,
+      "url": "https://piston-data.mojang.com/v1/objects/a661c6a55a0600bd391bdbbd6827654c05b2109c/client.txt"
+    },
+    "server": {
+      "sha1": "c8f83c5655308435b3dcf03c06d9fe8740a77469",
+      "size": 46592587,
+      "url": "https://piston-data.mojang.com/v1/objects/c8f83c5655308435b3dcf03c06d9fe8740a77469/server.jar"
+    },
+    "server_mappings": {
+      "sha1": "e562f588fea155d96291267465dc3323bfe1551b",
+      "size": 5212964,
+      "url": "https://piston-data.mojang.com/v1/objects/e562f588fea155d96291267465dc3323bfe1551b/server.txt"
+    }
+  },
+  "assetIndex": {
+    "id": "1.18",
+    "sha1": "d31a2e85ae149dd1b1a7070b22cb8887892fda6c",
+    "size": 348724,
+    "totalSize": 468892705,
+    "url": "https://piston-meta.mojang.com/v1/packages/d31a2e85ae149dd1b1a7070b22cb8887892fda6c/1.18.json"
+  },
+  "minecraftData": {
+    "repository": "https://github.com/PrismarineJS/minecraft-data",
+    "revision": "5e063fa99cfe8ded065ec6788b66696b7e4ef143",
+    "protocol": {
+      "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/5e063fa99cfe8ded065ec6788b66696b7e4ef143/data/pc/1.18.2/protocol.json",
+      "sha1": "3e000b192e884c9e447745165c1e3061542f2d40",
+      "size": 158638
+    },
+    "version": {
+      "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/5e063fa99cfe8ded065ec6788b66696b7e4ef143/data/pc/1.18.2/version.json",
+      "sha1": "61a8371ca903e2292a182b6b3b763db82d7fe6cc",
+      "size": 79
+    }
+  }
+}
