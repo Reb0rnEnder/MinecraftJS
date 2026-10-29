@@ -64,6 +64,7 @@ export class Chunk {
   }
 
   setState(x, y, z, state) {
+    this.debugHeightRevision=(this.debugHeightRevision||0)+1;
     if (y < 0 || y > 255) return;
     let s = this.sections[y >> 4];
     if (!s) {

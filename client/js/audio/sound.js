@@ -234,7 +234,7 @@ export class SoundManager {
     const generation = this.generation;
     const buf = await this._buffer(def.file);
     if (!buf || generation !== this.generation) return null;
-    const handle = { name: assetName, category: cat, onEnd: null, entity:opts.entity };
+    const handle = { name: assetName, stream:!!def.stream, category: cat, onEnd: null, entity:opts.entity };
     const voice = this.audio.play(buf, {
       volume: Math.min(1, volume) * def.volume * catVol,
       pitch: Math.max(0.5, Math.min(2, pitch * def.pitch)),
@@ -311,7 +311,7 @@ export class SoundManager {
     const base = def.volume * this.volumeFor(cat);
     const voice = this.audio.play(buf, { volume: 0, pitch: def.pitch, pos: opts.global ? null : [x, y, z], maxDistance: 16, loop: true });
     if (!voice) return null;
-    const handle = { name, category: cat, voice, base, stop: () => { voice.stop(); this.playing.delete(handle); }, setVolume: (v) => voice.setVolume && voice.setVolume(Math.min(1, v) * base), setPosition: (p) => voice.setPosition && voice.setPosition(p), setPitch: (v) => voice.setPitch?.(Math.max(0.5, Math.min(2, v * def.pitch))) };
+    const handle = { name, stream:!!def.stream, category: cat, voice, base, stop: () => { voice.stop(); this.playing.delete(handle); }, setVolume: (v) => voice.setVolume && voice.setVolume(Math.min(1, v) * base), setPosition: (p) => voice.setPosition && voice.setPosition(p), setPitch: (v) => voice.setPitch?.(Math.max(0.5, Math.min(2, v * def.pitch))) };
     this.playing.add(handle);
     return handle;
   }

@@ -57,3 +57,6 @@ for(const line of official.split('\n')){
 }
 const entityMetadata=Object.fromEntries(Object.entries(native.entityMetadata).map(([name,fields])=>[name,Object.fromEntries(Object.entries(fields).map(([key,index])=>{if(!names.has(key))throw new Error('Unmapped entity metadata '+key);return [names.get(key),index];}))]));
 await writeFile(join(root,'client/js/game/entity-metadata-1.15.2.js'),'// Entity metadata indices extracted from the pinned native jar and official mappings.\nexport const NATIVE_METADATA='+JSON.stringify(entityMetadata)+';\n');
+
+// Keep native F3 heightmap predicates reproducible when regenerating state data.
+await import('../extract-debug-heightmaps.mjs');
