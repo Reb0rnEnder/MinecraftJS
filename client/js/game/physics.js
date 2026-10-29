@@ -742,6 +742,9 @@ export class LocalPlayer {
     this.prevCameraYaw = this.cameraYaw; this.prevCameraPitch = this.cameraPitch;
     const result = { abilitiesChanged: false };
     this.ticksExisted++;
+    // Player.tick establishes spectator collision/ground state before local input and travel.
+    this.noClip = this.spectator;
+    if (this.spectator) this.onGround = false;
     if(this.sleeping){this.motionX=this.motionY=this.motionZ=0;this.pitch=0;this.updateSize(world);return result;}
 
     // Entity.onEntityUpdate (before EntityPlayerSP.onLivingUpdate): water pushes and the in-water / in-lava state
@@ -811,9 +814,8 @@ export class LocalPlayer {
       result.startFallFlying = true;
     }
     if (this.flying) {
-      // EntityPlayerSP: sneaking while flying only descends, the 0.3 slowdown is divided back out
+      // LocalPlayer: flight descent changes vertical velocity, not horizontal input.
       if (sneakKey) {
-        moveStrafe = f32(moveStrafe / 0.3); moveForward = f32(moveForward / 0.3);
         this.motionY -= f32(this.flySpeed * 3);
       }
       if (jump) this.motionY += f32(this.flySpeed * 3);
@@ -832,7 +834,7 @@ export class LocalPlayer {
     this.jumping = jump;
     if(this.inWater&&sneakKey&&!this.flying)this.motionY-=f32(0.04);
     if (jump) {
-      if (this.inWater || this.isInLava(world)) this.motionY += 0.03999999910593033; // handleJumpWater / Lava: 0.04F
+      if (!this.flying && (this.inWater || this.isInLava(world))) this.motionY += 0.03999999910593033; // handleJumpWater / Lava: 0.04F
       else if (this.onGround && this.jumpTicks === 0) { this.jump(world); this.jumpTicks = 10; }
     } else {
       this.jumpTicks = 0;
@@ -840,7 +842,6 @@ export class LocalPlayer {
     moveStrafe = f32(moveStrafe * F.p098);
     moveForward = f32(moveForward * F.p098);
 
-    this.noClip = this.spectator;
     this.moveEntityWithHeading(world, moveStrafe, moveForward);
 
     if (this.onGround && this.flying && !this.spectator) {
