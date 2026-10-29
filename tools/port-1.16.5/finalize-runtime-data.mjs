@@ -66,3 +66,6 @@ execFileSync(process.env.JAVA||'java',['-cp',[join(cache,'client.jar'),join(cach
 const guiModule=join(root,'client/js/gui/vanilla-layout.js'),previousGui=JSON.parse((await readFile(guiModule,'utf8')).split('export const VANILLA_UI = ')[1].replace(/;\s*$/,'')),nativeGui=JSON.parse(await readFile(join(cache,'gui.json')));
 const gui={...previousGui,...nativeGui,version:'1.16.5',clientJarSha1:target.downloads.client.sha1,videoOptions:['options.biomeBlendRadius',...nativeGui.videoOptions],bindingCategories:{...previousGui.bindingCategories,'key.socialInteractions':'key.categories.multiplayer'}};
 await writeFile(guiModule,'// Option arrays extracted from the pinned native 1.16.5 jar.\nexport const VANILLA_UI = '+JSON.stringify(gui,null,2)+';\n');
+
+// Keep native F3 heightmap predicates reproducible when regenerating state data.
+await import('../extract-debug-heightmaps.mjs');

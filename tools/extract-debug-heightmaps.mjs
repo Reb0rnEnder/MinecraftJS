@@ -1,0 +1,9 @@
+import {readFileSync,writeFileSync} from 'node:fs';import{join,delimiter}from'node:path';import{createHash}from'node:crypto';import{execFileSync}from'node:child_process';
+import{fileURLToPath}from'node:url';
+const root=fileURLToPath(new URL('../',import.meta.url)),version=JSON.parse(readFileSync(join(root,'client/js/gui/vanilla-layout.js'),'utf8').split('export const VANILLA_UI = ')[1].replace(/;\s*$/,'' )).version;
+const path=join(root,'client/data/blockCollisionShapes.json'),shapes=JSON.parse(readFileSync(path)),cache=join(root,'cache/port-'+version),jar=join(cache,'client.jar'),sha=createHash('sha1').update(readFileSync(jar)).digest('hex');
+if(shapes.render.source.clientJarSha1!==sha)throw Error('Wrong native jar');
+const count=shapes.render.states.length,out=join(cache,'debug-heightmap-masks.txt');
+execFileSync(process.env.JAVA||'java',['-cp',[jar,join(cache,'server.jar')].join(delimiter),join(root,'tools/ExtractDebugHeightmaps.java'),out,join(cache,'client.txt'),String(count)],{stdio:'pipe'});
+const masks=readFileSync(out,'utf8');if(!/^[0-9a-f]+$/.test(masks)||masks.length!==count)throw Error('Incomplete native heightmap masks');
+shapes.debugHeightmaps={source:{version,clientJarSha1:sha},types:['WORLD_SURFACE','OCEAN_FLOOR','MOTION_BLOCKING','MOTION_BLOCKING_NO_LEAVES'],masks};writeFileSync(path,JSON.stringify(shapes)+'\n');console.log(version+': extracted '+count+' native heightmap predicate masks');
