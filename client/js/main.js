@@ -1,3 +1,4 @@
+import {ResourceLoadingScreen} from './gui/screens/loading.js';
 import {ShaderLibrary} from './render/shader-library.js';
 // MinecraftJS boot: pick the platform + graphics device, load assets, then start at the title screen.
 import { buildCrashReport, showCrashScreen } from './crash.js';
@@ -28,17 +29,20 @@ async function boot() {
     assets.language = settings.language || 'en_us';
     try { await assets.activatePacks(settings.resourcePacks || []); } catch (e) { console.warn('Resource packs unavailable', e); }
     // Vanilla startup splash (Mojang logo on white) while everything loads
-    const splash = new Splash(device);
+    const splash = new Splash(device, settings);
     await splash.load(await assets.readBytes('textures/gui/title/mojang.png').catch(() => null));
     splash.start();
     P.hideLoading();
-    await assets.load((msg) => console.log('[loading]', msg));
+    await assets.load((msg, pct) => { splash.setProgress(pct); console.log('[loading]', msg); });
     splash.stop();
     if (assets.data.recipes) initRecipes(assets.data.recipes);
     const game = new Game(assets, settings, device);
     game.proxies = proxies;
     game.shaderLibrary=new ShaderLibrary(game.shaderPack);
     try { await game.shaderLibrary.load(); } catch(e) { game.shaderPack.error=e.message; console.warn('Shader pack unavailable',e.message); }
+    const title = new TitleScreen(game), loading = new ResourceLoadingScreen(game,title,{startup:true,progress:splash.progress});
+    game.screens.open(loading);
+    await loading.finish();
     globalThis.game = game; // debugging handle
     const params = P.launchParams ? P.launchParams() : {};
     if (params.connect) {
@@ -46,7 +50,7 @@ async function boot() {
       if (a && a.kind === 'eagler') game.connect(params.connect, 0, params.user || null);
       else game.connect(a ? a.host : 'localhost', a ? a.port : 25565, params.user || null);
     } else {
-      game.screens.open(new TitleScreen(game));
+      game.screens.open(title);
     }
   } catch (e) {
     console.error(e);
