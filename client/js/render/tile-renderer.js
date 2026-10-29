@@ -466,7 +466,12 @@ export class TileEntityRenderer {
           const f3 = 0.015625 * f;
           tn.position.set(0, 0.5 * f, 0.07 * f + 0.001);
           tn.scale.set(f3, -f3, f3);
-          for (const m of t.textMeshes) tn.addDrawable(m.mesh, material('color', m.tex || g.gui.white, colorParams(1, 1, 1, 1, 0.05, 1), { blend: 'none' }));
+          t.signTextParams = [];
+          for (const m of t.textMeshes) {
+            const params = colorParams(1, 1, 1, 1, 0.05, 1);
+            t.signTextParams.push(params);
+            tn.addDrawable(m.mesh, material('color', m.tex || g.gui.white, params, { blend: 'none' }));
+          }
           inner.add(tn);
         }
         inner.add(sc); outer.add(inner); obj.add(outer);
@@ -709,6 +714,10 @@ export class TileEntityRenderer {
           blk = Math.max(blk, g.world.getBlockLight(t.x + ox, t.y + oy, t.z + oz) - 1);
         }
         t.mat.params.setLight(sky, blk);
+        if (t.type === 'sign' && t.signTextParams) {
+          const index = ((Math.max(0, Math.min(15, sky)) << 4) + Math.max(0, Math.min(15, blk))) * 4;
+          for (const params of t.signTextParams) for (let i = 0; i < 3; i++) params[i] = g.renderer.lightmapData[index + i] / 255;
+        }
       }
       if(t.type==='bell' && t.bellPart){
         const time=(t.bellTime||0)+partial;
