@@ -3,8 +3,8 @@ export const GAMEMODE_CHOICES=[{id:1,name:'creative',icon:'grass_block'},{id:0,n
 // GameModeSwitcherScreen, protocol-independent command submission after releasing F3.
 export class GameModeSwitcherScreen extends Screen {
  constructor(game){super(game);this.background='none';const previous=game.previousGameMode??(game.gameMode===1?0:1);this.selected=GAMEMODE_CHOICES.findIndex(m=>m.id===previous);if(this.selected<0)this.selected=0;this.initialMouse=null;}
- finish(){const mode=GAMEMODE_CHOICES[this.selected];if(this.game.permissionLevel>=2&&mode.id!==this.game.gameMode)this.game.send(C.chat('/gamemode '+mode.name));this.game.f3Combo=false;this.game.screens.close();}
- tick(){if(!this.game.input.down.has('F3'))this.finish();}
+ finish(){if(this.finished)return;this.finished=true;const mode=GAMEMODE_CHOICES[this.selected];if(this.game.permissionLevel>=2&&mode.id!==this.game.gameMode)this.game.send(C.chat('/gamemode '+mode.name));this.game.f3Combo=true;this.game.screens.close();}
+ tick(){if(!this.game.input.isKeyHeld('F3'))this.finish();}
  key(e){if(e.code==='F4'){this.selected=(this.selected+1)%4;this.initialMouse=null;return true;}return super.key(e);}
  keyUp(e){if(e.code==='F3')this.finish();}
  renderContent(gui,mx,my){

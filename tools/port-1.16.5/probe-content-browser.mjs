@@ -32,7 +32,7 @@ try{
   const chat=new ChatOptionsScreen(g,null);g.screens.open(chat);const chatRows=chat.rows.flat().map(b=>b.optionKey);
   const accessibility=new AccessibilityScreen(g,null);g.screens.open(accessibility);const accessibilityRows=accessibility.rows.flat().map(b=>b.optionKey);
   g.screens.open(new SocialInteractionsScreen(g));await new Promise(r=>setTimeout(r,100));
-  g.input.down.add('F3');g.screens.open(new GameModeSwitcherScreen(g));await new Promise(r=>setTimeout(r,100));g.screens.close();g.input.down.delete('F3');
+  g.input.down.add('F3');g.input.heldKeys.add('F3');g.screens.open(new GameModeSwitcherScreen(g));await new Promise(r=>setTimeout(r,100));g.screens.close();g.input.down.delete('F3');g.input.heldKeys.delete('F3');
   return {rendered,menu,video,chatRows,accessibilityRows};
  });
  await page.screenshot({path:process.env.SCREENSHOT||'/tmp/minecraftjs-1.16.5-nether.png'});console.log(JSON.stringify({report,errors},null,2));assert.equal(report.rendered.length,12);assert.ok(report.rendered.every(e=>e.parts&&e.mesh>0));assert.equal(report.menu.type,'minecraft:smithing');assert.equal(report.video.length,18);assert.equal(report.chatRows.length,16);assert.equal(report.accessibilityRows.length,12);assert.deepEqual(errors,[]);

@@ -6,6 +6,7 @@ export class Input {
     const P = platform();
     this.settings = settings;
     this.down = new Set();
+    this.heldKeys = new Set(); // Physical keys survive pointer unlock; gameplay bindings are reset.
     this.toggled = {};
     this.pressed = []; // queued presses for the next tick: codes
     this.dx = 0;
@@ -53,6 +54,7 @@ export class Input {
       if (this.locked){if(Math.sign(d)!==Math.sign(this.wheelCarry||0))this.wheelCarry=0;this.wheelCarry=(this.wheelCarry||0)+d;const steps=Math.trunc(this.wheelCarry);this.wheel+=steps;this.wheelCarry-=steps;}
     });
     P.on('keydown', (e) => {
+      this.heldKeys.add(e.code);
       if (!e.repeat) { if(this.locked)this.togglePress(e.code); this.down.add(e.code); this.pressed.push(e.code); }
       this.emit('key', { ...e, down: true });
     });
@@ -63,10 +65,11 @@ export class Input {
       if(allowed)this.emit('char',allowed);
     });
     P.on('keyup', (e) => {
+      this.heldKeys.delete(e.code);
       this.down.delete(e.code);
       this.emit('key', { ...e, down: false });
     });
-    P.on('blur', () => {this.down.clear();this.toggled={};});
+    P.on('blur', () => {this.heldKeys.clear();this.down.clear();this.toggled={};});
   }
 
   on(ev, fn) { this.listeners[ev].push(fn); }
@@ -77,6 +80,8 @@ export class Input {
       if(this.settings[field]&&this.settings.keys[bind]===code)this.toggled[bind]=!this.toggled[bind];
     }
   }
+
+  isKeyHeld(code) { return this.heldKeys.has(code); }
 
   isDown(bind) {
     const field=bind==='sneak'?'toggleCrouch':bind==='sprint'?'toggleSprint':null;
