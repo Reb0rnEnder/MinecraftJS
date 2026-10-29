@@ -1,3 +1,4 @@
+import {VANILLA_UI} from './vanilla-layout.js';
 import {fireOverlayVertices,fireOverlayProjection} from '../render/fire-overlay.js';
 import {NATIVE_METADATA} from '../game/entity-metadata-1.14.4.js';
 import { debugTargets } from './debug-targets.js';
@@ -949,7 +950,7 @@ export class Hud {
     const pool = g.assets.worker && g.assets.worker.workers;
     const workers = pool ? pool.filter((w) => !w.busy).length : 1; // available builders
     const lines = [
-      'MinecraftJS 1.14.4 (1.14.4/vanilla)',
+      `MinecraftJS ${VANILLA_UI.version} (${VANILLA_UI.version}/vanilla)`,
       fpsLine,
       `C: ${r.visibleSections || 0}/${r.sections.size} (s) D: ${s.renderDistance}, pC: ${String(g.dirty.size).padStart(3, '0')}, pU: ${g.inFlight.size}, aB: ${workers}`,
       `E: ${rendered}/${er.total}, B: ${er.culled}, I: ${Math.max(0, er.total - er.culled - rendered)}`,
