@@ -89,7 +89,7 @@ export class World {
     const decoded=decodeChunkData756(packet),{x,z,groundUp,bitMap}=packet;
     let c=this.getChunk(x,z);
     if(!c){c=new Chunk(x,z,this.hasSky);this.chunks.set(World.key(x,z),c);this._gen++;}
-    c.nativeLight=this._lightColumn(x,z);c.heightmaps=packet.heightmaps;
+    c.nativeLight=this._lightColumn(x,z);c.heightmaps=packet.heightmaps;c.debugHeightRevision=(c.debugHeightRevision||0)+1;
     for(let sy=0;sy<16;sy++) {
       const data=decoded.sections[sy];
       if(!data){if(groundUp)c.sections[sy]=null;continue;}

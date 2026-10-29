@@ -31,6 +31,9 @@ are in `tools/port-1.17.1/baseline.json`.
 - Spectator noclip/ground initialization, flight descent and fluid-jump gating
   match the checked native rules. F3+F4 survives pointer unlock until F3 release.
   See `spectator-flight-fixes.md` for the backport matrix and regression checks.
+- F3 content follows the target-specific native layout, including CH/SH, target
+  coordinates, reduced-debug footer and browser/traffic diagnostics. See
+  `debug-overlay-version-audit.md` for cross-version checks and limits.
 - Sound registry/events/sample references are checked against the built assets.
 - Bee anger accessor follows the native renamed field; the same correction was
   backported to 1.16.5. 1.15.2 already uses its correct original accessor.

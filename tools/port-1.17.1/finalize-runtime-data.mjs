@@ -68,3 +68,6 @@ const gui={...previousGui,...nativeGui,version:'1.17.1',packFormat:7,clientJarSh
 await writeFile(guiModule,'// Option arrays extracted from the pinned native 1.17.1 jar.\nexport const VANILLA_UI = '+JSON.stringify(gui,null,2)+';\n');
 
 await writeFile(join(root,'client/js/game/menus-1.17.1.js'),'// Native 1.17.1 menu registry.\nexport const MENUS_756='+JSON.stringify(Object.fromEntries(Object.entries(reports['minecraft:menu'].entries).map(([name,value])=>[value.protocol_id,name])))+';\n');
+
+// Keep native F3 heightmap predicates reproducible when regenerating state data.
+await import('../extract-debug-heightmaps.mjs');
