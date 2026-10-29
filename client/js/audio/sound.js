@@ -36,9 +36,9 @@ function soundTypeOf(b) {
 
 // Canonical identities, not native wire IDs or internal renderer family numbers.
 const E = (k) => [`entity.${k}.hurt`, `entity.${k}.death`];
-const SOUND_ALIASES = { cave_spider: 'spider', giant: 'hostile', mooshroom: 'cow', ocelot: 'cat', pufferfish: 'puffer_fish' };
+const SOUND_ALIASES = { trader_llama: 'llama', cave_spider: 'spider', giant: 'hostile', mooshroom: 'cow', pufferfish: 'puffer_fish' };
 const HOSTILE_TYPES = new Set(('elder_guardian wither_skeleton stray husk zombie_villager evoker vex vindicator illusioner '
-  + 'creeper skeleton spider giant zombie slime ghast zombie_pigman enderman cave_spider silverfish blaze magma_cube '
+  + 'pillager ravager creeper skeleton spider giant zombie slime ghast zombie_pigman enderman cave_spider silverfish blaze magma_cube '
   + 'ender_dragon wither witch endermite guardian shulker drowned phantom hoglin zoglin piglin piglin_brute zombified_piglin').split(' '));
 
 // SPacketSoundEffect category ids
@@ -116,31 +116,36 @@ const CATEGORY_OF = (name) => {
 // RenderGlobal.playEvent sounds: id -> [event, volume, pitch(rand)]
 const r = Math.random;
 const EVENT_SOUNDS = {
-  1000: ['block.dispenser.dispense', 1, () => 1], 1001: ['block.dispenser.fail', 1, () => 1.2],
-  1002: ['block.dispenser.launch', 1, () => 1.2], 1003: ['entity.endereye.launch', 1, () => 1.2],
-  1004: ['entity.firework.shoot', 1, () => 1.2],
-  1005: ['block.iron_door.open', 1, () => r() * 0.1 + 0.9], 1006: ['block.wooden_door.open', 1, () => r() * 0.1 + 0.9],
-  1007: ['block.wooden_trapdoor.open', 1, () => r() * 0.1 + 0.9], 1008: ['block.fence_gate.open', 1, () => r() * 0.1 + 0.9],
-  1009: ['block.fire.extinguish', 0.5, () => 2.6 + (r() - r()) * 0.8],
-  1011: ['block.iron_door.close', 1, () => r() * 0.1 + 0.9], 1012: ['block.wooden_door.close', 1, () => r() * 0.1 + 0.9],
-  1013: ['block.wooden_trapdoor.close', 1, () => r() * 0.1 + 0.9], 1014: ['block.fence_gate.close', 1, () => r() * 0.1 + 0.9],
-  1015: ['entity.ghast.warn', 10, () => (r() - r()) * 0.2 + 1], 1016: ['entity.ghast.shoot', 10, () => (r() - r()) * 0.2 + 1],
-  1017: ['entity.enderdragon.shoot', 10, () => (r() - r()) * 0.2 + 1], 1018: ['entity.blaze.shoot', 2, () => (r() - r()) * 0.2 + 1],
-  1019: ['entity.zombie.attack_door_wood', 2, () => (r() - r()) * 0.2 + 1], 1020: ['entity.zombie.attack_iron_door', 2, () => (r() - r()) * 0.2 + 1],
-  1021: ['entity.zombie.break_door_wood', 2, () => (r() - r()) * 0.2 + 1], 1022: ['entity.wither.break_block', 2, () => (r() - r()) * 0.2 + 1],
-  1024: ['entity.wither.shoot', 2, () => (r() - r()) * 0.2 + 1], 1025: ['entity.bat.takeoff', 0.05, () => (r() - r()) * 0.2 + 1],
-  1026: ['entity.zombie.infect', 2, () => (r() - r()) * 0.2 + 1], 1027: ['entity.zombie_villager.converted', 2, () => (r() - r()) * 0.2 + 1],
-  1029: ['block.anvil.destroy', 1, () => r() * 0.1 + 0.9], 1030: ['block.anvil.use', 1, () => r() * 0.1 + 0.9],
-  1031: ['block.anvil.land', 0.3, () => r() * 0.1 + 0.9], 1033: ['block.chorus_flower.grow', 1, () => 1],
-  1034: ['block.chorus_flower.death', 1, () => 1], 1035: ['block.brewing_stand.brew', 1, () => 1],
-  1036: ['block.iron_trapdoor.close', 1, () => r() * 0.1 + 0.9], 1037: ['block.iron_trapdoor.open', 1, () => r() * 0.1 + 0.9],
+  1000: ['block.dispenser.dispense', 1, () => 1, 'block'], 1001: ['block.dispenser.fail', 1, () => 1.2, 'block'],
+  1002: ['block.dispenser.launch', 1, () => 1.2, 'block'], 1003: ['entity.endereye.launch', 1, () => 1.2, 'neutral'],
+  1004: ['entity.firework.shoot', 1, () => 1.2, 'neutral'],
+  1005: ['block.iron_door.open', 1, () => r() * 0.1 + 0.9, 'block'], 1006: ['block.wooden_door.open', 1, () => r() * 0.1 + 0.9, 'block'],
+  1007: ['block.wooden_trapdoor.open', 1, () => r() * 0.1 + 0.9, 'block'], 1008: ['block.fence_gate.open', 1, () => r() * 0.1 + 0.9, 'block'],
+  1009: ['block.fire.extinguish', 0.5, () => 2.6 + (r() - r()) * 0.8, 'block'],
+  1011: ['block.iron_door.close', 1, () => r() * 0.1 + 0.9, 'block'], 1012: ['block.wooden_door.close', 1, () => r() * 0.1 + 0.9, 'block'],
+  1013: ['block.wooden_trapdoor.close', 1, () => r() * 0.1 + 0.9, 'block'], 1014: ['block.fence_gate.close', 1, () => r() * 0.1 + 0.9, 'block'],
+  1015: ['entity.ghast.warn', 10, () => (r() - r()) * 0.2 + 1, 'hostile'], 1016: ['entity.ghast.shoot', 10, () => (r() - r()) * 0.2 + 1, 'hostile'],
+  1017: ['entity.enderdragon.shoot', 10, () => (r() - r()) * 0.2 + 1, 'hostile'], 1018: ['entity.blaze.shoot', 2, () => (r() - r()) * 0.2 + 1, 'hostile'],
+  1019: ['entity.zombie.attack_door_wood', 2, () => (r() - r()) * 0.2 + 1, 'hostile'], 1020: ['entity.zombie.attack_iron_door', 2, () => (r() - r()) * 0.2 + 1, 'hostile'],
+  1021: ['entity.zombie.break_door_wood', 2, () => (r() - r()) * 0.2 + 1, 'hostile'], 1022: ['entity.wither.break_block', 2, () => (r() - r()) * 0.2 + 1, 'hostile'],
+  1024: ['entity.wither.shoot', 2, () => (r() - r()) * 0.2 + 1, 'hostile'], 1025: ['entity.bat.takeoff', 0.05, () => (r() - r()) * 0.2 + 1, 'neutral'],
+  1026: ['entity.zombie.infect', 2, () => (r() - r()) * 0.2 + 1, 'hostile'], 1027: ['entity.zombie_villager.converted', 2, () => (r() - r()) * 0.2 + 1, 'neutral'],
+  1029: ['block.anvil.destroy', 1, () => r() * 0.1 + 0.9, 'block'], 1030: ['block.anvil.use', 1, () => r() * 0.1 + 0.9, 'block'],
+  1031: ['block.anvil.land', 0.3, () => r() * 0.1 + 0.9, 'block'], 1033: ['block.chorus_flower.grow', 1, () => 1, 'block'],
+  1034: ['block.chorus_flower.death', 1, () => 1, 'block'], 1035: ['block.brewing_stand.brew', 1, () => 1, 'block'],
+  1036: ['block.iron_trapdoor.close', 1, () => r() * 0.1 + 0.9, 'block'], 1037: ['block.iron_trapdoor.open', 1, () => r() * 0.1 + 0.9, 'block'],
   1039: ['entity.phantom.bite', 0.3, () => r() * 0.1 + 0.9, 'hostile'],
   1040: ['entity.zombie.converted_to_drowned', 2, () => (r() - r()) * 0.2 + 1, 'neutral'],
   1041: ['entity.husk.converted_to_zombie', 2, () => (r() - r()) * 0.2 + 1, 'neutral'],
   1042: ['block.grindstone.use', 1, () => r() * 0.1 + 0.9, 'block'],
   1043: ['item.book.page_turn', 1, () => r() * 0.1 + 0.9, 'block'],
   1044: ['block.smithing_table.use', 1, () => r() * 0.1 + 0.9, 'block'],
-  2002: ['entity.splash_potion.break', 1, () => r() * 0.1 + 0.9], 2007: ['entity.splash_potion.break', 1, () => r() * 0.1 + 0.9],
+  1501: ['block.lava.extinguish', .5, () => 2.6 + (r() - r()) * .8, 'block'],
+  1502: ['block.redstone_torch.burnout', .5, () => 2.6 + (r() - r()) * .8, 'block'],
+  1503: ['block.end_portal_frame.fill', 1, () => 1, 'block'],
+  3000: ['block.end_gateway.spawn', 10, () => (1 + (r() - r()) * .2) * .7, 'block'],
+  3001: ['entity.ender_dragon.growl', 64, () => .8 + r() * .3, 'hostile'],
+  2002: ['entity.splash_potion.break', 1, () => r() * 0.1 + 0.9, 'neutral'], 2007: ['entity.splash_potion.break', 1, () => r() * 0.1 + 0.9, 'neutral'],
 };
 // RenderGlobal.broadcastSound (heard from anywhere)
 const GLOBAL_EVENTS = { 1023: 'entity.wither.spawn', 1028: 'entity.enderdragon.death', 1038: 'block.end_portal.spawn' };
@@ -411,6 +416,8 @@ export class SoundManager {
       this.playBlockBreak(x, y, z, p.data);
       return;
     }
+    if(p.effectId===1500){this.play(p.data>0?'block.composter.fill_success':'block.composter.fill',x,y,z,1,1,{category:'block'});return;}
+    if(p.effectId===2006){if(p.data===1)this.play('entity.dragon_fireball.explode',cx,cy,cz,1,r()*.1+.9,{category:'hostile'});return;}
     const gl = GLOBAL_EVENTS[p.effectId];
     if (gl) { this.play(gl, cx, cy, cz, p.effectId === 1028 ? 5 : 1, 1, { global: true }); return; }
     const e = EVENT_SOUNDS[p.effectId];

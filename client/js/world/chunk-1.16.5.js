@@ -31,12 +31,16 @@ export function decodeChunkData754(packet, {stateCount = BLOCK_STATE_COUNT_754} 
       }
       const perLong = Math.floor(64 / bits), length = r.varint();
       if (length !== Math.ceil(4096 / perLong)) throw Error('Invalid padded palette length');
-      const blocks = new Uint32Array(4096), mask = (1n << BigInt(bits)) - 1n;
+      const blocks = new Uint32Array(4096), mask = (1 << bits) - 1;
       let index = 0, nonAir = 0;
       for (let i = 0; i < length; i++) {
-        const value = BigInt.asUintN(64, r.i64());
+        // Read the big-endian long as two words. Entries never cross long boundaries.
+        const high = r.i32() >>> 0, low = r.i32() >>> 0;
         for (let entry = 0; entry < perLong && index < 4096; entry++, index++) {
-          let state = Number(value >> BigInt(entry * bits) & mask);
+          const shift = entry * bits;
+          let value = shift < 32 ? low >>> shift : high >>> (shift - 32);
+          if (shift < 32 && shift + bits > 32) value |= high << (32 - shift);
+          let state = value & mask;
           if (palette) {
             if (state >= palette.length) throw Error('Invalid palette index');
             state = palette[state];

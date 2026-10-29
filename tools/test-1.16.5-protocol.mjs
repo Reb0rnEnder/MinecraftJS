@@ -68,3 +68,12 @@ test('fluid-heavy native sections accept occupancy counts above the cell count',
  writeNbtRoot(w,{t:10,name:'',v:{}});w.varint(1024);for(let i=0;i<1024;i++)w.varint(1);w.varint(terrain.length);for(const b of terrain)w.u8(b);w.varint(0);
  const decoded=decodeChunkData754(decode(w)).sections[0];assert.equal(decoded.wireNonAir,8192);assert.equal(decoded.nonAir,4096);assert.ok(decoded.blocks.every(state=>state===water));
 });
+test('word-based palette decoding matches an independent BigInt encoder at every native width',()=>{
+ for(const bits of[4,5,6,7,8,15]){
+  const local=bits<=8,paletteSize=local?1<<bits:0,w=new Writer().u16(8192).u8(bits),expected=new Uint32Array(4096),perLong=Math.floor(64/bits),length=Math.ceil(4096/perLong);
+  if(local){w.varint(paletteSize);for(let i=0;i<paletteSize;i++)w.varint(i+1);}w.varint(length);
+  let seed=0x12345678;
+  for(let i=0;i<length;i++){let packed=0n;for(let j=0;j<perLong&&i*perLong+j<4096;j++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const raw=local?seed%paletteSize:seed%17112;expected[i*perLong+j]=local?raw+1:raw;packed|=BigInt(raw)<<BigInt(j*bits);}w.i64(BigInt.asIntN(64,packed));}
+  assert.deepEqual(decodeChunkData754({bitMap:1,chunkData:w.build()}).sections[0].blocks,expected,'width '+bits);
+ }
+});
