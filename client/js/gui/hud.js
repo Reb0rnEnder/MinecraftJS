@@ -417,7 +417,7 @@ export class Hud {
       for(let y=Math.floor(bb[1]+epsilon);y<Math.ceil(bb[4]-epsilon);y++)
         for(let z=Math.floor(bb[2]+epsilon);z<Math.ceil(bb[5]-epsilon);z++){
           const state=g.world.getState(x,y,z),block=getBlock(state);
-          if(block?.name==='fire')return true;
+          if(block?.name==='fire'||block?.name==='soul_fire')return true;
         }
     return false;
   }

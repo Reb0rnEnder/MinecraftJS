@@ -18,7 +18,7 @@ test('empty light packets above build height cannot darken entities or weather',
 });
 test('burning first-person Creative and Survival players retain the overlay with F1; Spectator does not',()=>{
  for(const mode of [0,1,2,3])for(const burning of [false,true]){
-  let drawn=0;const hud=Object.create(Hud.prototype);hud.game={gameMode:mode,thirdPerson:0,hideGui:true,selfMetadata:{0:burning?1:0},player:{creative:mode===1}};hud.renderFire=()=>drawn++;hud.render({width:640,height:360},0,{underwater:false});assert.equal(drawn,burning&&mode!==3?1:0);
+  let drawn=0;const hud=Object.create(Hud.prototype);hud.game={gameMode:mode,thirdPerson:0,hideGui:true,settings:{},effects:new Map(),selfMetadata:{0:burning?1:0},player:{creative:mode===1}};hud.renderFire=()=>drawn++;hud.render({width:640,height:360},0,{underwater:false});assert.equal(drawn,burning&&mode!==3?1:0);
  }
 });
 test('native fire planes overlap the middle and retain perspective at every aspect ratio',()=>{

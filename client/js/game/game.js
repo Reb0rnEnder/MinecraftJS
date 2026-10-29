@@ -1058,6 +1058,7 @@ export class Game {
   on_block_break_animation(p) { this.interaction.setRemoteBreak(p.entityId, p.location, p.destroyStage); }
 
   on_explosion(p) {
+    this.sound.playExplosion(p.x, p.y, p.z);
     for (const r of p.records) this.world.setState(Math.floor(p.x) + r.x, Math.floor(p.y) + r.y, Math.floor(p.z) + r.z, 0);
     this.player.motionX += p.motionX;
     this.player.motionY += p.motionY;
@@ -1335,7 +1336,7 @@ export class Game {
     if (!b || b.isAir) return null;
     const n = b.name;
     if (n === 'barrier') return this.player.creative ? [0, 0, 0, 1, 1, 1] : null;
-    if (n === 'fire' || n === 'nether_portal' || n === 'portal' || n === 'end_portal' || n === 'moving_piston' || n === 'piston_extension') return null;
+    if (n === 'nether_portal' || n === 'portal' || n === 'end_portal' || n === 'moving_piston' || n === 'piston_extension') return null;
     const extracted = jarSelectionBox(state);
     if (extracted !== undefined) return extracted;
 
@@ -1354,7 +1355,7 @@ export class Game {
     if (n.endsWith('_wall_banner')) return [0, 0, 0, 1, 1, 1];
     if (n === 'barrier') return this.player.creative ? [0, 0, 0, 1, 1, 1] : null;
     if (n === 'tall_grass' || n === 'dead_bush') return [0.1, 0, 0.1, 0.9, 0.8, 0.9];
-    if (n === 'fire' || n === 'nether_portal' || n === 'end_portal' || n === 'moving_piston') return null;
+    if (n === 'nether_portal' || n === 'end_portal' || n === 'moving_piston') return null;
     // Blocks whose vanilla bounds (setBlockBoundsBasedOnState) differ from their (rotated/cross) models
     const props = getStateProperties(state);
     if (n === 'torch' || n === 'redstone_torch' || n === 'wall_torch' || n === 'redstone_wall_torch') {

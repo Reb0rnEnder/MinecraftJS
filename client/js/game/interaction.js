@@ -433,8 +433,11 @@ export class Interaction {
     const state = g.world.getState(pos.x, pos.y, pos.z);
     const b = getBlock(state);
     if (!b || b.id === 0) return false;
-    g.particles.blockBreak(pos.x, pos.y, pos.z, state);
-    g.sound.playBlockBreak(pos.x, pos.y, pos.z, state);
+    // BaseFireBlock.playerWillDestroy sends the extinguish event from the server.
+    if(b.name!=='fire'&&b.name!=='soul_fire'){
+      g.particles.blockBreak(pos.x, pos.y, pos.z, state);
+      g.sound.playBlockBreak(pos.x, pos.y, pos.z, state);
+    }
     g.world.setState(pos.x, pos.y, pos.z, 0);
     // Doors/double plants/beds: the other half goes too (server will confirm)
     if (b.isDoor) {
