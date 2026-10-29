@@ -463,7 +463,7 @@ export class Interaction {
     const x = pos.x + d[0], y = pos.y + d[1], z = pos.z + d[2];
     const b = blocks[g.world.getState(x, y, z) >> 4];
     if (!b || b.name !== 'fire') return false;
-    g.sound.onWorldEvent({ effectId: 1004, location: { x, y, z }, data: 0 });
+    g.sound.onWorldEvent({ effectId: 1009, location: { x, y, z }, data: 0 });
     g.world.setState(x, y, z, 0);
     return true;
   }
