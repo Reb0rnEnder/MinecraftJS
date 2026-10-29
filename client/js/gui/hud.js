@@ -1,5 +1,5 @@
 import {fireOverlayVertices,fireOverlayProjection} from '../render/fire-overlay.js';
-import {NATIVE_METADATA} from '../game/entity-metadata-1.15.2.js';
+import {NATIVE_METADATA} from '../game/entity-metadata-1.16.5.js';
 import { debugTargets } from './debug-targets.js';
 import {drawEffectIcon} from './effect-icons.js';
 import { getStateProperties } from '../world/blocks.js';

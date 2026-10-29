@@ -7,7 +7,7 @@ import {ENTITY_TYPES,MOB_FAMILIES} from '../../client/js/game/entity-types.js';
 import {villagerLayers} from '../../client/js/render/villager-layers.js';
 const read=name=>JSON.parse(readFileSync(new URL('../../client/data/'+name+'.json',import.meta.url)));
 const NON_LIVING=new Set('area_effect_cloud armor_stand arrow boat dragon_fireball end_crystal evoker_fangs experience_orb eye_of_ender falling_block firework_rocket item item_frame fireball leash_knot llama_spit minecart chest_minecart command_block_minecart furnace_minecart hopper_minecart spawner_minecart tnt_minecart painting tnt shulker_bullet small_fireball snowball spectral_arrow egg ender_pearl experience_bottle potion trident wither_skull lightning_bolt player fishing_bobber'.split(' '));
-export function validateVisualRuntime(jar,models,shapes=read('blockCollisionShapes')){
+export function validateVisualRuntime(jar,models,shapes=read('blockCollisionShapes'),{pendingEntities=new Set()}={}){
  const hash=createHash('sha1').update(jar.data).digest('hex'),definitions=read('blocks'),count=Math.max(...definitions.map(b=>b.maxStateId))+1;
  const props=shapes.render;
  if(props?.source?.clientJarSha1!==hash||props.states.length!==count)throw Error('Native rendering table is missing/stale: regenerate runtime data from this jar');
@@ -18,8 +18,9 @@ export function validateVisualRuntime(jar,models,shapes=read('blockCollisionShap
  initBlocks(definitions,shapes);setJarModels(models);
  const renderer=Object.create(EntityRenderer.prototype),tested=new Set();
  const texture=path=>{if(!jar.read('assets/minecraft/textures/'+path))throw Error('Entity texture is absent from this jar: '+path);tested.add(path);};
- let mobs=0;
+ let mobs=0;const pending=[];
  for(const entry of ENTITY_TYPES){
+  if(pendingEntities.has(entry.name)){if(!entry.mob)throw Error('Deferred entity is not classified as living: '+entry.name);pending.push(entry.name);continue;}
   if(!entry.mob){if(!NON_LIVING.has(entry.name))throw Error('Entity needs a living/object renderer classification: '+entry.name);continue;}
   const e={kind:'mob',entityName:entry.name,type:MOB_FAMILIES[entry.name]?.[0]||entry.name,...MOB_FAMILIES[entry.name]?.[1]};
   mobs++;if(e.type===63){texture('entity/enderdragon/dragon.png');continue;}
@@ -35,5 +36,5 @@ export function validateVisualRuntime(jar,models,shapes=read('blockCollisionShap
   };model.roots.forEach(visit);
  }
  for(const villagerZombie of [false,true])for(let type=0;type<7;type++)for(let profession=0;profession<15;profession++)for(let level=1;level<=5;level++)for(const layer of villagerLayers({villagerZombie,villagerType:type,profession,villagerLevel:level}))texture(layer.texture);
- return {states:count,mobs,textures:tested.size};
+ return {states:count,mobs,textures:tested.size,pending};
 }

@@ -1,9 +1,9 @@
 import {applyFoxFlags,tickFox} from './fox.js';
 import {tickBeeSound,stopBeeSound} from './bee-sound.js';
-import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.15.2.js';
+import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.16.5.js';
 import {placeLeashKnot} from './leash-knot.js';
 import {NATIVE_METADATA} from './entity-metadata-1.14.4.js';
-import {playerPoseDimensions} from './player-poses-1.15.2.js';
+import {playerPoseDimensions} from './player-poses-1.16.5.js';
 import { tickFallingBlock } from './falling-block.js';
 import { tickEntityEffects, tickDragonDeath, isDragon } from '../render/entity-effects.js';
 // Client-side entity tracking (positions, interpolation, metadata, animation state).

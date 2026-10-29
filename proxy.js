@@ -1,5 +1,5 @@
 // MinecraftJS proxy: serves the web client, bridges WebSocket <-> Minecraft TCP,
-// and serves the game's 1.15.2 assets.
+// and serves the game's 1.16.5 assets.
 const net = require('net');
 const http = require('http');
 const fs = require('fs');
@@ -24,7 +24,7 @@ const PROXY_VERSION = require('./package.json').version || '';
 
 // ---------------------------------------------------------------------------
 // Game assets. A built client/assets/ folder (npm run assets) is served as is; without one the proxy serves the
-// same layout straight from the 1.15.2 jar and asset index (see tools/build.js for the layout).
+// same layout straight from the 1.16.5 jar and asset index (see tools/build.js for the layout).
 // ---------------------------------------------------------------------------
 
 let jar = null;
@@ -286,8 +286,8 @@ async function resolveServer(host, port) {
   return {...await resolveTarget(target.host,target.port,options),serverHost:target.host};
 }
 
-// protocol: the client's game protocol (578 = 1.15.2)
-function handshake(host, port, nextState, protocol = 578) {
+// protocol: the client's game protocol (754 = 1.16.5)
+function handshake(host, port, nextState, protocol = 754) {
   return Buffer.concat([
     writeVarInt(0x00),
     writeVarInt(protocol),
@@ -387,13 +387,13 @@ wss.on('connection', (ws) => {
 
     // Proxy test from the client's Proxy Servers screen
     if (msg.type === 'info') {
-      sendJson({ type: 'info', name: 'MinecraftJS proxy', version: PROXY_VERSION, protocols: [578] });
+      sendJson({ type: 'info', name: 'MinecraftJS proxy', version: PROXY_VERSION, protocols: [754] });
       return;
     }
 
     if (msg.type === 'ping') {
       try {
-        const st = await pingServer(msg.host || 'localhost', msg.port || 25565, msg.protocol | 0 || 578);
+        const st = await pingServer(msg.host || 'localhost', msg.port || 25565, msg.protocol | 0 || 754);
         sendJson({ type: 'ping_result', id: msg.id, status: st });
       } catch (e) {
         sendJson({ type: 'ping_result', id: msg.id, error: e.message });
@@ -406,7 +406,7 @@ wss.on('connection', (ws) => {
       const port = msg.port || 25565;
       const auth = msg.auth && msg.auth.accessToken && msg.auth.uuid ? msg.auth : null;
       const username = (msg.username || 'WebPlayer').slice(0, 16);
-      const protocol = msg.protocol | 0 || 578;
+      const protocol = msg.protocol | 0 || 754;
       console.log(`[ws] connecting to ${host}:${port} as ${username}${auth ? ' (Microsoft account)' : ''}`);
       sendJson({ type: 'status', key: 'connect.connecting', message: `Connecting to ${host}:${port}...` });
 
@@ -472,8 +472,9 @@ wss.on('connection', (ws) => {
               split.threshold = readVarInt(body, 0).value;
             } else if (id.value === 0x02) {
               let o = 0;
-              const ul = readVarInt(body, o); o += ul.length;
-              const uuid = body.toString('utf8', o, o + ul.value); o += ul.value;
+              let uuid;
+              if(protocol>=735){const hex=body.subarray(0,16).toString('hex');if(hex.length!==32)throw Error('Truncated login UUID');uuid=hex.slice(0,8)+'-'+hex.slice(8,12)+'-'+hex.slice(12,16)+'-'+hex.slice(16,20)+'-'+hex.slice(20);o=16;}
+              else {const ul=readVarInt(body,o);o+=ul.length;uuid=body.toString('utf8',o,o+ul.value);o+=ul.value;}
               const nl = readVarInt(body, o); o += nl.length;
               const name = body.toString('utf8', o, o + nl.value);
               state = 'play';
@@ -511,7 +512,7 @@ wss.on('connection', (ws) => {
     console.log(built ? 'Game assets: client/assets/' : 'Game assets loaded (served from the game jar)');
   } catch (e) {
     console.error('Could not load game assets:', e.message);
-    console.error('Set MC_JAR to the location of the 1.15.2 client if it is installed somewhere unusual.');
+    console.error('Set MC_JAR to the location of the 1.16.5 client if it is installed somewhere unusual.');
   }
   try {
     assetIndex = await mcassets.loadAssetIndex();

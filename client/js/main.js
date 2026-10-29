@@ -29,7 +29,7 @@ async function boot() {
     try { await assets.activatePacks(settings.resourcePacks || []); } catch (e) { console.warn('Resource packs unavailable', e); }
     // Vanilla startup splash (Mojang logo on white) while everything loads
     const splash = new Splash(device);
-    await splash.load(await assets.readBytes('textures/gui/title/mojang.png').catch(() => null));
+    await splash.load(await assets.readBytes('textures/gui/title/mojangstudios.png').catch(() => null));
     splash.start();
     P.hideLoading();
     await assets.load((msg) => console.log('[loading]', msg));

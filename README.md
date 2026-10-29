@@ -1,31 +1,35 @@
-# MinecraftJS
+# MinecraftJS 1.16.5 development client
 
-> **1.15.2 runtime branch:** [plan and milestones](docs/transition-1.15.2.md).
-> Current parity status: [1.15.2 feature audit](docs/feature-audit-1.15.2.md).
-> Milestone 1 stages verified protocol-578 inputs, native reports and packet IDs.
-> The active browser/proxy runtime below still targets 1.14.4 until the codec,
-> registries and assets pass the transition gates.
+This branch targets Java **1.16.5, protocol 754**. Start with the
+[transition plan](docs/transition-1.16.5.md). The current milestone is native
+connection and terrain support; full Nether Update feature parity is pending.
 
-> **1.14.4 development branch:** the browser and proxy now use protocol 498 with native terrain data and independent light updates. Native workstations, trading, lectern controls, bell rendering and scaffolding movement are implemented; jar-derived block properties and visible models for the new mobs are in place; native crossbow use, fitting poses, colored signs, campfire contents, particle sprite lists, effect icons and Accessibility/Mouse settings are implemented. Remaining special animations, recipe-book and visual parity work is ongoing.
-> Follow the [1.14.4 transition plan](docs/transition-1.14.4.md) before publishing a 1.14.4 client.
-> The [content milestone](docs/workstations-content-1.14.4.md) records workstation/block support and its limits.
-> The [runtime milestone](docs/runtime-1.14.4-milestone.md) records browser join/reconnect validation and remaining work.
-> The [complete feature audit](docs/feature-audit-1.14.4.md) covers every 1.14 additions/change topic and target patch changes, including confirmed gaps and unexecuted gameplay checks. The [1.14.1–1.14.4 patch review](docs/patch-audit-1.14.1-1.14.4.md) inventories all requested patch topics and bug tickets. Asset coverage does not imply full parity.
-> Experimental [shader-pack image effects and vegetation support](docs/camera-and-shader-packs.md) is available in Video Settings with WebGL 2. This runs final image effects and BSL vegetation animation; full BSL lighting/shadows are not implemented.
+The browser and proxy use the matching handshake, packet IDs, binary login UUID,
+dimension registries and padded terrain palettes. Block/item/entity IDs, block
+shapes, item mechanics, assets and common entity models come from verified native
+1.16.5 inputs. New mob renderers and the smithing interface are deferred to the
+content milestone; unsupported new mobs are tracked without a borrowed model.
 
+For the already-running local server, run the new proxy from this worktree:
 
-A Minecraft 1.14.4 client that runs in the browser (WebGL 2 or WebGPU). It joins vanilla 1.14.4 servers through a
-small Node proxy, and Eaglercraft servers directly over WebSockets.
+```sh
+PORT=3001 ALLOW_LOOPBACK=1 npm start
+```
+
+Open `http://localhost:3001/` and join `localhost:25565`. The explicit loopback
+option is required for a local game server; loopback targets remain blocked by
+default. This can coexist with an older-version proxy on port 3000.
 
 MinecraftJS is not affiliated with Mojang or Microsoft. The repository contains no Mojang files: the game assets
-are taken from your own copy of Minecraft 1.14.4, or downloaded from Mojang's servers on first use. That includes the
-entity and block entity models (mobs, boats, chests, signs, skulls, beds, ...): in 1.12 they are Java code, so the
-build runs the model constructors from the client jar in a small bytecode interpreter (`lib/jvm.js`,
-`lib/modelextract.js`) and stores the boxes in `bundles/entity-models.json`.
+are taken from your own copy of Minecraft 1.16.5, or downloaded from Mojang's servers on first use. That includes the
+entity and block entity models (mobs, boats, chests, signs, skulls, beds, ...): the build runs the pinned
+native Java constructors through the official mappings and stores the resulting geometry in
+`bundles/entity-models.json`.
 
 ## Requirements
 
-- Node.js 18 or newer
+- Node.js 22 or newer
+- Java 17 or newer for native asset/data extraction
 - `npm install` (installs the proxy's dependencies, plus esbuild and ffmpeg for the build)
 
 ## Running with the proxy
@@ -41,13 +45,13 @@ relays Microsoft account sign in and serves player skins.
 Game assets are found automatically, in this order:
 
 1. `client/assets/` if you have built it (see below)
-2. the 1.14.4 jar from `./1.14.4/`, `MC_JAR`, `MC_DIR`, or your launcher's `.minecraft` folder
+2. the 1.16.5 jar from `./1.16.5/`, `MC_JAR`, `MC_DIR`, or your launcher's `.minecraft` folder
 3. otherwise a download from Mojang into `cache/`
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `PORT` | `3000` | HTTP and WebSocket port |
-| `MC_JAR` | | path to a `1.14.4.jar` |
+| `MC_JAR` | | path to a `1.16.5.jar` |
 | `MC_DIR` | | a `.minecraft` folder to look in |
 
 ## Building

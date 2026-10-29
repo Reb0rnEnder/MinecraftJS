@@ -248,6 +248,7 @@ export class VanillaSocket extends Emitter {
 
   async _connect(msg) {
     const host = msg.host || 'localhost', port = msg.port || 25565, protocol = msg.protocol | 0;
+    this.protocol=protocol;
     this.auth = msg.auth && msg.auth.accessToken && msg.auth.uuid ? msg.auth : null;
     this.state = 'login';
     this._control({ type: 'status', key: 'connect.connecting', message: `Connecting to ${host}:${port}...` });
@@ -270,7 +271,10 @@ export class VanillaSocket extends Emitter {
       case 0x00: this._kick(readString(body, 0).value); break; // login disconnect (JSON chat)
       case 0x01: this._encryption(body); break;
       case 0x02: {
-        const uuid = readString(body, 0), name = readString(body, uuid.end);
+        let uuid;
+        if(this.protocol>=735){if(body.length<16)throw Error('Truncated login UUID');const hex=Array.from(body.subarray(0,16),b=>b.toString(16).padStart(2,'0')).join('');uuid={value:hex.slice(0,8)+'-'+hex.slice(8,12)+'-'+hex.slice(12,16)+'-'+hex.slice(16,20)+'-'+hex.slice(20),end:16};}
+        else uuid=readString(body,0);
+        const name = readString(body, uuid.end);
         this.state = 'play';
         this._control({ type: 'login_success', uuid: uuid.value, username: name.value });
         break;

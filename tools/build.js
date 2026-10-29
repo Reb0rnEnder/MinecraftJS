@@ -183,14 +183,14 @@ async function collectAssets(opts) {
   // Extraction failures must stop the build rather than publish stale geometry.
   const models = assertCompleteModels(extractModels(jar));
   const {validateVisualRuntime}=await import('./port-1.14.4/validate-visual-runtime.mjs');
-  console.log('Native visual validation:',JSON.stringify(validateVisualRuntime(jar,models)));
+  console.log('Native visual validation:',JSON.stringify(validateVisualRuntime(jar,models,undefined,{pendingEntities:new Set(['hoglin','piglin','piglin_brute','strider','zoglin','zombified_piglin'])})));
   files.set('bundles/entity-models.json', Buffer.from(JSON.stringify(models)));
   console.log(`Entity models: ${Object.keys(models).length} from the jar`);
 
   const index = await mcassets.loadAssetIndex();
   const meta = await index.read('pack.mcmeta');
   const mcmeta = meta ? JSON.parse(meta.toString('utf8')) : {};
-  mcmeta.pack = { pack_format: mcassets.MC_VERSION === '1.15.2' ? 5 : 4, description: 'The default look and feel of Minecraft' };
+  mcmeta.pack = { pack_format: mcassets.MC_VERSION === '1.16.5' ? 6 : 5, description: 'The default look and feel of Minecraft' };
   files.set('pack.mcmeta', Buffer.from(JSON.stringify(mcmeta)));
 
   const names = indexedClientAssets(index)
@@ -199,15 +199,17 @@ async function collectAssets(opts) {
   const enc = new AudioEncoder(opts);
   console.log(`Sounds: ${sounds.length} files (${enc.codec === 'copy' ? 'original' : enc.codec + ` ${enc.sfxKbps}k mono / ${enc.musicKbps}k stereo music`})`);
   let done = 0, before = 0, after = 0;
-  await pool(names, Math.max(2, os.cpus().length), async (name) => {
-    let buf = await index.read(name);
-    if (name.startsWith('minecraft/sounds/') && name.endsWith('.ogg')) {
-      before += buf.length;
-      buf = await enc.encode(name.slice('minecraft/sounds/'.length), buf);
-      after += buf.length;
-      if (++done % 100 === 0) process.stdout.write(`  ${done}/${sounds.length}\r`);
-    }
-    files.set(name, buf);
+  await pool(names, Math.min(8, Math.max(2, os.cpus().length)), async (name) => {
+    try {
+      let buf = await index.read(name);
+      if (name.startsWith('minecraft/sounds/') && name.endsWith('.ogg')) {
+        before += buf.length;
+        buf = await enc.encode(name.slice('minecraft/sounds/'.length), buf);
+        after += buf.length;
+        if (++done % 100 === 0) process.stdout.write(`  ${done}/${sounds.length}\r`);
+      }
+      files.set(name, buf);
+    } catch (error) { throw new Error(`Asset ${name}: ${error.message || String(error)}`, {cause:error}); }
   });
   console.log(`  audio ${(before / 1048576).toFixed(1)} MB -> ${(after / 1048576).toFixed(1)} MB`);
   const metadata=await mcassets.getVersionJson();

@@ -97,6 +97,8 @@ export class RecipeBook {
     this.open = p.craftingBookOpen;
     this.filtering = p.filteringCraftable;
     this.cookingStates.smelting.open=!!p.smeltingBookOpen;this.cookingStates.smelting.filtering=!!p.filteringSmeltable;
+    this.cookingStates.blasting.open=!!p.blastFurnaceOpen;this.cookingStates.blasting.filtering=!!p.filteringBlastFurnace;
+    this.cookingStates.smoking.open=!!p.smokerBookOpen;this.cookingStates.smoking.filtering=!!p.filteringSmoker;
     if (p.action === 2) for (const id of p.recipes) this.known.delete(id);
     else if (p.action === 0) {
       this.known.clear();this.fresh.clear();

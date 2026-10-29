@@ -1,7 +1,7 @@
-import { ENTITY_REGISTRY_1152 } from './entity-registry-1.15.2.js';
-// Native 1.15.2 entity registry and dimensions, generated from the pinned reports.
+import { ENTITY_REGISTRY_1165 } from './entity-registry-1.16.5.js';
+// Native 1.16.5 entity registry and dimensions, generated from the pinned reports.
 // Numeric MOB_FAMILIES selectors below are internal renderer identities, not wire IDs.
-const REGISTRY = ENTITY_REGISTRY_1152;
+const REGISTRY = ENTITY_REGISTRY_1165;
 
 // INTERNAL renderer selectors, never protocol IDs. Only families already selected
 // by the renderer use numbers. A new family keeps its canonical string as e.type.
@@ -24,7 +24,7 @@ export const AGEABLE = new Set([...ANIMALS, 'villager','wandering_trader']);
 export const HORSES = new Set(('horse donkey mule zombie_horse skeleton_horse llama trader_llama').split(' '));
 export const ZOMBIES = new Set(('zombie husk zombie_villager zombie_pigman drowned').split(' '));
 export const FISH = new Set(('cod salmon pufferfish tropical_fish').split(' '));
-const NEW_MOBS = new Set(('bee cat fox panda pillager ravager wandering_trader trader_llama cod dolphin drowned evoker illusioner llama parrot polar_bear pufferfish salmon tropical_fish turtle vex vindicator phantom').split(' '));
+const NEW_MOBS = new Set(('hoglin piglin piglin_brute strider zoglin zombified_piglin bee cat fox panda pillager ravager wandering_trader trader_llama cod dolphin drowned evoker illusioner llama parrot polar_bear pufferfish salmon tropical_fish turtle vex vindicator phantom').split(' '));
 const EYES = { armor_stand: 1.7775, bat: 0.45, cave_spider: 0.45, enderman: 2.55, endermite: 0.1,
   ghast: 2.6, giant: 10.44, guardian: 0.425, elder_guardian: 0.99875, shulker: 0.5, silverfish: 0.1,
   skeleton: 1.74, stray: 1.74, wither_skeleton: 2.1, spider: 0.65, squid: 0.4,

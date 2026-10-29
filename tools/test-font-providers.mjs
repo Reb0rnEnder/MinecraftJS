@@ -49,3 +49,13 @@ test('bitmap dimensions, ascent and ink widths are independent of texture resolu
  const a=assets(),data=new Uint8Array(16*24*4);for(let y=0;y<24;y++)for(let x=0;x<10;x++)data[(y*16+x)*4+3]=255;
  const g=bitmapProvider(a,{chars:['A'],height:12,ascent:10},{width:16,height:24,data},'scale').get('A');assert.equal(g.advance,6);assert.equal(g.width,8);assert.equal(g.height,12);assert.equal(g.y,-3);
 });
+
+
+test('bitmap rows and text metrics use Unicode code points rather than surrogate halves',()=>{
+ const a=assets(),data=new Uint8Array(16*16*4).fill(255);
+ const p=bitmapProvider(a,{chars:['A😀','BC'],height:8,ascent:7},{width:16,height:16,data},'supplementary');
+ assert.ok(p.get('😀'));assert.equal(p.get('\ud83d'),null);
+ a.fontSets={default:new FontSet(a,[p])};const f=new FontRenderer({assets:a});
+ assert.equal(f.width('😀'),9);assert.equal(f.layout('😀',0,0,0xffffff,false).quads.length,1);
+ assert.deepEqual(f.wrap('😀😀',9),['😀','😀']);
+});

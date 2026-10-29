@@ -7,7 +7,7 @@ import {captureText} from '../debug/text-capture.js';
 import {pushLocalPlayer} from './entity-pushing.js';
 import {ShaderPackFinal} from '../render/shader-pack.js';
 import {CameraEye} from '../render/camera-eye.js';
-import {MENUS_498} from './menus-1.14.4.js';
+import {MENUS_754} from './menus-1.16.5.js';
 import { RegistryTags } from './tags.js';
 import { CommandTree } from './commands.js';
 import { startSleeping, stopSleeping, updateSleeping, sleepingCamera } from './bed-sleep.js';
@@ -727,13 +727,16 @@ export class Game {
     this.maxHealth = 20;
     if (this.gameMode !== (p.gameMode & 7)) this.previousGameMode = this.gameMode;
     this.gameMode = p.gameMode & 7;
-    this.hardcore = !!(p.gameMode & 8);
+    this.hardcore = p.isHardcore;
     this.dimension = p.dimension;
+    this.worldName=p.worldName;this.dimensionData=p.dimensionData;
+    if(p.dimensionCodec)this.dimensionCodec=p.dimensionCodec;
     if(p.difficulty!==undefined)this.difficulty = p.difficulty;
     this.maxPlayers = p.maxPlayers;
     this.levelType = p.levelType;
     this.reducedDebug = p.reducedDebugInfo;
     this.world.setDimension(p.dimension);
+    if(p.dimensionData)this.world.hasSky=!!p.dimensionData.has_skylight;
     this.world.setBiomeSeed?.(p.hashedSeed);
     this.applyGameMode();
     this.inWorld = true;
@@ -775,7 +778,7 @@ export class Game {
     this.world.timeOfDay = Math.abs(t);
   }
 
-  on_entity_equipment(p) { this.entities.setEquipment(p.entityId, p.slot, p.item); }
+  on_entity_equipment(p) { for(const equipment of p.equipments)this.entities.setEquipment(p.entityId,equipment.slot,equipment.item); }
 
   on_spawn_position(p) { this.spawnPos = p.location; }
 
@@ -802,7 +805,7 @@ export class Game {
     stopSleeping(this);
     if(this.screens.current instanceof SleepScreen)this.screens.close();
     this.interaction?.predictedBlocks?.clear();
-    if (p.dimension !== this.dimension) {
+    if (p.dimension !== this.dimension || p.worldName!==this.worldName) {
       this.world.clear();
       this._resetMeshing();
       this.entities.clear();
@@ -812,7 +815,10 @@ export class Game {
       this.screens.open(new DownloadingTerrainScreen(this));
     }
     this.dimension = p.dimension;
+    this.worldName=p.worldName;this.dimensionData=p.dimensionData;
+    if(p.dimensionCodec)this.dimensionCodec=p.dimensionCodec;
     this.world.setDimension(p.dimension);
+    if(p.dimensionData)this.world.hasSky=!!p.dimensionData.has_skylight;
     this.world.setBiomeSeed?.(p.hashedSeed);
     if(p.difficulty!==undefined)this.difficulty = p.difficulty;
     if (this.gameMode !== (p.gamemode)) this.previousGameMode = this.gameMode;
@@ -986,11 +992,11 @@ export class Game {
   }
 
   on_map_chunk(p) {
-    this.world.loadChunk578(p);
+    this.world.loadChunk754(p);
     for (const nbt of p.blockEntities) this.applyBlockEntity(nbt);
   }
 
-  on_update_light(p) { this.world.updateLight578(p); }
+  on_update_light(p) { this.world.updateLight754(p); }
 
   on_unload_chunk(p) { this.world.unloadChunk(p.chunkX, p.chunkZ); }
 
@@ -1105,11 +1111,13 @@ export class Game {
 
   on_open_window(p) {
     if(typeof p.inventoryType==='number'){
-      const name=MENUS_498[p.inventoryType],rows=/generic_9x([1-6])/.exec(name||'');
+      const name=MENUS_754[p.inventoryType];
+      if(name==='minecraft:smithing'){this.send(C.closeWindow(p.windowId));return;} // Planned in the content milestone.
+      const rows=/generic_9x([1-6])/.exec(name||'');
       const aliases={'minecraft:generic_3x3':['minecraft:dispenser',9],'minecraft:crafting':['minecraft:crafting_table',10],'minecraft:enchantment':['minecraft:enchanting_table',2],'minecraft:merchant':['minecraft:villager',3],'minecraft:blast_furnace':['minecraft:blast_furnace',3],'minecraft:smoker':['minecraft:smoker',3]};
       const fixed={'minecraft:anvil':3,'minecraft:beacon':1,'minecraft:brewing_stand':5,'minecraft:furnace':3,'minecraft:hopper':5,'minecraft:shulker_box':27,'minecraft:grindstone':3,'minecraft:lectern':1,'minecraft:loom':4,'minecraft:cartography':3,'minecraft:stonecutter':2};
       const [type,count]=rows?['minecraft:chest',Number(rows[1])*9]:aliases[name]||[name,fixed[name]];
-      if(!type||count===undefined)throw new Error('Unknown 1.14.4 menu '+p.inventoryType);
+      if(!type||count===undefined)throw new Error('Unknown 1.16.5 menu '+p.inventoryType);
       p={...p,inventoryType:type,slotCount:count};
     }
     const win = new ContainerWindow(this, p.windowId, p.inventoryType, chatToLegacy(p.windowTitle), p.slotCount, p.entityId);

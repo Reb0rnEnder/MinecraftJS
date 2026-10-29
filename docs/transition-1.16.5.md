@@ -26,3 +26,22 @@ Older supported branches keep their current protocol and content versions.
 First-session acceptance: the new client identifies as Java 1.16.5 (protocol
 754), successfully joins the local server, loads terrain and remains connected
 through keepalives and ordinary movement. This is not a full-parity release.
+
+## Connection milestone verification
+
+The active runtime now uses protocol 754 with native block/item/entity/sound IDs,
+metadata, collision/selection/rendering data and assets. A direct local-server
+probe decoded 2,313 terrain sections, confirmed the spawn teleport, answered two
+keepalives and reported no unsupported packets. The browser probe loaded terrain,
+rendered the world/HUD, moved the player and remained connected through two
+keepalives with no console errors, decoding warnings or missing HTTP resources.
+All 12 protocol/font checks pass. The asset build validates 17,112 block states
+and includes all 2,336 sounds; 90 common entity models are extracted natively.
+
+The font sheet fix is backported to 1.13.2, 1.14.4 and 1.15.2, which already
+support font providers. Bounded asset-build concurrency and useful per-file errors
+apply to all supported branches. Version-specific wire changes remain here.
+
+Next: implement the six pending Nether mob renderers, smithing, new block/item
+mechanics and native GUI differences. Keep the existing pending-entity list
+explicit until each renderer has matching model/texture validation.

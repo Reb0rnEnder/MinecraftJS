@@ -3,7 +3,7 @@ import {foxAnimationArgs} from '../game/fox.js';
 import {scaleFoxChild} from './fox-pose.js';
 import {nameUuid} from '../util/uuid-md5.js';
 import {shadowGeometry} from './shadows.js';
-import {PANDA_VARIANTS} from '../game/panda-variants-1.14.4.js';
+import {PANDA_VARIANTS} from '../game/panda-variants-1.16.5.js';
 import {villagerLayers} from './villager-layers.js';
 import { updateRiptide } from './riptide-layer.js';
 import { EntityEffects, dragonCorpseMatrix } from './entity-effects.js';

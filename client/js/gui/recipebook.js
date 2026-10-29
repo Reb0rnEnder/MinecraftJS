@@ -48,7 +48,7 @@ export class RecipeBookGui {
     if (!this.state.open) this.overlay = null;
     this._sendSettings();
   }
-  _sendSettings() { this.game.send(C.recipeInfoSettings(this.book.open,this.book.filtering,this.book.cookingStates)); }
+  _sendSettings() { this.game.send(C.recipeBookSettings(0,this.book.open,this.book.filtering));for(const [i,key]of ['smelting','blasting','smoking'].entries()){const state=this.book.cookingStates[key];this.game.send(C.recipeBookSettings(i+1,state.open,state.filtering));} }
 
   _gridItems() { return this.opts.slots.slice(1).map((i) => this.screen.container.get(i)); }
 

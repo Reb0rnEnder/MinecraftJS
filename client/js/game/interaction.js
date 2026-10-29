@@ -236,7 +236,7 @@ export class Interaction {
   // the 0.6 slowdown apply and crit particles appear locally; for mobs the server sends the crit animations.
   attackEntity(e) {
     const g = this.game, pl = this.player;
-    g.send(C.useEntity(e.id, 1));
+    g.send(C.useEntity(e.id, 1, 0, 0, 0, 0, !!g.player.sneaking));
     if (g.gameMode === 3) return;
     this._attackTargetEntity(e);
     this.resetCooldown();
@@ -503,9 +503,9 @@ export class Interaction {
         const e = t.entity;
         const p = g.entities.interp(e, 1);
         // interactWithEntity (INTERACT_AT): armor stands (not markers) take it client-side
-        g.send(C.useEntity(e.id, 2, t.hit[0] - p.x, t.hit[1] - p.y, t.hit[2] - p.z, hand));
+        g.send(C.useEntity(e.id, 2, t.hit[0] - p.x, t.hit[1] - p.y, t.hit[2] - p.z, hand, !!g.player.sneaking));
         if (e.kind === 'armorstand' && !((e.armorFlags || 0) & 16)) return;
-        g.send(C.useEntity(e.id, 0, 0, 0, 0, hand)); // interactWithEntity (INTERACT)
+        g.send(C.useEntity(e.id, 0, 0, 0, 0, hand, !!g.player.sneaking)); // interactWithEntity (INTERACT)
         // EntityMinecartCommandBlock.processInitialInteract: GuiEditCommandBlockMinecart (COMMAND 12, LAST_OUTPUT 13)
         if (e.kind === 'minecart' && e.cartType === 6 && g.canUseCommandBlock()) { g.screens.open(new CommandMinecartScreen(g, e, 12, 13)); return; }
         if (g.entities.isInteractive(e, stack)) return;

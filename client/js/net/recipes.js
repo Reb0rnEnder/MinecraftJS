@@ -11,6 +11,7 @@ export function readRecipes(r,protocol){
   else if(['smelting','blasting','smoking','campfire_cooking'].includes(kind)){
    data.group=r.string();data.ingredient=ingredient();data.result=r.slot();data.experience=r.f32();data.cookingTime=r.varint();
   }else if(protocol!==404&&kind==='stonecutting'){data.group=r.string();data.ingredient=ingredient();data.result=r.slot();}
+  else if(protocol>=735&&kind==='smithing'){data.base=ingredient();data.addition=ingredient();data.result=r.slot();}
   else if(!kind.startsWith('crafting_special_'))throw Error('Unsupported recipe serializer '+type);
   return {type,recipeId,data};
  });
