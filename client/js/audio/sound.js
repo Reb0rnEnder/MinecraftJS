@@ -131,6 +131,9 @@ const EVENT_SOUNDS = {
   1031: ['block.anvil.land', 0.3, () => r() * 0.1 + 0.9], 1033: ['block.chorus_flower.grow', 1, () => 1],
   1034: ['block.chorus_flower.death', 1, () => 1], 1035: ['block.brewing_stand.brew', 1, () => 1],
   1036: ['block.iron_trapdoor.close', 1, () => r() * 0.1 + 0.9], 1037: ['block.iron_trapdoor.open', 1, () => r() * 0.1 + 0.9],
+  1039: ['entity.phantom.bite', 0.3, () => r() * 0.1 + 0.9, 'hostile'],
+  1040: ['entity.zombie.converted_to_drowned', 2, () => (r() - r()) * 0.2 + 1, 'neutral'],
+  1041: ['entity.husk.converted_to_zombie', 2, () => (r() - r()) * 0.2 + 1, 'neutral'],
   2002: ['entity.splash_potion.break', 1, () => r() * 0.1 + 0.9], 2007: ['entity.splash_potion.break', 1, () => r() * 0.1 + 0.9],
 };
 // RenderGlobal.broadcastSound (heard from anywhere)
@@ -404,16 +407,15 @@ export class SoundManager {
     const gl = GLOBAL_EVENTS[p.effectId];
     if (gl) { this.play(gl, cx, cy, cz, p.effectId === 1028 ? 5 : 1, 1, { global: true }); return; }
     const e = EVENT_SOUNDS[p.effectId];
-    if (e) this.play(e[0], cx, cy, cz, e[1], e[2]());
+    if (e) this.play(e[0], cx, cy, cz, e[1], e[2](), { category: e[3] });
   }
 
   async playRecord(itemId, x, y, z) {
     if (this.record) { this.record.voice.stop(); this.record = null; }
     if (!itemId) return;
-    const names = { 2256: '13', 2257: 'cat', 2258: 'blocks', 2259: 'chirp', 2260: 'far', 2261: 'mall', 2262: 'mellohi', 2263: 'stal', 2264: 'strad', 2265: 'ward', 2266: '11', 2267: 'wait' };
-    const n = names[itemId];
+    const item=this.game.items.name(itemId),n=item.startsWith('music_disc_')?item.slice(11):null;
     if (!n) return;
-    this.game.hud.setActionBar('§dNow playing: C418 - ' + n);
+    this.game.hud.setActionBar(tr('record.nowPlaying',tr('item.minecraft.music_disc_'+n+'.desc')));
     this.record = await this.play('music_disc.' + n, x, y, z, 4, 1, { category: 'record' });
   }
 
