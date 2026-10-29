@@ -725,6 +725,9 @@ export class LocalPlayer {
     this.prevCameraYaw = this.cameraYaw; this.prevCameraPitch = this.cameraPitch;
     const result = { abilitiesChanged: false };
     this.ticksExisted++;
+    // Player.tick establishes spectator collision/ground state before local input and travel.
+    this.noClip = this.spectator;
+    if (this.spectator) this.onGround = false;
     if(this.sleeping){this.motionX=this.motionY=this.motionZ=0;this.pitch=0;this.updateSize(world);return result;}
 
     // Entity.onEntityUpdate (before EntityPlayerSP.onLivingUpdate): water pushes and the in-water / in-lava state
@@ -746,7 +749,7 @@ export class LocalPlayer {
     const sneakKey = !!input.sneak;
     this.sneaking = sneakKey;
     this.updateSize(world);
-    if (this.crouching || this.pose === 'swimming' && !this.inWater) { moveStrafe = f32(moveStrafe * 0.3); moveForward = f32(moveForward * 0.3); }
+    if (!this.spectator && (sneakKey || this.crouching || this.pose === 'swimming' && !this.inWater)) { moveStrafe = f32(moveStrafe * 0.3); moveForward = f32(moveForward * 0.3); }
     if (this.usingItem && !this.ridingEntity) { moveStrafe = f32(moveStrafe * F.p02b); moveForward = f32(moveForward * F.p02b); this.sprintToggleTimer = 0; }
     this._moveVec = [moveStrafe, moveForward]; // MovementInput.getMoveVector
     this.autoJump = !!input.autoJump;
@@ -823,7 +826,6 @@ export class LocalPlayer {
     moveStrafe = f32(moveStrafe * F.p098);
     moveForward = f32(moveForward * F.p098);
 
-    this.noClip = this.spectator;
     this.moveEntityWithHeading(world, moveStrafe, moveForward);
 
     if (this.onGround && this.flying && !this.spectator) {
