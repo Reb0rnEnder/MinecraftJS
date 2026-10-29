@@ -10,7 +10,7 @@ import {Chunk} from '../client/js/world/chunk.js';
 import {initBlocks,blocksByName} from '../client/js/world/blocks.js';
 import {C} from '../client/js/net/packets.js';
 const data=Object.fromEntries(['blocks','items','blockCollisionShapes','creative','foods','materials','enchantments'].map(n=>[n,JSON.parse(readFileSync(new URL('../client/data/'+n+'.json',import.meta.url)))]));
-initBlocks(data.blocks,data.blockCollisionShapes);const native=mcassets.MC_VERSION==='1.13.2';
+initBlocks(data.blocks,data.blockCollisionShapes);const native=!['1.8.9','1.12.2'].includes(mcassets.MC_VERSION);
 const state=n=>native?blocksByName[n].defaultState:blocksByName[n].id<<4;
 const assets={data,translate:k=>k,itemsById:new Map([...data.blocks,...data.items].map(d=>[d.id,d])),itemsByName:new Map([...data.blocks,...data.items].map(d=>[d.name,d]))};
 function fixture(mode,itemName,blockName='stone'){
