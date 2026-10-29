@@ -1,5 +1,5 @@
 import {DYE_TEXT_COLORS} from './block-entity-data-1.14.4.js';
-export const isSign = name => /^(oak|spruce|birch|jungle|acacia|dark_oak)_(wall_)?sign$/.test(name);
+export const isSign = name => /^(oak|spruce|birch|jungle|acacia|dark_oak|crimson|warped)_(wall_)?sign$/.test(name);
 export const signWood = name => name.replace(/_(wall_)?sign$/,'');
 export function signTextColor(color='black') {
   const rgb=DYE_TEXT_COLORS[color]??DYE_TEXT_COLORS.black;

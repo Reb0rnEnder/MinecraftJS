@@ -20,6 +20,10 @@ establish correct gameplay. The build validates 17,112 block states, extracts
 
 ## Implemented and checked
 
+- Crimson/warped signs are recognized as sign block entities; ordinary sign
+  text tracks ambient light updates. Resource-pack HTTP requests identify this
+  target as 1.16.5. Shared sign lighting is backported through 1.8.9.
+
 - Protocol: compressed login, binary UUIDs, dimension/biome registries, padded
   terrain palettes, independent lighting, entity equipment/metadata, teleport
   confirmation and keepalives. A real Chromium client joins the running Java

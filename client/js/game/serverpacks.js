@@ -2,6 +2,7 @@
 // HttpUtil.downloadResourcePack). The pack is fetched through the proxy (most pack hosts send no CORS headers), checked
 // against the server's SHA-1, cached under server-packs/<sha1 of the url> (the newest 10 are kept) and put on top of
 // the user's packs until the player leaves the server.
+import { VANILLA_UI } from '../gui/vanilla-layout.js';
 import { tr } from '../gui/i18n.js';
 import { Screen } from '../gui/screens/manager.js';
 import { ConfirmScreen } from '../gui/screens/menus.js';
@@ -125,7 +126,7 @@ export class ServerPacks {
     screen.resetProgressAndMessage(tr('resourcepack.downloading'));
     screen.displayLoadingString(tr('resourcepack.requesting'));
     const g = this.game;
-    const headers = { 'X-Minecraft-Username': g.username || '', 'X-Minecraft-UUID': (g.playerUuid || '').replace(/-/g, ''), 'X-Minecraft-Version': '1.15.2' };
+    const headers = { 'X-Minecraft-Username': g.username || '', 'X-Minecraft-UUID': (g.playerUuid || '').replace(/-/g, ''), 'X-Minecraft-Version': VANILLA_UI.version };
     const route = proxyRoute('/pack?url=' + encodeURIComponent(url));
     let res = null;
     if (route) { try { res = await fetch(route, { headers }); } catch (e) { res = null; } }
