@@ -1,3 +1,4 @@
+import {detachRemovedEntities} from './riding-lifecycle.js';
 import {placeLeashKnot} from './leash-knot.js';
 import { tickFallingBlock } from './falling-block.js';
 import { tickEntityEffects, tickDragonDeath, isDragon } from '../render/entity-effects.js';
@@ -186,6 +187,7 @@ export class EntityManager {
   }
 
   destroy(ids) {
+    detachRemovedEntities(this, ids);
     for (const id of ids) {
       const e = this.map.get(id);
       if (!e) continue;
