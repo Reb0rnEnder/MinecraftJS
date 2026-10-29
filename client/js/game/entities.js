@@ -1,3 +1,4 @@
+import {detachRemovedEntities} from './riding-lifecycle.js';
 import {applyNetherMetadata} from './nether-metadata.js';
 import {applyFoxFlags,tickFox} from './fox.js';
 import {tickBeeSound,stopBeeSound} from './bee-sound.js';
@@ -252,6 +253,7 @@ export class EntityManager {
   }
 
   destroy(ids) {
+    detachRemovedEntities(this, ids);
     for (const id of ids) {
       const e = this.map.get(id);
       if (!e) continue;
