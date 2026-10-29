@@ -87,7 +87,8 @@ export class FontRenderer {
     let w = 0;
     let bold = false;
     for (let i = 0; i < text.length; i++) {
-      const ch = text[i];
+      const ch = String.fromCodePoint(text.codePointAt(i));
+      if (ch.length === 2) i++;
       if (ch === '§' && i + 1 < text.length) {
         const code = text[i + 1].toLowerCase();
         if (code === 'l') bold = true;
@@ -121,7 +122,8 @@ export class FontRenderer {
     const startX = x;
     const ascii = this.assets.texture(this.texPath);
     for (let i = 0; i < text.length; i++) {
-      let ch = text[i];
+      let ch = String.fromCodePoint(text.codePointAt(i));
+      if (ch.length === 2) i++;
       if (ch === '§' && i + 1 < text.length) {
         const code = text[i + 1].toLowerCase();
         const idx = '0123456789abcdef'.indexOf(code);

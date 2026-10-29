@@ -13,7 +13,7 @@ function texture(assets,key,image) {
  return assets.textures.get(key)||assets.makeTexture(key,image.width,image.height,image.data,{filter:'nearest'});
 }
 export function bitmapProvider(assets,def,image,key) {
- const rows=def.chars;if(!rows?.length||!rows[0]?.length||rows.some(s=>s.length!==rows[0].length))throw new Error('Invalid bitmap character rows');
+ const rows=def.chars?.map(row=>Array.from(row));if(!rows?.length||!rows[0]?.length||rows.some(s=>s.length!==rows[0].length))throw new Error('Invalid bitmap character rows');
  const height=def.height??8,ascent=def.ascent;
  if(!Number.isFinite(height)||height<=0||!Number.isFinite(ascent)||ascent>height)throw new Error('Invalid bitmap height/ascent');
  const cw=Math.floor(image.width/rows[0].length),ch=Math.floor(image.height/rows.length),scale=height/ch,glyphs=new Map();
@@ -31,7 +31,8 @@ function legacyProvider(assets,def,sizes) {
  const cache=new Map(),images=new Map();
  return {type:'legacy_unicode',get:ch=>{
   if(cache.has(ch))return cache.get(ch);
-  const code=ch.charCodeAt(0),n=sizes[code],left=n>>4,right=(n&15)+1;
+  const code=ch.codePointAt(0);if(code>0xffff)return null;
+  const n=sizes[code],left=n>>4,right=(n&15)+1;
   if(!n||left>=right){cache.set(ch,null);return null;}
   const page=(code>>8).toString(16).padStart(2,'0'),id=location(def.template.replace('%s',page),'textures/');
   const glyph={advance:Math.floor((right-left)/2)+1,x:0,y:0,width:(right-left)/2,height:8,
@@ -69,7 +70,7 @@ export function trueTypeProvider(assets,def,bytes,key) {
   if(skipped.has(ch))return null;if(cache.has(ch))return cache.get(ch);
   let glyph=null;
   try {
-   const pointer=instance.glyph(ch.charCodeAt(0),size,over,...shift);
+   const pointer=instance.glyph(ch.codePointAt(0),size,over,...shift);
    if(pointer){const m=new Float32Array(instance.memory.buffer,instance.info(),8),width=m[0],height=m[1],alpha=new Uint8Array(instance.memory.buffer,pointer,width*height).slice();
     let tex;glyph={advance:m[4],x:m[2],y:m[3],width:width/over,height:height/over,boldOffset:1,shadowOffset:1,texture:()=>tex||(tex=bake(glyph,{width,height,alpha}))};}
   }catch(error){console.warn('Unable to rasterize TTF glyph',ch,error.message);}
