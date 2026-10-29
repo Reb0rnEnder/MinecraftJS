@@ -1,3 +1,4 @@
+import { frozenFraction, FREEZING_UUID } from '../world/powder-snow.js';
 // Port of vanilla 1.13.2 player movement physics (EntityPlayerSP / EntityPlayer / EntityLivingBase / Entity).
 import { getBlock, getStateProperties } from '../world/blocks.js';
 import { getFluidState, fluidHeightAt } from '../world/fluids.js';
@@ -99,6 +100,7 @@ export class LocalPlayer {
     this.eyesInWater = false; this.waterVisionTicks = 0;
     this.inWater = false; this.inLava = false; this.inWeb = false;
     this.fallDistance = 0;
+    this.frozenTicks = 0; this.canWalkPowderSnow = false; this.powderSnowStuck = false;
     this.jumpTicks = 0;
     this.sneaking = false; this.sprinting = false; this.swimming = false;
     this.pose = 'standing'; this.crouching = false;
@@ -213,7 +215,8 @@ export class LocalPlayer {
   aiMoveSpeed() {
     let base = this.speedAttr.base;
     let v = base;
-    const mods = this.speedAttr.modifiers.filter((m) => m.uuid !== SPRINT_UUID);
+    const mods = this.speedAttr.modifiers.filter((m) => m.uuid !== SPRINT_UUID && String(m.uuid).toLowerCase() !== FREEZING_UUID);
+    if (this.freezingSlow) v += Math.fround(-.05 * frozenFraction(this.frozenTicks));
     for (const m of mods) if (m.operation === 0) v += m.amount;
     let v2 = v;
     for (const m of mods) if (m.operation === 1) v2 += v * m.amount;
@@ -367,6 +370,11 @@ export class LocalPlayer {
     if (this.noClip) {
       this.setPosition(this.x + x, this.y + y, this.z + z);
       return;
+    }
+    if (this.powderSnowStuck) {
+      this.powderSnowStuck = false;
+      x *= Math.fround(.9); y *= 1.5; z *= Math.fround(.9);
+      this.motionX = this.motionY = this.motionZ = 0;
     }
     if (this.inWeb) {
       this.inWeb = false;
@@ -576,6 +584,7 @@ export class LocalPlayer {
     for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) for (let z = z0; z <= z1; z++) {
       const b = getBlock(world.getState(x, y, z));
       if (!b || b.id === 0) continue;
+      if (b.name === 'powder_snow' && getBlock(world.getState(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z))).name === 'powder_snow') { this.powderSnowStuck = true; this.fallDistance = 0; }
       if (b.name === 'cobweb') this.inWeb = true;
       else if (b.name === 'honey_block') {
         const edge=.4375+this.width/2;
@@ -719,7 +728,8 @@ export class LocalPlayer {
         if (this.sneaking && this.motionY < 0 && getBlock(world.getState(Math.floor(this.x),Math.floor(this.y),Math.floor(this.z))).name!=='scaffolding') this.motionY = 0;
       }
       this.moveEntity(world, this.motionX, this.motionY, this.motionZ);
-      if ((this.collidedH || this.jumping) && ladder) this.motionY = 0.2;
+      const powderClimb = this.canWalkPowderSnow && getBlock(world.getState(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z))).name === 'powder_snow';
+      if ((this.collidedH || this.jumping) && (ladder || powderClimb)) this.motionY = 0.2;
       if (this.levitation >= 0) {
         this.motionY += (0.05 * (this.levitation + 1) - this.motionY) * 0.2;
       } else if (!world.isLoaded(Math.floor(this.x), Math.floor(this.z))) {
@@ -742,6 +752,7 @@ export class LocalPlayer {
     this.prevCameraYaw = this.cameraYaw; this.prevCameraPitch = this.cameraPitch;
     const result = { abilitiesChanged: false };
     this.ticksExisted++;
+    this.freezingSlow = !getBlock(world.getState(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z)))?.isAir;
     // Player.tick establishes spectator collision/ground state before local input and travel.
     this.noClip = this.spectator;
     if (this.spectator) this.onGround = false;

@@ -1,3 +1,4 @@
+import { usingSpyglass } from '../game/spyglass.js';
 // First-person hand/item rendering (port of vanilla 1.12 ItemRenderer.renderItemInFirstPerson, both hands).
 import { playerModel } from './entity-models.js';
 import { applyTransform } from './item-renderer.js';
@@ -95,7 +96,7 @@ export class HandRenderer {
   // ItemRenderer.renderItemInFirstPerson (1.9+): both hands. Returns { draw(device) } or null.
   prepare(partial) {
     const g = this.game, pl = g.player, it = g.interaction;
-    if (g.sleeping) return null;
+    if (g.sleeping || usingSpyglass(g)) return null;
     if (this.skinDirty) this.reset();
     // the hand renders with a fixed 70-degree FOV independent of the game FOV
     mat4.perspective(this.proj, 70 * D2R, platform().width / platform().height, 0.05, 10);

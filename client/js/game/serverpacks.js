@@ -2,9 +2,11 @@
 // HttpUtil.downloadResourcePack). The pack is fetched through the proxy (most pack hosts send no CORS headers), checked
 // against the server's SHA-1, cached under server-packs/<sha1 of the url> (the newest 10 are kept) and put on top of
 // the user's packs until the player leaves the server.
+import { VANILLA_UI } from '../gui/vanilla-layout.js';
+import { chatToLegacy } from '../gui/chat.js';
 import { tr } from '../gui/i18n.js';
 import { Screen } from '../gui/screens/manager.js';
-import { ConfirmScreen } from '../gui/screens/menus.js';
+import { ConfirmScreen, DisconnectedScreen } from '../gui/screens/menus.js';
 import { platform } from '../platform/platform.js';
 import { proxyRoute } from '../net/proxies.js';
 import { sha1 } from '../util/mccrypto.js';
@@ -50,7 +52,7 @@ export class ServerPacks {
   }
 
   // NetHandlerPlayClient.handleResourcePack
-  handle(url, hash, send) {
+  handle(url, hash, send, forced = false, promptMessage = null) {
     const g = this.game;
     if (!this._validate(url)) { send(PACK_STATUS.FAILED_DOWNLOAD); return; }
     // level:// packs belong to the integrated server's world; there is none here
@@ -58,16 +60,26 @@ export class ServerPacks {
     const entry = this._serverEntry();
     const mode = entry ? entry.resourceMode || 'prompt' : 'prompt';
     if (entry && mode === 'enabled') { send(PACK_STATUS.ACCEPTED); this._download(url, hash, send); return; }
-    if (entry && mode !== 'prompt') { send(PACK_STATUS.DECLINED); return; }
+    if (entry && mode !== 'prompt' && !forced) { send(PACK_STATUS.DECLINED); return; }
     const conn = g.conn;
     g.screens.open(new ConfirmScreen(g, (yes) => {
       if (g.conn !== conn) return;
       const e = this._serverEntry();
-      if (e) { e.resourceMode = yes ? 'enabled' : 'disabled'; g.settings.save(); }
+      if (e && (yes || !forced)) { e.resourceMode = yes ? 'enabled' : 'disabled'; g.settings.save(); }
       send(yes ? PACK_STATUS.ACCEPTED : PACK_STATUS.DECLINED);
       g.screens.open(null);
       if (yes) this._download(url, hash, send);
-    }, tr('multiplayer.texturePrompt.line1'), tr('multiplayer.texturePrompt.line2')));
+      else if (forced) {
+        g.disconnect(true);
+        g.screens.open(new DisconnectedScreen(g, tr('disconnect.lost'), tr('multiplayer.requiredTexturePrompt.disconnect')));
+      }
+    }, tr(forced ? 'multiplayer.requiredTexturePrompt.line1' : 'multiplayer.texturePrompt.line1'),
+    this._promptText(forced, promptMessage), tr(forced ? 'gui.proceed' : 'gui.yes'), tr(forced ? 'menu.disconnect' : 'gui.no')));
+  }
+
+  _promptText(forced, promptMessage) {
+    const message = forced ? '§e§l' + tr('multiplayer.requiredTexturePrompt.line2') + '§r' : tr('multiplayer.texturePrompt.line2');
+    return promptMessage == null ? message : tr('multiplayer.texturePrompt.serverPrompt', message, chatToLegacy(promptMessage));
   }
 
   // validateResourcePackUrl: http, https or level:// ... /resources.zip
@@ -125,7 +137,7 @@ export class ServerPacks {
     screen.resetProgressAndMessage(tr('resourcepack.downloading'));
     screen.displayLoadingString(tr('resourcepack.requesting'));
     const g = this.game;
-    const headers = { 'X-Minecraft-Username': g.username || '', 'X-Minecraft-UUID': (g.playerUuid || '').replace(/-/g, ''), 'X-Minecraft-Version': '1.15.2' };
+    const headers = { 'X-Minecraft-Username': g.username || '', 'X-Minecraft-UUID': (g.playerUuid || '').replace(/-/g, ''), 'X-Minecraft-Version': VANILLA_UI.version };
     const route = proxyRoute('/pack?url=' + encodeURIComponent(url));
     let res = null;
     if (route) { try { res = await fetch(route, { headers }); } catch (e) { res = null; } }

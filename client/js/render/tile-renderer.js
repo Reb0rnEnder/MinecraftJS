@@ -1,3 +1,4 @@
+import { isScoping } from '../game/spyglass.js';
 // Tile entity (block entity) rendering: chests, signs, skulls, banners, enchanting book, beacon beam, end portal,
 // beds and shulker boxes.
 import { composeBanner, bannerLayers, buildBanner, bannerSwing } from './banner.js';
@@ -11,7 +12,7 @@ import { Node, material } from '../gfx/scene.js';
 import { resolveState } from '../world/blockstates.js';
 import { Pistons } from '../game/pistons.js';
 import { JavaRandom } from '../util/jrandom.js';
-import {isSign,signWood,signTextColor} from '../game/signs-1.14.4.js';
+import {isSign,signWood,glowingSignStyle} from '../game/signs-1.14.4.js';
 import {chatToLegacy} from '../gui/chat.js';
 import {applyTransform} from './item-renderer.js';
 const FLOWER_POT = {
@@ -456,17 +457,26 @@ export class TileEntityRenderer {
         const lines = t.lines || this.signs.get(key(t.x, t.y, t.z)) || ['', '', '', ''];
         if (lines.some((l) => l)) {
           const font = g.gui.font;
+          const camera = g.renderer.camPos;
+          const dist = (t.x + .5 - camera[0]) ** 2 + (t.y + .5 - camera[1]) ** 2 + (t.z + .5 - camera[2]) ** 2;
+          const style = glowingSignStyle(t.data?.Color, !!t.data?.GlowingText, dist, isScoping(g));
+          t.signOutlined = style.outlineColor !== undefined;
+          t.signTextParams = [];
           const items = [];
           for (let j = 0; j < 4; j++) {
             const line = lines[j] || '';
-            if (line) items.push({ text: line, x: -font.width(line) / 2, y: j * 10 - 20, color: signTextColor(t.data?.Color) });
+            if (line) items.push({ text: line, x: -font.width(line) / 2, y: j * 10 - 20, ...style });
           }
           t.textMeshes = buildTextMeshes(this.device, font, items);
           const tn = new Node();
           const f3 = 0.015625 * f;
           tn.position.set(0, 0.5 * f, 0.07 * f + 0.001);
           tn.scale.set(f3, -f3, f3);
-          for (const m of t.textMeshes) tn.addDrawable(m.mesh, material('color', m.tex || g.gui.white, colorParams(1, 1, 1, 1, 0.05, 1), { blend: 'none' }));
+          for (const m of t.textMeshes) {
+            const params = colorParams(1, 1, 1, 1, 0.05, 1);
+            t.signTextParams.push(params);
+            tn.addDrawable(m.mesh, material('color', m.tex || g.gui.white, params, { blend: 'none' }));
+          }
           inner.add(tn);
         }
         inner.add(sc); outer.add(inner); obj.add(outer);
@@ -698,6 +708,11 @@ export class TileEntityRenderer {
       const top = t.type === 'beacon' ? 256 : t.y + 1.5;
       const seen = t.type === 'beacon' ? aabbInFrustum(g.renderer.frustum, t.x, t.y, t.z, t.x + 1, top, t.z + 1) : g.renderer.boxVisible(t.x - 0.25, t.y, t.z - 0.25, t.x + 1.25, top, t.z + 1.25);
       if (!seen) { if (t.obj) t.obj.visible = false; continue; }
+      if (t.built && t.type === 'sign' && t.data?.GlowingText) {
+        const distance = (t.x + .5 - camPos[0]) ** 2 + (t.y + .5 - camPos[1]) ** 2 + (t.z + .5 - camPos[2]) ** 2;
+        const outlined = glowingSignStyle(t.data.Color, true, distance, isScoping(g)).outlineColor !== undefined;
+        if (outlined !== t.signOutlined) this._rebuild(t);
+      }
       if (!t.built) this._build(t);
       if (!t.obj) continue;
       t.obj.visible = true;
@@ -709,6 +724,11 @@ export class TileEntityRenderer {
           blk = Math.max(blk, g.world.getBlockLight(t.x + ox, t.y + oy, t.z + oz) - 1);
         }
         t.mat.params.setLight(sky, blk);
+        if (t.type === 'sign' && t.signTextParams) {
+          const index = ((Math.max(0, Math.min(15, sky)) << 4) + Math.max(0, Math.min(15, blk))) * 4;
+          for (const params of t.signTextParams) for (let i = 0; i < 3; i++)
+            params[i] = t.data?.GlowingText ? 1 : g.renderer.lightmapData[index + i] / 255;
+        }
       }
       if(t.type==='bell' && t.bellPart){
         const time=(t.bellTime||0)+partial;

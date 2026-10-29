@@ -1,3 +1,4 @@
+import { powderSnowCollision } from './powder-snow.js';
 import {BiomeZoom} from './biome-zoom.js';
 import {scaffoldingCollision} from './scaffolding.js';
 import {decodeChunkData756} from './chunk-1.17.1.js';
@@ -378,7 +379,7 @@ export class World {
     if (def.name === 'moving_piston') return;
     // TileEntityShulkerBox: the box grows with the opening lid
     if (this.shulkerCollider && def.name.endsWith('_shulker_box')) { this.shulkerCollider(x, y, z, state, out); return; }
-    const shapeBoxes = def.name === 'scaffolding' ? scaffoldingCollision(getStateProperties(state), y, mover) : staticCollisionBoxes(state);
+    const shapeBoxes = def.name === 'powder_snow' ? powderSnowCollision(y, mover) : def.name === 'scaffolding' ? scaffoldingCollision(getStateProperties(state), y, mover) : staticCollisionBoxes(state);
     for (const bx of shapeBoxes) out.push([x + bx[0], y + bx[1], z + bx[2], x + bx[3], y + bx[4], z + bx[5]]);
     return;
     const m = state & 15;

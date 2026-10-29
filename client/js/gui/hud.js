@@ -1,3 +1,5 @@
+import { frozenFraction } from '../world/powder-snow.js';
+import { isScoping, renderSpyglass } from '../game/spyglass.js';
 import {debugLeft,packetRates} from './debug-overlay.js';
 import {VANILLA_UI} from './vanilla-layout.js';
 import {fireOverlayVertices,fireOverlayProjection} from '../render/fire-overlay.js';
@@ -333,13 +335,21 @@ export class Hud {
     }
     const distortion=g.settings.screenEffectScale??1;
     if(g.effects.has(9)&&distortion<1&&env.portal>0){const strength=env.portal*(1-distortion),size=2-strength,tex=gui.tex('misc/nausea.png');if(tex){gui.setBlend('add');gui.quad(tex,W*(1-size)/2,H*(1-size)/2,W*(1+size)/2,H*(1+size)/2,0,0,1,1,[.2*strength,.4*strength,.2*strength,1]);gui.setBlend('alpha');}}
+    // Native scope zoom uses frame time, independent of GUI visibility.
+    this.scopeScale = (this.scopeScale ?? 0.5) + (1.125 - (this.scopeScale ?? 0.5)) * Math.min(1, 0.5 * (g.deltaFrameTime ?? 1));
+    if (!isScoping(g)) this.scopeScale = 0.5;
     if (g.hideGui) return;
 
     if (g.settings.fancyGraphics) this.renderVignette(gui);
     const helmet = g.inventory.armor[3];
-    if (g.thirdPerson === 0 && helmet && g.items.name(helmet.id) === 'carved_pumpkin') {
+    if (isScoping(g)) renderSpyglass(gui, this.scopeScale);
+    else if (g.thirdPerson === 0 && helmet && g.items.name(helmet.id) === 'carved_pumpkin') {
       const t = gui.tex('misc/pumpkinblur.png');
       if (t) gui.quad(t, 0, 0, W, H, 0, 0, 1, 1, [1, 1, 1, 1]);
+    }
+    if (g.player.frozenTicks > 0) {
+      const tex = gui.tex('misc/powder_snow_outline.png');
+      if (tex) gui.quad(tex, 0, 0, W, H, 0, 0, 1, 1, [1, 1, 1, frozenFraction(g.player.frozenTicks)]);
     }
     if (env.portal > 0 && !g.effects.has(9)) this.renderPortalOverlay(gui, env.portal);
 
@@ -547,7 +557,7 @@ export class Hud {
     const hardcore = g.hardcore ? 5 : 0;
     for (let i = Math.ceil((maxHealth + absorption) / 2) - 1; i >= 0; i--) {
       let u = 16;
-      if (g.effects.has(19)) u += 36; else if (g.effects.has(20)) u += 72;
+      if (g.effects.has(19)) u += 36; else if (g.effects.has(20)) u += 72; else if (g.player.frozenTicks >= 140) u += 126;
       const b0 = flash ? 1 : 0;
       const row = Math.ceil((i + 1) / 10) - 1;
       const x = left + (i % 10) * 8;
@@ -556,12 +566,12 @@ export class Hud {
       if (i === regen) y -= 2;
       gui.blit(ICONS, x, y, 16 + b0 * 9, 9 * hardcore, 9, 9);
       if (flash) {
-        if (i * 2 + 1 < lastHealth) gui.blit(ICONS, x, y, u + 54, 9 * hardcore, 9, 9);
-        if (i * 2 + 1 === lastHealth) gui.blit(ICONS, x, y, u + 63, 9 * hardcore, 9, 9);
+        if (i * 2 + 1 < lastHealth) gui.blit(ICONS, x, y, u + (u === 142 ? 36 : 54), 9 * hardcore, 9, 9);
+        if (i * 2 + 1 === lastHealth) gui.blit(ICONS, x, y, u + (u === 142 ? 45 : 63), 9 * hardcore, 9, 9);
       }
       if (absLeft > 0) {
-        if (absLeft === absorption && absorption % 2 === 1) gui.blit(ICONS, x, y, u + 153, 9 * hardcore, 9, 9);
-        else gui.blit(ICONS, x, y, u + 144, 9 * hardcore, 9, 9);
+        if (absLeft === absorption && absorption % 2 === 1) gui.blit(ICONS, x, y, (g.effects.has(20) ? 133 : 169), 9 * hardcore, 9, 9);
+        else gui.blit(ICONS, x, y, (g.effects.has(20) ? 124 : 160), 9 * hardcore, 9, 9);
         absLeft -= 2;
       } else {
         if (i * 2 + 1 < health) gui.blit(ICONS, x, y, u + 36, 9 * hardcore, 9, 9);

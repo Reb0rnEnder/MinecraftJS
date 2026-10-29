@@ -20,6 +20,16 @@ export function buildTextMeshes(device, font, items, rects = [], z = 0) {
   for (const r of rects) push(null, r.x0, r.y0, r.x1, r.y1, 0, 0, 1, 1, r.color, false, z + 0.01);
   for (const it of items) {
     const { quads } = font.layout(it.text, it.x, it.y, it.color === undefined ? 0xffffff : it.color, !!it.shadow, it.alpha === undefined ? 1 : it.alpha);
+    if (it.outlineColor !== undefined) {
+      const rgb = it.outlineColor, color = [(rgb >> 16 & 255) / 255, (rgb >> 8 & 255) / 255, (rgb & 255) / 255, 1];
+      for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) {
+        if (!dx && !dy) continue;
+        for (const q of quads) {
+          color[3] = q.color[3];
+          push(q.tex || null, q.x0 + dx, q.y0 + dy, q.x1 + dx, q.y1 + dy, q.u0 || 0, q.v0 || 0, q.u1 || 1, q.v1 || 1, color, q.skew, z, (q.skewOrigin ?? q.y0) + dy);
+        }
+      }
+    }
     let i = 0;
     for (const q of quads) {
       // shadow glyphs sit slightly behind the text to avoid z-fighting

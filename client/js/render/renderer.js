@@ -238,6 +238,7 @@ export class Renderer {
       [fogR,fogG,fogB]=water.color;fogMode=3;fogDensity=water.density;
     }
     else if (state.inLava) { fogR = 0.6; fogG = 0.1; fogB = 0; fogMode = 0; fogStart=state.fireResistance?0:.25;fogEnd=state.fireResistance?3:1; }
+    else if (state.inPowderSnow) { fogR = .623; fogG = .734; fogB = .785; fogMode = 0; fogStart = state.spectator ? -8 : 0; fogEnd = state.spectator ? renderDistBlocks * .5 : 2; }
     else if (dimension === -1) { fogStart = 0; fogEnd = renderDistBlocks * 0.5; }
     if(!state.underwater)this.waterFogState=null;
     if (state.blindness) { fogMode = 0; fogStart = 0; fogEnd = 5; fogR *= 0.1; fogG *= 0.1; fogB *= 0.1; }

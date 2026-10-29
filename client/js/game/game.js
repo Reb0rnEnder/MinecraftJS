@@ -1,3 +1,4 @@
+import { isScoping } from './spyglass.js';
 import {ResourceLoadingScreen} from '../gui/screens/loading.js';
 import {SocialInteractionsScreen} from '../gui/screens/social.js';
 import {GameModeSwitcherScreen} from '../gui/screens/gamemode-switcher.js';
@@ -932,7 +933,7 @@ export class Game {
     if (p.entityId === this.entityId) {
       if (p.entityStatus === 2) { this.hurtTime = 10; this.sound.playAtPlayer('entity.player.hurt', 1, 1); }
       else if(p.entityStatus===53||p.entityStatus===54)this.particles.honeyBlockEffect(this.player,p.entityStatus===53?5:10);
-      else if (p.entityStatus === 9) this.player.usingItem = false; // item use finished
+      else if (p.entityStatus === 9) { this.interaction.finishSpyglass(); this.player.usingItem = false; } // item use finished
       else if (p.entityStatus === 22) this.reducedDebug = true;
       else if (p.entityStatus === 23) this.reducedDebug = false;
       else if (p.entityStatus >= 24 && p.entityStatus <= 28) this.permissionLevel = p.entityStatus - 24; // EntityPlayer op level
@@ -966,6 +967,7 @@ export class Game {
   on_entity_metadata(p) {
     if (p.entityId === this.entityId) {
       this.selfMetadata = Object.assign(this.selfMetadata || {}, p.metadata);
+      if (p.metadata[7] !== undefined) this.player.frozenTicks = p.metadata[7];
       const sleepChange=updateSleeping(this,p.metadata,14);
       if(sleepChange==='start')this.screens.open(new SleepScreen(this));
       else if(sleepChange==='stop' && this.screens.current instanceof SleepScreen)this.screens.close();
@@ -1318,7 +1320,7 @@ export class Game {
 
   on_resource_pack_send(p) {
     const conn = this.conn;
-    this.serverPacks.handle(p.url, p.hash, (status) => { if (this.conn === conn) this.send(C.resourcePackStatus(status)); });
+    this.serverPacks.handle(p.url, p.hash, (status) => { if (this.conn === conn) this.send(C.resourcePackStatus(status)); }, p.forced, p.promptMessage);
   }
 
   on_update_entity_nbt() { /* unused by vanilla client */ }
@@ -1592,6 +1594,7 @@ export class Game {
       const chest = this.inventory.armor[2];
       tin.autoJump = this.settings.autoJump;
       tin.elytraUsable = !!(chest && this.items.name(chest.id) === 'elytra' && this.items.damage(chest) < this.items.maxDurability(chest.id) - 1);
+      pl.canWalkPowderSnow = !!this.inventory.armor[0] && this.items.name(this.inventory.armor[0].id) === 'leather_boots';
       pl.depthStrider=this.items.enchantLevel(this.inventory.armor[0],'depth_strider');
       pl.soulSpeed=this.items.enchantLevel(this.inventory.armor[0],'soul_speed');
       if(pl.soulSpeed&&!pl.spectator&&this.ticks%5===0&&pl.motionX!==0&&pl.motionZ!==0){
@@ -1640,6 +1643,7 @@ export class Game {
         f *= 1 - f1 * 0.15;
       }
     }
+    f = isScoping(this) ? 0.1 : 1 + (f - 1) * (this.settings.fovEffectScale ?? 1) ** 2;
     this.prevFovModifier = this.fovModifier;
     this.fovModifier += (f - this.fovModifier) * 0.5;
     if (this.fovModifier > 1.5) this.fovModifier = 1.5;
@@ -1799,6 +1803,7 @@ export class Game {
     P.start('root');
     let dt = now - this.lastFrame;
     this.lastFrame = now;
+    this.deltaFrameTime = Math.max(0, dt / TICK_MS);
     if (dt > 1000) dt = 1000;
     this.tickAccumulator += dt;
     let n = 0;
@@ -1817,7 +1822,7 @@ export class Game {
     if (this.inWorld && this.input.locked && !this.screens.current) {
       this.tutorial.handleMouse(mdx, mdy);
       const s = this.settings.sensitivity * 0.6 + 0.2;
-      const f = s * s * s * 8;
+      const f = s * s * s * (isScoping(this) && !smoothCameraActive(this) ? 1 : 8);
       let dx = mdx * f * 0.15, dy = mdy * f * 0.15 * (this.settings.invertMouse ? -1 : 1);
       if (smoothCameraActive(this)) {
         // EntityRenderer: accumulate input, filtered once per tick and spread over the frames of that tick
@@ -1951,7 +1956,7 @@ export class Game {
       if (this.thirdPerson === 2) { camYaw += 180; camPitch = -camPitch; }
     }
     let fov = this.settings.fov;
-    fov *= 1+((this.prevFovModifier+(this.fovModifier-this.prevFovModifier)*partial)-1)*(this.settings.fovEffectScale??1)**2;
+    fov *= this.prevFovModifier + (this.fovModifier - this.prevFovModifier) * partial;
     const underwater = isPointInFluid(this.world, ex, ey, ez);
     const inLava = isPointInFluid(this.world, ex, ey, ez, true);
     if (underwater || inLava) fov = fov * 60 / 70;
@@ -1966,6 +1971,7 @@ export class Game {
     const rain = this.world.prevRain !== undefined ? this.world.prevRain + (this.world.rainStrength - this.world.prevRain) * partial : this.world.rainStrength;
     r.updateEnvironment({
       worldTime: this.world.timeOfDay, partial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,biomeFog:sampleBiomeFog(this.world,ex,ey,ez),biomeSky:biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).effects?.sky_color,fireResistance:this.effects.has(12),
+      inPowderSnow: getBlock(this.world.getState(Math.floor(ex), Math.floor(ey), Math.floor(ez))).name === 'powder_snow', spectator: pl.spectator,
       camPos: [ex, ey, ez], lookDir: look, dimension: this.dimension, underwater, inLava, biomeId:this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey)), waterVision:pl.waterVision(), conduitPower:this.effects.has(29),
       blindness: this.effects.has(15), nightVision: this.effects.has(16) ? 1 : 0, clouds: this.settings.clouds,
       horizon: String(this.levelType).toLowerCase() === 'flat' ? 0 : 63,

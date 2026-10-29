@@ -21,8 +21,8 @@ are in `tools/port-1.17.1/baseline.json`.
 - Protocol 756 IDs and changed terrain/light masks, inventory state IDs and
   carried stack, explosion counts, registry-grouped tags, particle payloads,
   books, teleport dismount flag, attributes, optional map icons, split
-  titles/combat/border packets, and ping/pong. Required resource-pack fields
-  decode, but their new UI/enforcement behavior is still pending.
+  titles/combat/border packets, and ping/pong. Required resource-pack prompts,
+  custom messages, saved preferences and decline/disconnect behavior are implemented.
 - Frozen-tick base metadata is retained without shifting living/player data
   into the wrong fields. Existing sleep/Riptide consumers use target indices.
 - Goat/axolotl/glow-squid models and variants render, including baby goat horn
@@ -34,6 +34,9 @@ are in `tools/port-1.17.1/baseline.json`.
 - F3 content follows the target-specific native layout, including CH/SH, target
   coordinates, reduced-debug footer and browser/traffic diagnostics. See
   `debug-overlay-version-audit.md` for cross-version checks and limits.
+- Spyglass first-person use/scope/sounds/held model, glowing-sign text and
+  contextual powder-snow collision/movement/freezing visuals are implemented.
+  See `interaction-1.17.1-audit.md` for native methods, evidence and limits.
 - Sound registry/events/sample references are checked against the built assets.
 - Bee anger accessor follows the native renamed field; the same correction was
   backported to 1.16.5. 1.15.2 already uses its correct original accessor.
@@ -77,8 +80,9 @@ probes accept `--host=`, `--port=` and `--duration=`. They do not start a server
 - Nether/End round trips against the 1.17.1 server and all graphics adapters.
 - Full inventory operation matrix: drag/shift/drop, creative search, every menu,
   book limits, reconciliation during concurrent updates and resource-pack prompts.
-- Powder snow, freezing/leather boots/overlays; spyglass view/use/overlay; glowing
-  sign text; light-block markers; candles, dripstone, amethyst/sculk/vibration and
+- Complete live powder-snow/leather-armor/freezing and vehicle sequences, snow
+  particles, third-person spyglass arm/head attachment, and formatted glowing-sign
+  visual comparisons; light-block markers; candles, dripstone, amethyst/sculk/vibration and
   other new state-specific interactions and particles. Native assets/shapes alone
   do not implement these behaviors.
 - Exact goat/axolotl state animations and attachments. Axolotl currently has basic

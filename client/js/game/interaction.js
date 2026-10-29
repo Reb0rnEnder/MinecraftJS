@@ -36,6 +36,7 @@ export class Interaction {
     this.rightClickDelay = 0;
     this.leftClickCounter = 0;
     this.useTicks = 0;
+    this.spyglassUsing = false;
     this.target = null; // { type: 'block', ... } | { type: 'entity', entity, hit }
     this.remoteBreaks = new Map();
     this.swingProgress = 0;
@@ -116,6 +117,7 @@ export class Interaction {
   }
 
   onSlotChanged() {
+    this.finishSpyglass();
     if (this.isHitting) this.resetBreaking();
     this.player.usingItem = false;
   }
@@ -151,6 +153,7 @@ export class Interaction {
       if (!useDown) this.stopUsingItem();
       const held = g.inventory.getHand(this.activeHand);
       const dur = g.items.useDuration(held);
+      if (held && g.items.name(held.id) === 'spyglass' && dur > 0 && this.useTicks >= dur) this.stopUsingItem();
       if (held && ['eat','drink'].includes(g.items.useAction(held)) && dur > 0 && this.useTicks >= dur) {
         // Server finishes eating; stop locally
         this.player.usingItem = false;
@@ -761,6 +764,7 @@ export class Interaction {
         this.player.usingItem = true;
         this.activeHand = hand;
         this.useTicks = 0;
+        if (name === 'spyglass') { this.spyglassUsing = true; g.sound?.playAtPlayer('item.spyglass.use', 1, 1); }
         return true;
       }
       return false;
@@ -801,6 +805,11 @@ export class Interaction {
     return bodyWet||!!(w?.isRainingAt?.(p.x,p.y,p.z)||w?.isRainingAt?.(p.x,p.y+p.height,p.z));
   }
 
+  finishSpyglass() {
+    if (this.spyglassUsing) this.game.sound?.playAtPlayer('item.spyglass.stop_using', 1, 1);
+    this.spyglassUsing = false;
+  }
+
   stopUsingItem() {
     const g = this.game;
     const held = g.inventory.getHand(this.activeHand);
@@ -813,6 +822,7 @@ export class Interaction {
         g.sound?.playAtPlayer('item.trident.riptide_' + Math.min(level, 3), 1, 1);
       }
     }
+    this.finishSpyglass();
     this.player.usingItem = false;
     this.useTicks = 0;
   }

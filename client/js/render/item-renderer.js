@@ -59,7 +59,7 @@ export class ItemRenderer {
   modelFor(item, holder = null, held = false) {
     const g = this.game;
     const name = g.items.name(item.id);
-    let path = 'item/' + (held && name === 'trident' ? 'trident_in_hand' : name);
+    let path = 'item/' + (held && (name === 'trident' || name === 'spyglass') ? name + '_in_hand' : name);
     // ItemOverrideList.applyOverride: the last override whose predicates all reach their values wins
     const ov = this.store.resolveModel(path).overrides;
     if (ov && ov.length) {
