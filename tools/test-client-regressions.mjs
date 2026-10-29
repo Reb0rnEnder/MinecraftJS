@@ -506,8 +506,8 @@ if(native)test('1.13.2: F3 identifies each vanilla dimension immediately after t
   const g=fixture();g.renderer.sections=new Map();g.dirty=new Set();g.inFlight=new Map();g.settings=new Settings();g.world=new World();
   const hud=Object.create(Hud.prototype);hud.game=g;hud.debugTargets={block:null,fluid:null};
   for(const [dim,name] of [[0,'overworld'],[-1,'the_nether'],[1,'the_end']]) {
-    g.dimension=dim;const lines=hud._debugLeft(),index=lines.findIndex(s=>s.startsWith('MultiplayerChunkCache:'));
-    assert.equal(lines[index+1],'minecraft:'+name+' FC: n/a');
+    g.dimension=dim;const lines=hud._debugLeft(),index=lines.findIndex(s=>/^(MultiplayerChunkCache:|Client Chunk Cache:|Chunks\[C\])/.test(s));
+    assert.equal(lines[index+1],'minecraft:'+name+' FC: '+(version==='1.13.2'?'n/a':'0'));
   }
   g.reducedDebug=true;assert.ok(!hud._debugLeft().some(s=>s.includes(' FC: ')),'reduced-debug mode omits the dimension section like the jar');
 });

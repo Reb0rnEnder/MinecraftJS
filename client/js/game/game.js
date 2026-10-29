@@ -698,6 +698,7 @@ export class Game {
   on_keep_alive(p) { this.send(C.keepAlive(p.keepAliveId)); }
 
   on_login(p) {
+    this.serverBrand=null;this.serverViewDistance=p.viewDistance??this.settings.renderDistance;
     resetServerRecipes(this);this.nbtQueries?.clear();
     this.eaglerTextures?.clear();
     this.interaction?.predictedBlocks?.clear();
@@ -745,7 +746,6 @@ export class Game {
 
   captureText(options) { return captureText(this,options); }
 
-  on_custom_payload(p) { this.eaglerTextures?.handle(p.channel,p.data); }
 
   on_chat(p) {
     const text = chatToLegacy(p.message);
@@ -1171,6 +1171,8 @@ export class Game {
   on_scoreboard_team(p) { this.scoreboard.onTeam(p); }
 
   on_custom_payload(p) {
+    if(p.channel==='minecraft:brand')try{this.serverBrand=new Reader(p.data).string();}catch{}
+    this.eaglerTextures?.handle(p.channel,p.data);
     if (p.channel === 'minecraft:trader_list' || p.channel === 'MC|TrList') {
       if (this.screens.current && this.screens.current.onTradeList) this.screens.current.onTradeList(p.data);
       else this.pendingTrades = p.data;
@@ -1908,6 +1910,7 @@ export class Game {
     // EntityRenderer.loadEntityShader: spectating a creeper, spider or enderman in first person
     const viewed = this.cameraEntity != null && this.thirdPerson === 0 ? this.entities.get(this.cameraEntity) : null;
     const post = viewed && this.device.createRenderTarget ? this.postEffects.get(entityShaderName(viewed)) : null;
+    this.debugShaderName=post?'minecraft:shaders/post/'+entityShaderName(viewed)+'.json':null;
     const packPost = !post && this.shaderPack.active ? this.shaderPack : null;
     this.shaderPack.prepareTerrain(r.camPos,this.eyePosition(partial));
     r.render(hand, post || packPost);
