@@ -27,6 +27,7 @@ export class Connection {
     this.bytesIn = 0;
     this.bytesOut = 0;
     this.packetsIn = 0;
+    this.packetsOut = 0;
   }
 
   on(ev, fn) { (this.handlers[ev] ||= []).push(fn); }
@@ -92,6 +93,7 @@ export class Connection {
   send(bytes) {
     if (this.ws) {
       this.ws.sendBinary(bytes);
+      this.packetsOut++;
       this.bytesOut += bytes.length;
     }
   }
