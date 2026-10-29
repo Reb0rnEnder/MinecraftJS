@@ -28,11 +28,11 @@ async function boot() {
     assets.language = settings.language || 'en_us';
     try { await assets.activatePacks(settings.resourcePacks || []); } catch (e) { console.warn('Resource packs unavailable', e); }
     // Vanilla startup splash (Mojang logo on white) while everything loads
-    const splash = new Splash(device);
+    const splash = new Splash(device, settings);
     await splash.load(await assets.readBytes('textures/gui/title/mojang.png').catch(() => null));
     splash.start();
     P.hideLoading();
-    await assets.load((msg) => console.log('[loading]', msg));
+    await assets.load((msg, pct) => { splash.setProgress(pct); console.log('[loading]', msg); });
     splash.stop();
     if (assets.data.recipes) initRecipes(assets.data.recipes);
     const game = new Game(assets, settings, device);

@@ -516,7 +516,7 @@ export class Interaction {
     let activated = false;
     if (g.gameMode !== 3) {
       const mainAndOffEmpty = !g.inventory.held() && !g.inventory.offhand;
-      if ((!this.player.sneaking || mainAndOffEmpty) && b && INTERACTIVE.has(b.name) && b.name !== 'iron_door' && b.name !== 'iron_trapdoor') activated = true;
+      if ((!this.player.sneaking || mainAndOffEmpty) && b && (INTERACTIVE.has(b.name) || b.isDoor || b.isFenceGate || b.name.endsWith('_trapdoor') || b.name.endsWith('_button') || b.name.endsWith('_bed') || b.name.endsWith('_sign') || ['repeater','comparator','note_block','daylight_detector','shulker_box','light_gray_shulker_box'].includes(b.name)) && b.name !== 'iron_door' && b.name !== 'iron_trapdoor') activated = true;
       // BlockCommandBlock.onBlockActivated: only for players who can use command blocks, who get GuiCommandBlock
       // (TileEntityStructure.usedBy too: GuiEditStructure)
       if (activated && (COMMAND_BLOCKS.has(b.name) || b.name === 'structure_block') && !g.canUseCommandBlock()) activated = false;
@@ -528,7 +528,7 @@ export class Interaction {
     if (activated) {
       if (COMMAND_BLOCKS.has(b.name)) g.screens.open(new CommandBlockScreen(g, { x: t.x, y: t.y, z: t.z }));
       if (b.name === 'structure_block') g.screens.open(new StructureBlockScreen(g, { x: t.x, y: t.y, z: t.z }, g.structureBlocks.get(t.x + ',' + t.y + ',' + t.z)));
-      if (b.isDoor || b.name === 'trapdoor' || b.isFenceGate) this.predictToggle(t, b);
+      if (b.isDoor || b.name === 'trapdoor' || b.name.endsWith('_trapdoor') || b.isFenceGate) this.predictToggle(t, b);
       return true;
     }
     if (g.gameMode === 3) return true;
