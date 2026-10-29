@@ -993,6 +993,7 @@ export class Game {
   on_block_break_animation(p) { this.interaction.setRemoteBreak(p.entityId, p.location, p.destroyStage); }
 
   on_explosion(p) {
+    this.sound.playExplosion(p.x, p.y, p.z);
     for (const r of p.records) this.world.setState(Math.floor(p.x) + r.x, Math.floor(p.y) + r.y, Math.floor(p.z) + r.z, 0);
     this.player.motionX += p.motionX;
     this.player.motionY += p.motionY;

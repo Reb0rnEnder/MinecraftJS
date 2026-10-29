@@ -268,6 +268,11 @@ export class SoundManager {
     this.play(st[1], x + 0.5, y + 0.5, z + 0.5, (st[3] + 1) / 2, st[4] * 0.8, { category: 'block' });
   }
 
+  // Explosion.finalizeExplosion: the explosion packet owns this client-local sound.
+  playExplosion(x, y, z) {
+    this.play('entity.generic.explode', x, y, z, 4, (1 + (Math.random() - Math.random()) * .2) * .7, { category: 'block' });
+  }
+
   playBlockPlace(x, y, z, state) {
     const st = soundTypeOf(blocks[state >> 4]);
     this.play(st[2], x + 0.5, y + 0.5, z + 0.5, (st[3] + 1) / 2, st[4] * 0.8, { category: 'block' });
