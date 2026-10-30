@@ -1335,7 +1335,7 @@ export class Game {
     const n = b.name;
     if (n === 'barrier') return this.player.creative ? [0, 0, 0, 1, 1, 1] : null;
     if (n === 'fire' || n === 'nether_portal' || n === 'portal' || n === 'end_portal' || n === 'moving_piston' || n === 'piston_extension') return null;
-    const extracted = jarSelectionBox(state);
+    const extracted = jarSelectionBox(state,x,y,z);
     if (extracted !== undefined) return extracted;
 
     if (n === 'chest' || n === 'trapped_chest' || n === 'ender_chest') return [0.0625, 0, 0.0625, 0.9375, 0.875, 0.9375];
