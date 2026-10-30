@@ -203,7 +203,7 @@ export class Renderer {
     const sun = sunBrightness(angle, rain, thunder);
     updateLightmap(this.lightmapData, {
       sun: dimension === 0 ? sun : 1, dimension, torchFlicker: this.torchFlickerX, gamma: this.gamma,
-      nightVision: state.nightVision || (state.conduitPower ? state.waterVision || 0 : 0), lightning: this.lightningTicks,
+      nightVision: state.nightVision || (state.conduitPower ? state.waterVision || 0 : 0), lightning: state.hideLightningFlashes?0:this.lightningTicks,
     });
     this.device.updateTexture(this.lightmap, this.lightmapData);
 

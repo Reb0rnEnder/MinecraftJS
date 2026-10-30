@@ -3,7 +3,8 @@
 This branch targets Java **1.18.2, protocol 758**, with native 1.18 assets and
 resource-pack format 8. The [transition plan](docs/transition-1.18.2.md) and
 [implementation ledger](docs/parity-1.18.2.md) track verified and remaining work.
-Full 1.18.2 parity is still pending.
+Full 1.18.2 parity is still pending. A [1.19.2 transition plan](docs/transition-1.19.2.md)
+is pinned for later implementation; this branch keeps its 1.18.2 identity.
 
 Real-server tests pass login/compression, terrain/light, teleport confirmation,
 keepalives, authoritative inventory recovery, ten inventory operations and

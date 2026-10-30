@@ -1,0 +1,116 @@
+{
+  "minecraftVersion": "1.19.2",
+  "protocol": 760,
+  "dataVersion": 3120,
+  "resourcePackFormat": 9,
+  "dataPackFormat": 10,
+  "javaVersion": {
+    "component": "java-runtime-gamma",
+    "majorVersion": 17
+  },
+  "baselineVersion": "1.18.2",
+  "metadata": {
+    "url": "https://piston-meta.mojang.com/v1/packages/68cded4616fba9fbefb3f895033c261126c5f89c/1.19.2.json",
+    "sha1": "68cded4616fba9fbefb3f895033c261126c5f89c"
+  },
+  "downloads": {
+    "client": {
+      "sha1": "055b30d860ead928cba3849ba920c88b6950b654",
+      "size": 21644740,
+      "url": "https://piston-data.mojang.com/v1/objects/055b30d860ead928cba3849ba920c88b6950b654/client.jar"
+    },
+    "client_mappings": {
+      "sha1": "8e8c9be5dc27802caba47053d4fdea328f7f89bd",
+      "size": 7236064,
+      "url": "https://piston-data.mojang.com/v1/objects/8e8c9be5dc27802caba47053d4fdea328f7f89bd/client.txt"
+    },
+    "server": {
+      "sha1": "f69c284232d7c7580bd89a5a4931c3581eae1378",
+      "size": 45609512,
+      "url": "https://piston-data.mojang.com/v1/objects/f69c284232d7c7580bd89a5a4931c3581eae1378/server.jar"
+    },
+    "server_mappings": {
+      "sha1": "ed5e6e8334ad67f5af0150beed0f3d156d74bd57",
+      "size": 5584686,
+      "url": "https://piston-data.mojang.com/v1/objects/ed5e6e8334ad67f5af0150beed0f3d156d74bd57/server.txt"
+    }
+  },
+  "assetIndex": {
+    "id": "1.19",
+    "sha1": "b5c7548ddb9e584e84a5f762da5b78211c715a63",
+    "size": 385416,
+    "totalSize": 555198875,
+    "url": "https://piston-meta.mojang.com/v1/packages/b5c7548ddb9e584e84a5f762da5b78211c715a63/1.19.json"
+  },
+  "minecraftData": {
+    "repository": "https://github.com/PrismarineJS/minecraft-data",
+    "revision": "5e063fa99cfe8ded065ec6788b66696b7e4ef143",
+    "inputs": {
+      "protocol": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/5e063fa99cfe8ded065ec6788b66696b7e4ef143/data/pc/1.19.2/protocol.json",
+        "sha1": "3fd5da6e3d135b4ed59fc4f77f5d04b9463ac8c2",
+        "size": 176485
+      },
+      "version": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/5e063fa99cfe8ded065ec6788b66696b7e4ef143/data/pc/1.19.2/version.json",
+        "sha1": "3923772111de3d052cdbf6319efabddffeca2f84",
+        "size": 78
+      }
+    }
+  },
+  "protocolChanges": {
+    "toClient": {
+      "added": [
+        "chat_preview",
+        "chat_suggestions",
+        "hide_message",
+        "message_header",
+        "player_chat",
+        "server_data",
+        "should_display_chat_preview",
+        "system_chat"
+      ],
+      "removed": [
+        "chat",
+        "sculk_vibration_signal",
+        "spawn_entity_living",
+        "spawn_entity_painting"
+      ],
+      "changed": [
+        "acknowledge_player_digging",
+        "entity_effect",
+        "entity_sound_effect",
+        "initialize_world_border",
+        "login",
+        "multi_block_change",
+        "named_sound_effect",
+        "player_info",
+        "respawn",
+        "sound_effect",
+        "spawn_entity",
+        "trade_list",
+        "world_border_lerp_size",
+        "world_particles"
+      ]
+    },
+    "toServer": {
+      "added": [
+        "chat_command",
+        "chat_message",
+        "chat_preview",
+        "message_acknowledgement"
+      ],
+      "removed": [
+        "chat"
+      ],
+      "changed": [
+        "block_dig",
+        "block_place",
+        "set_beacon_effect",
+        "update_structure_block",
+        "use_item"
+      ]
+    }
+  },
+  "status": "planning-only"
+}

@@ -96,6 +96,7 @@ function nativeOption(screen,key) {
     case 'options.narrator':return {label:()=>g.narrator.label(),enabled:g.narrator.active,click:()=>g.narrator.cycle()};
     case 'options.darkMojangStudiosBackgroundColor':return {...toggle(key,'darkMojangStudiosBackground'),tip:()=>tr('options.darkMojangStudiosBackgroundColor.tooltip')};
     case 'options.showSubtitles':return toggle(key,'showSubtitles');
+    case 'options.hideLightningFlashes':return {...toggle(key,'hideLightningFlashes'),tip:()=>tr('options.hideLightningFlashes.tooltip')};
     case 'options.autoJump':return toggle(key,'autoJump');
     case 'key.sneak':case 'key.sprint':{
       const field=key==='key.sneak'?'toggleCrouch':'toggleSprint';

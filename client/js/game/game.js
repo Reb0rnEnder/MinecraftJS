@@ -2002,6 +2002,7 @@ export class Game {
     const temp = biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).temperature;
     const rain = this.world.prevRain !== undefined ? this.world.prevRain + (this.world.rainStrength - this.world.prevRain) * partial : this.world.rainStrength;
     r.updateEnvironment({
+      hideLightningFlashes:!!this.settings.hideLightningFlashes,
       minY:this.world.minY,minSection:this.world.minSection,sectionCount:this.world.sectionCount,
       worldTime: this.world.timeOfDay, partial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,biomeFog:sampleBiomeFog(this.world,ex,ey,ez),biomeSky:biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).effects?.sky_color,fireResistance:this.effects.has(12),
       inPowderSnow: getBlock(this.world.getState(Math.floor(ex), Math.floor(ey), Math.floor(ez))).name === 'powder_snow', spectator: pl.spectator,
