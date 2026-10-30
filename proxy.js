@@ -128,6 +128,8 @@ const authRoute = (fn) => async (req, res) => {
 app.post('/auth/device', express.json(), authRoute(() => msauth.startDeviceCode()));
 app.post('/auth/poll', express.json(), authRoute(async (b) => ({ account: await msauth.pollDeviceCode(String(b.deviceCode || '')) })));
 app.post('/auth/refresh', express.json(), authRoute(async (b) => ({ account: await msauth.refresh(String(b.refreshToken || '')) })));
+app.post('/auth/blocklist', express.json(), authRoute(async (b) => ({ blockedProfiles: await msauth.blockedProfiles(b.accessToken) })));
+app.post('/auth/privileges', express.json(), authRoute(async (b) => ({ privileges: await msauth.socialPrivileges(b.accessToken) })));
 // Session join for online-mode servers reached through a byte relay (Java relay / Wisp): the client does the
 // protocol and encryption itself, but sessionserver.mojang.com sends no CORS headers
 app.post('/auth/join', express.json(), authRoute(async (b) => {
