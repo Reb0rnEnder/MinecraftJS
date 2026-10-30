@@ -311,7 +311,7 @@ export class World {
     if (def.name === 'moving_piston') return;
     // TileEntityShulkerBox: the box grows with the opening lid
     if (this.shulkerCollider && def.name.endsWith('_shulker_box')) { this.shulkerCollider(x, y, z, state, out); return; }
-    const shapeBoxes = staticCollisionBoxes(state);
+    const shapeBoxes = staticCollisionBoxes(state,x,y,z);
     for (const bx of shapeBoxes) out.push([x + bx[0], y + bx[1], z + bx[2], x + bx[3], y + bx[4], z + bx[5]]);
     return;
     const m = state & 15;
