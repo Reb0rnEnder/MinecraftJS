@@ -1,0 +1,8 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';
+import {AccessibilityScreen} from '../client/js/gui/screens/options.js';import {ScreenManager} from '../client/js/gui/screens/manager.js';import {Settings} from '../client/js/game/settings.js';import {setPlatform} from '../client/js/platform/platform.js';import {VANILLA_UI} from '../client/js/gui/vanilla-layout.js';import {setTranslator} from '../client/js/gui/i18n.js';
+setPlatform({loadSetting:()=>null,saveSetting:()=>{},now:()=>0});setTranslator(k=>k);
+test('all native accessibility options initialize and render from title and game, including resize',()=>{
+ for(const inWorld of [false,true]){const gui=new Proxy({width:854,height:480,scale:1,narrator:null,font:{wrap:()=>[]}}, {get:(o,k)=>k in o?o[k]:()=>{}}),g={gui,settings:new Settings(),inWorld,narrator:{active:false,label:()=>'',cycle(){}},input:{locked:false,rawX:0,rawY:0,unlock(){}},assets:{texture:()=>null}};g.screens=new ScreenManager(g);const s=new AccessibilityScreen(g,{});g.screens.open(s);if(s.list)assert.deepEqual(s.rows.flat().map(b=>b.optionKey),VANILLA_UI.accessibilityOptions);else assert.equal(s.buttons.length,VANILLA_UI.accessibilityOptions.length+1);g.screens.render(gui,0);gui.width=640;g.screens.render(gui,0);assert.ok(s.buttons.length);
+ const lightning=(s.rows?.flat()||s.buttons).find(b=>b.optionKey==='options.hideLightningFlashes');if(lightning){assert.equal(g.settings.hideLightningFlashes,false);lightning.onClick();assert.equal(g.settings.hideLightningFlashes,true);lightning.onClick();assert.equal(g.settings.hideLightningFlashes,false);}
+ }
+});
