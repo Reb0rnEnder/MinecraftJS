@@ -1,3 +1,4 @@
+import {isSquid,squidTentacle,squidMatrix} from '../game/squid-animation.js';
 import {bedFacing} from '../game/bed-sleep.js';
 import {foxAnimationArgs} from '../game/fox.js';
 import {scaleFoxChild} from './fox-pose.js';
@@ -1197,6 +1198,7 @@ export class EntityRenderer {
       mat4.rotateZ(m,m,90*D2R);mat4.rotateY(m,m,270*D2R);
       v.yawGroup.matrix=m;
     }
+    if(isSquid(e))v.yawGroup.matrix=squidMatrix(e,body,partial);
     let yOffset = 0;
     if (e.kind === 'player' && e.sneaking && !e.sleeping) yOffset = -0.125;
     v.root.position.y += yOffset;
@@ -1270,7 +1272,7 @@ export class EntityRenderer {
       carrying: !!e.carried, screaming: e.screaming, horseType: e.horseType, saddled: !!(e.horseFlags & 4) || e.saddled,
       tailRotation: e.tamed ? (0.55 - (20 - (e.wolfHealth || 20)) * 0.02) * Math.PI : Math.PI / 5,
       witchDrinking: e.kind === 'mob' && e.type === 66 && e.usingItem,
-      squish: 0,
+      squish: 0, tentacleAngle:isSquid(e)?squidTentacle(e,partial):undefined,
       peek: e.type === 69 ? (e.prevPeek || 0) + ((e.peek || 0) - (e.prevPeek || 0)) * partial : 0,
       entityId: e.id, child: !!e.child, leftHanded: !!e.leftHanded,
       inWater: isPointInFluid(g.world, e.x, e.y + e.height / 2, e.z),

@@ -379,7 +379,7 @@ export class WebGPUDevice {
     }
   }
 
-  destroyTexture(t) { if (t && t.gpu) this.deferredDestroy.push(t.gpu); }
+  destroyTexture(t) { if(t?.gpu)this.deferredDestroy.push(t.gpu);if(t?.depthTex)this.deferredDestroy.push(t.depthTex); }
 
   // Offscreen colour + depth target; the returned object is also a normal (linear, clamped) texture
   createRenderTarget(w, h) {
