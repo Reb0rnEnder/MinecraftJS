@@ -34,3 +34,6 @@ try {
   else {const base=text.includes(',\n"selection":')?text.slice(0,text.indexOf(',\n"selection":')):text.trimEnd().slice(0,-1);writeFileSync(path,base+',\n"selection":'+JSON.stringify(selection)+'\n}\n');}
   console.log(`${version}: ${states.filter(i=>i!==null&&i!==undefined).length} states, ${boxes.length} unique selection boxes; ${raw.errors.length} invalid or context-dependent legacy states omitted`);
 } finally {rmSync(temp,{recursive:true,force:true});}
+
+// Keep model/selection offsets reproducible alongside native bounds.
+await import('../extract-legacy-block-offsets.mjs');

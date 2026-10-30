@@ -1,6 +1,6 @@
 // Section mesher: turns 16^3 block sections into vertex buffers. Runs inside a worker.
 // Vertex layout (10 floats): x y z u v r g b sky block
-import { blocks, DIR_OFFSETS } from '../world/blocks.js';
+import { nativeModelOffset, blocks, DIR_OFFSETS } from '../world/blocks.js';
 import { resolveState } from '../world/blockstates.js';
 import { grassColor, foliageColor, waterColor } from '../world/biomes.js';
 import { computeVisibility } from './visgraph.js';
@@ -76,6 +76,7 @@ const LOD_SKIP = new Set(['tallgrass', 'double_plant', 'yellow_flower', 'red_flo
 const ZERO_OFFSET=Object.freeze([0,0,0]);
 // Shared with damage rendering so plants keep the same per-position model offsets.
 export function blockModelOffset(name,x,y,z) {
+  const native=nativeModelOffset(name,x,y,z);if(native)return native;
   const type=OFFSET_TYPES[name];if(!type)return ZERO_OFFSET;
   const r=positionRandom(x,y,z);
   return [(((r>>>16)&15)/15-.5)*.5,type===2?(((r>>>20)&15)/15-1)*.2:0,(((r>>>24)&15)/15-.5)*.5];
@@ -313,7 +314,7 @@ export class Mesher {
       if (!model || !model.quads.length) continue;
       // Block.getOffsetType: flowers are nudged randomly in XZ, tall grass in XYZ (BlockModelRenderer)
       let ox=0,oy=0,oz=0;
-      if(OFFSET_TYPES[b.name])[ox,oy,oz]=blockModelOffset(b.name,x,y,z);
+      if(b.modelOffset||OFFSET_TYPES[b.name])[ox,oy,oz]=blockModelOffset(b.name,x,y,z);
       const useAO = this.options.smooth && model.ao && b.emitLight === 0;
       const fastLeaves = !this.options.fancy && this.isLeaves(b);
       const visible = this._visible;
