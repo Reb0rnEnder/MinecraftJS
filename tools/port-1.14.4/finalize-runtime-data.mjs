@@ -59,3 +59,6 @@ await writeFile(join(root,'client/js/game/entity-metadata-1.14.4.js'),'// Entity
 
 // Keep native F3 heightmap predicates reproducible when regenerating state data.
 await import('../extract-debug-heightmaps.mjs');
+
+// Keep mesh, damage, selection and collision offsets matched to the target jar.
+await import('../extract-block-offsets.mjs');

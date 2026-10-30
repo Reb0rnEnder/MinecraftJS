@@ -627,7 +627,7 @@ export class Interaction {
     if (p.y < 0 || p.y > 255) return false;
     if (!this._stackingProperty(t,held) && !this._replaceable(w.getState(p.x, p.y, p.z))) return false;
     // entities in the way of a block with a collision box (EntityLivingBase, boats, minecarts, TNT, falling blocks)
-    const placed=this._placementState(t,held,nb),boxes=staticCollisionBoxes(placed);
+    const placed=this._placementState(t,held,nb),boxes=staticCollisionBoxes(placed,p.x,p.y,p.z);
     if (boxes.length) {
       const hit=b=>placementIntersects(boxes,p,b);
       if (hit(this.player.bb())) return false;
