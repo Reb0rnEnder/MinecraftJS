@@ -594,11 +594,21 @@ export class Interaction {
   }
 
   // World.canBlockBePlaced (+ Block.canPlaceBlockOnSide basics) at the position the item would use
+  _stackingProperty(t, held) {
+    if (!held || this.player.sneaking) return null;
+    const state=this.game.world.getState(t.x,t.y,t.z),block=getBlock(state),placed=this._placedBlock(held);
+    if (!placed || placed.name !== block.name) return null;
+    const props=getStateProperties(state),property={snow:'layers',sea_pickle:'pickles',turtle_egg:'eggs'}[block.name];
+    if (!property || Number(props[property]) >= (property === 'layers' ? 8 : 4) || property === 'layers' && t.face !== 1) return null;
+    return property;
+  }
+
   _placementPos(t, held) {
     const g = this.game;
     const cur = getBlock(g.world.getState(t.x, t.y, t.z));
     let face = t.face;
     let p = { x: t.x, y: t.y, z: t.z };
+    if (this._stackingProperty(t, held)) return { p, face };
     if (cur && cur.name === 'snow' && Number(getStateProperties(g.world.getState(t.x, t.y, t.z)).layers || 1) < 1) face = 1;
     else if (!this._replaceable(g.world.getState(t.x, t.y, t.z))) {
       const d = FACE_DIR[t.face] || [0, 1, 0];
@@ -608,6 +618,8 @@ export class Interaction {
   }
 
   _placementState(t,held,block){
+    const stacked=this._stackingProperty(t,held);
+    if(stacked){const props={...getStateProperties(this.game.world.getState(t.x,t.y,t.z))};props[stacked]=String(Number(props[stacked])+1);return findState(block.name,props);}
     const props={...getStateProperties(block.defaultState)};
     if('axis' in props)props.axis=['y','y','z','z','x','x'][t.face]||'y';
     if('type' in props&&block.name.endsWith('_slab'))props.type=t.face===0||t.face!==1&&t.hit[1]-t.y>.5?'top':'bottom';
@@ -620,7 +632,7 @@ export class Interaction {
     if (!nb) return false;
     const { p, face } = this._placementPos(t, held);
     if (p.y < 0 || p.y > 255) return false;
-    if (!this._replaceable(w.getState(p.x, p.y, p.z))) return false;
+    if (!this._stackingProperty(t,held) && !this._replaceable(w.getState(p.x, p.y, p.z))) return false;
     // entities in the way of a block with a collision box (EntityLivingBase, boats, minecarts, TNT, falling blocks)
     const placed=this._placementState(t,held,nb),boxes=staticCollisionBoxes(placed);
     if (boxes.length) {
@@ -706,9 +718,10 @@ export class Interaction {
     // Only predict states whose native placement can be resolved here. A
     // default-state guess for doors, beds, stairs, fluids or multipart blocks
     // can create colliders inside players and overwrite legitimate neighbours.
-    if(!nb||nb.stateProperties?.some(p=>p.name!=='axis'))return;
+    const t=this.target,stacked=t?.type==='block'&&this._stackingProperty(t,held);
+    if(!nb||!stacked&&nb.stateProperties?.some(p=>p.name!=='axis'))return;
     const previous=this.game.world.getState(p.x,p.y,p.z),axis=nb.stateProperties?.some(p=>p.name==='axis');
-    const t=this.target, predicted=axis&&t?.type==='block'?this._placementState(t,held,nb):nb.defaultState;
+    const predicted=(stacked||axis&&t?.type==='block')?this._placementState(t,held,nb):nb.defaultState;
     if(predicted===undefined||predicted===previous)return;
     const key=p.x+','+p.y+','+p.z,old=this.predictedBlocks.get(key);
     this.predictedBlocks.set(key,{previous:old?.previous??previous,predicted,dimension:this.game.dimension});

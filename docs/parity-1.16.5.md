@@ -20,6 +20,11 @@ establish correct gameplay. The build validates 17,112 block states, extracts
 
 ## Implemented and checked
 
+- Modern world-event block IDs/item names, six-direction dispenser smoke,
+  Ender-eye rings and flattened block ambient dispatch are corrected. Stackable
+  snow/sea-pickle/turtle-egg placement predicts the clicked cell and native count.
+  Applicable corrections are backported through their introduction.
+
 - Crimson/warped signs are recognized as sign block entities; ordinary sign
   text tracks ambient light updates. Resource-pack HTTP requests identify this
   target as 1.16.5. Shared sign lighting is backported through 1.8.9.
