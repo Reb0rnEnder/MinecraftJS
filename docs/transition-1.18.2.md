@@ -1,14 +1,16 @@
 # Transition plan: Java 1.18.2
 
-Status: planning only. This worktree continues to report, load assets and connect
-as 1.17.1. Do not rename it or change its protocol during planning. Existing
-1.17.1 content/behavior gaps in `parity-1.17.1.md` remain explicit carry-over work.
+Status: implementation started on branch `1.18.2`. Native inputs, runtime
+extraction, protocol 758 terrain/light and live connection/inventory/dimension
+acceptance are implemented. See `parity-1.18.2.md` for evidence and remaining work.
+The existing 1.17.1 worktree retains its own identity and protocol.
 
 Target: Java **1.18.2**, protocol **758**, data version **2975**, resource-pack
 format **8**, data-pack format **9**, Java **17** tooling. The official version
 metadata checksum was verified. `transition-1.18.2.inputs.json` pins metadata,
 client/server jars, mappings, asset index and the upstream protocol schema;
-this planning step does not download/launch a server or modify a world.
+implementation downloads the verified files and creates `server1182/` using the
+previous accepted EULA/properties. No existing server/world is replaced.
 
 ## Branch discipline and entry gate
 

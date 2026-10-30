@@ -2,7 +2,7 @@ import { frozenFraction, FREEZING_UUID } from '../world/powder-snow.js';
 // Port of vanilla 1.13.2 player movement physics (EntityPlayerSP / EntityPlayer / EntityLivingBase / Entity).
 import { getBlock, getStateProperties } from '../world/blocks.js';
 import { getFluidState, fluidHeightAt } from '../world/fluids.js';
-import { playerPoseDimensions } from './player-poses-1.17.1.js';
+import { playerPoseDimensions } from './player-poses-1.18.2.js';
 
 const SPRINT_UUID = '662a6b8d-da3e-4c1c-8813-96ea6097278d';
 

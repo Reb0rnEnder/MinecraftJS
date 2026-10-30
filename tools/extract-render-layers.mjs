@@ -1,3 +1,4 @@
+import {nativeClasspath} from '../lib/native-classpath.js';
 // Execute the target-native client render-layer lookup; no graphics context.
 import {readFile,writeFile,mkdtemp,rm} from 'node:fs/promises';
 import {execFileSync} from 'node:child_process';
@@ -8,7 +9,7 @@ assert.ok(['--write','--check'].includes(mode));
 const target=JSON.parse(await readFile(join(root,'tools','port-'+version,'target.json'))),jar=join(cache,'client.jar');assert.equal(createHash('sha1').update(await readFile(jar)).digest('hex'),target.downloads.client.sha1);
 const temp=await mkdtemp(join(tmpdir(),'mc-render-layers-'));
 try{
- const out=join(temp,'layers.json');try{execFileSync(process.env.JAVA||'java',['-cp',[jar,join(cache,'server.jar')].join(delimiter),join(root,'tools','ExtractRenderLayers.java'),join(cache,'client.txt'),join(root,'client/data/blocks.json'),out],{cwd:cache,stdio:'pipe'});}catch(e){throw Error(String(e.stdout||'')+String(e.stderr||''));}
+ const out=join(temp,'layers.json');try{execFileSync(process.env.JAVA||'java',['-cp',nativeClasspath(cache),join(root,'tools','ExtractRenderLayers.java'),join(cache,'client.txt'),join(root,'client/data/blocks.json'),out],{cwd:cache,stdio:'pipe'});}catch(e){throw Error(String(e.stdout||'')+String(e.stderr||''));}
  const layers=JSON.parse(await readFile(out)),blocks=JSON.parse(await readFile(join(root,'client/data/blocks.json'))),file=join(root,'client/data/blockCollisionShapes.json'),data=JSON.parse(await readFile(file));
  assert.ok(data.render,'Native render properties must exist before render-layer extraction');assert.equal(Object.keys(layers).length,blocks.length);
  for(const block of blocks)assert.ok(['solid','cutoutMipped','cutout','translucent','tripwire'].includes(layers[block.name]),'Missing native render layer: '+block.name);

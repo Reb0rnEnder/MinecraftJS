@@ -24,6 +24,7 @@ const DEFAULTS = {
   textBackgroundOnlyChat: true,
   invertMouse: false,
   renderDistance: 8,
+  simulationDistance:12,prioritizeChunkUpdates:'none',autosaveIndicator:true,
   biomeBlendRadius: 2, // 1.13.2: 0=off, 1..7 average a (2r+1)^2 biome area.
   guiScale: 0,
   gamma: 0.5,

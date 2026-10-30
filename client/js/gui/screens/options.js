@@ -216,6 +216,9 @@ class VideoScreen extends OptionsBase {
     const g = this.game, s = this.s;
     this.mipsBefore = s.mipmapLevels;
     const items = [
+      {key:'options.prioritizeChunkUpdates',label:()=>trOption('options.prioritizeChunkUpdates',tr('options.prioritizeChunkUpdates.'+s.prioritizeChunkUpdates)),tip:()=>tr('options.prioritizeChunkUpdates.'+s.prioritizeChunkUpdates+'.tooltip'),click:()=>{const modes=['none','byPlayer','nearby'];s.prioritizeChunkUpdates=modes[(modes.indexOf(s.prioritizeChunkUpdates)+1)%3];}},
+      {key:'options.simulationDistance',slider:true,label:v=>trOption('options.simulationDistance',tr('options.chunks',[Math.round(5+v*27)])),value:()=>(s.simulationDistance-5)/27,set:v=>{s.simulationDistance=Math.round(5+v*27);}},
+      {key:'options.autosaveIndicator',label:()=>trOption('options.autosaveIndicator',onOff(s.autosaveIndicator)),click:()=>{s.autosaveIndicator=!s.autosaveIndicator;}},
       ...['options.screenEffectScale','options.fovEffectScale'].map(key=>({key,...nativeOption(this,key)})),
       {key:'options.entityDistanceScaling',slider:true,label:v=>trOption('options.entityDistanceScaling',Math.round((.5+v*4.5)*100)+'%'),value:()=>((s.entityDistanceScaling??1)-.5)/4.5,set:v=>{s.entityDistanceScaling=Math.round((.5+v*4.5)*4)/4;}},
       { key: 'options.graphics', label: () => trOption('options.graphics', tr(s.fabulousGraphics?'options.graphics.fabulous':s.fancyGraphics?'options.graphics.fancy':'options.graphics.fast')), click: () => { if(s.fabulousGraphics){s.fabulousGraphics=false;s.fancyGraphics=false;}else if(s.fancyGraphics)s.fabulousGraphics=true;else s.fancyGraphics=true; } },

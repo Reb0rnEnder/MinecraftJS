@@ -1,7 +1,7 @@
-import { ENTITY_REGISTRY_1171 } from './entity-registry-1.17.1.js';
+import { ENTITY_REGISTRY_1182 } from './entity-registry-1.18.2.js';
 // Native 1.17.1 entity registry and dimensions, generated from the pinned reports.
 // Numeric MOB_FAMILIES selectors below are internal renderer identities, not wire IDs.
-const REGISTRY = ENTITY_REGISTRY_1171;
+const REGISTRY = ENTITY_REGISTRY_1182;
 
 // INTERNAL renderer selectors, never protocol IDs. Only families already selected
 // by the renderer use numbers. A new family keeps its canonical string as e.type.

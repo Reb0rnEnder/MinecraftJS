@@ -3,7 +3,7 @@ import { isScoping, renderSpyglass } from '../game/spyglass.js';
 import {debugLeft,packetRates} from './debug-overlay.js';
 import {VANILLA_UI} from './vanilla-layout.js';
 import {fireOverlayVertices,fireOverlayProjection} from '../render/fire-overlay.js';
-import {NATIVE_METADATA} from '../game/entity-metadata-1.17.1.js';
+import {NATIVE_METADATA} from '../game/entity-metadata-1.18.2.js';
 import { debugTargets } from './debug-targets.js';
 import {drawEffectIcon} from './effect-icons.js';
 import { getStateProperties } from '../world/blocks.js';

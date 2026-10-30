@@ -1086,9 +1086,7 @@ export function boat() {
 
 export function minecart() {
   const p = J('minecart', ['sides']);
-  // RenderMinecart renders with ageInTicks -0.1 and ModelMinecart.render sets sideModels[5].rotationPointY = 4 - that:
-  // the floor sits 0.1 above the bottom plate instead of z-fighting with it
-  p.sides[5].py = 4.1;
+  // 1.18 native MinecartModel has five parts and no separate contents plate.
   return { parts: {}, roots: p.sides.filter(Boolean), animate() {} };
 }
 

@@ -3,10 +3,10 @@ import {detachRemovedEntities} from './riding-lifecycle.js';
 import {applyNetherMetadata} from './nether-metadata.js';
 import {applyFoxFlags,tickFox} from './fox.js';
 import {tickBeeSound,stopBeeSound} from './bee-sound.js';
-import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.17.1.js';
+import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.18.2.js';
 import {placeLeashKnot} from './leash-knot.js';
 import {NATIVE_METADATA} from './entity-metadata-1.14.4.js';
-import {playerPoseDimensions} from './player-poses-1.17.1.js';
+import {playerPoseDimensions} from './player-poses-1.18.2.js';
 import { tickFallingBlock } from './falling-block.js';
 import { tickEntityEffects, tickDragonDeath, isDragon } from '../render/entity-effects.js';
 // Client-side entity tracking (positions, interpolation, metadata, animation state).

@@ -1,3 +1,6 @@
+import {Mesher} from '../render/mesher.js';
+import {SliceWorld} from '../world/slice.js';
+import {immediateChunkBuild} from '../render/chunk-build-policy.js';
 import {SocialBlocking} from './social-blocking.js';
 import { isScoping } from './spyglass.js';
 import {ResourceLoadingScreen} from '../gui/screens/loading.js';
@@ -13,7 +16,7 @@ import {captureText} from '../debug/text-capture.js';
 import {pushLocalPlayer} from './entity-pushing.js';
 import {ShaderPackFinal} from '../render/shader-pack.js';
 import {CameraEye} from '../render/camera-eye.js';
-import {MENUS_756} from './menus-1.17.1.js';
+import {MENUS_758} from './menus-1.18.2.js';
 import { RegistryTags } from './tags.js';
 import { CommandTree } from './commands.js';
 import { startSleeping, stopSleeping, updateSleeping, sleepingCamera } from './bed-sleep.js';
@@ -413,6 +416,8 @@ export class Game {
   _setupWorker() {
     this.worker = this.assets.worker;
     this.dirty = new Set();
+    this.playerAffectedSections=new Set();
+    this.immediateMesher=null;
     this.inFlight = new Map();
     this.buildTokens = new Map(); this.buildSerial = 0;
     this.maxInFlight = 3 * (this.worker.size || 1) + 2;
@@ -453,7 +458,7 @@ export class Game {
   _resetMeshing() {
     if(this._meshUploads)this._meshUploads.length=0;
     this.renderer.clearSections();
-    this.dirty.clear(); this.inFlight.clear(); this.meshedChunks.clear();
+    this.dirty.clear();this.playerAffectedSections.clear(); this.inFlight.clear(); this.meshedChunks.clear();
     this.buildTokens.clear();
     this.tileProps.clear();
     this.meshGen++;
@@ -477,7 +482,7 @@ export class Game {
     w.on('chunkUnloaded', (c) => {
       this.renderer.removeChunk(c.x, c.z);
       this.meshedChunks.delete(c.x + ',' + c.z);
-      for (let y = c.minSection; y < c.maxSection; y++) { const key=c.x+','+y+','+c.z;this.dirty.delete(key);this.inFlight.delete(key);this.buildTokens.delete(key); }
+      for (let y = c.minSection; y < c.maxSection; y++) { const key=c.x+','+y+','+c.z;this.dirty.delete(key);this.inFlight.delete(key);this.buildTokens.delete(key);this.playerAffectedSections.delete(key); }
       this.tileRenderer.removeChunk(c.x, c.z);
     });
     w.on('sectionDirty', (cx, sy, cz) => {
@@ -507,6 +512,7 @@ export class Game {
       return out;
     };
     w.on('blockChanged', (x, y, z, oldState, newState) => {
+      for(let dx=-1;dx<=1;dx++)for(let dy=-1;dy<=1;dy++)for(let dz=-1;dz<=1;dz++)this.playerAffectedSections.add(((x+dx)>>4)+','+((y+dy)>>4)+','+((z+dz)>>4));
       this.pistons.onBlockChanged(x, y, z);
       this.tileRenderer.onBlockChanged(x, y, z, oldState, newState);
     });
@@ -523,6 +529,7 @@ export class Game {
     if (key === this._meshOptsKey) return;
     this._meshOptsKey = key;
     this.worker.postMessage({ type: 'options', options: opts });
+    this.meshingOptions=opts;if(this.immediateMesher){Object.assign(this.immediateMesher.options,opts);this.immediateMesher.stateModels.clear();}
     if (!initial) {
       for (const c of this.world.chunks.values()) for (let y = c.minSection; y < c.maxSection; y++) if (c.getSection(y)) this.dirty.add(c.x + ',' + y + ',' + c.z);
     }
@@ -552,16 +559,16 @@ export class Game {
     if(this._meshUploads?.length)this._uploadMeshes();
     const started=platform().now();let posted=0;
     this._updateLod();
-    if (!this.dirty.size || this.inFlight.size >= this.maxInFlight) return;
+    if (!this.dirty.size || this.inFlight.size >= this.maxInFlight && this.settings.prioritizeChunkUpdates==='none') return;
     const camera = this._lodCamera();
     const px = camera[0] / 16, py = camera[1] / 16, pz = camera[2] / 16;
     const rd = this.settings.renderDistance + 1;
     const candidates = [];
     for (const key of this.dirty) {
-      if (this.inFlight.has(key)) continue;
       const parts = key.split(',');
       const cx = +parts[0], sy = +parts[1], cz = +parts[2];
       if (Math.abs(cx - Math.floor(px)) > rd || Math.abs(cz - Math.floor(pz)) > rd) continue;
+      if(this.inFlight.has(key)&&!immediateChunkBuild(this.settings.prioritizeChunkUpdates,this.playerAffectedSections.has(key),cx,sy,cz,camera))continue;
       // Wait for horizontal neighbours so edge faces are culled correctly
       let ready = true;
       for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
@@ -578,14 +585,17 @@ export class Game {
     }
     candidates.sort((a, b) => a[0] - b[0]);
     for (const [, key, cx, sy, cz] of candidates) {
-      if (this.inFlight.size >= this.maxInFlight || posted&&platform().now()-started>=2) break;
+      if(posted&&platform().now()-started>=2)break;
+      if(this.inFlight.size>=this.maxInFlight&&!immediateChunkBuild(this.settings.prioritizeChunkUpdates,this.playerAffectedSections.has(key),cx,sy,cz,camera))continue;
       this.dirty.delete(key);
       this.inFlight.set(key, platform().now());
       this.meshedChunks.add(cx + ',' + cz);
       const sec = this.world.getChunk(cx, cz).getSection(sy);
-      if (!sec || sec.nonAir === 0) { this.inFlight.delete(key); this.renderer.removeSection(key); continue; }
+      if (!sec || sec.nonAir === 0) { this.playerAffectedSections.delete(key);this.inFlight.delete(key); this.renderer.removeSection(key); continue; }
       const slice = buildSlice(this.world, cx, sy, cz, this.tileProps, this.settings.biomeBlendRadius ?? 2);
       const token=++this.buildSerial;this.buildTokens.set(key,token);
+      const immediate=immediateChunkBuild(this.settings.prioritizeChunkUpdates,this.playerAffectedSections.delete(key),cx,sy,cz,camera);
+      if(immediate){if(!this.immediateMesher){this.immediateMesher=new Mesher(null,this.assets.modelStore);Object.assign(this.immediateMesher.options,this.meshingOptions);}const start=platform().now(),res=this.immediateMesher.buildSection(new SliceWorld(slice),cx,sy,cz,!!this._lodFor(cx,cz,sy));this.inFlight.delete(key);this.renderer.setSectionMesh(cx,sy,cz,res||{empty:true});this.meshStats.builds++;this.meshStats.ms+=platform().now()-start;this._chunkUpdatesCount=(this._chunkUpdatesCount||0)+1;this._lodKey=null;posted++;continue;}
       this.worker.postMessage({ type: 'build', gen: this.meshGen, token, slice, lod: this._lodFor(cx, cz, sy) }, [slice.states.buffer, slice.light.buffer, slice.biomes.buffer]);
       posted++;
     }
@@ -734,9 +744,14 @@ export class Game {
 
   on_keep_alive(p) { this.send(C.keepAlive(p.keepAliveId)); }
 
+  on_simulation_distance(p) { this.serverSimulationDistance=p.distance; }
+
   on_update_view_distance(p) { this.serverViewDistance=p.viewDistance; }
 
   on_login(p) {
+    this.serverSimulationDistance=p.simulationDistance;
+    const nativeBiomes=simplify(p.dimensionCodec)?.['minecraft:worldgen/biome']?.value||[];
+    this.world.biomeRegistrySize=Math.max(1,...nativeBiomes.map(b=>b.id+1));
     this.serverBrand=null;this.serverViewDistance=p.viewDistance??this.settings.renderDistance;
     resetServerRecipes(this);this.nbtQueries?.clear();
     this.eaglerTextures?.clear();
@@ -1028,11 +1043,11 @@ export class Game {
   }
 
   on_map_chunk(p) {
-    this.world.loadChunk756(p);
+    this.world.loadChunk758(p);
     for (const nbt of p.blockEntities) this.applyBlockEntity(nbt);
   }
 
-  on_update_light(p) { this.world.updateLight756(p); }
+  on_update_light(p) { this.world.updateLight758(p); }
 
   on_unload_chunk(p) { this.world.unloadChunk(p.chunkX, p.chunkZ); }
 
@@ -1050,7 +1065,7 @@ export class Game {
     if (id === 'structure_block') this.structureBlocks.set(pos.x + ',' + pos.y + ',' + pos.z, data); // for GuiEditStructure
     if (id === 'jigsaw') this.jigsawBlocks.set(pos.x+','+pos.y+','+pos.z,data);
     // GuiCommandBlock.updateGui once the opened block's data (action 2) arrives
-    if (id === 'command_block' && action === 2) {
+    if (id === 'command_block') {
       const s = this.screens.current;
       if (s instanceof CommandBlockScreen && s.pos.x === pos.x && s.pos.y === pos.y && s.pos.z === pos.z) s.updateGui(data);
     }
@@ -1150,12 +1165,12 @@ export class Game {
 
   on_open_window(p) {
     if(typeof p.inventoryType==='number'){
-      const name=MENUS_756[p.inventoryType];
+      const name=MENUS_758[p.inventoryType];
       const rows=/generic_9x([1-6])/.exec(name||'');
       const aliases={'minecraft:generic_3x3':['minecraft:dispenser',9],'minecraft:crafting':['minecraft:crafting_table',10],'minecraft:enchantment':['minecraft:enchanting_table',2],'minecraft:merchant':['minecraft:villager',3],'minecraft:blast_furnace':['minecraft:blast_furnace',3],'minecraft:smoker':['minecraft:smoker',3]};
       const fixed={'minecraft:smithing':3,'minecraft:anvil':3,'minecraft:beacon':1,'minecraft:brewing_stand':5,'minecraft:furnace':3,'minecraft:hopper':5,'minecraft:shulker_box':27,'minecraft:grindstone':3,'minecraft:lectern':1,'minecraft:loom':4,'minecraft:cartography':3,'minecraft:stonecutter':2};
       const [type,count]=rows?['minecraft:chest',Number(rows[1])*9]:aliases[name]||[name,fixed[name]];
-      if(!type||count===undefined)throw new Error('Unknown 1.17.1 menu '+p.inventoryType);
+      if(!type||count===undefined)throw new Error('Unknown 1.18.2 menu '+p.inventoryType);
       p={...p,inventoryType:type,slotCount:count};
     }
     const win = new ContainerWindow(this, p.windowId, p.inventoryType, chatToLegacy(p.windowTitle), p.slotCount, p.entityId);
@@ -1227,7 +1242,7 @@ export class Game {
     return Math.max(0, Math.min(1, (c.end - t) / (c.end - c.start)));
   }
 
-  on_tile_entity_data(p) { if (p.nbtData) this.applyBlockEntity(p.nbtData, p.action === 9 ? undefined : p.action); }
+  on_tile_entity_data(p) { if (p.nbtData) this.applyBlockEntity(p.nbtData); }
 
   on_open_sign_entity(p) { this.screens.open(new SignEditScreen(this, p.location)); }
 

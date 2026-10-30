@@ -1,12 +1,14 @@
-// Option arrays extracted from the pinned native 1.17.1 jar.
+// Option arrays extracted from the pinned native 1.18.2 jar.
 export const VANILLA_UI = {
-  "version": "1.17.1",
-  "clientJarSha1": "8d9b65467c7913fcf6f5b2e729d44a1e00fde150",
-  "packFormat": 7,
+  "version": "1.18.2",
+  "clientJarSha1": "2e9a3e3107cca00d6bc9c97bf7d149cae163ef21",
+  "packFormat": 8,
   "videoOptions": [
     "options.biomeBlendRadius",
     "options.graphics",
     "options.renderDistance",
+    "options.prioritizeChunkUpdates",
+    "options.simulationDistance",
     "options.ao",
     "options.framerateLimit",
     "options.vsync",
@@ -21,7 +23,8 @@ export const VANILLA_UI = {
     "options.entityShadows",
     "options.screenEffectScale",
     "options.entityDistanceScaling",
-    "options.fovEffectScale"
+    "options.fovEffectScale",
+    "options.autosaveIndicator"
   ],
   "controlOptions": [
     "options.autoJump"
@@ -91,7 +94,8 @@ export const VANILLA_UI = {
     "key.sprint",
     "options.screenEffectScale",
     "options.fovEffectScale",
-    "options.darkMojangStudiosBackgroundColor"
+    "options.darkMojangStudiosBackgroundColor",
+    "options.hideLightningFlashes"
   ],
   "controlsLayout": {
     "extraWidth": 45,

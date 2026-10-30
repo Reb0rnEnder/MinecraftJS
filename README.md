@@ -1,36 +1,35 @@
-# MinecraftJS 1.17.1 development client
+# MinecraftJS 1.18.2 development client
 
-This branch targets Java **1.17.1, protocol 756**, with native 1.17 assets and
-resource-pack format 7. Follow the [transition plan](docs/transition-1.17.1.md)
-and [implementation ledger](docs/parity-1.17.1.md). Full parity is still pending.
-The next target has a [1.18.2 transition plan](docs/transition-1.18.2.md); runtime
-implementation and version identity remain on 1.17.1.
+This branch targets Java **1.18.2, protocol 758**, with native 1.18 assets and
+resource-pack format 8. The [transition plan](docs/transition-1.18.2.md) and
+[implementation ledger](docs/parity-1.18.2.md) track verified and remaining work.
+Full 1.18.2 parity is still pending.
 
-The connection baseline is tested against the supplied local 1.17.1 server:
-login/compression, chunks/light, teleport confirmation, keepalives, movement,
-and server recovery from a stale inventory state. Native extraction includes
-898 blocks, 20,342 block states, 1,100 item registry entries, 113 entity types,
-1,190 sounds and 169 model layers. Goat, axolotl and glow-squid models render;
-new content behaviors and detailed animations remain work in progress.
+Real-server tests pass login/compression, terrain/light, teleport confirmation,
+keepalives, authoritative inventory recovery, ten inventory operations and
+Nether/End/Overworld travel, including below Y=0 and above Y=255. Large-world
+browser loading still needs profiling; see the ledger's acceptance limits.
 
 Start the proxy from **this worktree**:
 
 ```sh
-PORT=3002 ALLOW_LOOPBACK=1 npm start
+PORT=3003 ALLOW_LOOPBACK=1 npm start
 ```
 
-Open `http://localhost:3002/` and join `localhost:25565`. Loopback is explicitly
+Open `http://localhost:3003/` and join your 1.18.2 server. The local server files
+are in `server1182/`; its copied properties use port 25565. The isolated
+connection-check launch used `--port 25566` to leave the existing server alone. Loopback is explicitly
 allowed here for local testing; deployments block it by default. The older
 version proxies can remain running on their own ports.
 
-Reproduce the native inputs and assets (Java 16 or newer is needed for extraction):
+Reproduce the native inputs and assets (Java 17 or newer is needed for extraction):
 
 ```sh
-node tools/port-1.17.1/reports.mjs --check
-node tools/port-1.17.1/packet-ids.mjs --check
-node tools/port-1.17.1/runtime-data.mjs
+node tools/port-1.18.2/reports.mjs --check
+node tools/port-1.18.2/packet-ids.mjs --check
+node tools/port-1.18.2/runtime-data.mjs
 npm run assets
-node tools/port-1.17.1/verify-protocol.mjs
+node tools/port-1.18.2/verify-protocol.mjs
 ```
 
 `npm run build` creates a standalone HTML client; use
@@ -38,7 +37,7 @@ node tools/port-1.17.1/verify-protocol.mjs
 clients and require a compatible proxy to connect to ordinary Java TCP servers.
 
 MinecraftJS is not affiliated with Mojang or Microsoft. The repository contains no Mojang files: the game assets
-are taken from your own copy of Minecraft 1.17.1, or downloaded from Mojang's servers on first use. That includes the
+are taken from your own copy of Minecraft 1.18.2, or downloaded from Mojang's servers on first use. That includes the
 entity and block entity models (mobs, boats, chests, signs, skulls, beds, ...): the build runs the pinned
 native Java constructors through the official mappings and stores the resulting geometry in
 `bundles/entity-models.json`.

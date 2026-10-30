@@ -1,16 +1,15 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
 import {initBlocks,blocksByName} from '../client/js/world/blocks.js';import {World} from '../client/js/world/world.js';import {Chunk} from '../client/js/world/chunk.js';import {verticalBounds} from '../client/js/world/vertical-bounds.js';import {sectionKey,sectionCoords} from '../client/js/world/section-key.js';
-import {Writer756,decodePacket756} from '../client/js/net/protocol-1.17.1.js';import {CLIENTBOUND_756 as IN} from '../client/js/net/protocol-1.17.1-ids.js';import {decodeChunkData756} from '../client/js/world/chunk-1.17.1.js';import {SectionCuller} from '../client/js/render/culling.js';import {buildSlice,SliceWorld} from '../client/js/world/slice.js';import {columnHeights,packetHeight} from '../client/js/gui/debug-overlay.js';
+import {Writer758,decodePacket758} from '../client/js/net/protocol-1.18.2.js';import {CLIENTBOUND_758 as IN} from '../client/js/net/protocol-1.18.2-ids.js';import {decodeChunkData758} from '../client/js/world/chunk-1.18.2.js';import {SectionCuller} from '../client/js/render/culling.js';import {buildSlice,SliceWorld} from '../client/js/world/slice.js';import {columnHeights,packetHeight} from '../client/js/gui/debug-overlay.js';
 const json=n=>JSON.parse(readFileSync(new URL('../client/data/'+n+'.json',import.meta.url)));const shapes=json('blockCollisionShapes');initBlocks(json('blocks'),shapes);const stone=blocksByName.stone.defaultState;
-function section(){const w=new Writer756().u16(4096).i8(4).varint(1).varint(stone).varint(256);for(let i=0;i<256;i++)w.i64(0n);return w.build();}
+function terrain(count,stoneIndices=[]){const w=new Writer758();for(let i=0;i<count;i++){const state=stoneIndices.includes(i)?stone:0;w.u16(state?4096:0).u8(0).varint(state).varint(0).u8(0).varint(1).varint(0);}return{x:0,z:0,groundUp:true,chunkData:w.build(),skyLight:{},blockLight:{},emptySkyLightMask:0,emptyBlockLightMask:0};}
 function world(){const w=new World();w.setDimension(0,{min_y:-64,height:384,logical_height:384,has_skylight:true});return w;}
 test('native DimensionType bounds accept aligned custom heights and reject malformed ranges',()=>{
  assert.equal(verticalBounds({min_y:-2032,height:4064}).sectionCount,254);
  for(const data of[{min_y:-63,height:384},{min_y:-64,height:385},{min_y:0,height:4096},{min_y:-2048,height:256},{min_y:0,height:16,logical_height:17}])assert.throws(()=>verticalBounds(data),/bounds/);
 });
 test('negative and tall sections keep states, biomes, heights, collisions and worker slices',()=>{
- const w=world(),bytes=section(),data=new Uint8Array(bytes.length*2);data.set(bytes);data.set(bytes,bytes.length);
- const c=w.loadChunk756({x:0,z:0,groundUp:true,bitMap:1+(2**23),chunkData:data,biomes:new Uint32Array(1536).fill(1)});
+ const w=world(),c=w.loadChunk758(terrain(24,[0,23]));
  assert.equal(c.sections.length,24);assert.equal(w.getState(0,-64,0),stone);assert.equal(w.getState(0,319,0),stone);assert.equal(w.getState(0,320,0),0);assert.equal(c.heightMap[0],320);
  c.biomes[0]=2;c.biomes[1520]=3;assert.equal(w.getNoiseBiome(0,-16,0),2);assert.equal(w.getNoiseBiome(0,79,0),3);
  assert.ok(w.getCollisions([.1,-64.1,.1,.9,-63.1,.9]).some(b=>b[1]===-64));
@@ -19,13 +18,11 @@ test('negative and tall sections keep states, biomes, heights, collisions and wo
 });
 test('wire masks retain a third 64-bit word and terrain/light sections above bit 63',()=>{
  const w=new World();w.setDimension(0,{min_y:-2032,height:4064});
- const packet=new Writer756().varint(IN.map_chunk).i32(0).i32(0).varint(3).i64(0n).i64(0n).i64(4n).u8(0).varint(254*64);
- for(let i=0;i<254*64;i++)packet.varint(1);const bytes=section();packet.varint(bytes.length).raw(bytes).varint(0);
- const decoded=decodePacket756(packet.build());assert.equal(decoded.bitMap,1n<<130n);assert.equal(decodeChunkData756(decoded,{sectionCount:254}).sections[130].nonAir,4096);
- const c=w.loadChunk756(decoded),y=(w.minSection+130)*16;assert.equal(c.getState(0,y,0),stone);
- const light=new Writer756().varint(IN.update_light).varint(0).varint(0).bool(true);
+ const decoded=terrain(254,[130]);assert.equal(decodeChunkData758(decoded,{sectionCount:254}).sections[130].nonAir,4096);
+ const c=w.loadChunk758(decoded),y=(w.minSection+130)*16;assert.equal(c.getState(0,y,0),stone);
+ const light=new Writer758().varint(IN.update_light).varint(0).varint(0).bool(true);
  for(const mask of[1n<<131n,0n,0n,0n])light.varint(3).i64(mask&((1n<<64n)-1n)).i64(mask>>64n&((1n<<64n)-1n)).i64(mask>>128n);
- light.varint(1).varint(2048).raw(new Uint8Array(2048).fill(0xaa)).varint(0);w.updateLight756(decodePacket756(light.build()));assert.equal(c.getSkyLight(0,y,0),10);assert.equal(c.getSkyLight(0,2033,0),15);
+ light.varint(1).varint(2048).raw(new Uint8Array(2048).fill(0xaa)).varint(0);w.updateLight758(decodePacket758(light.build()));assert.equal(c.getSkyLight(0,y,0),10);assert.equal(c.getSkyLight(0,2033,0),15);
 });
 test('custom-height culling reaches negative sections and keys do not alias neighboring columns',()=>{
  const bounds={minSection:-4,sectionCount:24},culler=new SectionCuller(),a={cx:0,sy:-4,cz:0,solid:{}},b={cx:0,sy:19,cz:0,solid:{}},sections=new Map([[sectionKey(0,-4,0),a],[sectionKey(0,19,0),b]]);
@@ -38,5 +35,5 @@ test('custom server height maps use height-derived bit width and add min-Y',()=>
  const tall=new Chunk(0,0,true,{minY:-2032,height:4064});tall.heightmaps={WORLD_SURFACE:[4064n]};assert.equal(packetHeight(tall,'WORLD_SURFACE',0,0),2031);
 });
 test('dimension reset invalidates old vertical light/terrain storage',()=>{
- const w=world();w.loadChunk756({x:0,z:0,groundUp:true,bitMap:0,chunkData:new Uint8Array(0),biomes:[]});assert.equal(w.chunks.size,1);w.setDimension(0,{min_y:0,height:256});assert.equal(w.chunks.size,0);assert.equal(w.lightColumns.size,0);assert.equal(w.minY,0);
+ const w=world();w.loadChunk758(terrain(24));assert.equal(w.chunks.size,1);w.setDimension(0,{min_y:0,height:256});assert.equal(w.chunks.size,0);assert.equal(w.lightColumns.size,0);assert.equal(w.minY,0);
 });

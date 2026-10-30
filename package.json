@@ -1,7 +1,7 @@
 {
   "name": "minecraftjs",
   "version": "1.0.0",
-  "description": "Web-based Minecraft 1.17.1 client with WebSocket proxy",
+  "description": "Web-based Minecraft 1.18.2 client with WebSocket proxy",
   "scripts": {
     "start": "node proxy.js",
     "dev": "node proxy.js",

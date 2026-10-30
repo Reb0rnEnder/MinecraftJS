@@ -1,4 +1,4 @@
-import {NATIVE_METADATA} from './entity-metadata-1.17.1.js';
+import {NATIVE_METADATA} from './entity-metadata-1.18.2.js';
 import {ENTITIES_BY_NAME} from './entity-types.js';
 const NETHER_MOBS=new Set(['axolotl','goat','glow_squid','hoglin','zoglin','piglin','piglin_brute','zombified_piglin','strider']);
 export function applyNetherMetadata(e,wire){

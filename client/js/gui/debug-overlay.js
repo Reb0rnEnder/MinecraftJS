@@ -54,7 +54,7 @@ export function debugLeft(hud){
  fps+=!s.clouds?'':s.clouds===1?' fast-clouds':' fancy-clouds';
  fps+=since(15)?` B: ${s.biomeBlendRadius??2}`:s.useVbo!==false?' vbo':'';
  const workers=g.assets.worker?.workers?.filter(worker=>!worker.busy).length??1;
- const totalSections=(2*distance+1)**2*16;
+ const totalSections=(2*distance+1)**2*(w.sectionCount??16);
  const lines=[`MinecraftJS ${version} (${version}/vanilla)`,fps];
  if(since(13)){const rate=packetRates(g.conn,platform().now());lines.push(`"${g.serverBrand??'null'}" server, ${rate.tx} tx, ${rate.rx} rx`);}
  lines.push(`C: ${r.visibleSections||0}/${totalSections} (s) D: ${distance}, ${['1.12.2','1.13.2'].includes(version)?'L: 0, ':''}pC: ${String(g.dirty?.size||0).padStart(3,'0')}, pU: ${g.inFlight?.size||0}, aB: ${workers}`);
@@ -69,7 +69,7 @@ export function debugLeft(hud){
  const footer=()=>{if(version!=='1.8.9')lines.push('',`Debug: Pie [shift]: ${g.showProfiler?'visible':'hidden'} FPS [alt]: ${g.showLagometer?'visible':'hidden'}`,'For help: press F3 + Q');return lines;};
  if(reduced){lines.push('',`Chunk-relative: ${bx&15} ${by&15} ${bz&15}`);return footer();}
  if(since(13)){const dim=g.worldName||{0:'minecraft:overworld',[-1]:'minecraft:the_nether',1:'minecraft:the_end'}[g.dimension??w.dimension??0];lines.push(`${dim||'Unknown dimension'} FC: ${since(14)?0:'n/a'}`);}
- lines.push('',`XYZ: ${pl.x.toFixed(3)} / ${pl.y.toFixed(5)} / ${pl.z.toFixed(3)}`,`Block: ${bx} ${by} ${bz}`,`Chunk: ${bx&15} ${by&15} ${bz&15} in ${bx>>4} ${by>>4} ${bz>>4}`);
+ lines.push('',`XYZ: ${pl.x.toFixed(3)} / ${pl.y.toFixed(5)} / ${pl.z.toFixed(3)}`,`Block: ${bx} ${by} ${bz} [${bx&15} ${by&15} ${bz&15}]`,`Chunk: ${bx>>4} ${by>>4} ${bz>>4} [${(bx>>4)&31} ${(bz>>4)&31} in r.${bx>>9}.${bz>>9}.mca]`);
  const direction=Math.floor(pl.yaw*4/360+.5)&3;
  lines.push(`Facing: ${['south','west','north','east'][direction]} (Towards ${['positive Z','negative X','negative Z','positive X'][direction]}) (${wrap(pl.yaw).toFixed(1)} / ${wrap(pl.pitch).toFixed(1)})`);
  const chunk=w.getChunk?.(bx>>4,bz>>4),inBounds=by>=(w.minY??0)&&by<(w.maxY??256);

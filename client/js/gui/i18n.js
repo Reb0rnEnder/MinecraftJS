@@ -21,7 +21,7 @@ export const MINECRAFTJS_EN = {
   'minecraftjs.skinProxy.example': 'Example: https://proxy.example/?url=%R',
   'minecraftjs.skinProxy.invalid': 'Use an HTTP(S) URL containing %u, %r or %R.',
 
-  'minecraftjs.version': 'MinecraftJS 1.17.1',
+  'minecraftjs.version': 'MinecraftJS 1.18.2',
   'minecraftjs.notAffiliated': 'Not affiliated with Mojang AB',
   'minecraftjs.accounts.title': 'Accounts',
   'minecraftjs.accounts.use': 'Use Account',

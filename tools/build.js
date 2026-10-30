@@ -190,7 +190,7 @@ async function collectAssets(opts) {
   const index = await mcassets.loadAssetIndex();
   const meta = await index.read('pack.mcmeta');
   const mcmeta = meta ? JSON.parse(meta.toString('utf8')) : {};
-  mcmeta.pack = { pack_format: mcassets.MC_VERSION === '1.17.1' ? 7 : mcassets.MC_VERSION === '1.16.5' ? 6 : 5, description: 'The default look and feel of Minecraft' };
+  mcmeta.pack = { pack_format: mcassets.MC_VERSION === '1.18.2' ? 8 : mcassets.MC_VERSION === '1.17.1' ? 7 : mcassets.MC_VERSION === '1.16.5' ? 6 : 5, description: 'The default look and feel of Minecraft' };
   files.set('pack.mcmeta', Buffer.from(JSON.stringify(mcmeta)));
 
   const names = indexedClientAssets(index)

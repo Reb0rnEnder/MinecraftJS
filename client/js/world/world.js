@@ -4,7 +4,7 @@ import { maskHas, maskFits, maskValue } from '../net/bitset.js';
 import { powderSnowCollision } from './powder-snow.js';
 import {BiomeZoom} from './biome-zoom.js';
 import {scaffoldingCollision} from './scaffolding.js';
-import {decodeChunkData756} from './chunk-1.17.1.js';
+import {decodeChunkData758} from './chunk-1.18.2.js';
 import { getFluidState, fluidHeightAt } from './fluids.js';
 // Client world: chunk storage, block access, light propagation, collision and raycasting.
 import { biomeInfo } from './biomes.js';
@@ -91,8 +91,9 @@ export class World {
     return light;
   }
 
-  loadChunk756(packet) {
-    const decoded=decodeChunkData756(packet,{sectionCount:this.sectionCount}),{x,z,groundUp,bitMap}=packet;
+  loadChunk758(packet) {
+    const decoded=decodeChunkData758(packet,{sectionCount:this.sectionCount,biomeCount:this.biomeRegistrySize||61}),{x,z,groundUp}=packet;const bitMap=(1n<<BigInt(this.sectionCount))-1n;
+    this.updateLight758({...packet,chunkX:x,chunkZ:z});
     let c=this.getChunk(x,z);
     if(!c){c=new Chunk(x,z,this.hasSky,this);this.chunks.set(World.key(x,z),c);this._gen++;}
     c.nativeLight=this._lightColumn(x,z);c.heightmaps=packet.heightmaps;c.debugHeightRevision=(c.debugHeightRevision||0)+1;
@@ -112,7 +113,7 @@ export class World {
     return c;
   }
 
-  updateLight756(packet) {
+  updateLight758(packet) {
     const light=this._lightColumn(packet.chunkX,packet.chunkZ),changed=new Set();
     for(const [name,arrays,empty] of [['sky',packet.skyLight,packet.emptySkyLightMask],['block',packet.blockLight,packet.emptyBlockLightMask]]) {
       if(!maskFits(empty??0,this.sectionCount+2))throw Error('Light section outside dimension');
