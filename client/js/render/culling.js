@@ -5,7 +5,8 @@
 import { aabbInFrustum } from '../gfx/math.js';
 import { DIR_OFFSETS, OPPOSITE } from '../world/blocks.js';
 
-export const sectionKey = (cx, sy, cz) => ((cx + 0x100000) * 0x200000 + (cz + 0x100000)) * 16 + sy;
+import {sectionKey} from '../world/section-key.js';
+export {sectionKey} from '../world/section-key.js';
 
 export class SectionCuller {
   constructor() {
