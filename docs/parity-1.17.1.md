@@ -52,6 +52,11 @@ are in `tools/port-1.17.1/baseline.json`.
 - Microsoft account block lists/privileges now feed social filtering, chat
   input and multiplayer access; see `social-account-parity.md` for behavior and
   authenticated-test limits.
+- Native model/shape offsets now agree across meshing, damage, collision and
+  selection, including bamboo/dripstone; see `block-offset-parity.md`.
+- Live survival/creative inventory operations, chest transfer, Nether/End return
+  travel and negative/tall dimension terrain pass on a disposable Java server.
+  See `native-acceptance.md` for the exact coverage and limits.
 - Sound registry/events/sample references are checked against the built assets.
 - Bee anger accessor follows the native renamed field; the same correction was
   backported to 1.16.5. 1.15.2 already uses its correct original accessor.
@@ -89,10 +94,9 @@ probes accept `--host=`, `--port=` and `--duration=`. They do not start a server
 
 ## Pending acceptance work
 
-- Live custom-height server acceptance beyond the isolated browser/wire fixtures.
-- Nether/End round trips against the 1.17.1 server and all graphics adapters.
-- Full inventory operation matrix: drag/shift/drop, creative search, every menu,
-  book limits, reconciliation during concurrent updates and resource-pack prompts.
+- Broader travel/equipment/hardware combinations beyond the native acceptance run.
+- Additional inventory acceptance: creative search, every menu/book limit and
+  reconciliation during concurrent updates beyond the checked click sequences.
 - Complete live powder-snow/leather-armor/freezing and vehicle sequences, snow
   and formatted glowing-sign visual comparisons; full live sequences for candle,
   dripstone, amethyst/sculk/vibration and other new state-specific interactions.

@@ -12,15 +12,19 @@ this planning step does not download/launch a server or modify a world.
 
 ## Branch discipline and entry gate
 
-Implementation baseline: the pushed F3 fixes at
-`b0929cc969218e8f870c2b1d9000184bfa21a918` on 1.17.1. When implementation is requested, use the existing `1.18.2` branch if
+Implementation baseline: the latest pushed 1.17.1 fixes, including native
+Fabulous composition, account social data, model offsets and vertical bounds. When implementation is requested, use the existing `1.18.2` branch if
 present; otherwise create that exact name in `/home/ender/minecraftjs-1.18.2`.
 Keep all currently supported worktrees, their asset identities and deployment
 configuration usable. Do not create substitute branches for older versions.
 
-Inventory unfinished 1.17.1 features before claiming any 1.18 parity. In
-particular, powder snow/freezing, spyglass, glowing sign text, some mob poses,
-required-pack behavior and the full inventory matrix still need acceptance work.
+The known implementation gaps in the prior entry gate have been addressed and
+checked in targeted native/behavior/browser fixtures. The disposable Java-server
+run passes ten authoritative inventory operations and Nether/End/custom-height
+travel on 1.17.1, plus standard travel/inventory on 1.16.5. Broad parity acceptance
+remains documented honestly: every menu/equipment/pack/hardware combination and
+rare release behavior are not exhaustively demonstrated. Carry those audits into
+the new branch; do not present the connection milestone as full 1.18 parity.
 
 ## Milestone 1: verified native inputs and change inventory
 
@@ -45,8 +49,9 @@ workers, dirty queues, visibility, camera bounds, light columns, heightmaps,
 weather, particles, fluids, entities and debugging. Include negative section-Y
 and boundary-light layers. Nether and End must retain their own dimension data.
 
-The current 1.17 view deliberately rejects taller masks. Remove that guard only
-after the consumers can represent the target dimension. Add fixtures around
+The shared 1.17 infrastructure now supports custom vertical bounds, and a native
+server/browser run passes below 0 and above 255. Its fixtures include multi-word
+terrain/light masks. The new 758 decoder must preserve that coverage. Add fixtures around
 Y=-64/-1/0/255/319 and transitions between differently sized dimensions. Preserve
 word-based palette performance and compare against a BigInt reference decoder.
 

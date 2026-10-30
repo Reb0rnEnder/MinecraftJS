@@ -383,7 +383,7 @@ export class World {
     if (def.name === 'moving_piston') return;
     // TileEntityShulkerBox: the box grows with the opening lid
     if (this.shulkerCollider && def.name.endsWith('_shulker_box')) { this.shulkerCollider(x, y, z, state, out); return; }
-    const shapeBoxes = def.name === 'powder_snow' ? powderSnowCollision(y, mover) : def.name === 'scaffolding' ? scaffoldingCollision(getStateProperties(state), y, mover) : staticCollisionBoxes(state);
+    const shapeBoxes = def.name === 'powder_snow' ? powderSnowCollision(y, mover) : def.name === 'scaffolding' ? scaffoldingCollision(getStateProperties(state), y, mover) : staticCollisionBoxes(state,x,y,z);
     for (const bx of shapeBoxes) out.push([x + bx[0], y + bx[1], z + bx[2], x + bx[3], y + bx[4], z + bx[5]]);
     return;
     const m = state & 15;
@@ -548,8 +548,8 @@ export class World {
         if (b.isLiquid) {
           if (hitLiquids && Number(getStateProperties(state).level || 0) === 0) box = [0, 0, 0, 1, 0.875, 1];
         } else if(!collider) box = this.selectionBox(state, x, y, z);
-        const boxes = collider ? staticCollisionBoxes(state) : box ? [box] : [];
-        if (hitLiquids === 'any' && getFluidState(state)) boxes.push([0,0,0,1,fluidHeightAt(this,x,y,z),1]);
+        let boxes = collider ? staticCollisionBoxes(state,x,y,z) : box ? [box] : [];
+        if (hitLiquids === 'any' && getFluidState(state)) boxes=[...boxes,[0,0,0,1,fluidHeightAt(this,x,y,z),1]];
         let nearest = null, hitBox = null;
         for (const candidate of boxes) {
           const r = rayBox(ox, oy, oz, dx, dy, dz, x + candidate[0], y + candidate[1], z + candidate[2], x + candidate[3], y + candidate[4], z + candidate[5]);

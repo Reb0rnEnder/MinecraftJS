@@ -19,7 +19,8 @@ sections and worker invalidation. Seeded biome oracle tests still pass.
 `probe-vertical-world-browser.mjs` renders four worker-built sections at Y=-32
 and Y=304 in WebGL 2, checks visibility, precipitation, F3 heights and fog, and
 reports no console or missing-resource errors. These are controlled scenes;
-live custom-dimension travel and other adapters remain acceptance work.
+the disposable Java-server run now verifies custom-dimension travel and terrain
+at Y=-32/Y=304 too (`native-acceptance.md`). Other hardware remains acceptance work.
 
 Shared corrections are backported to all six older targets: a native height
 of 256 no longer overflows an 8-bit height map, and section keys preserve the
