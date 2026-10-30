@@ -158,7 +158,7 @@ export class TileEntityRenderer {
   scanChunk(c) {
     for (let sy = 0; sy < 16; sy++) {
       const s = c.sections[sy];
-      if (!s) continue;
+      if (!s || s.nonAir === 0) continue;
       for (let i = 0; i < 4096; i++) {
         const id = s.blocks[i] >> 4;
         if (id === 54 || id === 146 || id === 130 || id === 63 || id === 68 || id === 144 || id === 176 || id === 177 || id === 116 || id === 138 || id === 119 ||
