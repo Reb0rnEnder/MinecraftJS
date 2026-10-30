@@ -54,7 +54,7 @@ export function debugLeft(hud){
  fps+=!s.clouds?'':s.clouds===1?' fast-clouds':' fancy-clouds';
  fps+=since(15)?` B: ${s.biomeBlendRadius??2}`:s.useVbo!==false?' vbo':'';
  const workers=g.assets.worker?.workers?.filter(worker=>!worker.busy).length??1;
- const totalSections=(2*distance+1)**2*16;
+ const totalSections=(2*distance+1)**2*(w.sectionCount??16);
  const lines=[`MinecraftJS ${version} (${version}/vanilla)`,fps];
  if(since(13)){const rate=packetRates(g.conn,platform().now());lines.push(`"${g.serverBrand??'null'}" server, ${rate.tx} tx, ${rate.rx} rx`);}
  lines.push(`C: ${r.visibleSections||0}/${totalSections} (s) D: ${distance}, ${['1.12.2','1.13.2'].includes(version)?'L: 0, ':''}pC: ${String(g.dirty?.size||0).padStart(3,'0')}, pU: ${g.inFlight?.size||0}, aB: ${workers}`);
