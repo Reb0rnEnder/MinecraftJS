@@ -577,6 +577,7 @@ export class Game {
   // Connect as the active account (or as an explicit offline username)
   async connect(host, port, username = null) {
     this.disconnect(true);
+    const attempt=this.connectAttempt=(this.connectAttempt||0)+1;
     this.reset();
     this.serverAddress = { host, port };
     this.screens.open(new ConnectingScreen(this, host, port));
@@ -586,6 +587,7 @@ export class Game {
       // Eaglercraft servers log in by name only (no Mojang session check)
       if (acc.type === 'microsoft' && !isEaglerAddress(host)) {
         try { acc = await this.accounts.ensureFresh(acc); } catch (e) {
+          if(attempt!==this.connectAttempt)return;
           this.screens.open(new DisconnectedScreen(this, tr('disconnect.loginFailed'), e.message));
           return;
         }
@@ -593,6 +595,7 @@ export class Game {
       }
       username = acc.name;
     }
+    if(attempt!==this.connectAttempt)return;
     this.username = username;
     const conn = this.conn = new Connection();
     conn.on('control', (m) => this.onControl(m, conn));
@@ -601,11 +604,13 @@ export class Game {
     try {
       await conn.connect(host, port, username, auth);
     } catch (e) {
+      if(this.conn!==conn)return;
       this.screens.open(new DisconnectedScreen(this, tr('connect.failed'), e.message));
     }
   }
 
   disconnect(silent = false, reason) {
+    this.connectAttempt=(this.connectAttempt||0)+1;
     if (this.conn) {
       const c = this.conn;
       this.conn = null;
