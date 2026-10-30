@@ -69,3 +69,6 @@ await writeFile(guiModule,'// Option arrays extracted from the pinned native 1.1
 
 // Keep native F3 heightmap predicates reproducible when regenerating state data.
 await import('../extract-debug-heightmaps.mjs');
+
+// RenderShape MODEL is independent of the client's blend/cutout layer.
+await import('../extract-render-layers.mjs');

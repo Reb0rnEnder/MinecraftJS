@@ -66,7 +66,7 @@ export class SectionCuller {
       const i = queue[head++];
       const sy = i & 15, col = i >> 4, cz = ((col / W) | 0) - R + ccz, cx = (col % W) - R + ccx;
       const s = sections.get(sectionKey(cx, sy, cz));
-      if (s && (s.solid || s.cutout || s.translucent)) out.push(s);
+      if (s && (s.solid || s.cutout || s.translucent || s.tripwire)) out.push(s);
       const entry = state[i] - 1; // face we came in through (6 = start)
       const vis = occlude && s ? s.vis : null;
       for (let d = 0; d < 6; d++) {

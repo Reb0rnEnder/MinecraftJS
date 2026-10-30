@@ -1,3 +1,4 @@
+import {compositeWebGPU} from './transparency.js';
 // WebGPU implementation of the graphics device contract (see device.js).
 import { DEFAULT_PARAMS, PIPELINE_FORMAT, quadIndices, buildMips, vertexLayout } from './device.js';
 
@@ -379,17 +380,21 @@ export class WebGPUDevice {
     }
   }
 
-  destroyTexture(t) { if (t && t.gpu) this.deferredDestroy.push(t.gpu); }
+  destroyTexture(t) { if(t?.gpu)this.deferredDestroy.push(t.gpu);if(t?.depthTex)this.deferredDestroy.push(t.depthTex); }
 
   // Offscreen colour + depth target; the returned object is also a normal (linear, clamped) texture
-  createRenderTarget(w, h) {
+  createRenderTarget(w, h, {sampleDepth=false}={}) {
     const tex = this.device.createTexture({ size: [w, h], format: 'rgba8unorm', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_DST });
     const t = { gpu: tex, width: w, height: h, mipmaps: false, levels: 1, filter: 'linear', wrap: 'clamp', view: tex.createView() };
     t.bg = this.device.createBindGroup({ layout: this.bgl2, entries: [{ binding: 0, resource: t.view }, { binding: 1, resource: this._sampler('linear', 'clamp', false) }] });
-    t.depthTex = this.device.createTexture({ size: [w, h], format: 'depth24plus', usage: GPUTextureUsage.RENDER_ATTACHMENT });
+    t.depthFormat=sampleDepth?'depth32float':'depth24plus';
+    t.depthTex = this.device.createTexture({ size: [w, h], format: t.depthFormat, usage: GPUTextureUsage.RENDER_ATTACHMENT | (sampleDepth?GPUTextureUsage.TEXTURE_BINDING|GPUTextureUsage.COPY_SRC|GPUTextureUsage.COPY_DST:0) });
     t.depthView = t.depthTex.createView();
     return t;
   }
+
+  copyDepth(from,to){if(this.pass)this.pass.end();this.pass=null;this.encoder.copyTextureToTexture({texture:from.depthTex},{texture:to.depthTex},[from.width,from.height]);this._beginPass(null,false);}
+  compositeTransparency(layers,output){compositeWebGPU(this,layers,output);}
 
   // Draw into a render target (null = the screen). clear = [r, g, b, a] clears colour + depth.
   setRenderTarget(t, clear) {
@@ -445,7 +450,8 @@ export class WebGPUDevice {
 
   _pipeline(name, s, primitive) {
     const fmtOut = this.target ? 'rgba8unorm' : this.format;
-    const key = fmtOut + name + '|' + (s.blend || 'none') + (s.depthTest === false ? 0 : 1) + (s.depthWrite === false ? 0 : 1) + (s.cull ? 1 : 0) + (s.polygonOffset ? 1 : 0) + (s.depthFunc === 'equal' ? 'e' : '') + (s.colorWrite === false ? 'n' : '') + primitive;
+    const depthFormat=this.target?.depthFormat||'depth24plus';
+    const key = depthFormat + fmtOut + name + '|' + (s.blend || 'none') + (s.depthTest === false ? 0 : 1) + (s.depthWrite === false ? 0 : 1) + (s.cull ? 1 : 0) + (s.polygonOffset ? 1 : 0) + (s.depthFunc === 'equal' ? 'e' : '') + (s.colorWrite === false ? 'n' : '') + primitive;
     let p = this.pipelines.get(key);
     if (p) return p;
     const fmt = PIPELINE_FORMAT[name];
@@ -467,7 +473,7 @@ export class WebGPUDevice {
       fragment: { module: mod, entryPoint: 'fs', targets: [target] },
       primitive: { topology: tri ? 'triangle-list' : 'line-list', cullMode: s.cull && tri ? 'back' : 'none', frontFace: 'ccw' },
       depthStencil: {
-        format: 'depth24plus', depthWriteEnabled: s.depthWrite !== false, depthCompare: s.depthTest === false ? 'always' : s.depthFunc === 'equal' ? 'equal' : 'less-equal',
+        format: depthFormat, depthWriteEnabled: s.depthWrite !== false, depthCompare: s.depthTest === false ? 'always' : s.depthFunc === 'equal' ? 'equal' : 'less-equal',
         depthBias: s.polygonOffset && tri ? -1 : 0, depthBiasSlopeScale: s.polygonOffset && tri ? -1 : 0,
       },
     });

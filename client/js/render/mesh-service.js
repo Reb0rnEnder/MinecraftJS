@@ -42,7 +42,7 @@ export class MeshService {
         const ms = Date.now() - t0;
         const head = { type: 'built', x: sl.x, y: sl.y, z: sl.z, gen: msg.gen, token: msg.token, ms };
         if (!res) { this.post({ ...head, empty: true }); break; }
-        this.post({ ...head, ...res }, [res.solid.buffer, res.cutout.buffer, res.translucent.buffer]);
+        this.post({ ...head, ...res }, [res.solid.buffer, res.cutout.buffer, res.translucent.buffer,res.tripwire.buffer]);
         break;
       }
       default: break;

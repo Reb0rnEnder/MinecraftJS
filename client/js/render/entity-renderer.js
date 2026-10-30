@@ -1,3 +1,4 @@
+import {isSquid,squidTentacle,squidMatrix} from '../game/squid-animation.js';
 import {scaleHoglinChild,scalePiglinChild} from './nether-poses.js';
 import {bedFacing} from '../game/bed-sleep.js';
 import {foxAnimationArgs} from '../game/fox.js';
@@ -1091,11 +1092,11 @@ export class EntityRenderer {
     const p1 = new EntityParams().setTint(0.5 * 0.75, 0.25 * 0.75, 0.8 * 0.75, 1).setFullBright(true).setNoLighting(true).setAlphaTest(0);
     const state = { blend: 'add', depthWrite: false, depthFunc: 'equal' };
     const meshes = [];
-    node.traverse((n) => { if (n.visible) for (const d of n.drawables) if (d.mesh && n.userData.glint) meshes.push({ mesh: d.mesh, world: n.world }); });
+    node.traverse((n) => { if (n.visible) for (const d of n.drawables) if (d.mesh && n.userData.glint) meshes.push({ mesh: d.mesh, world: n.world,outputTarget:d.outputTarget||d.mat?.outputTarget }); });
     // RenderItem.renderEffect: uv * 8 scrolled by one texture width per period (second pass the other way)
     for (const [period, dir] of [[3000, 1], [4873, -1]]) {
       p1.setUvTransform(dir * (t % period) / period, 0, 8);
-      for (const m of meshes) device.draw({ mesh: m.mesh, pipeline: 'entity', textures: [tex], params: new Float32Array(p1.p), model: m.world, state });
+      for (const m of meshes) device.draw({ mesh: m.mesh, pipeline: 'entity', textures: [tex], params: new Float32Array(p1.p), model: m.world, state,outputTarget:m.outputTarget });
     }
     void GLINT_PARAMS;
   }
@@ -1210,6 +1211,7 @@ export class EntityRenderer {
       mat4.rotateZ(m,m,90*D2R);mat4.rotateY(m,m,270*D2R);
       v.yawGroup.matrix=m;
     }
+    if(isSquid(e))v.yawGroup.matrix=squidMatrix(e,body,partial);
     let yOffset = 0;
     if (e.kind === 'player' && e.sneaking && !e.sleeping) yOffset = -0.125;
     v.root.position.y += yOffset;
@@ -1285,7 +1287,7 @@ export class EntityRenderer {
       carrying: !!e.carried, screaming: e.screaming, horseType: e.horseType, saddled: !!(e.horseFlags & 4) || e.saddled,
       tailRotation: e.tamed ? (0.55 - (20 - (e.wolfHealth || 20)) * 0.02) * Math.PI : Math.PI / 5,
       witchDrinking: e.kind === 'mob' && e.type === 66 && e.usingItem,
-      squish: 0,
+      squish: 0, tentacleAngle:isSquid(e)?squidTentacle(e,partial):undefined,
       peek: e.type === 69 ? (e.prevPeek || 0) + ((e.peek || 0) - (e.prevPeek || 0)) * partial : 0,
       attackTicks:e.attackTicks||0,aggressive:!!e.aggressive,piglinPose:e.dancing?'dancing':(e.offhand&&(g.tags?.registries.items.get('minecraft:piglin_loved')||[]).includes(e.offhand.id))?'admiring':e.crossbowCharging?'crossbow_charge':e.aggressive&&held&&g.items.name(held.id)==='crossbow'?'crossbow_hold':e.aggressive?'attacking':'default',
       entityId: e.id, child: !!e.child, leftHanded: !!e.leftHanded,

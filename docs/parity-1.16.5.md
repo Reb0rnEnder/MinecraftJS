@@ -63,8 +63,10 @@ multiplayer interaction or pixel-perfect rendering of every screen.
 
 ## Remaining verification and known gaps
 
-- Fabulous graphics requires the native multipass/translucency behavior; only
-  the existing Fast/Fancy renderer paths are available.
+- Full live shader/resource-pack and native screenshot comparisons for the
+  new Fabulous path remain acceptance work. Six-layer composition and native
+  item/tripwire routing pass controlled tests on all three graphics backends;
+  see `fabulous-rendering.md`.
 - Social Interactions has session-local hiding and name filtering. Microsoft
   account block-list retrieval and account-service integration remain missing.
 - Verify complete gameplay sequences against Java: respawn anchors and invalid

@@ -98,7 +98,7 @@ export function faceFlags() {
     const n = b.name;
     let f = 0;
     if (n.endsWith('_leaves')) f |= 1;
-    if (n === 'glass' || n.endsWith('_stained_glass') || n === 'ice' || n === 'frosted_ice' || n === 'slime_block' || n === 'nether_portal') f |= 2;
+    if (n === 'glass' || (b.translucent&&!b.isPane&&!b.isLiquid) || n.endsWith('_stained_glass') || n === 'ice' || n === 'frosted_ice' || n === 'slime_block' || n === 'nether_portal') f |= 2;
     if (b.isPane) f |= 4;
     FACE_FLAGS[i] = f;
   }
@@ -338,8 +338,8 @@ export class Mesher {
     this.world = world;
     this._flags = faceFlags();
     // the buffers stay allocated between builds (result() copies the used part out)
-    const bufs = this._bufs || (this._bufs = [new VBuf(), new VBuf(), new VBuf()]);
-    const solid = bufs[0].reset(), cutout = bufs[1].reset(), trans = bufs[2].reset();
+    const bufs = this._bufs || (this._bufs = [new VBuf(), new VBuf(), new VBuf(), new VBuf()]);
+    const solid = bufs[0].reset(), cutout = bufs[1].reset(), trans = bufs[2].reset(), tripwire=bufs[3].reset();
     const w = world;
     const bx0 = cx * 16, by0 = sy * 16, bz0 = cz * 16;
     const blocksArr = w.getSectionBlocks();
@@ -375,7 +375,7 @@ export class Mesher {
       for (const q of model.quads) {
         if (q.cull >= 0 && !visible[q.cull]) continue;
         let buf;
-        if (b.translucent) buf = trans; else if (q.alpha && !fastLeaves) buf = cutout; else buf = solid;
+        if(b.renderLayer==='tripwire')buf=tripwire;else if (b.translucent) buf = trans; else if (q.alpha && !fastLeaves) buf = cutout; else buf = solid;
         let tint = q.tint < 0 ? 0xffffff : tintCache[q.tint];
         if (tint === undefined) tint = tintCache[q.tint] = this.tintFor(state, q.tint, x, y, z);
         const tr = ((tint >> 16) & 255) / 255, tg = ((tint >> 8) & 255) / 255, tb = (tint & 255) / 255;
@@ -422,7 +422,7 @@ export class Mesher {
         }
       }
     }
-    return { solid: solid.result(), cutout: cutout.result(), translucent: trans.result(), vis: computeVisibility(blocksArr, this.options.fancy), lod: !!this.options.lod };
+    return { solid: solid.result(), cutout: cutout.result(), translucent: trans.result(), tripwire:tripwire.result(), vis: computeVisibility(blocksArr, this.options.fancy), lod: !!this.options.lod };
   }
 
   // ---- Fluids (port of BlockFluidRenderer) ----
