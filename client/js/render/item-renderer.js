@@ -1,3 +1,4 @@
+import {blocksByName} from '../world/blocks.js';
 import {compassProperty} from './compass.js';
 // Item rendering: GUI icons (2D sprites + 3D block icons), counts/durability/glint,
 // and 3D meshes for held/dropped items (port of ItemModelGenerator extrusion).
@@ -457,6 +458,10 @@ export class ItemRenderer {
     if (!res.mesh) return null;
     const n = new Node();
     n.addDrawable(res.mesh, atlasMat);
+    // ItemBlockRenderTypes/ItemRenderer: world half-transparent block items use
+    // the Fabulous item target; ordinary entity translucent materials stay on main.
+    const name=res.model.itemName||res.model.name||'',block=blocksByName[name];
+    if(block?.translucent&&(name==='ice'||name==='slime_block'||name==='honey_block'||name.includes('glass')))n.drawables[0].outputTarget='itemEntity';
     if (this.game.items.hasEffect(item)) n.userData.glint = res.mesh;
     return { obj: n, gui3d: res.model.kind === 'block', model: res.model };
   }

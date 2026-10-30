@@ -128,7 +128,7 @@ export function toDraw(d, world, resolve) {
   let tex = m.tex;
   if (typeof tex === 'string' || typeof tex === 'function') { tex = resolve ? resolve(tex) : null; if (!tex) return null; }
   const params = m.params && m.params.p ? m.params.p : m.params;
-  return { mesh: d.mesh, pipeline: m.pipeline, textures: tex ? [tex] : null, params, model: world, state: m.state, primitive: d.primitive, first: d.first, count: d.count };
+  return { mesh: d.mesh, pipeline: m.pipeline, textures: tex ? [tex] : null, params, model: world, state: m.state, primitive: d.primitive, first: d.first, count: d.count, outputTarget:d.outputTarget||m.outputTarget };
 }
 
 // Submit a node tree to the device, ordered by drawable.order (stable). With opts.batcher, runs of consecutive
@@ -162,7 +162,7 @@ export function drawTree(device, root, opts = {}) {
     const m = dr.mesh;
     const batchable = m.cpu && m.quads && dr.pipeline === 'entity' && !dr.primitive && dr.first === undefined && dr.count === undefined;
     if (!batchable) { flush(); cmds.push(dr); continue; }
-    if (run && run.dr.params === dr.params && run.dr.state === dr.state && run.dr.textures && dr.textures && run.dr.textures[0] === dr.textures[0]) {
+    if (run && run.dr.outputTarget===dr.outputTarget && run.dr.params === dr.params && run.dr.state === dr.state && run.dr.textures && dr.textures && run.dr.textures[0] === dr.textures[0]) {
       run.items.push([m, world]);
       continue;
     }
@@ -217,7 +217,7 @@ export class Batcher {
       }
     }
     this.n += verts;
-    return { mesh: null, batch: this, pipeline: dr.pipeline, textures: dr.textures, params: dr.params, model: IDENTITY, state: dr.state, first: (first / 4) * 6, count: (verts / 4) * 6 };
+    return { mesh: null, batch: this, pipeline: dr.pipeline, textures: dr.textures, params: dr.params, model: IDENTITY, state: dr.state, outputTarget:dr.outputTarget, first: (first / 4) * 6, count: (verts / 4) * 6 };
   }
 
   // Upload this frame's vertices (one buffer update) and point the batched draws at the mesh

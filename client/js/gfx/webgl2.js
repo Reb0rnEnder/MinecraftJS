@@ -1,3 +1,4 @@
+import {compositeWebGL} from './transparency.js';
 import {FINAL_UNIFORMS,shaderFrameUniforms} from '../render/shader-frame.js';
 // WebGL 2 implementation of the graphics device contract (see device.js).
 import { DEFAULT_PARAMS, PIPELINE_FORMAT, quadIndices, buildMips, vertexLayout } from './device.js';
@@ -418,16 +419,20 @@ vec3 mcjsWave(vec3 p){
   }
 
   // Offscreen colour + depth target; the returned object is also a normal (linear, clamped) texture
-  createRenderTarget(w, h) {
+  createRenderTarget(w, h, {sampleDepth=false}={}) {
     const gl = this.gl;
     const t = this.createTexture({ width: w, height: h, filter: 'linear', wrap: 'clamp' });
     t.fbo = gl.createFramebuffer();
-    t.depth = gl.createRenderbuffer();
-    gl.bindRenderbuffer(gl.RENDERBUFFER, t.depth);
-    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, w, h);
+    if(sampleDepth){
+      t.depthTexture=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t.depthTexture);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.DEPTH_COMPONENT24,w,h,0,gl.DEPTH_COMPONENT,gl.UNSIGNED_INT,null);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);this.boundTex.fill(null);
+    }else{t.depth=gl.createRenderbuffer();gl.bindRenderbuffer(gl.RENDERBUFFER,t.depth);gl.renderbufferStorage(gl.RENDERBUFFER,gl.DEPTH_COMPONENT24,w,h);}
     gl.bindFramebuffer(gl.FRAMEBUFFER, t.fbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t.tex, 0);
-    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, t.depth);
+    if(t.depthTexture)gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.TEXTURE_2D,t.depthTexture,0);
+    else gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, t.depth);
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.target ? this.target.fbo : null);
     return t;
   }
@@ -476,7 +481,9 @@ vec3 mcjsWave(vec3 p){
     if (t.mipmaps && x === 0 && y === 0 && w === t.width && h === t.height) this._uploadMips(t, data);
   }
 
-  destroyTexture(t) { if (t && t.tex) this.gl.deleteTexture(t.tex); }
+  destroyTexture(t) { if(!t)return;const gl=this.gl;if(t.tex)gl.deleteTexture(t.tex);if(t.fbo)gl.deleteFramebuffer(t.fbo);if(t.depth)gl.deleteRenderbuffer(t.depth);if(t.depthTexture)gl.deleteTexture(t.depthTexture); }
+  copyDepth(from,to){const gl=this.gl;gl.bindFramebuffer(gl.READ_FRAMEBUFFER,from.fbo);gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER,to.fbo);gl.blitFramebuffer(0,0,from.width,from.height,0,0,to.width,to.height,gl.DEPTH_BUFFER_BIT,gl.NEAREST);gl.bindFramebuffer(gl.FRAMEBUFFER,this.target?.fbo||null);}
+  compositeTransparency(layers,output){compositeWebGL(this,layers,output);}
 
   // ---------------------------------------------------------------- meshes
 

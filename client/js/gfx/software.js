@@ -1,3 +1,4 @@
+import {compositeSoftware} from './transparency.js';
 // Software rasteriser implementing the graphics device contract (see device.js), for browsers with neither WebGL 2
 // nor WebGPU. Everything runs on the CPU into a Uint32 colour buffer and a Float32 depth buffer, presented with
 // putImageData. The platform keeps Super Potato Mode (reduced resolution) on while this device runs.
@@ -92,6 +93,8 @@ export class SoftwareDevice {
   }
 
   destroyTexture() {}
+  copyDepth(from,to){to.rt.depth.set(from.rt.depth);}
+  compositeTransparency(layers,output){compositeSoftware(this,layers,output);}
 
   createRenderTarget(w, h) {
     const b = this._buffers(w, h);

@@ -45,6 +45,10 @@ are in `tools/port-1.17.1/baseline.json`.
   worker storage, culling/meshing, collisions, biome sampling, precipitation and
   F3 height maps. Negative and above-255 browser scenes render without errors.
   See `vertical-world-parity.md` for native limits, tests and live-test limits.
+- Fabulous six-layer depth composition is implemented on WebGL 2, WebGPU and
+  software, with native item/tripwire routing. Native render-layer extraction
+  fixes tinted glass and inherited honey transparency. See
+  `fabulous-rendering.md` and `block-render-layers.md` for checks and limits.
 - Sound registry/events/sample references are checked against the built assets.
 - Bee anger accessor follows the native renamed field; the same correction was
   backported to 1.16.5. 1.15.2 already uses its correct original accessor.
@@ -90,14 +94,14 @@ probes accept `--host=`, `--port=` and `--duration=`. They do not start a server
   and formatted glowing-sign visual comparisons; full live sequences for candle,
   dripstone, amethyst/sculk/vibration and other new state-specific interactions.
   Provider construction/fixtures do not prove every timing or visual detail.
-- Remaining inherited mob animation accuracy. Glow-squid motion still shares
-  the existing squid animation adapter, whose tentacle timing needs comparison
-  to native Squid entity state. Goat/axolotl and spyglass follow-up checks are in
-  `caves-content-parity.md`.
+- Remaining inherited mob animation acceptance. Squid/glow-squid now use the
+  native client phase, server cycle reset and interpolated body/tentacle pose;
+  random constructor seeds and visual timing still need live comparisons.
+  Goat/axolotl and spyglass follow-up checks are in `caves-content-parity.md`.
 - Compare all release-note changes and native implementations, including native
   harvesting tags/tool tiers, new mob sound variants and client status effects.
 - Carry-over gaps from `parity-1.16.5.md`; command/font/GUI/narrator parity audits;
   shader/custom-pack regressions and measured frame-time/memory profiles.
 
-Next milestone: native Fabulous rendering;
-then complete the live inventory/equipment/dimension-travel acceptance matrix.
+Next milestone: complete the live inventory/equipment/dimension-travel
+acceptance matrix and the outstanding account/GUI/release audits.

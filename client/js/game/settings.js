@@ -30,6 +30,7 @@ const DEFAULTS = {
   viewBobbing: true,
   clouds: 2, // 0 off, 1 fast, 2 fancy
   fancyGraphics: true,
+  fabulousGraphics: false,
   smoothLighting: 2, // ambient occlusion: 0 off, 1 minimum, 2 maximum
   enableVsync: true,
   mipmapLevels: 4,

@@ -1971,6 +1971,7 @@ export class Game {
 
     fov = zoomFov(this,fov);
     r.renderDistance = this.settings.renderDistance;
+    r.fabulousEnabled=!!this.settings.fabulousGraphics;
     r.setCamera(ex, ey, ez, camYaw, camPitch, roll, fov, pre,portalWarp(portal*(this.settings.screenEffectScale??1)**2,this.ticks+partial,this.effects.has(9)));
     const temp = biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).temperature;
     const rain = this.world.prevRain !== undefined ? this.world.prevRain + (this.world.rainStrength - this.world.prevRain) * partial : this.world.rainStrength;

@@ -50,7 +50,7 @@ export function debugLeft(hud){
  let fps=`${g.fps} fps`;
  if(!since(15)){const n=g.chunkUpdates||0;fps+=` (${n} chunk update${n===1?'':'s'})`;}
  fps+=` T: ${s.maxFps||'inf'}${s.enableVsync?' vsync':''}`;
- fps+=since(16)?(s.fancyGraphics?' fancy':' fast'):(s.fancyGraphics?'':' fast');
+ fps+=since(16)?(s.fabulousGraphics?' fabulous':s.fancyGraphics?' fancy':' fast'):(s.fancyGraphics?'':' fast');
  fps+=!s.clouds?'':s.clouds===1?' fast-clouds':' fancy-clouds';
  fps+=since(15)?` B: ${s.biomeBlendRadius??2}`:s.useVbo!==false?' vbo':'';
  const workers=g.assets.worker?.workers?.filter(worker=>!worker.busy).length??1;

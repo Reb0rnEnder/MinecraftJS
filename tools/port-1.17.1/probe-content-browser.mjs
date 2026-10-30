@@ -1,11 +1,11 @@
 // Isolated client scene; never connects to or changes a game server.
 import assert from 'node:assert/strict';
 const {chromium}=await import(process.env.PLAYWRIGHT_MODULE||'playwright');
-const browser=await chromium.launch({headless:true,args:['--no-sandbox','--use-angle=swiftshader','--enable-unsafe-swiftshader']});
+const browser=await chromium.launch({headless:true,args:['--no-sandbox','--enable-unsafe-webgpu','--use-angle=vulkan','--enable-unsafe-swiftshader','--use-vulkan=swiftshader','--use-dawn-backend=vulkan','--enable-features=Vulkan','--use-webgpu-adapter=swiftshader','--disable-vulkan-surface']});
 try{
  const page=await browser.newPage({viewport:{width:1200,height:800}}),errors=[];
  page.on('pageerror',e=>errors.push(e.stack));page.on('console',m=>{if(m.type()==='error')errors.push(m.text());});
- await page.addInitScript(()=>localStorage.setItem('minecraftjs.settings',JSON.stringify({renderDistance:2,maxFps:30,entityShadows:true,masterVolume:0,pauseOnLostFocus:false,tutorialStep:'none'})));
+ await page.addInitScript(({fabulous,graphicsApi})=>localStorage.setItem('minecraftjs.settings',JSON.stringify({fabulousGraphics:fabulous,graphicsApi,renderDistance:2,maxFps:30,entityShadows:true,masterVolume:0,pauseOnLostFocus:false,tutorialStep:'none'})),{fabulous:process.env.FABULOUS==='1',graphicsApi:process.env.GRAPHICS_API||'webgl2'});
  await page.goto(process.env.CLIENT_URL||'http://127.0.0.1:3002');await page.waitForFunction(()=>globalThis.game,null,{timeout:120000});
  const report=await page.evaluate(async()=>{
   const {Chunk,Section}=await import('/js/world/chunk.js'),{findState}=await import('/js/world/blocks.js'),{NATIVE_METADATA}=await import('/js/game/entity-metadata-1.17.1.js'),{openContainerScreen}=await import('/js/gui/screens/containers.js'),{ContainerWindow}=await import('/js/game/container.js');
@@ -35,7 +35,7 @@ try{
   const accessibility=new AccessibilityScreen(g,null);g.screens.open(accessibility);const accessibilityRows=accessibility.rows.flat().map(b=>b.optionKey);
   g.screens.open(new SocialInteractionsScreen(g));await new Promise(r=>setTimeout(r,100));
   g.input.down.add('F3');g.input.heldKeys.add('F3');g.screens.open(new GameModeSwitcherScreen(g));await new Promise(r=>setTimeout(r,100));g.screens.close();g.input.down.delete('F3');g.input.heldKeys.delete('F3');
-  return {rendered,menu,video,chatRows,accessibilityRows,crashed:!!g.crashed,newMobs:[...g.entities.map.values()].filter(e=>['goat','axolotl','glow_squid'].includes(e.entityName)).map(e=>({name:e.entityName,variant:e.axolotlVariant,child:e.child,screaming:e.screamingGoat}))};
+  return {rendered,menu,video,chatRows,accessibilityRows,crashed:!!g.crashed,fabulous:!!g.renderer.fabulous,adapter:g.device.name,glError:g.device.gl?.getError(),newMobs:[...g.entities.map.values()].filter(e=>['goat','axolotl','glow_squid'].includes(e.entityName)).map(e=>({name:e.entityName,variant:e.axolotlVariant,child:e.child,screaming:e.screamingGoat}))};
  });
- await page.screenshot({path:process.env.SCREENSHOT||'/tmp/minecraftjs-1.17.1-nether.png'});console.log(JSON.stringify({report,errors},null,2));assert.equal(report.rendered.length,12);assert.ok(report.rendered.every(e=>e.parts&&e.mesh>0));assert.equal(report.menu.type,'minecraft:smithing');assert.equal(report.crashed,false);assert.ok(report.newMobs.some(e=>e.name==='axolotl'&&e.variant===4&&e.child));assert.ok(report.newMobs.some(e=>e.name==='goat'&&e.screaming));assert.deepEqual(errors,[]);
+ await page.screenshot({path:process.env.SCREENSHOT||'/tmp/minecraftjs-1.17.1-nether.png'});console.log(JSON.stringify({report,errors},null,2));assert.equal(report.rendered.length,12);assert.ok(report.rendered.every(e=>e.parts&&e.mesh>0));assert.equal(report.menu.type,'minecraft:smithing');assert.equal(report.crashed,false);if(report.adapter==='WebGL 2')assert.equal(report.glError,0);assert.equal(report.adapter,({webgpu:'WebGPU',software:'Software',webgl2:'WebGL 2'})[process.env.GRAPHICS_API||'webgl2']);assert.equal(report.fabulous,process.env.FABULOUS==='1');assert.ok(report.newMobs.some(e=>e.name==='axolotl'&&e.variant===4&&e.child));assert.ok(report.newMobs.some(e=>e.name==='goat'&&e.screaming));assert.deepEqual(errors,[]);
 }finally{await browser.close();}

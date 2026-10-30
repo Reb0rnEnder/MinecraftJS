@@ -1,3 +1,4 @@
+import {isSquid,initSquid,tickSquid,squidInWater} from './squid-animation.js';
 import {detachRemovedEntities} from './riding-lifecycle.js';
 import {applyNetherMetadata} from './nether-metadata.js';
 import {applyFoxFlags,tickFox} from './fox.js';
@@ -118,6 +119,7 @@ export class EntityManager {
   }
 
   add(e) {
+    if(isSquid(e))initSquid(e);
     if(e.kind==='leash')placeLeashKnot(e);
     const old = this.map.get(e.id);
     if (old) { stopBeeSound(old); this.game.entityRenderer.remove(old); }
@@ -598,6 +600,7 @@ export class EntityManager {
       case 15: g.particles.entityEffect(e, 'witchMagic'); break;
       case 58: case 59: if (e.entityName === 'goat') e.goatRamming = p.entityStatus === 58; break;
       case 53:case 54:g.particles.honeyBlockEffect(e,p.entityStatus===53?5:10);break;
+      case 19: if(isSquid(e)){if(!e.squid)initSquid(e);e.squid.phase=0;}break;
       case 17: g.particles.fireworkExplode && g.particles.fireworkExplode(e); break;
       default: break;
     }
@@ -1013,6 +1016,8 @@ export class EntityManager {
       } else e.swingTicks = 0;
       e.swingProgress = e.swingTicks / 6;
       if (e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand') this._livingUpdate(e);
+      if(isSquid(e))tickSquid(e,squidInWater(e,g.world));
+      if(e.entityName==='glow_squid')g.particles.nativeParticle('glow',e.x+(Math.random()-.5)*e.width*.6,e.y+Math.random()*e.height,e.z+(Math.random()-.5)*e.width*.6);
       if (e.kind === 'player') this._updateCape(e);
       if (e.onFire && Math.random() < 0.3) g.particles.entityFire && g.particles.entityFire(e);
       // EntityLivingBase.updatePotionEffects (1.9+): colour in metadata 8, "ambient" (beacon) in 9

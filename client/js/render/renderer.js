@@ -1,3 +1,4 @@
+import {Fabulous} from './fabulous.js';
 import { BreakingOverlay } from './breaking.js';
 import { waterFog } from './water-fog.js';
 // World renderer (device-agnostic, see gfx/device.js).
@@ -78,7 +79,7 @@ export class Renderer {
     this.removeSection(key);
     if (!data || data.empty) return;
     const s = { cx, sy, cz, vis: data.vis || null, lod: !!data.lod };
-    for (const layer of ['solid', 'cutout', 'translucent']) {
+    for (const layer of ['solid', 'cutout', 'translucent','tripwire']) {
       const arr = data[layer];
       if (arr && arr.length) s[layer] = this.device.createMesh(FORMAT.terrain, arr, { quads: true });
     }
@@ -91,7 +92,7 @@ export class Renderer {
     if (typeof key === 'string') { const p = key.split(','); key = sectionKey(+p[0], +p[1], +p[2]); }
     const s = this.sections.get(key);
     if (!s) return;
-    for (const layer of ['solid', 'cutout', 'translucent']) if (s[layer]) this.device.destroyMesh(s[layer]);
+    for (const layer of ['solid', 'cutout', 'translucent','tripwire']) if (s[layer]) this.device.destroyMesh(s[layer]);
     this.sections.delete(key);
   }
 
@@ -426,6 +427,9 @@ export class Renderer {
     const d = this.device;
     d.beginFrame(this.fog.color);
     if (post) post.begin(this.fog.color);
+    const fabulous=this.fabulousEnabled?(this.fabulous||=new Fabulous(d)):null;
+    if(!fabulous&&this.fabulous){this.fabulous.destroy();this.fabulous=null;}
+    if(fabulous)fabulous.begin(this.fog.color);
     this._drawSky();
     d.clearDepth();
     this._globals(this.view, this.proj);
@@ -445,7 +449,7 @@ export class Renderer {
     const cutState = { blend: 'none', cull: true };
     for (const s of vis) if (s.cutout) d.draw({ mesh: s.cutout, pipeline: 'terrain', textures: atlas, params: s.lod ? P_CUTOUT_LOD : P_CUTOUT, model: s.model, state: cutState });
     // Entities + tile entities
-    if (this.drawEntities) this.drawEntities(d, this.camRot);
+    if (this.drawEntities) this.drawEntities(fabulous?fabulous.entityDevice:d, this.camRot);
     else drawTree(d, this.entityRoot, { camRot: this.camRot });
     // Selection outline + break progress
     if (this.outlineBox) d.draw({ mesh: this.outlineMesh, pipeline: 'color', params: P_WHITE, primitive: 'lines', state: { blend: 'alpha', depthWrite: false } });
@@ -461,12 +465,17 @@ export class Renderer {
     }
     const extras = [...this.extraDraws].sort((a, b) => (a.order || 0) - (b.order || 0));
     for (const e of extras) if ((e.order || 0) < 10) e(d);
+    if(fabulous){fabulous.prepare();d.setRenderTarget(fabulous.targets.translucent);}
     // Translucent terrain, far to near
     const transState = { blend: 'alpha', cull: true, depthWrite: true };
     for (let i = vis.length - 1; i >= 0; i--) {
       const s = vis[i];
       if (s.translucent) d.draw({ mesh: s.translucent, pipeline: 'terrain', textures: atlas, params: s.lod ? P_TRANSLUCENT_LOD : P_TRANSLUCENT, model: s.model, state: transState });
     }
+    // RenderType.tripwire targets weather in Fabulous and main otherwise.
+    if(fabulous)d.setRenderTarget(fabulous.targets.weather);
+    for(let i=vis.length-1;i>=0;i--){const s=vis[i];if(s.tripwire)d.draw({mesh:s.tripwire,pipeline:'terrain',textures:atlas,params:P_CUTOUT,model:s.model,state:transState});}
+    if(fabulous)d.setRenderTarget(fabulous.targets.clouds);
     // Clouds
     if (this.env.cloudsVisible) {
       const ct = this.assets.texture('environment/clouds.png', { wrap: 'repeat' });
@@ -476,9 +485,14 @@ export class Renderer {
         const fc = this.fancyClouds, p = colorParams(cc[0], cc[1], cc[2], 0.8, 0.1, 1);
         d.draw({ mesh: fc.mesh, pipeline: 'color', textures: [ct], params: p, model: fc.model, state: { blend: 'none', colorWrite: false, cull: false } });
         d.draw({ mesh: fc.mesh, pipeline: 'color', textures: [ct], params: p, model: fc.model, state: { blend: 'alpha', depthWrite: false, cull: false } });
-      } else if (ct) d.draw({ mesh: this.cloudMesh, pipeline: 'color', textures: [ct], params: colorParams(cc[0], cc[1], cc[2], 0.8, 0.004, 1), state: { blend: 'alpha', depthWrite: false } });
+      } else if (ct) d.draw({ mesh: this.cloudMesh, pipeline: 'color', textures: [ct], params: colorParams(cc[0], cc[1], cc[2], 0.8, 0.004, 1), state: { blend: 'alpha', depthWrite: !!fabulous } });
     }
-    for (const e of extras) if ((e.order || 0) >= 10) e(d);
+    for (const e of extras) if ((e.order || 0) >= 10 && (e.order||0)<20) {
+      if(fabulous)fabulous.layer(e.order===11?'particles':e.order===12?'weather':'main',e,true);else e(d);
+    }
+    if(fabulous)d.setRenderTarget(fabulous.targets.main);
+    for(const e of extras)if((e.order||0)>=20)e(d);
+    if(fabulous)fabulous.finish();
     // EntityRenderer.renderWorldPass: clear depth, renderHand, then renderWorldDirections
     if (hand || this.afterHand.some((f) => f.active && f.active())) {
       d.clearDepth();
