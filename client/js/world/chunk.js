@@ -51,7 +51,7 @@ export class Chunk {
     this.hasSky = hasSky;
     this.sections = new Array(16).fill(null);
     this.biomes = new Uint8Array(256);
-    this.heightMap = new Uint8Array(256); // y of highest light-blocking block + 1
+    this.heightMap = new Uint16Array(256); // y of highest light-blocking block + 1
     this.tileEntities = new Map(); // "x,y,z" -> nbt (simplified)
   }
 
