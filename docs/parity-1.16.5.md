@@ -67,8 +67,9 @@ multiplayer interaction or pixel-perfect rendering of every screen.
   new Fabulous path remain acceptance work. Six-layer composition and native
   item/tripwire routing pass controlled tests on all three graphics backends;
   see `fabulous-rendering.md`.
-- Social Interactions has session-local hiding and name filtering. Microsoft
-  account block-list retrieval and account-service integration remain missing.
+- Authenticated account-service acceptance remains: native block-list and
+  privileges retrieval, account isolation and filtering are now implemented and
+  covered by transport/behavior fixtures; see `social-account-parity.md`.
 - Verify complete gameplay sequences against Java: respawn anchors and invalid
   dimension explosions, Nether portal travel, lodestone invalidation, piglin
   bartering, strider mounting/boosting, Soul Speed equipment changes and custom

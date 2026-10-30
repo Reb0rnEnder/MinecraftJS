@@ -1,3 +1,4 @@
+import {SocialBlocking} from './social-blocking.js';
 import {ResourceLoadingScreen} from '../gui/screens/loading.js';
 import {SocialInteractionsScreen} from '../gui/screens/social.js';
 import {GameModeSwitcherScreen} from '../gui/screens/gamemode-switcher.js';
@@ -110,6 +111,8 @@ export class Game {
     this.gui.resize();
     this.items = new Items(assets);
     this.accounts = new Accounts(settings);
+    this.socialBlocking=new SocialBlocking(this);
+    this.accounts.onActiveChanged=()=>this.socialBlocking.sync();
     this.renderer = new Renderer(device, assets);
     this.renderer.renderDistance = settings.renderDistance;
     this.renderer.gamma = settings.gamma;
@@ -592,6 +595,7 @@ export class Game {
   // Connect as the active account (or as an explicit offline username)
   async connect(host, port, username = null) {
     this.disconnect(true);
+    const attempt=this.connectAttempt=(this.connectAttempt||0)+1;
     this.reset();
     this.serverAddress = { host, port };
     this.screens.open(new ConnectingScreen(this, host, port));
@@ -601,6 +605,7 @@ export class Game {
       // Eaglercraft servers log in by name only (no Mojang session check)
       if (acc.type === 'microsoft' && !isEaglerAddress(host)) {
         try { acc = await this.accounts.ensureFresh(acc); } catch (e) {
+          if(attempt!==this.connectAttempt)return;
           this.screens.open(new DisconnectedScreen(this, tr('disconnect.loginFailed'), e.message));
           return;
         }
@@ -608,6 +613,10 @@ export class Game {
       }
       username = acc.name;
     }
+    if(attempt!==this.connectAttempt)return;
+    await this.socialBlocking.sync();
+    if(attempt!==this.connectAttempt)return;
+    if(this.accountPrivileges?.multiplayerServer===false){this.screens.open(new DisconnectedScreen(this,tr('connect.failed'),tr('title.multiplayer.disabled')));return;}
     this.username = username;
     const conn = this.conn = new Connection();
     conn.on('control', (m) => this.onControl(m, conn));
@@ -616,11 +625,13 @@ export class Game {
     try {
       await conn.connect(host, port, username, auth);
     } catch (e) {
+      if(this.conn!==conn)return;
       this.screens.open(new DisconnectedScreen(this, tr('connect.failed'), e.message));
     }
   }
 
   disconnect(silent = false, reason) {
+    this.connectAttempt=(this.connectAttempt||0)+1;
     if (this.conn) {
       const c = this.conn;
       this.conn = null;
@@ -782,8 +793,8 @@ export class Game {
   }
 
   on_chat(p) {
-    if(this.hiddenPlayers?.has(p.sender)||this.blockedPlayers?.has(p.sender))return;
-    if(this.settings.hideMatchedNames){const name=chatToLegacy(p.message).replace(/§./g,'').match(/<([^>]+)>/)?.[1],id=[...(this.scoreboard?.players||[])].find(([,player])=>player.name===name)?.[0];if(id&&(this.hiddenPlayers?.has(id)||this.blockedPlayers?.has(id)))return;}
+    if(this.hiddenPlayers?.has(p.sender)||(this.socialBlocking?.isBlocked(p.sender)||this.blockedPlayers?.has(p.sender)))return;
+    if(this.settings.hideMatchedNames){const name=chatToLegacy(p.message).replace(/§./g,'').match(/<([^>]+)>/)?.[1],id=[...(this.scoreboard?.players||[])].find(([,player])=>player.name===name)?.[0];if(id&&(this.hiddenPlayers?.has(id)||(this.socialBlocking?.isBlocked(id)||this.blockedPlayers?.has(id))))return;}
     const text = chatToLegacy(p.message);
     if (p.position === 2) this.hud.setActionBar(text);
     else if(p.position===0)this.hud.queueChatMessage(text,p.message);

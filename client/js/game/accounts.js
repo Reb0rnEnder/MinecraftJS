@@ -35,6 +35,7 @@ export class Accounts {
     const a = this.active();
     if (a) { this.settings.username = a.name; this.settings.save(); }
     this.save();
+    this.onActiveChanged?.();
   }
 
   addOffline(name) {
@@ -59,6 +60,7 @@ export class Accounts {
     if (!this.list.length) this.addOffline(this.settings.username || 'WebPlayer');
     if (this.activeId === id) this.activeId = this.list[0].id;
     this.save();
+    this.onActiveChanged?.();
   }
 
   // Valid Minecraft token for a Microsoft account (refreshing it when it is about to expire)
@@ -68,6 +70,20 @@ export class Accounts {
     const r = await authPost('/auth/refresh', { refreshToken: a.refreshToken });
     if (!r.json || !r.json.account) throw new Error((r.json && r.json.error) || 'Could not refresh the Microsoft session');
     return this.addMicrosoft(r.json.account);
+  }
+
+  async socialPrivileges(account=this.active()) {
+    if(account?.type!=='microsoft')return null;
+    const fresh=await this.ensureFresh(account),r=await authPost('/auth/privileges',{accessToken:fresh.accessToken});
+    if(r.status!==200||!r.json?.privileges)throw Error(r.json?.error||'Could not load account privileges');
+    return r.json.privileges;
+  }
+
+  async blockedProfiles(account=this.active()) {
+    if(account?.type!=='microsoft')return [];
+    const fresh=await this.ensureFresh(account),r=await authPost('/auth/blocklist',{accessToken:fresh.accessToken});
+    if(r.status!==200||!Array.isArray(r.json?.blockedProfiles))throw Error(r.json?.error||'Could not load the account block list');
+    return r.json.blockedProfiles;
   }
 
   // Device code sign in: returns { userCode, verificationUri, deviceCode, interval, expiresIn }

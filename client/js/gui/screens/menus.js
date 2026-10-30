@@ -25,6 +25,7 @@ export class TitleScreen extends Screen {
 
   init() {
     const g = this.game;
+    g.socialBlocking?.sync();
     g.updateWindowTitle?.();
     const splashes = g.assets.splashes;
     if (!this.splash && splashes && splashes.length) {
@@ -131,6 +132,7 @@ export class TitleScreen extends Screen {
     gui.text(legal, this.width - gui.textWidth(legal) - 2, this.height - 10, 0xffffff, true);
     if (this.reason) gui.textCentered(this.reason, this.width / 2, this.height / 4 + 30, 0xff5555, true);
     this.hoverText = null;
+    const multiplayer=this.buttons.find(b=>b.id===2);if(multiplayer){multiplayer.enabled=this.game.accountPrivileges?.multiplayerServer!==false;if(!multiplayer.enabled&&multiplayer.hovered(mx,my))this.hoverText=tr('title.multiplayer.disabled');}
     for (const b of this.buttons) b.render(gui, mx, my);
     if (this.hoverText) gui.tooltip([this.hoverText], mx, my);
   }

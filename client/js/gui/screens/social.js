@@ -4,6 +4,7 @@ const TEX='gui/social_interactions.png';
 export class SocialInteractionsScreen extends Screen {
  constructor(game){super(game);game.hiddenPlayers||=new Set();game.socialNames||=new Map();this.page='all';this.scroll=0;}
  init(){
+  this.game.socialBlocking?.sync();
   this.left=Math.floor((this.width-238)/2);this.count=Math.floor(Math.max(52,this.height-144)/16);this.bottom=72+this.count*16;
   this.search=new TextField(this.left+28,78,196,16,{maxLength:16,background:false,onChange:()=>{this.scroll=0;}});this.search.textColor=0xffffff;this.fields=[this.search];
   this.buttons=['all','hidden','blocked'].map((name,i)=>new Button(i,this.left+6+i*76,45,74,20,()=>((name===this.page)?'§n':'')+tr('gui.socialInteractions.tab_'+name),()=>{this.page=name;this.scroll=0;}));
@@ -12,8 +13,8 @@ export class SocialInteractionsScreen extends Screen {
  }
  entries(){
   const g=this.game;for(const [uuid,p]of g.scoreboard.players)g.socialNames.set(uuid,p.name);
-  const hidden=g.hiddenPlayers,blocked=g.blockedPlayers||new Set(),uuids=this.page==='all'?[...g.scoreboard.players.keys()]:[...(this.page==='hidden'?hidden:blocked)];
-  const query=this.search.text.toLowerCase();return uuids.map(uuid=>({uuid,name:g.socialNames.get(uuid)||uuid,player:g.scoreboard.players.get(uuid),hidden:hidden.has(uuid),blocked:blocked.has(uuid)})).filter(e=>e.name.toLowerCase().includes(query)).sort((a,b)=>a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+  const hidden=g.hiddenPlayers,blocked=g.blockedPlayers||new Set(),uuids=this.page==='all'?[...g.scoreboard.players.keys()]:this.page==='hidden'?[...hidden]:[...g.scoreboard.players.keys()].filter(id=>g.socialBlocking?.isBlocked(id)||blocked.has(id));
+  const query=this.search.text.toLowerCase();return uuids.map(uuid=>({uuid,name:g.socialNames.get(uuid)||uuid,player:g.scoreboard.players.get(uuid),hidden:hidden.has(uuid),blocked:!!(g.socialBlocking?.isBlocked(uuid)||blocked.has(uuid))})).filter(e=>e.name.toLowerCase().includes(query)).sort((a,b)=>a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
  }
  hide(entry){const g=this.game;if(entry.hidden)g.hiddenPlayers.delete(entry.uuid);else g.hiddenPlayers.add(entry.uuid);g.sound.playUi('ui.button.click');g.hud.addChat(tr(entry.hidden?'gui.socialInteractions.shown_in_chat':'gui.socialInteractions.hidden_in_chat',entry.name),null,true);}
  renderContent(gui,mx,my){
