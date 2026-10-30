@@ -1,3 +1,5 @@
+import {getBlock} from './blocks.js';
+const isAir=state=>state===0||!!getBlock(state)?.isAir;
 // Chunk storage: 16 sections of 16^3 flattened global block-state ids (1.13+),
 // nibble arrays for block light and sky light, and a 16x16 biome array.
 
@@ -17,8 +19,8 @@ export class Section {
   set(x, y, z, state) {
     const i = (y << 8) | (z << 4) | x;
     const old = this.blocks[i];
-    if (old === 0 && state !== 0) this.nonAir++;
-    else if (old !== 0 && state === 0) this.nonAir--;
+    if (isAir(old) && !isAir(state)) this.nonAir++;
+    else if (!isAir(old) && isAir(state)) this.nonAir--;
     this.blocks[i] = state;
   }
 
@@ -39,7 +41,7 @@ export class Section {
 
   recount() {
     let n = 0;
-    for (let i = 0; i < 4096; i++) if (this.blocks[i] !== 0) n++;
+    for (let i = 0; i < 4096; i++) if (!isAir(this.blocks[i])) n++;
     this.nonAir = n;
   }
 }
@@ -51,7 +53,7 @@ export class Chunk {
     this.hasSky = hasSky;
     this.sections = new Array(16).fill(null);
     this.biomes = new Uint32Array(256);
-    this.heightMap = new Uint8Array(256); // y of highest light-blocking block + 1
+    this.heightMap = new Uint16Array(256); // y of highest light-blocking block + 1
     this.tileEntities = new Map(); // "x,y,z" -> nbt (simplified)
   }
 
