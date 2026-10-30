@@ -20,6 +20,10 @@ establish correct gameplay. The build validates 17,112 block states, extracts
 
 ## Implemented and checked
 
+- Native climbable vegetation now follows the synchronized `climbable` block
+  tag, including new vine tips/stems and server overrides. See
+  [climbing verification](climbing-parity.md).
+
 - Modern world-event block IDs/item names, six-direction dispenser smoke,
   Ender-eye rings and flattened block ambient dispatch are corrected. Stackable
   snow/sea-pickle/turtle-egg placement predicts the clicked cell and native count.

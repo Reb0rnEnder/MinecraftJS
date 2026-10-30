@@ -1,8 +1,10 @@
+import {DEFAULT_TAGS} from './default-tags.js';
 // Port of vanilla 1.13.2 player movement physics (EntityPlayerSP / EntityPlayer / EntityLivingBase / Entity).
 import { getBlock, getStateProperties } from '../world/blocks.js';
 import { getFluidState, fluidHeightAt } from '../world/fluids.js';
 import { playerPoseDimensions } from './player-poses-1.16.5.js';
 
+const DEFAULT_CLIMBABLE=new Set(DEFAULT_TAGS.blocks['minecraft:climbable']||[]);
 const SPRINT_UUID = '662a6b8d-da3e-4c1c-8813-96ea6097278d';
 
 // Vanilla MathHelper.sin/cos use a 65536-entry table; reproduce it for parity with the server
@@ -329,13 +331,13 @@ export class LocalPlayer {
     return this.isFluidInBB(world, bb);
   }
 
-  // EntityLivingBase.isOnLadder: ladders, vines, and an open trapdoor right above a ladder facing the same way
+  // Native LivingEntity.onClimbable: the synchronized block tag, then the trapdoor/ladder exception.
   isOnLadder(world) {
     if (this.spectator) return false;
     const x = Math.floor(this.x), y = Math.floor(this.bb()[1]), z = Math.floor(this.z);
     const st = world.getState(x, y, z), b = getBlock(st);
     if (!b) return false;
-    if (b.name === 'ladder' || b.name === 'vine' || b.name === 'scaffolding') return true;
+    if (world.registryTags ? world.registryTags.contains('blocks','minecraft:climbable',b.id) : DEFAULT_CLIMBABLE.has(b.id)) return true;
     if ((b.name === 'oak_trapdoor' || b.name === 'iron_trapdoor') && getStateProperties(st).open === 'true') {
       const below = world.getState(x, y - 1, z);
       if (getBlock(below).name !== 'ladder') return false;
