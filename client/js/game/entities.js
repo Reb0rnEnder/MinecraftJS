@@ -1,3 +1,4 @@
+import {isSquid,initSquid,tickSquid,squidInWater} from './squid-animation.js';
 import {detachRemovedEntities} from './riding-lifecycle.js';
 import {applyFoxFlags,tickFox} from './fox.js';
 import {tickBeeSound,stopBeeSound} from './bee-sound.js';
@@ -117,6 +118,7 @@ export class EntityManager {
   }
 
   add(e) {
+    if(isSquid(e))initSquid(e);
     if(e.kind==='leash')placeLeashKnot(e);
     const old = this.map.get(e.id);
     if (old) { stopBeeSound(old); this.game.entityRenderer.remove(old); }
@@ -582,6 +584,7 @@ export class EntityManager {
     const g = this.game;
     if (!e) return;
     switch (p.entityStatus) {
+      case 19: if(isSquid(e)){if(!e.squid)initSquid(e);e.squid.phase=0;}break;
       case 2: e.hurtTime = 10; g.sound.playEntityHurt(e); break;
       case 3: e.dead = true; e.health = 0; g.sound.playEntityDeath(e); break;
       case 4: if (e.entityName === 'evoker_fangs') e.fangsActive = true; break;
@@ -1003,6 +1006,7 @@ export class EntityManager {
       } else e.swingTicks = 0;
       e.swingProgress = e.swingTicks / 6;
       if (e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand') this._livingUpdate(e);
+      if(isSquid(e))tickSquid(e,squidInWater(e,g.world));
       if (e.kind === 'player') this._updateCape(e);
       if (e.onFire && Math.random() < 0.3) g.particles.entityFire && g.particles.entityFire(e);
       // EntityLivingBase.updatePotionEffects (1.9+): colour in metadata 8, "ambient" (beacon) in 9

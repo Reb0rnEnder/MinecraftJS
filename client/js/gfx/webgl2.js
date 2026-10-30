@@ -476,7 +476,7 @@ vec3 mcjsWave(vec3 p){
     if (t.mipmaps && x === 0 && y === 0 && w === t.width && h === t.height) this._uploadMips(t, data);
   }
 
-  destroyTexture(t) { if (t && t.tex) this.gl.deleteTexture(t.tex); }
+  destroyTexture(t) { if(!t)return;const gl=this.gl;if(t.tex)gl.deleteTexture(t.tex);if(t.fbo)gl.deleteFramebuffer(t.fbo);if(t.depth)gl.deleteRenderbuffer(t.depth); }
 
   // ---------------------------------------------------------------- meshes
 

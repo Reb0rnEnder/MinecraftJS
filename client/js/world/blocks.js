@@ -63,7 +63,8 @@ export function initBlocks(blocksJson, shapesJson) {
   for (const k of Object.keys(blocksByName)) delete blocksByName[k];
   for (const b of blocksJson) {
     const name = b.name;
-    const stairs = STAIRS(name);
+    const stairs = STAIRS(name),renderLayer=shapesJson?.render?.layers?.[name];
+    if(shapesJson?.render?.layers&&!renderLayer)throw Error("Missing native block render layer: "+name);
     const def = {
       id: b.id,
       name,
@@ -81,7 +82,8 @@ export function initBlocks(blocksJson, shapesJson) {
       filterLight: b.filterLight === undefined ? 15 : b.filterLight,
       boundingBox: b.boundingBox,
       opaque: b.boundingBox === 'block' && !b.transparent && !NOT_OPAQUE.has(name) && b.id !== 0,
-      translucent: TRANSLUCENT.has(name) || name.endsWith('_stained_glass') || name.endsWith('_stained_glass_pane'),
+      renderLayer,
+      translucent: renderLayer?renderLayer==='translucent':(TRANSLUCENT.has(name) || name.endsWith('_stained_glass') || name.endsWith('_stained_glass_pane')),
       hasModel: !NO_MODEL.has(name) && !name.endsWith('_bed') && !name.endsWith('_banner') && !name.endsWith('_wall_banner') &&
         !HEAD_BLOCKS.has(name) &&
         !name.endsWith('_shulker_box') && name !== 'conduit' &&

@@ -60,3 +60,6 @@ await writeFile(join(root,'client/js/game/entity-metadata-1.15.2.js'),'// Entity
 
 // Keep native F3 heightmap predicates reproducible when regenerating state data.
 await import('../extract-debug-heightmaps.mjs');
+
+// RenderShape MODEL is independent of the client's blend/cutout layer.
+await import('../extract-render-layers.mjs');
