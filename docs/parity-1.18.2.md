@@ -6,6 +6,10 @@ fixes are carried forward. Shared fixes remain on their native older branches.
 
 ## Implemented and checked
 
+- Native climbable vegetation now follows the synchronized `climbable` block
+  tag, including new vine tips/stems and server overrides. See
+  [climbing verification](climbing-parity.md).
+
 - Version identity: Java 1.18.2, protocol 758, data version 2975, pack format 8.
   Native metadata, jars, official mappings, asset index and protocol schema are
   hash pinned in `tools/port-1.18.2/target.json`.
