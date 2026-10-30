@@ -192,7 +192,7 @@ export class Game {
   }
 
   reset() {
-    this.tags = new RegistryTags();
+    this.tags = new RegistryTags();if(this.world)this.world.registryTags=this.tags;
     this.commands = null;
     this.connected = false;
     this.inWorld = false;
@@ -682,7 +682,7 @@ export class Game {
     this.input.unlock();
     // Per-server state: tab list, teams, objectives/sidebar, header/footer, titles, action bar
     this.scoreboard.reset();
-    this.tags = new RegistryTags(); this.commands = null;
+    this.tags = new RegistryTags();if(this.world)this.world.registryTags=this.tags; this.commands = null;
     if (this.advancements) this.advancements.clear();
     this.hud.resetServerState();
     this.statValues = null; this.stats = null;

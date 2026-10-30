@@ -7,6 +7,10 @@ are in `tools/port-1.17.1/baseline.json`.
 
 ## Implemented and checked
 
+- Native climbable vegetation now follows the synchronized `climbable` block
+  tag, including new vine tips/stems and server overrides. See
+  [climbing verification](climbing-parity.md).
+
 - Native reports: 898 blocks / 20,342 states, 1,100 item registry entries
   (including air), 113 entity types, 1,190 sound events, 89 particles.
 - Native selection/collision/occlusion/render/sound properties for every state,
