@@ -1,3 +1,4 @@
+import {sectionKey,sectionCoords} from './section-key.js';
 import {BiomeZoom} from './biome-zoom.js';
 import {scaffoldingCollision} from './scaffolding.js';
 import {decodeChunkData578} from './chunk-1.15.2.js';
@@ -213,7 +214,7 @@ export class World {
     }
     if (blockSeeds.length) this._relight(false, blockSeeds, dirty);
     if (skySeeds.length) this._relight(true, skySeeds, dirty);
-    for (const k of dirty) this.emit('sectionDirty', Math.floor(k / 0x200000 / 16) - 0x100000, k % 16, Math.floor(k / 16) % 0x200000 - 0x100000);
+    for (const k of dirty) this.emit('sectionDirty', ...sectionCoords(k));
     for (const [x, y, z, old, state] of changes) this.emit('blockChanged', x, y, z, old, state);
   }
 
@@ -226,7 +227,7 @@ export class World {
     const y0 = ly === 0 && cy > 0 ? -1 : 0, y1 = ly === 15 && cy < 15 ? 1 : 0;
     const z0 = lz === 0 ? -1 : 0, z1 = lz === 15 ? 1 : 0;
     for (let dx = x0; dx <= x1; dx++) for (let dy = y0; dy <= y1; dy++) for (let dz = z0; dz <= z1; dz++) {
-      set.add(((cx + dx + 0x100000) * 0x200000 + (cz + dz + 0x100000)) * 16 + cy + dy);
+      set.add(sectionKey(cx+dx,cy+dy,cz+dz));
     }
   }
 
