@@ -41,6 +41,7 @@ export class ChatScreen extends Screen {
     f.narrationLabel=tr('chat.editBox');
     this.input = f;
     this.fields.push(f);
+    if(this.game.accountPrivileges?.onlineChat===false){f.enabled=false;f.setText(tr('chat.disabled.profile'));}
     f.formatter = (text,offset) => this.game.commands ? this.game.commands.format(text,offset,this.input.text,!this.commandOnly) : text;
     this.game.hud.chatScroll = 0;
     this.requestSuggestions();
@@ -134,6 +135,7 @@ export class ChatScreen extends Screen {
     }
     if (e.code === 'Escape') { this.close(); return true; }
     if (e.code === 'Enter' || e.code === 'NumpadEnter') {
+      if(g.accountPrivileges?.onlineChat===false){this.close();return true;}
       const msg = this.input.text.trim();
       if (msg) {
         g.hud.sentHistory.push(msg);
@@ -172,6 +174,7 @@ export class ChatScreen extends Screen {
   }
 
   requestSuggestions(fromTab = false) {
+    if(this.game.accountPrivileges?.onlineChat===false)return;
     const g = this.game;
     if (!this.input || !g.send) return;
     const text = this.input.text.slice(0, this.input.cursor);
@@ -269,7 +272,7 @@ export class ChatScreen extends Screen {
           if(this.game.settings.chatLinksPrompt===false){platform().openUrl(c.value);return true;}
           this.game.screens.open(new ConfirmLinkScreen(this.game, this, c.value));
         } else if (c.action === 'run_command') {
-          this.game.send(C.chat(c.value));
+          if(this.game.accountPrivileges?.onlineChat!==false)this.game.send(C.chat(c.value));
         } else if (c.action === 'suggest_command') {
           this.input.setText(c.value);
         }

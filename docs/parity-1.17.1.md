@@ -49,6 +49,9 @@ are in `tools/port-1.17.1/baseline.json`.
   software, with native item/tripwire routing. Native render-layer extraction
   fixes tinted glass and inherited honey transparency. See
   `fabulous-rendering.md` and `block-render-layers.md` for checks and limits.
+- Microsoft account block lists/privileges now feed social filtering, chat
+  input and multiplayer access; see `social-account-parity.md` for behavior and
+  authenticated-test limits.
 - Sound registry/events/sample references are checked against the built assets.
 - Bee anger accessor follows the native renamed field; the same correction was
   backported to 1.16.5. 1.15.2 already uses its correct original accessor.
