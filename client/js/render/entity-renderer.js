@@ -1,3 +1,5 @@
+import { scaleAgeableGroups } from './ageable-pose.js';
+import { attachSpyglassHolder } from './spyglass-pose.js';
 import {scaleHoglinChild,scalePiglinChild} from './nether-poses.js';
 import {bedFacing} from '../game/bed-sleep.js';
 import {foxAnimationArgs} from '../game/fox.js';
@@ -436,7 +438,7 @@ export class EntityRenderer {
 
   _makeModelObject(model, mat) {
     const g = new Node();
-    if(model.foxAgeable||model.hoglinAgeable||model.piglinAgeable){const head=new Node(),body=new Node();g.add(head);g.add(body);model.childGroups={head,body};for(const r of model.roots)(r===model.parts.head||model.piglinAgeable&&r===model.parts.headwear?head:body).add(r.build());}
+    if(model.nativeAgeable||model.foxAgeable||model.hoglinAgeable||model.piglinAgeable){const head=new Node(),body=new Node();g.add(head);g.add(body);model.childGroups={head,body};for(const r of model.roots)((r===model.parts.head&&!model.nativeAgeable?.bodyOnly)||model.piglinAgeable&&r===model.parts.headwear?head:body).add(r.build());}
     else for (const r of model.roots) g.add(r.build());
     for (const r of model.roots) r.setMaterial(mat);
     return g;
@@ -1258,7 +1260,8 @@ export class EntityRenderer {
     if(e.entityName==='fox'){v.yawGroup.rotation.order='YXZ';if(e.foxPouncing||e.foxFaceplanted)v.yawGroup.rotation.x=-pitch*D2R;}
     v.scaleGroup.position.set(0, 0, 0);
     v.modelGroup.position.set(0, -1.5078125 + (model.modelTranslateY || 0), model.modelTranslateZ || 0);
-    if(model.foxAgeable)scaleFoxChild(model.childGroups,!!e.child);
+    if(model.nativeAgeable)scaleAgeableGroups(model.childGroups,!!e.child,model.nativeAgeable);
+    else if(model.foxAgeable)scaleFoxChild(model.childGroups,!!e.child);
     else if(model.piglinAgeable)scalePiglinChild(model.childGroups,!!e.child);
     else if(model.hoglinAgeable)scaleHoglinChild(model.childGroups,!!e.child);
     else if (e.child) v.scaleGroup.scale.multiplyScalar(model.childScale || 0.5);
@@ -1273,6 +1276,7 @@ export class EntityRenderer {
         if (name === 'shield') return 'block';
         if (name === 'bow') return 'bow';
         if (name === 'trident') return 'spear';
+        if (name === 'spyglass') return 'spyglass';
         if (name === 'crossbow') return 'crossbow_charge';
       }
       if(g.items.name(stack.id)==='crossbow'&&g.items.crossbowCharged(stack))return 'crossbow_hold';
@@ -1295,6 +1299,9 @@ export class EntityRenderer {
       squish: 0,
       peek: e.type === 69 ? (e.prevPeek || 0) + ((e.peek || 0) - (e.prevPeek || 0)) * partial : 0,
       attackTicks:e.attackTicks||0,aggressive:!!e.aggressive,piglinPose:e.dancing?'dancing':(e.offhand&&(g.tags?.registries.items.get('minecraft:piglin_loved')||[]).includes(e.offhand.id))?'admiring':e.crossbowCharging?'crossbow_charge':e.aggressive&&held&&g.items.name(held.id)==='crossbow'?'crossbow_hold':e.aggressive?'attacking':'default',
+      playingDead: !!e.playingDead, rammingHeadRotation: (e.goatRammingTicks || 0) / 20 * 30 * D2R,
+      moving: speedSq > 1e-7 || e.x !== e.prevX || e.z !== e.prevZ || e.yaw !== e.prevYaw || e.pitch !== e.prevPitch,
+      axolotlRotations: e.entityName === 'axolotl' ? (e.axolotlRotations ||= {}) : undefined,
       entityId: e.id, child: !!e.child, leftHanded: !!e.leftHanded,
       inWater: isPointInFluid(g.world, e.x, e.y + e.height / 2, e.z),
       swimming: !e.sleeping && !!e.swimming, swimAmount: e.sleeping ? 0 : swimAmount, armsRaised: !!e.armsRaised,
@@ -1470,7 +1477,9 @@ export class EntityRenderer {
   // then the THIRD_PERSON_RIGHT_HAND / LEFT_HAND transform (mirrored for the left hand)
   _heldIn(v, k, holder, stack, leftHand, args, entity) {
     if (!holder) return;
-    const key = stack ? stack.id + ':' + stack.damage + ':' + this.game.itemRenderer.iconKey(stack, true, entity) : null;
+    const eye = entity.kind === 'player' && stack && this.game.items.name(stack.id) === 'spyglass' && (leftHand ? args.leftPose : args.rightPose) === 'spyglass' && args.swing <= 0;
+    attachSpyglassHolder(holder, v.model.parts.head, eye);
+    const key = stack ? stack.id + ':' + stack.damage + ':' + this.game.itemRenderer.iconKey(stack, true, entity) + ':' + eye : null;
     const st = v['held' + k] || (v['held' + k] = { key: undefined, root: null, glint: null });
     if (key !== st.key) {
       st.key = key;
@@ -1481,12 +1490,14 @@ export class EntityRenderer {
         if (io) {
           const root = new Node();
           const turn = new Node();
-          turn.rotation.set(-Math.PI / 2, Math.PI, 0, 'XYZ');
+          if (eye) { turn.position.y = -.25; turn.rotation.y = Math.PI; turn.scale.set(.625, -.625, -.625); }
+          else turn.rotation.set(-Math.PI / 2, Math.PI, 0, 'XYZ');
           const off = new Node();
-          off.position.set((leftHand ? -1 : 1) / 16, 0.125, -0.625);
+          if (eye) off.position.set((leftHand ? -2.5 : 2.5) / 16, -.0625, 0);
+          else off.position.set((leftHand ? -1 : 1) / 16, 0.125, -0.625);
           const t = new Node();
           const d = io.model.display || {};
-          applyTransform(t, leftHand ? d.thirdperson_lefthand || d.thirdperson_righthand : d.thirdperson_righthand, leftHand);
+          applyTransform(t, eye ? d.head : leftHand ? d.thirdperson_lefthand || d.thirdperson_righthand : d.thirdperson_righthand, eye ? false : leftHand);
           t.add(io.obj); off.add(t); turn.add(off); root.add(turn);
           holder.add(root);
           st.root = root;
@@ -1494,7 +1505,7 @@ export class EntityRenderer {
         } else st.key = undefined;
       }
     }
-    if (st.root) st.root.position.y = args.sneak ? 0.2 : 0;
+    if (st.root) st.root.position.y = !eye && args.sneak ? 0.2 : 0;
     if (st.glint) this.glints.push(st.glint);
   }
 

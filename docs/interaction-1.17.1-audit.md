@@ -65,8 +65,9 @@ sign construction and material values, frozen-tick handling, frost overlay,
 frozen heart texture coordinates and powder-snow fog. It does not modify a
 server. This does not replace live-server interaction or all-adapter checks.
 
-Pending: precise third-person spyglass arm/head attachment and held pose;
-powder-snow particles and complete live equipment/freezing/vehicle sequences;
+Third-person spyglass attachment and powder-snow particles are covered by the
+follow-up in `caves-content-parity.md`. Pending: complete live
+equipment/freezing/vehicle sequences;
 formatted glowing-text corner cases and GPU visual comparisons. The remaining
 version-wide gaps are tracked in `parity-1.17.1.md` and `parity-1.16.5.md`.
 1.18.2 remains gated on those ledgers, as requested.

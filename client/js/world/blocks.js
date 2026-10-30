@@ -144,6 +144,7 @@ export function initBlocks(blocksJson, shapesJson) {
 
 function propertyValues(prop) {
   if (prop.type === 'bool') return ['true', 'false'];
+  if (prop.values?.length) return prop.values.map(String);
   if (prop.type === 'int') return Array.from({ length: prop.num_values }, (_, i) => String(i));
   return prop.values || [];
 }

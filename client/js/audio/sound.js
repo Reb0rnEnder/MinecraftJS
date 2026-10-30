@@ -344,6 +344,7 @@ export class SoundManager {
   // EntityLiving.getHurtSound / getDeathSound (handleStatusUpdate 2 / 3)
   _mobSounds(e) {
     const name = e.entityName;
+    if (name === 'goat' && e.screamingGoat) return E('goat.screaming');
     if (name === 'armor_stand') return ['entity.armor_stand.hit', 'entity.armor_stand.break'];
     if (name === 'slime' || name === 'magma_cube') return E(name).map(s => (e.size || 1) > 1 ? s : s + '_small');
     return E(SOUND_ALIASES[name] || name || 'generic');

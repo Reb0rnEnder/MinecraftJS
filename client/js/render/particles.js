@@ -1,3 +1,5 @@
+import { animateCavesBlock, cavesWorldEvent } from './block-effects-1.17.1.js';
+import { cavesParticle, CAVES_PARTICLES, vibrationParticle } from './particles-1.17.1.js';
 import {netherParticle,NETHER_PARTICLES} from './nether-particles.js';
 import {moveParticle} from './particle-collision.js';
 // Particle system (port of EffectRenderer + common EntityFX subclasses), batched into one buffer per texture.
@@ -143,6 +145,8 @@ export class Particles {
       if (p.sizeFn) size = p.sizeFn(p, partial) * 0.1;
       let sky, blk;
       if (p.fullBright) { sky = -1; blk = 15; } else { const bx = Math.floor(x), by = Math.floor(y), bz = Math.floor(z); sky = w.getSkyLight(bx, by, bz); blk = w.getBlockLight(bx, by, bz); }
+      if (p.lightFn) [sky, blk] = p.lightFn(p, partial, sky, blk);
+      const color = p.colorFn ? p.colorFn(p, partial) : [p.r, p.g, p.b];
       let u0, v0, u1, v1, batch;
       if (p.atlas) {
         batch = this.batchA;
@@ -155,6 +159,10 @@ export class Particles {
       } else {
         batch = this.batchP;
         const uv=particleSprite(this.game.assets,p,partial);if(!uv)continue;[u0,v0,u1,v1]=uv;
+      }
+      if (p.geometryFn) {
+        for (const quad of p.geometryFn(p, partial, x, y, z)) batch.quad(quad, u0, v0, u1, v1, ...color, p.a, sky, blk);
+        continue;
       }
       if (p.footprint) {
         // flat on the ground (handled with particles texture fallback)
@@ -169,7 +177,7 @@ export class Particles {
         x - rx + ux, y - ry + uy, z - rz + uz,
         x + rx + ux, y + ry + uy, z + rz + uz,
         x + rx - ux, y + ry - uy, z + rz - uz,
-      ], u0, v0, u1, v1, p.r, p.g, p.b, p.alphaFn ? p.alphaFn(p, partial) : p.a, sky, blk);
+      ], u0, v0, u1, v1, ...color, p.alphaFn ? p.alphaFn(p, partial) : p.a, sky, blk);
     }
     for (const b of [this.batchP, this.batchA, this.batchE]) b.end();
     void cx; void cy; void cz;
@@ -689,7 +697,8 @@ export class Particles {
     return this.add(p);
   }
 
-  nativeParticle(type,x,y,z,mx=0,my=0,mz=0) {
+  nativeParticle(type,x,y,z,mx=0,my=0,mz=0,data={}) {
+    if(CAVES_PARTICLES.has(type)) return cavesParticle(this,type,x,y,z,mx,my,mz,data);
     if(NETHER_PARTICLES.has(type))return netherParticle(this,type,x,y,z,mx,my,mz);
     const p={x,y,z,mx,my,mz,sprite:type,scale:1,maxAge:20,drag:.96,collide:false};
     switch(type){
@@ -711,6 +720,8 @@ export class Particles {
     return this.add(p);
   }
 
+  vibration(data) { return vibrationParticle(this, data); }
+
   onPacket(p) {
     const n = p.particles;
     const emit = (fn) => {
@@ -724,7 +735,9 @@ export class Particles {
       }
     };
     const type = this.game.assets.data.particles[p.particleId]?.name;
+    if (CAVES_PARTICLES.has(type)) { emit((x,y,z,mx,my,mz)=>this.nativeParticle(type,x,y,z,mx,my,mz,p.data)); return; }
     switch (type) {
+      case 'light': emit((x,y,z)=>this.barrier(Math.floor(x),Math.floor(y),Math.floor(z),'light')); break;
       case 'poof': emit((x, y, z, mx, my, mz) => this.poof(x, y, z, mx, my, mz)); break;
       case 'explosion': emit((x, y, z) => this.largeExplode(x, y, z, 1)); break;
       case 'explosion_emitter': emit((x, y, z) => this.hugeExplode(x, y, z)); break;
@@ -800,18 +813,19 @@ export class Particles {
 
   // World events with particles
   onWorldEvent(p) {
+    if (cavesWorldEvent(this, p)) return;
     const { x, y, z } = p.location;
     switch (p.effectId) {
       case 2000: {
-        const dx = (p.data % 3) - 1, dz = Math.floor(p.data / 3) % 3 - 1;
+        const [dx,dy,dz] = [[0,-1,0],[0,1,0],[0,0,-1],[0,0,1],[-1,0,0],[1,0,0]][((p.data % 6) + 6) % 6];
         for (let i = 0; i < 10; i++) {
-          const d = rand() * 0.2 + 0.01;
-          this.smoke(x + 0.5 + dx * 0.6 + (rand() - 0.5) * 0.25 * dz, y + 0.5 + (rand() - 0.5) * 0.5, z + 0.5 + dz * 0.6 + (rand() - 0.5) * 0.25 * dx, dx * d + (rand() - 0.5) * 0.01, -0.03 + (rand() - 0.5) * 0.01, dz * d + (rand() - 0.5) * 0.01);
+          const speed = rand() * .2 + .01;
+          this.smoke(x + .5 + dx * .61 + (rand() - .5) * dz * .5, y + .5 + dy * .61 + (rand() - .5) * dy * .5, z + .5 + dz * .61 + (rand() - .5) * dx * .5, dx * speed + gauss() * .01, dy * speed + gauss() * .01, dz * speed + gauss() * .01);
         }
         break;
       }
       case 2001: {
-        const st = ((p.data & 4095) << 4) | ((p.data >> 12) & 15);
+        const st = p.data; // Flattened block-state ID since protocol 393 (1.13).
         this.blockBreak(x, y, z, st);
         break;
       }
@@ -819,7 +833,7 @@ export class Particles {
         // RenderGlobal.playEvent: the data is the potion colour; 2007 (instant effects) uses SPELL_INSTANT
         const color = p.data;
         const r = ((color >> 16) & 255) / 255, g = ((color >> 8) & 255) / 255, b = (color & 255) / 255;
-        const uv = this._itemAtlas(438); // ITEM_CRACK of splash_potion
+        const uv = this._itemAtlas(this.game.items.byName.get('splash_potion')?.id); // ITEM_CRACK of splash_potion
         for (let i = 0; i < 8; i++) if (uv) this._itemCrackAt(uv, x + 0.5, y + 0.5, z + 0.5, gauss() * 0.15, rand() * 0.2, gauss() * 0.15);
         for (let i = 0; i < 100; i++) {
           const d = rand() * 4, a = rand() * Math.PI * 2;
@@ -829,7 +843,14 @@ export class Particles {
         }
         break;
       }
-      case 2003: for (let i = 0; i < 8; i++) this._itemCrackAt(this._itemAtlas(381) || [0, 0, 0, 0], x + 0.5, y + 0.5, z + 0.5, gauss() * 0.15, rand() * 0.2, gauss() * 0.15); break;
+      case 2003: {
+        for (let i = 0; i < 8; i++) this._itemCrackAt(this._itemAtlas(this.game.items.byName.get('ender_eye')?.id) || [0, 0, 0, 0], x + 0.5, y, z + 0.5, gauss() * 0.15, rand() * 0.2, gauss() * 0.15);
+        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 20) {
+          const dx = Math.cos(angle), dz = Math.sin(angle);
+          for (const speed of [5,7]) this.portal(x + .5 + dx * 5, y - .4, z + .5 + dz * 5, -dx * speed, 0, -dz * speed);
+        }
+        break;
+      }
       case 2004: for (let i = 0; i < 20; i++) { this.smoke(x + 0.5 + (rand() - 0.5) * 2, y + 0.5 + (rand() - 0.5) * 2, z + 0.5 + (rand() - 0.5) * 2, 0, 0, 0); this.flame(x + 0.5 + (rand() - 0.5) * 2, y + 0.5 + (rand() - 0.5) * 2, z + 0.5 + (rand() - 0.5) * 2); } break;
       case 2005: {
         const n = p.data || 15;
@@ -841,24 +862,25 @@ export class Particles {
   }
 
   _barrierVisible(p) {
-    const g = this.game, held = g.inventory.held();
-    return !!g.player.creative && !!held && g.items.name(held.id) === 'barrier'
-      && getBlock(g.world.getState(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z))).name === 'barrier';
+    const g = this.game, held = g.inventory.held(), block = p.markerBlock || 'barrier';
+    return !!g.player.creative && !!held && g.items.name(held.id) === block
+      && getBlock(g.world.getState(Math.floor(p.x), Math.floor(p.y), Math.floor(p.z))).name === block;
   }
 
-  barrier(x, y, z) {
-    if (!this._barrierVisible({ x: x + 0.5, y: y + 0.5, z: z + 0.5 })) return;
-    const key = x + ',' + y + ',' + z;
+  barrier(x, y, z, markerBlock = 'barrier') {
+    if (!this._barrierVisible({ x: x + 0.5, y: y + 0.5, z: z + 0.5, markerBlock })) return;
+    const key = markerBlock + ':' + x + ',' + y + ',' + z;
     const index = this.barrierIndex || (this.barrierIndex = new Map());
     const existing = index.get(key);
     if (existing) { existing.age = 0; return; }
-    const marker = this.add({ x: x + 0.5, y: y + 0.5, z: z + 0.5, barrier: true, barrierKey: key,
-      atlas: this.game.assets.atlas.uv('item/barrier'), scale: 5, maxAge: 80, update: () => {} });
+    const marker = this.add({ x: x + 0.5, y: y + 0.5, z: z + 0.5, barrier: true, markerBlock, barrierKey: key,
+      atlas: this.game.assets.atlas.uv('item/' + markerBlock), scale: 5, maxAge: 80, update: () => {} });
     if (marker) index.set(key, marker);
   }
 
   // Ambient block particles (Block.randomDisplayTick), called by the weather/ambience ticker
   randomDisplayTick(x, y, z, state) {
+    animateCavesBlock(this, x, y, z, state);
     const b = getBlock(state);
     if (!b) return;
     const n = b.name;
@@ -869,38 +891,38 @@ export class Particles {
       }
     }
     if(n==='soul_torch'||n==='soul_wall_torch'||n==='soul_fire'){this.nativeParticle('soul_fire_flame',x+.5,y+.7,z+.5);this.smoke(x+.5,y+.7,z+.5);}
-    if (n === 'barrier' && this.game.player.creative) {
+    if ((n === 'barrier' || n === 'light') && this.game.player.creative) {
       const held = this.game.inventory.held();
-      if (held && this.game.items.name(held.id) === 'barrier') this.barrier(x, y, z);
+      if (held && this.game.items.name(held.id) === n) this.barrier(x, y, z, n);
     }
-    const m = Number(getStateProperties(state).level || 0);
-    if (n === 'torch' || n === 'redstone_torch') {
-      let px = x + 0.5, py = y + 0.7, pz = z + 0.5;
-      const off = { 1: [-0.27, 0.22, 0], 2: [0.27, 0.22, 0], 3: [0, 0.22, -0.27], 4: [0, 0.22, 0.27] }[m];
-      if (off) { px += off[0]; py += off[1]; pz += off[2]; }
-      if (n === 'torch') { this.smoke(px, py, pz, 0, 0, 0); this.flame(px, py, pz); }
-      else this.reddust(px, py, pz, 1, 0, 0);
-    } else if (n === 'lit_furnace') {
-      const f = [null, null, [0, -0.52], [0, 0.52], [-0.52, 0], [0.52, 0]][m] || [0, -0.52];
-      const px = x + 0.5 + f[0] + (f[0] ? 0 : rand() * 0.6 - 0.3), py = y + rand() * 6 / 16, pz = z + 0.5 + f[1] + (f[1] ? 0 : rand() * 0.6 - 0.3);
-      this.smoke(px, py, pz, 0, 0, 0); this.flame(px, py, pz);
+    const props = getStateProperties(state);
+    const m = Number(props.power ?? props.level ?? 0);
+    if (['torch','wall_torch','redstone_torch','redstone_wall_torch'].includes(n) && props.lit !== 'false') {
+      let px=x+.5,py=y+.7,pz=z+.5;
+      if(n.includes('wall')){const [dx,dz]={north:[0,1],south:[0,-1],west:[1,0],east:[-1,0]}[props.facing]||[0,0];px+=dx*.27;py+=.22;pz+=dz*.27;}
+      if(n==='torch'||n==='wall_torch'){this.smoke(px,py,pz,0,0,0);this.flame(px,py,pz);}else this.reddust(px,py,pz,1,0,0);
+    } else if (['furnace','blast_furnace','smoker'].includes(n) && props.lit === 'true') {
+      if (rand() < .1) this.game.sound.play({furnace:'block.furnace.fire_crackle',blast_furnace:'block.blastfurnace.fire_crackle',smoker:'block.smoker.smoke'}[n], x + .5, y + .5, z + .5, 1, 1);
+      const [dx,dz]={north:[0,-1],south:[0,1],west:[-1,0],east:[1,0]}[props.facing]||[0,-1];
+      const px=x+.5+dx*.52+(dx?0:rand()*.6-.3),py=y+rand()*6/16,pz=z+.5+dz*.52+(dz?0:rand()*.6-.3);
+      if(n==='smoker')this.smoke(x+.5,y+1.1,z+.5,0,0,0);else{this.smoke(px,py,pz,0,0,0);if(n==='furnace')this.flame(px,py,pz);}
     } else if (n === 'fire') {
       if (rand() * 24 < 1) this.game.sound.play('block.fire.ambient', x + 0.5, y + 0.5, z + 0.5, 1 + rand(), rand() * 0.7 + 0.3);
       for (let i = 0; i < 3; i++) this.smoke(x + rand(), y + rand() * 0.5 + 0.5, z + rand(), 0, 0, 0, 2.5);
-    } else if (n === 'portal') {
+    } else if (n === 'nether_portal') {
       if (rand() * 100 < 1) this.game.sound.play('block.portal.ambient', x + 0.5, y + 0.5, z + 0.5, 0.5, rand() * 0.4 + 0.8);
       for (let i = 0; i < 4; i++) {
         let px = x + rand(), py = y + rand(), pz = z + rand();
         const j = rand() < 0.5 ? -1 : 1;
         let mx = (rand() - 0.5) * 0.5, my = (rand() - 0.5) * 0.5, mz = (rand() - 0.5) * 0.5;
-        if (this.game.world.getBlockId(x - 1, y, z) !== 90 && this.game.world.getBlockId(x + 1, y, z) !== 90) { px = x + 0.5 + 0.25 * j; mx = rand() * 2 * j; }
+        if (getBlock(this.game.world.getState(x - 1, y, z)).name !== 'nether_portal' && getBlock(this.game.world.getState(x + 1, y, z)).name !== 'nether_portal') { px = x + 0.5 + 0.25 * j; mx = rand() * 2 * j; }
         else { pz = z + 0.5 + 0.25 * j; mz = rand() * 2 * j; }
         this.portal(px, py, pz, mx, my, mz);
       }
     } else if (n === 'redstone_wire' && m > 0) {
       const f = m / 15;
       this.reddust(x + 0.5 + (rand() - 0.5) * 0.2, y + 0.0625, z + 0.5 + (rand() - 0.5) * 0.2, f * 0.6 + 0.4, Math.max(0, f * f * 0.7 - 0.5), Math.max(0, f * f * 0.6 - 0.7));
-    } else if (n === 'lit_redstone_ore') {
+    } else if ((n === 'redstone_ore' || n === 'deepslate_redstone_ore') && props.lit === 'true') {
       for (let i = 0; i < 6; i++) this.reddust(x + rand(), y + rand(), z + rand(), 1, 0, 0);
     } else if (n === 'mycelium') {
       this.simpleRising(x + rand(), y + 1.1, z + rand(), 0, { r: 0.4, g: 0.4, b: 0.7, my: 0, scale: 0.5 });
@@ -908,7 +930,7 @@ export class Particles {
       for (let dx = -2; dx <= 2; dx++) for (let dz = -2; dz <= 2; dz++) {
         if (dx > -2 && dx < 2 && dz === -1) dz = 2;
         if (rand() < 1 / 16) for (let dy = 0; dy <= 1; dy++) {
-          if (this.game.world.getBlockId(x + dx, y + dy, z + dz) === 47) this.enchant(x + 0.5, y + 2, z + 0.5, dx + rand() - 0.5, dy - rand() - 1, dz + rand() - 0.5);
+          if (getBlock(this.game.world.getState(x + dx, y + dy, z + dz)).name === 'bookshelf') this.enchant(x + 0.5, y + 2, z + 0.5, dx + rand() - 0.5, dy - rand() - 1, dz + rand() - 0.5);
         }
       }
     } else if (n === 'water' || n === 'flowing_water') {
@@ -929,9 +951,9 @@ export class Particles {
       if(below&&!below.collisionFull&&!getFluidState(this.game.world.getState(x,y-1,z))&&rand()>=.3)this.honeyDrip(x+rand(),y-.05,z+rand());
     } else if (n === 'end_portal_frame' || n === 'dragon_egg') {
       // no-op
-    } else if (n === 'leaves' || n === 'leaves2') {
+    } else if (n.endsWith('_leaves')) {
       // World.isRaining (canLightningStrike): rain strength above 0.2, not the "begin raining" flag
-      if (this.game.world.rainStrength > 0.2 && rand() < 0.07 && getBlock(this.game.world.getState(x, y - 1, z)).id === 0) this.drip(x + rand(), y - 0.05, z + rand(), false);
+      if (this.game.world.isRainingAt(x, y + 1, z) && rand() < 1/15 && !getBlock(this.game.world.getState(x, y - 1, z)).collisionFull) this.drip(x + rand(), y - 0.05, z + rand(), false);
     }
     // Liquids dripping through ceilings
       const below = getBlock(this.game.world.getState(x, y - 1, z));

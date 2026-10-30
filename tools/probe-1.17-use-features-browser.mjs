@@ -11,7 +11,7 @@ try{
  await page.evaluate(async()=>{
   const {Chunk}=await import('/js/world/chunk.js'),{blocksByName}=await import('/js/world/blocks.js');
   const g=game,state=name=>blocksByName[name].defaultState;
-  g.inWorld=g.doneLoadingTerrain=true;g.screens.current=null;g.gameMode=1;g.player.setPosition(.5,65,3.5);g.player.allowFlying=g.player.flying=true;g.player.yaw=g.player.prevYaw=180;g.player.pitch=g.player.prevPitch=0;
+  g.playerUuid='00000000-0000-0000-0000-000000000002';g.username='Parity';g.entityRenderer.skins.set(g.playerUuid,{path:'entity/steve.png',slim:false,texture:null,propValue:null});g.inWorld=g.doneLoadingTerrain=true;g.screens.current=null;g.gameMode=1;g.player.setPosition(.5,65,3.5);g.player.allowFlying=g.player.flying=true;g.player.yaw=g.player.prevYaw=180;g.player.pitch=g.player.prevPitch=0;
   for(let x=-1;x<=0;x++)for(let z=-1;z<=0;z++){const c=new Chunk(x,z,true);c.biomes.fill(1);for(let a=0;a<16;a++)for(let b=0;b<16;b++)c.setState(a,64,b,state('stone'));g.world.chunks.set(x+','+z,c);g.world.emit('chunkLoaded',c,1<<4,true);}
   for(const [x,color,glow,name]of[[0,'red',1,'oak_sign'],[-1,'black',1,'warped_sign'],[1,'red',0,'crimson_sign']]){
    g.world.setState(x,65,0,state(name));g.tileRenderer.setTileEntity({x,y:65,z:0},9,{Text1:JSON.stringify({text:'Glow '+color}),Text2:'"TEST"',Color:color,GlowingText:glow});
@@ -27,6 +27,15 @@ try{
  });
  assert.equal(report.crashed,false);assert.equal(report.held,'spyglass');assert.equal(report.scoping,true);assert.equal(report.model,'spyglass_in_hand');assert.equal(report.handHidden,true);assert.equal(report.signs.length,3);assert.ok(report.signs.filter(t=>t.glow).every(t=>t.outlined&&t.params===1));assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);
  await page.screenshot({path:process.env.SCREENSHOT||'/tmp/minecraftjs-spyglass-signs.png'});
+ const thirdPerson=[];
+ for(const primary of ['right','left'])for(const hand of [0,1]){
+  await page.evaluate(({primary,hand})=>{const g=game;g.thirdPerson=1;g.settings.mainHand=primary;g.interaction.activeHand=hand;g.inventory.main[g.heldSlot]=hand===0?g._testSpyglass:null;g.inventory.offhand=hand===1?g._testSpyglass:null;g.player.usingItem=true;g.input.isDown=action=>action==='use';},{primary,hand});
+  await page.waitForFunction(()=>game.entityRenderer.visuals.has(-1),null,{timeout:10000}).catch(async e=>{console.log(JSON.stringify(await page.evaluate(()=>({crashed:!!game.crashed,inWorld:game.inWorld,ticks:game.ticks,thirdPerson:game.thirdPerson,cameraEntity:game.cameraEntity,self:game.entities.self&&{id:game.entities.self.id,kind:game.entities.self.kind},visuals:[...game.entityRenderer.visuals.keys()]}))));console.log(errors);throw e;});
+  await page.waitForTimeout(200);
+  const attachment=await page.evaluate(({primary,hand})=>{const v=game.entityRenderer.visuals.get(-1),right=(primary==='right')===(hand===0),holder=right?v.itemHolder:v.leftHolder;return {attachedToHead:holder.parent===v.model.parts.head.obj.parent,armPitch:(right?v.model.parts.rightArm:v.model.parts.leftArm).rx,headPitch:v.model.parts.head.rx};},{primary,hand});
+  assert.equal(attachment.attachedToHead,true);assert.ok(attachment.armPitch < -1);thirdPerson.push({primary,hand,...attachment});
+ }
+ await page.evaluate(()=>{game.thirdPerson=0;game.settings.mainHand='right';game.inventory.main[game.heldSlot]=game._testSpyglass;game.inventory.offhand=null;});
  await page.evaluate(async()=>{
   const {blocksByName}=await import('/js/world/blocks.js'),g=game;
   g.input.isDown=()=>false;g.player.usingItem=false;g.gameMode=0;g.health=g.maxHealth=20;g.food=20;g.player.setPosition(.5,65,.5);
@@ -41,5 +50,5 @@ try{
  const freezing=await page.evaluate(()=>({ticks:game.player.frozenTicks,overlay:game._frostDraws.at(-1),heartCount:game._frozenHearts.length,fog:game.renderer.fog,crashed:!!game.crashed}));
  assert.equal(freezing.crashed,false);assert.equal(freezing.ticks,140);assert.deepEqual(freezing.overlay,[1,1,1,1]);assert.ok(freezing.heartCount>=10);assert.equal(freezing.fog.end,2);assert.deepEqual(freezing.fog.color,[.623,.734,.785]);assert.deepEqual(errors,[]);assert.deepEqual(missing,[]);
  await page.screenshot({path:'/tmp/minecraftjs-freezing.png'});
- console.log(JSON.stringify({report,freezing,errors,missing},null,2));
+ console.log(JSON.stringify({report,thirdPerson,freezing,errors,missing},null,2));
 }finally{await browser.close();}

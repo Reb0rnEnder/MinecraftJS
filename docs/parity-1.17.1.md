@@ -37,6 +37,10 @@ are in `tools/port-1.17.1/baseline.json`.
 - Spyglass first-person use/scope/sounds/held model, glowing-sign text and
   contextual powder-snow collision/movement/freezing visuals are implemented.
   See `interaction-1.17.1-audit.md` for native methods, evidence and limits.
+- Axolotl native state poses/history, goat ramming/long-jump metadata and baby
+  transforms, third-person spyglass attachment, all new particle providers and
+  block effect producers are implemented. Block-state decoding matches all
+  20,342 native states. See `caves-content-parity.md` for evidence and limits.
 - Sound registry/events/sample references are checked against the built assets.
 - Bee anger accessor follows the native renamed field; the same correction was
   backported to 1.16.5. 1.15.2 already uses its correct original accessor.
@@ -81,17 +85,17 @@ probes accept `--host=`, `--port=` and `--duration=`. They do not start a server
 - Full inventory operation matrix: drag/shift/drop, creative search, every menu,
   book limits, reconciliation during concurrent updates and resource-pack prompts.
 - Complete live powder-snow/leather-armor/freezing and vehicle sequences, snow
-  particles, third-person spyglass arm/head attachment, and formatted glowing-sign
-  visual comparisons; light-block markers; candles, dripstone, amethyst/sculk/vibration and
-  other new state-specific interactions and particles. Native assets/shapes alone
-  do not implement these behaviors.
-- Exact goat/axolotl state animations and attachments. Axolotl currently has basic
-  swim/walk motion; playing-dead pose and goat long-jump/head movement are pending.
-  Glow-squid motion currently shares the existing squid animation adapter.
+  and formatted glowing-sign visual comparisons; full live sequences for candle,
+  dripstone, amethyst/sculk/vibration and other new state-specific interactions.
+  Provider construction/fixtures do not prove every timing or visual detail.
+- Remaining inherited mob animation accuracy. Glow-squid motion still shares
+  the existing squid animation adapter, whose tentacle timing needs comparison
+  to native Squid entity state. Goat/axolotl and spyglass follow-up checks are in
+  `caves-content-parity.md`.
 - Compare all release-note changes and native implementations, including native
   harvesting tags/tool tiers, new mob sound variants and client status effects.
 - Carry-over gaps from `parity-1.16.5.md`; command/font/GUI/narrator parity audits;
   shader/custom-pack regressions and measured frame-time/memory profiles.
 
-Next milestone: complete inventory/menu reconciliation coverage and required
-pack behavior, then implement the powder-snow/spyglass/glowing-sign feature group.
+Next milestone: custom-dimension vertical bounds and native Fabulous rendering;
+then complete the live inventory/equipment/dimension-travel acceptance matrix.

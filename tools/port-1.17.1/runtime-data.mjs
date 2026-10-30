@@ -1,3 +1,4 @@
+import {initBlocks,getStateProperties} from '../../client/js/world/blocks.js';
 // Import the protocol-756 registries and gameplay tables from the pinned
 // minecraft-data revision, then cross-check registry/state IDs against the
 // verified vanilla 1.17.1 reports.
@@ -32,6 +33,13 @@ for(const [file,registry] of [['blocks','block'],['items','item'],['entities','e
 }
 const blockData=JSON.parse(await readFile(join(root,'client/data','blocks.json')));
 for(const b of blockData){const states=blocksReport['minecraft:'+b.name]?.states;if(!states||states[0].id!==b.minStateId||states.at(-1).id!==b.maxStateId||states.find(s=>s.default)?.id!==b.defaultState)throw new Error('State mismatch '+b.name);}
+// Validate the actual client decoder against every native state, not just
+// registry ranges. In particular integer properties may begin at one.
+initBlocks(blockData,null);
+for(const [name,block] of Object.entries(blocksReport))for(const state of block.states){
+ const actual=getStateProperties(state.id),expected=state.properties||{};
+ if(Object.keys(actual).length!==Object.keys(expected).length||Object.entries(expected).some(([key,value])=>actual[key]!==value))throw new Error('Native block property mismatch '+name+' '+state.id);
+}
 const entityData=JSON.parse(await readFile(join(root,'client/data','entities.json')));
 await writeFile(join(root,'client/js/game/entity-registry-1.17.1.js'),'// Native 1.17.1 entity registry and dimensions, generated from client/data/entities.json.\nexport const ENTITY_REGISTRY_1171='+JSON.stringify(entityData.map(e=>[e.name,e.width,e.height]))+';\n');
 const jar=new ZipFile(join(cache,'client.jar')),tags={source:{version:'1.17.1',clientJarSha1:target.downloads.client.sha1}};

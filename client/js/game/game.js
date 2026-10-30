@@ -144,6 +144,7 @@ export class Game {
     this.world.selectionProvider = (state, x, y, z) => this.selectionBox(state, x, y, z);
     this.player = new LocalPlayer();
     this.cameraEye = new CameraEye();
+    this.player.onPowderSnow = (...args) => this.particles.nativeParticle('snowflake', ...args);
     this.player.onStep = (x, y, z, state) => this.sound.playStep(x, y, z, state, [this.player.x, this.player.y, this.player.z]);
     this.player.onFall = (dmg, state) => this.sound.playFall(dmg, this.player.x, this.player.y, this.player.z, state);
     this.player.onWaterEnter = () => this._waterSplash();
@@ -234,6 +235,7 @@ export class Game {
     if (this.player) {
       const p = new LocalPlayer();
       p.onStep = this.player.onStep;
+      p.onPowderSnow = this.player.onPowderSnow;
       p.onWaterEnter = this.player.onWaterEnter;
       p.onFall = this.player.onFall;
       p.onSwim = this.player.onSwim;
@@ -1075,6 +1077,8 @@ export class Game {
     this.particles.explosion(p.x, p.y, p.z, p.radius);
   }
 
+  on_sculk_vibration_signal(p) { this.particles.vibration(p); }
+
   on_world_event(p) { this.sound.onWorldEvent(p); this.particles.onWorldEvent(p); }
 
   on_named_sound_effect(p) { this.sound.play(p.soundName.replace(/^minecraft:/, ''), p.x, p.y, p.z, p.volume, p.pitch, { category: p.soundCategory }); }
@@ -1347,6 +1351,7 @@ export class Game {
     const b = getBlock(state);
     if (!b || b.isAir) return null;
     const n = b.name;
+    if (n === 'light') { const held = this.inventory.held(); return held && this.items.name(held.id) === 'light' ? [0,0,0,1,1,1] : null; }
     if (n === 'barrier') return this.player.creative ? [0, 0, 0, 1, 1, 1] : null;
     if (n === 'nether_portal' || n === 'portal' || n === 'end_portal' || n === 'moving_piston' || n === 'piston_extension') return null;
     const extracted = jarSelectionBox(state);

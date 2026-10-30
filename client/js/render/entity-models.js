@@ -1,3 +1,5 @@
+import { spyglassArmPitch } from './spyglass-pose.js';
+import { animateAxolotl } from './axolotl-pose.js';
 import {animateHoglin,animatePiglin,animateStrider} from './nether-poses.js';
 import {animateFox} from './fox-pose.js';
 // Entity models (native 1.14.4). Their boxes come from the Minecraft client jar at build time (lib/modelextract.js runs the
@@ -139,9 +141,11 @@ export function animateBiped(m, a) {
   p.rightArm.ry = 0; p.leftArm.ry = 0;
   if (lp === 'block') { p.leftArm.rx = p.leftArm.rx * 0.5 - 0.9424779; p.leftArm.ry = 0.5235988; }
   else if (lp === 'item') p.leftArm.rx = p.leftArm.rx * 0.5 - PI / 10;
+  else if (lp === 'spyglass') { p.leftArm.rx = spyglassArmPitch(p.head.rx, a.sneak); p.leftArm.ry = p.head.ry + .2617994; }
   else if (lp === 'spear') { p.leftArm.rx = p.leftArm.rx * 0.5 - PI; p.leftArm.ry = 0; }
   if (rp === 'block') { p.rightArm.rx = p.rightArm.rx * 0.5 - 0.9424779; p.rightArm.ry = -0.5235988; }
   else if (rp === 'item') p.rightArm.rx = p.rightArm.rx * 0.5 - PI / 10;
+  else if (rp === 'spyglass') { p.rightArm.rx = spyglassArmPitch(p.head.rx, a.sneak); p.rightArm.ry = p.head.ry - .2617994; }
   else if (rp === 'spear') { p.rightArm.rx = p.rightArm.rx * 0.5 - PI; p.rightArm.ry = 0; }
   p.body.ry = 0;
   p.rightArm.pz = 0; p.rightArm.px = -5; p.leftArm.pz = 0; p.leftArm.px = 5;
@@ -173,10 +177,8 @@ export function animateBiped(m, a) {
     p.rightLeg.py = 12 + yOff; p.leftLeg.py = 12 + yOff;
     p.head.py = yOff;
   }
-  p.rightArm.rz += cos(age * 0.09) * 0.05 + 0.05;
-  p.leftArm.rz -= cos(age * 0.09) * 0.05 + 0.05;
-  p.rightArm.rx += sin(age * 0.067) * 0.05;
-  p.leftArm.rx -= sin(age * 0.067) * 0.05;
+  if (rp !== 'spyglass') { p.rightArm.rz += cos(age * .09) * .05 + .05; p.rightArm.rx += sin(age * .067) * .05; }
+  if (lp !== 'spyglass') { p.leftArm.rz -= cos(age * .09) * .05 + .05; p.leftArm.rx -= sin(age * .067) * .05; }
   if (rp === 'bow' || (a.aimedBow && lp !== 'bow')) {
     p.rightArm.ry = -0.1 + p.head.ry; p.leftArm.ry = 0.1 + p.head.ry + 0.4;
     p.rightArm.rx = -PI / 2 + p.head.rx; p.leftArm.rx = -PI / 2 + p.head.rx;
@@ -1124,16 +1126,9 @@ export function goat() {
   return jarAdapter('goat', [...QUADRUPED, 'leftHorn', 'rightHorn', 'nose'], (m,a) => {
     const rx=m.parts.body.rx;animateQuadruped(m,a);m.parts.body.rx=rx;
     m.parts.leftHorn.visible = m.parts.rightHorn.visible = !a.child;
-  }, {quadruped:true});
+    if (a.rammingHeadRotation) m.parts.head.rx = a.rammingHeadRotation;
+  }, {quadruped:true,nativeAgeable:{scaleHead:true,headY:19,headZ:1,headScale:2.5,bodyScale:2,bodyY:24}});
 }
 export function axolotl() {
-  return jarAdapter('axolotl', ['body','head','tail','rightFrontLeg','leftFrontLeg','rightHindLeg','leftHindLeg','topGills','leftGills','rightGills'], (m,a) => {
-    const p=m.parts,phase=a.age*(a.inWater?.33:.11),move=a.inWater?.5:a.lsa;
-    p.head.ry=a.yaw*PI/180;p.head.rx=a.pitch*PI/180;
-    p.tail.ry=sin(phase)*move;
-    p.leftFrontLeg.ry=p.rightHindLeg.ry=sin(phase)*move;
-    p.rightFrontLeg.ry=p.leftHindLeg.ry=-sin(phase)*move;
-    p.topGills.rx=sin(phase)*.15;
-    p.leftGills.ry=-p.topGills.rx;p.rightGills.ry=p.topGills.rx;
-  });
+  return jarAdapter('axolotl', ['body','head','tail','rightFrontLeg','leftFrontLeg','rightHindLeg','leftHindLeg','topGills','leftGills','rightGills'], animateAxolotl, {nativeAgeable:{scaleHead:true,headY:8,headZ:3.35,headScale:2,bodyScale:2,bodyY:24,bodyOnly:true}});
 }

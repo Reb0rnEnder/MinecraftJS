@@ -124,6 +124,7 @@ export class ItemRenderer {
         pv.firework = charged && g.items.nbt(item)?.ChargedProjectiles?.some(p => p.id === 'minecraft:firework_rocket') ? 1 : 0;
         break;
       }
+      case 'light': { const level=Number(g.items.nbt(item)?.BlockStateTag?.level ?? 15); pv.level=Math.max(0,Math.min(15,Number.isFinite(level)?level:15))/16; break; }
       case 'shield': pv.blocking = using ? 1 : 0; break;
       case 'fishing_rod': pv.cast = local && g.entities?.fishingCast && g.inventory.held() === item ? 1 : 0; break;
       case 'elytra': pv.broken = damage >= max - 1 ? 1 : 0; break;

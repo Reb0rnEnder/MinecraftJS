@@ -353,7 +353,7 @@ export class EntityManager {
     if(native[6]!==undefined){
       e.pose=native[6];
       if(e.kind==='player'){
-        const pose=['standing','fall_flying','sleeping','swimming','spin_attack','sneaking','dying'][e.pose];
+        const pose=['standing','fall_flying','sleeping','swimming','spin_attack','sneaking','long_jumping','dying'][e.pose];
         const size=playerPoseDimensions(pose);
         if(size){e.width=Math.fround(size[0]);e.height=Math.fround(size[1]);}
         e.visuallySwimming=pose==='swimming';
@@ -596,6 +596,7 @@ export class EntityManager {
       case 13: g.particles.entityEffect(e, 'angryVillager'); break;
       case 14: g.particles.entityEffect(e, 'happyVillager'); break;
       case 15: g.particles.entityEffect(e, 'witchMagic'); break;
+      case 58: case 59: if (e.entityName === 'goat') e.goatRamming = p.entityStatus === 58; break;
       case 53:case 54:g.particles.honeyBlockEffect(e,p.entityStatus===53?5:10);break;
       case 17: g.particles.fireworkExplode && g.particles.fireworkExplode(e); break;
       default: break;
@@ -909,6 +910,7 @@ export class EntityManager {
       e.prevLimbSwingAmount = e.limbSwingAmount;
       e.prevSwingProgress = e.swingProgress;
       e.ticks++;
+      if(e.entityName==='goat') e.goatRammingTicks = Math.max(0, Math.min(20, (e.goatRammingTicks || 0) + (e.goatRamming ? 1 : -2)));
       if(e.entityName==='glow_squid'&&e.darkTicks>0)e.darkTicks--;
       if(e.entityName==='fox')tickFox(e);
       if(e.entityName==='bee'){tickBeeSound(this,e);e.prevBeeRoll=e.beeRoll||0;e.beeRoll=Math.fround(e.beeRolling?Math.min(1,Math.fround(e.prevBeeRoll+Math.fround(.2))):Math.max(0,Math.fround(e.prevBeeRoll-Math.fround(.24))));}

@@ -584,7 +584,11 @@ export class LocalPlayer {
     for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) for (let z = z0; z <= z1; z++) {
       const b = getBlock(world.getState(x, y, z));
       if (!b || b.id === 0) continue;
-      if (b.name === 'powder_snow' && getBlock(world.getState(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z))).name === 'powder_snow') { this.powderSnowStuck = true; this.fallDistance = 0; }
+      if (b.name === 'powder_snow' && getBlock(world.getState(Math.floor(this.x), Math.floor(this.y), Math.floor(this.z))).name === 'powder_snow') {
+        this.powderSnowStuck = true; this.fallDistance = 0;
+        if ((this.prevX !== this.x || this.prevZ !== this.z) && Math.random() < .5)
+          this.onPowderSnow?.(this.x, y + 1, this.z, (Math.random() * 2 - 1) * Math.fround(.083333336), Math.fround(.05), (Math.random() * 2 - 1) * Math.fround(.083333336));
+      }
       if (b.name === 'cobweb') this.inWeb = true;
       else if (b.name === 'honey_block') {
         const edge=.4375+this.width/2;
