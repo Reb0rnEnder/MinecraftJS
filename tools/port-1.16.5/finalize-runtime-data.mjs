@@ -72,3 +72,6 @@ await import('../extract-debug-heightmaps.mjs');
 
 // RenderShape MODEL is independent of the client's blend/cutout layer.
 await import('../extract-render-layers.mjs');
+
+// Keep mesh, damage, selection and collision offsets matched to the target jar.
+await import('../extract-block-offsets.mjs');
