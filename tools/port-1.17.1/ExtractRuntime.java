@@ -82,6 +82,7 @@ public class ExtractRuntime {
     render.put("shade",m(state,"getShadeBrightness",access,pos).invoke(s,world,origin));
     render.put("emission",m(state,"getLightEmission").invoke(s));
     render.put("collisionFull",m(state,"isCollisionShapeFullBlock",access,pos).invoke(s,world,origin));
+    render.put("sturdyTop",m(state,"isFaceSturdy",access,pos,c("net.minecraft.core.Direction")).invoke(s,world,origin,f(c("net.minecraft.core.Direction"),"UP").get(null)));
     Object sound=m(state,"getSoundType").invoke(s);Class<?> soundType=c("net.minecraft.world.level.block.SoundType");List<Object> sounds=new ArrayList<>();
     for(String method:new String[]{"getStepSound","getBreakSound","getPlaceSound"})sounds.add(m(c("net.minecraft.sounds.SoundEvent"),"getLocation").invoke(m(soundType,method).invoke(sound)).toString().replace("minecraft:",""));
     sounds.add(m(soundType,"getVolume").invoke(sound));sounds.add(m(soundType,"getPitch").invoke(sound));
