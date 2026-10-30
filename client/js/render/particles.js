@@ -758,7 +758,14 @@ export class Particles {
         }
         break;
       }
-      case 2003: for (let i = 0; i < 8; i++) this._itemCrackAt(this._itemAtlas(381) || [0, 0, 0, 0], x + 0.5, y + 0.5, z + 0.5, gauss() * 0.15, rand() * 0.2, gauss() * 0.15); break;
+      case 2003: {
+        for (let i = 0; i < 8; i++) this._itemCrackAt(this._itemAtlas(381) || [0, 0, 0, 0], x + 0.5, y + 0.5, z + 0.5, gauss() * 0.15, rand() * 0.2, gauss() * 0.15);
+        for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 20) {
+          const dx = Math.cos(angle), dz = Math.sin(angle);
+          for (const speed of [5,7]) this.portal(x + .5 + dx * 5, y - .4, z + .5 + dz * 5, -dx * speed, 0, -dz * speed);
+        }
+        break;
+      }
       case 2004: for (let i = 0; i < 20; i++) { this.smoke(x + 0.5 + (rand() - 0.5) * 2, y + 0.5 + (rand() - 0.5) * 2, z + 0.5 + (rand() - 0.5) * 2, 0, 0, 0); this.flame(x + 0.5 + (rand() - 0.5) * 2, y + 0.5 + (rand() - 0.5) * 2, z + 0.5 + (rand() - 0.5) * 2); } break;
       case 2005: {
         const n = p.data || 15;
