@@ -66,6 +66,7 @@ function patchShapes(s) {
 export function initBlocks(blocksJson, shapesJson) {
   patchShapes(shapesJson);
   shapesData = shapesJson;
+  if(shapesJson?.modelOffsets&&shapesJson.modelOffsets.source.blockCount!==blocksJson.length)throw Error("Incomplete native model offset data");
   for (const b of blocksJson) {
     const name = b.name;
     const def = {
@@ -93,6 +94,7 @@ export function initBlocks(blocksJson, shapesJson) {
       isLava: name === 'lava' || name === 'flowing_lava',
       replaceable: REPLACEABLE.has(name) || (b.material === 'plant' && b.boundingBox === 'empty' && name !== 'reeds' && name !== 'cactus' && name !== 'waterlily' && !/sapling|wheat|carrots|potatoes|stem|wart|flower|mushroom/.test(name)),
       slipperiness: name === 'ice' || name === 'packed_ice' ? 0.98 : name === 'slime' ? 0.8 : 0.6,
+      modelOffset:shapesJson?.modelOffsets?.blocks[name],
       shapes: shapesJson ? shapesJson.blocks[name] : null,
       // AO: opaque full cubes darken neighbours
       aoLight: 0,
@@ -133,7 +135,23 @@ export function isFullOpaque(state) {
 }
 
 // Undefined means the shape needs the live-neighbour resolver; null means no selectable volume.
-export function jarSelectionBox(state) {
+export function jarSelectionBox(state,x=0,y=0,z=0) {
   const selection = shapesData?.selection, index = selection?.states[state];
-  return typeof index === 'number' ? selection.boxes[index] : undefined;
+  const box=typeof index==='number'?selection.boxes[index]:undefined,delta=shapeOffsetDelta(blocks[state>>4],'selection',x,y,z);
+  return box&&delta?box.map((v,i)=>v+delta[i%3]):box;
+}
+
+const NO_MODEL_OFFSET=Object.freeze([0,0,0]);
+// Native Block/BlockBehaviour offsets. null retains the older renderer fallback
+// only when a target has no extracted policy at all.
+export function nativeModelOffset(name,x,y,z){
+ if(!shapesData?.modelOffsets)return null;
+ const policy=blocksByName[name]?.modelOffset;if(!policy)return NO_MODEL_OFFSET;
+ const seed=Math.imul(x,3129871)^Math.imul(z,116129781)^(shapesData.modelOffsets.source.seedY?y:0),r=(Math.imul(Math.imul(seed,seed),42317861)+Math.imul(seed,11))|0,h=policy.horizontal;
+ return [Math.max(-h,Math.min(h,(Math.fround(((r>>>16)&15)/15)-.5)*.5)),policy.type===2?(Math.fround(((r>>>20)&15)/15)-1)*policy.vertical:0,Math.max(-h,Math.min(h,(Math.fround(((r>>>24)&15)/15)-.5)*.5))];
+}
+function shapeOffsetDelta(block,kind,x,y,z){
+ const policy=block?.modelOffset;if(!policy?.[kind])return null;
+ const offset=nativeModelOffset(block.name,x,y,z),delta=offset.map((v,i)=>v-policy.origin[i]);
+ return delta.some(v=>v!==0)?delta:null;
 }
