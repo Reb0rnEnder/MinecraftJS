@@ -1,3 +1,4 @@
+import { bitsetValue, compactMask, maskHas, maskHighest } from './bitset.js';
 // Native Java 1.17.1 protocol 756. Reuse bodies only when the pinned schemas agree.
 import {Reader754,Writer754,decodePacket754,C754} from './protocol-1.16.5.js';
 import {CLIENTBOUND_754 as OLD_IN,SERVERBOUND_754 as OLD_OUT} from './protocol-1.16.5-ids.js';
@@ -21,8 +22,8 @@ function readVibration(r,particle=false){
   let destination;if(kind==='block')destination=r.position();else if(kind==='entity'||kind==='entityId')destination=r.varint();else throw Error('Unknown vibration destination '+positionType);
   return{origin,positionType,destination,ticks:r.varint(),particle};
 }
-const masks=r=>list(r,()=>r.i64(),64);
-const numericMask=words=>{if(words.length>1&&words.slice(1).some(n=>n!==0n)||words[0]!==undefined&&BigInt.asUintN(64,words[0])>0x3ffffn)throw Error('This terrain view requires a taller dimension');return Number(words[0]||0n);};
+const masks=r=>list(r,()=>r.i64(),4);
+const numericMask=words=>compactMask(bitsetValue(words));
 const attributes=r=>({entityId:r.varint(),properties:list(r,()=>({key:r.string().replace(/^minecraft:/,''),value:r.f64(),modifiers:list(r,()=>({uuid:r.uuid(),amount:r.f64(),operation:r.i8()}))}))});
 const ATTRIBUTE_NAMES={'generic.max_health':'generic.maxHealth','generic.movement_speed':'generic.movementSpeed','generic.flying_speed':'generic.flyingSpeed','generic.attack_damage':'generic.attackDamage','generic.attack_speed':'generic.attackSpeed','generic.knockback_resistance':'generic.knockbackResistance','generic.follow_range':'generic.followRange','horse.jump_strength':'horse.jumpStrength','zombie.spawn_reinforcements':'zombie.spawnReinforcements'};
 function changed(name,r){switch(name){
@@ -32,7 +33,7 @@ function changed(name,r){switch(name){
   case 'update_light':{
     const p={chunkX:r.varint(),chunkZ:r.varint(),trustEdges:r.bool()};
     for(const key of['skyLightMask','blockLightMask','emptySkyLightMask','emptyBlockLightMask']){p[key+'Words']=masks(r);p[key]=numericMask(p[key+'Words']);}
-    for(const [key,mask]of[['skyLight',p.skyLightMask],['blockLight',p.blockLightMask]]){const arrays=list(r,()=>r.bytesN(r.varint()).slice(),256),data={};let next=0;for(let i=0;i<18;i++)if(mask&(1<<i)){if(arrays[next]?.length!==2048)throw Error('Invalid 756 light array');data[i-1]=arrays[next++];}if(next!==arrays.length)throw Error('756 light array count does not match mask');p[key]=data;}return p;
+    for(const [key,mask]of[['skyLight',p.skyLightMask],['blockLight',p.blockLightMask]]){const arrays=list(r,()=>r.bytesN(r.varint()).slice(),256),data={};let next=0;for(let i=0;i<=maskHighest(mask);i++)if(maskHas(mask,i)){if(arrays[next]?.length!==2048)throw Error('Invalid 756 light array');data[i-1]=arrays[next++];}if(next!==arrays.length)throw Error('756 light array count does not match mask');p[key]=data;}return p;
   }
   case 'position':return{x:r.f64(),y:r.f64(),z:r.f64(),yaw:r.f32(),pitch:r.f32(),flags:r.i8(),teleportId:r.varint(),dismountVehicle:r.bool()};
   case 'spawn_position':return{location:r.position(),angle:r.f32()};

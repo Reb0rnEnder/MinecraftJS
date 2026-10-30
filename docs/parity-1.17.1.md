@@ -41,6 +41,10 @@ are in `tools/port-1.17.1/baseline.json`.
   transforms, third-person spyglass attachment, all new particle providers and
   block effect producers are implemented. Block-state decoding matches all
   20,342 native states. See `caves-content-parity.md` for evidence and limits.
+- Custom dimension min-Y/height flows through terrain/light bitsets, world and
+  worker storage, culling/meshing, collisions, biome sampling, precipitation and
+  F3 height maps. Negative and above-255 browser scenes render without errors.
+  See `vertical-world-parity.md` for native limits, tests and live-test limits.
 - Sound registry/events/sample references are checked against the built assets.
 - Bee anger accessor follows the native renamed field; the same correction was
   backported to 1.16.5. 1.15.2 already uses its correct original accessor.
@@ -78,9 +82,7 @@ probes accept `--host=`, `--port=` and `--duration=`. They do not start a server
 
 ## Pending acceptance work
 
-- Nonstandard dimension min-Y/height throughout world storage, meshing, lighting,
-  collision, weather and workers. The current view supports ordinary 0–255
-  worlds; out-of-range section/light masks fail explicitly.
+- Live custom-height server acceptance beyond the isolated browser/wire fixtures.
 - Nether/End round trips against the 1.17.1 server and all graphics adapters.
 - Full inventory operation matrix: drag/shift/drop, creative search, every menu,
   book limits, reconciliation during concurrent updates and resource-pack prompts.
@@ -97,5 +99,5 @@ probes accept `--host=`, `--port=` and `--duration=`. They do not start a server
 - Carry-over gaps from `parity-1.16.5.md`; command/font/GUI/narrator parity audits;
   shader/custom-pack regressions and measured frame-time/memory profiles.
 
-Next milestone: custom-dimension vertical bounds and native Fabulous rendering;
+Next milestone: native Fabulous rendering;
 then complete the live inventory/equipment/dimension-travel acceptance matrix.

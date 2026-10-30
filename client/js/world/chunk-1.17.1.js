@@ -1,14 +1,15 @@
+import { maskHas, maskFits } from '../net/bitset.js';
 // Since 1.16, entries are padded within each long and never straddle long boundaries.
 import {Reader756} from '../net/protocol-1.17.1.js';
 export const BLOCK_STATE_COUNT_756 = 20342;
 export const AIR_STATES_756 = Object.freeze([0, 9916, 9915]);
 
-export function decodeChunkData756(packet, {stateCount = BLOCK_STATE_COUNT_756} = {}) {
+export function decodeChunkData756(packet, {stateCount = BLOCK_STATE_COUNT_756, sectionCount = 16} = {}) {
   const {bitMap, chunkData} = packet;
-  if (!Number.isInteger(bitMap) || bitMap < 0 || bitMap > 65535) throw Error('Invalid terrain section mask');
-  const r = new Reader756(chunkData), sections = new Array(16).fill(null);
+  if (!Number.isInteger(sectionCount) || sectionCount < 1 || sectionCount > 254 || !maskFits(bitMap, sectionCount)) throw Error('Invalid terrain section mask');
+  const r = new Reader756(chunkData), sections = new Array(sectionCount).fill(null);
   const globalBits = Math.ceil(Math.log2(stateCount));
-  for (let y = 0; y < 16; y++) if (bitMap & (1 << y)) {
+  for (let y = 0; y < sectionCount; y++) if (maskHas(bitMap, y)) {
     const offset = r.offset;
     let wireBits, wireNonAir;
     try {

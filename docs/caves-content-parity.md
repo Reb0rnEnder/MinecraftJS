@@ -82,6 +82,6 @@ console or missing-resource errors. These do not establish all-adapter or exact
 pixel equality, and do not replace live server equipment/interactions.
 
 Remaining engine-wide work is listed in `parity-1.17.1.md` and
-`parity-1.16.5.md`: custom height support, Fabulous rendering, live inventory and
+`parity-1.16.5.md`: live custom-height acceptance, Fabulous rendering, live inventory and
 travel coverage, account services and remaining inherited animation/GUI audits.
 This is not a declaration of full parity and does not start 1.18.2.

@@ -26,7 +26,7 @@ const light=packet('update_light').varint(-2).varint(3).bool(true);
 for(const mask of [2n,0n,0n,0n])light.varint(1).i64(mask);
 light.varint(1).varint(2048).raw(new Uint8Array(2048).fill(255)).varint(0);
 p=read(light);assert.equal(p.skyLight[0].length,2048);assert.equal(p.skyLight[0][100],255);
-assert.throws(()=>read(packet('update_light').varint(0).varint(0).bool(false).varint(1).i64(1n<<40n)),/taller dimension/);
+assert.throws(()=>read(packet('update_light').varint(0).varint(0).bool(false).varint(5)),/array length/);
 p=read(packet('position').f64(1).f64(64).f64(2).f32(90).f32(0).i8(0).varint(123).bool(true));assert.equal(p.dismountVehicle,true);
 p=read(packet('resource_pack_send').string('https://example.org/pack.zip').string('').bool(true).bool(true).string('{"text":"Required"}'));assert.equal(p.forced,true);assert.equal(JSON.parse(p.promptMessage).text,'Required');
 p=read(packet('map').varint(1).i8(0).bool(true).bool(false).u8(0));assert.equal(p.icons,null);assert.equal(p.locked,true);

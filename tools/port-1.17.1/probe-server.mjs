@@ -40,7 +40,7 @@ const server=await status();assert.equal(server.version.protocol,756);console.lo
 function captureFailedChunk(packet){writeFileSync(join(cache,'failed-chunk.json'),JSON.stringify({...packet,chunkData:Buffer.from(packet.chunkData).toString('base64')},(_,v)=>typeof v==='bigint'?v.toString():v));}
 const report={protocol:756,serverVersion:server.version.name,compressionThreshold:null,loginSuccess:false,packets:{},unsupported:{},teleportsConfirmed:0,keepAlivesAnswered:0,sectionsDecoded:0,inventoryResync:false};
 await new Promise((resolve,reject)=>{
-  const sock=new DirectProbeSocket();let finished=false;
+  const sock=new DirectProbeSocket();let finished=false,sectionCount=16;
   const finish=error=>{if(finished)return;finished=true;clearTimeout(timer);sock.close();error?reject(error):resolve();};
   const timer=setTimeout(()=>{
     try{
@@ -61,10 +61,10 @@ await new Promise((resolve,reject)=>{
       const packet=decodePacket756(bytes);
       if(packet.name==='unsupported'){const key=packet.packetName||String(packet.id);report.unsupported[key]=(report.unsupported[key]||0)+1;return;}
       report.packets[packet.name]=(report.packets[packet.name]||0)+1;
-      if(packet.name==='login'){report.join={entityId:packet.entityId,dimension:packet.dimension,viewDistance:packet.viewDistance};sock.sendBinary(C756.settings('en_us',2));console.log('Join game decoded; waiting for chunks, light and keepalive');}
+      if(packet.name==='login'){sectionCount=(packet.dimensionData?.height??256)/16;report.join={entityId:packet.entityId,dimension:packet.dimension,viewDistance:packet.viewDistance};sock.sendBinary(C756.settings('en_us',2));console.log('Join game decoded; waiting for chunks, light and keepalive');}
       if(packet.name==='window_items'&&packet.windowId===0){if(report.packets.window_items===1){assert.equal(packet.carriedItem,null);sock.sendBinary(C756.windowClick(0,-999,0,packet.stateId+1,0,[],null));}else report.inventoryResync=true;}
       if(packet.name==='ping')sock.sendBinary(C756.pong(packet.pingId));
-      if(packet.name==='map_chunk'){try{const chunk=decodeChunkData756(packet);report.sectionsDecoded+=chunk.sections.filter(Boolean).length;}catch(error){captureFailedChunk(packet);throw error;}}
+      if(packet.name==='map_chunk'){try{const chunk=decodeChunkData756(packet,{sectionCount});report.sectionsDecoded+=chunk.sections.filter(Boolean).length;}catch(error){captureFailedChunk(packet);throw error;}}
       if(packet.name==='kick_disconnect')throw new Error('Server disconnected probe: '+packet.reason);
       if(packet.name==='position'){sock.sendBinary(C756.teleportConfirm(packet.teleportId));report.teleportsConfirmed++;}
       if(packet.name==='keep_alive'){sock.sendBinary(C756.keepAlive(packet.keepAliveId));report.keepAlivesAnswered++;}

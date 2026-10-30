@@ -5,7 +5,8 @@
 import { aabbInFrustum } from '../gfx/math.js';
 import { DIR_OFFSETS, OPPOSITE } from '../world/blocks.js';
 
-export const sectionKey = (cx, sy, cz) => ((cx + 0x100000) * 0x200000 + (cz + 0x100000)) * 16 + sy;
+import {sectionKey} from '../world/section-key.js';
+export {sectionKey} from '../world/section-key.js';
 
 export class SectionCuller {
   constructor() {
@@ -14,10 +15,11 @@ export class SectionCuller {
     this.reachedCount = 0;
   }
 
-  _alloc(R) {
+  _alloc(R, H = 16) {
+    this.H = H;
     this.R = R;
     this.W = 2 * R + 1;
-    const n = this.W * this.W * 16;
+    const n = this.W * this.W * H;
     this.state = new Uint8Array(n);     // 0 unvisited, else 1 + entry face (or 7 for the start)
     this.dirs = new Uint8Array(n);      // directions travelled to reach this section
     this.queue = new Int32Array(n);
@@ -27,15 +29,17 @@ export class SectionCuller {
   // sections: Map sectionKey -> { vis?: Uint8Array(6), ... }. columnLoaded(cx, cz) -> bool.
   // Returns the reached sections that have geometry, in walk order (roughly near to far).
   // maxDist: fog end; sections entirely beyond it render as pure fog colour and are skipped (Sodium's fog occlusion)
-  update(sections, frustum, cam, renderDistance, columnLoaded, cameraInOpaque, maxDist = Infinity) {
+  update(sections, frustum, cam, renderDistance, columnLoaded, cameraInOpaque, maxDist = Infinity, bounds = {}) {
+    const min=bounds.minSection??0,H=bounds.sectionCount??16,max=min+H;
+    this.minSection=min;this.maxSection=max;
     const R = renderDistance + 1;
-    if (R !== this.R) this._alloc(R);
+    if (R !== this.R || H !== this.H) this._alloc(R,H);
     const W = this.W, state = this.state, dirs = this.dirs, queue = this.queue;
     state.fill(0);
     const ccx = Math.floor(cam[0] / 16), ccy = Math.floor(cam[1] / 16), ccz = Math.floor(cam[2] / 16);
     this.ccx = ccx; this.ccz = ccz;
     for (let i = 0; i < W; i++) for (let j = 0; j < W; j++) this.columns[i * W + j] = columnLoaded(ccx - R + j, ccz - R + i) ? 1 : 0;
-    const idx = (cx, sy, cz) => ((cz - ccz + R) * W + (cx - ccx + R)) * 16 + sy;
+    const idx = (cx, sy, cz) => ((cz - ccz + R) * W + (cx - ccx + R)) * H + sy - min;
     const out = [];
     let head = 0, tail = 0;
     const md2 = maxDist * maxDist;
@@ -47,12 +51,12 @@ export class SectionCuller {
       return aabbInFrustum(frustum, x0, y0, z0, x0 + 16, y0 + 16, z0 + 16);
     };
     const occlude = this.enabled && !cameraInOpaque;
-    if (ccy >= 0 && ccy < 16 && this.columns[R * W + R]) {
+    if (ccy >= min && ccy < max && this.columns[R * W + R]) {
       const i = idx(ccx, ccy, ccz);
       state[i] = 7; dirs[i] = 0; queue[tail++] = i;
     } else {
       // Camera above / below the world (or in an unloaded column): seed with the nearest layer in view
-      const sy = ccy >= 16 ? 15 : 0, entry = ccy >= 16 ? 1 : 0;
+      const sy = ccy >= max ? max-1 : min, entry = ccy >= max ? 1 : 0;
       for (let dz = -R; dz <= R; dz++) for (let dx = -R; dx <= R; dx++) {
         if (!this.columns[(dz + R) * W + dx + R]) continue;
         const cx = ccx + dx, cz = ccz + dz;
@@ -63,7 +67,7 @@ export class SectionCuller {
     }
     while (head < tail) {
       const i = queue[head++];
-      const sy = i & 15, col = i >> 4, cz = ((col / W) | 0) - R + ccz, cx = (col % W) - R + ccx;
+      const sy = i % H + min, col = Math.floor(i / H), cz = ((col / W) | 0) - R + ccz, cx = (col % W) - R + ccx;
       const s = sections.get(sectionKey(cx, sy, cz));
       if (s && (s.solid || s.cutout || s.translucent)) out.push(s);
       const entry = state[i] - 1; // face we came in through (6 = start)
@@ -73,10 +77,10 @@ export class SectionCuller {
         if (vis && entry < 6 && !(vis[entry] & (1 << d))) continue; // no path through this section
         const o = DIR_OFFSETS[d];
         const nx = cx + o[0], ny = sy + o[1], nz = cz + o[2];
-        if (ny < 0 || ny > 15 || Math.abs(nx - ccx) > R || Math.abs(nz - ccz) > R) continue;
+        if (ny < min || ny >= max || Math.abs(nx - ccx) > R || Math.abs(nz - ccz) > R) continue;
         const col2 = (nz - ccz + R) * W + (nx - ccx + R);
         if (!this.columns[col2]) continue;
-        const j = col2 * 16 + ny;
+        const j = col2 * H + ny - min;
         if (state[j]) continue;
         if (!inView(nx, ny, nz)) continue;
         state[j] = 1 + OPPOSITE[d];
@@ -92,9 +96,9 @@ export class SectionCuller {
   isVisible(x, y, z) {
     if (this.R < 0 || !this.state) return true;
     const sy = Math.floor(y / 16);
-    if (sy < 0 || sy > 15) return true;
+    if (sy < this.minSection || sy >= this.maxSection) return true;
     const cx = Math.floor(x / 16), cz = Math.floor(z / 16), R = this.R;
     if (Math.abs(cx - this.ccx) > R || Math.abs(cz - this.ccz) > R) return false;
-    return this.state[((cz - this.ccz + R) * this.W + (cx - this.ccx + R)) * 16 + sy] !== 0;
+    return this.state[((cz - this.ccz + R) * this.W + (cx - this.ccx + R)) * this.H + sy - this.minSection] !== 0;
   }
 }

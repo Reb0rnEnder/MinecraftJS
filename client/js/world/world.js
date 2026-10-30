@@ -1,3 +1,6 @@
+import { verticalBounds } from './vertical-bounds.js';
+import { sectionKey, sectionCoords } from './section-key.js';
+import { maskHas, maskFits, maskValue } from '../net/bitset.js';
 import { powderSnowCollision } from './powder-snow.js';
 import {BiomeZoom} from './biome-zoom.js';
 import {scaffoldingCollision} from './scaffolding.js';
@@ -13,6 +16,7 @@ const HORIZ = ['south', 'west', 'north', 'east'];
 
 export class World {
   constructor() {
+    Object.assign(this, verticalBounds());
     this.chunks = new Map();
     this.lightColumns = new Map();
     this.dimension = 0;
@@ -47,10 +51,11 @@ export class World {
     return c;
   }
 
-  setDimension(dim) {
-    if (dim !== this.dimension) this.clear();
-    this.dimension = dim;
-    this.hasSky = dim === 0;
+  setDimension(dim, data = {}) {
+    const bounds=verticalBounds(data);
+    if (dim !== this.dimension || bounds.minY !== this.minY || bounds.height !== this.height) this.clear();
+    Object.assign(this,bounds);this.dimension = dim;
+    this.hasSky = data.has_skylight === undefined ? dim === 0 : !!data.has_skylight;
   }
 
   // A new world (vanilla makes a new WorldClient on join and dimension change, with fresh WorldInfo: clear weather)
@@ -69,7 +74,7 @@ export class World {
     // A full chunk without sections is an empty chunk (unloading has its own packet since 1.9)
     let c = this.getChunk(x, z);
     if (!c) {
-      c = new Chunk(x, z, this.hasSky);
+      c = new Chunk(x, z, this.hasSky, this);
       this.chunks.set(x + ',' + z, c);
       this._gen++;
     }
@@ -82,45 +87,47 @@ export class World {
   // Light columns have their own lifecycle: Update Light may precede terrain.
   _lightColumn(x, z) {
     const key=World.key(x,z);let light=this.lightColumns.get(key);
-    if(!light){light={sky:new Array(18),block:new Array(18),skyKnown:false,skyDataMask:0};this.lightColumns.set(key,light);}
+    if(!light){light={sky:new Array(this.sectionCount+2),block:new Array(this.sectionCount+2),skyKnown:false,skyDataMask:0n,minSection:this.minSection,maxY:this.maxY};this.lightColumns.set(key,light);}
     return light;
   }
 
   loadChunk756(packet) {
-    const decoded=decodeChunkData756(packet),{x,z,groundUp,bitMap}=packet;
+    const decoded=decodeChunkData756(packet,{sectionCount:this.sectionCount}),{x,z,groundUp,bitMap}=packet;
     let c=this.getChunk(x,z);
-    if(!c){c=new Chunk(x,z,this.hasSky);this.chunks.set(World.key(x,z),c);this._gen++;}
+    if(!c){c=new Chunk(x,z,this.hasSky,this);this.chunks.set(World.key(x,z),c);this._gen++;}
     c.nativeLight=this._lightColumn(x,z);c.heightmaps=packet.heightmaps;c.debugHeightRevision=(c.debugHeightRevision||0)+1;
-    for(let sy=0;sy<16;sy++) {
-      const data=decoded.sections[sy];
-      if(!data){if(groundUp)c.sections[sy]=null;continue;}
+    for(let index=0;index<this.sectionCount;index++) {
+      const sy=this.minSection+index,data=decoded.sections[index];
+      if(!data){if(groundUp)c.setSection(sy,null);continue;}
       const sec=new Section(false);sec.blocks=data.blocks;sec.nonAir=data.nonAir;sec.wireNonAir=data.wireNonAir;
-      sec.skyLight=c.nativeLight.sky[sy+1] ||= new Uint8Array(2048);
-      sec.blockLight=c.nativeLight.block[sy+1] ||= new Uint8Array(2048);
-      c.sections[sy]=sec;
+      sec.skyLight=c.nativeLight.sky[sy-this.minSection+1] ||= new Uint8Array(2048);
+      sec.blockLight=c.nativeLight.block[sy-this.minSection+1] ||= new Uint8Array(2048);
+      c.setSection(sy,sec);
     }
-    if(decoded.biomes)c.biomes=decoded.biomes;
+    if(decoded.biomes){c.biomes=new Uint32Array(this.sectionCount*64);c.biomes.set(decoded.biomes.slice(0,c.biomes.length));c.biomes3D=true;}
     this._computeHeights(c);
     this.emit('chunkLoaded',c,bitMap,groundUp);
     // Include cleared sections so previous geometry cannot survive a full reload.
-    for(let sy=0;sy<16;sy++)if(groundUp||bitMap&(1<<sy))for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)this.emit('sectionDirty',x+dx,sy,z+dz);
+    for(let sy=this.minSection;sy<this.maxSection;sy++)if(groundUp||maskHas(bitMap,sy-this.minSection))for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)this.emit('sectionDirty',x+dx,sy,z+dz);
     return c;
   }
 
   updateLight756(packet) {
     const light=this._lightColumn(packet.chunkX,packet.chunkZ),changed=new Set();
     for(const [name,arrays,empty] of [['sky',packet.skyLight,packet.emptySkyLightMask],['block',packet.blockLight,packet.emptyBlockLightMask]]) {
-      for(let i=0;i<18;i++) {
-        const bytes=arrays?.[i-1];if(!bytes&&!(empty&(1<<i)))continue;
+      if(!maskFits(empty??0,this.sectionCount+2))throw Error('Light section outside dimension');
+      for(const key of Object.keys(arrays||{}))if(Number(key)<-1||Number(key)>this.sectionCount)throw Error('Light section outside dimension');
+      for(let i=0;i<this.sectionCount+2;i++) {
+        const bytes=arrays?.[i-1];if(!bytes&&!maskHas(empty??0,i))continue;
         if(bytes?.length!==2048&&bytes)throw new Error('Invalid light section');
-        light[name][i]=bytes?bytes.slice():new Uint8Array(2048);if(name==='sky'){light.skyKnown=true;light.skyDataMask=bytes?(light.skyDataMask||0)|(1<<i):(light.skyDataMask||0)&~(1<<i); }changed.add(i-1);
+        light[name][i]=bytes?bytes.slice():new Uint8Array(2048);if(name==='sky'){light.skyKnown=true;light.skyDataMask=bytes?maskValue(light.skyDataMask||0)|(1n<<BigInt(i)):maskValue(light.skyDataMask||0)&~(1n<<BigInt(i)); }changed.add(this.minSection+i-1);
       }
     }
     const c=this.getChunk(packet.chunkX,packet.chunkZ);if(!c)return;
     c.nativeLight=light;
     for(const sy of changed) {
-      const sec=c.sections[sy];if(sec){sec.skyLight=light.sky[sy+1]||sec.skyLight;sec.blockLight=light.block[sy+1]||sec.blockLight;}
-      for(let dy=-1;dy<=1;dy++)if(sy+dy>=0&&sy+dy<16)for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)this.emit('sectionDirty',c.x+dx,sy+dy,c.z+dz);
+      const sec=c.getSection(sy);if(sec){sec.skyLight=light.sky[sy-this.minSection+1]||sec.skyLight;sec.blockLight=light.block[sy-this.minSection+1]||sec.blockLight;}
+      for(let dy=-1;dy<=1;dy++)if(sy+dy>=this.minSection&&sy+dy<this.maxSection)for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)this.emit('sectionDirty',c.x+dx,sy+dy,c.z+dz);
     }
   }
 
@@ -133,10 +140,10 @@ export class World {
   isLoaded(x, z) { return !!this._chunk(x >> 4, z >> 4); }
 
   getState(x, y, z) {
-    if (y < 0 || y > 255) return 0;
+    if (y < this.minY || y >= this.maxY) return 0;
     const c = this._chunk(x >> 4, z >> 4);
     if (!c) return 0;
-    const s = c.sections[y >> 4];
+    const s = c.getSection(y >> 4);
     return s ? s.blocks[((y & 15) << 8) | ((z & 15) << 4) | (x & 15)] : 0;
   }
 
@@ -146,26 +153,23 @@ export class World {
 
   setBiomeSeed(seed){this.biomeZoom=seed===undefined?null:new BiomeZoom(seed);}
 
-  getNoiseBiome(qx,qy,qz){
-    const chunk=this._chunk(qx>>2,qz>>2);
-    return chunk?.biomes.length===1024?chunk.biomes[(Math.max(0,Math.min(63,qy))<<4)|((qz&3)<<2)|(qx&3)]:1;
+  _quartBiome(c,qx,qy,qz) {
+    if(!c)return null;
+    if(c.biomes3D||c.biomes.length===1024){const layer=Math.max(0,Math.min(c.biomes.length/16-1,qy-(c.minY??this.minY)/4));return c.biomes[(layer<<4)|((qz&3)<<2)|(qx&3)];}
+    return c.biomes[((qz&3)*4<<4)|(qx&3)*4];
+  }
+  getNoiseBiome(qx,qy,qz){return this._quartBiome(this._chunk(qx>>2,qz>>2),qx,qy,qz)??1;}
+  getBiome(x,z,y=64){
+    if(this.biomeZoom){const biome=this.biomeZoom.sample(Math.floor(x),Math.floor(y),Math.floor(z),(qx,qy,qz)=>{const c=this._chunk(qx>>2,qz>>2);return c&&(c.biomes3D||c.biomes.length===1024)?this._quartBiome(c,qx,qy,qz):null;});if(biome!==null)return biome;}
+    const c=this._chunk(x>>4,z>>4);if(!c)return 1;
+    return c.biomes3D||c.biomes.length===1024?this._quartBiome(c,Math.floor(x/4),Math.floor(y/4),Math.floor(z/4)):c.biomes[((z&15)<<4)|(x&15)];
   }
 
-  getBiome(x, z, y = 64) {
-    if(this.biomeZoom){const biome=this.biomeZoom.sample(Math.floor(x),Math.floor(y),Math.floor(z),(qx,qy,qz)=>{const chunk=this._chunk(qx>>2,qz>>2);return chunk?.biomes.length===1024?chunk.biomes[(Math.max(0,Math.min(63,qy))<<4)|((qz&3)<<2)|(qx&3)]:null;});if(biome!==null)return biome;}
-
-
-    const c = this._chunk(x >> 4, z >> 4);
-    if(!c)return 1;
-    return c.biomes.length===1024?c.biomes[(Math.max(0,Math.min(63,Math.floor(y/4)))<<4)|((z&15)>>2)<<2|((x&15)>>2)]:c.biomes[((z&15)<<4)|(x&15)];
-  }
-
-  // World.isRainingAt: rain, an exposed position, and a biome with rain precipitation.
   isRainingAt(x, y, z) {
     x = Math.floor(x); y = Math.floor(y); z = Math.floor(z);
     if (!this.hasSky || this.rainStrength <= 0.2 || !this.isLoaded(x, z)) return false;
     if (biomeInfo(this.getBiome(x,z,y)).precipitation !== 'rain') return false;
-    for (let above = Math.max(0, y); above < 256; above++) {
+    for (let above = Math.max(this.minY, y); above < this.maxY; above++) {
       const b = getBlock(this.getState(x, above, z));
       if (b.boundingBox === 'block' || b.isLiquid) return false;
     }
@@ -187,7 +191,7 @@ export class World {
   // Sets a block and updates lighting. Emits sectionDirty for affected sections.
   // Between beginBatch() and endBatch() changes are collected and relit together (one light pass).
   setState(x, y, z, state) {
-    if (y < 0 || y > 255) return;
+    if (y < this.minY || y >= this.maxY) return;
     const c = this._chunk(x >> 4, z >> 4);
     if (!c) return;
     const old = c.getState(x & 15, y, z & 15);
@@ -219,7 +223,7 @@ export class World {
     }
     if (blockSeeds.length) this._relight(false, blockSeeds, dirty);
     if (skySeeds.length) this._relight(true, skySeeds, dirty);
-    for (const k of dirty) this.emit('sectionDirty', Math.floor(k / 0x200000 / 16) - 0x100000, k % 16, Math.floor(k / 16) % 0x200000 - 0x100000);
+    for (const k of dirty) this.emit('sectionDirty', ...sectionCoords(k));
     for (const [x, y, z, old, state] of changes) this.emit('blockChanged', x, y, z, old, state);
   }
 
@@ -229,10 +233,10 @@ export class World {
     const cx = x >> 4, cy = y >> 4, cz = z >> 4;
     const lx = x & 15, ly = y & 15, lz = z & 15;
     const x0 = lx === 0 ? -1 : 0, x1 = lx === 15 ? 1 : 0;
-    const y0 = ly === 0 && cy > 0 ? -1 : 0, y1 = ly === 15 && cy < 15 ? 1 : 0;
+    const y0 = ly === 0 && cy > this.minSection ? -1 : 0, y1 = ly === 15 && cy < this.maxSection-1 ? 1 : 0;
     const z0 = lz === 0 ? -1 : 0, z1 = lz === 15 ? 1 : 0;
     for (let dx = x0; dx <= x1; dx++) for (let dy = y0; dy <= y1; dy++) for (let dz = z0; dz <= z1; dz++) {
-      set.add(((cx + dx + 0x100000) * 0x200000 + (cz + dz + 0x100000)) * 16 + cy + dy);
+      set.add(sectionKey(cx+dx,cy+dy,cz+dz));
     }
   }
 
@@ -249,12 +253,12 @@ export class World {
   _computeHeights(c) {
     for (let i = 0; i < 256; i++) {
       const lx = i & 15, lz = i >> 4;
-      let h = 0;
-      for (let sy = 15; sy >= 0 && !h; sy--) {
-        const s = c.sections[sy];
+      let h = this.minY,found = false;
+      for (let sy = this.maxSection-1; sy >= this.minSection && !found; sy--) {
+        const s = c.getSection(sy);
         if (!s || !s.nonAir) continue;
         for (let ly = 15; ly >= 0; ly--) {
-          if (this.opacity(s.blocks[(ly << 8) | (lz << 4) | lx]) > 0) { h = sy * 16 + ly + 1; break; }
+          if (this.opacity(s.blocks[(ly << 8) | (lz << 4) | lx]) > 0) { h = sy * 16 + ly + 1; found=true; break; }
         }
       }
       c.heightMap[i] = h;
@@ -267,20 +271,20 @@ export class World {
     if (this.opacity(state) > 0) { if (y + 1 > h) c.heightMap[i] = y + 1; return; }
     if (y + 1 !== h) return;
     let ny = y - 1;
-    while (ny >= 0 && this.opacity(c.getState(lx, ny, lz)) === 0) ny--;
+    while (ny >= this.minY && this.opacity(c.getState(lx, ny, lz)) === 0) ny--;
     c.heightMap[i] = ny + 1;
   }
 
   _getL(sky, x, y, z) {
-    if (y < 0) return 0;
-    if (y > 255) return sky ? 15 : 0;
+    if (y < this.minY) return 0;
+    if (y >= this.maxY) return sky && this.hasSky ? 15 : 0;
     const c = this._chunk(x >> 4, z >> 4);
     if (!c) return -1;
     return sky ? c.getSkyLight(x & 15, y, z & 15) : c.getBlockLight(x & 15, y, z & 15);
   }
 
   _setL(sky, x, y, z, v, dirty) {
-    if (y < 0 || y > 255) return;
+    if (y < this.minY || y >= this.maxY) return;
     const c = this._chunk(x >> 4, z >> 4);
     if (!c) return;
     if (sky) c.setSkyLight(x & 15, y, z & 15, v); else c.setBlockLightAt(x & 15, y, z & 15, v);
@@ -327,7 +331,7 @@ export class World {
       const src = this._sourceLevel(sky, x, y, z);
       if (src > 0 && src > this._getL(sky, x, y, z)) { this._setL(sky, x, y, z, src, dirty); addQ.push(x, y, z); }
       if (sky && src === 15) {
-        for (let yy = y - 1; yy >= 0; yy--) {
+        for (let yy = y - 1; yy >= this.minY; yy--) {
           if (this.opacity(this.getState(x, yy, z)) > 0) break;
           if (this._getL(true, x, yy, z) < 15) { this._setL(true, x, yy, z, 15, dirty); addQ.push(x, yy, z); }
         }
@@ -347,7 +351,7 @@ export class World {
       for (let d = 0; d < 6; d++) {
         const o = DIR_OFFSETS[d];
         const nx = cx + o[0], ny = cy + o[1], nz = cz + o[2];
-        if (ny < 0 || ny > 255) continue;
+        if (ny < this.minY || ny >= this.maxY) continue;
         const nl = this._getL(sky, nx, ny, nz);
         if (nl < 0) continue;
         const op = this.opacity(this.getState(nx, ny, nz));
@@ -496,7 +500,7 @@ export class World {
       for (let z = z0; z < z1; z++) {
         if (!this.isLoaded(x, z)) {
           // Unloaded chunks are solid walls for the player (prevents falling into the void)
-          for (let y = Math.max(y0, 0); y < y1; y++) out.push([x, y, z, x + 1, y + 1, z + 1]);
+          for (let y = Math.max(y0, this.minY); y < y1; y++) out.push([x, y, z, x + 1, y + 1, z + 1]);
           continue;
         }
         for (let y = y0; y < y1; y++) {

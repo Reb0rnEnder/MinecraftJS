@@ -169,8 +169,8 @@ export class TileEntityRenderer {
 
   // Scan a newly loaded chunk for tile blocks
   scanChunk(c) {
-    for (let sy = 0; sy < 16; sy++) {
-      const s = c.sections[sy];
+    for (let sy = c.minSection; sy < c.maxSection; sy++) {
+      const s = c.getSection(sy);
       if (!s) continue;
        for (let i = 0; i < 4096; i++) {
          const state = s.blocks[i], name = getBlock(state).name;
@@ -300,7 +300,7 @@ export class TileEntityRenderer {
     let seg = { color: [1, 1, 1], height: 1 };
     t.beamSegments.push(seg);
     let first = true;
-    for (let yy = y + 1; yy < 256; yy++) {
+    for (let yy = y + 1; yy < this.game.world.maxY; yy++) {
       const st = w.getState(x, yy, z), b = getBlock(st);
       let c;
       if (b && (b.name.endsWith('_stained_glass') || b.name.endsWith('_stained_glass_pane'))) {
@@ -322,7 +322,7 @@ export class TileEntityRenderer {
       const ok = new Set(['emerald_block', 'gold_block', 'diamond_block', 'iron_block']);
       for (let l = 1; l <= 4; t.levels = l++) {
         const yy = y - l;
-        if (yy < 0) break;
+        if (yy < this.game.world.minY) break;
         let full = true;
         for (let xx = x - l; xx <= x + l && full; xx++) for (let zz = z - l; zz <= z + l; zz++) {
           const b = getBlock(w.getState(xx, yy, zz));
@@ -705,7 +705,7 @@ export class TileEntityRenderer {
       const dx = t.x - camPos[0], dz = t.z - camPos[2];
       if (dx * dx + dz * dz > Math.min(maxD, 64 * 64) && t.type !== 'beacon') { if (t.obj) t.obj.visible = false; continue; }
       // Block entity culling: frustum + occlusion (beacon beams reach the sky, so only frustum-test their column)
-      const top = t.type === 'beacon' ? 256 : t.y + 1.5;
+      const top = t.type === 'beacon' ? this.game.world.maxY : t.y + 1.5;
       const seen = t.type === 'beacon' ? aabbInFrustum(g.renderer.frustum, t.x, t.y, t.z, t.x + 1, top, t.z + 1) : g.renderer.boxVisible(t.x - 0.25, t.y, t.z - 0.25, t.x + 1.25, top, t.z + 1.25);
       if (!seen) { if (t.obj) t.obj.visible = false; continue; }
       if (t.built && t.type === 'sign' && t.data?.GlowingText) {

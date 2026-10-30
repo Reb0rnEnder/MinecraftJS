@@ -295,7 +295,7 @@ export class Game {
       case 'KeyI':copyInspect(this,!!e.shift);return true;
       case 'KeyC':platform().setClipboard(`/execute in ${this.dimension===-1?'minecraft:the_nether':this.dimension===1?'minecraft:the_end':'minecraft:overworld'} run tp @s ${this.player.x.toFixed(2)} ${this.player.y.toFixed(2)} ${this.player.z.toFixed(2)} ${this.player.yaw.toFixed(2)} ${this.player.pitch.toFixed(2)}`);this.debugFeedback('debug.copy_location.message');return true;
       case 'KeyA': // RenderGlobal.loadRenderers
-        for (const c of this.world.chunks.values()) for (let y = 0; y < 16; y++) if (c.sections[y]) this.dirty.add(c.x + ',' + y + ',' + c.z);
+        for (const c of this.world.chunks.values()) for (let y = c.minSection; y < c.maxSection; y++) if (c.getSection(y)) this.dirty.add(c.x + ',' + y + ',' + c.z);
         this.debugFeedback('debug.reload_chunks.message');
         return true;
       case 'KeyB':
@@ -400,7 +400,7 @@ export class Game {
     this.renderer.clearSections();
     if(this._meshUploads)this._meshUploads.length=0;
     for (const c of this.world.chunks.values()) {
-      for (let y = 0; y < 16; y++) if (c.sections[y]) this.dirty.add(c.x + ',' + y + ',' + c.z);
+      for (let y = c.minSection; y < c.maxSection; y++) if (c.getSection(y)) this.dirty.add(c.x + ',' + y + ',' + c.z);
       this.tileRenderer.scanChunk(c);
     }
   }
@@ -460,25 +460,25 @@ export class Game {
     const w = this.world;
     w.on('chunkLoaded', (c, bitMap, groundUp) => {
       void bitMap; void groundUp;
-      for (let y = 0; y < 16; y++) if (c.sections[y]) this.dirty.add(c.x + ',' + y + ',' + c.z);
+      for (let y = c.minSection; y < c.maxSection; y++) if (c.getSection(y)) this.dirty.add(c.x + ',' + y + ',' + c.z);
       this.tileRenderer.scanChunk(c);
       // Neighbours that were already meshed need their edges rebuilt
       for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
         const nk = (c.x + dx) + ',' + (c.z + dz);
         if (this.meshedChunks.has(nk)) {
           const n = w.getChunk(c.x + dx, c.z + dz);
-          if (n) for (let y = 0; y < 16; y++) if (n.sections[y]) this.dirty.add(n.x + ',' + y + ',' + n.z);
+          if (n) for (let y = n.minSection; y < n.maxSection; y++) if (n.getSection(y)) this.dirty.add(n.x + ',' + y + ',' + n.z);
         }
       }
     });
     w.on('chunkUnloaded', (c) => {
       this.renderer.removeChunk(c.x, c.z);
       this.meshedChunks.delete(c.x + ',' + c.z);
-      for (let y = 0; y < 16; y++) { const key=c.x+','+y+','+c.z;this.dirty.delete(key);this.inFlight.delete(key);this.buildTokens.delete(key); }
+      for (let y = c.minSection; y < c.maxSection; y++) { const key=c.x+','+y+','+c.z;this.dirty.delete(key);this.inFlight.delete(key);this.buildTokens.delete(key); }
       this.tileRenderer.removeChunk(c.x, c.z);
     });
     w.on('sectionDirty', (cx, sy, cz) => {
-      if (!w.getChunk(cx, cz)) return;
+      if (!w.getChunk(cx, cz) || sy < w.minSection || sy >= w.maxSection) return;
       this.dirty.add(cx + ',' + sy + ',' + cz);
     });
     // World.getCollisionBoxes' entity part (1.12): boats and live shulkers are solid to every mover
@@ -521,7 +521,7 @@ export class Game {
     this._meshOptsKey = key;
     this.worker.postMessage({ type: 'options', options: opts });
     if (!initial) {
-      for (const c of this.world.chunks.values()) for (let y = 0; y < 16; y++) if (c.sections[y]) this.dirty.add(c.x + ',' + y + ',' + c.z);
+      for (const c of this.world.chunks.values()) for (let y = c.minSection; y < c.maxSection; y++) if (c.getSection(y)) this.dirty.add(c.x + ',' + y + ',' + c.z);
     }
   }
 
@@ -579,7 +579,7 @@ export class Game {
       this.dirty.delete(key);
       this.inFlight.set(key, platform().now());
       this.meshedChunks.add(cx + ',' + cz);
-      const sec = this.world.getChunk(cx, cz).sections[sy];
+      const sec = this.world.getChunk(cx, cz).getSection(sy);
       if (!sec || sec.nonAir === 0) { this.inFlight.delete(key); this.renderer.removeSection(key); continue; }
       const slice = buildSlice(this.world, cx, sy, cz, this.tileProps, this.settings.biomeBlendRadius ?? 2);
       const token=++this.buildSerial;this.buildTokens.set(key,token);
@@ -752,7 +752,7 @@ export class Game {
     this.maxPlayers = p.maxPlayers;
     this.levelType = p.levelType;
     this.reducedDebug = p.reducedDebugInfo;
-    this.world.setDimension(p.dimension);
+    this.world.setDimension(p.dimension,p.dimensionData||{});
     if(p.dimensionData)this.world.hasSky=!!p.dimensionData.has_skylight;
     this.world.setBiomeSeed?.(p.hashedSeed);
     this.applyGameMode();
@@ -828,7 +828,7 @@ export class Game {
     stopSleeping(this);
     if(this.screens.current instanceof SleepScreen)this.screens.close();
     this.interaction?.predictedBlocks?.clear();
-    if (p.dimension !== this.dimension || p.worldName!==this.worldName) {
+    if (p.dimension !== this.dimension || p.worldName!==this.worldName || (p.dimensionData?.min_y??0)!==this.world.minY || (p.dimensionData?.height??256)!==this.world.height) {
       this.world.clear();
       this._resetMeshing();
       this.entities.clear();
@@ -840,7 +840,7 @@ export class Game {
     this.dimension = p.dimension;
     this.worldName=p.worldName;this.dimensionData=p.dimensionData;
     if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));}
-    this.world.setDimension(p.dimension);
+    this.world.setDimension(p.dimension,p.dimensionData||{});
     if(p.dimensionData)this.world.hasSky=!!p.dimensionData.has_skylight;
     this.world.setBiomeSeed?.(p.hashedSeed);
     if(p.difficulty!==undefined)this.difficulty = p.difficulty;
@@ -1975,6 +1975,7 @@ export class Game {
     const temp = biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).temperature;
     const rain = this.world.prevRain !== undefined ? this.world.prevRain + (this.world.rainStrength - this.world.prevRain) * partial : this.world.rainStrength;
     r.updateEnvironment({
+      minY:this.world.minY,minSection:this.world.minSection,sectionCount:this.world.sectionCount,
       worldTime: this.world.timeOfDay, partial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,biomeFog:sampleBiomeFog(this.world,ex,ey,ez),biomeSky:biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).effects?.sky_color,fireResistance:this.effects.has(12),
       inPowderSnow: getBlock(this.world.getState(Math.floor(ex), Math.floor(ey), Math.floor(ez))).name === 'powder_snow', spectator: pl.spectator,
       camPos: [ex, ey, ez], lookDir: look, dimension: this.dimension, underwater, inLava, biomeId:this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey)), waterVision:pl.waterVision(), conduitPower:this.effects.has(29),

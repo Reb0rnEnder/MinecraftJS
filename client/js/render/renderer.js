@@ -95,7 +95,7 @@ export class Renderer {
     this.sections.delete(key);
   }
 
-  removeChunk(cx, cz) { for (let y = 0; y < 16; y++) this.removeSection(sectionKey(cx, y, cz)); }
+  removeChunk(cx, cz) { for (const [key,section] of this.sections) if(section.cx===cx&&section.cz===cz)this.removeSection(key); }
   clearSections() { for (const k of [...this.sections.keys()]) this.removeSection(k); this.breaking.clear(); this.breakState=null; }
 
   // ---------------------------------------------------------------- sky geometry
@@ -206,6 +206,7 @@ export class Renderer {
     });
     this.device.updateTexture(this.lightmap, this.lightmapData);
 
+    this.verticalBounds={minSection:state.minSection??0,sectionCount:state.sectionCount??16};
     const renderDistBlocks = this.renderDistance * 16;
     let fogR, fogG, fogB;
     let sky = [0, 0, 0];
@@ -244,8 +245,8 @@ export class Renderer {
     if (state.blindness) { fogMode = 0; fogStart = 0; fogEnd = 5; fogR *= 0.1; fogG *= 0.1; fogB *= 0.1; }
     // WorldProvider.getVoidFogYFactor: 1.0 on superflat worlds, 1/32 otherwise
     const voidFactor = state.horizon === 0 ? 1 : 0.03125;
-    if (dimension === 0 && state.camPos[1] * voidFactor < 1) {
-      let d1 = state.camPos[1] * voidFactor;
+    if (dimension === 0 && (state.camPos[1] - (state.minY??0)) * voidFactor < 1) {
+      let d1 = (state.camPos[1] - (state.minY??0)) * voidFactor;
       if (d1 < 1) { if (d1 < 0) d1 = 0; d1 *= d1; fogR *= d1; fogG *= d1; fogB *= d1; }
     }
     if(state.underwater) {
@@ -408,7 +409,7 @@ export class Renderer {
     const c = this.camPos;
     const f = this.fog;
     const fogEnd = f.mode === 0 ? f.end : f.mode === 1 ? 4.6 / Math.max(0.001, f.density) : f.mode === 3 ? Math.sqrt(4.6) / Math.max(0.001,f.density) : Infinity; // exp fog: 99% at 4.6/density
-    this.visibleList = this.culler.update(this.sections, this.frustum, c, this.renderDistance, this.columnLoaded, this.opaqueAt(c[0], c[1], c[2]), this.culler.enabled ? fogEnd : Infinity);
+    this.visibleList = this.culler.update(this.sections, this.frustum, c, this.renderDistance, this.columnLoaded, this.opaqueAt(c[0], c[1], c[2]), this.culler.enabled ? fogEnd : Infinity, this.verticalBounds);
     return this.visibleList;
   }
 

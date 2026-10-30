@@ -20,17 +20,17 @@ export function columnHeights(game,chunk,x,z){
  let cache=columns.get(chunk),revision=chunk.debugHeightRevision||0;
  if(!cache||cache.revision!==revision){cache={revision,values:new Map()};columns.set(chunk,cache);}
  const key=(z&15)*16+(x&15);if(cache.values.has(key))return cache.values.get(key);
- let S=-1,M=-1;
- for(let y=255;y>=0&&(S<0||M<0);y--){const mask=parseInt(masks[chunk.getState(x&15,y,z&15)],16);if(S<0&&(mask&1))S=y;if(M<0&&(mask&4))M=y;}
+ const min=chunk.minY??0,max=chunk.maxY??256;let S=min-1,M=min-1;
+ for(let y=max-1;y>=min&&(S<min||M<min);y--){const mask=parseInt(masks[chunk.getState(x&15,y,z&15)],16);if(S<min&&(mask&1))S=y;if(M<min&&(mask&4))M=y;}
  const result={S,M};cache.values.set(key,result);return result;
 }
 // Heightmaps were continuous bit arrays before 1.16 and padded per long afterwards.
 export function packetHeight(chunk,type,x,z){
  const raw=chunk.heightmaps?.v?.[type]?.v??chunk.heightmaps?.[type];if(!raw?.length)return -1;
- const index=(z&15)*16+(x&15),padded=since(16),word=padded?Math.floor(index/7):Math.floor(index*9/64),shift=padded?(index%7)*9:index*9%64;
+ const index=(z&15)*16+(x&15),padded=since(16),bits=Math.ceil(Math.log2((chunk.height??256)+1)),perLong=Math.floor(64/bits),word=padded?Math.floor(index/perLong):Math.floor(index*bits/64),shift=padded?(index%perLong)*bits:index*bits%64;
  if(raw[word]===undefined)return -1;let value=BigInt.asUintN(64,BigInt(raw[word]))>>BigInt(shift);
- if(!padded&&shift>55&&raw[word+1]!==undefined)value|=BigInt.asUintN(64,BigInt(raw[word+1]))<<BigInt(64-shift);
- return Number(value&511n)-1;
+ if(!padded&&shift>64-bits&&raw[word+1]!==undefined)value|=BigInt.asUintN(64,BigInt(raw[word+1]))<<BigInt(64-shift);
+ return Number(value&((1n<<BigInt(bits))-1n))+(chunk.minY??0)-1;
 }
 export function localDifficulty(difficulty,time,moonOverride){
  if(!difficulty)return 0;
@@ -72,7 +72,7 @@ export function debugLeft(hud){
  lines.push('',`XYZ: ${pl.x.toFixed(3)} / ${pl.y.toFixed(5)} / ${pl.z.toFixed(3)}`,`Block: ${bx} ${by} ${bz}`,`Chunk: ${bx&15} ${by&15} ${bz&15} in ${bx>>4} ${by>>4} ${bz>>4}`);
  const direction=Math.floor(pl.yaw*4/360+.5)&3;
  lines.push(`Facing: ${['south','west','north','east'][direction]} (Towards ${['positive Z','negative X','negative Z','positive X'][direction]}) (${wrap(pl.yaw).toFixed(1)} / ${wrap(pl.pitch).toFixed(1)})`);
- const chunk=w.getChunk?.(bx>>4,bz>>4),inBounds=by>=0&&by<256;
+ const chunk=w.getChunk?.(bx>>4,bz>>4),inBounds=by>=(w.minY??0)&&by<(w.maxY??256);
  if(chunk&&(inBounds||since(17))){
   const biome=biomeInfo(w.getBiome(bx,bz,by)),sky=w.getSkyLight(bx,by,bz),block=w.getBlockLight(bx,by,bz);
   if(since(14)){

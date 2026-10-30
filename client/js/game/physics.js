@@ -737,7 +737,7 @@ export class LocalPlayer {
       if (this.levitation >= 0) {
         this.motionY += (0.05 * (this.levitation + 1) - this.motionY) * 0.2;
       } else if (!world.isLoaded(Math.floor(this.x), Math.floor(this.z))) {
-        this.motionY = this.y > 0 ? -0.1 : 0;
+        this.motionY = this.y > (world.minY??0) ? -0.1 : 0;
       } else {
         this.motionY -= 0.08;
       }
