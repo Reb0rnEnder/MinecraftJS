@@ -170,7 +170,7 @@ export class TileEntityRenderer {
   scanChunk(c) {
     for (let sy = 0; sy < 16; sy++) {
       const s = c.sections[sy];
-      if (!s) continue;
+      if (!s || s.nonAir === 0) continue;
        for (let i = 0; i < 4096; i++) {
          const state = s.blocks[i], name = getBlock(state).name;
          if (name === 'chest' || name === 'trapped_chest' || name === 'ender_chest' || isSign(name) || (name === 'campfire'||name==='soul_campfire') || name === 'lectern' ||
