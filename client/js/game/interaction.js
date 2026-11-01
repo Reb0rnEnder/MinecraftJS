@@ -1,3 +1,4 @@
+import {growingPlantSurvives} from '../world/growing-plant-placement.js';
 import {predictDoorPair,reconcileDoorPair} from './door-prediction.js';
 import {dripleafCanSurvive} from './dripleaf-placement.js';
 import { cavesBlockUse } from './block-use-1.17.1.js';
@@ -641,6 +642,7 @@ export class Interaction {
     const nb = this._placedBlock(held);
     if (!nb) return false;
     const { p, face } = this._placementPos(t, held);
+    if(growingPlantSurvives(w,nb.name,p.x,p.y,p.z)===false)return false;
     if(dripleafCanSurvive(w,nb.name,p.x,p.y,p.z)===false)return false;
     if(nb.name==='small_dripleaf'&&(p.y+1>=(w.maxY??256)||!this._replaceable(w.getState(p.x,p.y+1,p.z))))return false;
     if (p.y < (w.minY??0) || p.y >= (w.maxY??256)) return false;

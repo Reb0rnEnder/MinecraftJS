@@ -213,6 +213,16 @@ export class Particles {
     return this.add(p);
   }
 
+  // Entity.spawnSprintParticle: one terrain puff at the feet per entity tick.
+  sprint(entity = this.game.player) {
+    const g = this.game, e = entity, w = g.world;
+    if (!e || !e.sprinting || e.inWater || e.inLava || e.spectator || e.sneaking || e.crouching || e.dead || e.health <= 0 || (e === g.player && (g.dead || e.flying))) return;
+    if (isPointInFluid(w,e.x,e.y+.1,e.z) || isPointInFluid(w,e.x,e.y+.1,e.z,true)) return;
+    const state = w.getState(Math.floor(e.x),Math.floor(e.y-Math.fround(.2)),Math.floor(e.z)), b = getBlock(state);
+    if (!b || b.renderType === 0 || ['air','cave_air','void_air','barrier','structure_void','light'].includes(b.name)) return;
+    return this.digging(e.x+(rand()-.5)*(e.width||.6),e.y+.1,e.z+(rand()-.5)*(e.width||.6),-(e.motionX||0)*4,1.5,-(e.motionZ||0)*4,state);
+  }
+
   blockBreak(x, y, z, state) {
     const b = getBlock(state);
     if (!b || b.id === 0) return;

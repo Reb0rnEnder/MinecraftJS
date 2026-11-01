@@ -1,0 +1,14 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
+import {initBlocks,blocksByName,findState,getBlock} from '../client/js/world/blocks.js';import {World} from '../client/js/world/world.js';import {Chunk} from '../client/js/world/chunk.js';import {LocalPlayer} from '../client/js/game/physics.js';import {Interaction} from '../client/js/game/interaction.js';import {growingPlantSurvives} from '../client/js/world/growing-plant-placement.js';
+const json=n=>JSON.parse(readFileSync(new URL('../client/data/'+n+'.json',import.meta.url)));initBlocks(json('blocks'),json('blockCollisionShapes'));const state=name=>blocksByName[name].defaultState;
+function scene(name,support='stone'){const world=new World(),chunk=new Chunk(0,0,true,world),player=new LocalPlayer();world.chunks.set('0,0',chunk);chunk.setState(1,1,1,state(support));player.setPosition(5,1,5);let sounds=0,swings=0;const held={id:1,count:4,damage:0},game={world,player,gameMode:0,entities:{all:()=>[]},inventory:{getHand:hand=>hand===0?held:null,held:()=>held,offhand:null},items:{name:()=>name,useAction:()=>'none',def:()=>({name}),isBlockItem:()=>true,blockFor:()=>blocksByName[name]},sound:{playBlockPlace:()=>sounds++},cooldownFraction:()=>0,send:()=>{}},interaction=new Interaction(game),target={type:'block',x:1,y:1,z:1,face:1,hit:[1.5,2,1.5]};interaction.target=target;interaction.swing=()=>swings++;return{world,chunk,player,game,interaction,target,held,sounds:()=>sounds,swings:()=>swings};}
+test('growing vines use native support faces, including slabs and existing plant continuation',()=>{
+ for(const[name,dy]of[['weeping_vines',1],['twisting_vines',-1]])for(const[block,expected]of[['stone',true],['air',false],[name,true],[name+'_plant',true]]){
+  const s=scene(name);s.chunk.setState(1,2+dy,1,state(block));assert.equal(growingPlantSurvives(s.world,name,1,2,1),expected,name+' '+block);
+ }
+ for(const[name,dy]of[['weeping_vines',1],['twisting_vines',-1]])for(const type of ['top','bottom']){
+  const s=scene(name);s.chunk.setState(1,2+dy,1,findState('stone_slab',{type}));assert.equal(growingPlantSurvives(s.world,name,1,2,1),name==='weeping_vines'?type==='bottom':type==='top');
+ }
+});
+test('failed weeping-vine placement has no sound, swing, stack loss or prediction',()=>{const s=scene('weeping_vines','stone');assert.equal(s.interaction.onPlayerRightClick(s.target),false);s.interaction.rightClickMouse();assert.equal(s.sounds(),0);assert.equal(s.swings(),0);assert.equal(s.held.count,4);assert.equal(s.interaction.predictedBlocks.size,0);});
+test('weeping vines placed on a solid underside play placement feedback once',()=>{const s=scene('weeping_vines','stone');s.target.face=0;s.target.hit=[1.5,1,1.5];assert.equal(s.interaction.onPlayerRightClick(s.target),true);assert.equal(s.sounds(),1);assert.equal(s.held.count,3);});
