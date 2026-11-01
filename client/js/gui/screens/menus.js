@@ -145,13 +145,13 @@ export function openMultiplayer(game,parent){game.screens.open(game.settings.ski
 export class MultiplayerSafetyScreen extends Screen {
  constructor(game,parent){super(game);this.parent=parent;this.background='dirt';this.skip=false;}
  init(){
-  this.lines=this.gui.font.wrap(tr('multiplayerWarning.message'),this.width-50);const offset=(this.lines.length+1)*9,left=this.width/2-155;
+  this.lines=this.gui.font.wrap(tr('multiplayerWarning.message'),this.width-50);const offset=(this.lines.length+1)*18,left=this.width/2-155;
   this.buttons.push(new Button(0,left,100+offset,150,20,tr('gui.proceed'),()=>{if(this.skip){this.game.settings.skipMultiplayerWarning=true;this.game.settings.save();}this.game.screens.open(new MultiplayerScreen(this.game,this.parent));}));
   this.buttons.push(new Button(1,left+160,100+offset,150,20,tr('gui.back'),()=>this.close()));
   const checkbox=new Button(2,left+80,76+offset,150,20,tr('multiplayerWarning.check'),()=>{this.skip=!this.skip;});
-  checkbox.render=(gui)=>{gui.blit('gui/checkbox.png',checkbox.x,checkbox.y,0,this.skip?20:0,20,20,32,64);gui.text(tr('multiplayerWarning.check'),checkbox.x+24,checkbox.y+6,0xe0e0e0,true);};this.buttons.push(checkbox);
+  checkbox.render=(gui)=>{gui.blit('gui/checkbox.png',checkbox.x,checkbox.y,checkbox.focused?20:0,this.skip?20:0,20,20,64,64);gui.text(tr('multiplayerWarning.check'),checkbox.x+24,checkbox.y+6,0xe0e0e0,true);};this.buttons.unshift(checkbox);
  }
- renderContent(gui){gui.textCentered('§l'+tr('multiplayerWarning.header'),this.width/2,30,0xffffff,true);this.lines.forEach((line,i)=>gui.textCentered(line,this.width/2,70+i*9,0xffffff,true));}
+ renderContent(gui){gui.text('§l'+tr('multiplayerWarning.header'),25,30,0xffffff,true);this.lines.forEach((line,i)=>gui.text(line,25,70+i*18,0xffffff,true));}
  close(){this.game.screens.open(this.parent);}
 }
 

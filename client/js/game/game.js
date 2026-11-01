@@ -1,3 +1,5 @@
+import {captureNetwork} from '../debug/capture-network.js';
+import {resetPlayerView} from './respawn-view.js';
 import {Mesher} from '../render/mesher.js';
 import {SliceWorld} from '../world/slice.js';
 import {immediateChunkBuild} from '../render/chunk-build-policy.js';
@@ -749,6 +751,8 @@ export class Game {
   on_update_view_distance(p) { this.serverViewDistance=p.viewDistance; }
 
   on_login(p) {
+    resetPlayerView(this);
+    this.interaction?.predictedDoors?.clear();
     this.serverSimulationDistance=p.simulationDistance;
     const nativeBiomes=simplify(p.dimensionCodec)?.['minecraft:worldgen/biome']?.value||[];
     this.world.biomeRegistrySize=Math.max(1,...nativeBiomes.map(b=>b.id+1));
@@ -803,6 +807,8 @@ export class Game {
     if (gm === 0 || gm === 2) p.flying = false;
   }
 
+  captureNetwork(options) { return captureNetwork(this,options); }
+
   captureText(options) { return captureText(this,options); }
 
   on_custom_payload(p) {
@@ -851,6 +857,8 @@ export class Game {
   }
 
   on_respawn(p) {
+    resetPlayerView(this);
+    this.interaction?.predictedDoors?.clear();
     stopSleeping(this);
     if(this.screens.current instanceof SleepScreen)this.screens.close();
     this.interaction?.predictedBlocks?.clear();
@@ -1076,7 +1084,9 @@ export class Game {
   on_multi_block_change(p) {
     // Relight all changed blocks together in one pass
     this.world.beginBatch();
-    try { for (const r of p.records) this.world.setState(p.chunkX * 16 + r.x, r.y, p.chunkZ * 16 + r.z, r.state); } finally { this.world.endBatch(); }
+    try { for (const r of p.records) this.world.setState(p.chunkX * 16 + r.x, r.y, p.chunkZ * 16 + r.z, r.state);
+      for(const r of p.records)this.interaction.onBlockChange({x:p.chunkX*16+r.x,y:r.y,z:p.chunkZ*16+r.z},r.state);
+    } finally { this.world.endBatch(); }
   }
 
   on_block_change(p) {
