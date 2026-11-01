@@ -1581,6 +1581,7 @@ export class Game {
       pl.depthStrider=this.items.enchantLevel(this.inventory.armor[0],'depth_strider');
       pl.dolphinsGrace=this.effects.has(30);pl.slowFalling=this.effects.has(28);
       pl.sleeping = !!this.sleeping;
+      this.particles.sprint(pl);
       const res = pl.tick(world, tin);
       if (res.abilitiesChanged) this.sendAbilities();
       if (res.startFallFlying) this.send(C.entityAction(this.entityId, 8)); // START_FALL_FLYING
