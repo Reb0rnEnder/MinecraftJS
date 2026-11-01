@@ -1,3 +1,5 @@
+import {captureNetwork} from '../debug/capture-network.js';
+import {resetPlayerView} from './respawn-view.js';
 import {tickPortal,portalWarp} from './portal.js';
 import {EaglerTextures} from '../net/eagler-textures.js';
 import {zoomFov,smoothCameraActive} from './zoom.js';
@@ -689,6 +691,8 @@ export class Game {
   on_keep_alive(p) { this.send(C.keepAlive(p.keepAliveId)); }
 
   on_login(p) {
+    resetPlayerView(this);
+    this.interaction?.predictedDoors?.clear();
     this.eaglerTextures?.clear();
     // handleJoinGame always starts a new WorldClient (proxies may send another Join Game on server switch)
     if (this.inWorld) {
@@ -731,6 +735,8 @@ export class Game {
     if (gm === 0 || gm === 2) p.flying = false;
   }
 
+  captureNetwork(options) { return captureNetwork(this,options); }
+
   captureText(options) { return captureText(this,options); }
 
 
@@ -772,6 +778,8 @@ export class Game {
   }
 
   on_respawn(p) {
+    resetPlayerView(this);
+    this.interaction?.predictedDoors?.clear();
     stopSleeping(this);
     if(this.screens.current instanceof SleepScreen)this.screens.close();
     if (p.dimension !== this.dimension) {
@@ -978,7 +986,9 @@ export class Game {
   on_multi_block_change(p) {
     // Relight all changed blocks together in one pass
     this.world.beginBatch();
-    try { for (const r of p.records) this.world.setState(p.chunkX * 16 + r.x, r.y, p.chunkZ * 16 + r.z, r.state); } finally { this.world.endBatch(); }
+    try { for (const r of p.records) this.world.setState(p.chunkX * 16 + r.x, r.y, p.chunkZ * 16 + r.z, r.state);
+      for(const r of p.records)this.interaction.onBlockChange({x:p.chunkX*16+r.x,y:r.y,z:p.chunkZ*16+r.z},r.state);
+    } finally { this.world.endBatch(); }
   }
 
   on_block_change(p) {
