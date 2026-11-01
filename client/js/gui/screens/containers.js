@@ -1,3 +1,4 @@
+const creativeTabIconStacks = new WeakMap();
 // Container GUIs (port of GuiContainer and subclasses, incl. GuiContainerCreative).
 import { FontRenderer, stripCodes } from '../font.js';
 import {drawEffectIcon} from '../effect-icons.js';
@@ -354,8 +355,7 @@ export class InventoryScreen extends ContainerScreen {
 
   init() {
     super.init();
-    this.effectsShift = this.game.effects.size > 0 && !this.game.recipeBook.open;
-    if (this.effectsShift) this.guiLeft = Math.floor(160 + (this.width - this.xSize - 200) / 2);
+    // Native 1.18 effects use the space to the right; keep the inventory centered.
   }
 
   drawEmptySlot(gui, i, x, y) { drawPlayerEmptySlot(this.game, gui, i, x, y); }
@@ -363,7 +363,7 @@ export class InventoryScreen extends ContainerScreen {
   drawBackground(gui, mx, my) {
     gui.blit('gui/container/inventory.png', this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
     this.game.entityRenderer.drawPlayerInGui && this.game.entityRenderer.drawPlayerInGui(gui, this.guiLeft + 51, this.guiTop + 75, 30, this.guiLeft + 51 - mx, this.guiTop + 75 - 50 - my);
-    if (this.effectsShift) drawEffects(this.game, gui, this.guiLeft - 124, this.guiTop);
+    drawModernEffects(this.game, gui, this, mx, my);
   }
 
   drawForeground(gui) { this.title(gui, this.game.assets.translate('container.crafting'), 97, 8); }
@@ -372,6 +372,29 @@ export class InventoryScreen extends ContainerScreen {
 const POTION_ICON = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 8: 10, 9: 11, 10: 7, 11: 14, 12: 15, 13: 16, 14: 8, 15: 13, 16: 12, 17: 9, 18: 5, 19: 6, 20: 17, 21: 23, 22: 18 };
 // Potion.getName (effect.moveSpeed, ...) by effect id, from client/data/creative.json
 const effectKey = (game, id) => (game.assets.data.creative.effects[id] || { name: 'effect.none' }).name;
+
+// EffectRenderingInventoryScreen (1.18): right-side full or compact panels.
+export function drawModernEffects(game, gui, screen, mx, my) {
+ if(screen.recipeBook?.visible&&screen.recipeBook.narrow)return;
+ const x=screen.guiLeft+screen.xSize+2,available=gui.width-x;
+ if(available<32||!game.effects.size)return;
+ const wide=available>=120,entries=[...game.effects],dy=entries.length>5?Math.floor(132/(entries.length-1)):33;
+ entries.sort(([a,ea],[b,eb])=>{
+  const ambient=Number(!!ea.ambient)-Number(!!eb.ambient);
+  return ambient||((ea.duration<=32147||eb.duration<=32147)&&!(ea.ambient&&eb.ambient)?ea.duration-eb.duration:0)||((game.items.effects[a]?.color||0)-(game.items.effects[b]?.color||0));
+ });
+ let y=screen.guiTop;
+ for(const[id,e]of entries){
+  gui.blit('gui/container/inventory.png',x,y,0,wide?166:198,wide?120:32,32);
+  drawEffectIcon(game,gui,id,x+(wide?6:7),y+7);
+  let name=game.assets.translate(effectKey(game,id));
+  if(e.amplifier>=1&&e.amplifier<=9)name+=' '+game.assets.translate('enchantment.level.'+(e.amplifier+1));
+  const secs=Math.floor(e.duration/20),duration=e.duration>32767?'**:**':Math.floor(secs/60)+':'+String(secs%60).padStart(2,'0');
+  if(wide){gui.text(name,x+28,y+6,0xffffff,true);gui.text(duration,x+28,y+16,0x7f7f7f,true);}
+  else if(mx>=x&&mx<=x+33&&my>=y&&my<=y+dy)gui.tooltip([name,duration],mx,my);
+  y+=dy;
+ }
+}
 
 function drawEffects(game, gui, x, y) {
   const n = game.effects.size;
@@ -941,9 +964,7 @@ export class CreativeScreen extends ContainerScreen {
 
   init() {
     super.init();
-    // InventoryEffectRenderer: with active effects the window moves right to make room for the list
-    this.effectsShift = this.game.effects.size > 0;
-    if (this.effectsShift) this.guiLeft = Math.floor(160 + (this.width - this.xSize - 200) / 2);
+    // Native 1.18 effects use the space to the right; keep the inventory centered.
     this.search = new TextField(this.guiLeft + 82, this.guiTop + 6, 80, 9, { maxLength: 50, background: false, focused: false, onChange: () => this.filter() });
     this.search.textColor = 0xffffff;
     this.setTab(this.tab);
@@ -1050,12 +1071,12 @@ export class CreativeScreen extends ContainerScreen {
     const info = tabInfo(this.game, this.tab);
     for (const t of tabData(this.game)) if (t.index !== this.tab) this._drawTab(gui, t, false);
     const tabTex = 'gui/container/creative_inventory/tab_' + info.background; // CreativeTabs.getBackgroundImageName
-    if (this.effectsShift) drawEffects(this.game, gui, L - 124, T);
+    drawModernEffects(this.game, gui, this, mx, my);
     gui.blit(tabTex, L, T, 0, 0, this.xSize, this.ySize);
     if (info.scrollbar) {
       const sx = L + 175, sy = T + 18;
       const enabled = this.maxScrollRows() > 0;
-      gui.blit('gui/container/creative_inventory/tabs.png', sx, sy + (112 - 17) * this.scroll, 232 + (enabled ? 0 : 12), 0, 12, 15);
+      gui.blit('gui/container/creative_inventory/tabs.png', sx, sy + Math.floor((112 - 17) * this.scroll), 232 + (enabled ? 0 : 12), 0, 12, 15);
     }
     this._drawTab(gui, info, true);
     if (info.title) gui.text(tr('itemGroup.' + info.label), L + 8, T + 6, 0x404040, false);
@@ -1144,7 +1165,9 @@ export class CreativeScreen extends ContainerScreen {
     if (selected) v += 32;
     gui.blit('gui/container/creative_inventory/tabs.png', r.x, r.y, r.col * 28, v, 28, 32);
     const ix = r.x + 6, iy = r.y + 8 + (r.top ? 1 : -1);
-    this.game.itemRenderer.drawItem(gui, stackOf(t.icon), ix, iy, false);
+    let stack = creativeTabIconStacks.get(t.icon);
+    if (!stack) { stack = stackOf(t.icon); creativeTabIconStacks.set(t.icon, stack); }
+    this.game.itemRenderer.drawItem(gui, stack, ix, iy, false);
   }
 
   wheel(d) {

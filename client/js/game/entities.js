@@ -913,6 +913,7 @@ export class EntityManager {
       e.prevLimbSwingAmount = e.limbSwingAmount;
       e.prevSwingProgress = e.swingProgress;
       e.ticks++;
+      if (e.id !== g.entityId) g.particles?.sprint?.(e);
       if(e.entityName==='goat') e.goatRammingTicks = Math.max(0, Math.min(20, (e.goatRammingTicks || 0) + (e.goatRamming ? 1 : -2)));
       if(e.entityName==='glow_squid'&&e.darkTicks>0)e.darkTicks--;
       if(e.entityName==='fox')tickFox(e);
