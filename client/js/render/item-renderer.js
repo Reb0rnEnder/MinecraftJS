@@ -456,7 +456,10 @@ export class ItemRenderer {
     }
     if (!res.mesh) return null;
     const n = new Node();
-    n.addDrawable(res.mesh, atlasMat);
+    // Native block-item render types cull back faces. Plant models can have
+    // opposite quads on the same plane; drawing both makes their UVs z-fight.
+    const mat = res.model.kind === 'block' ? { ...atlasMat, state: { ...atlasMat.state, cull: true } } : atlasMat;
+    n.addDrawable(res.mesh, mat);
     // ItemBlockRenderTypes/ItemRenderer: world half-transparent block items use
     // the Fabulous item target; ordinary entity translucent materials stay on main.
     const name=res.model.itemName||res.model.name||'',block=blocksByName[name];
