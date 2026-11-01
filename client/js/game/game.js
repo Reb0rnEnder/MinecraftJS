@@ -1,3 +1,4 @@
+import {registryEntries} from '../net/registry-codec.js';
 import {captureNetwork} from '../debug/capture-network.js';
 import {resetPlayerView} from './respawn-view.js';
 import {Mesher} from '../render/mesher.js';
@@ -754,7 +755,7 @@ export class Game {
     resetPlayerView(this);
     this.interaction?.predictedDoors?.clear();
     this.serverSimulationDistance=p.simulationDistance;
-    const nativeBiomes=simplify(p.dimensionCodec)?.['minecraft:worldgen/biome']?.value||[];
+    const nativeBiomes=registryEntries(simplify(p.dimensionCodec),'minecraft:worldgen/biome');
     this.world.biomeRegistrySize=Math.max(1,...nativeBiomes.map(b=>b.id+1));
     this.serverBrand=null;this.serverViewDistance=p.viewDistance??this.settings.renderDistance;
     resetServerRecipes(this);this.nbtQueries?.clear();

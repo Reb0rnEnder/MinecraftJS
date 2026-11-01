@@ -1,3 +1,4 @@
+import {registryEntries} from '../net/registry-codec.js';
 import { WATER_BIOMES } from './water-biomes.js';
 // Biome colour helpers (ColorizerGrass / ColorizerFoliage + per-biome overrides). Worker-safe.
 
@@ -15,7 +16,7 @@ export function initBiomes(biomesJson, grassPixels, foliagePixels) {
 
 export function setServerBiomes(codec){
  serverBiomeTable=[];
- for(const entry of codec?.['minecraft:worldgen/biome']?.value||[]){
+ for(const entry of registryEntries(codec,'minecraft:worldgen/biome')){
   const b=entry.element,effects=b.effects||{};
   serverBiomeTable[entry.id]={...(biomeTable[entry.id]||{}),...b,name:entry.name.replace(/^minecraft:/,''),rainfall:b.downfall,effects,waterColor:effects.water_color,waterFogColor:effects.water_fog_color};
  }

@@ -45,6 +45,10 @@ releases do not receive the newer warning screen.
 
 ## Verification and remaining server-specific investigation
 
+Follow-up: the supplied authenticated trace identified an unqualified registry
+key; see [biome registry namespace fix](biome-registry-namespace.md). The probe
+limitations below describe the earlier investigation.
+
 Run `node --test tools/test-door-prediction.mjs tools/test-respawn-view.mjs tools/test-network-capture.mjs`.
 These nine regressions pass on all eight targets; browser bundle checks pass too.
 On 1.15.2 through 1.18.2 also run `node --test tools/test-multiplayer-warning.mjs`.
