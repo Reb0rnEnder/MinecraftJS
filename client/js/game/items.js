@@ -1,3 +1,4 @@
+const attributeKey = name => 'attribute.name.' + name.replace(/^minecraft:/, '').replace(/[A-Z]/g, c => '_' + c.toLowerCase());
 // Item metadata helpers: names, tooltips, stack sizes, durability, use actions, tool speeds.
 import { simplify } from '../net/nbt.js';
 import { blocksByName } from '../world/blocks.js';
@@ -167,8 +168,8 @@ export class Items {
     const fmt = (d) => String(Math.round(d * 100) / 100); // ItemStack.DECIMALFORMAT "#.##"
     for (const [attr, amount, op] of mods) {
       const d = op === 1 || op === 2 ? amount * 100 : amount;
-      if (amount > 0) lines.push('§9' + t('attribute.modifier.plus.' + op, fmt(d), t('attribute.name.' + attr)));
-      else if (amount < 0) lines.push('§c' + t('attribute.modifier.take.' + op, fmt(-d), t('attribute.name.' + attr)));
+      if (amount > 0) lines.push('§9' + t('attribute.modifier.plus.' + op, fmt(d), t(attributeKey(attr))));
+      else if (amount < 0) lines.push('§c' + t('attribute.modifier.take.' + op, fmt(-d), t(attributeKey(attr))));
     }
   }
 
@@ -266,7 +267,7 @@ export class Items {
       const sharp = this.enchantLevel(item, 'sharpness');
       const dmg = weapon[registryName] + (sharp > 0 ? 0.5 * sharp + 0.5 : 0);
       lines.push('');
-      lines.push('§9' + t('attribute.modifier.plus.0', String(Math.round(dmg * 100) / 100), t('attribute.name.generic.attackDamage')));
+      lines.push('§9' + t('attribute.modifier.plus.0', String(Math.round(dmg * 100) / 100), t(attributeKey('generic.attackDamage'))));
     }
     if (advanced && this.isDamageable(item) && damage > 0) {
       lines.push(t('item.durability', this.maxDurability(item.id) - damage, this.maxDurability(item.id)));
