@@ -1,3 +1,4 @@
+import {INVENTORY_LIGHT0, INVENTORY_LIGHT1} from './inventory-lighting.js';
 // WebGPU implementation of the graphics device contract (see device.js).
 import { DEFAULT_PARAMS, PIPELINE_FORMAT, quadIndices, buildMips, vertexLayout } from './device.js';
 
@@ -51,10 +52,10 @@ const SHADERS = {
   var o: VOut; let mv = G.view * D.model * vec4f(p, 1.0);
   let m3 = mat3x3f(D.model[0].xyz, D.model[1].xyz, D.model[2].xyz);
   let n = normalize(m3 * nrm);
-  // lighting mode p[2].w: 0 world item lighting, 1 none, 2 GUI item lighting (see the WebGL 2 shader)
+  // lighting mode p[2].w: 0 world item lighting, 1 none, 2 GUI item lighting, 3 inventory player (see the WebGL 2 shader)
   let gui = D.p[2].w > 1.5;
-  let l0 = select(normalize(vec3f(0.2, 1.0, -0.7)), vec3f(-0.237910, -0.634435, 0.735453), gui);
-  let l1 = select(normalize(vec3f(-0.2, 1.0, 0.7)), vec3f(0.028667, -0.927375, -0.373034), gui);
+  let l0 = select(select(normalize(vec3f(0.2, 1.0, -0.7)), vec3f(-0.237910, -0.634435, 0.735453), gui), vec3f(${INVENTORY_LIGHT0.join(", ")}), D.p[2].w > 2.5);
+  let l1 = select(select(normalize(vec3f(-0.2, 1.0, 0.7)), vec3f(0.028667, -0.927375, -0.373034), gui), vec3f(${INVENTORY_LIGHT1.join(", ")}), D.p[2].w > 2.5);
   let d = 0.4 + 0.6 * (max(dot(n, l0), 0.0) + max(dot(n, l1), 0.0));
   let us = select(1.0, D.p[3].w, D.p[3].w > 0.0);
   o.pos = project(mv); o.uv = uv * us + D.p[3].yz; o.col = vec4f(col, 1.0); o.light = D.p[2].xy; o.depth = length(mv.xyz);

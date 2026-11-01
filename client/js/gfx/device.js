@@ -108,6 +108,7 @@ export class EntityParams {
   setFullBright(v) { this.p[10] = v ? 1 : 0; return this; }
   setNoLighting(v) { this.p[11] = v ? 1 : 0; return this; }
   setGuiLighting(v) { this.p[11] = v ? 2 : 0; return this; } // RenderHelper.enableGUIStandardItemLighting
+  setInventoryLighting(v) { this.p[11] = v ? 3 : 0; return this; }
   setAlphaTest(v) { this.p[12] = v; return this; }
   setUvTransform(du, dv, scale = 0) { this.p[13] = du; this.p[14] = dv; this.p[15] = scale; return this; }
 }
