@@ -1,3 +1,4 @@
+import {predictDoorPair,reconcileDoorPair} from './door-prediction.js';
 import {staticCollisionBoxes} from '../world/blocks.js';
 import {placementIntersects} from './placement-collision.js';
 // Player interaction (port of PlayerControllerMP + Minecraft.clickMouse/rightClickMouse).
@@ -402,7 +403,9 @@ export class Interaction {
     return true;
   }
 
-  onBlockChange(pos, state) { /* reserved for prediction rollback */ }
+  onBlockChange(pos, state) {
+    reconcileDoorPair(this,pos,state,(group,state)=>(state>>4)===(group.entries[0].previous>>4)&&((state&4)!==0)===group.opening);
+  }
 
   _extinguishFire(pos, face) {
     const g = this.game;
@@ -610,7 +613,8 @@ export class Interaction {
     let st = g.world.getState(x, y, z);
     if (b.isDoor && ((st & 15) & 8)) { y -= 1; st = g.world.getState(x, y, z); }
     const meta = (st & 15) ^ 4;
-    g.world.setState(x, y, z, ((st >> 4) << 4) | meta);
+    const predicted=((st>>4)<<4)|meta;
+    if(b.isDoor){const upper=g.world.getState(x,y+1,z),entries=[{x,y,z,previous:st,predicted,confirms:true}];if((upper>>4)===(st>>4))entries.push({x,y:y+1,z,previous:upper,predicted:upper,confirms:false});predictDoorPair(this,entries,!!(meta&4),false);}else g.world.setState(x,y,z,predicted);
     const opening = !!(meta & 4);
     const sound = opening ? 'random.door_open' : 'random.door_close';
     g.sound.play(sound, x + 0.5, y + 0.5, z + 0.5, 1, Math.random() * 0.1 + 0.9);
