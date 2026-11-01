@@ -853,6 +853,7 @@ export class EntityManager {
       e.prevLimbSwingAmount = e.limbSwingAmount;
       e.prevSwingProgress = e.swingProgress;
       e.ticks++;
+      if (e.id !== g.entityId) g.particles?.sprint?.(e);
       if (e.boostedId && e.boostedId === g.entityId) this._fireworkBoost(e);
       if (e.entityName === 'firework_rocket') this._fireworkTick(e);
       if (e.pickup) {
