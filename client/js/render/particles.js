@@ -1,7 +1,7 @@
 import {moveParticle} from './particle-collision.js';
 // Particle system (port of EffectRenderer + common EntityFX subclasses), batched into one buffer per texture.
 import { POTIONS } from '../game/potionhelper.js';
-import { blocks } from '../world/blocks.js';
+import { blocks, getBlock } from '../world/blocks.js';
 import { resolveState } from '../world/blockstates.js';
 import { FORMAT, litParams } from '../gfx/device.js';
 
@@ -204,6 +204,17 @@ export class Particles {
     if (tint) { p.r *= ((tint >> 16) & 255) / 255; p.g *= ((tint >> 8) & 255) / 255; p.b *= (tint & 255) / 255; }
     p.scale /= 2;
     return this.add(p);
+  }
+
+  // Entity.spawnSprintParticle: one terrain puff at the feet per entity tick.
+  sprint(entity = this.game.player) {
+    const g = this.game, e = entity, w = g.world;
+    if (!e || !e.sprinting || e.inWater || e.inLava || e.spectator || e.sneaking || e.crouching || e.dead || e.health <= 0 || (e === g.player && (g.dead || e.flying))) return;
+    const feet=getBlock(w.getState(Math.floor(e.x),Math.floor(e.y+.1),Math.floor(e.z))>>4);
+    if(feet?.isWater||feet?.isLava)return;
+    const state = w.getState(Math.floor(e.x),Math.floor(e.y-Math.fround(.2)),Math.floor(e.z)), b = getBlock(state>>4);
+    if (!b || b.renderType === 0 || ['air','cave_air','void_air','barrier','structure_void','light'].includes(b.name)) return;
+    return this.digging(e.x+(rand()-.5)*(e.width||.6),e.y+.1,e.z+(rand()-.5)*(e.width||.6),-(e.motionX||0)*4,1.5,-(e.motionZ||0)*4,state);
   }
 
   blockBreak(x, y, z, state) {

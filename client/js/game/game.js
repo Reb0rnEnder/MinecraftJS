@@ -1350,6 +1350,7 @@ export class Game {
     } else {
       // Dead or sleeping: isMovementBlocked, so the player still falls but takes no input
       const blocked = this.dead || !!this.sleeping;
+      this.particles.sprint(pl);
       const res = pl.tick(world, blocked ? {} : inp);
       if (res.abilitiesChanged) this.sendAbilities();
       this._sendMovement();

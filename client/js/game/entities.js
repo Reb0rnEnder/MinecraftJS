@@ -642,6 +642,7 @@ export class EntityManager {
       e.prevLimbSwingAmount = e.limbSwingAmount;
       e.prevSwingProgress = e.swingProgress;
       e.ticks++;
+      if (e.id !== g.entityId) g.particles?.sprint?.(e);
       if (e.pickup) {
         e.pickup.tick++;
         if (e.pickup.tick >= 3) { this.game.entityRenderer.remove(e); this.map.delete(e.id); continue; }

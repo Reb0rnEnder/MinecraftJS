@@ -1,3 +1,4 @@
+const creativeTabIconStacks = new WeakMap();
 // Container GUIs (port of GuiContainer and subclasses, incl. GuiContainerCreative).
 import { FontRenderer } from '../font.js';
 import { JavaRandom } from '../../util/jrandom.js';
@@ -901,7 +902,7 @@ export class CreativeScreen extends ContainerScreen {
     if (TABS[this.tab] !== 'inventory') {
       const sx = L + 175, sy = T + 18;
       const enabled = this.maxScrollRows() > 0;
-      gui.blit('gui/container/creative_inventory/tabs.png', sx, sy + (112 - 17) * this.scroll, 232 + (enabled ? 0 : 12), 0, 12, 15);
+      gui.blit('gui/container/creative_inventory/tabs.png', sx, sy + Math.floor((112 - 17) * this.scroll), 232 + (enabled ? 0 : 12), 0, 12, 15);
     }
     this._drawTab(gui, this.tab, true);
     if (TABS[this.tab] !== 'inventory') gui.text(tr('itemGroup.' + TABS[this.tab]), L + 8, T + 6, 0x404040, false);
@@ -969,7 +970,9 @@ export class CreativeScreen extends ContainerScreen {
     gui.blit('gui/container/creative_inventory/tabs.png', r.x, r.y, r.col * 28, v, 28, 32);
     const icon = TAB_ICONS[i];
     const ix = r.x + 6, iy = r.y + (r.top ? 9 : 7) + (r.top ? 1 : -1);
-    this.game.itemRenderer.drawItem(gui, { id: icon.id, damage: icon.damage || 0, count: 1 }, ix, iy, false);
+    let stack = creativeTabIconStacks.get(icon);
+    if (!stack) { stack = { id: icon.id, damage: icon.damage || 0, count: 1 }; creativeTabIconStacks.set(icon, stack); }
+    this.game.itemRenderer.drawItem(gui, stack, ix, iy, false);
   }
 
   wheel(d) {
