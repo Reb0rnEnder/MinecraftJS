@@ -57,6 +57,7 @@ export class Connection {
       try {
         p = decodePacket(bytes);
       } catch (err) {
+        this.emit('decode_error',{leadingByte:bytes[0],bytes:bytes.length,message:String(err?.message||err)});
         console.warn('Failed to decode packet', bytes[0], err);
         return;
       }
