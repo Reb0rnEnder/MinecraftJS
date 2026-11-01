@@ -411,7 +411,7 @@ export class TileEntityRenderer {
         const type=isEnder?'single':(props.type||'single');
         const prefix=isEnder?'ender':getBlock(st).name==='trapped_chest'?'trapped':'normal';
         mat=entityMaterial('entity/chest/'+prefix+(type==='single'?'':'_'+type)+'.png',{alphaTest:.1});
-        const {lid,below,knob}=blockModel(type==='single'?'chest':type==='left'?'chestRight':'chestLeft',['lid','below','knob']);
+        const {lid,below,knob}=blockModel(type==='single'?'chest':type==='left'?'chestLeft':'chestRight',['lid','below','knob']);
         const model=new Node();model.scale.set(1/16,1/16,1/16);
         for(const part of [lid,knob,below]){model.add(part.build());part.setMaterial(mat);}
         const rotation=new Node();rotation.position.set(.5,.5,.5);

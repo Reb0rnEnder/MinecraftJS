@@ -1,3 +1,4 @@
+import {INVENTORY_LIGHT0, INVENTORY_LIGHT1} from './inventory-lighting.js';
 import {compositeSoftware} from './transparency.js';
 // Software rasteriser implementing the graphics device contract (see device.js), for browsers with neither WebGL 2
 // nor WebGPU. Everything runs on the CPU into a Uint32 colour buffer and a Float32 depth buffer, presented with
@@ -454,7 +455,7 @@ export class SoftwareDevice {
         let shade = 1;
         const gui = lightMode > 1.5;
         if (!(lightMode > 0.5 && !gui)) {
-          const L0 = gui ? GUI_L0 : WORLD_L0, L1 = gui ? GUI_L1 : WORLD_L1;
+          const L0 = lightMode > 2.5 ? INVENTORY_LIGHT0 : gui ? GUI_L0 : WORLD_L0, L1 = lightMode > 2.5 ? INVENTORY_LIGHT1 : gui ? GUI_L1 : WORLD_L1;
           shade = Math.min(1, 0.4 + 0.6 * (Math.max(nx * L0[0] + ny * L0[1] + nz * L0[2], 0) + Math.max(nx * L1[0] + ny * L1[1] + nz * L1[2], 0)));
         }
         const k = (1 - oA) * shade;
