@@ -339,9 +339,9 @@ export class ItemRenderer {
       const g = new Node();
       for (const p of [lid, knob, below]) g.add(p.build());
       g.setMaterial(mat(tex));
-      // ModelChest is in a y-down space scaled by 1/16 with rotate 180 X
-      g.scale.set(1 / 16, -1 / 16, -1 / 16);
-      g.position.set(0, 1, 1);
+      // Since 1.15 the chest layer is y-up. ChestRenderer's no-world
+      // fallback faces SOUTH, so the item needs no axis flip or rotation.
+      g.scale.set(1 / 16, 1 / 16, 1 / 16);
       root.add(g);
       return root;
     }

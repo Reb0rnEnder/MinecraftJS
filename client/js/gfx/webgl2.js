@@ -1,3 +1,4 @@
+import {INVENTORY_LIGHT0, INVENTORY_LIGHT1} from './inventory-lighting.js';
 import {compositeWebGL} from './transparency.js';
 import {FINAL_UNIFORMS,shaderFrameUniforms} from '../render/shader-frame.js';
 // WebGL 2 implementation of the graphics device contract (see device.js).
@@ -63,11 +64,11 @@ out vec2 vUv; out vec3 vCol; out float vShade; out float vDepth;
 void main() {
   vUv = aUv * (uP[3].w > 0.0 ? uP[3].w : 1.0) + uP[3].yz; vCol = aCol;
   vec3 n = normalize(mat3(uModel) * aNrm);
-  // lighting mode uP[2].w: 0 world item lighting, 1 none, 2 GUI item lighting (RenderHelper.enableGUIStandardItemLighting:
+  // lighting mode uP[2].w: 0 world item lighting, 1 none, 2 GUI item lighting, 3 inventory player (RenderHelper.enableGUIStandardItemLighting:
   // the same two lights turned -30 degrees about Y and 165 about X, in the y-down GUI space)
   bool gui = uP[2].w > 1.5;
-  vec3 l0 = gui ? vec3(-0.237910, -0.634435, 0.735453) : normalize(vec3(0.2, 1.0, -0.7));
-  vec3 l1 = gui ? vec3(0.028667, -0.927375, -0.373034) : normalize(vec3(-0.2, 1.0, 0.7));
+  vec3 l0 = uP[2].w > 2.5 ? vec3(${INVENTORY_LIGHT0.join(", ")}) : gui ? vec3(-0.237910, -0.634435, 0.735453) : normalize(vec3(0.2, 1.0, -0.7));
+  vec3 l1 = uP[2].w > 2.5 ? vec3(${INVENTORY_LIGHT1.join(", ")}) : gui ? vec3(0.028667, -0.927375, -0.373034) : normalize(vec3(-0.2, 1.0, 0.7));
   float d = 0.4 + 0.6 * (max(dot(n, l0), 0.0) + max(dot(n, l1), 0.0));
   vShade = (uP[2].w > 0.5 && !gui) ? 1.0 : min(1.0, d);
   vec4 mv = uView * uModel * vec4(aPos, 1.0); vDepth = length(mv.xyz); gl_Position = uProj * mv;
