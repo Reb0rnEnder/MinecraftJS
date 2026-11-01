@@ -1,0 +1,467 @@
+{
+  "minecraftVersion": "1.19.4",
+  "protocol": 762,
+  "dataVersion": 3337,
+  "resourcePackFormat": 13,
+  "dataPackFormat": 12,
+  "baselineVersion": "1.18.2",
+  "baselineCommit": "257389ba65c78c80240bc3dbcca2e6aab18e0a16",
+  "minecraftDataRevision": "5e063fa99cfe8ded065ec6788b66696b7e4ef143",
+  "dataPaths": {
+    "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/5e063fa99cfe8ded065ec6788b66696b7e4ef143/data/dataPaths.json",
+    "sha1": "978e74b93055a670bb34682f5885811d0b74fabf"
+  },
+  "releases": [
+    {
+      "version": "1.19",
+      "metadata": {
+        "url": "https://piston-meta.mojang.com/v1/packages/14bbfb25fb1c1c798e3c9b9482b081a78d1f3a9d/1.19.json",
+        "sha1": "14bbfb25fb1c1c798e3c9b9482b081a78d1f3a9d"
+      },
+      "downloads": {
+        "client": {
+          "sha1": "c0898ec7c6a5a2eaa317770203a1554260699994",
+          "size": 21462385,
+          "url": "https://piston-data.mojang.com/v1/objects/c0898ec7c6a5a2eaa317770203a1554260699994/client.jar"
+        },
+        "client_mappings": {
+          "sha1": "150346d1c0b4acec0b4eb7f58b86e3ea1aa730f3",
+          "size": 7123832,
+          "url": "https://piston-data.mojang.com/v1/objects/150346d1c0b4acec0b4eb7f58b86e3ea1aa730f3/client.txt"
+        },
+        "server": {
+          "sha1": "e00c4052dac1d59a1188b2aa9d5a87113aaf1122",
+          "size": 45538778,
+          "url": "https://piston-data.mojang.com/v1/objects/e00c4052dac1d59a1188b2aa9d5a87113aaf1122/server.jar"
+        },
+        "server_mappings": {
+          "sha1": "1c1cea17d5cd63d68356df2ef31e724dd09f8c26",
+          "size": 5552032,
+          "url": "https://piston-data.mojang.com/v1/objects/1c1cea17d5cd63d68356df2ef31e724dd09f8c26/server.txt"
+        }
+      },
+      "assetIndex": {
+        "id": "1.19",
+        "sha1": "a9c8b05a8082a65678beda6dfa2b8f21fa627bce",
+        "size": 385608,
+        "totalSize": 557023211,
+        "url": "https://piston-meta.mojang.com/v1/packages/a9c8b05a8082a65678beda6dfa2b8f21fa627bce/1.19.json"
+      },
+      "javaVersion": {
+        "component": "java-runtime-gamma",
+        "majorVersion": 17
+      },
+      "minecraftData": {
+        "protocol": {
+          "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/5e063fa99cfe8ded065ec6788b66696b7e4ef143/data/pc/1.19/protocol.json",
+          "sha1": "43aa04e6d254a6adf7dd5eb0d9cfcfa72707438d",
+          "size": 169966
+        },
+        "version": {
+          "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/5e063fa99cfe8ded065ec6788b66696b7e4ef143/data/pc/1.19/version.json",
+          "sha1": "6fa44e9e685fc57b3f8e02dacad81564932973c9",
+          "size": 77
+        }
+      },
+      "identity": {
+        "minecraftVersion": "1.19",
+        "version": 759,
+        "majorVersion": "1.19"
+      }
+    },
+    {
+      "version": "1.19.1",
+      "metadata": {
+        "url": "https://piston-meta.mojang.com/v1/packages/39d5e8925d37490c6f2abb2e02b8c6f1b35719df/1.19.1.json",
+        "sha1": "39d5e8925d37490c6f2abb2e02b8c6f1b35719df"
+      },
+      "downloads": {
+        "client": {
+          "sha1": "90d438c3e432add8848a9f9f368ce5a52f6bc4a7",
+          "size": 21643604,
+          "url": "https://piston-data.mojang.com/v1/objects/90d438c3e432add8848a9f9f368ce5a52f6bc4a7/client.jar"
+        },
+        "client_mappings": {
+          "sha1": "fc8e22d42c0e4eb1899e2acf7e97eae917e1cb94",
+          "size": 7235104,
+          "url": "https://piston-data.mojang.com/v1/objects/fc8e22d42c0e4eb1899e2acf7e97eae917e1cb94/client.txt"
+        },
+        "server": {
+          "sha1": "8399e1211e95faa421c1507b322dbeae86d604df",
+          "size": 45609936,
+          "url": "https://piston-data.mojang.com/v1/objects/8399e1211e95faa421c1507b322dbeae86d604df/server.jar"
+        },
+        "server_mappings": {
+          "sha1": "3565648cdd47ae15738fb804a95a659137d7cfd3",
+          "size": 5584928,
+          "url": "https://piston-data.mojang.com/v1/objects/3565648cdd47ae15738fb804a95a659137d7cfd3/server.txt"
+        }
+      },
+      "assetIndex": {
+        "id": "1.19",
+        "sha1": "a9c8b05a8082a65678beda6dfa2b8f21fa627bce",
+        "size": 385608,
+        "totalSize": 557023211,
+        "url": "https://piston-meta.mojang.com/v1/packages/a9c8b05a8082a65678beda6dfa2b8f21fa627bce/1.19.json"
+      },
+      "javaVersion": {
+        "component": "java-runtime-gamma",
+        "majorVersion": 17
+      },
+      "protocolSchemaNote": "No separate 1.19.1 entry in pinned minecraft-data dataPaths.json; protocol 760 milestone uses 1.19.2 schema, with native 1.19.1 audit still required."
+    },
+    {
+      "version": "1.19.2",
+      "metadata": {
+        "url": "https://piston-meta.mojang.com/v1/packages/ed548106acf3ac7e8205a6ee8fd2710facfa164f/1.19.2.json",
+        "sha1": "ed548106acf3ac7e8205a6ee8fd2710facfa164f"
+      },
+      "downloads": {
+        "client": {
+          "sha1": "055b30d860ead928cba3849ba920c88b6950b654",
+          "size": 21644740,
+          "url": "https://piston-data.mojang.com/v1/objects/055b30d860ead928cba3849ba920c88b6950b654/client.jar"
+        },
+        "client_mappings": {
+          "sha1": "8e8c9be5dc27802caba47053d4fdea328f7f89bd",
+          "size": 7236064,
+          "url": "https://piston-data.mojang.com/v1/objects/8e8c9be5dc27802caba47053d4fdea328f7f89bd/client.txt"
+        },
+        "server": {
+          "sha1": "f69c284232d7c7580bd89a5a4931c3581eae1378",
+          "size": 45609512,
+          "url": "https://piston-data.mojang.com/v1/objects/f69c284232d7c7580bd89a5a4931c3581eae1378/server.jar"
+        },
+        "server_mappings": {
+          "sha1": "ed5e6e8334ad67f5af0150beed0f3d156d74bd57",
+          "size": 5584686,
+          "url": "https://piston-data.mojang.com/v1/objects/ed5e6e8334ad67f5af0150beed0f3d156d74bd57/server.txt"
+        }
+      },
+      "assetIndex": {
+        "id": "1.19",
+        "sha1": "a9c8b05a8082a65678beda6dfa2b8f21fa627bce",
+        "size": 385608,
+        "totalSize": 557023211,
+        "url": "https://piston-meta.mojang.com/v1/packages/a9c8b05a8082a65678beda6dfa2b8f21fa627bce/1.19.json"
+      },
+      "javaVersion": {
+        "component": "java-runtime-gamma",
+        "majorVersion": 17
+      },
+      "minecraftData": {
+        "protocol": {
+          "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/5e063fa99cfe8ded065ec6788b66696b7e4ef143/data/pc/1.19.2/protocol.json",
+          "sha1": "3fd5da6e3d135b4ed59fc4f77f5d04b9463ac8c2",
+          "size": 176485
+        },
+        "version": {
+          "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/5e063fa99cfe8ded065ec6788b66696b7e4ef143/data/pc/1.19.2/version.json",
+          "sha1": "3923772111de3d052cdbf6319efabddffeca2f84",
+          "size": 78
+        }
+      },
+      "identity": {
+        "minecraftVersion": "1.19.2",
+        "version": 760,
+        "majorVersion": "1.19"
+      }
+    },
+    {
+      "version": "1.19.3",
+      "metadata": {
+        "url": "https://piston-meta.mojang.com/v1/packages/b21e032c55cbada6a1760a9c105cba48c6bc07d8/1.19.3.json",
+        "sha1": "b21e032c55cbada6a1760a9c105cba48c6bc07d8"
+      },
+      "downloads": {
+        "client": {
+          "sha1": "977727ec9ab8b4631e5c12839f064092f17663f8",
+          "size": 22704188,
+          "url": "https://piston-data.mojang.com/v1/objects/977727ec9ab8b4631e5c12839f064092f17663f8/client.jar"
+        },
+        "client_mappings": {
+          "sha1": "42366909cc612e76208d34bf1356f05a88e08a1d",
+          "size": 7574170,
+          "url": "https://piston-data.mojang.com/v1/objects/42366909cc612e76208d34bf1356f05a88e08a1d/client.txt"
+        },
+        "server": {
+          "sha1": "c9df48efed58511cdd0213c56b9013a7b5c9ac1f",
+          "size": 47162712,
+          "url": "https://piston-data.mojang.com/v1/objects/c9df48efed58511cdd0213c56b9013a7b5c9ac1f/server.jar"
+        },
+        "server_mappings": {
+          "sha1": "bc44f6dd84cd2f3ad8c0caad850eaca9e82067e3",
+          "size": 5852819,
+          "url": "https://piston-data.mojang.com/v1/objects/bc44f6dd84cd2f3ad8c0caad850eaca9e82067e3/server.txt"
+        }
+      },
+      "assetIndex": {
+        "id": "2",
+        "sha1": "5c50c0605e597e9312c684c6080d3654d47edc9c",
+        "size": 407568,
+        "totalSize": 594149915,
+        "url": "https://piston-meta.mojang.com/v1/packages/5c50c0605e597e9312c684c6080d3654d47edc9c/2.json"
+      },
+      "javaVersion": {
+        "component": "java-runtime-gamma",
+        "majorVersion": 17
+      },
+      "minecraftData": {
+        "protocol": {
+          "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/5e063fa99cfe8ded065ec6788b66696b7e4ef143/data/pc/1.19.3/protocol.json",
+          "sha1": "16f90868587dfa360bf197c5791eda903a1f25ff",
+          "size": 174880
+        },
+        "version": {
+          "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/5e063fa99cfe8ded065ec6788b66696b7e4ef143/data/pc/1.19.3/version.json",
+          "sha1": "c4bf3bd21a5dc3020694f06d2d85284940fdf085",
+          "size": 78
+        }
+      },
+      "identity": {
+        "minecraftVersion": "1.19.3",
+        "version": 761,
+        "majorVersion": "1.19"
+      }
+    },
+    {
+      "version": "1.19.4",
+      "metadata": {
+        "url": "https://piston-meta.mojang.com/v1/packages/4fc30c189872faebae2617aba033cc17fec5899f/1.19.4.json",
+        "sha1": "4fc30c189872faebae2617aba033cc17fec5899f"
+      },
+      "downloads": {
+        "client": {
+          "sha1": "958928a560c9167687bea0cefeb7375da1e552a8",
+          "size": 23476620,
+          "url": "https://piston-data.mojang.com/v1/objects/958928a560c9167687bea0cefeb7375da1e552a8/client.jar"
+        },
+        "client_mappings": {
+          "sha1": "f14771b764f943c154d3a6fcb47694477e328148",
+          "size": 7844191,
+          "url": "https://piston-data.mojang.com/v1/objects/f14771b764f943c154d3a6fcb47694477e328148/client.txt"
+        },
+        "server": {
+          "sha1": "8f3112a1049751cc472ec13e397eade5336ca7ae",
+          "size": 47515675,
+          "url": "https://piston-data.mojang.com/v1/objects/8f3112a1049751cc472ec13e397eade5336ca7ae/server.jar"
+        },
+        "server_mappings": {
+          "sha1": "73c8bb982e420b33aad9632b482608c5c33e2d13",
+          "size": 6043763,
+          "url": "https://piston-data.mojang.com/v1/objects/73c8bb982e420b33aad9632b482608c5c33e2d13/server.txt"
+        }
+      },
+      "assetIndex": {
+        "id": "3",
+        "sha1": "1c5794ccdb92e85c7933fb033979301b95477a29",
+        "size": 411679,
+        "totalSize": 594907998,
+        "url": "https://piston-meta.mojang.com/v1/packages/1c5794ccdb92e85c7933fb033979301b95477a29/3.json"
+      },
+      "javaVersion": {
+        "component": "java-runtime-gamma",
+        "majorVersion": 17
+      },
+      "minecraftData": {
+        "protocol": {
+          "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/5e063fa99cfe8ded065ec6788b66696b7e4ef143/data/pc/1.19.4/protocol.json",
+          "sha1": "81548e398cc9d99edfe1de82c5bde1b00af13370",
+          "size": 181913
+        },
+        "version": {
+          "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/5e063fa99cfe8ded065ec6788b66696b7e4ef143/data/pc/1.19.4/version.json",
+          "sha1": "047034d89fcc3d8de6faddd63b197d463740d81e",
+          "size": 78
+        }
+      },
+      "identity": {
+        "minecraftVersion": "1.19.4",
+        "version": 762,
+        "majorVersion": "1.19"
+      }
+    }
+  ],
+  "protocolChanges": [
+    {
+      "from": "1.18.2",
+      "to": "1.19",
+      "play": {
+        "toClient": {
+          "added": [
+            "packet_chat_preview",
+            "packet_player_chat",
+            "packet_server_data",
+            "packet_should_display_chat_preview",
+            "packet_system_chat"
+          ],
+          "removed": [
+            "packet_chat",
+            "packet_sculk_vibration_signal",
+            "packet_spawn_entity_living",
+            "packet_spawn_entity_painting"
+          ],
+          "changed": [
+            "packet_acknowledge_player_digging",
+            "packet_entity_effect",
+            "packet_entity_sound_effect",
+            "packet_initialize_world_border",
+            "packet_login",
+            "packet_multi_block_change",
+            "packet_named_sound_effect",
+            "packet_player_info",
+            "packet_respawn",
+            "packet_sound_effect",
+            "packet_spawn_entity",
+            "packet_trade_list",
+            "packet_world_border_lerp_size",
+            "packet_world_particles"
+          ],
+          "packetIdsChanged": true
+        },
+        "toServer": {
+          "added": [
+            "packet_chat_command",
+            "packet_chat_message",
+            "packet_chat_preview"
+          ],
+          "removed": [
+            "packet_chat"
+          ],
+          "changed": [
+            "packet_block_dig",
+            "packet_block_place",
+            "packet_set_beacon_effect",
+            "packet_update_structure_block",
+            "packet_use_item"
+          ],
+          "packetIdsChanged": true
+        }
+      },
+      "sharedTypesChanged": [
+        "command_node",
+        "particleData"
+      ]
+    },
+    {
+      "from": "1.19",
+      "to": "1.19.2",
+      "play": {
+        "toClient": {
+          "added": [
+            "packet_chat_suggestions",
+            "packet_hide_message",
+            "packet_message_header"
+          ],
+          "removed": [],
+          "changed": [
+            "packet_multi_block_change",
+            "packet_player_chat",
+            "packet_respawn",
+            "packet_server_data",
+            "packet_system_chat",
+            "packet_trade_list"
+          ],
+          "packetIdsChanged": true
+        },
+        "toServer": {
+          "added": [
+            "packet_message_acknowledgement"
+          ],
+          "removed": [],
+          "changed": [
+            "packet_chat_command",
+            "packet_chat_message"
+          ],
+          "packetIdsChanged": true
+        }
+      },
+      "sharedTypesChanged": [
+        "entityMetadataItem"
+      ]
+    },
+    {
+      "from": "1.19.2",
+      "to": "1.19.3",
+      "play": {
+        "toClient": {
+          "added": [
+            "packet_feature_flags",
+            "packet_player_remove",
+            "packet_profileless_chat"
+          ],
+          "removed": [
+            "packet_chat_preview",
+            "packet_message_header",
+            "packet_named_sound_effect",
+            "packet_should_display_chat_preview"
+          ],
+          "changed": [
+            "packet_declare_recipes",
+            "packet_entity_sound_effect",
+            "packet_explosion",
+            "packet_hide_message",
+            "packet_player_chat",
+            "packet_player_info",
+            "packet_server_data",
+            "packet_sound_effect"
+          ],
+          "packetIdsChanged": true
+        },
+        "toServer": {
+          "added": [
+            "packet_chat_session_update"
+          ],
+          "removed": [
+            "packet_chat_preview"
+          ],
+          "changed": [
+            "packet_chat_command",
+            "packet_chat_message",
+            "packet_message_acknowledgement"
+          ],
+          "packetIdsChanged": true
+        }
+      },
+      "sharedTypesChanged": [
+        "command_node",
+        "entityMetadataItem",
+        "minecraft_smelting_format",
+        "previousMessages"
+      ]
+    },
+    {
+      "from": "1.19.3",
+      "to": "1.19.4",
+      "play": {
+        "toClient": {
+          "added": [
+            "packet_chunk_biomes",
+            "packet_damage_event",
+            "packet_hurt_animation"
+          ],
+          "removed": [],
+          "changed": [
+            "packet_declare_recipes",
+            "packet_position",
+            "packet_server_data"
+          ],
+          "packetIdsChanged": true
+        },
+        "toServer": {
+          "added": [],
+          "removed": [],
+          "changed": [],
+          "packetIdsChanged": true
+        }
+      },
+      "sharedTypesChanged": [
+        "command_node",
+        "entityMetadata",
+        "entityMetadataItem",
+        "particleData"
+      ]
+    }
+  ],
+  "validation": "Official metadata SHA-1 checked; referenced jar/mapping/index hashes pinned but target jars and native runtime not downloaded or executed. Protocol schemas downloaded, hashed and structurally compared. Release pack/data identities cross-checked with release-specific Wiki pages."
+}

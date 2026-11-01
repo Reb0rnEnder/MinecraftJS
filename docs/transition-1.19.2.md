@@ -1,5 +1,8 @@
 # Transition plan: Java 1.19.2
 
+The proposed destination is now [1.19.4](transition-1.19.4.md). Retain this
+historical 760 checkpoint; it is not an additional supported runtime branch.
+
 Status: planning only. Keep this worktree on 1.18.2 / protocol 758. No 1.19.2
 branch, runtime relabel, server launch or world upgrade is part of this plan.
 When implementation is requested, use branch `1.19.2` and worktree
