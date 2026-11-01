@@ -1,3 +1,4 @@
+import {predictDoorPair,reconcileDoorPair} from './door-prediction.js';
 import {placementIntersects} from './placement-collision.js';
 // Player interaction (port of PlayerControllerMP + Minecraft.clickMouse/rightClickMouse).
 import { C } from '../net/packets.js';
@@ -50,6 +51,7 @@ export class Interaction {
     this.ticksSinceLastSwing = 0;
     this.lastHeld = null;
     this.predictedBlocks = new Map();
+    this.predictedDoors = new Map();
     this.tickNumber = 0;
   }
 
@@ -454,7 +456,10 @@ export class Interaction {
     return true;
   }
 
-  onBlockChange(pos,state){this.predictedBlocks.delete(pos.x+','+pos.y+','+pos.z);}
+  onBlockChange(pos,state){
+    reconcileDoorPair(this,pos,state,(group,state)=>getBlock(state).name===getBlock(group.entries[0].previous).name&&getStateProperties(state).open===String(group.opening));
+    this.predictedBlocks.delete(pos.x+','+pos.y+','+pos.z);
+  }
 
   _extinguishFire(pos, face) {
     const g = this.game;
@@ -696,7 +701,8 @@ export class Interaction {
     let props = getStateProperties(st);
     if (b.isDoor && props.half === 'upper') { y -= 1; st = g.world.getState(x, y, z); props = getStateProperties(st); }
     const opening = props.open !== 'true';
-    g.world.setState(x, y, z, findState(b.name, { ...props, open: String(opening) }));
+    const predicted=findState(b.name,{...props,open:String(opening)});
+    if(b.isDoor){const upper=g.world.getState(x,y+1,z),upperBlock=getBlock(upper),entries=[{x,y,z,previous:st,predicted,confirms:true}];if(upperBlock.name===b.name)entries.push({x,y:y+1,z,previous:upper,predicted:findState(b.name,{...getStateProperties(upper),open:String(opening)}),confirms:true});predictDoorPair(this,entries,opening,true);}else g.world.setState(x,y,z,predicted);
     // BlockDoor / BlockTrapDoor / BlockFenceGate.onBlockActivated: World.playEvent for the player's own client
     const iron = b.name === 'iron_trapdoor';
     const ev = b.isDoor ? (opening ? 1006 : 1012) : b.isFenceGate ? (opening ? 1008 : 1014) : iron ? (opening ? 1037 : 1036) : (opening ? 1007 : 1013);
