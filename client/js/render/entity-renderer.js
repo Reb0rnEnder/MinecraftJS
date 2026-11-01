@@ -1985,7 +1985,7 @@ export class EntityRenderer {
     if (!this._guiModel) {
       const s = this.skinFor({ uuid: g.playerUuid || '00000000-0000-0000-0000-000000000000' });
       this._guiModel = M.playerModel(s.slim, 64, 64);
-      this._guiMat = entityMaterial(this.skinTex(s), { alphaTest: 0.1, fullBright: true });
+      this._guiMat = entityMaterial(this.skinTex(s), { alphaTest: 0.1, fullBright: true, inventoryLighting: true });
       const root = new Node();
       for (const r of this._guiModel.roots) root.add(r.build());
       for (const r of this._guiModel.roots) r.setMaterial(this._guiMat);
