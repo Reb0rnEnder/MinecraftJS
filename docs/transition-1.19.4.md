@@ -118,6 +118,11 @@ operator permissions and tab visibility. Regenerate the Vex model. Port atlas
 source definitions and target sound/recipe formats instead of treating pack
 format numbers as the only resource-pack change.
 
+The 1.19.3 experiment checkpoint includes bamboo wood, hanging signs, chiseled
+bookshelves and camels. The 1.19.4 checkpoint adds the sniffer, archaeology,
+armor trims and cherry content. Test those registries, models and menus under
+their required flags rather than making them ordinary defaults.
+
 Read server feature flags when determining available content. Native experimental
 1.20 content and bundles must be recognized where the target supports them, but
 remain gated; they are not ordinary default 1.19.4 progression and must not be
