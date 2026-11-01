@@ -1500,6 +1500,7 @@ export class Game {
       tin.autoJump = this.settings.autoJump;
       tin.elytraUsable = !!(chest && chest.id === 443 && chest.damage < this.items.maxDurability(443) - 1);
       pl.sleeping = !!this.sleeping;
+      this.particles.sprint(pl);
       const res = pl.tick(world, tin);
       if (res.abilitiesChanged) this.sendAbilities();
       if (res.startFallFlying) this.send(C.entityAction(this.entityId, 8)); // START_FALL_FLYING
