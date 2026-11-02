@@ -161,7 +161,7 @@ export class Particles {
         const uv=particleSprite(this.game.assets,p,partial);if(!uv)continue;[u0,v0,u1,v1]=uv;
       }
       if (p.geometryFn) {
-        for (const quad of p.geometryFn(p, partial, x, y, z)) batch.quad(quad, u0, v0, u1, v1, ...color, p.a, sky, blk);
+        for (const quad of p.geometryFn(p, partial, x, y, z)) batch.quad(quad, u0, v0, u1, v1, ...color, p.alphaFn ? p.alphaFn(p, partial) : p.a, sky, blk);
         continue;
       }
       if (p.footprint) {

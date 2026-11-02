@@ -16,18 +16,28 @@ export function breakingVertices(model,atlas,visible=63,offset=[0,0,0]) {
   return new Float32Array(out);
 }
 
+// SheetedDecalTextureGenerator projects transformed positions onto the nearest
+// face, independently of the block entity's skin atlas (native 1.15+).
+export function decalUV(x,y,z,nx,ny,nz) {
+  const ax=Math.abs(nx),ay=Math.abs(ny),az=Math.abs(nz);
+  if (ay>=ax && ay>=az) return [x,ny<0?-z:z];
+  if (az>=ax) return [nz<0?-x:x,-y];
+  return [nx<0?-z:z,-y];
+}
+
 function tileVertices(tile,pos) {
   const out=[],draws=[];tile.root.updateWorld(null);tile.root.collect(draws);
   for(const {d,world:m} of draws) {
     const src=d.mesh.cpu;if(!src||d.mat?.pipeline!=='entity')continue; // Sign lettering and beam effects are not block surfaces.
-    const size=d.mesh.textureSize||[64,32],su=size[0]/16,sv=(tile.type==='skull'||tile.type==='sign')?2:size[1]/16;
     const first=d.first||0,end=d.count===undefined?src.length/11:first+d.count;
     for(let i=first;i<end;i++) {
       const a=i*11,x=src[a],y=src[a+1],z=src[a+2],nx=src[a+5],ny=src[a+6],nz=src[a+7];
       let dx=m[0]*nx+m[4]*ny+m[8]*nz,dy=m[1]*nx+m[5]*ny+m[9]*nz,dz=m[2]*nx+m[6]*ny+m[10]*nz;
       const len=Math.hypot(dx,dy,dz)||1;dx/=len;dy/=len;dz/=len;
       const shade=.6*dx*dx+.8*dz*dz+(dy<0?.5:1)*dy*dy;
-      out.push(m[0]*x+m[4]*y+m[8]*z+m[12]-pos.x,m[1]*x+m[5]*y+m[9]*z+m[13]-pos.y,m[2]*x+m[6]*y+m[10]*z+m[14]-pos.z,(src[a+3]+.0625)*su,(src[a+4]+.0625)*sv,shade,shade,shade,1);
+      const px=m[0]*x+m[4]*y+m[8]*z+m[12]-pos.x,py=m[1]*x+m[5]*y+m[9]*z+m[13]-pos.y,pz=m[2]*x+m[6]*y+m[10]*z+m[14]-pos.z;
+      const [u,v]=decalUV(px,py,pz,dx,dy,dz);
+      out.push(px,py,pz,u,v,shade,shade,shade,1);
     }
   }
   return new Float32Array(out);

@@ -1,0 +1,2 @@
+import{test}from'node:test';import assert from'node:assert/strict';import{readFileSync}from'node:fs';import{decalUV}from'../client/js/render/breaking.js';
+const fixture=JSON.parse(readFileSync(new URL('./fixtures/decal-1.19.4.json',import.meta.url)));test('block-entity crack projection agrees with native SheetedDecalTextureGenerator',()=>{for(const s of fixture.samples){const uv=decalUV(...s.position,...s.normal);uv.forEach((v,i)=>assert.ok(Math.abs(v-s.uv[i])<1e-6,JSON.stringify(s)));}});
