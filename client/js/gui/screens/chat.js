@@ -6,7 +6,7 @@ import { chatToPlain } from '../chat.js';
 import { Screen } from './manager.js';
 import { TextField, Button } from '../widgets.js';
 import { platform } from '../../platform/platform.js';
-import { C } from '../../net/packets.js';
+import { C,PROTOCOL_VERSION } from '../../net/packets.js';
 
 export class ChatScreen extends Screen {
   constructor(game, initial, options = {}) {
@@ -62,7 +62,7 @@ export class ChatScreen extends Screen {
       const moved = mx !== this.tabMouseX || my !== this.tabMouseY;
       this.tabMouseX = mx; this.tabMouseY = my;
       const hoverRow = this._suggestionRow(mx, my);
-      if (moved && hoverRow >= 0) { this.tabIndex = hoverRow; this.tabApplied = false; }
+      if (moved && hoverRow >= 0) { if(this.tabIndex!==hoverRow)this._selectTab(hoverRow); }
       gui.rect(x, y, x + width, y + rows * 12, 0xd0000000);
       if (this.tabOffset > 0 || this.tabOffset + rows < this.tabMatches.length) {
         gui.rect(x, y - 1, x + width, y, 0xd0000000);
@@ -87,11 +87,18 @@ export class ChatScreen extends Screen {
         if (tooltip) gui.tooltip(chatToPlain(tooltip).split('\n'), mx, my);
       }
     }
-    if (!this.tabMatches?.length && this.commandState?.error) {
-      const error=this.commandState.error,text=this.game.assets.translate(error.key,error.args||[]);
-      const x=this.input.x,y=this.commandOnly?this.input.y+this.input.h+2:this.input.y-14;
-      const width=Math.min(this.width-x-2,gui.font.width(text)+2);
-      gui.rect(x-1,y-2,x+width,y+10,0xd0000000);gui.text(text,x,y,0xffff5555,true);
+    if (!this.tabMatches?.length && this.commandState) {
+      const error=this.commandState.error,g=this.game,usage=g.commands?.usage?.(this.input.text,this.input.cursor,!this.commandOnly);
+      let lines=[],x=0,width=this.width;
+      if(error&&this.input.cursor===this.input.text.length){
+        const message=g.assets.translate(error.key,error.args||[]),cursor=error.start;
+        const context=(cursor>10?'...':'')+this.input.text.slice(Math.max(0,cursor-10),cursor)+g.assets.translate('command.context.here',[]);
+        lines=[PROTOCOL_VERSION<735?message+' at position '+cursor+': '+context:g.assets.translate('command.context.parse_error',[message,cursor,context])];
+      }else if(!error&&usage?.lines.length){lines=usage.lines;const widest=Math.max(...lines.map(line=>gui.font.width(line)));x=Math.max(0,Math.min(this.input.x+gui.font.width(this.input.text.slice(this.input.scroll,Math.max(this.input.scroll,usage.start))),this.input.x+this.input.w-widest));width=widest;}
+      for(let i=0;i<lines.length;i++){
+        const y=this.commandOnly?72+i*12:this.height-27-i*12;
+        gui.rect(x-1,y,x+width+1,y+12,PROTOCOL_VERSION<573?0xff000000:0xd0000000);gui.text(lines[i],x,y+2,error?0xffffffff:0xffaaaaaa,true);
+      }
     }
   }
 
@@ -161,7 +168,6 @@ export class ChatScreen extends Screen {
   tabComplete(reverse = false) {
     if (this.tabMatches && this.tabMatches.length) {
       if (this.tabApplied) this.tabIndex = (this.tabIndex + (reverse ? -1 : 1) + this.tabMatches.length) % this.tabMatches.length;
-      else if (reverse) this.tabIndex = this.tabMatches.length - 1;
       this._selectTab(this.tabIndex);
       this._applyTab();
       return;
@@ -219,7 +225,7 @@ export class ChatScreen extends Screen {
     const matches = Array.isArray(packet) ? packet.map(match => ({ match, tooltip: null })) : packet.matches || [];
     if (!Array.isArray(packet) && packet.transactionId !== undefined && packet.transactionId !== this.tabTransaction) return;
     this.waitingTab = false;
-    if (!matches.length) return;
+    if (!matches.length) {this._showMatches([]);return;}
     if (!Array.isArray(packet)) {
       this.tabReplaceStart = packet.start;
       this.tabReplaceEnd = packet.start + packet.length;
@@ -228,7 +234,8 @@ export class ChatScreen extends Screen {
   }
 
   _showMatches(matches) {
-    this.tabMatches = matches.length ? matches : null;
+    const prefix=this.input.text.slice(0,this.input.cursor).split(/\s/).at(-1).toLowerCase(),preferred=m=>{const text=typeof m==='string'?m:m.match;return text.startsWith(prefix)||text.startsWith('minecraft:'+prefix);};
+    this.tabMatches = matches.length ? (PROTOCOL_VERSION>=735?[...matches.filter(preferred),...matches.filter(m=>!preferred(m))]:matches) : null;
     this.tabIndex=0;this.tabOffset=0;
     this.tabMouseX=this.tabMouseY=undefined;
     this.tabApplied=false;
@@ -275,14 +282,12 @@ export class ChatScreen extends Screen {
   mouseMove(mx,my) {
     this.tabPointerX=mx;this.tabPointerY=my;
     const row=this._suggestionRow(mx,my);
-    if(row>=0){this.tabIndex=row;this.tabApplied=false;}
+    if(row>=0&&row!==this.tabIndex)this._selectTab(row);
   }
 
   wheel(d) {
     if (this.tabMatches?.length && this._suggestionRow(this.tabPointerX ?? this.tabMouseX, this.tabPointerY ?? this.tabMouseY) >= 0) {
       this.tabOffset = Math.max(0, Math.min(this.tabMatches.length - Math.min(10, this.tabMatches.length), this.tabOffset + d));
-      const row=this._suggestionRow(this.tabPointerX??this.tabMouseX,this.tabPointerY??this.tabMouseY);
-      if(row>=0){this.tabIndex=row;this.tabApplied=false;}
       return;
     }
     this.game.hud.scrollChat(-d);
@@ -298,22 +303,23 @@ export class ChatScreen extends Screen {
 
 // GuiConfirmOpenLink
 export class ConfirmLinkScreen extends Screen {
-  constructor(game, parent, url) {
+  constructor(game, parent, url, trusted = false) {
     super(game);
     this.parent = parent;
     this.url = url;
+    this.trusted = trusted;
     this.background = 'world';
   }
   init() {
     const cx = this.width / 2, y = this.height / 6 + 96;
-    this.buttons.push(new Button(0, cx - 155, y, 100, 20, tr('chat.link.open'), () => { platform().openUrl(this.url); this.close(); }));
+    this.buttons.push(new Button(0, cx - 155, y, 100, 20, tr(this.trusted?'chat.link.open':'gui.yes'), () => { platform().openUrl(this.url); this.close(); }));
     this.buttons.push(new Button(2, cx - 50, y, 100, 20, tr('chat.copy'), () => { platform().setClipboard(this.url); this.close(); }));
-    this.buttons.push(new Button(1, cx + 55, y, 100, 20, tr('gui.cancel'), () => this.close()));
+    this.buttons.push(new Button(1, cx + 55, y, 100, 20, tr(this.trusted?'gui.cancel':'gui.no'), () => this.close()));
   }
   close() { this.game.screens.open(this.parent); }
   renderContent(gui) {
-    gui.textCentered(tr('chat.link.confirmTrusted'), this.width / 2, 70, 0xffffff);
+    gui.textCentered(tr(this.trusted?'chat.link.confirmTrusted':'chat.link.confirm'), this.width / 2, 70, 0xffffff);
     gui.textCentered(this.url, this.width / 2, 90, 0xffffff);
-    gui.textCentered('§c' + tr('chat.link.warning'), this.width / 2, 110, 0xffffff);
+    if(!this.trusted)gui.textCentered(tr('chat.link.warning'), this.width / 2, 110, 0xffcccc);
   }
 }

@@ -1,3 +1,4 @@
+import{DYNAMIC_GLSL,EMPTY_DYNAMIC_LIGHTS}from'./dynamic-lighting.js';
 import {INVENTORY_LIGHT0, INVENTORY_LIGHT1} from './inventory-lighting.js';
 import {FINAL_UNIFORMS,shaderFrameUniforms} from '../render/shader-frame.js';
 // WebGL 2 implementation of the graphics device contract (see device.js).
@@ -13,6 +14,7 @@ uniform vec4 uFog;       // start, end, density, mode (0 linear, 1 exp, 2 none)
 uniform vec3 uFogColor;
 uniform sampler2D uTex0;
 uniform sampler2D uLightmap;
+${DYNAMIC_GLSL}
 float fogFactor(float d) {
   if (uFog.w > 1.5 && uFog.w < 2.5) return 0.0;
   if (uFog.w > 2.5) return 1.0 - clamp(exp(-pow(uFog.z * d, 2.0)), 0.0, 1.0);
@@ -30,6 +32,7 @@ out vec2 vUv; out vec3 vCol; out vec2 vLight; out float vDepth;
 void main() {
   vUv = aUv; vCol = aCol.rgb; vLight = aLight * 15.0;
   vec3 p = aPos.xyz * (65535.0 / 2048.0) - 8.0;
+  vLight.y=dynamicBlockLight((uModel*vec4(p,1.0)).xyz,vLight.y);
   vec4 mv = uView * uModel * vec4(p, 1.0); vDepth = length(mv.xyz); gl_Position = uProj * mv;
 }`,
     fs: `
@@ -45,7 +48,7 @@ void main() {
     vs: `
 layout(location=0) in vec3 aPos; layout(location=1) in vec2 aUv; layout(location=2) in vec4 aCol; layout(location=3) in vec2 aLight;
 out vec2 vUv; out vec4 vCol; out vec2 vLight; out float vDepth;
-void main() { vUv = aUv; vCol = aCol; vLight = aLight; vec4 mv = uView * uModel * vec4(aPos, 1.0); vDepth = length(mv.xyz); gl_Position = uProj * mv; }`,
+void main() { vUv = aUv; vCol = aCol; vLight = vec2(aLight.x,dynamicBlockLight((uModel*vec4(aPos,1.0)).xyz,aLight.y)); vec4 mv = uView * uModel * vec4(aPos, 1.0); vDepth = length(mv.xyz); gl_Position = uProj * mv; }`,
     fs: `
 in vec2 vUv; in vec4 vCol; in vec2 vLight; in float vDepth; out vec4 o;
 void main() {
@@ -59,8 +62,9 @@ void main() {
   entity: {
     vs: `
 layout(location=0) in vec3 aPos; layout(location=1) in vec2 aUv; layout(location=2) in vec3 aNrm; layout(location=3) in vec3 aCol;
-out vec2 vUv; out vec3 vCol; out float vShade; out float vDepth;
+out vec2 vUv; out vec3 vCol; out float vShade; out float vDepth; out float vDynamicLight;
 void main() {
+  vDynamicLight=uP[2].w<1.5?dynamicBlockLight((uModel*vec4(aPos,1.0)).xyz,uP[2].y):uP[2].y;
   vUv = aUv * (uP[3].w > 0.0 ? uP[3].w : 1.0) + uP[3].yz; vCol = aCol;
   vec3 n = normalize(mat3(uModel) * aNrm);
   // lighting mode uP[2].w: 0 world item lighting, 1 none, 2 GUI item lighting, 3 inventory player (RenderHelper.enableGUIStandardItemLighting:
@@ -73,11 +77,11 @@ void main() {
   vec4 mv = uView * uModel * vec4(aPos, 1.0); vDepth = length(mv.xyz); gl_Position = uProj * mv;
 }`,
     fs: `
-in vec2 vUv; in vec3 vCol; in float vShade; in float vDepth; out vec4 o;
+in vec2 vUv; in vec3 vCol; in float vShade; in float vDepth; in float vDynamicLight; out vec4 o;
 void main() {
   vec4 t = texture(uTex0, vUv);
   if (t.a < uP[3].x) discard;
-  vec3 lm = uP[2].z > 0.5 ? vec3(1.0) : lightmap(uP[2].xy);
+  vec3 lm = uP[2].z > 0.5 ? vec3(1.0) : lightmap(vec2(uP[2].x,vDynamicLight));
   vec3 c = t.rgb * uP[0].rgb * vCol;
   c = mix(c, uP[1].rgb, uP[1].a);
   c *= vShade * lm;
@@ -289,7 +293,7 @@ export class WebGL2Device {
     this.quadGen = 0;
     this._ensureQuads(1 << 16);
     this.white = this.createTexture({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) });
-    this.globals = { view: new Float32Array(16), proj: new Float32Array(16), fog: new Float32Array([0, 1, 0, 2]), fogColor: new Float32Array(3), lightmap: this.white };
+    this.globals = { view: new Float32Array(16), proj: new Float32Array(16), fog: new Float32Array([0, 1, 0, 2]), fogColor: new Float32Array(3), lightmap: this.white,dynamicLights:EMPTY_DYNAMIC_LIGHTS };
     gl.frontFace(gl.CCW);
     gl.cullFace(gl.BACK);
     gl.depthFunc(gl.LEQUAL);
@@ -312,7 +316,7 @@ export class WebGL2Device {
     const u = (n) => gl.getUniformLocation(p, n);
     return {
       p, uView: u('uView'), uProj: u('uProj'), uModel: u('uModel'), uP: u('uP'), uFog: u('uFog'), uFogColor: u('uFogColor'),
-      uTex0: u('uTex0'), uLightmap: u('uLightmap'), globalsVersion: -1,
+      uDynamicLights:u('uDynamicLights[0]'),uTex0: u('uTex0'), uLightmap: u('uLightmap'), globalsVersion: -1,
       lastModel: new Float32Array(16).fill(NaN), lastParams: new Float32Array(16).fill(NaN),
     };
   }
@@ -338,10 +342,10 @@ vec3 mcjsWave(vec3 p){
       program=this._program('pack terrain animation',{vs,fs:lighting?lighting+SHADERS.terrain.fs.replace('lightmap(vLight)','mcjsPackLight(vLight)'):SHADERS.terrain.fs});
       const gl=this.gl;programs.terrain=program;
       if(lighting)for(const name of ['entity','lit']){
-        const shader=SHADERS[name],old=name==='entity'?'lightmap(uP[2].xy)':'lightmap(vLight)';
-        programs[name]=this._program('pack '+name+' lighting',{vs:shader.vs,fs:lighting+shader.fs.replace(old,name==='entity'?'mcjsPackLight(uP[2].xy)':'mcjsPackLight(vLight)')});
+        const shader=SHADERS[name],old=name==='entity'?'lightmap(vec2(uP[2].x,vDynamicLight))':'lightmap(vLight)';
+        programs[name]=this._program('pack '+name+' lighting',{vs:shader.vs,fs:lighting+shader.fs.replace(old,name==='entity'?'mcjsPackLight(vec2(uP[2].x,vDynamicLight))':'mcjsPackLight(vLight)')});
       }
-      for(const p of Object.values(programs))p.uLighting=['Ambient','Direct','Block','Minimum','Dimension'].map(n=>gl.getUniformLocation(p.p,'uPack'+n));
+      for(const p of Object.values(programs))p.uLighting=['Ambient','Direct','Block','Minimum','Dimension','FullBright'].map(n=>gl.getUniformLocation(p.p,'uPack'+n));
       return {program,programs,ids,frame:null,uIds:gl.getUniformLocation(program.p,'uWaveIds'),uFrame:gl.getUniformLocation(program.p,'uWaveFrame'),uCamera:gl.getUniformLocation(program.p,'cameraPosition'),uEye:gl.getUniformLocation(program.p,'relativeEyePosition'),destroy:()=>{if(this.terrainAnimation?.program===program)this.terrainAnimation=null;for(const p of Object.values(programs))gl.deleteProgram(p.p);this.destroyTexture(ids);}};
     }catch(e){for(const p of Object.values(programs))this.gl.deleteProgram(p.p);this.destroyTexture(ids);throw e;}
   }
@@ -560,6 +564,7 @@ vec3 mcjsWave(vec3 p){
     if (g.fogDensity !== undefined) G.fog[2] = g.fogDensity;
     if (g.fogMode !== undefined) G.fog[3] = g.fogMode;
     if (g.lightmap) G.lightmap = g.lightmap;
+    if(g.dynamicLights)G.dynamicLights=g.dynamicLights;
     this.globalsVersion = (this.globalsVersion || 0) + 1;
   }
 
@@ -616,6 +621,7 @@ vec3 mcjsWave(vec3 p){
       gl.uniform3fv(prog.uFogColor, G.fogColor);
       gl.uniform1i(prog.uTex0, 0);
       gl.uniform1i(prog.uLightmap, 1);
+      gl.uniform4fv(prog.uDynamicLights,G.dynamicLights);
       prog.globalsVersion = this.globalsVersion;
     }
     // Skip uniform uploads / binds that would not change anything (draw state caching)
@@ -628,7 +634,7 @@ vec3 mcjsWave(vec3 p){
     if (this.boundTex[1] !== lm) { gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, lm); gl.activeTexture(gl.TEXTURE0); this.boundTex[1] = lm; }
     if(animation){
       const f=animation.frame,c=f.camera,e=f.eye;
-      if(f.lighting){const l=f.lighting;for(const [i,key]of ['ambient','direct','block','minimum'].entries())gl.uniform3fv(prog.uLighting[i],l[key]);gl.uniform1f(prog.uLighting[4],l.dimension);}
+      if(f.lighting){const l=f.lighting;for(const [i,key]of ['ambient','direct','block','minimum'].entries())gl.uniform3fv(prog.uLighting[i],l[key]);gl.uniform1f(prog.uLighting[4],l.dimension);gl.uniform1f(prog.uLighting[5],f.fullBright?1:0);}
       if(d.pipeline==='terrain'){gl.uniform1i(animation.uIds,2);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,animation.ids.tex);gl.activeTexture(gl.TEXTURE0);
       gl.uniform4f(animation.uFrame,f.time,f.worldTime,0,0);gl.uniform3fv(animation.uCamera,c);gl.uniform3f(animation.uEye,c[0]-e[0],c[1]-e[1],c[2]-e[2]);}
     }

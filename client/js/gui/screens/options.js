@@ -134,6 +134,16 @@ class LanguageScreen extends OptionsBase {
 }
 
 // GuiVideoSettings: GuiOptionsRowList (two columns, scrolling) with GameSettings.Options in 1.13.2 order
+export class MinecraftJSExtrasScreen extends OptionsBase{
+  constructor(game,parent,options){super(game,parent,'minecraftjs.extras.title');this.options=options||[];}
+  init(){const g=this.game,s=this.s,toggle=(key,field)=>({label:()=>trOption(key,onOff(!!s[field])),click:()=>{s[field]=!s[field];}});
+    const items=this.options.map(it=>it.extra==='shaders'?{...it,click:()=>import('./shaders.js').then(m=>g.screens.open(new m.ShaderPacksScreen(g,this)))}:it);
+    items.push(toggle('minecraftjs.extras.zoom','zoomEnabled'),toggle('minecraftjs.extras.dynamicLights','dynamicLights'),toggle('minecraftjs.extras.otherLights','dynamicLightsOthers'),toggle('minecraftjs.extras.fullBright','fullBright'));
+    this.grid(items);this.doneButton();
+  }
+  done(){this.game.applyGraphicsSettings?.();super.done();}
+}
+
 class VideoScreen extends OptionsBase {
   constructor(game, parent) { super(game, parent, 'options.videoTitle'); }
   init() {
@@ -160,7 +170,7 @@ class VideoScreen extends OptionsBase {
       { slider: true, label: (v) => { const k = Math.round(v * 31); return tr('minecraftjs.options.lodDistance') + ': ' + (k >= 31 ? tr('options.off') : (16 + k * 16) + ' blocks'); },
         value: () => s.lodDistance <= 0 ? 1 : Math.min(30, Math.max(0, (s.lodDistance - 16) / 16)) / 31,
         set: (v) => { const k = Math.round(v * 31); s.lodDistance = k >= 31 ? 0 : 16 + k * 16; } },
-      { label: () => 'Shader Packs…', click: () => import('./shaders.js').then(m=>g.screens.open(new m.ShaderPacksScreen(g,this))) },
+      { extra:'shaders',label: () => 'Shader Packs…', click: () => import('./shaders.js').then(m=>g.screens.open(new m.ShaderPacksScreen(g,this))) },
       // MinecraftJS: which graphics API the renderer uses
       { label: () => {
           const names = { webgl2: 'WebGL 2', webgpu: 'WebGPU', software: tr('minecraftjs.options.graphicsApi.software') };
@@ -187,7 +197,8 @@ class VideoScreen extends OptionsBase {
       if (!item) throw new Error('Missing video option: ' + key);
       return item;
     });
-    const orderedItems = [...vanillaItems, ...items.filter(it => !it.key)];
+    this.extraOptions=items.filter(it=>!it.key);
+    const orderedItems = [...vanillaItems,{label:()=>tr('minecraftjs.extras.title')+'…',click:()=>g.screens.open(new MinecraftJSExtrasScreen(g,this,this.extraOptions))}];
     // GuiOptionsRowList: GuiListExtended(32, height - 32, 25), list width 400, scrollbar 32 further right
     this.rows = [];
     let col = 0;

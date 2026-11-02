@@ -39,7 +39,7 @@ test('every numeric sound ID follows SoundEvent registration order, including la
 
 function screen(text = '') {
   const sent = [];
-  const game = { gui: { width: 320, height: 240 },
+  const game = { settings: {}, gui: { width: 320, height: 240 },
     hud: { chatScroll: 0, sentHistory: [], chatComponentAt: () => null, scrollChat() {} },
     send: p => sent.push(p), screens: { close() {} } };
   const s = new ChatScreen(game, text); s.init();

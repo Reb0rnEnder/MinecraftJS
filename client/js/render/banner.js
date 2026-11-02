@@ -76,3 +76,11 @@ export function buildBanner(mat, standing, meta) {
 
 // Flag sway: (-0.0125 + 0.01 * cos(time * PI * 0.02)) * PI around X
 export function bannerSwing(time) { return (-0.0125 + 0.01 * Math.cos(time * Math.PI * 0.02)) * Math.PI; }
+
+// Flattened banner base colour comes from the block; NBT pattern dyes use the
+// white-first DyeColor IDs. The shared legacy compositor is black-first.
+export function placedBannerLayers(name,patterns){
+ const colors=['white','orange','magenta','light_blue','yellow','lime','pink','gray','light_gray','cyan','purple','blue','brown','green','red','black'];
+ const base=colors.indexOf(name.replace(/_(wall_)?banner$/,''));
+ return bannerLayers(15-Math.max(0,base),(patterns||[]).map(p=>({...p,Color:15-(p.Color&15)})));
+}

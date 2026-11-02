@@ -134,11 +134,11 @@ export class TextField {
     const move = (pos) => { this.cursor = pos; if (!shift) this.selEnd = pos; };
     if (e.ctrl && e.code === 'KeyA') { this.cursor = this.text.length; this.selEnd = 0; return true; }
     if (e.ctrl && e.code === 'KeyC') { const [a, b] = this.selection(); platform().setClipboard(this.text.slice(a, b)); return true; }
-    if (e.ctrl && e.code === 'KeyX') { const [a, b] = this.selection(); platform().setClipboard(this.text.slice(a, b)); this.insert(''); return true; }
+    if (e.ctrl && e.code === 'KeyX') { const [a, b] = this.selection(); platform().setClipboard(this.text.slice(a, b)); if(this.enabled)this.insert(''); return true; }
     if (e.ctrl && e.code === 'KeyV') { return true; } // handled by paste event -> char
     switch (e.code) {
-      case 'Backspace': if (e.ctrl) this.deleteChars(this.wordBoundary(-1) - this.cursor); else this.deleteChars(-1); return true;
-      case 'Delete': if (e.ctrl) this.deleteChars(this.wordBoundary(1) - this.cursor); else this.deleteChars(1); return true;
+      case 'Backspace': if(!this.enabled)return true; if (e.ctrl) this.deleteChars(this.wordBoundary(-1) - this.cursor); else this.deleteChars(-1); return true;
+      case 'Delete': if(!this.enabled)return true; if (e.ctrl) this.deleteChars(this.wordBoundary(1) - this.cursor); else this.deleteChars(1); return true;
       case 'Home': move(0); return true;
       case 'End': move(this.text.length); return true;
       case 'ArrowLeft': move(e.ctrl ? this.wordBoundary(-1) : Math.max(0, this.cursor - 1)); return true;

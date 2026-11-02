@@ -251,6 +251,9 @@ export class Assets {
     try { this.glyphSizes = await this.readBytes('font/glyph_sizes.bin'); } catch (e) { this.glyphSizes = null; }
     this.fontSets = await loadFontSets(this);
 
+    await Promise.all(Array.from({length:6},(_,i)=>this.imageAsync('gui/title/background/panorama_'+i+'.png')));
+    for(let i=0;i<6;i++)this.texture('gui/title/background/panorama_'+i+'.png',{filter:'linear'});
+
     step('Starting mesh worker...', 85);
     await this.startMeshWorker();
     step('Ready', 100);

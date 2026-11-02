@@ -1,6 +1,6 @@
 // Tile entity (block entity) rendering: chests, signs, skulls, banners, enchanting book, beacon beam, end portal,
 // beds and shulker boxes.
-import { composeBanner, bannerLayers, buildBanner, bannerSwing } from './banner.js';
+import { composeBanner, bannerLayers, buildBanner, bannerSwing, placedBannerLayers } from './banner.js';
 import { entityMaterial, entityMesh } from './boxmodel.js';
 import { blockModel } from './entity-models.js';
 import { buildTextMeshes, destroyTextMeshes } from './text-mesh.js';
@@ -477,7 +477,7 @@ export class TileEntityRenderer {
           outer.position.set(0.5, 0, 0.5);
           outer.rotation.y = -(Number(props.rotation || 0) * 360 / 16) * D2R;
         } else {
-          const pos = { north: [0.5, 0.25, 0.74, 180], south: [0.5, 0.25, 0.26, 0],
+          const pos = { north: [0.5, 0.25, 0.74, 0], south: [0.5, 0.25, 0.26, 180],
             west: [0.74, 0.25, 0.5, 270], east: [0.26, 0.25, 0.5, 90] }[props.facing] || [0.5, 0.25, 0.5, 0];
           outer.position.set(pos[0], pos[1], pos[2]);
           outer.rotation.y = -pos[3] * D2R;
@@ -492,8 +492,8 @@ export class TileEntityRenderer {
         mat = entityMaterial(tex, { alphaTest: 0.1 });
          const bannerName = getBlock(st).name;
          const wall = bannerName.endsWith('_wall_banner');
-         const rotation = wall ? ({ north: 180, south: 0, west: 90, east: -90 }[props.facing] || 0) : Number(props.rotation || 0);
-         const b = buildBanner(mat, wall, rotation);
+         const rotation = wall ? ({north:2,south:3,west:4,east:5}[props.facing] || 3) : Number(props.rotation || 0);
+         const b = buildBanner(mat, !wall, rotation);
         t.bannerSwing = b.swing;
         obj.add(b.node);
         break;
@@ -572,7 +572,8 @@ export class TileEntityRenderer {
   // Composite banner texture (base + tinted pattern masks), or null while the images load
   _bannerTexture(t) {
     const data = t.data || {};
-    const img = composeBanner(this.game.assets, bannerLayers(data.Base !== undefined ? data.Base : 0, data.Patterns));
+    const layers=placedBannerLayers(getBlock(t.state).name,data.Patterns);
+    const img = composeBanner(this.game.assets, layers);
     if (!img) return null;
     t.texture = this.device.createTexture({ width: img.width, height: img.height, data: img.data });
     return t.texture;
