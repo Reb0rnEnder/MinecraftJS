@@ -1,9 +1,10 @@
-// Option arrays extracted from the pinned native 1.18.2 jar.
+// Native 1.19.4 option arrays, derived from the pinned jar and mapped getters.
 export const VANILLA_UI = {
-  "version": "1.18.2",
-  "clientJarSha1": "2e9a3e3107cca00d6bc9c97bf7d149cae163ef21",
-  "packFormat": 8,
+  "version": "1.19.4",
+  "clientJarSha1": "958928a560c9167687bea0cefeb7375da1e552a8",
+  "packFormat": 13,
   "videoOptions": [
+    "options.fullscreen.resolution",
     "options.biomeBlendRadius",
     "options.graphics",
     "options.renderDistance",
@@ -24,7 +25,9 @@ export const VANILLA_UI = {
     "options.screenEffectScale",
     "options.entityDistanceScaling",
     "options.fovEffectScale",
-    "options.autosaveIndicator"
+    "options.autosaveIndicator",
+    "options.glintSpeed",
+    "options.glintStrength"
   ],
   "controlOptions": [
     "options.autoJump"
@@ -84,22 +87,29 @@ export const VANILLA_UI = {
   "accessibilityOptions": [
     "options.narrator",
     "options.showSubtitles",
+    "options.accessibility.high_contrast",
+    "options.autoJump",
     "options.accessibility.text_background_opacity",
     "options.accessibility.text_background",
     "options.chat.opacity",
     "options.chat.line_spacing",
     "options.chat.delay_instant",
-    "options.autoJump",
+    "options.notifications.display_time",
     "key.sneak",
     "key.sprint",
     "options.screenEffectScale",
     "options.fovEffectScale",
+    "options.darknessEffectScale",
+    "options.damageTiltStrength",
+    "options.glintSpeed",
+    "options.glintStrength",
+    "options.hideLightningFlashes",
     "options.darkMojangStudiosBackgroundColor",
-    "options.hideLightningFlashes"
+    "options.accessibility.panorama_speed"
   ],
   "controlsLayout": {
     "extraWidth": 45,
-    "listTop": 43,
+    "listTop": 20,
     "bottomMargin": 32,
     "rowHeight": 20
   },
@@ -119,7 +129,8 @@ export const VANILLA_UI = {
     "options.narrator",
     "options.autoSuggestCommands",
     "options.hideMatchedNames",
-    "options.reducedDebugInfo"
+    "options.reducedDebugInfo",
+    "options.onlyShowSecureChat"
   ],
   "buttonText": {
     "normal": 16777215,

@@ -6,7 +6,8 @@ function wobble(state,tick,target){
 }
 export function compassProperty(game,item,holder,state,seed=0){
  const tag=game.items.nbt(item),lodestone=tag&&(Object.hasOwn(tag,'LodestonePos')||Object.hasOwn(tag,'LodestoneDimension')),worldName=game.worldName||({0:'minecraft:overworld',[-1]:'minecraft:the_nether',1:'minecraft:the_end'}[game.dimension]);
- const position=lodestone?(tag.LodestoneDimension===worldName?tag.LodestonePos:null):((game.dimensionData?.natural??game.dimension===0)?game.spawnPos:null),entity=holder||game.player,tick=game.world?.worldAge??game.ticks??0;
+ const recovery=game.items.name?.(item.id)==='recovery_compass';
+ const position=recovery?(game.lastDeathLocation?.dimensionName===worldName?game.lastDeathLocation.location:null):lodestone?(tag.LodestoneDimension===worldName?tag.LodestonePos:null):((game.dimensionData?.natural??game.dimension===0)?game.spawnPos:null),entity=holder||game.player,tick=game.world?.worldAge??game.ticks??0;
  const x=position?.X??position?.x,z=position?.Z??position?.z;
  if(!Number.isFinite(x)||!Number.isFinite(z)||(x+.5-entity.x)**2+(z+.5-entity.z)**2<1e-5){
   state.random||={};

@@ -21,6 +21,11 @@ export class Scoreboard {
   }
 
   onPlayerInfo(p) {
+    if(p.actions!==undefined){
+      for(const d of p.data){let pl=this.players.get(d.uuid);if(p.actions&1){pl={uuid:d.uuid,name:d.name,properties:d.properties,gamemode:0,ping:0,displayName:null,listed:false};this.players.set(d.uuid,pl);for(const e of this.game.entities.all())if(e.uuid===d.uuid)e.name=d.name;}if(!pl)continue;
+       if(p.actions&2)pl.chatSession=d.chatSession;if(p.actions&4)pl.gamemode=d.gamemode;if(p.actions&8)pl.listed=d.listed;if(p.actions&16)pl.ping=d.ping;if(p.actions&32)pl.displayName=d.displayName!=null?chatToLegacy(d.displayName):null;
+      }return;
+    }
     for (const d of p.data) {
       if (p.action === 0) {
         this.players.set(d.uuid, { uuid: d.uuid, name: d.name, properties: d.properties, gamemode: d.gamemode, ping: d.ping, displayName: d.displayName != null ? chatToLegacy(d.displayName) : null });
@@ -132,7 +137,7 @@ export class Scoreboard {
 
   // GuiPlayerTabOverlay ordering: spectators last, then by team, then by name
   sortedPlayers() {
-    const arr = [...this.players.values()];
+    const arr = [...this.players.values()].filter(p=>p.listed!==false);
     arr.sort((a, b) => {
       const sa = a.gamemode === 3 ? 1 : 0, sb = b.gamemode === 3 ? 1 : 0;
       if (sa !== sb) return sa - sb;

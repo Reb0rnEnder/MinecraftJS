@@ -1,7 +1,7 @@
 import {tr,trOption,onOff} from './i18n.js';
 export function chatOption(game,key){
  const s=game.settings;
- const fields={'options.chat.color':'chatColors','options.chat.links':'chatLinks','options.chat.links.prompt':'chatLinksPrompt','options.reducedDebugInfo':'reducedDebugInfo','options.autoSuggestCommands':'autoSuggestCommands','options.hideMatchedNames':'hideMatchedNames'};
+ const fields={'options.chat.color':'chatColors','options.chat.links':'chatLinks','options.chat.links.prompt':'chatLinksPrompt','options.reducedDebugInfo':'reducedDebugInfo','options.autoSuggestCommands':'autoSuggestCommands','options.hideMatchedNames':'hideMatchedNames','options.onlyShowSecureChat':'onlyShowSecureChat'};
  const field=fields[key];
  if(field)return {label:()=>trOption(key,onOff(s[field])),click:()=>s[field]=!s[field]};
  if(key==='options.narrator')return {label:()=>game.narrator.label(),enabled:game.narrator.active,click:()=>game.narrator.cycle()};

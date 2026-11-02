@@ -1,3 +1,4 @@
+import {animateWildMob} from './wild-mobs-1.19.4.js';
 import { spyglassArmPitch } from './spyglass-pose.js';
 import { animateAxolotl } from './axolotl-pose.js';
 import {animateHoglin,animatePiglin,animateStrider} from './nether-poses.js';
@@ -32,6 +33,7 @@ export function J(name, names) {
     for (const b of q.boxes) p.boxes.push({ u: b[0], v: b[1], x: b[2], y: b[3], z: b[4], dx: b[5], dy: b[6], dz: b[7], inflate: b[8], mirror: b[9], quads: b[10] || null });
     p.px = q.p[0]; p.py = q.p[1]; p.pz = q.p[2];
     p.rx = q.r[0]; p.ry = q.r[1]; p.rz = q.r[2];
+    if(q.s)[p.sx,p.sy,p.sz]=q.s;
     made.set(i, p);
     for (const c of q.children) { const cp = mk(c); if (cp) p.add(cp); }
     return p;
@@ -76,12 +78,13 @@ function jarAdapter(name, names, pose, options = {}) {
   };
   Object.values(p).flat().forEach(visit);
   const roots = [...all].filter((part) => !children.has(part));
-  const keys = ['px', 'py', 'pz', 'rx', 'ry', 'rz', 'visible'];
+  const keys = ['px', 'py', 'pz', 'rx', 'ry', 'rz', 'sx','sy','sz','visible'];
   const rest = [...all].map((part) => [part, keys.map((key) => part[key])]);
   const m = {
     parts: p, roots, jarModel: name, modelScale: 1, materialOptions: { cull: false }, ...options,
+    resetPose(){for (const [part, values] of rest) keys.forEach((key, i) => { part[key] = values[i]; });},
     animate(model, args) {
-      for (const [part, values] of rest) keys.forEach((key, i) => { part[key] = values[i]; });
+      model.resetPose();
       const a = animationArgs(args);
       pose(model, a);
       const show = a.showParts;
@@ -552,17 +555,27 @@ export function parrot(variant = 0) {
 }
 
 export function vex() {
-  return jarAdapter('vex', [...BIPED, 'leftWing', 'rightWing'], (m, a) => {
-    animateBiped(m, a);
-    const p = m.parts;
-    if (a.charging) p[a.leftHanded ? 'leftArm' : 'rightArm'].rx = PI * 1.2;
-    p.rightLeg.rx += PI / 5;
-    p.leftWing.py = p.rightWing.py = 1; p.leftWing.pz = p.rightWing.pz = 2;
-    p.rightWing.ry = 0.47123894 + cos(a.age * 0.8) * PI * 0.05;
-    p.leftWing.ry = -p.rightWing.ry;
-    p.leftWing.rx = p.rightWing.rx = 0.47123894;
-    p.leftWing.rz = -0.47123894; p.rightWing.rz = 0.47123894;
-  }, { texture: 'entity/illager/vex.png', modelScale: 0.4 });
+ return jarAdapter('vex',['head','body','rightArm','leftArm','leftWing','rightWing','root'],(m,a)=>{
+  const p=m.parts;for(const part of Object.values(p))part.resetPose?.();
+  p.head.ry=a.yaw*D2R;p.head.rx=a.pitch*D2R;
+  const wave=cos(a.age*5.5*D2R)*.1;
+  p.rightArm.rz=.62831855+wave;p.leftArm.rz=-(.62831855+wave);
+  p.body.rx=a.charging?0:.15707964;
+  if(a.charging){const main=!!a.heldMain,off=!!a.heldOff;
+   if(!main&&!off){p.rightArm.rx=p.leftArm.rx=-1.2217305;p.rightArm.ry=.2617994;p.leftArm.ry=-.2617994;p.rightArm.rz=-.47123888-wave;p.leftArm.rz=.47123888+wave;}
+   else{if(main){const arm=a.leftHanded?p.leftArm:p.rightArm;arm.rx=3.6651914;arm.ry=arm===p.rightArm?.2617994:-.2617994;arm.rz=arm===p.rightArm?-.47123888-wave:.47123888+wave;}if(off){const arm=a.leftHanded?p.rightArm:p.leftArm;arm.rx=3.6651914;arm.ry=arm===p.rightArm?.2617994:-.2617994;arm.rz=arm===p.rightArm?-.47123888-wave:.47123888+wave;}}
+  }
+  p.leftWing.ry=1.0995574+cos(a.age*45.836624*D2R)*D2R*16.2;p.rightWing.ry=-p.leftWing.ry;
+  p.leftWing.rx=p.rightWing.rx=.47123888;p.leftWing.rz=-.47123888;p.rightWing.rz=.47123888;
+ },{texture:'entity/illager/vex.png'});
+}
+
+// Native model roots for newly registered families. Their animation state
+// adapters are implemented separately; retaining native hierarchy avoids
+// incorrectly treating a different release's model as a biped.
+export const WILD_MOB_TEXTURES={allay:'entity/allay/allay.png',frog:'entity/frog/temperate_frog.png',tadpole:'entity/tadpole/tadpole.png',warden:'entity/warden/warden.png',camel:'entity/camel/camel.png',sniffer:'entity/sniffer/sniffer.png'};
+export function wildMob(name) {
+ return jarAdapter(name,JAR[name].slotNames,animateWildMob,{texture:WILD_MOB_TEXTURES[name]});
 }
 
 // pose: crossed (default), attacking, spellcasting, bow. Illusioners show the constructor-hidden hat.
@@ -1065,8 +1078,8 @@ export function shulker() {
 }
 
 // ModelBoat (1.9): five sides, two paddles and the depth-only "noWater" plate (renderMultipass)
-export function boat() {
-  const p = J('boat', ['sides', 'paddles', 'noWater']);
+export function boat(wood='oak',chest=false) {
+  const p = J((chest?'chest_boat_':'boat_')+wood, ['sides', 'paddles', 'noWater']);
   const [p0, p1] = p.paddles;
   const noWater = p.noWater;
   const clampedLerp = (a, b, t) => (t < 0 ? a : t > 1 ? b : a + (b - a) * t);
@@ -1123,7 +1136,7 @@ export function glowSquid() { return squid('glowSquid'); }
 export function goat() {
   return jarAdapter('goat', [...QUADRUPED, 'leftHorn', 'rightHorn', 'nose'], (m,a) => {
     const rx=m.parts.body.rx;animateQuadruped(m,a);m.parts.body.rx=rx;
-    m.parts.leftHorn.visible = m.parts.rightHorn.visible = !a.child;
+    m.parts.leftHorn.visible=!a.child&&a.entity?.hasLeftHorn!==false;m.parts.rightHorn.visible=!a.child&&a.entity?.hasRightHorn!==false;
     if (a.rammingHeadRotation) m.parts.head.rx = a.rammingHeadRotation;
   }, {quadruped:true,nativeAgeable:{scaleHead:true,headY:19,headZ:1,headScale:2.5,bodyScale:2,bodyY:24}});
 }

@@ -117,7 +117,7 @@ export class HandRenderer {
     const T = (m, x, y, z) => mat4.translate(m, m, x, y, z);
     const R = (m, a, x, y, z) => mat4.rotate(m, m, a * D2R, x, y, z);
     const S = (m, x, y, z) => mat4.scale(m, m, x, y, z);
-    if (g.hurtTime > 0) { let f = (g.hurtTime - partial) / 10; f = sin(f * f * f * f * Math.PI); R(base, -f * 14, 0, 0, 1); }
+    if (g.hurtTime > 0) { let f = (g.hurtTime - partial) / 10; f = sin(f * f * f * f * Math.PI); R(base, -f * 14 * g.settings.damageTiltStrength, 0, 0, 1); }
     if (g.settings.viewBobbing) {
       const f = pl.distanceWalked - pl.prevDistanceWalked, f1 = -(pl.distanceWalked + f * partial);
       const f2 = pl.prevCameraYaw + (pl.cameraYaw - pl.prevCameraYaw) * partial, f3 = pl.prevCameraPitch + (pl.cameraPitch - pl.prevCameraPitch) * partial;

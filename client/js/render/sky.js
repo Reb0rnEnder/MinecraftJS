@@ -98,7 +98,7 @@ export function brightnessTable(dimension) {
 
 // Lightmap as in EntityRenderer.updateLightmap. data: Uint8Array(16*16*4), index = sky*16 + block
 export function updateLightmap(data, opts) {
-  const { sun, dimension, torchFlicker, gamma, nightVision = 0, lightning = 0 } = opts;
+  const { sun, dimension, torchFlicker, gamma, nightVision = 0, lightning = 0, darkness = {gamma:0,pulse:0} } = opts;
   const table = brightnessTable(dimension);
   const f1 = sun * 0.95 + 0.05;
   for (let i = 0; i < 256; i++) {
@@ -120,10 +120,12 @@ export function updateLightmap(data, opts) {
       g = g * (1 - nightVision) + g * f15 * nightVision;
       b = b * (1 - nightVision) + b * f15 * nightVision;
     }
+    if(dimension!==1){r-=darkness.pulse;g-=darkness.pulse;b-=darkness.pulse;}
     r = Math.min(1, Math.max(0, r)); g = Math.min(1, Math.max(0, g)); b = Math.min(1, Math.max(0, b));
     let rr = 1 - r, gg = 1 - g, bb = 1 - b;
     rr = 1 - rr * rr * rr * rr; gg = 1 - gg * gg * gg * gg; bb = 1 - bb * bb * bb * bb;
-    r = r * (1 - gamma) + rr * gamma; g = g * (1 - gamma) + gg * gamma; b = b * (1 - gamma) + bb * gamma;
+    const effectiveGamma=Math.max(0,gamma-darkness.gamma);
+    r = r * (1 - effectiveGamma) + rr * effectiveGamma; g = g * (1 - effectiveGamma) + gg * effectiveGamma; b = b * (1 - effectiveGamma) + bb * effectiveGamma;
     r = r * 0.96 + 0.03; g = g * 0.96 + 0.03; b = b * 0.96 + 0.03;
     r = Math.min(1, Math.max(0, r)); g = Math.min(1, Math.max(0, g)); b = Math.min(1, Math.max(0, b));
     // stored so that texture coords (block, sky) -> x = block, y = sky

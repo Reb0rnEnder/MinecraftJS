@@ -90,6 +90,12 @@ function nativeOption(screen,key) {
   const toggle=(name,field)=>({label:()=>trOption(name,onOff(s[field])),click:()=>{s[field]=!s[field];}});
   const slider=(name,field)=>({slider:true,label:v=>trOption(name,Math.round(v*100)+'%'),value:()=>s[field],set:v=>{s[field]=v;}});
   switch(key){
+    case 'options.darknessEffectScale':return {...slider(key,'darknessEffectScale'),value:()=>Math.sqrt(s.darknessEffectScale),set:v=>{s.darknessEffectScale=v*v;},tip:()=>tr(key+'.tooltip')};
+    case 'options.damageTiltStrength':case 'options.glintSpeed':case 'options.glintStrength':case 'options.accessibility.panorama_speed':return {...slider(key,{'options.damageTiltStrength':'damageTiltStrength','options.glintSpeed':'glintSpeed','options.glintStrength':'glintStrength','options.accessibility.panorama_speed':'panoramaSpeed'}[key]),tip:()=>tr(key+'.tooltip')};
+    case 'options.notifications.display_time':return {slider:true,label:v=>trOption(key,tr('options.multiplier',(Math.round(v*95+5)/10).toFixed(1))),value:()=>(s.notificationDisplayTime-.5)/9.5,set:v=>{s.notificationDisplayTime=Math.round(v*95+5)/10;}};
+    case 'options.onlyShowSecureChat':return {...toggle(key,'onlyShowSecureChat'),tip:()=>tr(key+'.tooltip')};
+    case 'options.operatorItemsTab':return toggle(key,'operatorItemsTab');
+    case 'options.accessibility.high_contrast':return {label:()=>trOption(key,onOff(s.resourcePacks.includes('high_contrast'))),click:async()=>{const ids=s.resourcePacks.filter(id=>id!=='high_contrast');if(!s.resourcePacks.includes('high_contrast'))ids.unshift('high_contrast');s.resourcePacks=ids;s.save();await g.assets.activatePacks(ids);await g.reloadResources();}};
     case 'options.chat.line_spacing':case 'options.chat.delay_instant':return chatOption(g,key);
     case 'options.screenEffectScale':return {...slider(key,'screenEffectScale'),tip:()=>tr(key+'.tooltip')};
     case 'options.fovEffectScale':return {...slider(key,'fovEffectScale'),tip:()=>tr(key+'.tooltip')};
@@ -263,12 +269,14 @@ class VideoScreen extends OptionsBase {
         label: v => { const r=Math.round(v*7); return trOption('options.biomeBlendRadius', r===0?tr('options.off'):(r*2+1)+'x'+(r*2+1)); },
         value: () => s.biomeBlendRadius/7, set: v => { const radius=Math.round(v*7); if(radius!==s.biomeBlendRadius){s.biomeBlendRadius=radius;g.applyGraphicsSettings();} } },
     ];
+    for(const key of ['options.glintSpeed','options.glintStrength'])items.push({key,...nativeOption(this,key)});
+    items.push({key:'options.fullscreen.resolution',wide:true,label:()=>tr('options.fullscreen.unavailable'),enabled:false});
     const vanillaItems = VANILLA_UI.videoOptions.map(key => {
       const item = items.find(it => it.key === key);
       if (!item) throw new Error('Missing video option: ' + key);
       return item;
     });
-    for(const it of vanillaItems)if(it.key==='options.biomeBlendRadius')it.wide=true;
+    for(const it of vanillaItems)if(['options.biomeBlendRadius','options.fullscreen.resolution'].includes(it.key))it.wide=true;
     const orderedItems = [...vanillaItems, ...items.filter(it => !it.key)];
     // GuiOptionsRowList: GuiListExtended(32, height - 32, 25), list width 400, scrollbar 32 further right
     this.rows = [];
@@ -379,15 +387,22 @@ for (const binding of Object.values(KEY_BINDINGS)) binding[1] = VANILLA_UI.bindi
 const compareText = (a,b) => a < b ? -1 : a > b ? 1 : 0; // Java String.compareTo, not locale collation.
 
 
+class ControlsScreen extends OptionsBase {
+ constructor(game,parent){super(game,parent,'controls.title');}
+ init(){const cx=Math.floor(this.width/2),y=this.height/6-12;
+  this.buttons.push(new Button(202,cx-155,y,150,20,tr('options.mouse_settings'),()=>this.game.screens.open(new MouseSettingsScreen(this.game,this))));
+  this.buttons.push(new Button(203,cx+5,y,150,20,tr('controls.keybinds'),()=>this.game.screens.open(new KeyBindsScreen(this.game,this))));
+  this.grid(['key.sneak','key.sprint','options.autoJump','options.operatorItemsTab'].map(key=>nativeOption(this,key)),y+24);this.doneButton(y+72);
+ }
+}
+
 // Native ControlsScreen and ControlList. Geometry is extracted from the pinned jar;
 // categories have no focus target, while each binding/reset is a real widget.
-class ControlsScreen extends OptionsBase {
-  constructor(game, parent) { super(game, parent, 'controls.title'); this.binding = null; }
+class KeyBindsScreen extends OptionsBase {
+  constructor(game, parent) { super(game, parent, 'controls.keybinds.title'); this.binding = null; }
   init() {
     const s = this.s;
     const cx = Math.floor(this.width / 2);
-    this.buttons.push(new Button(202,cx-155,18,150,20,tr('options.mouse_settings'),()=>this.game.screens.open(new MouseSettingsScreen(this.game,this))));
-    this.buttons.push(new Button(203,cx+5,18,150,20,()=>trOption('options.autoJump',onOff(s.autoJump)),()=>{s.autoJump=!s.autoJump;}));
     this.resetAll = new Button(201, cx - 155, this.height - 29, 150, 20, tr('controls.resetAll'), () => { s.keys = { ...DEFAULT_KEYS }; });
     this.buttons.push(this.resetAll);
     this.buttons.push(new Button(200, cx + 5, this.height - 29, 150, 20, tr('gui.done'), () => this.done()));
@@ -478,7 +493,7 @@ class ControlsScreen extends OptionsBase {
     }
     this._updateResets();
     const rows=this.entries.flatMap(e=>e.header?[]:[e.changeButton,e.resetButton]);
-    return focusOptionWidgets(this,e,[...this.buttons.slice(0,2),...rows,...this.buttons.slice(2)])||super.key(e);
+    return focusOptionWidgets(this,e,[...rows,...this.buttons])||super.key(e);
   }
   wheel(d) { this.list.wheel(d); }
 }
@@ -524,4 +539,4 @@ class StreamUnavailableScreen extends OptionsBase {
   }
 }
 
-export { VideoScreen, ControlsScreen, LanguageScreen };
+export { VideoScreen, ControlsScreen, KeyBindsScreen, LanguageScreen };

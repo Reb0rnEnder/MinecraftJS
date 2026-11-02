@@ -1,9 +1,8 @@
 # Transition plan: Java 1.19.4
 
-Status: **native-input foundation completed; protocol-762 connection/terrain
-probe implemented and verified** on the named `1.19.4` branch. The browser
-runtime remains 1.18.2 / protocol 758 until target assets and packet handlers are
-integrated; this is not a playable 1.19.4 release or a complete parity claim.
+Status: **graphical protocol-762 connection and target-native runtime/assets
+integrated** on the named `1.19.4` branch. Full content, signed chat and visual
+parity remain unfinished; this is a development checkpoint.
 See [development progress and reproduction](development-1.19.4.md).
 
 The older [1.19.2 plan](transition-1.19.2.md) is superseded. Development uses

@@ -68,10 +68,9 @@ export class Assets {
   async listPacks() {
     const ids = await platform().files.list(PACK_PREFIX).catch(() => []);
     const out = [];
-    try {
-      const bytes=await this.source.bytes('minecraft/resourcepacks/programmer_art.zip');
-      if(bytes){const pack=new ResourcePack('programmer_art',bytes);pack.name='Programmer Art';pack.builtin=true;out.push(pack);}
-    }catch{ /* Native built-in pack unavailable in an incomplete asset tree. */ }
+    for(const [id,name]of [['programmer_art','Programmer Art'],['high_contrast','High Contrast']])try{
+      const bytes=await this.source.bytes('minecraft/resourcepacks/'+id+'.zip');if(bytes){const pack=new ResourcePack(id,bytes);pack.name=name;pack.builtin=true;out.push(pack);}
+    }catch{}
     for (const key of ids) {
       const id = key.slice(PACK_PREFIX.length);
       try {

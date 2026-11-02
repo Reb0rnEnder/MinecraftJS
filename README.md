@@ -1,20 +1,13 @@
-> **1.19.4 development branch:** native inputs and the isolated protocol-762
-> connection/terrain probe are ready. The browser remains on 1.18.2 until the
-> graphical integration gates pass. See [development progress](docs/development-1.19.4.md).
+# MinecraftJS 1.19.4 development client
 
-# MinecraftJS 1.18.2 development client
+This branch targets Java **1.19.4, protocol 762**, with native 1.19.4 assets and
+resource-pack format 13. The graphical client can join a native offline-mode
+server. **Full parity is unfinished**; see the [development ledger](docs/development-1.19.4.md)
+and [transition plan](docs/transition-1.19.4.md) for implemented and remaining work.
 
-This branch targets Java **1.18.2, protocol 758**, with native 1.18 assets and
-resource-pack format 8. The [transition plan](docs/transition-1.18.2.md) and
-[implementation ledger](docs/parity-1.18.2.md) track verified and remaining work.
-Full 1.18.2 parity is still pending. A [1.19.4 transition plan](docs/transition-1.19.4.md)
-covers the 1.19 through 1.19.4 changes and supersedes the earlier 1.19.2 destination;
-this branch keeps its 1.18.2 identity.
-
-Real-server tests pass login/compression, terrain/light, teleport confirmation,
-keepalives, authoritative inventory recovery, ten inventory operations and
-Nether/End/Overworld travel, including below Y=0 and above Y=255. Large-world
-browser loading still needs profiling; see the ledger's acceptance limits.
+Cherry and other Update 1.20 experiments retain their native registry IDs but
+are excluded from normal creative tabs. Older supported clients remain on their
+existing named branches.
 
 Start the proxy from **this worktree**:
 
@@ -22,20 +15,18 @@ Start the proxy from **this worktree**:
 PORT=3003 ALLOW_LOOPBACK=1 npm start
 ```
 
-Open `http://localhost:3003/` and join your 1.18.2 server. The local server files
-are in `server1182/`; its copied properties use port 25565. The isolated
-connection-check launch used `--port 25566` to leave the existing server alone. Loopback is explicitly
-allowed here for local testing; deployments block it by default. The older
-version proxies can remain running on their own ports.
+Open `http://localhost:3003/` and join your 1.19.4 server. Local server files are
+in `server1194/`. Loopback is explicitly allowed here for local testing;
+deployments block it by default. Existing local worlds/configurations are preserved.
 
-Reproduce the native inputs and assets (Java 17 or newer is needed for extraction):
+Reproduce native runtime data and assets (Java 17 or newer and CFR required):
 
 ```sh
-node tools/port-1.18.2/reports.mjs --check
-node tools/port-1.18.2/packet-ids.mjs --check
-node tools/port-1.18.2/runtime-data.mjs
+node tools/port-1.19.4/prepare.mjs
+node tools/port-1.19.4/reports.mjs --check
+node tools/port-1.19.4/runtime-data.mjs
 npm run assets
-node tools/port-1.18.2/verify-protocol.mjs
+node tools/port-1.19.4/verify-protocol.mjs
 ```
 
 `npm run build` creates a standalone HTML client; use

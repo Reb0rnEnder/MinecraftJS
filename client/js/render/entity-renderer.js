@@ -1,3 +1,4 @@
+import {BOAT_TYPES} from '../game/boat-types-1.19.4.js';
 import {isSquid,squidTentacle,squidMatrix} from '../game/squid-animation.js';
 import { scaleAgeableGroups } from './ageable-pose.js';
 import { attachSpyglassHolder } from './spyglass-pose.js';
@@ -7,7 +8,7 @@ import {foxAnimationArgs} from '../game/fox.js';
 import {scaleFoxChild} from './fox-pose.js';
 import {nameUuid} from '../util/uuid-md5.js';
 import {shadowGeometry} from './shadows.js';
-import {PANDA_VARIANTS} from '../game/panda-variants-1.18.2.js';
+import {PANDA_VARIANTS} from '../game/panda-variants-1.19.4.js';
 import {villagerLayers} from './villager-layers.js';
 import { updateRiptide } from './riptide-layer.js';
 import { EntityEffects, dragonCorpseMatrix } from './entity-effects.js';
@@ -278,6 +279,8 @@ export class EntityRenderer {
   // ---------------------------------------------------------------- building visuals
 
   _texFor(e) {
+    if(e.entityName==='frog')return 'entity/frog/'+(['temperate','warm','cold'][e.frogVariant||0]||'temperate')+'_frog.png';
+    if(['allay','tadpole','warden','camel','sniffer'].includes(e.entityName))return M.WILD_MOB_TEXTURES[e.entityName];
     if (e.kind === 'player') return null;
     if (e.kind === 'armorstand') return 'entity/armorstand/wood.png';
     const t = e.type;
@@ -355,6 +358,7 @@ export class EntityRenderer {
   }
 
   _modelFor(e) {
+    if(['allay','frog','tadpole','warden','camel','sniffer'].includes(e.entityName))return M.wildMob(e.entityName);
     if (e.kind === 'player') {
       const s = this.skinFor(e);
       return M.playerModel(s.slim, 64, 64);
@@ -429,7 +433,7 @@ export class EntityRenderer {
 
   _visualKey(e) {
     if (e.kind === 'mob') return this._livingKey(e);
-    if (e.kind === 'boat') return 'boat:' + (e.boatType || 0);
+    if (e.kind === 'boat') return 'boat:' + (e.boatType || 0)+':'+!!e.chestBoat;
     if (e.kind === 'minecart') return ['cart', e.cartType, e.customDisplay, e.displayBlock, e.displayOffset, e.furnacePowered].join(':');
     if (e.kind === 'crystal') return 'crystal:' + (e.showBottom !== false);
     if (e.kind === 'projectile') return ['projectile', e.type, e.invulnerable,
@@ -891,9 +895,9 @@ export class EntityRenderer {
       }
       case 'boat': case 'minecart': {
         v = atlasOnly(e.kind);
-        const model = e.kind === 'boat' ? M.boat() : M.minecart();
+        const model = e.kind === 'boat' ? M.boat(BOAT_TYPES[e.boatType||0]||'oak',!!e.chestBoat) : M.minecart();
         // EntityBoat.Type: 1.13 uses the wood name directly, including dark_oak.
-        const mat = this._mat(v, e.kind === 'boat' ? 'entity/boat/' + (['oak', 'spruce', 'birch', 'jungle', 'acacia', 'dark_oak'][e.boatType || 0] || 'oak') + '.png' : 'entity/minecart.png');
+        const mat = this._mat(v, e.kind === 'boat' ? 'entity/'+(e.chestBoat?'chest_boat/':'boat/') + (BOAT_TYPES[e.boatType || 0] || 'oak') + '.png' : 'entity/minecart.png');
         v.inner = new Node();
         const mg = new Node();
         mg.scale.set(-1 / 16, -1 / 16, 1 / 16);
@@ -903,7 +907,7 @@ export class EntityRenderer {
           r.rotation.set(0, Math.PI / 2, 0);
           r.add(this._makeModelObject(model, mat));
           const mask = this._mat(v, mat.tex, { colorWrite: false });
-          r.add(this._makeModelObject({ roots: [model.noWater] }, mask));
+          if(model.noWater)r.add(this._makeModelObject({ roots: [model.noWater] }, mask));
           mg.add(r);
           v.boatModel = model;
         } else mg.add(this._makeModelObject(model, mat));
@@ -1098,10 +1102,10 @@ export class EntityRenderer {
   // Enchantment glint (RenderItem.renderEffect): redraw the item meshes with the scrolling glint texture,
   // additive and depth-equal. node must have up-to-date world matrices.
   drawGlint(device, node) {
-    const tex = this.game.assets.texture('misc/enchanted_item_glint.png', { wrap: 'repeat' });
+    const tex = this.game.assets.texture('misc/enchanted_glint_item.png', { wrap: 'repeat' });
     if (!tex) return;
-    const t = platform().now();
-    const p1 = new EntityParams().setTint(0.5 * 0.75, 0.25 * 0.75, 0.8 * 0.75, 1).setFullBright(true).setNoLighting(true).setAlphaTest(0);
+    const t = platform().now()*(this.game.settings.glintSpeed??.5)*2;
+    const strength=(this.game.settings.glintStrength??.75)/.75;const p1 = new EntityParams().setTint(0.5 * 0.75*strength, 0.25 * 0.75*strength, 0.8 * 0.75*strength, 1).setFullBright(true).setNoLighting(true).setAlphaTest(0);
     const state = { blend: 'add', depthWrite: false, depthFunc: 'equal' };
     const meshes = [];
     node.traverse((n) => { if (n.visible) for (const d of n.drawables) if (d.mesh && n.userData.glint) meshes.push({ mesh: d.mesh, world: n.world,outputTarget:d.outputTarget||d.mat?.outputTarget }); });
@@ -1291,6 +1295,7 @@ export class EntityRenderer {
     const skeletonAim = (e.kind === 'mob' && e.type === 51 && e.armsRaised && held && g.items.name(held.id) === 'bow');
     const speedSq = (e.motionX || 0) ** 2 + (e.motionY || 0) ** 2 + (e.motionZ || 0) ** 2;
     const args = {
+      entity:e,
       ...foxAnimationArgs(e,partial),ls, lsa, age, yaw: head - body, pitch, swing: swing > 0 ? swing : -9999, partial,
       sneak: !e.sleeping && !!e.sneaking, riding: e.riding >= 0,
       useTicks:e.useTicks||0,crossbowChargeDuration:held&&g.items.name(held.id)==='crossbow'?g.items.crossbowChargeDuration(held):25,

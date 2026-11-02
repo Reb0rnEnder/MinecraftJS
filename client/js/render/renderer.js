@@ -203,7 +203,7 @@ export class Renderer {
     const sun = sunBrightness(angle, rain, thunder);
     updateLightmap(this.lightmapData, {
       sun: dimension === 0 ? sun : 1, dimension, torchFlicker: this.torchFlickerX, gamma: this.gamma,
-      nightVision: state.nightVision || (state.conduitPower ? state.waterVision || 0 : 0), lightning: state.hideLightningFlashes?0:this.lightningTicks,
+      darkness:state.darkness,nightVision: state.nightVision || (state.conduitPower ? state.waterVision || 0 : 0), lightning: state.hideLightningFlashes?0:this.lightningTicks,
     });
     this.device.updateTexture(this.lightmap, this.lightmapData);
 
@@ -243,6 +243,7 @@ export class Renderer {
     else if (state.inPowderSnow) { fogR = .623; fogG = .734; fogB = .785; fogMode = 0; fogStart = state.spectator ? -8 : 0; fogEnd = state.spectator ? renderDistBlocks * .5 : 2; }
     else if (dimension === -1) { fogStart = 0; fogEnd = renderDistBlocks * 0.5; }
     if(!state.underwater)this.waterFogState=null;
+    if(state.darkness?.factor>0&&!state.spectator){fogMode=0;fogEnd=fogEnd+(15-fogEnd)*state.darkness.factor;fogStart=fogEnd*.75;}
     if (state.blindness) { fogMode = 0; fogStart = 0; fogEnd = 5; fogR *= 0.1; fogG *= 0.1; fogB *= 0.1; }
     // WorldProvider.getVoidFogYFactor: 1.0 on superflat worlds, 1/32 otherwise
     const voidFactor = state.horizon === 0 ? 1 : 0.03125;
@@ -503,7 +504,7 @@ export class Renderer {
 
   // Native 1.14 CubeMap/PanoramaRenderer: full-resolution cube, four jitter
   // passes, 85-degree FOV. No legacy 256px framebuffer or blur chain.
-  renderPanorama(timeMs) {
+  renderPanorama(timeMs,speed=1) {
     const d=this.device;
     if(!this.panoMeshes){
       const corners=[
@@ -517,7 +518,7 @@ export class Renderer {
       this.panoMeshes=corners.map(c=>colorMesh(d,[c.map((p,i)=>[...p,...uv[i],1,1,1,1])]));
     }
     this.panoStart ??= timeMs;
-    const t=(timeMs-this.panoStart)/50,pitch=Math.sin(t*.001)*5+25,yaw=-t*.1;
+    const t=(timeMs-this.panoStart)/50*speed,pitch=Math.sin(t*.001)*5+25,yaw=-t*.1;
     this.aspect=platform().width/platform().height;
     const proj=mat4.perspective(mat4.create(),85*D2R,this.aspect,.05,10);
     const textures=Array.from({length:6},(_,i)=>this.assets.texture('gui/title/background/panorama_'+i+'.png',{filter:'linear'}));

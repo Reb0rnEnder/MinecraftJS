@@ -293,6 +293,7 @@ export class Items {
 
   useDuration(item) {
     if (!item) return 0;
+    if(this.name(item.id)==='goat_horn')return this.assets.data.creative.instruments?.[this.nbt(item)?.instrument]?.duration||0;
     if (this.name(item.id) === 'crossbow') return this.crossbowChargeDuration(item) + 3;
     const native = this.assets.data.creative.itemMechanics?.[item.id];
     if (native) return native.duration;

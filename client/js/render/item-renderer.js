@@ -129,6 +129,7 @@ export class ItemRenderer {
       case 'shield': pv.blocking = using ? 1 : 0; break;
       case 'fishing_rod': pv.cast = local && g.entities?.fishingCast && g.inventory.held() === item ? 1 : 0; break;
       case 'elytra': pv.broken = damage >= max - 1 ? 1 : 0; break;
+      case 'recovery_compass': pv.angle=compassProperty(g,item,holder,this.recoveryCompassWobble||(this.recoveryCompassWobble={}));break;
       case 'compass': pv.angle=compassProperty(g,item,holder,this.compassWobble||(this.compassWobble={}));break;
       case 'clock': pv.time = g.clockTime || 0; break;
       case 'trident': pv.throwing = using ? 1 : 0; break;
@@ -224,12 +225,12 @@ export class ItemRenderer {
 
   // RenderItem.renderEffect: two scrolling, rotated passes of the glint texture, additive, depth-equal on the item
   _glintQuads(gui, x, y) {
-    const tex = this.assets.texture('misc/enchanted_item_glint.png', { wrap: 'repeat' });
+    const tex = this.assets.texture('misc/enchanted_glint_item.png', { wrap: 'repeat' });
     if (!tex) return;
-    const t = platform().now();
+    const t = platform().now()*(this.game.settings.glintSpeed??.5)*2;
     gui.setDepth({ depthTest: true, depthWrite: false, depthFunc: 'equal' });
     gui.setBlend('add');
-    const col = [0.5 * 0.5, 0.25 * 0.5, 0.8 * 0.5, 1];
+    const strength=(this.game.settings.glintStrength??.75)/.75;const col = [0.5 * 0.5*strength, 0.25 * 0.5*strength, 0.8 * 0.5*strength, 1];
     // RenderItem.renderEffect: texture matrix scale(8) * translate(+-time / period / 8) * rotate(angle), applied to
     // the sprite's atlas coordinates: one texture width per period, pattern 8x the sprite's atlas size
     const k = 8 * 16 / (this.atlas.size || 1024);

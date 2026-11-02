@@ -58,6 +58,7 @@ export class Interaction {
     this.predictedBlocks = new Map();
     this.predictedDoors = new Map();
     this.tickNumber = 0;
+    for(const method of ['clickMouse','rightClickMouse','sendClickBlockToController']){const action=this[method];this[method]=(...args)=>this.game.blockPrediction?this.game.blockPrediction.run(()=>action.apply(this,args)):action.apply(this,args);}
   }
 
   // ---------------------------------------------------------------- attack cooldown (1.9+)
@@ -471,10 +472,11 @@ export class Interaction {
     const p=this.player;
     this.pendingDigs.set(`${pos.x},${pos.y},${pos.z}:${status}`,{x:p.x,y:p.y,z:p.z});
     while(this.pendingDigs.size>50)this.pendingDigs.delete(this.pendingDigs.keys().next().value);
-    this.game.send(C.blockDig(status,pos.x,pos.y,pos.z,face));
+    this.game.send(C.blockDig(status,pos.x,pos.y,pos.z,face,this.game.blockPrediction?.current||0));
   }
 
   acknowledgeDigging(p) {
+    if(p.sequenceId!==undefined){this.game.blockPrediction.acknowledge(p.sequenceId);return;}
     const {x,y,z}=p.location,key=`${x},${y},${z}:${p.status}`,before=this.pendingDigs?.get(key);
     this.pendingDigs?.delete(key);
     const g=this.game;
@@ -567,7 +569,7 @@ export class Interaction {
       if (!activated && held && this._itemBlock(held) && g.items.name(held.id)!=='scaffolding' && !this._canPlaceBlockOnSide(t, held)) return false;
     }
     // CPacketPlayerTryUseItemOnBlock (cursor position on the face)
-    g.send(C.blockPlace(t.x, t.y, t.z, t.face, hand, fx, fy, fz));
+    g.send(C.blockPlace(t.x, t.y, t.z, t.face, hand, fx, fy, fz,false,g.blockPrediction?.current||0));
     if (activated) {
       if (COMMAND_BLOCKS.has(b.name)) g.screens.open(new CommandBlockScreen(g, { x: t.x, y: t.y, z: t.z }));
       if (b.name === 'structure_block') g.screens.open(new StructureBlockScreen(g, { x: t.x, y: t.y, z: t.z }, g.structureBlocks.get(t.x + ',' + t.y + ',' + t.z)));
@@ -767,7 +769,7 @@ export class Interaction {
       // ItemWritableBook opens the editor client-side
       import('../gui/screens/book.js').then((m) => g.screens.open(new m.BookScreen(g, held, true, hand)));
     }
-    g.send(C.useItem(hand)); // CPacketPlayerTryUseItem
+    g.send(C.useItem(hand,g.blockPrediction?.current||0)); // CPacketPlayerTryUseItem
     if (g.cooldownFraction(held.id, 0) > 0) return false; // CooldownTracker: still cooling down
     if (name === 'trident') {
       if (g.items.damage(held) >= g.items.maxDurability(held.id)-1) return false;

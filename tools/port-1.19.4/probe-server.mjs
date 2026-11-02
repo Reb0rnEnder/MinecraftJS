@@ -1,3 +1,5 @@
+import {C} from '../../client/js/net/packets.js';
+import {handleDamage762} from '../../client/js/game/damage-1.19.4.js';
 // Opt-in local integration probe: real TCP, existing Minecraft framing/compression/login,
 // native-762 packet codec. Uses its own connection and does not alter the UI.
 import net from 'node:net';
@@ -15,7 +17,9 @@ import {decodePacket762,C762,PROTOCOL_762} from '../../client/js/net/protocol-1.
 import {cache} from './prepare.mjs';
 import {decodeChunkData762} from '../../client/js/world/chunk-1.19.4.js';
 const options=Object.fromEntries(process.argv.slice(2).map(a=>{const [key,...v]=a.replace(/^--/,'').split('=');return [key,v.join('=')];}));
+const damageTest=options['fixture-damage']==='true';
 const host=options.host||'127.0.0.1',port=Number(options.port||25567),duration=Number(options.duration||25000);
+if(damageTest)assert.ok(host==='127.0.0.1'&&port===25567,'damage commands are restricted to the isolated local fixture server');
 assert.ok(Number.isInteger(port)&&port>0&&port<65536);assert.ok(Number.isFinite(duration)&&duration>=1000&&duration<=60000);
 setPlatform({now:()=>performance.now()});
 class DirectProbeSocket extends VanillaSocket {
@@ -44,10 +48,11 @@ const server=await status();assert.equal(server.version.protocol,762);console.lo
 function captureFailedChunk(packet){writeFileSync(join(cache,'failed-chunk.json'),JSON.stringify({...packet,chunkData:Buffer.from(packet.chunkData).toString('base64')},(_,v)=>typeof v==='bigint'?v.toString():v));}
 const report={protocol:762,serverVersion:server.version.name,compressionThreshold:null,loginSuccess:false,packets:{},unsupported:{},teleportsConfirmed:0,keepAlivesAnswered:0,sectionsDecoded:0,inventoryResync:false};
 await new Promise((resolve,reject)=>{
-  const sock=new DirectProbeSocket();let finished=false,sectionCount=24,biomeCount=1;
-  const finish=error=>{if(finished)return;finished=true;clearTimeout(timer);sock.close();error?reject(error):resolve();};
+  const sock=new DirectProbeSocket();let finished=false,sectionCount=24,biomeCount=1,codec,damageGame;const commandTimers=[];
+  const finish=error=>{if(finished)return;finished=true;clearTimeout(timer);for(const t of commandTimers)clearTimeout(t);sock.close();error?reject(error):resolve();};
   const timer=setTimeout(()=>{
     try{
+      if(damageTest)for(const sound of ['entity.player.hurt','entity.player.hurt_on_fire','entity.player.hurt_drown','entity.player.hurt_freeze','entity.player.hurt_sweet_berry_bush','enchant.thorns.hit'])assert.ok(report.damageSounds?.includes(sound),'native damage event invoked '+sound);
       assert.ok(report.loginSuccess,'login success');assert.ok(report.packets.login,'join game');
       assert.ok(report.teleportsConfirmed,'spawn teleport');assert.ok(report.packets.map_chunk,'chunks');assert.ok(report.packets.map_chunk,'combined light updates');assert.ok(report.inventoryResync,'stale inventory state was resynchronized');
       if(duration>=22000)assert.ok(report.keepAlivesAnswered,'server keepalive round-trip');
@@ -65,6 +70,10 @@ await new Promise((resolve,reject)=>{
       const packet=decodePacket762(bytes);
       if(packet.name==='unsupported'){const key=packet.packetName||String(packet.id);report.unsupported[key]=(report.unsupported[key]||0)+1;return;}
       report.packets[packet.name]=(report.packets[packet.name]||0)+1;
+      if(packet.name==='login'&&damageTest){codec=simplify(packet.dimensionCodec);report.damageSounds=[];damageGame={entityId:packet.entityId,player:{x:0,y:64,z:0},entities:new Map(),sound:{play:name=>report.damageSounds.push(name)}};commandTimers.push(setTimeout(()=>sock.sendBinary(C.chat('/gamemode survival')),4000));for(const [i,type]of ['generic','in_fire','drown','freeze','sweet_berry_bush','thorns'].entries())commandTimers.push(setTimeout(()=>sock.sendBinary(C.chat('/damage @s 1 minecraft:'+type)),7000+i*2000));}
+      if(packet.name==='damage_event'&&damageTest){report.lastDamage=packet;handleDamage762(damageGame,packet,codec);}
+      if(packet.name==='update_health'&&damageTest)report.health=packet.health;
+      if(packet.name==='system_chat'&&damageTest)console.log('FIXTURE CHAT',packet.content);
       if(packet.name==='login'){console.log('BOUNDS',packet.dimensionData);sectionCount=packet.dimensionData.height/16;biomeCount=Math.max(...registryEntries(simplify(packet.dimensionCodec),'minecraft:worldgen/biome').map(e=>e.id))+1;report.join={entityId:packet.entityId,dimension:packet.dimension,viewDistance:packet.viewDistance};sock.sendBinary(C762.settings('en_us',2));console.log('Join game decoded; waiting for chunks, light and keepalive');}
       if(packet.name==='window_items'&&packet.windowId===0){if(report.packets.window_items===1){assert.equal(packet.carriedItem,null);sock.sendBinary(C762.windowClick(0,-999,0,packet.stateId+1,0,[],null));}else report.inventoryResync=true;}
       if(packet.name==='ping')sock.sendBinary(C762.pong(packet.pingId));
@@ -75,7 +84,7 @@ await new Promise((resolve,reject)=>{
     }catch(e){finish(e);}
   });
   sock.on('close',()=>{if(!finished)finish(new Error('Connection closed before probe completed'));});
-  sock.sendText(JSON.stringify({type:'connect',host,port,username:'Codex1194Probe',protocol:PROTOCOL_762}));
+  sock.sendText(JSON.stringify({type:'connect',host,port,username:damageTest?'codex1194gui':'Codex1194Probe',protocol:PROTOCOL_762}));
 });
 await writeFile(join(cache,'live-probe.json'),JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify(report,null,2));

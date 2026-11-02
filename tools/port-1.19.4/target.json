@@ -62,5 +62,13 @@
         "size": 78
       }
     }
+  },
+  "clientLibraries": {
+    "org.apache.commons:commons-compress:1.21": {
+      "path": "org/apache/commons/commons-compress/1.21/commons-compress-1.21.jar",
+      "sha1": "4ec95b60d4e86b5c95a0e919cb172a0af98011ef",
+      "size": 1018316,
+      "url": "https://libraries.minecraft.net/org/apache/commons/commons-compress/1.21/commons-compress-1.21.jar"
+    }
   }
 }

@@ -24,7 +24,7 @@ export async function input(name,source) {
   try {const bytes=await readFile(path);verify(bytes,source.sha1,name);return bytes;}
   catch(error){if(error.code!=='ENOENT')throw error;} // Corrupt cached inputs require explicit removal.
   const bytes=await download(source.url);verify(bytes,source.sha1,name);
-  await mkdir(cache,{recursive:true});
+  await mkdir(dirname(path),{recursive:true});
   await writeFile(path+'.part',bytes);await rename(path+'.part',path);
   return bytes;
 }
@@ -39,6 +39,11 @@ export async function prepare() {
     if(bytes.length!==source.size)throw new Error(`Unexpected size: ${key}`);
     hashes[key]=source.sha1;
     console.log(`Verified ${name}: ${source.sha1}`);
+  }
+  for(const [name,source]of Object.entries(target.clientLibraries||{})){
+    const artifact=metadata.libraries.find(l=>l.name===name)?.downloads?.artifact;
+    if(artifact?.sha1!==source.sha1||artifact?.url!==source.url)throw Error('Pinned client library mismatch '+name);
+    const bytes=await input('client-libraries/commons-compress.jar',source);if(bytes.length!==source.size)throw Error('Client library size mismatch');
   }
   // Extract trusted bundled dependencies for client reflection; the launcher jar
   // itself contains neither the game classes nor its dependency classpath.

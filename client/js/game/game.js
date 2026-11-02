@@ -1,3 +1,12 @@
+import {handleDamage762} from './damage-1.19.4.js';
+import {factorData762,tickFactor762,darkness762} from './darkness-1.19.4.js';
+import {chatState762} from '../net/packets.js';
+import {decorateChat762} from '../net/chat-state-1.19.4.js';
+import {readPalette762} from '../world/chunk-1.19.4.js';
+import {Reader762} from '../net/protocol-1.19.4.js';
+import {BlockPrediction762} from './block-prediction-1.19.4.js';
+import {resolveDimension762} from '../net/protocol-1.19.4.js';
+import {ENTITY_TYPES} from './entity-types.js';
 import {registryEntries} from '../net/registry-codec.js';
 import {captureNetwork} from '../debug/capture-network.js';
 import {resetPlayerView} from './respawn-view.js';
@@ -19,7 +28,7 @@ import {captureText} from '../debug/text-capture.js';
 import {pushLocalPlayer} from './entity-pushing.js';
 import {ShaderPackFinal} from '../render/shader-pack.js';
 import {CameraEye} from '../render/camera-eye.js';
-import {MENUS_758} from './menus-1.18.2.js';
+import {MENUS_762} from './menus-1.19.4.js';
 import { RegistryTags } from './tags.js';
 import { CommandTree } from './commands.js';
 import { startSleeping, stopSleeping, updateSleeping, sleepingCamera } from './bed-sleep.js';
@@ -165,6 +174,7 @@ export class Game {
     this.nbtQueries=new NbtQueries(this);
     this.inventory = new Inventory(this);
     this.interaction = new Interaction(this);
+    this.blockPrediction=new BlockPrediction762(this);this.world.prediction=this.blockPrediction;
     this.conn = null;
     this.reset();
 
@@ -677,6 +687,7 @@ export class Game {
 
   leaveWorld() {
     setServerBiomes(null);
+    this.worker?.postMessage({type:'serverBiomes',codec:null});
     resetServerRecipes(this);this.nbtQueries?.clear();
     this.structureBlocks.clear();
     this.jigsawBlocks.clear();
@@ -752,6 +763,7 @@ export class Game {
   on_update_view_distance(p) { this.serverViewDistance=p.viewDistance; }
 
   on_login(p) {
+    this.blockPrediction?.reset();chatState762.reset();
     resetPlayerView(this);
     this.interaction?.predictedDoors?.clear();
     this.serverSimulationDistance=p.simulationDistance;
@@ -777,8 +789,8 @@ export class Game {
     this.gameMode = p.gameMode & 7;
     this.hardcore = p.isHardcore;
     this.dimension = p.dimension;
-    this.worldName=p.worldName;this.dimensionData=p.dimensionData;
-    if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));}
+    this.worldName=p.worldName;this.dimensionData=p.dimensionData;this.lastDeathLocation=p.death;
+    if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));this.worker?.postMessage({type:'serverBiomes',codec:simplify(p.dimensionCodec)});}
     if(p.difficulty!==undefined)this.difficulty = p.difficulty;
     this.maxPlayers = p.maxPlayers;
     this.levelType = p.levelType;
@@ -817,6 +829,23 @@ export class Game {
     this.eaglerTextures?.handle(p.channel,p.data);
   }
 
+  on_feature_flags(p){this.enabledFeatures=new Set(p.features);}
+  on_system_chat(p){this.on_chat({message:p.content,position:p.isActionBar?2:1});}
+  on_profileless_chat(p){this.on_chat({message:JSON.stringify(decorateChat762(simplify(this.dimensionCodec),p,JSON.parse(p.message))),position:1});}
+  on_player_chat(p){
+   const blocked=this.hiddenPlayers?.has(p.sender)||this.socialBlocking?.isBlocked(p.sender)||this.blockedPlayers?.has(p.sender),shown=p.filterType!==1&&!blocked&&this.settings.chatVisibility===0;
+   if(chatState762.process(p.signature,shown)&&chatState762.offset>64)this.send(chatState762.flush());if(!shown||this.settings.onlyShowSecureChat)return;
+   let content=p.unsignedChatContent?JSON.parse(p.unsignedChatContent):{text:p.plainMessage};
+   if(p.filterType===2){const chars=p.plainMessage.split('');for(let i=0;i<chars.length;i++)if(p.filterTypeMask[i>>6]!==undefined&&(BigInt.asUintN(64,p.filterTypeMask[i>>6])&(1n<<BigInt(i&63))))chars[i]='#';content={text:chars.join('')};}
+   this.on_chat({sender:p.sender,message:JSON.stringify(decorateChat762(simplify(this.dimensionCodec),p,content)),position:0,trust:'unverified'});
+  }
+  on_player_remove(p){this.on_player_info({action:4,data:p.players.map(uuid=>({uuid}))});}
+  on_hurt_animation(p){if(p.entityId===this.entityId){this.hurtTime=10;this.attackedAtYaw=p.yaw;}else{const e=this.entities.get(p.entityId);if(e){e.hurtTime=10;e.attackedAtYaw=p.yaw;}}}
+  on_damage_event(p){handleDamage762(this,p,simplify(this.dimensionCodec));}
+  on_chunk_biomes(p){
+   const decoded=p.biomes.map(update=>{const r=new Reader762(update.data),biomes=new Uint32Array(this.world.sectionCount*64);for(let i=0;i<this.world.sectionCount;i++)biomes.set(readPalette762(r,64,this.world.biomeRegistrySize,'biomes'),i*64);if(r.remaining())throw Error('Trailing 762 biome update');return{...update,biomes};});
+   for(const u of decoded){const c=this.world.getChunk(u.x,u.z);if(!c)continue;c.biomes=u.biomes;c.biomes3D=true;for(let sy=this.world.minSection;sy<this.world.maxSection;sy++)for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)this.world.emit('sectionDirty',u.x+dx,sy,u.z+dz);}
+  }
   on_chat(p) {
     if(this.hiddenPlayers?.has(p.sender)||(this.socialBlocking?.isBlocked(p.sender)||this.blockedPlayers?.has(p.sender)))return;
     if(this.settings.hideMatchedNames){const name=chatToLegacy(p.message).replace(/§./g,'').match(/<([^>]+)>/)?.[1],id=[...(this.scoreboard?.players||[])].find(([,player])=>player.name===name)?.[0];if(id&&(this.hiddenPlayers?.has(id)||(this.socialBlocking?.isBlocked(id)||this.blockedPlayers?.has(id))))return;}
@@ -858,6 +887,7 @@ export class Game {
   }
 
   on_respawn(p) {
+    this.blockPrediction?.reset();p.dimensionData=resolveDimension762(this.dimensionCodec,p.worldType);p.dimension=p.dimensionData.effects==='minecraft:the_nether'?-1:p.dimensionData.effects==='minecraft:the_end'?1:0;
     resetPlayerView(this);
     this.interaction?.predictedDoors?.clear();
     stopSleeping(this);
@@ -873,15 +903,15 @@ export class Game {
       this.screens.open(new DownloadingTerrainScreen(this));
     }
     this.dimension = p.dimension;
-    this.worldName=p.worldName;this.dimensionData=p.dimensionData;
-    if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));}
+    this.worldName=p.worldName;this.dimensionData=p.dimensionData;this.lastDeathLocation=p.death;
+    if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));this.worker?.postMessage({type:'serverBiomes',codec:simplify(p.dimensionCodec)});}
     this.world.setDimension(p.dimension,p.dimensionData||{});
     if(p.dimensionData)this.world.hasSky=!!p.dimensionData.has_skylight;
     this.world.setBiomeSeed?.(p.hashedSeed);
     if(p.difficulty!==undefined)this.difficulty = p.difficulty;
-    this.previousGameMode=p.previousGamemode>=0?p.previousGamemode:null;
-    this.gameMode = p.gamemode;
-    this.levelType = p.levelType;
+    this.previousGameMode=p.previousGameMode>=0?p.previousGameMode:null;
+    this.gameMode = p.gameMode;
+    this.levelType = p.isFlat?'flat':'default';
     this.applyGameMode();
     this.dead = false;
     this.health = 20;
@@ -942,7 +972,7 @@ export class Game {
 
   on_collect(p) { this.entities.onCollect(p); }
 
-  on_spawn_entity(p) { this.entities.spawnObject(p); }
+  on_spawn_entity(p) { const def=ENTITY_TYPES[p.type];if(def?.mob||def?.name==='armor_stand')this.entities.spawnMob({...p,entityUUID:p.objectUUID,metadata:{}});else this.entities.spawnObject(p); }
 
   on_spawn_entity_living(p) { this.entities.spawnMob(p); }
 
@@ -1020,7 +1050,7 @@ export class Game {
 
   on_entity_effect(p) {
     if (p.entityId === this.entityId) {
-      this.effects.set(p.effectId, { amplifier: p.amplifier, duration: p.duration, hideParticles: p.hideParticles, ambient:p.ambient, showIcon:p.showIcon, start: this.ticks });
+      this.effects.set(p.effectId, { amplifier: p.amplifier, duration: p.duration, hideParticles: p.hideParticles, ambient:p.ambient, showIcon:p.showIcon,factor:p.factorCodec?factorData762(simplify(p.factorCodec)):null, start: this.ticks });
       this._applyEffects();
     }
     this.entities.addEffect(p);
@@ -1052,7 +1082,7 @@ export class Game {
   }
 
   on_map_chunk(p) {
-    this.world.loadChunk758(p);
+    this.world.loadChunk762(p);
     for (const nbt of p.blockEntities) this.applyBlockEntity(nbt);
   }
 
@@ -1083,6 +1113,7 @@ export class Game {
   }
 
   on_multi_block_change(p) {
+    p={...p,records:p.records.filter(r=>!this.blockPrediction?.serverUpdate({x:p.chunkX*16+r.x,y:r.y,z:p.chunkZ*16+r.z},r.state))};
     // Relight all changed blocks together in one pass
     this.world.beginBatch();
     try { for (const r of p.records) this.world.setState(p.chunkX * 16 + r.x, r.y, p.chunkZ * 16 + r.z, r.state);
@@ -1091,6 +1122,7 @@ export class Game {
   }
 
   on_block_change(p) {
+    if(this.blockPrediction?.serverUpdate(p.location,p.state))return;
     this.world.setState(p.location.x, p.location.y, p.location.z, p.state);
     this.interaction.onBlockChange(p.location, p.state);
   }
@@ -1122,7 +1154,7 @@ export class Game {
 
   // SoundEvent registry id (data/sounds.json)
   on_sound_effect(p) {
-    const name = this.assets.soundNames[p.soundId];
+    const name = p.soundName?.replace(/^minecraft:/,'')||this.assets.soundNames[p.soundId];
     if (name) this.sound.play(name, p.x, p.y, p.z, p.volume, p.pitch, { category: p.soundCategory });
   }
 
@@ -1130,7 +1162,7 @@ export class Game {
 
   on_entity_sound_effect(p) {
     const e = p.entityId === this.entityId ? this.player : this.entities.get(p.entityId);
-    const name = this.assets.soundNames[p.soundId];
+    const name = p.soundName?.replace(/^minecraft:/,'')||this.assets.soundNames[p.soundId];
     if (e && name) this.sound.play(name,e.x,e.y,e.z,p.volume,p.pitch,{category:p.soundCategory,entity:e});
   }
 
@@ -1176,12 +1208,12 @@ export class Game {
 
   on_open_window(p) {
     if(typeof p.inventoryType==='number'){
-      const name=MENUS_758[p.inventoryType];
+      const name=MENUS_762[p.inventoryType];
       const rows=/generic_9x([1-6])/.exec(name||'');
       const aliases={'minecraft:generic_3x3':['minecraft:dispenser',9],'minecraft:crafting':['minecraft:crafting_table',10],'minecraft:enchantment':['minecraft:enchanting_table',2],'minecraft:merchant':['minecraft:villager',3],'minecraft:blast_furnace':['minecraft:blast_furnace',3],'minecraft:smoker':['minecraft:smoker',3]};
       const fixed={'minecraft:smithing':3,'minecraft:anvil':3,'minecraft:beacon':1,'minecraft:brewing_stand':5,'minecraft:furnace':3,'minecraft:hopper':5,'minecraft:shulker_box':27,'minecraft:grindstone':3,'minecraft:lectern':1,'minecraft:loom':4,'minecraft:cartography':3,'minecraft:stonecutter':2};
       const [type,count]=rows?['minecraft:chest',Number(rows[1])*9]:aliases[name]||[name,fixed[name]];
-      if(!type||count===undefined)throw new Error('Unknown 1.18.2 menu '+p.inventoryType);
+      if(!type||count===undefined)throw new Error('Unknown 1.19.4 menu '+p.inventoryType);
       p={...p,inventoryType:type,slotCount:count};
     }
     const win = new ContainerWindow(this, p.windowId, p.inventoryType, chatToLegacy(p.windowTitle), p.slotCount, p.entityId);
@@ -1693,6 +1725,7 @@ export class Game {
     if (this.fovModifier < 0.1) this.fovModifier = 0.1;
 
     for (const [id, e] of this.effects) {
+      tickFactor762(e);
       if (e.duration > 0) e.duration--;
     }
   }
@@ -1944,7 +1977,7 @@ export class Game {
     const partial = this.partial;
     const gui = this.gui;
     if (!this.inWorld || !this.doneLoadingTerrain) {
-      if (this.screens.current && this.screens.current.panorama) r.renderPanorama(platform().now());
+      if (this.screens.current && this.screens.current.panorama) r.renderPanorama(platform().now(),this.settings.panoramaSpeed);
       else r.renderBlank();
       gui.begin();
       this.screens.render(gui, partial);
@@ -1972,7 +2005,7 @@ export class Game {
     if (this.hurtTime > 0) {
       let f = (this.hurtTime - partial) / 10; // maxHurtTime; attackedAtYaw is always 0 on the client
       f = Math.sin(f * f * f * f * Math.PI);
-      mat4.rotateZ(pre, pre, -f * 14 * Math.PI / 180);
+      mat4.rotateZ(pre, pre, -f * 14 * this.settings.damageTiltStrength * Math.PI / 180);
     }
     if (this.settings.viewBobbing && !sleepView) {
       const f = pl.distanceWalked - pl.prevDistanceWalked;
@@ -2019,6 +2052,7 @@ export class Game {
       worldTime: this.world.timeOfDay, partial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,biomeFog:sampleBiomeFog(this.world,ex,ey,ez),biomeSky:biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).effects?.sky_color,fireResistance:this.effects.has(12),
       inPowderSnow: getBlock(this.world.getState(Math.floor(ex), Math.floor(ey), Math.floor(ez))).name === 'powder_snow', spectator: pl.spectator,
       camPos: [ex, ey, ez], lookDir: look, dimension: this.dimension, underwater, inLava, biomeId:this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey)), waterVision:pl.waterVision(), conduitPower:this.effects.has(29),
+      darkness:darkness762(this.effects.get(33),partial,this.ticks,this.settings.darknessEffectScale),
       blindness: this.effects.has(15), nightVision: this.effects.has(16) ? 1 : 0, clouds: this.settings.clouds,
       horizon: String(this.levelType).toLowerCase() === 'flat' ? 0 : 63,
     });

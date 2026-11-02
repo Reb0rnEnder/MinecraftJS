@@ -1,0 +1,5 @@
+// MobEffectInstance.FactorData and LightTexture's darkness contribution.
+const f=Math.fround;
+export function factorData762(data){return{padding_duration:22,factor_start:0,factor_target:1,factor_current:0,ticks_active:0,factor_previous_frame:0,had_effect_last_tick:false,...data};}
+export function tickFactor762(effect){const d=effect.factor;if(!d)return;d.factor_previous_frame=d.factor_current;const active=effect.duration===-1||effect.duration>d.padding_duration;d.ticks_active++;if(d.had_effect_last_tick!==active){d.had_effect_last_tick=active;d.ticks_active=0;d.factor_start=d.factor_current;d.factor_target=active?1:0;}const t=Math.min(1,Math.max(0,f(d.ticks_active/d.padding_duration)));d.factor_current=f(d.factor_start+f(t*f(d.factor_target-d.factor_start)));}
+export function darkness762(effect,partial,ticks,setting=1){if(!effect?.factor)return{factor:0,gamma:0,pulse:0};const d=effect.factor,factor=f(d.factor_previous_frame+f(partial*f(d.factor_current-d.factor_previous_frame))),gamma=f(factor*setting),pulse=f(Math.max(0,Math.cos(f(f(ticks-partial)*f(Math.PI*.025))))*f(.45*gamma))*setting;return{factor,gamma,pulse};}

@@ -13,6 +13,7 @@ export const DEFAULT_KEYS = {
 };
 
 const DEFAULTS = {
+  operatorItemsTab:false,onlyShowSecureChat:false,panoramaSpeed:1,notificationDisplayTime:1,darknessEffectScale:1,damageTiltStrength:1,glintSpeed:.5,glintStrength:.75,rawMouseInput:true,
   skipMultiplayerWarning: false,
   darkMojangStudiosBackground: false,
   hideLightningFlashes:false,
@@ -66,7 +67,7 @@ const DEFAULTS = {
   attackIndicator: 1, // 0 off, 1 crosshair, 2 hotbar (1.9)
   toggleCrouch: false,
   toggleSprint: false,
-  autoJump: true,     // GameSettings.autoJump (1.11+)
+  autoJump: false,     // GameSettings.autoJump (1.11+)
   maxFps: 0,
   graphicsApi: 'webgl2', // 'webgl2' | 'webgpu' | 'software'
   superPotato: false, // lower internal resolution, single-pass menu panorama (always on with the CPU rasteriser)

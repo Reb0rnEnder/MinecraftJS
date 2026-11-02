@@ -3,10 +3,10 @@ import {detachRemovedEntities} from './riding-lifecycle.js';
 import {applyNetherMetadata} from './nether-metadata.js';
 import {applyFoxFlags,tickFox} from './fox.js';
 import {tickBeeSound,stopBeeSound} from './bee-sound.js';
-import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.18.2.js';
+import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.19.4.js';
 import {placeLeashKnot} from './leash-knot.js';
 import {NATIVE_METADATA} from './entity-metadata-1.14.4.js';
-import {playerPoseDimensions} from './player-poses-1.18.2.js';
+import {playerPoseDimensions} from './player-poses-1.19.4.js';
 import { tickFallingBlock } from './falling-block.js';
 import { tickEntityEffects, tickDragonDeath, isDragon } from '../render/entity-effects.js';
 // Client-side entity tracking (positions, interpolation, metadata, animation state).
@@ -177,6 +177,8 @@ export class EntityManager {
     e.type = p.type;
     e.typeName = e.entityName || 'Unknown object';
     e.objectData = p.objectData;
+    if(e.entityName==='chest_boat')e.chestBoat=true;
+    if(e.kind==='interaction'){e.width=e.height=1;e.pickable=true;e.noPhysics=true;}
     if(e.kind==='minecart')e.cartType=Math.max(0,MINECART_NAMES.indexOf(e.entityName));
     e.width = def ? def.width : 0; e.height = def ? def.height : 0; e.eyeHeight = def ? def.eyeHeight : 0;
     e.pickable = ['boat', 'minecart', 'crystal', 'itemframe', 'leash', 'armorstand', 'shulker_bullet'].includes(e.kind) || e.entityName === 'fireball';
@@ -353,6 +355,7 @@ export class EntityManager {
     if(living498&&compat[12]!==undefined)e.stingerCount=compat[12];
     if(wire[7]!==undefined)e.frozenTicks=wire[7];
     if(native[6]!==undefined){
+      if(e.pose!==native[6])e.wildAnimationStart=e.ticks;
       e.pose=native[6];
       if(e.kind==='player'){
         const pose=['standing','fall_flying','sleeping','swimming','spin_attack','sneaking','long_jumping','dying'][e.pose];
@@ -369,6 +372,15 @@ export class EntityManager {
     } else if(native[6]!==undefined&&native[6]!==2){e.sleeping=false;e.bedPos=null;e.sleepingPosition=null;}
     m={};for(const [key,value] of Object.entries(native)){const i=Number(key);if(i===6||living498&&i===12)continue;m[i-(i>=7?living498&&i>=13?2:1:0)]=value;}
     const name = e.entityName;
+    const own=WIRE_METADATA[name]||{},assign=(symbol,key)=>{const id=own[symbol];if(id!==undefined&&wire[id]!==undefined){if(['snifferState','dashing'].includes(key)&&e[key]!==wire[id])e.wildAnimationStart=e.ticks;e[key]=wire[id];}};
+    if(name==='frog'){assign('DATA_VARIANT_ID','frogVariant');assign('DATA_TONGUE_TARGET_ID','tongueTarget');}
+    if(name==='allay'){assign('DATA_DANCING','dancing');assign('DATA_CAN_DUPLICATE','canDuplicate');}
+    if(name==='warden')assign('CLIENT_ANGER_LEVEL','angerLevel');
+    if(name==='sniffer')assign('DATA_STATE','snifferState');
+    if(name==='camel'){assign('DASH','dashing');assign('LAST_POSE_CHANGE_TICK','lastPoseChangeTick');assign('DATA_ID_FLAGS','horseFlags');}
+    if(name==='goat'){assign('DATA_HAS_LEFT_HORN','hasLeftHorn');assign('DATA_HAS_RIGHT_HORN','hasRightHorn');}
+    if(name==='cat'){assign('DATA_VARIANT_ID','catType');assign('IS_LYING','catLying');assign('RELAX_STATE_ONE','catRelaxing');assign('DATA_COLLAR_COLOR','collar');}
+
     applyNetherMetadata(e,wire);
     const ids=NATIVE_METADATA[name];
     if(ids){
@@ -586,6 +598,7 @@ export class EntityManager {
     const e = this.map.get(p.entityId);
     const g = this.game;
     if (!e) return;
+    if(e.entityName==='warden'){if(p.entityStatus===4)e.wildAttackStart=e.ticks;if(p.entityStatus===62)e.sonicBoomStart=e.ticks;if(p.entityStatus===61)e.tendrilStart=e.ticks;}
     switch (p.entityStatus) {
       case 2: e.hurtTime = 10; g.sound.playEntityHurt(e); break;
       case 3: e.dead = true; e.health = 0; g.sound.playEntityDeath(e); break;

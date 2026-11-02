@@ -860,7 +860,8 @@ const creativeCopy = (it) => it ? { id: it.id, count: it.count, damage: 0,
   nbt: it.nbt ? structuredClone(it.nbt) : null, nbtRaw: !it.nbt && it.nbtRaw ? it.nbtRaw.slice() : null } : null;
 const creativeLocked = (it) => !!(it && (it.locked || it.nbt?.v?.CustomCreativeLock));
 const sendCreativeSlot = (game, slot, it) => game.send(C.creativeSlot(slot, creativeCopy(it)));
-const tabData = (game) => game.assets.data.creative.tabs;
+const creativeRows=game=>game.settings.operatorItemsTab&&game.canUseCommandBlock()?game.assets.data.creative.operatorTabs:game.assets.data.creative.tabs;
+const tabData = game=>creativeRows(game).filter(t=>t.type!=='category'||t.items.length>0);
 const tabInfo = (game, i) => tabData(game).find((t) => t.index === i);
 const label = (game, i) => (tabInfo(game, i) || {}).label;
 
@@ -870,9 +871,9 @@ const creativeCatalogs = new WeakMap();
 function creativeCatalog(game) {
   const data = game.assets.data.creative;
   let catalog = creativeCatalogs.get(data);
-  if (!catalog || catalog.source !== data.tabs) {
+  if (!catalog || catalog.source !== creativeRows(game)) {
     const tabs = {}, tabOfId = new Map(), enchantmentTabs = new Map();
-    for (const t of data.tabs) {
+    for (const t of creativeRows(game)) {
       tabs[t.label] = t.items.map(stackOf);
       if (['search', 'hotbar', 'inventory'].includes(t.label)) continue;
       for (const it of tabs[t.label]) {
@@ -882,7 +883,7 @@ function creativeCatalog(game) {
         }
       }
     }
-    catalog = { source: data.tabs, tabs, tabOfId, enchantmentTabs };
+    catalog = { source: creativeRows(game), tabs, tabOfId, enchantmentTabs };
     creativeCatalogs.set(data, catalog);
   }
   return catalog;
@@ -890,7 +891,7 @@ function creativeCatalog(game) {
 
 // HotbarSnapshot storage (CreativeSettings, hotbar.nbt): nine saved toolbars, kept in the browser
 // Never read/write the unversioned 1.12 key: its numeric IDs cannot be safely reinterpreted.
-const HOTBARS_KEY = 'minecraftjs.hotbars.1.15.2.v1';
+const HOTBARS_KEY = 'minecraftjs.hotbars.1.19.4.v1';
 const toJson = (v) => JSON.stringify(v, (k, x) => (ArrayBuffer.isView(x) ? { $ta: x.constructor.name, a: Array.from(x, (n) => (typeof n === 'bigint' ? String(n) : n)) } : typeof x === 'bigint' ? { $big: String(x) } : x));
 const savedArrays = { Int8Array, Uint8Array, Int32Array, BigInt64Array };
 const fromJson = (s) => JSON.parse(s, (k, x) => {
@@ -1115,7 +1116,7 @@ export class CreativeScreen extends ContainerScreen {
     else if (hoverGrid) gui.tooltip(this._tooltip(hoverGrid), mx, my);
     else if (this.hovered !== null && this.container.get(this.hovered)) gui.tooltip(this._tooltip(this.container.get(this.hovered)), mx, my);
     else {
-      const t = this._tabAt(mx, my);
+      const t = this._tabAt(mx, my,true);
       if (t >= 0) gui.tooltip([tr('itemGroup.' + this.tabLabel(t))], mx, my);
       else if (this.tabLabel() === 'inventory' && mx >= L + 172 && mx < L + 190 && my >= T + 111 && my < T + 129) gui.tooltip([tr('inventory.binSlot')], mx, my);
     }
@@ -1139,22 +1140,22 @@ export class CreativeScreen extends ContainerScreen {
   // right edge; top row above the window, bottom row below it
   _tabRect(t) {
     const col = t.column;
-    let x = this.guiLeft + 28 * col;
-    if (t.right) x = this.guiLeft + this.xSize - 28 * (6 - col);
-    else if (col > 0) x += col;
+    let x = this.guiLeft + 27 * col;
+    if (t.right) x = this.guiLeft + this.xSize - 27 * (7 - col) + 1;
+
     const y = t.top ? this.guiTop - 28 : this.guiTop + this.ySize - 4;
     return { x, y, top: t.top, col };
   }
 
-  _tabAt(mx, my) {
+  _tabAt(mx, my, tooltip=false) {
     for (const t of tabData(this.game)) {
       // isMouseOverTab: x from 28 * column (+ column, or + 2 when right-aligned), y 32 above / at ySize
-      let x = 28 * t.column;
-      if (t.right) x = this.xSize - 28 * (6 - t.column) + 2;
-      else if (t.column > 0) x += t.column;
+      let x = 27 * t.column;
+      if (t.right) x = this.xSize - 27 * (7 - t.column) + 1;
+
       const y = t.top ? -32 : this.ySize;
       const rx = mx - this.guiLeft, ry = my - this.guiTop;
-      if (rx >= x && rx <= x + 28 && ry >= y && ry <= y + 32) return t.index;
+      if (rx >= x+(tooltip?3:0) && rx <= x+(tooltip?24:26) && ry >= y+(tooltip?3:0) && ry <= y+(tooltip?30:32)) return t.index;
     }
     return -1;
   }
@@ -1163,8 +1164,8 @@ export class CreativeScreen extends ContainerScreen {
     const r = this._tabRect(t);
     let v = r.top ? 0 : 64;
     if (selected) v += 32;
-    gui.blit('gui/container/creative_inventory/tabs.png', r.x, r.y, r.col * 28, v, 28, 32);
-    const ix = r.x + 6, iy = r.y + 8 + (r.top ? 1 : -1);
+    gui.blit('gui/container/creative_inventory/tabs.png', r.x, r.y, r.col * 26, v, 26, 32);
+    const ix = r.x + 5, iy = r.y + 8 + (r.top ? 1 : -1);
     let stack = creativeTabIconStacks.get(t.icon);
     if (!stack) { stack = stackOf(t.icon); creativeTabIconStacks.set(t.icon, stack); }
     this.game.itemRenderer.drawItem(gui, stack, ix, iy, false);

@@ -56,6 +56,7 @@ export class Part {
     this.boxes = [];
     this.px = 0; this.py = 0; this.pz = 0;
     this.rx = 0; this.ry = 0; this.rz = 0;
+    this.sx = this.sy = this.sz = 1;
     this.children = [];
     this.mirror = false;
     this.visible = true;
@@ -90,6 +91,7 @@ export class Part {
     if (!o) return;
     o.position.set(this.px, this.py, this.pz);
     o.rotation.set(this.rx, this.ry, this.rz, 'ZYX');
+    o.scale.set(this.sx,this.sy,this.sz);
     o.visible = this.visible;
     for (const c of this.children) c.sync();
   }

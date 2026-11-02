@@ -12,6 +12,11 @@ export async function fontBytes(assets,id) {
 function texture(assets,key,image) {
  return assets.textures.get(key)||assets.makeTexture(key,image.width,image.height,image.data,{filter:'nearest'});
 }
+export function spaceProvider(def){
+ const glyphs=new Map();if(!def.advances||typeof def.advances!=='object')throw Error('Missing space advances');
+ for(const[ch,advance]of Object.entries(def.advances)){if(Array.from(ch).length!==1||!Number.isFinite(advance))throw Error('Invalid space glyph');glyphs.set(ch,{advance,width:0,height:0,boldOffset:1,shadowOffset:1,texture:()=>null});}
+ return{type:'space',get:ch=>glyphs.get(ch)||null};
+}
 export function bitmapProvider(assets,def,image,key) {
  const rows=def.chars?.map(row=>Array.from(row));if(!rows?.length||!rows[0]?.length||rows.some(s=>s.length!==rows[0].length))throw new Error('Invalid bitmap character rows');
  const height=def.height??8,ascent=def.ascent;
@@ -81,8 +86,8 @@ export class FontSet {
  constructor(assets,providers){this.assets=assets;this.providers=providers;this.normal=new Map();this.unicode=new Map();}
  glyph(ch,unicode=false){
   const cache=unicode?this.unicode:this.normal;if(cache.has(ch))return cache.get(ch);
-  let glyph;if(ch===' ')glyph={advance:4,boldOffset:1,shadowOffset:1,texture:()=>null};
-  else for(const provider of this.providers){if(unicode&&provider.type!=='legacy_unicode')continue;glyph=provider.get(ch);if(glyph)break;}
+  let glyph;for(const provider of this.providers){if(unicode&&!['legacy_unicode','space'].includes(provider.type))continue;glyph=provider.get(ch);if(glyph)break;}
+  if(!glyph&&ch===' ')glyph={advance:4,width:0,height:0,boldOffset:1,shadowOffset:1,texture:()=>null};
   if(!glyph){const data=new Uint8Array(5*8*4);for(let y=0;y<8;y++)for(let x=0;x<5;x++)if(x===0||x===4||y===0||y===7)data.fill(255,(y*5+x)*4,(y*5+x+1)*4);
    glyph={advance:6,x:0,y:0,width:5,height:8,u0:0,v0:0,u1:1,v1:1,boldOffset:1,shadowOffset:1,texture:()=>texture(this.assets,'font:missing',{width:5,height:8,data})};}
   cache.set(ch,glyph);return glyph;
@@ -98,7 +103,8 @@ export async function loadFontSets(assets) {
   const providers=[];
   for(const definition of definitions)for(const def of definition.providers||[])try{
    const key='font:'+id+':'+providers.length;
-   if(def.type==='bitmap'){const b=await fontBytes(assets,location(def.file,'textures/'));if(b)providers.push(bitmapProvider(assets,def,decodePng(b),key));}
+   if(def.type==='space')providers.push(spaceProvider(def));
+   else if(def.type==='bitmap'){const b=await fontBytes(assets,location(def.file,'textures/'));if(b)providers.push(bitmapProvider(assets,def,decodePng(b),key));}
    else if(def.type==='legacy_unicode'){const b=await fontBytes(assets,location(def.sizes));if(b)providers.push(legacyProvider(assets,def,b));}
    else if(def.type==='ttf'){const b=await fontBytes(assets,location(def.file,'font/'));if(b)providers.push(trueTypeProvider(assets,def,b,key));}
    else console.warn('Unsupported font provider',def.type);

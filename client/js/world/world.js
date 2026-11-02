@@ -4,7 +4,7 @@ import { maskHas, maskFits, maskValue } from '../net/bitset.js';
 import { powderSnowCollision } from './powder-snow.js';
 import {BiomeZoom} from './biome-zoom.js';
 import {scaffoldingCollision} from './scaffolding.js';
-import {decodeChunkData758} from './chunk-1.18.2.js';
+import {decodeChunkData762} from './chunk-1.19.4.js';
 import { getFluidState, fluidHeightAt } from './fluids.js';
 // Client world: chunk storage, block access, light propagation, collision and raycasting.
 import { biomeInfo } from './biomes.js';
@@ -91,8 +91,8 @@ export class World {
     return light;
   }
 
-  loadChunk758(packet) {
-    const decoded=decodeChunkData758(packet,{sectionCount:this.sectionCount,biomeCount:this.biomeRegistrySize||61}),{x,z,groundUp}=packet;const bitMap=(1n<<BigInt(this.sectionCount))-1n;
+  loadChunk762(packet) {
+    const decoded=decodeChunkData762(packet,{sectionCount:this.sectionCount,biomeCount:this.biomeRegistrySize}),{x,z,groundUp}=packet;const bitMap=(1n<<BigInt(this.sectionCount))-1n;
     this.updateLight758({...packet,chunkX:x,chunkZ:z});
     let c=this.getChunk(x,z);
     if(!c){c=new Chunk(x,z,this.hasSky,this);this.chunks.set(World.key(x,z),c);this._gen++;}
@@ -192,6 +192,7 @@ export class World {
   // Sets a block and updates lighting. Emits sectionDirty for affected sections.
   // Between beginBatch() and endBatch() changes are collected and relit together (one light pass).
   setState(x, y, z, state) {
+    if(this.prediction?.current)this.prediction.record(x,y,z,this.getState(x,y,z));
     if (y < this.minY || y >= this.maxY) return;
     const c = this._chunk(x >> 4, z >> 4);
     if (!c) return;

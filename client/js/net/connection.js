@@ -1,3 +1,4 @@
+import {PacketBundles762} from './bundle-1.19.4.js';
 // Socket link to the game server. Vanilla servers go through the selected proxy: a MinecraftJS proxy
 // (platform().openSocket, the proxy logs in), or a Java relay / Wisp server carrying raw TCP (tcp.js, the client logs
 // in); Eaglercraft servers (ws:// / wss:// addresses) are reached directly over their own WebSocket (eagler.js). All
@@ -24,6 +25,7 @@ export class Connection {
     this.ws = null;
     this.handlers = {};
     this.state = 'idle';
+    this.bundles=new PacketBundles762();
     this.bytesIn = 0;
     this.bytesOut = 0;
     this.packetsIn = 0;
@@ -41,7 +43,7 @@ export class Connection {
     this.ws = sock;
     sock.on('close', () => {
       const was = this.state;
-      this.state = 'closed';
+      this.state = 'closed';this.bundles.reset();
       this.ws = null;
       this.emit('close', was);
     });
@@ -61,7 +63,7 @@ export class Connection {
         console.warn('Failed to decode packet', bytes[0], err);
         return;
       }
-      this.emit('packet', p);
+      try{this.bundles.accept(p,packet=>this.emit('packet',packet));}catch(error){this.emit('decode_error',{message:error.message});sock.close();}
     });
   }
 

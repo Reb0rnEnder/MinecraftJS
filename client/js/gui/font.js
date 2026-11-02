@@ -72,11 +72,11 @@ export class FontRenderer {
   }
 
   charW(ch,fontId) {
-    if (ch === ' ') return 4;
     if (ch === '§') return -1;
     const set = this._providerSet(fontId);
     if (set) return set.glyph(ch, this._unicodeFor(fontId)).advance;
     const i = this.unicode ? undefined : CHAR_INDEX.get(ch);
+    if (ch === ' ') return 4;
     if (i !== undefined) return this.charWidth[i];
     const gw = this.glyphWidth[ch.charCodeAt(0)];
     if (gw) return (((gw & 15) + 1 - (gw >>> 4)) / 2 + 1) | 0;
@@ -174,7 +174,6 @@ export class FontRenderer {
   }
 
   _glyph(out, ascii, ch, x, y, color, italic,fontId) {
-    if (ch === ' ') return 4;
     const set = this._providerSet(fontId);
     if (set) {
       const g = set.glyph(ch, this._unicodeFor(fontId)), tex = g.texture();
@@ -182,6 +181,7 @@ export class FontRenderer {
         u0:g.u0, v0:g.v0, u1:g.u1, v1:g.v1, color, skew:italic?1:0, skewOrigin:y });
       return g.advance;
     }
+    if (ch === ' ') return 4;
     const i = this.unicode ? undefined : CHAR_INDEX.get(ch);
     const skew = italic ? 1 : 0;
     if (i !== undefined) {
