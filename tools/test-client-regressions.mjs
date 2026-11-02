@@ -8,7 +8,7 @@ import { SkinProxyScreen } from '../client/js/gui/screens/proxies.js';
 import { platform } from '../client/js/platform/platform.js';
 import { debugTargets } from '../client/js/gui/debug-targets.js';
 import { VANILLA_UI } from '../client/js/gui/vanilla-layout.js';
-import { VideoScreen, ControlsScreen } from '../client/js/gui/screens/options.js';
+import { VideoScreen, KeyBindsScreen as ControlsScreen } from '../client/js/gui/screens/options.js';
 import { ResourcePacksScreen } from '../client/js/gui/screens/packs.js';
 import { ConfirmScreen } from '../client/js/gui/screens/menus.js';
 import { setTranslator } from '../client/js/gui/i18n.js';

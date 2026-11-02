@@ -99,7 +99,7 @@ export const VANILLA_UI = {
   ],
   "controlsLayout": {
     "extraWidth": 45,
-    "listTop": 43,
+    "listTop": 20,
     "bottomMargin": 32,
     "rowHeight": 20
   },

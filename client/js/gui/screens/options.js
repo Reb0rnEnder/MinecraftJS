@@ -379,15 +379,22 @@ for (const binding of Object.values(KEY_BINDINGS)) binding[1] = VANILLA_UI.bindi
 const compareText = (a,b) => a < b ? -1 : a > b ? 1 : 0; // Java String.compareTo, not locale collation.
 
 
+class ControlsScreen extends OptionsBase {
+ constructor(game,parent){super(game,parent,'controls.title');}
+ init(){const cx=Math.floor(this.width/2),y=this.height/6-12;
+  this.buttons.push(new Button(202,cx-155,y,150,20,tr('options.mouse_settings'),()=>this.game.screens.open(new MouseSettingsScreen(this.game,this))));
+  this.buttons.push(new Button(203,cx+5,y,150,20,tr('controls.keybinds'),()=>this.game.screens.open(new KeyBindsScreen(this.game,this))));
+  this.grid(['key.sneak','key.sprint','options.autoJump'].map(key=>nativeOption(this,key)),y+24);this.doneButton(y+72);
+ }
+}
+
 // Native ControlsScreen and ControlList. Geometry is extracted from the pinned jar;
 // categories have no focus target, while each binding/reset is a real widget.
-class ControlsScreen extends OptionsBase {
-  constructor(game, parent) { super(game, parent, 'controls.title'); this.binding = null; }
+class KeyBindsScreen extends OptionsBase {
+  constructor(game, parent) { super(game, parent, 'controls.keybinds.title'); this.binding = null; }
   init() {
     const s = this.s;
     const cx = Math.floor(this.width / 2);
-    this.buttons.push(new Button(202,cx-155,18,150,20,tr('options.mouse_settings'),()=>this.game.screens.open(new MouseSettingsScreen(this.game,this))));
-    this.buttons.push(new Button(203,cx+5,18,150,20,()=>trOption('options.autoJump',onOff(s.autoJump)),()=>{s.autoJump=!s.autoJump;}));
     this.resetAll = new Button(201, cx - 155, this.height - 29, 150, 20, tr('controls.resetAll'), () => { s.keys = { ...DEFAULT_KEYS }; });
     this.buttons.push(this.resetAll);
     this.buttons.push(new Button(200, cx + 5, this.height - 29, 150, 20, tr('gui.done'), () => this.done()));
@@ -478,7 +485,7 @@ class ControlsScreen extends OptionsBase {
     }
     this._updateResets();
     const rows=this.entries.flatMap(e=>e.header?[]:[e.changeButton,e.resetButton]);
-    return focusOptionWidgets(this,e,[...this.buttons.slice(0,2),...rows,...this.buttons.slice(2)])||super.key(e);
+    return focusOptionWidgets(this,e,[...rows,...this.buttons])||super.key(e);
   }
   wheel(d) { this.list.wheel(d); }
 }
@@ -524,4 +531,4 @@ class StreamUnavailableScreen extends OptionsBase {
   }
 }
 
-export { VideoScreen, ControlsScreen, LanguageScreen };
+export { VideoScreen, ControlsScreen, KeyBindsScreen, LanguageScreen };
