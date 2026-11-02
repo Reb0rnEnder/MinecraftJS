@@ -130,22 +130,23 @@ export class ChatScreen extends Screen {
 
 // GuiConfirmOpenLink
 export class ConfirmLinkScreen extends Screen {
-  constructor(game, parent, url) {
+  constructor(game, parent, url, trusted = false) {
     super(game);
     this.parent = parent;
     this.url = url;
+    this.trusted = trusted;
     this.background = 'world';
   }
   init() {
     const cx = this.width / 2, y = this.height / 6 + 96;
-    this.buttons.push(new Button(0, cx - 155, y, 100, 20, tr('chat.link.open'), () => { platform().openUrl(this.url); this.close(); }));
+    this.buttons.push(new Button(0, cx - 155, y, 100, 20, tr(this.trusted?'chat.link.open':'gui.yes'), () => { platform().openUrl(this.url); this.close(); }));
     this.buttons.push(new Button(2, cx - 50, y, 100, 20, tr('chat.copy'), () => { platform().setClipboard(this.url); this.close(); }));
-    this.buttons.push(new Button(1, cx + 55, y, 100, 20, tr('gui.cancel'), () => this.close()));
+    this.buttons.push(new Button(1, cx + 55, y, 100, 20, tr(this.trusted?'gui.cancel':'gui.no'), () => this.close()));
   }
   close() { this.game.screens.open(this.parent); }
   renderContent(gui) {
-    gui.textCentered(tr('chat.link.confirmTrusted'), this.width / 2, 70, 0xffffff);
+    gui.textCentered(tr(this.trusted?'chat.link.confirmTrusted':'chat.link.confirm'), this.width / 2, 70, 0xffffff);
     gui.textCentered(this.url, this.width / 2, 90, 0xffffff);
-    gui.textCentered('§c' + tr('chat.link.warning'), this.width / 2, 110, 0xffffff);
+    if(!this.trusted)gui.textCentered(tr('chat.link.warning'), this.width / 2, 110, 0xffcccc);
   }
 }

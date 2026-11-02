@@ -1,3 +1,4 @@
+import{EMPTY_DYNAMIC_LIGHTS}from'../gfx/dynamic-lighting.js';
 import {VANILLA_UI} from './vanilla-layout.js';
 // 2D GUI layer rendered through the graphics device (vanilla-like drawing helpers).
 // Quads are accumulated for the whole frame and drawn in order at end() (one vertex upload per frame).
@@ -70,7 +71,7 @@ export class Gui {
     const pw = platform().width / this.scale, ph = platform().height / this.scale;
     mat4.ortho(this.proj, 0, pw, ph, 0, -400000, 400000);
     d.clearDepth();
-    d.setGlobals({ view: IDENTITY, proj: this.proj, fogMode: 2 });
+    d.setGlobals({ view: IDENTITY, proj: this.proj, fogMode: 2,dynamicLights:EMPTY_DYNAMIC_LIGHTS });
     for (const c of this.commands) {
       d.setScissor(c.scissor ? [c.scissor[0] * this.scale, c.scissor[1] * this.scale, c.scissor[2] * this.scale, c.scissor[3] * this.scale] : null);
       if (c.kind === 'quads') {
