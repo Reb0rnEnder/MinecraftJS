@@ -399,7 +399,7 @@ export class TileEntityRenderer {
         const outer = new Node();
         if (meta === 1) { outer.position.set(0.5, 0, 0.5); outer.rotation.y = -(rotN * 360 / 16) * D2R; }
         else {
-          const pos = { 2: [0.5, 0.25, 0.74, 180], 3: [0.5, 0.25, 0.26, 0], 4: [0.74, 0.25, 0.5, 270], 5: [0.26, 0.25, 0.5, 90] }[meta] || [0.5, 0.25, 0.5, 0];
+          const pos = { 2: [0.5, 0.25, 0.74, 0], 3: [0.5, 0.25, 0.26, 180], 4: [0.74, 0.25, 0.5, 270], 5: [0.26, 0.25, 0.5, 90] }[meta] || [0.5, 0.25, 0.5, 0];
           outer.position.set(pos[0], pos[1], pos[2]);
           outer.rotation.y = -pos[3] * D2R;
         }

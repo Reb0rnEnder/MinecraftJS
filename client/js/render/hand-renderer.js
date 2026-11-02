@@ -1,3 +1,5 @@
+import{firstPersonBlockLight}from'./dynamic-lights.js';
+import{EMPTY_DYNAMIC_LIGHTS}from'../gfx/dynamic-lighting.js';
 // First-person hand/item rendering (port of vanilla ItemRenderer.renderItemInFirstPerson).
 import { playerModel } from './entity-models.js';
 import { applyTransform } from './item-renderer.js';
@@ -58,7 +60,17 @@ export class HandRenderer {
   }
 
   _itemObject(item) {
-    return this.game.itemRenderer.objectFor(item, this.atlasMat);
+    const object = this.game.itemRenderer.objectFor(item, this.atlasMat);
+    // Built-in item meshes share cached materials with world holders. Keep hand
+    // lighting private when rendering those meshes in camera-local coordinates.
+    const copies=new Map();object?.obj.traverse(node=>{for(const d of node.drawables){
+      const source=d.mat;if(source?.pipeline!=='entity'||source.params===this.atlasMat.params)continue;
+      if(!copies.has(source)){const values=source.params?.p||source.params;let params;
+        if(source.params?.p){params=new EntityParams();params.p.set(values);}else params=new Float32Array(values);
+        copies.set(source,{...source,params});
+      }d.mat=copies.get(source);
+    }});
+    return object;
   }
 
   // Both arms (RenderPlayer.renderRightArm / renderLeftArm) for holding a map
@@ -114,7 +126,7 @@ export class HandRenderer {
     }
     const eye = g.eyePosition(partial);
     const sky = g.world.getSkyLight(Math.floor(eye[0]), Math.floor(eye[1]), Math.floor(eye[2]));
-    const blk = g.world.getBlockLight(Math.floor(eye[0]), Math.floor(eye[1]), Math.floor(eye[2]));
+    const blk = firstPersonBlockLight(g,eye,g.world.getBlockLight(Math.floor(eye[0]), Math.floor(eye[1]), Math.floor(eye[2])));
     this.mapParams.setLight(sky, blk);
     if (this.armsMat) this.armsMat.params.setLight(sky, blk);
     arms.right.visible = arms.left.visible = !pl.invisible;
@@ -163,10 +175,11 @@ export class HandRenderer {
     S(mm, 0.015625, 0.015625, 0.015625);
     this.mapNode.matrix = mm;
     mat4.perspective(this.proj, 70 * D2R, platform().width / platform().height, 0.05, 10);
+    this.root.traverse(node=>{for(const d of node.drawables){if(d.mat?.pipeline!=='entity')continue;const params=d.mat.params?.p||d.mat.params;if(params){params[8]=sky;params[9]=blk;}}});
     const r = g.renderer;
     return {
       draw: (device) => {
-        device.setGlobals({ view: this.view, proj: this.proj, fogMode: 2, lightmap: r.lightmap });
+        device.setGlobals({ view: this.view, proj: this.proj, fogMode: 2, lightmap: r.lightmap,dynamicLights:EMPTY_DYNAMIC_LIGHTS });
         drawTree(device, this.root, { resolve: g.entityRenderer.resolve });
       },
     };
@@ -212,7 +225,7 @@ export class HandRenderer {
     // Light from the player's position
     const eye = g.eyePosition(partial);
     const sky = g.world.getSkyLight(Math.floor(eye[0]), Math.floor(eye[1]), Math.floor(eye[2]));
-    const blk = g.world.getBlockLight(Math.floor(eye[0]), Math.floor(eye[1]), Math.floor(eye[2]));
+    const blk = firstPersonBlockLight(g,eye,g.world.getBlockLight(Math.floor(eye[0]), Math.floor(eye[1]), Math.floor(eye[2])));
     if (this.armMat) this.armMat.params.setLight(sky, blk);
     this.atlasMat.params.setLight(sky, blk);
 
@@ -342,10 +355,11 @@ export class HandRenderer {
     // Arm scale: the arm model is in pixel units scaled 1/16 inside the holder, matching vanilla
     if (!held && this._armObj) this._armObj.scale.set(1 / 16, 1 / 16, 1 / 16);
     void fov;
+    this.root.traverse(node=>{for(const d of node.drawables){if(d.mat?.pipeline!=='entity')continue;const params=d.mat.params?.p||d.mat.params;if(params){params[8]=sky;params[9]=blk;}}});
     const r = g.renderer;
     return {
       draw: (device) => {
-        device.setGlobals({ view: this.view, proj: this.proj, fogMode: 2, lightmap: r.lightmap });
+        device.setGlobals({ view: this.view, proj: this.proj, fogMode: 2, lightmap: r.lightmap,dynamicLights:EMPTY_DYNAMIC_LIGHTS });
         drawTree(device, this.root, { resolve: g.entityRenderer.resolve });
         if (this.itemObj) g.entityRenderer.drawGlint(device, this.itemObj, this.atlasMat);
       },

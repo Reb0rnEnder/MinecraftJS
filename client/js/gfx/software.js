@@ -1,3 +1,4 @@
+import{dynamicBlockLight,EMPTY_DYNAMIC_LIGHTS}from'./dynamic-lighting.js';
 import {INVENTORY_LIGHT0, INVENTORY_LIGHT1} from './inventory-lighting.js';
 // Software rasteriser implementing the graphics device contract (see device.js), for browsers with neither WebGL 2
 // nor WebGPU. Everything runs on the CPU into a Uint32 colour buffer and a Float32 depth buffer, presented with
@@ -27,7 +28,7 @@ export class SoftwareDevice {
     this.ctx = ctx;
     this.rtOriginBottom = false;
     this.white = this.createTexture({ width: 1, height: 1, data: new Uint8Array([255, 255, 255, 255]) });
-    this.globals = { view: new Float32Array(16), proj: new Float32Array(16), fog: [0, 1, 0, 2], fogColor: [0, 0, 0], lightmap: null };
+    this.globals = { view: new Float32Array(16), proj: new Float32Array(16), fog: [0, 1, 0, 2], fogColor: [0, 0, 0], lightmap: null,dynamicLights:EMPTY_DYNAMIC_LIGHTS };
     this.scissor = null;
     this.target = null;
     this.mvp = new Float64Array(16);
@@ -190,6 +191,7 @@ export class SoftwareDevice {
     if (g.fogDensity !== undefined) G.fog[2] = g.fogDensity;
     if (g.fogMode !== undefined) G.fog[3] = g.fogMode;
     if (g.lightmap) G.lightmap = g.lightmap;
+    if(g.dynamicLights)G.dynamicLights=g.dynamicLights;
     this.vpDirty = true;
   }
 
@@ -438,14 +440,17 @@ export class SoftwareDevice {
       }
       const nf = 1 - f;
       let mr, mg, mb, ar = 0, ag = 0, ab = 0, am;
+      let dl=pipe==='entity'?P[9]:src[s+10];
+      if(G.dynamicLights?.[3]>0&&(pipe==='terrain'||pipe==='lit'||pipe==='entity'&&lightMode<1.5))dl=dynamicBlockLight(G.dynamicLights,D[0]*x+D[4]*y+D[8]*z+D[12],D[1]*x+D[5]*y+D[9]*z+D[13],D[2]*x+D[6]*y+D[10]*z+D[14],dl);
       if (pipe === 'terrain') {
-        const c = lightmap(lmTex, src[s + 9], src[s + 10]);
+        const c = lightmap(lmTex, src[s + 9], dl);
         mr = src[s + 5] * c[0]; mg = src[s + 6] * c[1]; mb = src[s + 7] * c[2]; am = terrainAlpha;
       } else if (pipe === 'lit') {
         let c = ONE3;
-        if (src[s + 9] >= 0) c = lightmap(lmTex, src[s + 9], src[s + 10]);
+        if (src[s + 9] >= 0) c = lightmap(lmTex, src[s + 9], dl);
         mr = src[s + 5] * c[0]; mg = src[s + 6] * c[1]; mb = src[s + 7] * c[2]; am = src[s + 8];
       } else if (pipe === 'entity') {
+        if(P[10]<.5&&lightMode<1.5){const c=lightmap(lmTex,P[8],dl);lr=c[0];lg=c[1];lb=c[2];}
         // shade from the model-space normal turned by the model matrix (see the WebGL 2 entity shader)
         const nx0 = src[s + 11], ny0 = src[s + 12], nz0 = src[s + 13];
         let nx = D[0] * nx0 + D[4] * ny0 + D[8] * nz0, ny = D[1] * nx0 + D[5] * ny0 + D[9] * nz0, nz = D[2] * nx0 + D[6] * ny0 + D[10] * nz0;

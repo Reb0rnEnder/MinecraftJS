@@ -745,22 +745,21 @@ export class Interaction {
       const b = t.box;
       r.setOutline([t.x + b[0], t.y + b[1], t.z + b[2], t.x + b[3], t.y + b[4], t.z + b[5]]);
     } else r.setOutline(null);
-    if (this.isHitting && this.curBlock.y >= 0) {
-      const dmg = this.prevDamage + (this.curDamage - this.prevDamage) * partial;
-      const stage = Math.floor(dmg * 10) - 1;
-      const st = g.world.getState(this.curBlock.x, this.curBlock.y, this.curBlock.z);
-      r.setBreakProgress(this.curBlock, stage, st, this._lightAround(this.curBlock));
-    } else {
-      let shown = false;
-      for (const rb of this.remoteBreaks.values()) {
-        if (g.ticks - rb.time > 400) continue;
-        const st = g.world.getState(rb.pos.x, rb.pos.y, rb.pos.z);
-        r.setBreakProgress(rb.pos, rb.stage, st, this._lightAround(rb.pos));
-        shown = true;
-        break;
-      }
-      if (!shown) r.setBreakProgress(null, -1);
+    const entries = new Map();
+    const add = (pos, stage) => {
+      if (stage < 0) return;
+      const key = `${pos.x},${pos.y},${pos.z}`, previous = entries.get(key);
+      if (!previous || stage > previous.stage) entries.set(key, {pos, stage,
+        state: g.world.getState(pos.x, pos.y, pos.z), light: this._lightAround(pos)});
+    };
+    for (const rb of this.remoteBreaks.values()) {
+      const p = g.player;
+      if (g.ticks - rb.time > 400 || (p && (p.x-rb.pos.x)**2 + (p.y-rb.pos.y)**2 + (p.z-rb.pos.z)**2 > 1024)) continue;
+      add(rb.pos, rb.stage);
     }
+    // Native destruction stages change on simulation ticks, without frame interpolation.
+    if (this.isHitting && this.curBlock.y >= (g.world.minY ?? 0)) add(this.curBlock, Math.floor(this.curDamage * 10) - 1);
+    r.setBreakProgresses([...entries.values()]);
   }
 }
 

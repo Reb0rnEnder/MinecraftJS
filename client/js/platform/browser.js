@@ -1,3 +1,4 @@
+import {writeClipboard} from './clipboard.js';
 import {decodeBase85} from '../util/base85.js';
 // Browser implementation of the platform contract (platform.js).
 import { WebGL2Device } from '../gfx/webgl2.js';
@@ -241,6 +242,7 @@ export class BrowserPlatform extends Emitter {
       this._userGesture();
       const block = ['Tab', 'F1', 'F2', 'F3', 'F5', 'F11', 'Space', 'Slash', 'Quote', 'Backspace', 'Escape', 'ArrowUp', 'ArrowDown'];
       if (block.includes(e.code) || (e.ctrlKey && ['KeyW', 'KeyS', 'KeyD', 'KeyF', 'Equal', 'Minus', 'NumpadAdd', 'NumpadSubtract', 'Digit0'].includes(e.code))) e.preventDefault();
+      if ((e.ctrlKey || e.metaKey) && ['KeyC','KeyX'].includes(e.code)) e.preventDefault();
       this.emit('keydown', { code: e.code, key: e.key, repeat: e.repeat, ctrl: e.ctrlKey || e.metaKey, shift: e.shiftKey, alt: e.altKey });
       if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) this.emit('char', e.key);
     });
@@ -277,7 +279,7 @@ export class BrowserPlatform extends Emitter {
   }
   isFullscreen() { return !!document.fullscreenElement; }
 
-  setClipboard(text) { if (navigator.clipboard) navigator.clipboard.writeText(text).catch(() => {}); }
+  setClipboard(text) { return writeClipboard(text); }
 
   loadSetting(key) { try { return localStorage.getItem(key); } catch (e) { return null; } }
   saveSetting(key, value) { try { localStorage.setItem(key, value); } catch (e) { /* storage disabled */ } }

@@ -1,3 +1,4 @@
+import{renderBlockOverlay}from'../render/block-overlay.js';
 import {debugLeft} from './debug-overlay.js';
 import {VANILLA_UI} from './vanilla-layout.js';
 import {FORMAT,colorParams} from '../gfx/device.js';
@@ -246,6 +247,7 @@ export class Hud {
     const survival = g.gameMode === 0 || g.gameMode === 2;
 
     // First person overlays (rendered before GUI in vanilla)
+    if(g.thirdPerson===0)renderBlockOverlay(g,gui);
     if (g.thirdPerson === 0 && g.gameMode !== 3) {
       if (env.underwater) this.renderUnderwater(gui, partial);
       if (this._isBurning()) this.renderFire(gui);

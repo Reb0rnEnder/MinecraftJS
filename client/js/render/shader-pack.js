@@ -112,7 +112,7 @@ export class ShaderPackFinal {
  }
  clear(){this.waving?.destroy();this.waving=null;this.wavingError='';this.game.device.setTerrainAnimation?.(null);for(const p of this.passes.values())p.destroy();this.passes.clear();if(this.target)this.releaseTarget();this.target=null;this.bytes=null;this.name='';this.options={};this.availableOptions=[];this.lighting=null;this.hasWaving=false;}
  releaseTarget(){const d=this.game.device;if(this.target?.fbo)d.gl.deleteFramebuffer(this.target.fbo);if(this.target?.depth)d.gl.deleteRenderbuffer(this.target.depth);d.destroyTexture(this.target);this.target=null;}
- prepareTerrain(camera,eye){const now=performance.now()/1000;this.game.device.setTerrainAnimation?.(this.active?this.waving:null,{time:(now-this.startTime)%3600,worldTime:this.game.world.timeOfDay,camera,eye,lighting:this.lighting?lightingFrame(this.lighting,this.game.world.timeOfDay,this.game.dimension||0,this.game.world.rainStrength||0):null});}
+ prepareTerrain(camera,eye){const now=performance.now()/1000;this.game.device.setTerrainAnimation?.(this.active?this.waving:null,{time:(now-this.startTime)%3600,worldTime:this.game.world.timeOfDay,camera,eye,fullBright:!!this.game.settings?.fullBright,lighting:this.lighting?lightingFrame(this.lighting,this.game.world.timeOfDay,this.game.dimension||0,this.game.world.rainStrength||0):null});}
  get active(){return this.enabled&&!!this.bytes;}
  begin(clear){
   const d=this.game.device;if(!this.target||this.target.width!==d.width||this.target.height!==d.height){if(this.target)this.releaseTarget();this.target=d.createRenderTarget(d.width,d.height);}d.setRenderTarget(this.target,clear);

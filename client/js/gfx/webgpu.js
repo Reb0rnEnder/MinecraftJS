@@ -1,9 +1,10 @@
+import{DYNAMIC_WGSL}from'./dynamic-lighting.js';
 import {INVENTORY_LIGHT0, INVENTORY_LIGHT1} from './inventory-lighting.js';
 // WebGPU implementation of the graphics device contract (see device.js).
 import { DEFAULT_PARAMS, PIPELINE_FORMAT, quadIndices, buildMips, vertexLayout } from './device.js';
 
 const HEADER = /* wgsl */`
-struct Globals { view: mat4x4f, proj: mat4x4f, fog: vec4f, fogColor: vec4f };
+struct Globals { view: mat4x4f, proj: mat4x4f, fog: vec4f, fogColor: vec4f, lights:array<vec4f,6> };
 struct Draw { model: mat4x4f, p: array<vec4f, 4> };
 @group(0) @binding(0) var<uniform> G: Globals;
 @group(0) @binding(1) var lmTex: texture_2d<f32>;
@@ -11,6 +12,7 @@ struct Draw { model: mat4x4f, p: array<vec4f, 4> };
 @group(1) @binding(0) var<uniform> D: Draw;
 @group(2) @binding(0) var tex0: texture_2d<f32>;
 @group(2) @binding(1) var samp0: sampler;
+${DYNAMIC_WGSL}
 fn fogFactor(d: f32) -> f32 {
   if (G.fog.w > 1.5) { return 0.0; }
   if (G.fog.w < 0.5) { return clamp((d - G.fog.x) / max(0.0001, G.fog.y - G.fog.x), 0.0, 1.0); }
@@ -26,7 +28,7 @@ const SHADERS = {
 @vertex fn vs(@location(0) pp: vec4f, @location(1) uv: vec2f, @location(2) col: vec4f, @location(3) light: vec2f) -> VOut {
   let p = pp.xyz * (65535.0 / 2048.0) - 8.0;
   var o: VOut; let mv = G.view * D.model * vec4f(p, 1.0);
-  o.pos = project(mv); o.uv = uv; o.col = vec4f(col.rgb, 1.0); o.light = light * 15.0; o.depth = length(mv.xyz); o.shade = 1.0; return o;
+  o.pos = project(mv); o.uv = uv; o.col = vec4f(col.rgb, 1.0); o.light = vec2f(light.x*15.0,dynamicBlockLight((D.model*vec4f(p,1.0)).xyz,light.y*15.0)); o.depth = length(mv.xyz); o.shade = 1.0; return o;
 }
 @fragment fn fs(i: VOut) -> @location(0) vec4f {
   let t = textureSampleBias(tex0, samp0, i.uv, D.p[0].z); // D.p[0].z: mip bias (far LOD sections)
@@ -37,7 +39,7 @@ const SHADERS = {
   lit: `
 @vertex fn vs(@location(0) p: vec3f, @location(1) uv: vec2f, @location(2) col: vec4f, @location(3) light: vec2f) -> VOut {
   var o: VOut; let mv = G.view * D.model * vec4f(p, 1.0);
-  o.pos = project(mv); o.uv = uv; o.col = col; o.light = light; o.depth = length(mv.xyz); o.shade = 1.0; return o;
+  o.pos = project(mv); o.uv = uv; o.col = col; o.light = vec2f(light.x,dynamicBlockLight((D.model*vec4f(p,1.0)).xyz,light.y)); o.depth = length(mv.xyz); o.shade = 1.0; return o;
 }
 @fragment fn fs(i: VOut) -> @location(0) vec4f {
   let t = textureSample(tex0, samp0, i.uv);
@@ -58,7 +60,7 @@ const SHADERS = {
   let l1 = select(select(normalize(vec3f(-0.2, 1.0, 0.7)), vec3f(0.028667, -0.927375, -0.373034), gui), vec3f(${INVENTORY_LIGHT1.join(", ")}), D.p[2].w > 2.5);
   let d = 0.4 + 0.6 * (max(dot(n, l0), 0.0) + max(dot(n, l1), 0.0));
   let us = select(1.0, D.p[3].w, D.p[3].w > 0.0);
-  o.pos = project(mv); o.uv = uv * us + D.p[3].yz; o.col = vec4f(col, 1.0); o.light = D.p[2].xy; o.depth = length(mv.xyz);
+  o.pos = project(mv); o.uv = uv * us + D.p[3].yz; o.col = vec4f(col, 1.0); o.light = vec2f(D.p[2].x,select(D.p[2].y,dynamicBlockLight((D.model*vec4f(p,1.0)).xyz,D.p[2].y),D.p[2].w<1.5)); o.depth = length(mv.xyz);
   o.shade = select(min(1.0, d), 1.0, D.p[2].w > 0.5 && !gui); return o;
 }
 @fragment fn fs(i: VOut) -> @location(0) vec4f {
@@ -510,7 +512,7 @@ export class WebGPUDevice {
     let bg = this.bg0Cache.get(lm);
     if (!bg) {
       bg = this.device.createBindGroup({ layout: this.bgl0, entries: [
-        { binding: 0, resource: { buffer: this.globalBuf, size: 160 } },
+        { binding: 0, resource: { buffer: this.globalBuf, size: GLOBAL_STRIDE } },
         { binding: 1, resource: lm.gpu.createView() },
         { binding: 2, resource: this._sampler('linear', 'clamp', false) }] });
       this.bg0Cache.set(lm, bg);
@@ -528,6 +530,7 @@ export class WebGPUDevice {
     if (g.fogMode !== undefined) G[35] = g.fogMode;
     if (g.fogColor) { G[36] = g.fogColor[0]; G[37] = g.fogColor[1]; G[38] = g.fogColor[2]; }
     if (g.lightmap) this.lightmap = g.lightmap;
+    if(g.dynamicLights)G.set(g.dynamicLights,40);
     if (this.encoder) this._pushGlobals();
   }
 
