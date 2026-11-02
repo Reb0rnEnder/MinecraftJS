@@ -75,3 +75,6 @@ await import('../extract-render-layers.mjs');
 
 // Keep mesh, damage, selection and collision offsets matched to the target jar.
 await import('../extract-block-offsets.mjs');
+
+// Native support predicates are also placement data; refresh them with runtime tables.
+await import('../extract-support.mjs');

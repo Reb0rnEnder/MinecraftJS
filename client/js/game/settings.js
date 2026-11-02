@@ -13,6 +13,7 @@ export const DEFAULT_KEYS = {
 };
 
 const DEFAULTS = {
+  zoomEnabled:true,dynamicLights:false,dynamicLightsOthers:true,fullBright:false,
   skipMultiplayerWarning: false,
   fov: 70,
   fovEffectScale:1,screenEffectScale:1,entityDistanceScaling:1,chatLineSpacing:0,chatDelay:0,hideMatchedNames:true,
