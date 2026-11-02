@@ -17,6 +17,16 @@ test('inventory lighting and all graphics backends render world formats, leads, 
   const mesh=d.createMesh(FORMAT[pipeline]||FORMAT.color,data,{quads:true}),params=pipeline==='entity'?new EntityParams().setFullBright(true).setNoLighting(true).p:pipeline==='endportal'?new Float32Array([1,1,1,0,1,0,0,0,32,32,0,0,0,0,0,0]):DEFAULT_PARAMS[pipeline];
   d.beginFrame([0,0,0,1]);d.draw({mesh,pipeline,model:id,params,textures:[d.white],state});out[pipeline]=await pixel();d.destroyMesh(mesh);
  }
+ const lightmapData=new Uint8Array(16*16*4);for(let y=0;y<16;y++)for(let x=0;x<16;x++)lightmapData.set([x*17,x*17,x*17,255],(y*16+x)*4);
+ const lm=d.createTexture({width:16,height:16,data:lightmapData,filter:'linear'}),lights=new Float32Array(24);lights.set([0,0,0,15]);out.dynamic={};
+ for(const pipeline of['terrain','lit','entity']){
+  let vertices;if(pipeline==='terrain'){vertices=new Uint8Array(80);const v=new DataView(vertices.buffer);quad.forEach(([x,y],i)=>{for(const[k,n]of[x,y,0].entries())v.setUint16(i*20+k*2,Math.round((n+8)*2048),true);vertices.fill(255,i*20+12,i*20+16);});}
+  else vertices=new Float32Array(quad.flatMap(([x,y])=>pipeline==='entity'?[x,y,0,0,0,0,0,1,1,1,1]:[x,y,0,0,0,1,1,1,1,0,0]));
+  const mesh=d.createMesh(FORMAT[pipeline],vertices,{quads:true}),params=pipeline==='entity'?new EntityParams().setLight(0,0).setNoLighting(true).p:DEFAULT_PARAMS[pipeline];
+  d.beginFrame([0,0,0,1]);d.setGlobals({lightmap:lm,dynamicLights:new Float32Array(24)});d.draw({mesh,pipeline,model:id,params,textures:[d.white],state});const dark=await pixel();
+  d.beginFrame([0,0,0,1]);d.setGlobals({lightmap:lm,dynamicLights:lights});d.draw({mesh,pipeline,model:id,params,textures:[d.white],state});out.dynamic[pipeline]={dark,lit:await pixel()};d.destroyMesh(mesh);
+ }
+ d.setGlobals({lightmap:d.white,dynamicLights:new Float32Array(24)});d.destroyTexture(lm);
  out.inventory=[];
  for(const normal of [[0,0,1],[0,-1,0],[-1,0,0]]){
   const mesh=d.createMesh(FORMAT.entity,new Float32Array(quad.flatMap(([x,y])=>[x,y,0,0,0,...normal,1,1,1])),{quads:true});
@@ -33,7 +43,7 @@ test('inventory lighting and all graphics backends render world formats, leads, 
  const fire=d.createMesh(FORMAT.color,fireOverlayVertices([0,0,1,1]),{quads:true});d.setGlobals({view:id,proj:mat4.ortho(mat4.create(),0,32,32,0,-400000,400000),fogMode:2});d.beginFrame([0,0,0,1]);d.draw({mesh:fire,pipeline:'color',model:fireOverlayProjection(32,32),textures:[d.white],state:{...state,blend:'alpha'}});out.fire=await pixel();d.destroyMesh(fire);
  await d.device?.queue.onSubmittedWorkDone();return{out,errors,name:d.name};
  },api),new Promise((_,reject)=>renderTimer=setTimeout(()=>reject(Error(api+' render timed out')),15000))]);
- clearTimeout(renderTimer);assert.deepEqual(result.errors,[],api);assert.deepEqual(result.out.blockItemFaces,[255,0,0,255],api+' coplanar block item faces');const expected=['1.17.1','1.18.2'].includes(mcassets.MC_VERSION)?[209,255,132]:['1.15.2','1.16.5'].includes(mcassets.MC_VERSION)?[117,255,255]:[146,255,181];for(let i=0;i<3;i++)assert.ok(Math.abs(result.out.inventory[i]-expected[i])<=1,api+' native inventory normal '+i+': '+result.out.inventory);for(const name of['color','lit','entity','terrain','endportal','post'])assert.deepEqual(result.out[name],[255,255,255,255],api+' '+name);for(const[i,n]of[51,102,153,255].entries())assert.ok(Math.abs(result.out.target[i]-n)<=1,api+' render target '+result.out.target);assert.ok(result.out.ropePixels>0,api+' visible lead');assert.ok(result.out.fire[0]>230,api+' fire spans the screen center');console.log(api,JSON.stringify(result));await page.close();
+ clearTimeout(renderTimer);assert.deepEqual(result.errors,[],api);for(const [name,colors]of Object.entries(result.out.dynamic)){assert.ok(colors.dark[0]<5,api+' dark '+name);assert.ok(colors.lit[0]>200,api+' dynamic '+name+': '+colors.lit);}assert.deepEqual(result.out.blockItemFaces,[255,0,0,255],api+' coplanar block item faces');const expected=['1.17.1','1.18.2','1.19.4'].includes(mcassets.MC_VERSION)?[209,255,132]:['1.15.2','1.16.5'].includes(mcassets.MC_VERSION)?[117,255,255]:[146,255,181];for(let i=0;i<3;i++)assert.ok(Math.abs(result.out.inventory[i]-expected[i])<=1,api+' native inventory normal '+i+': '+result.out.inventory);for(const name of['color','lit','entity','terrain','endportal','post'])assert.deepEqual(result.out[name],[255,255,255,255],api+' '+name);for(const[i,n]of[51,102,153,255].entries())assert.ok(Math.abs(result.out.target[i]-n)<=1,api+' render target '+result.out.target);assert.ok(result.out.ropePixels>0,api+' visible lead');assert.ok(result.out.fire[0]>230,api+' fire spans the screen center');console.log(api,JSON.stringify(result));await page.close();
  }
  }finally{if(browser)await browser.close();await new Promise(r=>server.close(r));}
 });
