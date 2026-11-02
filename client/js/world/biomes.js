@@ -46,6 +46,7 @@ const isMesa = (n) => !!n && (n.includes('badlands'));
 export function grassColor(id, y) {
   const b = biomeInfo(id);
   const n = b.name;
+  if (typeof b.effects?.grass_color === 'number') return b.effects.grass_color;
   if (isSwamp(n)) return 0x6a7039;
   if (isMesa(n)) return 0x90814d;
   const c = sample(grassMap, tempAt(b, y), b.rainfall);
@@ -56,6 +57,7 @@ export function grassColor(id, y) {
 export function foliageColor(id, y) {
   const b = biomeInfo(id);
   const n = b.name;
+  if (typeof b.effects?.foliage_color === 'number') return b.effects.foliage_color;
   if (isSwamp(n)) return 0x6a7039;
   if (isMesa(n)) return 0x9e814d;
   return sample(foliageMap, tempAt(b, y), b.rainfall);
