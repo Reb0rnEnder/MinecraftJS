@@ -1,3 +1,4 @@
+import {defaultSkin,DEFAULT_SKIN} from '../render/default-skins.js';
 import {nameUuid} from '../util/uuid-md5.js';
 import {EAGLER_SKINS,EAGLER_CAPES} from './eagler-presets.js';
 import {decodeBase64} from '../util/base64.js';
@@ -33,7 +34,7 @@ export class EaglerTextures {
  request(uuid){
   if(!this.active||!validUuid(uuid))return null;uuid=uuid.toLowerCase();let record=this.records.get(uuid);if(record)return record;
   if(this.records.size>=512){const [old,value]=this.records.entries().next().value;this._dispose(old,value);this.records.delete(old);this.game.entityRenderer._rebuild(old);}
-  record={path:'entity/steve.png',slim:false,texture:null,legacy:false};this.records.set(uuid,record);
+  record={...defaultSkin(uuid),texture:null,legacy:false};this.records.set(uuid,record);
   const bytes=new Writer().u8(3).uuid(uuid).build();
   this.game.send(C.customPayload(PROTOCOL_VERSION>=393?'eagler:skins-1-8':'EAG|Skins-1.8',bytes));
   this.game.send(C.customPayload(PROTOCOL_VERSION>=393?'eagler:capes-1-8':'EAG|Capes-1.8',bytes));
@@ -44,7 +45,7 @@ export class EaglerTextures {
   try{if(!['http:','https:'].includes(new URL(url).protocol))return null;}catch{return null;}
   let uuid=this.urls.get(url);if(!uuid){uuid=nameUuid(new TextEncoder().encode('EaglercraftSkinURL:'+url));if(this.urls.size>=512)this.urls.delete(this.urls.keys().next().value);this.urls.set(url,uuid);}let record=this.records.get(uuid);if(record)return record;
   if(this.records.size>=512){const old=this.records.keys().next().value;this.drop(old);}
-  record={path:'entity/steve.png',slim:false,texture:null,legacy:false};this.records.set(uuid,record);
+  record={...defaultSkin(uuid),texture:null,legacy:false};this.records.set(uuid,record);
   const bytes=new TextEncoder().encode(url),packet=new Writer().u8(6).uuid(uuid).u16(bytes.length).raw(bytes).build();
   this.game.send(C.customPayload(PROTOCOL_VERSION>=393?'eagler:skins-1-8':'EAG|Skins-1.8',packet));return record;
  }
@@ -54,7 +55,7 @@ export class EaglerTextures {
   const expected=bytes?.[0]===4?21:bytes?.[0]===5?(skin?16402:1190):0;if(!expected||bytes.length!==expected)return true;
   const r=new Reader(bytes),type=r.u8(),uuid=r.uuid(),record=this.records.get(uuid);if(!record)return true;
   if(type===4){
-   const preset=r.i32(),asset=this._preset(skin?'skin':'cape',preset);if(skin){record.preset=preset;record.slim=asset?.slim||false;record.path=record.slim?'entity/alex.png':'entity/steve.png';record.texture=asset?.texture||null;record.image=asset?.image;}
+   const preset=r.i32(),asset=this._preset(skin?'skin':'cape',preset);if(skin){record.preset=preset;record.slim=asset?.slim||false;record.path=defaultSkin(uuid).path;record.texture=asset?.texture||null;record.image=asset?.image;}
    else record.cape=asset?.texture||null;
   }else if(skin){
    record.model=r.u8();record.slim=record.model===1;record.image={width:64,height:64,data:skinPixelsV3(r.rest())};record.texture=this.game.assets.makeTexture('eagler-skin:'+uuid,64,64,record.image.data);

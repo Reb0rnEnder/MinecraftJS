@@ -188,7 +188,7 @@ export class Assets {
     if (!meta) throw new Error('Game assets not found: put the assets/ folder (built with `npm run assets`) next to index.html');
     try { this.defaultPackMeta = JSON.parse(decodeUtf8(meta)); } catch (e) { this.defaultPackMeta = {}; }
     step('Loading game data...', 5);
-    const names = ['blocks', 'items', 'entities', 'blockCollisionShapes', 'biomes', 'foods', 'effects', 'enchantments', 'windows', 'particles', 'particleSprites', 'materials', 'recipes', 'sounds', 'creative'];
+    const names = ['blocks', 'items', 'entities', 'blockCollisionShapes', 'biomes', 'foods', 'effects', 'enchantments', 'windows', 'particles', 'particleSprites', 'materials', 'recipes', 'sounds', 'creative', 'commandRegistries'];
     const datas = await Promise.all(names.map((n) => this.source.data(n)));
     names.forEach((n, i) => { this.data[n] = datas[i]; });
     // CraftingManager recipes in id order (id = 11 + index; 0 - 10 are the special recipes)
@@ -261,6 +261,9 @@ export class Assets {
     ].map((p) => this.imageAsync(p).catch(() => null)));
     try { this.glyphSizes = await this.readBytes('font/glyph_sizes.bin'); } catch (e) { this.glyphSizes = null; }
     this.fontSets = await loadFontSets(this);
+
+    await Promise.all(Array.from({length:6},(_,i)=>this.imageAsync('gui/title/background/panorama_'+i+'.png')));
+    for(let i=0;i<6;i++)this.texture('gui/title/background/panorama_'+i+'.png',{filter:'linear'});
 
     step('Starting mesh worker...', 85);
     await this.startMeshWorker();

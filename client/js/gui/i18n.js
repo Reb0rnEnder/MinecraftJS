@@ -13,6 +13,11 @@ export function trOption(key, value) { return tr(key) + ': ' + value; }
 export const onOff = (v) => tr(v ? 'options.on' : 'options.off');
 
 export const MINECRAFTJS_EN = {
+  'minecraftjs.extras.title':'MinecraftJS Extras',
+  'minecraftjs.extras.zoom':'Zoom',
+  'minecraftjs.extras.dynamicLights':'Held Item Lights',
+  'minecraftjs.extras.otherLights':'Other Holder Lights',
+  'minecraftjs.extras.fullBright':'Fullbright',
   'minecraftjs.skinProxy.title': 'Skin Proxy',
   'minecraftjs.skinProxy.url': 'Skin/profile URL template',
   'minecraftjs.skinProxy.automatic': 'Blank: use the automatic MinecraftJS proxy.',

@@ -1,3 +1,4 @@
+import{collectDynamicLights}from'../render/dynamic-lights.js';
 import {handleDamage762} from './damage-1.19.4.js';
 import {factorData762,tickFactor762,darkness762} from './darkness-1.19.4.js';
 import {chatState762} from '../net/packets.js';
@@ -763,6 +764,7 @@ export class Game {
   on_update_view_distance(p) { this.serverViewDistance=p.viewDistance; }
 
   on_login(p) {
+    this.enabledFeatures=new Set(['minecraft:vanilla']);this.commandTags={};
     this.blockPrediction?.reset();chatState762.reset();
     resetPlayerView(this);
     this.interaction?.predictedDoors?.clear();
@@ -1317,7 +1319,7 @@ export class Game {
     pl.walkSpeed = p.walkingSpeed;
   }
 
-  on_tags(p) { this.tags.replace(p.tags); this.screens.current?.requestSuggestions?.(); }
+  on_tags(p) { this.commandTags=p.registries||{};this.tags.replace(p.tags); this.screens.current?.requestSuggestions?.(); }
   on_declare_commands(p) {
     this.commands = new CommandTree(p, this);
     this.screens.current?.requestSuggestions?.();
@@ -2047,6 +2049,7 @@ export class Game {
     const temp = biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).temperature;
     const rain = this.world.prevRain !== undefined ? this.world.prevRain + (this.world.rainStrength - this.world.prevRain) * partial : this.world.rainStrength;
     r.updateEnvironment({
+      fullBright:!!this.settings.fullBright,dynamicLights:collectDynamicLights(this,[ex,ey,ez],partial),
       hideLightningFlashes:!!this.settings.hideLightningFlashes,
       minY:this.world.minY,minSection:this.world.minSection,sectionCount:this.world.sectionCount,
       worldTime: this.world.timeOfDay, partial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,biomeFog:sampleBiomeFog(this.world,ex,ey,ez),biomeSky:biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).effects?.sky_color,fireResistance:this.effects.has(12),

@@ -1,3 +1,4 @@
+import{vibrationParticle762,shriekParticle762,sculkWorldEvent762}from'./particles-1.19.4.js';
 import { animateCavesBlock, cavesWorldEvent } from './block-effects-1.17.1.js';
 import { cavesParticle, CAVES_PARTICLES, vibrationParticle } from './particles-1.17.1.js';
 import {netherParticle,NETHER_PARTICLES} from './nether-particles.js';
@@ -161,7 +162,7 @@ export class Particles {
         const uv=particleSprite(this.game.assets,p,partial);if(!uv)continue;[u0,v0,u1,v1]=uv;
       }
       if (p.geometryFn) {
-        for (const quad of p.geometryFn(p, partial, x, y, z)) batch.quad(quad, u0, v0, u1, v1, ...color, p.a, sky, blk);
+        for (const quad of p.geometryFn(p, partial, x, y, z)) batch.quad(quad, u0, v0, u1, v1, ...color, p.alphaFn ? p.alphaFn(p, partial) : p.a, sky, blk);
         continue;
       }
       if (p.footprint) {
@@ -708,6 +709,8 @@ export class Particles {
   }
 
   nativeParticle(type,x,y,z,mx=0,my=0,mz=0,data={}) {
+    if(type==='vibration'&&data.positionType)return vibrationParticle762(this,x,y,z,data);
+    if(type==='shriek')return shriekParticle762(this,x,y,z,data);
     if(CAVES_PARTICLES.has(type)) return cavesParticle(this,type,x,y,z,mx,my,mz,data);
     if(NETHER_PARTICLES.has(type))return netherParticle(this,type,x,y,z,mx,my,mz);
     const p={x,y,z,mx,my,mz,sprite:type,scale:1,maxAge:20,drag:.96,collide:false};
@@ -745,6 +748,7 @@ export class Particles {
       }
     };
     const type = this.game.assets.data.particles[p.particleId]?.name;
+    if(type==='shriek'){emit((x,y,z)=>shriekParticle762(this,x,y,z,p.data));return;}
     if (CAVES_PARTICLES.has(type)) { emit((x,y,z,mx,my,mz)=>this.nativeParticle(type,x,y,z,mx,my,mz,p.data)); return; }
     switch (type) {
       case 'light': emit((x,y,z)=>this.barrier(Math.floor(x),Math.floor(y),Math.floor(z),'light')); break;
@@ -823,6 +827,7 @@ export class Particles {
 
   // World events with particles
   onWorldEvent(p) {
+    if(sculkWorldEvent762(this,p))return;
     if (cavesWorldEvent(this, p)) return;
     const { x, y, z } = p.location;
     switch (p.effectId) {

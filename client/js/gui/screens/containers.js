@@ -860,7 +860,7 @@ const creativeCopy = (it) => it ? { id: it.id, count: it.count, damage: 0,
   nbt: it.nbt ? structuredClone(it.nbt) : null, nbtRaw: !it.nbt && it.nbtRaw ? it.nbtRaw.slice() : null } : null;
 const creativeLocked = (it) => !!(it && (it.locked || it.nbt?.v?.CustomCreativeLock));
 const sendCreativeSlot = (game, slot, it) => game.send(C.creativeSlot(slot, creativeCopy(it)));
-const creativeRows=game=>game.settings.operatorItemsTab&&game.canUseCommandBlock()?game.assets.data.creative.operatorTabs:game.assets.data.creative.tabs;
+export function creativeRows(game){const data=game.assets.data.creative,enabled=game.enabledFeatures,mask=(enabled?.has('minecraft:update_1_20')?1:0)|(enabled?.has('minecraft:bundle')?2:0),catalog=data.featureCatalogs?.find(c=>c.mask===mask)||data;return game.settings.operatorItemsTab&&game.canUseCommandBlock()?catalog.operatorTabs:catalog.tabs;}
 const tabData = game=>creativeRows(game).filter(t=>t.type!=='category'||t.items.length>0);
 const tabInfo = (game, i) => tabData(game).find((t) => t.index === i);
 const label = (game, i) => (tabInfo(game, i) || {}).label;

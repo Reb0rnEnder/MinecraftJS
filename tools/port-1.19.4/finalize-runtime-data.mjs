@@ -9,11 +9,18 @@ import {readNbtRoot} from '../../client/js/net/nbt.js';
 execFileSync(process.env.JAVA||'java',['-cp',nativeClasspath(cache),join(root,'tools/port-1.19.4/ExtractRuntime.java'),join(cache,'runtime.json'),join(cache,'client.txt')],{cwd:cache,stdio:'inherit',maxBuffer:8*1024*1024});
 const native=JSON.parse(await readFile(join(cache,'runtime.json')));if(native.errors.length)throw new Error(native.errors.join('\n'));
 const path=name=>join(root,'client/data',name+'.json');
+for(const [kind,key]of [['items','ITEM'],['blocks','BLOCK'],['entities','ENTITY_TYPE']]){const definitions=JSON.parse(await readFile(path(kind)));for(const definition of definitions){const flags=native.requiredFeatures[key]['minecraft:'+definition.name];if(!flags)throw Error('Missing native feature requirements: '+definition.name);definition.requiredFeatures=flags;}await writeFile(path(kind),JSON.stringify(definitions)+'\n');}
+await writeFile(join(root,'client/js/render/default-skin-data-1.19.4.js'),'// Pinned native DefaultPlayerSkin table and no-profile fallback.\nexport const DEFAULT_SKINS_762='+JSON.stringify(native.defaultSkins)+';\nexport const DEFAULT_SKIN_762='+JSON.stringify(native.defaultSkin)+';\n');
+await writeFile(join(root,'tools/fixtures/default-skins-1.19.4.json'),JSON.stringify({version:'1.19.4',clientJarSha1:target.downloads.client.sha1,samples:native.defaultSkinSamples})+'\n');
+
+await writeFile(path('commandRegistries'),JSON.stringify(native.commandRegistries)+'\n');
+await writeFile(join(root,'client/js/game/command-arguments-1.19.4.js'),'// Exact native enum arguments; heightmaps exclude world-generation-only entries.\nexport const COMMAND_ARGUMENT_VALUES='+JSON.stringify(native.commandArgumentValues)+';\n');
 const old=JSON.parse(await readFile(path('creative')));
 const stack=s=>[s[0],0,s[2]?readNbtRoot(new Reader(Buffer.from(s[2],'base64'))).v:null];
 const tabRows=rows=>rows.map(t=>({...t,scrollbar:t.scroll,items:t.items.map(stack)}));
 const creative={...old,toolSpeeds:native.toolSpeeds,version:'1.19.4',protocol:762,dataVersion:3337,source:{clientJarSha1:target.downloads.client.sha1},tabs:tabRows(native.tabs),operatorTabs:tabRows(native.operatorTabs)};
 const items=JSON.parse(await readFile(path('items'))),itemsById=new Map(items.map(i=>[i.id,i]));
+creative.featureCatalogs=native.creativeFeatureCatalogs.map(c=>({...c,tabs:tabRows(c.tabs),operatorTabs:tabRows(c.operatorTabs)}));
 creative.itemMechanics=native.itemMechanics;creative.instruments=native.instruments;
 await writeFile(join(root,'client/js/game/boat-types-1.19.4.js'),'// Native Boat.Type enum order, including gated experimental wood types.\nexport const BOAT_TYPES='+JSON.stringify(native.boatTypes)+';\n');
 creative.source.version='1.19.4';creative.source.nativeRuntimeSha1=target.downloads.client.sha1;
@@ -83,3 +90,6 @@ await import('../extract-block-offsets.mjs');
 await writeFile(join(root,'client/js/net/block-entity-types-1.19.4.js'),'// Native 1.19.4 block entity registry from the pinned server reports.\nexport const BLOCK_ENTITY_TYPES='+JSON.stringify(Object.fromEntries(Object.entries(reports['minecraft:block_entity_type'].entries).map(([name,e])=>[e.protocol_id,name])))+';\n');
 
 await import('./animation-data.mjs');
+
+// Native support predicates are also placement data; refresh them with runtime tables.
+await import('../extract-support.mjs');

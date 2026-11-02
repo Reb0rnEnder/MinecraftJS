@@ -1,3 +1,4 @@
+import {defaultSkin,DEFAULT_SKIN} from '../../render/default-skins.js';
 // Account manager screens: account list, Microsoft sign in (OAuth device code), offline names.
 import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
@@ -12,7 +13,7 @@ const ROW_H = 36;
 // Skin face texture for an account (falls back to the default skins until loaded)
 const faces = new Map();
 export function accountFace(game, acc) {
-  const fallback = acc && acc.slim ? 'entity/alex.png' : 'entity/steve.png';
+  const fallback = defaultSkin(acc?.uuid).path;
   if (!acc || !acc.skinUrl && !acc.uuid) return fallback;
   const key = acc.skinUrl + '@' + acc.uuid + '@' + (game.settings?.skinProxy||'') + '@' + game.assets.version;
   const cur = faces.get(key);

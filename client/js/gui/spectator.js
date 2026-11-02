@@ -1,3 +1,4 @@
+import {DEFAULT_SKIN} from '../render/default-skins.js';
 // GuiSpectator + SpectatorMenu: the spectator-mode hotbar menu. A number key, middle click or the scroll wheel opens
 // it (root: Teleport to Player / Teleport to Team); selecting an item twice uses it. It fades out 5 seconds after the
 // last selection.
@@ -21,7 +22,7 @@ const SCROLL_LEFT = move(-1, true), SCROLL_RIGHT_ENABLED = move(1, true), SCROLL
 
 // A player's face (8x8 face and hat layers drawn at 12x12), tinted like GlStateManager.color(b, b, b, alpha)
 function face(gui, game, info, alpha, b = 1) {
-  const skin = gui.tex(info ? game.entityRenderer.skinImage(info) : 'entity/steve.png');
+  const skin = gui.tex(info ? game.entityRenderer.skinImage(info) : DEFAULT_SKIN);
   if (!skin) return;
   const k = skin.width / 64;
   gui.setColor(b, b, b, alpha);

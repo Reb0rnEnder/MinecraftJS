@@ -1,3 +1,4 @@
+import {defaultSkin,DEFAULT_SKIN,uuidHash,profileDefaultSkin} from './default-skins.js';
 import {BOAT_TYPES} from '../game/boat-types-1.19.4.js';
 import {isSquid,squidTentacle,squidMatrix} from '../game/squid-animation.js';
 import { scaleAgeableGroups } from './ageable-pose.js';
@@ -75,15 +76,6 @@ const CULLABLE = new Set(['player', 'mob', 'armorstand', 'item', 'xp', 'arrow', 
   'llama_spit', 'shulker_bullet', 'dragon_fireball', 'evoker_fangs', 'falling', 'tnt', 'boat', 'minecart', 'crystal']);
 const STATE_ALPHA = { blend: 'alpha', depthWrite: false };
 const GLINT_PARAMS = new EntityParams().setTint(0.5 * 0.75, 0.25 * 0.75, 0.8 * 0.75, 1).setFullBright(true).setNoLighting(true).setAlphaTest(0);
-
-// UUID.hashCode for default skin selection
-function uuidHash(uuid) {
-  const hex = uuid.replace(/-/g, '');
-  const most = BigInt.asIntN(64, BigInt('0x' + hex.slice(0, 16)));
-  const least = BigInt.asIntN(64, BigInt('0x' + hex.slice(16)));
-  const hilo = most ^ least;
-  return Number(BigInt.asIntN(32, hilo >> 32n)) ^ Number(BigInt.asIntN(32, hilo));
-}
 
 // Box with explicit per-face UV rectangles (in texture pixels): faces = { px, nx, py, ny, pz, nz: [u0, v0, u1, v1] }
 function uvBoxMesh(w, h, d, faces, texW, texH) {
@@ -176,8 +168,7 @@ export class EntityRenderer {
     const value = this._texturesProp(e.uuid);
     let s = this.skins.get(e.uuid);
     if (s && (s.propValue === value || (value === null && s.propValue !== undefined && s.fromSession))) return s;
-    const slim = (uuidHash(e.uuid) & 1) === 1;
-    const fresh = { path: slim ? 'entity/alex.png' : 'entity/steve.png', slim, texture: null, propValue: value };
+    const fresh = { ...defaultSkin(e.uuid), texture: null, propValue: value };
     if (s) this._rebuild(e.uuid);
     s = fresh;
     this.skins.set(e.uuid, s);
@@ -197,11 +188,11 @@ export class EntityRenderer {
       const value=property?.Value??property?.value;
       if(value)url=JSON.parse(decodeUtf8(decodeBase64(value))).textures?.SKIN?.url;
     }catch{ /* Malformed profiles use the default head. */ }
-    if(typeof url!=='string'||!/^https?:\/\//i.test(url))return ()=>this.game.assets.texture('entity/steve.png');
+    if(typeof url!=='string'||!/^https?:\/\//i.test(url))return ()=>this.game.assets.texture(profileDefaultSkin(owner).path);
     const key=nameUuid(new TextEncoder().encode('EaglercraftSkinURL:'+url));
     return ()=>{
       let skin=this.game.eaglerTextures?.requestUrl(url);
-      if(!skin){skin=this.skins.get(key);if(!skin){skin={path:'entity/steve.png',slim:false,texture:null};this.skins.set(key,skin);this._loadSkin(skin,key,url);}}
+      if(!skin){skin=this.skins.get(key);if(!skin){skin={path:DEFAULT_SKIN,slim:false,texture:null};this.skins.set(key,skin);this._loadSkin(skin,key,url);}}
       return skin.texture||this.game.assets.texture(skin.path);
     };
   }

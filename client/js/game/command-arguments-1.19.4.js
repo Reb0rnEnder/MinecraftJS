@@ -1,0 +1,2 @@
+// Exact native enum arguments; heightmaps exclude world-generation-only entries.
+export const COMMAND_ARGUMENT_VALUES={"minecraft:gamemode":["survival","creative","adventure","spectator"],"minecraft:heightmap":["world_surface","ocean_floor","motion_blocking","motion_blocking_no_leaves"],"minecraft:template_mirror":["none","left_right","front_back"],"minecraft:template_rotation":["none","clockwise_90","180","counterclockwise_90"]};

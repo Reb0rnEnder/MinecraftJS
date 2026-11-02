@@ -1,0 +1,3 @@
+// Reproduce the committed Brigadier and selector oracle using the pinned client.
+import{nativeClasspath}from'../../lib/native-classpath-1.19.4.js';import{readFile,writeFile}from'node:fs/promises';import{execFileSync}from'node:child_process';import{root,cache}from'./prepare.mjs';import{join}from'node:path';
+const fixture=join(root,'tools/fixtures/commands-1.19.4.json'),inputs=join(cache,'command-inputs.json'),old=JSON.parse(await readFile(fixture));await writeFile(inputs,JSON.stringify(old.cases.map(c=>c.input)));execFileSync(process.env.JAVA||'java',['-cp',nativeClasspath(cache),join(root,'tools/port-1.19.4/ExtractCommands.java'),fixture,join(cache,'client.txt'),inputs],{cwd:cache,stdio:'inherit'});

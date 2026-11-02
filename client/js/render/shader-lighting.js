@@ -22,8 +22,9 @@ export function lightingFrame(colors,worldTime,dimension=0,rain=0){
 }
 export const basicLightingGLSL=`
 uniform vec3 uPackAmbient,uPackDirect,uPackBlock,uPackMinimum;
-uniform float uPackDimension;
+uniform float uPackDimension,uPackFullBright;
 vec3 mcjsPackLight(vec2 light){
+ if(uPackFullBright>.5)return vec3(1.0);
  float sky=clamp(light.x/15.0,0.0,1.0),block=clamp(light.y/15.0,0.0,1.0);
  float attenuation=pow(block,10.0)*1.6+block*.6;
  vec3 scene=uPackDimension==0.0?(uPackAmbient*sky+uPackDirect*.6)*sky*sky:uPackAmbient+uPackDirect*.6;

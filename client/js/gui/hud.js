@@ -1,3 +1,5 @@
+import{renderBlockOverlay}from'../render/block-overlay.js';
+import {DEFAULT_SKIN} from '../render/default-skins.js';
 import { frozenFraction } from '../world/powder-snow.js';
 import { isScoping, renderSpyglass } from '../game/spyglass.js';
 import {debugLeft,packetRates} from './debug-overlay.js';
@@ -329,6 +331,7 @@ export class Hud {
     const survival = g.gameMode === 0 || g.gameMode === 2;
 
     // First person overlays (rendered before GUI in vanilla)
+    if(g.thirdPerson===0)renderBlockOverlay(g,gui);
     if (g.thirdPerson === 0 && g.gameMode !== 3) {
       if (env.underwater) this.renderUnderwater(gui, partial);
       if (this._isBurning()) this.renderFire(gui);
@@ -920,7 +923,7 @@ export class Hud {
       const p = players[i];
       let tx = x;
       if (showHeads) {
-        const skin = gui.tex(g.entityRenderer.skinImage ? g.entityRenderer.skinImage(p) : 'entity/steve.png');
+        const skin = gui.tex(g.entityRenderer.skinImage ? g.entityRenderer.skinImage(p) : DEFAULT_SKIN);
         if (skin) {
           const k = skin.width / 64;
           gui.drawImage(skin, 8 * k, 8 * k, 8 * k, 8 * k, tx, yy, 8, 8);

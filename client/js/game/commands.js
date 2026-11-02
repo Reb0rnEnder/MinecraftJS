@@ -1,3 +1,6 @@
+import {COMMAND_ARGUMENT_VALUES} from './command-arguments-1.19.4.js';
+import {registryEntries} from '../net/registry-codec.js';
+import {simplify} from '../net/nbt.js';
 import {PROTOCOL_VERSION} from '../net/packets.js';
 import {parseSnbt} from '../net/snbt.js';
 // Client-side parsing of the server's Brigadier tree. Execution and permission checks stay on the server.
@@ -57,13 +60,20 @@ function selectorOptions(value){
   (options[key]||=[]).push(v);
  }return options;
 }
+const RESOURCE_KINDS={'minecraft:block':'blocks','minecraft:item':'items','minecraft:mob_effect':'effects','minecraft:enchantment':'enchantments','minecraft:entity_type':'entities','minecraft:worldgen/biome':'biomes'};
 const numeric=(value,integer=false)=>integer?/^-?\d+$/.test(value):/^-?(?:\d+(?:\.\d*)?|\.\d+)$/.test(value);
 export class CommandTree {
   constructor(packet,game) { this.nodes=packet.nodes;this.root=packet.root;this.game=game; }
   registry(kind) {
     const data=this.game.assets?.data?.[kind];
+    if(kind==='effects'&&this.game.assets?.data?.creative?.effects)return Object.values(this.game.assets.data.creative.effects).map(e=>e.key).filter(Boolean);
     if(kind==='effects')return ['speed','slowness','haste','mining_fatigue','strength','instant_health','instant_damage','jump_boost','nausea','regeneration','resistance','fire_resistance','water_breathing','invisibility','blindness','night_vision','hunger','weakness','poison','wither','health_boost','absorption','saturation','glowing','levitation','luck','unluck','slow_falling','conduit_power','dolphins_grace'].map(normalize);
-    return Array.isArray(data)?data.map(d=>d.name).filter(Boolean).map(normalize):[];
+    return Array.isArray(data)?data.filter(d=>!d.requiredFeatures||d.requiredFeatures.every(flag=>(this.game.enabledFeatures||new Set(['minecraft:vanilla'])).has(flag))).map(d=>d.name).filter(Boolean).map(normalize):[];
+  }
+  namedRegistry(key){
+    const codec=simplify(this.game.dimensionCodec),path=key.replace(/^minecraft:/,''),exists=codec&&(Object.hasOwn(codec,key)||Object.hasOwn(codec,path)||Object.hasOwn(codec,':'+path));
+    if(exists)return registryEntries(codec,key).map(e=>e.name);
+    const kind=RESOURCE_KINDS[key];return kind?this.registry(kind):this.game.assets?.data?.commandRegistries?.[key];
   }
   argument(node,text,start) {
     const parser=node.parser,p=node.properties||{};
@@ -72,6 +82,13 @@ export class CommandTree {
     if(token.error)return token;
     let {value,end}=token;
     if(!value)return fail(start);
+    if(COMMAND_ARGUMENT_VALUES[parser]&&!COMMAND_ARGUMENT_VALUES[parser].includes(value))return fail(start,parser==='minecraft:gamemode'?'argument.gamemode.invalid':'argument.enum.invalid',[value]);
+    if(['minecraft:resource','minecraft:resource_or_tag','minecraft:resource_key','minecraft:resource_or_tag_key'].includes(parser)){
+      const tag=value.startsWith('#'),name=normalize(tag?value.slice(1):value),entries=this.namedRegistry(p.registry);
+      if(tag&&!parser.includes('or_tag'))return fail(start);
+      if(!tag&&entries&&!entries.includes(name)&&!parser.endsWith('_key'))return fail(start,'argument.resource.not_found',[name,p.registry]);
+      if(tag&&parser==='minecraft:resource_or_tag'&&this.game.commandTags?.[p.registry]&&!Object.hasOwn(this.game.commandTags[p.registry],name))return fail(start,'argument.resource_tag.not_found',[name,p.registry]);
+    }
     if(parser==='brigadier:string') {
       if(p.mode===2)return {end:text.length};
       if(p.mode===0&&!/^[0-9A-Za-z_+.-]+$/.test(value))return fail(start);
@@ -95,7 +112,7 @@ export class CommandTree {
       const match=value.match(/^(-?(?:\d+(?:\.\d*)?|\.\d+))([dst]?)$/);
       if(!match)return fail(start,'argument.time.invalid_unit');
       const ticks=Math.round(Number(match[1])*({d:24000,s:20,t:1,'':1}[match[2]]));
-      if(ticks<0)return fail(start,'argument.time.invalid_tick_count',[ticks]);
+      if(ticks<(p.min??0))return fail(start,'argument.time.tick_count_too_low',[p.min??0,ticks]);
     }
     if(parser==='minecraft:component'){try{if(JSON.parse(value)===null)return fail(start);}catch{return fail(start,'argument.component.invalid',[value]);}}
     if(['brigadier:integer','brigadier:float','brigadier:double'].includes(parser)) {
@@ -164,14 +181,14 @@ export class CommandTree {
       }
     }
     if(parser==='minecraft:swizzle'&&(!/^[xyz]+$/.test(value)||new Set(value).size!==value.length))return fail(start,'arguments.swizzle.invalid');
-    const kind={ 'minecraft:block_state':'blocks','minecraft:block_predicate':'blocks','minecraft:item_stack':'items','minecraft:item_predicate':'items','minecraft:entity_summon':'entities','minecraft:mob_effect':'effects','minecraft:item_enchantment':'enchantments'}[parser];
+    const kind=(['minecraft:resource','minecraft:resource_or_tag','minecraft:resource_key','minecraft:resource_or_tag_key'].includes(parser)?RESOURCE_KINDS[p.registry]:null)||{ 'minecraft:block_state':'blocks','minecraft:block_predicate':'blocks','minecraft:item_stack':'items','minecraft:item_predicate':'items','minecraft:entity_summon':'entities','minecraft:mob_effect':'effects','minecraft:item_enchantment':'enchantments'}[parser];
     if(kind) {
       const nbt=value.indexOf('{');if(nbt>=0){try{if(nativeSnbt(value.slice(nbt)).t!==10)return fail(start);}catch{return fail(start);}}
 
       const id=value.split(/[\[{]/,1)[0],tag=id.startsWith('#'),name=normalize(tag?id.slice(1):id),registry=this.registry(kind);
       if(!/^(?:[a-z0-9_.-]+:)?[a-z0-9_./-]+$/.test(tag?id.slice(1):id))return fail(start);
       if(tag){if(!parser.endsWith('_predicate')||!this.game.tags?.names(kind).includes(name))return fail(start,'arguments.block.tag.unknown',[name]);}
-      else if(registry.length&&!registry.includes(name))return fail(start,({'blocks':'argument.block.id.invalid','items':'argument.item.id.invalid','effects':'effect.effectNotFound','enchantments':'enchantment.unknown','entities':'entity.notFound'})[kind],[name]);
+      else if(registry.length&&!registry.includes(name))return fail(start,parser.startsWith('minecraft:resource')?'argument.resource.not_found':({'blocks':'argument.block.id.invalid','items':'argument.item.id.invalid','effects':'effect.effectNotFound','enchantments':'enchantment.unknown','entities':'entity.notFound'})[kind],parser.startsWith('minecraft:resource')?[name,p.registry]:[name]);
       if(kind==='blocks'&&value.includes('[')&&!tag){
         const def=this.game.assets.data.blocks.find(b=>normalize(b.name)===name),properties=value.slice(value.indexOf('[')+1,value.indexOf(']'));
         const seen=new Set();for(const pair of properties?properties.split(','):[]){const [key,v]=pair.split('='),property=def?.states?.find(p=>p.name===key);
@@ -182,7 +199,7 @@ export class CommandTree {
         }
       }
     }
-    if(parser==='minecraft:resource_location'||parser==='minecraft:dimension'||parser==='minecraft:function') {
+    if(['minecraft:resource_location','minecraft:dimension','minecraft:function','minecraft:resource','minecraft:resource_or_tag','minecraft:resource_key','minecraft:resource_or_tag_key'].includes(parser)) {
       const id=value.startsWith('#')?value.slice(1):value;if(!/^(?:[a-z0-9_.-]+:)?[a-z0-9_./-]+$/.test(id))return fail(start);
     }
     if(parser==='minecraft:particle') {
@@ -230,14 +247,38 @@ export class CommandTree {
     if(!text.endsWith(' ')&&!result.error&&result.edges?.length){const edge=result.edges.at(-1);result.completion={node:edge.parent,start:edge.start};}
     return result;
   }
+  usage(text,cursor=text.length,slash=true){
+    const parsed=this.parse(text.slice(0,cursor),slash),context=parsed.completion||{node:parsed.node,start:cursor},parent=this.nodes[context.node];
+    const label=node=>node.type===2?'<'+node.name+'>':node.name||'';
+    const smart=(id,optional,deep,depth=0)=>{const node=this.nodes[id];if(!node||depth>128)return null;const self=optional?'['+label(node)+']':label(node),childOptional=!!node.executable,children=node.children||[];
+      if(!deep){if(node.redirect!==undefined)return self+' '+(node.redirect===this.root?'...':'-> '+label(this.nodes[node.redirect]));
+        if(children.length===1){const value=smart(children[0],childOptional,childOptional,depth+1);if(value)return self+' '+value;}
+        else if(children.length>1){const usages=[...new Set(children.map(id=>smart(id,childOptional,true,depth+1)).filter(Boolean))];if(usages.length===1)return self+' '+(childOptional?'['+usages[0]+']':usages[0]);if(usages.length>1)return self+' '+(childOptional?'[':'(')+children.map(id=>label(this.nodes[id])).join('|')+(childOptional?']':')');}}
+      return self;};
+    return {start:context.start,lines:(parent?.children||[]).filter(id=>this.nodes[id].type!==1).map(id=>smart(id,!!parent.executable,false)).filter(Boolean)};
+  }
   format(text,offset=0,full=text,slash=true) {
     if(slash&&!full.startsWith('/'))return text;
     const parse=this.parse(full,slash),events=[];
-    for(const span of parse.spans){events.push([span.start,span.color]);events.push([span.end,'§7']);}
+    const redirects=(parse.edges||[]).filter(edge=>this.nodes[edge.node]?.redirect!==undefined),contextStart=redirects.length?redirects.at(-1).end:0;
+    for(const span of parse.spans.filter(span=>span.start>=contextStart)){events.push([span.start,span.color]);events.push([span.end,'§7']);}
     if(parse.error)events.push([parse.error.start,'§c']);events.sort((a,b)=>a[0]-b[0]);
     let color='§7',out='',pos=offset;
     for(const [at,next] of events){if(at<=offset){color=next;continue;}if(at>=offset+text.length)break;out+=(out?'':color)+text.slice(pos-offset,at-offset)+next;pos=at;}
     return (out||color)+text.slice(pos-offset);
+  }
+  selectorSuggestions(prefix,start,cursor){
+    const word=prefix.slice(start),bracket=word.indexOf('[');if(bracket<0||!/^@[pares]\[/.test(word)||word.endsWith(']'))return null;
+    const raw=word.slice(bracket+1),parts=splitOptions(raw),part=parts.at(-1),offset=start+bracket+1+raw.length-part.length,equal=part.indexOf('='),used=parts.slice(0,-1);
+    let range=offset,names=[];
+    if(equal<0){const repeat=new Set(['tag','nbt','predicate']),keys=['name','distance','level','x','y','z','dx','dy','dz','x_rotation','y_rotation','limit','sort','gamemode','team','type','tag','nbt','scores','advancements',...(PROTOCOL_VERSION>=573?['predicate']:[])];names=keys.filter(key=>repeat.has(key)||!used.some(p=>p.startsWith(key+'=')&&!p.slice(key.length+1).startsWith('!'))).map(key=>key+'=');}
+    else{const key=part.slice(0,equal).trim();range=offset+equal+1;
+      if(key==='type'){const types=(this.game.assets?.data?.entities||[]).map(e=>normalize(e.name)),tags=(this.game.tags?.names('entities')||[]).map(n=>'#'+n);names=[...types,...tags,...types.map(n=>'!'+n),...tags.map(n=>'!'+n)];if(used.some(p=>p.startsWith('type=!')))names=names.filter(n=>n.startsWith('!'));}
+      if(key==='sort')names=['nearest','furthest','random','arbitrary'];
+      if(key==='gamemode'){const modes=['survival','creative','adventure','spectator'];names=[...modes,...modes.map(n=>'!'+n)];}
+      if(key==='team'){const teams=[...(this.game.scoreboard?.teams?.keys()||[])];names=[...teams,...teams.map(n=>'!'+n)];}
+    }
+    const value=prefix.slice(range);return {start:range,end:cursor,matches:[...new Set(names)].filter(n=>matches(n,value)||matches(n.replace('minecraft:',''),value)).sort((a,b)=>a.toLowerCase()<b.toLowerCase()?-1:a.toLowerCase()>b.toLowerCase()?1:0).map(match=>({match})),askServer:false};
   }
   suggestions(text,cursor=text.length,slash=true) {
     const prefix=text.slice(0,cursor),parsed=this.parse(prefix,slash),context=parsed.completion||{node:parsed.node,start:cursor},word=prefix.slice(context.start),names=[];
@@ -246,15 +287,21 @@ export class CommandTree {
       const node=this.nodes[id];if(node.type===1){names.push(node.name);continue;}
       if(node.suggestions){if(node.suggestions==='minecraft:ask_server')askServer=true;else if(node.suggestions==='minecraft:available_sounds')names.push(...this.game.assets.data.sounds.map(s=>normalize(s.name)));else if(node.suggestions==='minecraft:summonable_entities')names.push(...this.registry('entities'));else askServer=true;continue;}
       const parser=node.parser;
+      if(COMMAND_ARGUMENT_VALUES[parser])names.push(...COMMAND_ARGUMENT_VALUES[parser]);
+      if(['minecraft:resource','minecraft:resource_or_tag','minecraft:resource_key','minecraft:resource_or_tag_key'].includes(parser)){
+        const entries=this.namedRegistry(node.properties?.registry);if(entries)names.push(...entries);else askServer=true;
+        if(parser.includes('or_tag'))names.push(...Object.keys(this.game.commandTags?.[node.properties?.registry]||{}).map(n=>'#'+n));
+      }
       if(parser==='brigadier:bool')names.push('true','false');
       if(['minecraft:entity','minecraft:game_profile','minecraft:score_holder'].includes(parser)) {
+        const selector=this.selectorSuggestions(prefix,context.start,cursor);if(selector)return selector;
         names.push(...[...(this.game.scoreboard?.players?.values()||[])].map(p=>p.name).filter(Boolean));
         if(parser==='minecraft:entity'||parser==='minecraft:game_profile')names.push('@p','@a','@r','@s',...((node.properties?.flags&2)?[]:['@e']));
       }
       if(parser==='minecraft:color')names.push(...COLOR_NAMES);
       if(parser==='minecraft:entity_anchor')names.push('eyes','feet');
       if(parser==='minecraft:dimension')names.push('minecraft:overworld','minecraft:the_nether','minecraft:the_end');
-      const kind={'minecraft:block_state':'blocks','minecraft:block_predicate':'blocks','minecraft:item_stack':'items','minecraft:item_predicate':'items','minecraft:mob_effect':'effects','minecraft:item_enchantment':'enchantments','minecraft:entity_summon':'entities'}[parser];
+      const kind=(['minecraft:resource','minecraft:resource_or_tag','minecraft:resource_key','minecraft:resource_or_tag_key'].includes(parser)?RESOURCE_KINDS[node.properties?.registry]:null)||{'minecraft:block_state':'blocks','minecraft:block_predicate':'blocks','minecraft:item_stack':'items','minecraft:item_predicate':'items','minecraft:mob_effect':'effects','minecraft:item_enchantment':'enchantments','minecraft:entity_summon':'entities'}[parser];
       if(kind==='blocks'&&word.includes('[')) {
         const bracket=word.indexOf('['),def=this.game.assets.data.blocks.find(b=>normalize(b.name)===normalize(word.slice(0,bracket)));
         if(def&&!word.includes(']')) {

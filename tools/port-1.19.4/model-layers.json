@@ -1616,5 +1616,11 @@
       ],
       null
     ]
+  },
+  "zombieHead": {
+    "layer": "minecraft:zombie_head#main",
+    "fields": [
+      "head"
+    ]
   }
 }

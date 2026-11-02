@@ -1,8 +1,8 @@
+import {ConfirmLinkScreen} from './chat.js';
 // GuiIngameMenu
 import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
 import { Button } from '../widgets.js';
-import {platform} from '../../platform/platform.js';
 
 export class PauseScreen extends Screen {
   constructor(game) {
@@ -18,8 +18,8 @@ export class PauseScreen extends Screen {
     this.buttons.push(new Button(6, cx + 2, y + 48 - 16, 98, 20, tr('gui.stats'), () => {
       import('./stats.js').then((m) => g.screens.open(new m.StatsScreen(g, this)));
     }));
-    this.buttons.push(new Button(12,cx-100,y+72-16,98,20,tr('menu.sendFeedback'),()=>platform().openUrl('https://feedback.minecraft.net/')));
-    this.buttons.push(new Button(13,cx+2,y+72-16,98,20,tr('menu.reportBugs'),()=>platform().openUrl('https://bugs.mojang.com/')));
+    this.buttons.push(new Button(12,cx-100,y+72-16,98,20,tr('menu.sendFeedback'),()=>g.screens.open(new ConfirmLinkScreen(g,this,'https://aka.ms/javafeedback?ref=game',true))));
+    this.buttons.push(new Button(13,cx+2,y+72-16,98,20,tr('menu.reportBugs'),()=>g.screens.open(new ConfirmLinkScreen(g,this,'https://aka.ms/snapshotbugs?ref=game',true))));
     this.buttons.push(new Button(0, cx - 100, y + 96 - 16, 98, 20, tr('menu.options'), () => {
       import('./options.js').then((m) => g.screens.open(new m.OptionsScreen(g, this)));
     }));

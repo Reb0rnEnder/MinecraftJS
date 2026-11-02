@@ -1,3 +1,4 @@
+import{EMPTY_DYNAMIC_LIGHTS}from'../gfx/dynamic-lighting.js';
 import {Fabulous} from './fabulous.js';
 import { BreakingOverlay } from './breaking.js';
 import { waterFog } from './water-fog.js';
@@ -97,7 +98,7 @@ export class Renderer {
   }
 
   removeChunk(cx, cz) { for (const [key,section] of this.sections) if(section.cx===cx&&section.cz===cz)this.removeSection(key); }
-  clearSections() { for (const k of [...this.sections.keys()]) this.removeSection(k); this.breaking.clear(); this.breakState=null; }
+  clearSections() { for (const k of [...this.sections.keys()]) this.removeSection(k); this.breaking.clear(); for (const overlay of this.breakOverlays?.values() || []) overlay.clear(); this.breakOverlays?.clear(); this.breakStates=[]; this.breakState=null; }
 
   // ---------------------------------------------------------------- sky geometry
 
@@ -180,9 +181,27 @@ export class Renderer {
 
   // Damage uses rendered geometry; the selection outline remains independent.
   setBreakProgress(pos,stage,state,light={sky:15,block:15}) {
-    if(!pos||stage<0){this.breakState=null;return;}
-    const geometry=this.breaking.update(this.breakContext?.(),pos,state);
-    this.breakState=geometry?{...geometry,tex:`block/destroy_stage_${Math.min(9,stage)}.png`,light}:null;
+    this.setBreakProgresses(pos && stage >= 0 ? [{pos,stage,state,light}] : []);
+  }
+
+  setBreakProgresses(entries) {
+    this.breakOverlays ||= new Map();
+    const used = new Set(), states = [];
+    for (const {pos,stage,state,light} of entries) {
+      if (stage < 0) continue;
+      const key = `${pos.x},${pos.y},${pos.z}`;
+      used.add(key);
+      let overlay = this.breakOverlays.get(key);
+      if (!overlay) {
+        overlay = this.breakOverlays.size === 0 ? this.breaking : new BreakingOverlay(this.breaking.device,this.breaking.assets);
+        this.breakOverlays.set(key,overlay);
+      }
+      const geometry = overlay.update(this.breakContext?.(),pos,state);
+      if (geometry) states.push({...geometry,tex:`block/destroy_stage_${Math.min(9,stage)}.png`,light:light||{sky:15,block:15}});
+    }
+    for (const [key,overlay] of this.breakOverlays) if (!used.has(key)) { overlay.clear(); this.breakOverlays.delete(key); }
+    this.breakStates = states;
+    this.breakState = states[0] || null;
   }
 
   // ---------------------------------------------------------------- per tick / frame
@@ -197,6 +216,8 @@ export class Renderer {
   }
 
   updateEnvironment(state) {
+    this.dynamicLights=state.dynamicLights||EMPTY_DYNAMIC_LIGHTS;
+    this.fullBright=!!state.fullBright;
     const { worldTime, partial, rain, thunder, temperature, dimension } = state;
     this.dimension = dimension;
     const angle = celestialAngle(worldTime, partial);
@@ -205,6 +226,7 @@ export class Renderer {
       sun: dimension === 0 ? sun : 1, dimension, torchFlicker: this.torchFlickerX, gamma: this.gamma,
       darkness:state.darkness,nightVision: state.nightVision || (state.conduitPower ? state.waterVision || 0 : 0), lightning: state.hideLightningFlashes?0:this.lightningTicks,
     });
+    if(this.fullBright)this.lightmapData.fill(255);
     this.device.updateTexture(this.lightmap, this.lightmapData);
 
     this.verticalBounds={minSection:state.minSection??0,sectionCount:state.sectionCount??16};
@@ -361,7 +383,7 @@ export class Renderer {
 
   _globals(view, proj) {
     const f = this.fog;
-    this.device.setGlobals({ view, proj, fogColor: f.color, fogStart: f.start, fogEnd: f.end, fogDensity: f.density, fogMode: f.mode, lightmap: this.lightmap });
+    this.device.setGlobals({ view, proj, fogColor: f.color, fogStart: f.start, fogEnd: f.end, fogDensity: f.density, fogMode: f.mode, lightmap: this.lightmap,dynamicLights:this.dynamicLights||EMPTY_DYNAMIC_LIGHTS });
   }
 
   _drawSky() {
@@ -454,14 +476,14 @@ export class Renderer {
     else drawTree(d, this.entityRoot, { camRot: this.camRot });
     // Selection outline + break progress
     if (this.outlineBox) d.draw({ mesh: this.outlineMesh, pipeline: 'color', params: P_WHITE, primitive: 'lines', state: { blend: 'alpha', depthWrite: false } });
-    if (this.breakState) {
-      const t = this.assets.texture(this.breakState.tex,{wrap:'repeat'});
+    for (const breaking of this.breakStates || []) {
+      const t = this.assets.texture(breaking.tex,{wrap:'repeat'});
       if (t) {
         // RenderGlobal.preRenderDamagedBlocks: blendFunc(DST_COLOR, SRC_COLOR), alpha test 0.1
-        const { sky, block } = this.breakState.light;
+        const { sky, block } = breaking.light;
         const i = (sky * 16 + block) * 4, L = this.lightmapData;
         colorParams(L[i] / 255, L[i + 1] / 255, L[i + 2] / 255, 1, 0.1, 0, P_BREAK);
-        d.draw({ mesh: this.breakState.mesh, pipeline: 'color', textures: [t], params: P_BREAK, model: this.breakState.model, state: { blend: 'multiply', depthWrite: false, polygonOffset: true } });
+        d.draw({ mesh: breaking.mesh, pipeline: 'color', textures: [t], params: P_BREAK, model: breaking.model, state: { blend: 'multiply', depthWrite: false, polygonOffset: true } });
       }
     }
     const extras = [...this.extraDraws].sort((a, b) => (a.order || 0) - (b.order || 0));

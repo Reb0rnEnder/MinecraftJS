@@ -1,3 +1,4 @@
+import {DEFAULT_SKIN} from './default-skins.js';
 import {blocksByName} from '../world/blocks.js';
 import {compassProperty} from './compass.js';
 // Item rendering: GUI icons (2D sprites + 3D block icons), counts/durability/glint,
@@ -363,7 +364,7 @@ export class ItemRenderer {
     if (SKULLS[name] !== undefined) {
       const type = SKULLS[name];
       const texPath = ['entity/skeleton/skeleton.png', 'entity/skeleton/wither_skeleton.png', 'entity/zombie/zombie.png',
-        'entity/steve.png', 'entity/creeper/creeper.png', 'entity/enderdragon/dragon.png'][type];
+        DEFAULT_SKIN, 'entity/creeper/creeper.png', 'entity/enderdragon/dragon.png'][type];
       // the skull node is in scale(-1, -1, 1) 1/16 units; this item space flips z instead of x
       const g = new Node();
       const sk = skullModel(type, mat(type===3&&this.game.items.nbt(item)?.SkullOwner?this.game.entityRenderer.skullTexture(this.game.items.nbt(item).SkullOwner):texPath));

@@ -135,7 +135,7 @@ export function initBlocks(blocksJson, shapesJson) {
       const value = rendering.values[rendering.states[info.id]];
       if (!value) throw new Error('Missing block render properties for state '+info.id);
       const def = blocks[info.blockId];
-      const overrides = {hasModel:value.renderType===2,renderType:value.renderType,opaque:value.solid,suffocates:value.suffocates??value.viewBlocking,canOcclude:value.occludes,aoLight:value.shade,filterLight:value.lightBlock,
+      const overrides = {hasModel:value.renderType===2,renderType:value.renderType,opaque:value.solid,suffocates:value.suffocates??value.viewBlocking,viewBlocking:value.viewBlocking,canOcclude:value.occludes,aoLight:value.shade,filterLight:value.lightBlock,
         emitLight:value.emission,collisionFull:value.collisionFull,sturdyBottom:value.sturdyBottom,sturdyTop:value.sturdyTop,occlusionBoxes:value.occlusion,soundType:value.sound,
         useNeighborBrightness:!value.solid&&!value.collisionFull&&!def.isLiquid};
       renderBlocks[info.id] = Object.assign(Object.create(def),overrides);
@@ -219,4 +219,13 @@ function shapeOffsetDelta(block,kind,x,y,z){
  const policy=block?.modelOffset;if(!policy?.[kind])return null;
  const offset=nativeModelOffset(block.name,x,y,z),delta=offset.map((v,i)=>v-policy.origin[i]);
  return delta.some(v=>v!==0)?delta:null;
+}
+
+// Six native Block.canSupportCenter / BlockState.isFaceSturdy bits per state.
+// Kept separate from opacity and collision: stairs, glass, fences and lanterns
+// deliberately differ between these predicates.
+export function blockFaceSupports(state,face,center=false){
+ const native=shapesData?.support?.states[state];
+ if(!native)throw Error('Missing native placement support data for state '+state);
+ return !!(native[center?0:1]&(1<<face));
 }
