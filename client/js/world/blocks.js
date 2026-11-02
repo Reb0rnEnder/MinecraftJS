@@ -219,3 +219,12 @@ function shapeOffsetDelta(block,kind,x,y,z){
  const offset=nativeModelOffset(block.name,x,y,z),delta=offset.map((v,i)=>v-policy.origin[i]);
  return delta.some(v=>v!==0)?delta:null;
 }
+
+// Six native Block.canSupportCenter / BlockState.isFaceSturdy bits per state.
+// Kept separate from opacity and collision: stairs, glass, fences and lanterns
+// deliberately differ between these predicates.
+export function blockFaceSupports(state,face,center=false){
+ const native=shapesData?.support?.states[state];
+ if(!native)throw Error('Missing native placement support data for state '+state);
+ return !!(native[center?0:1]&(1<<face));
+}

@@ -62,6 +62,7 @@ export class CommandTree {
   constructor(packet,game) { this.nodes=packet.nodes;this.root=packet.root;this.game=game; }
   registry(kind) {
     const data=this.game.assets?.data?.[kind];
+    if(kind==='effects'&&this.game.assets?.data?.creative?.effects)return Object.values(this.game.assets.data.creative.effects).map(e=>e.key).filter(Boolean);
     if(kind==='effects')return ['speed','slowness','haste','mining_fatigue','strength','instant_health','instant_damage','jump_boost','nausea','regeneration','resistance','fire_resistance','water_breathing','invisibility','blindness','night_vision','hunger','weakness','poison','wither','health_boost','absorption','saturation','glowing','levitation','luck','unluck','slow_falling','conduit_power','dolphins_grace'].map(normalize);
     return Array.isArray(data)?data.map(d=>d.name).filter(Boolean).map(normalize):[];
   }
@@ -220,14 +221,38 @@ export class CommandTree {
     if(!text.endsWith(' ')&&!result.error&&result.edges?.length){const edge=result.edges.at(-1);result.completion={node:edge.parent,start:edge.start};}
     return result;
   }
+  usage(text,cursor=text.length,slash=true){
+    const parsed=this.parse(text.slice(0,cursor),slash),context=parsed.completion||{node:parsed.node,start:cursor},parent=this.nodes[context.node];
+    const label=node=>node.type===2?'<'+node.name+'>':node.name||'';
+    const smart=(id,optional,deep,depth=0)=>{const node=this.nodes[id];if(!node||depth>128)return null;const self=optional?'['+label(node)+']':label(node),childOptional=!!node.executable,children=node.children||[];
+      if(!deep){if(node.redirect!==undefined)return self+' '+(node.redirect===this.root?'...':'-> '+label(this.nodes[node.redirect]));
+        if(children.length===1){const value=smart(children[0],childOptional,childOptional,depth+1);if(value)return self+' '+value;}
+        else if(children.length>1){const usages=[...new Set(children.map(id=>smart(id,childOptional,true,depth+1)).filter(Boolean))];if(usages.length===1)return self+' '+(childOptional?'['+usages[0]+']':usages[0]);if(usages.length>1)return self+' '+(childOptional?'[':'(')+children.map(id=>label(this.nodes[id])).join('|')+(childOptional?']':')');}}
+      return self;};
+    return {start:context.start,lines:(parent?.children||[]).filter(id=>this.nodes[id].type!==1).map(id=>smart(id,!!parent.executable,false)).filter(Boolean)};
+  }
   format(text,offset=0,full=text,slash=true) {
     if(slash&&!full.startsWith('/'))return text;
     const parse=this.parse(full,slash),events=[];
-    for(const span of parse.spans){events.push([span.start,span.color]);events.push([span.end,'§7']);}
+    const redirects=(parse.edges||[]).filter(edge=>this.nodes[edge.node]?.redirect!==undefined),contextStart=redirects.length?redirects.at(-1).end:0;
+    for(const span of parse.spans.filter(span=>span.start>=contextStart)){events.push([span.start,span.color]);events.push([span.end,'§7']);}
     if(parse.error)events.push([parse.error.start,'§c']);events.sort((a,b)=>a[0]-b[0]);
     let color='§7',out='',pos=offset;
     for(const [at,next] of events){if(at<=offset){color=next;continue;}if(at>=offset+text.length)break;out+=(out?'':color)+text.slice(pos-offset,at-offset)+next;pos=at;}
     return (out||color)+text.slice(pos-offset);
+  }
+  selectorSuggestions(prefix,start,cursor){
+    const word=prefix.slice(start),bracket=word.indexOf('[');if(bracket<0||!/^@[pares]\[/.test(word)||word.endsWith(']'))return null;
+    const raw=word.slice(bracket+1),parts=splitOptions(raw),part=parts.at(-1),offset=start+bracket+1+raw.length-part.length,equal=part.indexOf('='),used=parts.slice(0,-1);
+    let range=offset,names=[];
+    if(equal<0){const repeat=new Set(['tag','nbt','predicate']),keys=['name','distance','level','x','y','z','dx','dy','dz','x_rotation','y_rotation','limit','sort','gamemode','team','type','tag','nbt','scores','advancements',...(PROTOCOL_VERSION>=573?['predicate']:[])];names=keys.filter(key=>repeat.has(key)||!used.some(p=>p.startsWith(key+'=')&&!p.slice(key.length+1).startsWith('!'))).map(key=>key+'=');}
+    else{const key=part.slice(0,equal).trim();range=offset+equal+1;
+      if(key==='type'){const types=(this.game.assets?.data?.entities||[]).map(e=>normalize(e.name)),tags=(this.game.tags?.names('entities')||[]).map(n=>'#'+n);names=[...types,...tags,...types.map(n=>'!'+n),...tags.map(n=>'!'+n)];if(used.some(p=>p.startsWith('type=!')))names=names.filter(n=>n.startsWith('!'));}
+      if(key==='sort')names=['nearest','furthest','random','arbitrary'];
+      if(key==='gamemode'){const modes=['survival','creative','adventure','spectator'];names=[...modes,...modes.map(n=>'!'+n)];}
+      if(key==='team'){const teams=[...(this.game.scoreboard?.teams?.keys()||[])];names=[...teams,...teams.map(n=>'!'+n)];}
+    }
+    const value=prefix.slice(range);return {start:range,end:cursor,matches:[...new Set(names)].filter(n=>matches(n,value)||matches(n.replace('minecraft:',''),value)).sort((a,b)=>a.toLowerCase()<b.toLowerCase()?-1:a.toLowerCase()>b.toLowerCase()?1:0).map(match=>({match})),askServer:false};
   }
   suggestions(text,cursor=text.length,slash=true) {
     const prefix=text.slice(0,cursor),parsed=this.parse(prefix,slash),context=parsed.completion||{node:parsed.node,start:cursor},word=prefix.slice(context.start),names=[];
@@ -238,6 +263,7 @@ export class CommandTree {
       const parser=node.parser;
       if(parser==='brigadier:bool')names.push('true','false');
       if(['minecraft:entity','minecraft:game_profile','minecraft:score_holder'].includes(parser)) {
+        const selector=this.selectorSuggestions(prefix,context.start,cursor);if(selector)return selector;
         names.push(...[...(this.game.scoreboard?.players?.values()||[])].map(p=>p.name).filter(Boolean));
         if(parser==='minecraft:entity'||parser==='minecraft:game_profile')names.push('@p','@a','@r','@s',...((node.properties?.flags&2)?[]:['@e']));
       }

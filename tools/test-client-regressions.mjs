@@ -1,3 +1,4 @@
+import{EntityParams}from'../client/js/gfx/device.js';
 import { Renderer } from '../client/js/render/renderer.js';
 import { BreakingOverlay } from '../client/js/render/breaking.js';
 import { blockModelOffset } from '../client/js/render/mesher.js';
@@ -647,7 +648,7 @@ test(version + ': chest cracks follow the live lid and include both halves of a 
 
 test(version + ': local and remote break rendering receive block state while selection outline keeps its own box',()=>{
  const g=fixture(),w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);g.world=w;c.setState(3,64,3,state('oak_stairs'));
- const calls=[],outlines=[];g.renderer.setOutline=b=>outlines.push(b);g.renderer.setBreakProgress=(...args)=>calls.push(args);
+ const calls=[],outlines=[];g.renderer.setOutline=b=>outlines.push(b);g.renderer.setBreakProgresses=entries=>{for(const e of entries)calls.push([e.pos,e.stage,e.state,e.light]);if(!entries.length)calls.push([null,-1]);};
  w.selectionBox=()=>{throw new Error('damage must not use selection geometry');};
  const it=new Interaction(g);it.updateTarget=()=>it.target;it.isHitting=true;it.curBlock={x:3,y:64,z:3};it.curDamage=.5;it.prevDamage=.5;it.target={type:'block',x:3,y:64,z:3,box:[0,0,0,1,1,1]};
  it.renderSelection(.5);assert.equal(calls.at(-1)[2],state('oak_stairs'));assert.deepEqual(outlines.at(-1),[3,64,3,4,65,4]);
@@ -744,4 +745,42 @@ test(version + ': wake animation restores standing dimensions as well as hiding 
 test(version + ': fire overlay resolves the target-version atlas sprite and submits its two planes',()=>{
  const g=fixture(),hud=Object.create(Hud.prototype);hud.game=g;let draws=0;
  hud.renderFire({scale:1,drawMesh:()=>draws++});assert.ok(hud._fireMesh);assert.equal(draws,1);assert.equal(hud._fireMesh.vertices.length,8*9);
+});
+
+
+test(version + ': first-person items and arms use dynamic light and return to world light when disabled',()=>{
+ const g=fixture(),eye=g.eyePosition(0);g.world.getSkyLight=()=>0;g.world.getBlockLight=()=>0;g.settings.dynamicLights=true;
+ g.inventory.main[0]=item(g,'torch');g.handRenderer.prepare(.5,70);
+ const lights=()=>{const out=[];g.handRenderer.root.traverse(n=>{for(const d of n.drawables)if(d.mat?.pipeline==='entity'){const p=d.mat.params?.p||d.mat.params;out.push(p[9]);}});return out;};
+ assert.ok(lights().length);assert.ok(lights().every(v=>v===14),'held torch illuminates every first-person material on its first frame');
+ g.settings.dynamicLights=false;g.handRenderer.prepare(.5,70);assert.ok(lights().every(v=>v===0),'switching off restores actual world light');
+ g.inventory.main[0]=item(g,'snowball');g.settings.dynamicLights=true;g.renderer.dynamicLights=new Float32Array(24);g.renderer.dynamicLights.set([...eye,9]);g.handRenderer.prepare(.5,70);assert.ok(lights().every(v=>Math.abs(v-9)<1e-4),'nearby holders illuminate the hand at the camera world position');
+});
+
+
+test(version + ': placed skulls face their native wall direction and keep native offsets',()=>{
+ const g=fixture(),w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);g.world=w;const tiles=new TileEntityRenderer(g);
+ for(const [face,meta,angle]of[['north',2,0],['south',3,180],['west',4,270],['east',5,90]]){
+  const st=native?findState('skeleton_wall_skull',{facing:face}):(data.blocks.find(b=>b.name==='skull').id<<4)|meta;c.setState(3,64,3,st);const t=tiles._ensure(3,64,3,st);t.state=st;tiles._build(t);const outer=t.obj.children[0];assert.ok(Math.abs(outer.rotation.y+angle*Math.PI/180)<1e-6);const near=['1.8.9','1.12.2','1.13.2','1.14.4','1.15.2'].includes(version)?.26:.25;assert.ok(Math.abs(outer.position.z-(face==='north'?1-near:face==='south'?near:.5))<1e-6);tiles.clear();
+ }
+});
+
+
+test(version + ': placed banners preserve standing poles, wall metadata and flattened dye colors',async()=>{
+ const {placedBannerLayers}=await import('../client/js/render/banner.js');assert.deepEqual(placedBannerLayers('white_banner',[{Pattern:'cr',Color:14}]),[{Pattern:'b',Color:15},{Pattern:'cr',Color:1}]);assert.equal(placedBannerLayers('red_wall_banner',[])[0].Color,1);
+ const g=fixture(),w=new World(),c=new Chunk(0,0,true);w.chunks.set(World.key(0,0),c);g.world=w;const tiles=new TileEntityRenderer(g);tiles._bannerTexture=()=>({});
+ const build=(name,props)=>{const st=findState(name,props);c.setState(3,64,3,st);const t=tiles._ensure(3,64,3,st);t.state=st;tiles._build(t);t.obj.updateWorld(null);return t.obj.collect([]).length;};
+ assert.equal(build('white_banner',{rotation:'0'}),3,'standing banner draws flag, pole and bar');tiles.clear();assert.equal(build('white_wall_banner',{facing:'north'}),2,'wall banner draws flag and bar');tiles.clear();
+});
+
+
+test(version + ': simultaneous destruction merges stages per block without interpolating simulation progress',()=>{
+ const g=fixture(),low=['1.18.2','1.19.4'].includes(version),y=low?-8:64;g.world.minY=low?-64:0;g.world.getState=()=>state('stone');g.player.setPosition(0,y,0);const it=new Interaction(g);it.updateTarget=()=>null;it.isHitting=true;it.curBlock={x:0,y,z:0};it.curDamage=.59;it.prevDamage=0;let batch;g.renderer.setOutline=()=>{};g.renderer.setBreakProgresses=entries=>batch=entries;
+ it.setRemoteBreak(1,{x:0,y,z:0},7);it.setRemoteBreak(2,{x:1,y,z:0},3);it.setRemoteBreak(3,{x:100,y,z:0},9);it.setRemoteBreak(4,{x:2,y,z:0},8);it.remoteBreaks.get(4).time=g.ticks-401;it.renderSelection(0);assert.equal(batch.length,2);assert.equal(batch.find(e=>e.pos.x===0).stage,7);assert.equal(batch.find(e=>e.pos.x===1).stage,3);
+ it.remoteBreaks.delete(1);it.renderSelection(0);assert.equal(batch.find(e=>e.pos.x===0).stage,4,'native stage comes from current tick even at partial tick zero');
+});
+
+
+test(version + ': hand lighting owns built-in item materials independently of cached world items',()=>{
+ const g=fixture(),source={pipeline:'entity',params:new EntityParams()};source.params.p[9]=2;g.itemRenderer.objectFor=()=>({obj:new Node().addDrawable({},source),model:{}});const object=g.handRenderer._itemObject(item(g,'chest')),mat=object.obj.drawables[0].mat;assert.notEqual(mat,source);assert.notEqual(mat.params,source.params);mat.params.p[9]=14;assert.equal(source.params.p[9],2);
 });
