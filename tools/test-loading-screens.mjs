@@ -19,7 +19,7 @@ test('progress uses native smoothing, outlines, fill colors and correct atlas bl
 });
 if(LOADING_STYLE!=='legacy')test('resource reload blocks input and fades over its parent before completion',async()=>{
  const{ResourceLoadingScreen}=await import('../client/js/gui/screens/loading.js');let time=0,rendered=0;setPlatform({now:()=>time});
- const gui={width:900,height:400,rect(){},tex:()=>null},parent={init(){},render(){rendered++;}},screen=new ResourceLoadingScreen({gui},parent);
+ const gui={width:900,height:400,rect(){},tex:()=>null},parent={init(){},render(){rendered++;}},screen=new ResourceLoadingScreen({gui,settings:{darkMojangStudiosBackground:false}},parent);
  screen.init();const done=screen.finish();assert.equal(screen.key({code:'Escape'}),true);screen.render(gui,0,0,0);assert.equal(rendered,1);
  time=1500;screen.render(gui,0,0,0);assert.ok(screen.resolve);time=2000;screen.render(gui,0,0,0);await done;assert.equal(screen.resolve,null);
 });
