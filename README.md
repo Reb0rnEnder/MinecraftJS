@@ -1,4 +1,4 @@
-# MinecraftJS
+# Gravrust
 
 > **1.15.2 runtime branch:** [plan and milestones](docs/transition-1.15.2.md).
 > Current parity status: [1.15.2 feature audit](docs/feature-audit-1.15.2.md).
@@ -6,20 +6,9 @@
 > The active browser/proxy runtime below still targets 1.14.4 until the codec,
 > registries and assets pass the transition gates.
 
-> **1.14.4 development branch:** the browser and proxy now use protocol 498 with native terrain data and independent light updates. Native workstations, trading, lectern controls, bell rendering and scaffolding movement are implemented; jar-derived block properties and visible models for the new mobs are in place; native crossbow use, fitting poses, colored signs, campfire contents, particle sprite lists, effect icons and Accessibility/Mouse settings are implemented. Remaining special animations, recipe-book and visual parity work is ongoing.
-> Follow the [1.14.4 transition plan](docs/transition-1.14.4.md) before publishing a 1.14.4 client.
-> The [content milestone](docs/workstations-content-1.14.4.md) records workstation/block support and its limits.
-> The [runtime milestone](docs/runtime-1.14.4-milestone.md) records browser join/reconnect validation and remaining work.
-> The [complete feature audit](docs/feature-audit-1.14.4.md) covers every 1.14 additions/change topic and target patch changes, including confirmed gaps and unexecuted gameplay checks. The [1.14.1–1.14.4 patch review](docs/patch-audit-1.14.1-1.14.4.md) inventories all requested patch topics and bug tickets. Asset coverage does not imply full parity.
-> Experimental [shader-pack image effects and vegetation support](docs/camera-and-shader-packs.md) is available in Video Settings with WebGL 2. This runs final image effects and BSL vegetation animation; full BSL lighting/shadows are not implemented.
-
-
-A Minecraft 1.14.4 client that runs in the browser (WebGL 2 or WebGPU). It joins vanilla 1.14.4 servers through a
-small Node proxy, and Eaglercraft servers directly over WebSockets.
-
-MinecraftJS is not affiliated with Mojang or Microsoft. The repository contains no Mojang files: the game assets
-are taken from your own copy of Minecraft 1.14.4, or downloaded from Mojang's servers on first use. That includes the
-entity and block entity models (mobs, boats, chests, signs, skulls, beds, ...): in 1.12 they are Java code, so the
+Gravrust is not affiliated with any big block game makers. The repository contains no big block game files: the game assets
+are taken from your own copy of the game, or downloaded from public servers on first use. That includes the
+entity and block entity models (mobs, boats, chests, signs, skulls, beds, ...): in some vershions they are Java code, so the
 build runs the model constructors from the client jar in a small bytecode interpreter (`lib/jvm.js`,
 `lib/modelextract.js`) and stores the boxes in `bundles/entity-models.json`.
 
@@ -35,7 +24,7 @@ npm install
 npm start
 ```
 
-Then open http://localhost:3000. The proxy serves the client, bridges the browser to Minecraft servers (TCP),
+Then open http://localhost:3000. The proxy serves the client, bridges the browser to popular servers using (TCP),
 relays Microsoft account sign in and serves player skins.
 
 Game assets are found automatically, in this order:
@@ -58,7 +47,7 @@ Game assets are found automatically, in this order:
 npm run build
 ```
 
-Writes `dist/minecraftjs.html`: one file with the code (minified), the game data and all assets, with sounds
+Writes `dist/Gravrust.html`: one file with the code (minified), the game data and all assets, with sounds
 re-encoded to Opus. It runs from any web server or straight from disk (`file://`).
 
 Options (after `npm run build --` or with `node tools/build.js html`):
@@ -97,7 +86,7 @@ A `config.json` next to `index.html` (or embedded in the single-file build) sets
 {
   "skinProxy": "",
   "proxies": [
-    { "name": "This website", "url": "origin", "type": "minecraftjs" },
+    { "name": "This website", "url": "origin", "type": "Gravrust" },
     { "name": "Eaglercraft Relay", "url": "wss://relay.eaglercraft.net", "type": "relay" },
     { "name": "Public Java Relay", "url": "wss://eagler-minecraft-relay.u2471966200.workers.dev", "type": "relay" }
   ],
@@ -118,7 +107,7 @@ The build can read a config file, build one from options, or both:
 # embed a file
 npm run build -- --config=client/config.example.json
 # or construct it on the command line
-npm run build -- --proxy=minecraftjs,origin --proxy="relay,wss://relay.eaglercraft.net,Eaglercraft Relay" --server="mc.example.com,My Server"
+npm run build -- --proxy=Gravrust,origin --proxy="relay,wss://relay.eaglercraft.net,Eaglercraft Relay" --server="mc.example.com,My Server"
 # the same options with the assets task write client/config.json
 npm run assets -- --config=client/config.example.json
 # or just write a config.json
@@ -133,14 +122,14 @@ types:
 
 | Type | What it is | Who speaks the Minecraft protocol |
 | --- | --- | --- |
-| MinecraftJS Proxy | `npm start` on any machine (`wss://proxy.example.com/`, `localhost:3000`) | the proxy |
+| Gravrust Proxy | `npm start` on any machine (`wss://proxy.example.com/`, `localhost:3000`) | the proxy |
 | Java Relay | an [Eaglercraft 26.2 relay](https://radicle.network/nodes/radicle.jarg.io/rad%3Az3rCaaQD1cNmPDTjyinYWmPpcMgNX) (`wss://relay.eaglercraft.net`) | the client |
 | Wisp | a [Wisp](https://github.com/MercuryWorkshop/wisp-protocol) server (v1 protocol, which v2 servers also speak) | the client |
 
 Wisp v1 is supported, including `wisp-python`. Select the **Wisp** proxy type and enter its WebSocket endpoint (for example, `ws://localhost:4000/`); endpoint paths are normalized to end in `/`. The client waits for the server’s initial buffer allowance before sending data. For local or LAN Minecraft targets, start wisp-python with `--allow-loopback` or `--allow-private` as appropriate.
 
 Java relays and Wisp servers only carry the TCP stream; the client does the handshake, login, compression and
-encryption itself. Public relays usually refuse local or private addresses. Microsoft accounts still need a MinecraftJS
+encryption itself. Public relays usually refuse local or private addresses. Microsoft accounts still need a Gravrust
 proxy somewhere in the list: it signs accounts in, joins online-mode sessions (Mojang's session server blocks
 browsers). Skin/profile downloads can instead use the separate HTTP/CORS template below.
 
@@ -170,7 +159,7 @@ use their embedded configuration.
 `%R` inserts the full percent-encoded URL. `%U` remains an alias for `%r`.
 A UUID image service can use `https://skins.example/skin/%u` even when the server
 sends no texture property. UUID-only templates apply to skins; cape/profile
-requests keep the automatic route so PNG endpoints never receive JSON requests. Leave the field blank to use the automatic MinecraftJS proxy route.
+requests keep the automatic route so PNG endpoints never receive JSON requests. Leave the field blank to use the automatic Gravrust proxy route.
 The service should return the original PNG or profile JSON with CORS headers.
 This works independently of the game-server relay; sign-in/session authentication
 continues to use its existing routes. Saving reloads skins immediately.
