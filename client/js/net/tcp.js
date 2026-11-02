@@ -261,7 +261,9 @@ export class VanillaSocket extends Emitter {
     }
     this._control({ type: 'status', key: 'connect.authorizing', message: 'Logging in...' });
     this._send(handshake(protocol, host, port, 2));
-    this._send(concat([new Uint8Array([0x00]), mcString((msg.username || 'Player').slice(0, 16))]));
+    // ServerboundHelloPacket in 1.19.4 appends an optional profile UUID.
+    // Absence is valid for both offline login and authenticated session join.
+    this._send(concat([new Uint8Array([0x00]), mcString((msg.username || 'Player').slice(0, 16)), ...(protocol === 762 ? [new Uint8Array([0])] : [])]));
   }
 
   _packet(p) {

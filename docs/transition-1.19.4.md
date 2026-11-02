@@ -1,11 +1,14 @@
 # Transition plan: Java 1.19.4
 
-Status: planning only; runtime remains **1.18.2 / protocol 758**. This supersedes
-the older [1.19.2 plan](transition-1.19.2.md) as the proposed destination. It does
-not claim 1.19 connectivity or complete 1.18.2 parity. Implementation should use
-one named `1.19.4` branch and `/home/ender/minecraftjs-1.19.4` worktree, reusing
-that target if it already exists. Do not create intermediate supported branches
-unless requested. Preserve every existing supported branch and local input.
+Status: **native-input foundation completed; protocol-762 connection/terrain
+probe implemented and verified** on the named `1.19.4` branch. The browser
+runtime remains 1.18.2 / protocol 758 until target assets and packet handlers are
+integrated; this is not a playable 1.19.4 release or a complete parity claim.
+See [development progress and reproduction](development-1.19.4.md).
+
+The older [1.19.2 plan](transition-1.19.2.md) is superseded. Development uses
+`/home/ender/minecraftjs-1.19.4`, preserving all existing named worktrees and local
+servers/worlds. No intermediate supported branch was created.
 
 ## Release boundaries and inputs
 
@@ -19,8 +22,11 @@ unless requested. Preserve every existing supported branch and local input.
 
 All use Java 17. Official release metadata was downloaded and SHA-1 checked;
 client/server jars, mappings and asset-index references are pinned in
-[transition-1.19.4.inputs.json](transition-1.19.4.inputs.json). Those target jars
-have not been downloaded or executed for this planning task. The pinned
+[transition-1.19.4.inputs.json](transition-1.19.4.inputs.json). The 1.19.4 target
+jars, mappings and asset index have now been downloaded and
+verified; its server data generator and an isolated local server were executed.
+Intermediate 1.19–1.19.3 jars remain pinned references, not executed inputs. The
+pinned
 minecraft-data schemas for 758, 759, 760, 761 and 762 were downloaded and compared.
 There is no separate 1.19.1 dataPaths entry in that revision: use the 1.19.2
 schema for the protocol-760 checkpoint and audit native 1.19.1 separately.

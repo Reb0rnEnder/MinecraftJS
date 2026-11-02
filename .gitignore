@@ -32,3 +32,7 @@ server1171/
 # Native 1.18.2 local assets and test server
 1.18.2/
 server1182/
+
+# Native 1.19.4 inputs and isolated local server
+1.19.4/
+server1194/

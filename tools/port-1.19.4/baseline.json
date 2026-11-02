@@ -1,0 +1,1035 @@
+{
+  "minecraftVersion": "1.19.4",
+  "protocol": 762,
+  "sources": {
+    "metadata": "4fc30c189872faebae2617aba033cc17fec5899f",
+    "client": "958928a560c9167687bea0cefeb7375da1e552a8",
+    "client_mappings": "f14771b764f943c154d3a6fcb47694477e328148",
+    "server": "8f3112a1049751cc472ec13e397eade5336ca7ae",
+    "server_mappings": "73c8bb982e420b33aad9632b482608c5c33e2d13",
+    "report_blocks": "10a0f8cdbbb76c4d02672e4f6629d36a09e2522d",
+    "report_registries": "f3aa298a71cf66ab8734576926a09f92a1323c16",
+    "report_commands": "009f019919d8666cf6a08eb70828c5fcd868c55f",
+    "minecraftDataRevision": "5e063fa99cfe8ded065ec6788b66696b7e4ef143"
+  },
+  "blocks": 998,
+  "blockStates": 23725,
+  "lastBlockState": 23724,
+  "registries": {
+    "minecraft:activity": 26,
+    "minecraft:attribute": 13,
+    "minecraft:banner_pattern": 41,
+    "minecraft:block": 998,
+    "minecraft:block_entity_type": 40,
+    "minecraft:block_predicate_type": 12,
+    "minecraft:cat_variant": 11,
+    "minecraft:chunk_status": 13,
+    "minecraft:command_argument_type": 49,
+    "minecraft:custom_stat": 75,
+    "minecraft:decorated_pot_patterns": 6,
+    "minecraft:enchantment": 39,
+    "minecraft:entity_type": 124,
+    "minecraft:float_provider_type": 4,
+    "minecraft:fluid": 5,
+    "minecraft:frog_variant": 3,
+    "minecraft:game_event": 48,
+    "minecraft:height_provider_type": 6,
+    "minecraft:instrument": 8,
+    "minecraft:int_provider_type": 6,
+    "minecraft:item": 1228,
+    "minecraft:loot_condition_type": 17,
+    "minecraft:loot_function_type": 25,
+    "minecraft:loot_nbt_provider_type": 2,
+    "minecraft:loot_number_provider_type": 4,
+    "minecraft:loot_pool_entry_type": 8,
+    "minecraft:loot_score_provider_type": 2,
+    "minecraft:memory_module_type": 97,
+    "minecraft:menu": 25,
+    "minecraft:mob_effect": 33,
+    "minecraft:painting_variant": 30,
+    "minecraft:particle_type": 96,
+    "minecraft:point_of_interest_type": 20,
+    "minecraft:pos_rule_test": 3,
+    "minecraft:position_source_type": 2,
+    "minecraft:potion": 43,
+    "minecraft:recipe_serializer": 24,
+    "minecraft:recipe_type": 7,
+    "minecraft:rule_test": 6,
+    "minecraft:schedule": 4,
+    "minecraft:sensor_type": 22,
+    "minecraft:sound_event": 1454,
+    "minecraft:stat_type": 9,
+    "minecraft:villager_profession": 15,
+    "minecraft:villager_type": 7,
+    "minecraft:worldgen/biome_source": 4,
+    "minecraft:worldgen/block_state_provider_type": 7,
+    "minecraft:worldgen/carver": 3,
+    "minecraft:worldgen/chunk_generator": 3,
+    "minecraft:worldgen/density_function_type": 32,
+    "minecraft:worldgen/feature": 61,
+    "minecraft:worldgen/feature_size_type": 2,
+    "minecraft:worldgen/foliage_placer_type": 11,
+    "minecraft:worldgen/material_condition": 11,
+    "minecraft:worldgen/material_rule": 4,
+    "minecraft:worldgen/placement_modifier_type": 15,
+    "minecraft:worldgen/root_placer_type": 1,
+    "minecraft:worldgen/structure_piece": 56,
+    "minecraft:worldgen/structure_placement": 2,
+    "minecraft:worldgen/structure_pool_element": 5,
+    "minecraft:worldgen/structure_processor": 10,
+    "minecraft:worldgen/structure_type": 16,
+    "minecraft:worldgen/tree_decorator_type": 6,
+    "minecraft:worldgen/trunk_placer_type": 9
+  },
+  "commands": [
+    "advancement",
+    "attribute",
+    "ban",
+    "ban-ip",
+    "banlist",
+    "bossbar",
+    "clear",
+    "clone",
+    "damage",
+    "data",
+    "datapack",
+    "debug",
+    "defaultgamemode",
+    "deop",
+    "difficulty",
+    "effect",
+    "enchant",
+    "execute",
+    "experience",
+    "fill",
+    "fillbiome",
+    "forceload",
+    "function",
+    "gamemode",
+    "gamerule",
+    "give",
+    "help",
+    "item",
+    "jfr",
+    "kick",
+    "kill",
+    "list",
+    "locate",
+    "loot",
+    "me",
+    "msg",
+    "op",
+    "pardon",
+    "pardon-ip",
+    "particle",
+    "perf",
+    "place",
+    "playsound",
+    "publish",
+    "recipe",
+    "reload",
+    "ride",
+    "save-all",
+    "save-off",
+    "save-on",
+    "say",
+    "schedule",
+    "scoreboard",
+    "seed",
+    "setblock",
+    "setidletimeout",
+    "setworldspawn",
+    "spawnpoint",
+    "spectate",
+    "spreadplayers",
+    "stop",
+    "stopsound",
+    "summon",
+    "tag",
+    "team",
+    "teammsg",
+    "teleport",
+    "tell",
+    "tellraw",
+    "time",
+    "title",
+    "tm",
+    "tp",
+    "trigger",
+    "w",
+    "weather",
+    "whitelist",
+    "worldborder",
+    "xp"
+  ],
+  "protocolChanges": {
+    "toClient": {
+      "beforeCount": 104,
+      "afterCount": 111,
+      "added": [
+        {
+          "name": "bundle_delimiter",
+          "id": 0
+        },
+        {
+          "name": "chunk_biomes",
+          "id": 13
+        },
+        {
+          "name": "chat_suggestions",
+          "id": 22
+        },
+        {
+          "name": "damage_event",
+          "id": 24
+        },
+        {
+          "name": "hide_message",
+          "id": 25
+        },
+        {
+          "name": "profileless_chat",
+          "id": 27
+        },
+        {
+          "name": "hurt_animation",
+          "id": 33
+        },
+        {
+          "name": "player_chat",
+          "id": 53
+        },
+        {
+          "name": "player_remove",
+          "id": 57
+        },
+        {
+          "name": "server_data",
+          "id": 69
+        },
+        {
+          "name": "system_chat",
+          "id": 100
+        },
+        {
+          "name": "feature_flags",
+          "id": 107
+        }
+      ],
+      "removed": [
+        {
+          "name": "spawn_entity_living",
+          "id": 2
+        },
+        {
+          "name": "spawn_entity_painting",
+          "id": 3
+        },
+        {
+          "name": "sculk_vibration_signal",
+          "id": 5
+        },
+        {
+          "name": "chat",
+          "id": 15
+        },
+        {
+          "name": "named_sound_effect",
+          "id": 25
+        }
+      ],
+      "moved": [
+        {
+          "name": "spawn_entity",
+          "from": 0,
+          "to": 1
+        },
+        {
+          "name": "spawn_entity_experience_orb",
+          "from": 1,
+          "to": 2
+        },
+        {
+          "name": "named_entity_spawn",
+          "from": 4,
+          "to": 3
+        },
+        {
+          "name": "animation",
+          "from": 6,
+          "to": 4
+        },
+        {
+          "name": "statistics",
+          "from": 7,
+          "to": 5
+        },
+        {
+          "name": "acknowledge_player_digging",
+          "from": 8,
+          "to": 6
+        },
+        {
+          "name": "block_break_animation",
+          "from": 9,
+          "to": 7
+        },
+        {
+          "name": "tile_entity_data",
+          "from": 10,
+          "to": 8
+        },
+        {
+          "name": "block_action",
+          "from": 11,
+          "to": 9
+        },
+        {
+          "name": "block_change",
+          "from": 12,
+          "to": 10
+        },
+        {
+          "name": "boss_bar",
+          "from": 13,
+          "to": 11
+        },
+        {
+          "name": "difficulty",
+          "from": 14,
+          "to": 12
+        },
+        {
+          "name": "clear_titles",
+          "from": 16,
+          "to": 14
+        },
+        {
+          "name": "tab_complete",
+          "from": 17,
+          "to": 15
+        },
+        {
+          "name": "declare_commands",
+          "from": 18,
+          "to": 16
+        },
+        {
+          "name": "close_window",
+          "from": 19,
+          "to": 17
+        },
+        {
+          "name": "window_items",
+          "from": 20,
+          "to": 18
+        },
+        {
+          "name": "craft_progress_bar",
+          "from": 21,
+          "to": 19
+        },
+        {
+          "name": "set_slot",
+          "from": 22,
+          "to": 20
+        },
+        {
+          "name": "set_cooldown",
+          "from": 23,
+          "to": 21
+        },
+        {
+          "name": "custom_payload",
+          "from": 24,
+          "to": 23
+        },
+        {
+          "name": "entity_status",
+          "from": 27,
+          "to": 28
+        },
+        {
+          "name": "explosion",
+          "from": 28,
+          "to": 29
+        },
+        {
+          "name": "unload_chunk",
+          "from": 29,
+          "to": 30
+        },
+        {
+          "name": "game_state_change",
+          "from": 30,
+          "to": 31
+        },
+        {
+          "name": "open_horse_window",
+          "from": 31,
+          "to": 32
+        },
+        {
+          "name": "initialize_world_border",
+          "from": 32,
+          "to": 34
+        },
+        {
+          "name": "keep_alive",
+          "from": 33,
+          "to": 35
+        },
+        {
+          "name": "map_chunk",
+          "from": 34,
+          "to": 36
+        },
+        {
+          "name": "world_event",
+          "from": 35,
+          "to": 37
+        },
+        {
+          "name": "world_particles",
+          "from": 36,
+          "to": 38
+        },
+        {
+          "name": "update_light",
+          "from": 37,
+          "to": 39
+        },
+        {
+          "name": "login",
+          "from": 38,
+          "to": 40
+        },
+        {
+          "name": "map",
+          "from": 39,
+          "to": 41
+        },
+        {
+          "name": "trade_list",
+          "from": 40,
+          "to": 42
+        },
+        {
+          "name": "rel_entity_move",
+          "from": 41,
+          "to": 43
+        },
+        {
+          "name": "entity_move_look",
+          "from": 42,
+          "to": 44
+        },
+        {
+          "name": "entity_look",
+          "from": 43,
+          "to": 45
+        },
+        {
+          "name": "vehicle_move",
+          "from": 44,
+          "to": 46
+        },
+        {
+          "name": "open_book",
+          "from": 45,
+          "to": 47
+        },
+        {
+          "name": "open_window",
+          "from": 46,
+          "to": 48
+        },
+        {
+          "name": "open_sign_entity",
+          "from": 47,
+          "to": 49
+        },
+        {
+          "name": "ping",
+          "from": 48,
+          "to": 50
+        },
+        {
+          "name": "craft_recipe_response",
+          "from": 49,
+          "to": 51
+        },
+        {
+          "name": "abilities",
+          "from": 50,
+          "to": 52
+        },
+        {
+          "name": "end_combat_event",
+          "from": 51,
+          "to": 54
+        },
+        {
+          "name": "enter_combat_event",
+          "from": 52,
+          "to": 55
+        },
+        {
+          "name": "death_combat_event",
+          "from": 53,
+          "to": 56
+        },
+        {
+          "name": "player_info",
+          "from": 54,
+          "to": 58
+        },
+        {
+          "name": "face_player",
+          "from": 55,
+          "to": 59
+        },
+        {
+          "name": "position",
+          "from": 56,
+          "to": 60
+        },
+        {
+          "name": "unlock_recipes",
+          "from": 57,
+          "to": 61
+        },
+        {
+          "name": "entity_destroy",
+          "from": 58,
+          "to": 62
+        },
+        {
+          "name": "remove_entity_effect",
+          "from": 59,
+          "to": 63
+        },
+        {
+          "name": "resource_pack_send",
+          "from": 60,
+          "to": 64
+        },
+        {
+          "name": "respawn",
+          "from": 61,
+          "to": 65
+        },
+        {
+          "name": "entity_head_rotation",
+          "from": 62,
+          "to": 66
+        },
+        {
+          "name": "multi_block_change",
+          "from": 63,
+          "to": 67
+        },
+        {
+          "name": "select_advancement_tab",
+          "from": 64,
+          "to": 68
+        },
+        {
+          "name": "action_bar",
+          "from": 65,
+          "to": 70
+        },
+        {
+          "name": "world_border_center",
+          "from": 66,
+          "to": 71
+        },
+        {
+          "name": "world_border_lerp_size",
+          "from": 67,
+          "to": 72
+        },
+        {
+          "name": "world_border_size",
+          "from": 68,
+          "to": 73
+        },
+        {
+          "name": "world_border_warning_delay",
+          "from": 69,
+          "to": 74
+        },
+        {
+          "name": "world_border_warning_reach",
+          "from": 70,
+          "to": 75
+        },
+        {
+          "name": "camera",
+          "from": 71,
+          "to": 76
+        },
+        {
+          "name": "held_item_slot",
+          "from": 72,
+          "to": 77
+        },
+        {
+          "name": "update_view_position",
+          "from": 73,
+          "to": 78
+        },
+        {
+          "name": "update_view_distance",
+          "from": 74,
+          "to": 79
+        },
+        {
+          "name": "spawn_position",
+          "from": 75,
+          "to": 80
+        },
+        {
+          "name": "scoreboard_display_objective",
+          "from": 76,
+          "to": 81
+        },
+        {
+          "name": "entity_metadata",
+          "from": 77,
+          "to": 82
+        },
+        {
+          "name": "attach_entity",
+          "from": 78,
+          "to": 83
+        },
+        {
+          "name": "entity_velocity",
+          "from": 79,
+          "to": 84
+        },
+        {
+          "name": "entity_equipment",
+          "from": 80,
+          "to": 85
+        },
+        {
+          "name": "experience",
+          "from": 81,
+          "to": 86
+        },
+        {
+          "name": "update_health",
+          "from": 82,
+          "to": 87
+        },
+        {
+          "name": "scoreboard_objective",
+          "from": 83,
+          "to": 88
+        },
+        {
+          "name": "set_passengers",
+          "from": 84,
+          "to": 89
+        },
+        {
+          "name": "teams",
+          "from": 85,
+          "to": 90
+        },
+        {
+          "name": "scoreboard_score",
+          "from": 86,
+          "to": 91
+        },
+        {
+          "name": "simulation_distance",
+          "from": 87,
+          "to": 92
+        },
+        {
+          "name": "set_title_subtitle",
+          "from": 88,
+          "to": 93
+        },
+        {
+          "name": "update_time",
+          "from": 89,
+          "to": 94
+        },
+        {
+          "name": "set_title_text",
+          "from": 90,
+          "to": 95
+        },
+        {
+          "name": "set_title_time",
+          "from": 91,
+          "to": 96
+        },
+        {
+          "name": "entity_sound_effect",
+          "from": 92,
+          "to": 97
+        },
+        {
+          "name": "sound_effect",
+          "from": 93,
+          "to": 98
+        },
+        {
+          "name": "stop_sound",
+          "from": 94,
+          "to": 99
+        },
+        {
+          "name": "playerlist_header",
+          "from": 95,
+          "to": 101
+        },
+        {
+          "name": "nbt_query_response",
+          "from": 96,
+          "to": 102
+        },
+        {
+          "name": "collect",
+          "from": 97,
+          "to": 103
+        },
+        {
+          "name": "entity_teleport",
+          "from": 98,
+          "to": 104
+        },
+        {
+          "name": "advancements",
+          "from": 99,
+          "to": 105
+        },
+        {
+          "name": "entity_update_attributes",
+          "from": 100,
+          "to": 106
+        },
+        {
+          "name": "entity_effect",
+          "from": 101,
+          "to": 108
+        },
+        {
+          "name": "declare_recipes",
+          "from": 102,
+          "to": 109
+        },
+        {
+          "name": "tags",
+          "from": 103,
+          "to": 110
+        }
+      ],
+      "changed": [
+        "spawn_entity",
+        "acknowledge_player_digging",
+        "explosion",
+        "initialize_world_border",
+        "world_particles",
+        "login",
+        "trade_list",
+        "player_info",
+        "position",
+        "respawn",
+        "multi_block_change",
+        "world_border_lerp_size",
+        "entity_sound_effect",
+        "sound_effect",
+        "entity_effect",
+        "declare_recipes"
+      ]
+    },
+    "toServer": {
+      "beforeCount": 48,
+      "afterCount": 51,
+      "added": [
+        {
+          "name": "message_acknowledgement",
+          "id": 3
+        },
+        {
+          "name": "chat_command",
+          "id": 4
+        },
+        {
+          "name": "chat_message",
+          "id": 5
+        },
+        {
+          "name": "chat_session_update",
+          "id": 6
+        }
+      ],
+      "removed": [
+        {
+          "name": "chat",
+          "id": 3
+        }
+      ],
+      "moved": [
+        {
+          "name": "client_command",
+          "from": 4,
+          "to": 7
+        },
+        {
+          "name": "settings",
+          "from": 5,
+          "to": 8
+        },
+        {
+          "name": "tab_complete",
+          "from": 6,
+          "to": 9
+        },
+        {
+          "name": "enchant_item",
+          "from": 7,
+          "to": 10
+        },
+        {
+          "name": "window_click",
+          "from": 8,
+          "to": 11
+        },
+        {
+          "name": "close_window",
+          "from": 9,
+          "to": 12
+        },
+        {
+          "name": "custom_payload",
+          "from": 10,
+          "to": 13
+        },
+        {
+          "name": "edit_book",
+          "from": 11,
+          "to": 14
+        },
+        {
+          "name": "query_entity_nbt",
+          "from": 12,
+          "to": 15
+        },
+        {
+          "name": "use_entity",
+          "from": 13,
+          "to": 16
+        },
+        {
+          "name": "generate_structure",
+          "from": 14,
+          "to": 17
+        },
+        {
+          "name": "keep_alive",
+          "from": 15,
+          "to": 18
+        },
+        {
+          "name": "lock_difficulty",
+          "from": 16,
+          "to": 19
+        },
+        {
+          "name": "position",
+          "from": 17,
+          "to": 20
+        },
+        {
+          "name": "position_look",
+          "from": 18,
+          "to": 21
+        },
+        {
+          "name": "look",
+          "from": 19,
+          "to": 22
+        },
+        {
+          "name": "flying",
+          "from": 20,
+          "to": 23
+        },
+        {
+          "name": "vehicle_move",
+          "from": 21,
+          "to": 24
+        },
+        {
+          "name": "steer_boat",
+          "from": 22,
+          "to": 25
+        },
+        {
+          "name": "pick_item",
+          "from": 23,
+          "to": 26
+        },
+        {
+          "name": "craft_recipe_request",
+          "from": 24,
+          "to": 27
+        },
+        {
+          "name": "abilities",
+          "from": 25,
+          "to": 28
+        },
+        {
+          "name": "block_dig",
+          "from": 26,
+          "to": 29
+        },
+        {
+          "name": "entity_action",
+          "from": 27,
+          "to": 30
+        },
+        {
+          "name": "steer_vehicle",
+          "from": 28,
+          "to": 31
+        },
+        {
+          "name": "pong",
+          "from": 29,
+          "to": 32
+        },
+        {
+          "name": "recipe_book",
+          "from": 30,
+          "to": 33
+        },
+        {
+          "name": "displayed_recipe",
+          "from": 31,
+          "to": 34
+        },
+        {
+          "name": "name_item",
+          "from": 32,
+          "to": 35
+        },
+        {
+          "name": "resource_pack_receive",
+          "from": 33,
+          "to": 36
+        },
+        {
+          "name": "advancement_tab",
+          "from": 34,
+          "to": 37
+        },
+        {
+          "name": "select_trade",
+          "from": 35,
+          "to": 38
+        },
+        {
+          "name": "set_beacon_effect",
+          "from": 36,
+          "to": 39
+        },
+        {
+          "name": "held_item_slot",
+          "from": 37,
+          "to": 40
+        },
+        {
+          "name": "update_command_block",
+          "from": 38,
+          "to": 41
+        },
+        {
+          "name": "update_command_block_minecart",
+          "from": 39,
+          "to": 42
+        },
+        {
+          "name": "set_creative_slot",
+          "from": 40,
+          "to": 43
+        },
+        {
+          "name": "update_jigsaw_block",
+          "from": 41,
+          "to": 44
+        },
+        {
+          "name": "update_structure_block",
+          "from": 42,
+          "to": 45
+        },
+        {
+          "name": "update_sign",
+          "from": 43,
+          "to": 46
+        },
+        {
+          "name": "arm_animation",
+          "from": 44,
+          "to": 47
+        },
+        {
+          "name": "spectate",
+          "from": 45,
+          "to": 48
+        },
+        {
+          "name": "block_place",
+          "from": 46,
+          "to": 49
+        },
+        {
+          "name": "use_item",
+          "from": 47,
+          "to": 50
+        }
+      ],
+      "changed": [
+        "block_dig",
+        "set_beacon_effect",
+        "update_structure_block",
+        "block_place",
+        "use_item"
+      ]
+    }
+  },
+  "sharedTypeChanges": [
+    "registryEntryHolder",
+    "registryEntryHolderSet",
+    "vec3f",
+    "vec4f",
+    "vec3f64",
+    "ItemSoundEvent",
+    "ItemSoundHolder",
+    "particleData",
+    "packedChunkPos",
+    "soundSource",
+    "previousMessages",
+    "entityMetadataItem",
+    "entityMetadata",
+    "minecraft_simple_recipe_format",
+    "minecraft_smelting_format",
+    "chat_session",
+    "game_profile",
+    "command_node"
+  ],
+  "resources": {
+    "entityTextures": 481,
+    "recipes": 1089,
+    "packMetadata": null
+  }
+}

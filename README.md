@@ -1,3 +1,7 @@
+> **1.19.4 development branch:** native inputs and the isolated protocol-762
+> connection/terrain probe are ready. The browser remains on 1.18.2 until the
+> graphical integration gates pass. See [development progress](docs/development-1.19.4.md).
+
 # MinecraftJS 1.18.2 development client
 
 This branch targets Java **1.18.2, protocol 758**, with native 1.18 assets and
