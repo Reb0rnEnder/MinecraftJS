@@ -795,14 +795,17 @@ export class EntityRenderer {
         break;
       }
       case 'projectile': {
-        const itemName = { 61: 'snowball', 62: 'egg', 65: 'ender_pearl', 72: 'ender_eye', 73: 'splash_potion',
-          75: 'experience_bottle', 64: 'fire_charge', 63: 'fire_charge', 76: 'firework_rocket' }[e.type];
+        // Object IDs became unified registry IDs in 1.14; use the decoded identity.
+        const name = e.entityName;
+        const itemName = { snowball: 'snowball', egg: 'egg', ender_pearl: 'ender_pearl', eye_of_ender: 'ender_eye',
+          potion: 'splash_potion', experience_bottle: 'experience_bottle', small_fireball: 'fire_charge',
+          fireball: 'fire_charge', firework_rocket: 'firework_rocket' }[name];
         const itemId = this.game.items.byName.get(itemName)?.id;
         v = { root: new Node(), kind: 'projectile', materials: [] };
         if (itemId) {
           const ir = this.game.itemRenderer;
           // EntityPotion carries its ItemStack (splash or lingering potion) in metadata
-          const item = e.type === 73 && e.item ? e.item : { id: itemId, damage: 0, count: 1 };
+          const item = name === 'potion' && e.item ? e.item : { id: itemId, damage: 0, count: 1 };
           const m = ir.modelFor(item);
           const layer = m.layers && m.layers[m.layers.length > 1 ? 1 : 0];
           const entry = layer ? this.game.assets.atlas.entries.get(layer) : null;
@@ -811,20 +814,20 @@ export class EntityRenderer {
             v.spriteParams = colorParams(1, 1, 1, 1, 0.1, 1);
             const n = new Node();
             n.billboard = true;
-            const s = e.type === 63 ? 2 : 0.5;
+            const s = name === 'fireball' ? 2 : 0.5;
             n.scale.setScalar(s);
             n.addDrawable(mesh, material('color', this.atlasTex, v.spriteParams, { blend: 'none' }));
             v.billboard = n;
             v.root.add(n);
             // RenderSnowball draws the whole item: the potion's liquid layer tinted with PotionUtils.getColor
-            const over = e.type === 73 && m.layers.length > 1 ? this.game.assets.atlas.entries.get(m.layers[0]) : null;
+            const over = name === 'potion' && m.layers.length > 1 ? this.game.assets.atlas.entries.get(m.layers[0]) : null;
             if (over) {
               const c = this.game.items.potionColor(item);
               const om = this._cachedMesh('sprite:' + m.layers[0], () => spriteMesh(this.device, over.uv[0], over.uv[1], over.uv[2], over.uv[3]));
               n.addDrawable(om, material('color', this.atlasTex, colorParams(((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255, 1, 0.1, 1), { blend: 'none' }));
             }
           }
-        } else if (e.type === 66) {
+        } else if (name === 'wither_skull') {
           // wither skull
           const mat = this._mat(v, e.invulnerable ? 'entity/wither/wither_invulnerable.png' : 'entity/wither/wither.png');
           const { head } = M.blockModel('witherSkull', ['head']); // RenderWitherSkull's ModelSkeletonHead
