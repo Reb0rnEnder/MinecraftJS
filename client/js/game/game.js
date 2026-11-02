@@ -666,6 +666,7 @@ export class Game {
 
   leaveWorld() {
     setServerBiomes(null);
+    this.worker?.postMessage({type:'serverBiomes',codec:null});
     resetServerRecipes(this);this.nbtQueries?.clear();
     this.structureBlocks.clear();
     this.jigsawBlocks.clear();
@@ -762,7 +763,7 @@ export class Game {
     this.hardcore = p.isHardcore;
     this.dimension = p.dimension;
     this.worldName=p.worldName;this.dimensionData=p.dimensionData;
-    if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));}
+    if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));this.worker?.postMessage({type:'serverBiomes',codec:simplify(p.dimensionCodec)});}
     if(p.difficulty!==undefined)this.difficulty = p.difficulty;
     this.maxPlayers = p.maxPlayers;
     this.levelType = p.levelType;
@@ -858,7 +859,7 @@ export class Game {
     }
     this.dimension = p.dimension;
     this.worldName=p.worldName;this.dimensionData=p.dimensionData;
-    if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));}
+    if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));this.worker?.postMessage({type:'serverBiomes',codec:simplify(p.dimensionCodec)});}
     this.world.setDimension(p.dimension,p.dimensionData||{});
     if(p.dimensionData)this.world.hasSky=!!p.dimensionData.has_skylight;
     this.world.setBiomeSeed?.(p.hashedSeed);
