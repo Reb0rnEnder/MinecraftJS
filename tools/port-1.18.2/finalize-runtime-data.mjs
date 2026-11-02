@@ -80,3 +80,6 @@ await import('../extract-render-layers.mjs');
 await import('../extract-block-offsets.mjs');
 
 await writeFile(join(root,'client/js/net/block-entity-types-1.18.2.js'),'// Native 1.18.2 block entity registry from the pinned server reports.\nexport const BLOCK_ENTITY_TYPES='+JSON.stringify(Object.fromEntries(Object.entries(reports['minecraft:block_entity_type'].entries).map(([name,e])=>[e.protocol_id,name])))+';\n');
+
+// Native support predicates are also placement data; refresh them with runtime tables.
+await import('../extract-support.mjs');

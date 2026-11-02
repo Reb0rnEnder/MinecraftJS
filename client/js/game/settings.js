@@ -13,6 +13,7 @@ export const DEFAULT_KEYS = {
 };
 
 const DEFAULTS = {
+  zoomEnabled:true,dynamicLights:false,dynamicLightsOthers:true,fullBright:false,
   skipMultiplayerWarning: false,
   darkMojangStudiosBackground: false,
   hideLightningFlashes:false,

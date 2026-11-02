@@ -1194,5 +1194,11 @@
         "tentacle7"
       ]
     ]
+  },
+  "zombieHead": {
+    "layer": "minecraft:zombie_head#main",
+    "fields": [
+      "head"
+    ]
   }
 }
