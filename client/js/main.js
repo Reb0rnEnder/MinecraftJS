@@ -25,6 +25,7 @@ async function boot() {
     // Super Potato Mode: the setting, and always with the CPU rasteriser
     if (P.setPotato) P.setPotato(!!settings.superPotato || device.name === 'Software');
     assets.setDevice(device);
+    assets.preloadWorldTextures=settings.preloadTextures!==false;
     assets.language = settings.language || 'en_US';
     try { await assets.activatePacks(settings.resourcePacks || []); } catch (e) { console.warn('Resource packs unavailable', e); }
     // Vanilla startup splash (Mojang logo on white) while everything loads
@@ -33,12 +34,13 @@ async function boot() {
     splash.start();
     P.hideLoading();
     await assets.load((msg, pct) => { splash.setProgress(pct); console.log('[loading]', msg); });
-    splash.stop();
     if (assets.data.recipes) initRecipes(assets.data.recipes);
-    const game = new Game(assets, settings, device);
+    const game = new Game(assets, settings, device,{deferStart:true});
     game.proxies = proxies;
     game.shaderLibrary=new ShaderLibrary(game.shaderPack);
+    await game.sound.preload();
     try { await game.shaderLibrary.load(); } catch(e) { game.shaderPack.error=e.message; console.warn('Shader pack unavailable',e.message); }
+    splash.stop();game.lastFrame=P.now();P.requestFrame(t=>game.frame(t));
     globalThis.game = game; // debugging handle
     const params = P.launchParams ? P.launchParams() : {};
     if (params.connect) {

@@ -140,7 +140,7 @@ export class MinecraftJSExtrasScreen extends OptionsBase{
   constructor(game,parent,options){super(game,parent,'minecraftjs.extras.title');this.options=options||[];}
   init(){const g=this.game,s=this.s,toggle=(key,field)=>({label:()=>trOption(key,onOff(!!s[field])),click:()=>{s[field]=!s[field];}});
     const items=this.options.map(it=>it.extra==='shaders'?{...it,click:()=>import('./shaders.js').then(m=>g.screens.open(new m.ShaderPacksScreen(g,this)))}:it);
-    items.push(toggle('minecraftjs.extras.shaderReflections','shaderReflections'),toggle('minecraftjs.extras.functionKeys','functionKeyChords'),toggle('minecraftjs.extras.zoom','zoomEnabled'),toggle('minecraftjs.extras.dynamicLights','dynamicLights'),toggle('minecraftjs.extras.otherLights','dynamicLightsOthers'),toggle('minecraftjs.extras.fullBright','fullBright'));
+    items.push(toggle('minecraftjs.extras.preloadTextures','preloadTextures'),toggle('minecraftjs.extras.functionKeys','functionKeyChords'),toggle('minecraftjs.extras.zoom','zoomEnabled'),toggle('minecraftjs.extras.dynamicLights','dynamicLights'),toggle('minecraftjs.extras.otherLights','dynamicLightsOthers'),toggle('minecraftjs.extras.fullBright','fullBright'));
     this.grid(items);this.doneButton();
   }
   done(){this.game.applyGraphicsSettings?.();super.done();}

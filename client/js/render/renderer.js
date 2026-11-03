@@ -1,3 +1,4 @@
+import{VisibilityCache}from'./visibility-cache.js';
 import{EMPTY_DYNAMIC_LIGHTS}from'../gfx/dynamic-lighting.js';
 import { BreakingOverlay } from './breaking.js';
 // World renderer (device-agnostic, see gfx/device.js).
@@ -35,6 +36,7 @@ export class Renderer {
     this.device = device;
     this.assets = assets;
     this.renderDistance = 8;
+    this.visibilityCache=new VisibilityCache();this.visibilityRevision=0;
     this.sections = new Map(); // sectionKey -> { cx, sy, cz, solid, cutout, translucent, vis }
     this.culler = new SectionCuller();
     this.columnLoaded = () => true; // set by the game
@@ -83,7 +85,7 @@ export class Renderer {
       if (arr && arr.length) s[layer] = this.device.createMesh(FORMAT.terrain, arr, { quads: true });
     }
     s.model = mat4.translate(mat4.create(), mat4.create(), cx * 16, sy * 16, cz * 16);
-    this.sections.set(key, s);
+    this.sections.set(key, s);this.invalidateVisibility();
   }
 
   // key: sectionKey number or 'cx,sy,cz'
@@ -92,7 +94,7 @@ export class Renderer {
     const s = this.sections.get(key);
     if (!s) return;
     for (const layer of ['solid', 'cutout', 'translucent']) if (s[layer]) this.device.destroyMesh(s[layer]);
-    this.sections.delete(key);
+    this.sections.delete(key);this.invalidateVisibility();
   }
 
   removeChunk(cx, cz) { for (let y = 0; y < 16; y++) this.removeSection(sectionKey(cx, y, cz)); }
@@ -284,6 +286,7 @@ export class Renderer {
     env.cloudsVisible = dimension === 0 && env.cloudMode > 0;
     if (env.cloudMode === 2) this._updateFancyClouds(state.camPos, partial);
     // Fast clouds follow the camera; UVs scroll with time
+    if(env.cloudMode!==1)return;
     const size = renderDistBlocks * 4;
     const cam = state.camPos;
     const scrollX = (this.cloudTicks + partial) * 0.03;
@@ -415,11 +418,15 @@ export class Renderer {
   }
 
   // Frustum + occlusion culling (graph walk from the camera section). Call after setCamera.
+  invalidateVisibility(){this.visibilityRevision++;this.visibilityCache.invalidate();}
+
   cull() {
     const c = this.camPos;
     const f = this.fog;
     const fogEnd = f.mode === 0 ? f.end : f.mode === 1 ? 4.6 / Math.max(0.001, f.density) : Infinity; // exp fog: 99% at 4.6/density
-    this.visibleList = this.culler.update(this.sections, this.frustum, c, this.renderDistance, this.columnLoaded, this.opaqueAt(c[0], c[1], c[2]), this.culler.enabled ? fogEnd : Infinity);
+    const opaque=this.opaqueAt(c[0],c[1],c[2]),bounds=this.verticalBounds||{};
+    const inputs=[...c,...this.frustum.flat(),this.renderDistance,opaque?1:0,this.culler.enabled?1:0,fogEnd,bounds.minSection??0,bounds.sectionCount??16];
+    this.visibleList=this.visibilityCache.get(inputs,this.visibilityRevision,()=>{const list=this.culler.update(this.sections,this.frustum,c,this.renderDistance,this.columnLoaded,opaque,this.culler.enabled?fogEnd:Infinity,this.verticalBounds);for(const section of list){const dx=section.cx*16+8-c[0],dy=section.sy*16+8-c[1],dz=section.cz*16+8-c[2];section.dist=dx*dx+dy*dy+dz*dz;}list.sort((a,b)=>a.dist-b.dist);return list;});
     return this.visibleList;
   }
 
@@ -444,11 +451,6 @@ export class Renderer {
     const cx = this.camPos[0], cy = this.camPos[1], cz = this.camPos[2];
     const vis = this.visibleList || this.cull();
     this.visibleList = null;
-    for (const s of vis) {
-      const dx = s.cx * 16 + 8 - cx, dy = s.sy * 16 + 8 - cy, dz = s.cz * 16 + 8 - cz;
-      s.dist = dx * dx + dy * dy + dz * dz;
-    }
-    vis.sort((a, b) => a.dist - b.dist);
     this.visibleSections = vis.length;
     const solidState = { blend: 'none', cull: true };
     for (const s of vis) if (s.solid) d.draw({ mesh: s.solid, pipeline: 'terrain', textures: atlas, params: s.lod ? P_SOLID_LOD : P_SOLID, model: s.model, state: solidState });

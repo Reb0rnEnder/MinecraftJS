@@ -232,6 +232,7 @@ function buildBundles(files) {
   const len = Buffer.alloc(4);
   len.writeUInt32LE(header.length);
   return {
+    'bundles/texture-index.json':Buffer.from(JSON.stringify([...files].filter(([n])=>n.startsWith('minecraft/textures/')&&n.endsWith('.png')).map(([n,b])=>[n.slice(19),b.readUInt32BE(16),b.readUInt32BE(20)]))),
     'bundles/models.json': Buffer.from(JSON.stringify(models)),
     'bundles/textures.bin': Buffer.concat([len, header, ...blobs]),
   };

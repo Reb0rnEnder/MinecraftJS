@@ -84,6 +84,7 @@ export function blockModelOffset(name,x,y,z) {
 
 export class Mesher {
   constructor(world, store) {
+    const water=blocks.find(b=>b&&b.isWater);this.waterVisualState=water?.defaultState??((water?.id||0)<<4);
     this.world = world; // { getState(x,y,z), getLight(x,y,z) -> sky<<4|block, getBiome(x,z) }
     this.store = store;
     this.cache = new Map(); // resolved model per (file|props) key
@@ -465,10 +466,12 @@ export class Mesher {
     const lb = Math.max(light(x, y, z) & 15, light(x, y + 1, z) & 15);
     const emitL = lava ? 15 : 0;
 
+    const visualState=lava?state:this.waterVisualState;
+    const material=v=>visualState|(!lava&&renderTop&&v[1]>.001?32768:0);
     const quad = (verts, shade, sky, blk) => {
       // verts: [[x,y,z,u,v] x4]
-      for (const v of verts) buf.push10(lx + v[0], ly + v[1], lz + v[2], v[3], v[4], cr * shade, cg * shade, cb * shade, sky, Math.max(blk, emitL));
-      for (let k = 3; k >= 0; k--) { const v = verts[k]; buf.push10(lx + v[0], ly + v[1], lz + v[2], v[3], v[4], cr * shade, cg * shade, cb * shade, sky, Math.max(blk, emitL)); }
+      for (const v of verts) buf.push10(lx + v[0], ly + v[1], lz + v[2], v[3], v[4], cr * shade, cg * shade, cb * shade, sky, Math.max(blk, emitL),material(v));
+      for (let k = 3; k >= 0; k--) { const v = verts[k]; buf.push10(lx + v[0], ly + v[1], lz + v[2], v[3], v[4], cr * shade, cg * shade, cb * shade, sky, Math.max(blk, emitL),material(v)); }
     };
 
     if (renderTop) {

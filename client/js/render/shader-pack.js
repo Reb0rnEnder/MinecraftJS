@@ -1,8 +1,8 @@
+import{shaderStagePlan,POST_SCENE_SAMPLERS,validatePostOutputs,shaderProgramEnabled}from'./shader-stages.js';
 import {decodePng} from '../util/png.js';
 import {shaderFrameUniforms} from './shader-frame.js';
 import {shaderCompatibility,compatibleShaderSource} from './shader-compat.js';
 import {parseShaderOptions,validateShaderOptions,applyShaderOptions} from './shader-options.js';
-import {packLighting,lightingFrame,lightingOption,basicLightingGLSL} from './shader-lighting.js';
 import {selectGLSLFunctions,shaderBlockRules,animationLookup,glslFloatLiterals} from './glsl-functions.js';
 import {getBlock as getBlockById} from '../world/blocks.js';
 const getBlock=state=>getBlockById(state>>4);
@@ -26,9 +26,11 @@ export function shaderPackSources(bytes,dimension=0,options={}){
  };
  return {zip,root,start,read};
 }
-export function finalShaderSource(bytes,dimension=0,options={}){
+export function finalShaderSource(bytes,dimension=0,options={},stage='final'){
  const {read,start,zip,root}=shaderPackSources(bytes,dimension,options);
- const source=compatibleShaderSource(read(start),shaderCompatibility(zip,root),MC_VERSION).replace(/^\s*#version[^\n]*$/gm,'').replace(/^\s*#extension\s+GL_ARB_shader_texture_lod[^\n]*$/gm,'');
+ const entry=stage==='final'?start:(zip.has(root+(dimension===-1?'world-1/':dimension===1?'world1/':'world0/')+stage+'.fsh')?(dimension===-1?'world-1/':dimension===1?'world1/':'world0/')+stage+'.fsh':stage+'.fsh');
+ const raw=read(entry);if(stage!=='final')validatePostOutputs(raw,stage);
+ const source=compatibleShaderSource(raw,shaderCompatibility(zip,root),MC_VERSION).replace(/^\s*#version[^\n]*$/gm,'').replace(/^\s*#extension\s+GL_ARB_shader_texture_lod[^\n]*$/gm,'');
  if(/^\s*#extension/m.test(source))throw Error('Final pass requests an unsupported GLSL extension');
  return '#version 300 es\nprecision highp float;\nprecision highp int;precision highp sampler2DShadow;\n#define MC_VERSION '+MC_VERSION+'\n#define MC_GL_VERSION 302\n#define MC_GLSL_VERSION 330\n#define MC_RENDER_QUALITY 1.0\n#define MC_HAND_DEPTH 0.125\n'+(/\bgl_FragColor\b|\bgl_FragData\s*\[\s*0\s*\]/.test(source)?'out vec4 mcjsFinalColor;\n':'')+'vec4 mcjsTextureLod(sampler2D s,vec2 uv,int lod){return textureLod(s,uv,float(lod));}\nvec4 mcjsTextureLod(sampler2D s,vec2 uv,float lod){return textureLod(s,uv,lod);}\n'+source.replace(/\bvarying\b/g,'in').replace(/\btexture(?:2D)?Lod\b/g,'mcjsTextureLod').replace(/\btexture2D\b/g,'texture').replace(/\bgl_FragColor\b|\bgl_FragData\s*\[\s*0\s*\]/g,'mcjsFinalColor')+'\n';
 }
@@ -64,8 +66,8 @@ vec3 WavingBlocks(vec3 p,int id,float tip){return mcjsPackWaving(p,id/100,tip);}
  source=glslFloatLiterals(source).replace(/\bmc_Entity\.x\s*(==|!=|<=|>=|<|>)\s*(\d+)(?![\w.])/g,'mc_Entity.x $1 $2.0');
  return {source,rules:shaderBlockRules(properties,version),functions};
 }
-export function finalVertexSource(bytes,dimension=0,options={}){
- const {read,start,zip,root}=shaderPackSources(bytes,dimension,options),name=start.replace(/\.fsh$/,'.vsh');
+export function finalVertexSource(bytes,dimension=0,options={},stage='final'){
+ const {read,start,zip,root}=shaderPackSources(bytes,dimension,options),world=dimension===-1?'world-1/':dimension===1?'world1/':'world0/',name=stage==='final'?start.replace(/\.fsh$/,'.vsh'):zip.has(root+world+stage+'.vsh')?world+stage+'.vsh':stage+'.vsh';
  if(!zip.has(root+name))return undefined;
  const source=compatibleShaderSource(read(name),shaderCompatibility(zip,root),MC_VERSION).replace(/^[ \t]*#version[^\n]*/gm,'').replace(/\bvarying\b/g,'out').replace(/\bftransform\s*\(\s*\)/g,'vec4(mcjsUV*2.0-1.0,0.0,1.0)').replace(/gl_TextureMatrix\[\d+\]/g,'mat4(1.0)').replace(/\bgl_MultiTexCoord1\b/g,'vec4(vec2(mcjsEyeBrightness)/240.0,0.0,1.0)').replace(/\bgl_MultiTexCoord0\b|\bgl_Vertex\b/g,'vec4(mcjsUV,0.0,1.0)').replace(/(\d+\.\d*)f\b/g,'$1');
  return '#version 300 es\nprecision highp float;precision highp int;precision highp sampler2DShadow;\n#define MC_VERSION '+MC_VERSION+'\n#define MC_RENDER_QUALITY 1.0\n#define MC_HAND_DEPTH 0.125\nuniform ivec2 mcjsEyeBrightness;vec2 mcjsUV;\n'+source.replace(/void\s+main\s*\(\s*\)\s*{/g,'void main(){mcjsUV=vec2(float((gl_VertexID<<1)&2),float(gl_VertexID&2));');
@@ -89,41 +91,43 @@ export function supportedShaderOptions(bytes){
  for(const path of zip.list(root))if(/\.(?:glsl|fsh|vsh|settings)$/.test(path))for(const option of parseShaderOptions(zip.readText(path)))if(!all.has(option.name))all.set(option.name,option);
  let used=programOnly(read(start));try{used+='\n'+programOnly(wavingShaderSource(bytes)?.source||'');}catch{}
  used=used.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g,'').replace(/^[ \t]*#define[ \t]+(\w+)[^\n]*/gm,(line,name)=>all.has(name)?'':line).replace(/#if(?:def|ndef)?[^\n]*\n\s*#endif/g,'');
- const hasLighting=all.has('BLOCKLIGHT_R')&&all.has('LIGHT_DR')&&all.has('AMBIENT_DR'),names=new Set(used.match(/\b[A-Za-z_]\w*\b/g)||[]);
- const unsupported=new Set([...profile.disabled,...Object.keys(profile.fixed),'FSH','VSH','OVERWORLD','NETHER','END','ambientOcclusionLevel','centerDepthHalflife','wetnessHalflife','drynessHalflife','UNIFORM_MOONPHASE']);
+ const names=new Set(used.match(/\b[A-Za-z_]\w*\b/g)||[]);
+ const unsupported=new Set([...profile.disabled,...Object.keys(profile.fixed),'FSH','VSH','OVERWORLD','NETHER','END','ambientOcclusionLevel','centerDepthHalflife','wetnessHalflife','drynessHalflife','UNIFORM_MOONPHASE','TAA','TAAU','FXAA','WAVING_LAVA','WAVING_FIRE','WAVING_LANTERN']);
  const lang=zip.readText(root+'lang/en_US.lang')||'',labels=Object.fromEntries(lang.split(/\r?\n/).filter(s=>s.includes('=')).map(s=>[s.slice(0,s.indexOf('=')),s.slice(s.indexOf('=')+1)]));
- return [...all.values()].filter(o=>(!profile.finalOptions||profile.finalOptions.includes(o.name))&&!unsupported.has(o.name)&&(names.has(o.name)||hasLighting&&lightingOption.test(o.name))&&!(hasLighting&&['TAA','FXAA','WAVING_LAVA','WAVING_FIRE','WAVING_LANTERN'].includes(o.name))).map(o=>({...o,label:labels['option.'+o.name]||o.name,description:labels['option.'+o.name+'.comment']||''}));
+ return [...all.values()].filter(o=>(!profile.finalOptions||profile.finalOptions.includes(o.name))&&!unsupported.has(o.name)&&(names.has(o.name))).map(o=>({...o,label:labels['option.'+o.name]||o.name,description:labels['option.'+o.name+'.comment']||''}));
 }
-function createPackPass(device,bytes,dimension,options){
+function createPackPass(device,bytes,dimension,options,stage='final'){
  const {zip,root}=shaderPackSources(bytes),properties=zip.readText(root+'shaders.properties')||'',path=/^[ \t]*texture\.noise[ \t]*=[ \t]*([^\s#]+)/m.exec(properties)?.[1],png=path&&zip.read(root+normalize(path));
- const textures={};for(const match of properties.matchAll(/^[ \t]*texture\.final\.(\w+)[ \t]*=[ \t]*([^\s#]+)/gm)){const data=zip.read(root+normalize(match[2].replace(/^\//,'')));if(!data)throw Error('Missing final texture: '+match[2]);textures[match[1]]=decodePng(data);}
- return device.createFinalShaderPass(finalShaderSource(bytes,dimension,options),finalVertexSource(bytes,dimension,options),{noise:png?decodePng(png):null,textures});
+ const textures={};for(const match of properties.matchAll(new RegExp('^[ \t]*texture\\.'+stage+'\\.(\\w+)[ \t]*=[ \t]*([^\\s#]+)','gm'))){const data=zip.read(root+normalize(match[2].replace(/^\//,'')));if(!data)throw Error('Missing final texture: '+match[2]);textures[match[1]]=decodePng(data);}
+ return device.createFinalShaderPass(finalShaderSource(bytes,dimension,options,stage),finalVertexSource(bytes,dimension,options,stage),{noise:png?decodePng(png):null,textures,sceneSamplers:stage==='final'?undefined:POST_SCENE_SAMPLERS});
 }
 
 export class ShaderPackFinal {
- constructor(game){this.game=game;this.passes=new Map();this.enabled=true;this.name='';this.bytes=null;this.target=null;this.error='';this.frame=0;this.startTime=performance.now()/1000;this.lastTime=this.startTime;this.waving=null;this.wavingError='';this.options={};this.availableOptions=[];this.lighting=null;}
+ constructor(game){this.postChains=new Map();this.postTargets=[];this.pipelineReports=new Map();this.game=game;this.passes=new Map();this.enabled=true;this.name='';this.bytes=null;this.target=null;this.error='';this.frame=0;this.startTime=performance.now()/1000;this.lastTime=this.startTime;this.waving=null;this.wavingError='';this.options={};this.availableOptions=[];this.lighting=null;}
  load(name,bytes,options={},{restore=false}={}){
   const d=this.game.device;if(!d.createFinalShaderPass)throw Error('Shader packs currently require WebGL 2');
   const available=supportedShaderOptions(bytes),saved=restore?Object.fromEntries(Object.entries(options).filter(([name,value])=>available.some(o=>o.name===name&&o.values.includes(String(value))))):options,valid=validateShaderOptions(available,saved);
   const pass=createPackPass(d,bytes,this.game.dimension||0,valid);
-  let terrain=null,wave=null,lighting=packLighting(available,valid);
-  try{wave=this.game.assets?.data?.blocks?wavingShaderSource(bytes,MC_VERSION,valid):null;if((wave||lighting||this.game.assets?.data?.blocks)&&d.createTerrainAnimation){const states=this.game.assets?.data?.blocks?blockStates(this.game):[],lookup=states.length?animationLookup(wave?.rules||[],states):null;for(const state of states)if(state.water)lookup.data[state.id*4+2]=255;terrain=d.createTerrainAnimation(wave?.source||'',lookup,lighting?basicLightingGLSL:'',states.length>0);}}
+  let terrain=null,wave=null;
+  try{wave=this.game.assets?.data?.blocks?wavingShaderSource(bytes,MC_VERSION,valid):null;if(wave&&d.createTerrainAnimation){const states=this.game.assets?.data?.blocks?blockStates(this.game):[],lookup=states.length?animationLookup(wave?.rules||[],states):null;for(const state of states)if(state.water)lookup.data[state.id*4+2]=255;terrain=d.createTerrainAnimation(wave?.source||'',lookup,'',false);}}
   catch(e){pass.destroy();throw Error('Shader terrain settings could not compile: '+e.message);}
-  this.clear();this.bytes=bytes;this.name=name;this.options=valid;this.availableOptions=available;this.lighting=lighting;const {zip,root}=shaderPackSources(bytes);const kind=shaderCompatibility(zip,root).kind;this.compatibilityNote=['photon','complementary'].includes(kind)?'Partial support: final effects + MinecraftJS water reflections':'';this.hasWaving=!!wave;this.waving=terrain;this.wavingError='';this.passes.set(this.game.dimension||0,pass);this.enabled=true;this.error='';
+  const chain=this.buildPostChain(bytes,this.game.dimension||0,valid);if(chain.report.unsupported.length){terrain?.destroy();pass.destroy();throw Error('Shader pipeline not yet supported: '+chain.report.unsupported.join('; '));}this.clear();this.postChains.set(this.game.dimension||0,chain.passes);this.pipelineReports.set(this.game.dimension||0,chain.report);this.bytes=bytes;this.name=name;this.options=valid;this.availableOptions=available;this.lighting=null;this.updatePipelineNote(chain.report);this.hasWaving=!!wave;this.waving=terrain;this.wavingError='';this.passes.set(this.game.dimension||0,pass);this.enabled=true;this.error='';
  }
- clear(){this.waving?.destroy();this.waving=null;this.wavingError='';this.game.device.setTerrainAnimation?.(null);this.game.device.clearWaterReflection?.();for(const p of this.passes.values())p.destroy();this.passes.clear();if(this.target)this.releaseTarget();this.target=null;if(this.worldDepth)this.game.device.destroyTexture(this.worldDepth);this.worldDepth=null;this.bytes=null;this.name='';this.compatibilityNote='';this.options={};this.availableOptions=[];this.lighting=null;this.hasWaving=false;}
- captureOpaque(projection,sky){if(this.active&&this.game.settings?.shaderReflections!==false)this.game.device.captureWaterReflection?.(projection,sky);else if(this.game.device.waterReflection)this.game.device.clearWaterReflection?.();}
+ buildPostChain(bytes,dimension,options){const {zip,root}=shaderPackSources(bytes,dimension,options),plan=shaderStagePlan(zip,root,dimension),passes=[],report={...plan,running:[],unsupported:[]};try{for(const name of plan.post){const properties=zip.readText(root+'shaders.properties')||'';if(!shaderProgramEnabled(properties,dimension,name))continue;const pass=createPackPass(this.game.device,bytes,dimension,options,name);passes.push({name,pass});report.running.push(name);}}catch(e){for(const {pass}of passes)pass.destroy();passes.length=0;report.running=[];report.unsupported.push(e.message);}return {passes,report};}
+ updatePipelineNote(report){this.pipelineReport=report;this.compatibilityNote=report.geometry.length||report.shadow.length?'Partial support: pack sky, water and shadows remain unsupported':report.unsupported.length?'Partial support: '+report.unsupported[0]:report.running.length?'Real pack stages: '+report.running.join(', ')+', final':'';}
+ clear(){for(const chain of this.postChains.values())for(const {pass}of chain)pass.destroy();this.postChains.clear();this.pipelineReports.clear();this.pipelineReport=null;for(const target of this.postTargets)this.game.device.destroyTexture(target);this.postTargets=[];this.waving?.destroy();this.waving=null;this.wavingError='';this.game.device.setTerrainAnimation?.(null);this.game.device.clearWaterReflection?.();for(const p of this.passes.values())p.destroy();this.passes.clear();if(this.target)this.releaseTarget();this.target=null;if(this.worldDepth)this.game.device.destroyTexture(this.worldDepth);this.worldDepth=null;this.bytes=null;this.name='';this.compatibilityNote='';this.options={};this.availableOptions=[];this.lighting=null;this.hasWaving=false;}
+ captureOpaque(){if(this.game.device.waterReflection)this.game.device.clearWaterReflection?.();}
  releaseTarget(){this.game.device.destroyTexture(this.target);this.target=null;}
- prepareTerrain(camera,eye){const now=performance.now()/1000;this.game.device.setTerrainAnimation?.(this.active?this.waving:null,{time:(now-this.startTime)%3600,worldTime:this.game.world.timeOfDay,camera,eye,fullBright:!!this.game.settings?.fullBright,lighting:this.lighting?lightingFrame(this.lighting,this.game.world.timeOfDay,this.game.dimension||0,this.game.world.rainStrength||0):null});}
+ prepareTerrain(camera,eye){const now=performance.now()/1000;this.game.device.setTerrainAnimation?.(this.active?this.waving:null,{time:(now-this.startTime)%3600,worldTime:this.game.world.timeOfDay,camera,eye,fullBright:!!this.game.settings?.fullBright,lighting:null});}
  get active(){return this.enabled&&!!this.bytes;}
- captureDepth(source){const pass=this.passes.get(this.game.dimension||0);if(!pass?.needsDepth)return;const d=this.game.device;if(!this.worldDepth||this.worldDepth.width!==d.width||this.worldDepth.height!==d.height){if(this.worldDepth)d.destroyTexture(this.worldDepth);this.worldDepth=d.createRenderTarget(d.width,d.height,{sampleDepth:true});}d.copyDepth(source||this.target,this.worldDepth);}
+ captureDepth(source){const pass=this.passes.get(this.game.dimension||0);if(!pass?.needsDepth&&!this.postChains.get(this.game.dimension||0)?.some(({pass})=>pass.needsDepth))return;const d=this.game.device;if(!this.worldDepth||this.worldDepth.width!==d.width||this.worldDepth.height!==d.height){if(this.worldDepth)d.destroyTexture(this.worldDepth);this.worldDepth=d.createRenderTarget(d.width,d.height,{sampleDepth:true});}d.copyDepth(source||this.target,this.worldDepth);}
  begin(clear){
-  const d=this.game.device;const dimension=this.game.dimension||0;try{if(!this.passes.has(dimension))this.passes.set(dimension,createPackPass(d,this.bytes,dimension,this.options));}catch(e){this.error=e.message;this.enabled=false;console.warn('Shader pack disabled',e.message);}if(!this.target||this.target.width!==d.width||this.target.height!==d.height){if(this.target)this.releaseTarget();this.target=d.createRenderTarget(d.width,d.height,{sampleDepth:true});}d.setRenderTarget(this.target,clear);
+  const d=this.game.device;const dimension=this.game.dimension||0;if(!this.postChains.has(dimension)){const chain=this.buildPostChain(this.bytes,dimension,this.options);this.postChains.set(dimension,chain.passes);this.pipelineReports.set(dimension,chain.report);if(chain.report.unsupported.length){this.error='Shader pipeline not yet supported: '+chain.report.unsupported.join('; ');this.enabled=false;}}this.updatePipelineNote(this.pipelineReports.get(dimension));try{if(!this.passes.has(dimension))this.passes.set(dimension,createPackPass(d,this.bytes,dimension,this.options));}catch(e){this.error=e.message;this.enabled=false;console.warn('Shader pack disabled',e.message);}if(!this.target||this.target.width!==d.width||this.target.height!==d.height){if(this.target)this.releaseTarget();this.target=d.createRenderTarget(d.width,d.height,{sampleDepth:true});}d.setRenderTarget(this.target,clear);
  }
  render(){
   const g=this.game,d=g.device,dimension=g.dimension||0,now=performance.now()/1000;
   const frame={time:(now-this.startTime)%3600,delta:now-this.lastTime,frame:this.frame++,worldTime:g.world.timeOfDay,underwater:!!g.player.eyesInWater,gamma:g.settings.gamma,uniforms:shaderFrameUniforms(g)};this.lastTime=now;d.setRenderTarget(null);if(!this.enabled){d.copyColor(this.target);return;}
-  try{if(!this.passes.has(dimension))this.passes.set(dimension,createPackPass(d,this.bytes,dimension,this.options));this.passes.get(dimension).draw(this.worldDepth?{...this.target,depthTexture:this.worldDepth.depthTexture}:this.target,frame);}
-  catch(e){this.error=e.message;this.enabled=false;console.warn('Shader pack disabled',e.message);d.copyColor(this.target);}
+  try{if(!this.passes.has(dimension))this.passes.set(dimension,createPackPass(d,this.bytes,dimension,this.options));let scene=this.target;const chain=this.postChains.get(dimension)||[];for(let i=0;i<chain.length;i++){const slot=i%2;let target=this.postTargets[slot];if(!target||target.width!==d.width||target.height!==d.height){if(target)d.destroyTexture(target);target=this.postTargets[slot]=d.createRenderTarget(d.width,d.height);}d.setRenderTarget(target,[0,0,0,0]);chain[i].pass.draw(this.worldDepth?{...scene,depthTexture:this.worldDepth.depthTexture}:scene,frame);scene=target;}d.setRenderTarget(null);this.passes.get(dimension).draw(this.worldDepth?{...scene,depthTexture:this.worldDepth.depthTexture}:scene,frame);}
+  catch(e){this.error=e.message;this.enabled=false;console.warn('Shader pack disabled',e.message);d.setRenderTarget(null);d.copyColor(this.target);}
  }
 }

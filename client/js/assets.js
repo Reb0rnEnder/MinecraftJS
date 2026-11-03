@@ -1,3 +1,4 @@
+import{preloadTextures}from'./render/texture-preload.js';
 import {applyPackModels,applyPackTextures} from './resource-models.js';
 // Asset manager: base game assets (an assets/ folder next to the page, or the zip embedded in a single-file build)
 // layered under user resource packs.
@@ -42,6 +43,7 @@ export class ResourcePack {
 
 export class Assets {
   constructor() {
+    this.imageLoads=new Map();
     this.images = new Map();   // rel -> decoded image | null (loading) | false (missing)
     this.textures = new Map(); // rel -> device texture
     this.data = {};
@@ -137,23 +139,21 @@ export class Assets {
     const cur = this.images.get(rel);
     if (cur !== undefined) return cur || null;
     this.images.set(rel, null);
-    this.imageAsync(rel).catch(() => this.images.set(rel, false));
+    const version=this.version;this.imageAsync(rel).catch(()=>{if(this.version===version)this.images.set(rel,false);});
     return null;
   }
 
   async imageAsync(rel) {
     const cur = this.images.get(rel);
     if (cur) return cur;
-    const bytes = await this.readBytes('textures/' + rel);
-    if (!bytes) { this.images.set(rel, false); throw new Error('Missing texture ' + rel); }
-    const img = decodePng(bytes);
-    this.images.set(rel, img);
-    return img;
+    if(this.imageLoads.has(rel))return this.imageLoads.get(rel);
+    const version=this.version,task=(async()=>{const bytes=await this.readBytes('textures/'+rel);if(!bytes)throw Error('Missing texture '+rel);const img=decodePng(bytes);if(version!==this.version)throw Error('Resource reload superseded texture '+rel);this.images.set(rel,img);return img;})();
+    this.imageLoads.set(rel,task);try{return await task;}finally{if(this.imageLoads.get(rel)===task)this.imageLoads.delete(rel);}
   }
 
   // Device texture for a texture path (null until decoded)
   texture(rel, opts = {}) {
-    const key = rel + (opts.wrap === 'repeat' ? '#r' : '');
+    const key = rel + (opts.wrap === 'repeat' ? '#r' : '')+(opts.filter==='linear'?'#linear':'');
     let t = this.textures.get(key);
     if (t) return t;
     const img = this.image(rel);
@@ -201,7 +201,7 @@ export class Assets {
     this.version++;
     for (const t of this.textures.values()) this.device.destroyTexture(t);
     this.textures.clear();
-    this.images.clear();
+    this.images.clear();this.imageLoads.clear();
     const packsLowFirst = [...this.packs].reverse();
 
     step('Loading block models...', 15);
@@ -244,8 +244,16 @@ export class Assets {
     ].map((p) => this.imageAsync(p).catch(() => null)));
     try { this.glyphSizes = await this.readBytes('font/glyph_sizes.bin'); } catch (e) { this.glyphSizes = null; }
 
-    await Promise.all(Array.from({length:6},(_,i)=>this.imageAsync('gui/title/background/panorama_'+i+'.png')));
-    for(let i=0;i<6;i++)this.texture('gui/title/background/panorama_'+i+'.png',{filter:'linear'});
+    step('Preparing title textures...',78);
+    const required=Array.from({length:6},(_,i)=>'gui/title/background/panorama_'+i+'.png').concat(['gui/title/minecraft.png','gui/widgets.png','gui/icons.png','gui/options_background.png','font/ascii.png']);
+    this.preloadReport={required:await preloadTextures(this,required,{budget:Infinity})};
+    const missingPanorama=this.preloadReport.required.failed.filter(p=>/panorama_[0-5]\.png$/.test(p));if(missingPanorama.length)throw Error('Missing panorama textures: '+missingPanorama.join(', '));
+    if(this.preloadWorldTextures!==false){
+      const index=await this.source.textureIndex?.()||[],all=new Map(index.map(e=>[e[0],e]));
+      for(const pack of packsLowFirst)for(const name of pack.list('textures/'))if(name.endsWith('.png')){const bytes=pack.read(name);if(bytes?.length>=24){const d=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);all.set(name.slice(9),[name.slice(9),d.getUint32(16),d.getUint32(20)]);}}
+      const entries=[...all.values()].filter(([path])=>! /^(block|blocks|item|items)\//.test(path)&&!required.includes(path)).sort(([a],[b])=>Number(a.startsWith('font/unicode_page_'))-Number(b.startsWith('font/unicode_page_')));
+      this.preloadReport.world=await preloadTextures(this,entries,{yieldFrame:()=>new Promise(resolve=>platform().requestFrame(resolve)),progress:(done,total)=>step('Preloading textures...',78+6*done/Math.max(1,total))});
+    }
 
     step('Starting mesh worker...', 85);
     await this.startMeshWorker();
