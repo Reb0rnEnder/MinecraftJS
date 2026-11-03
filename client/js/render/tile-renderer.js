@@ -768,7 +768,7 @@ export class TileEntityRenderer {
         t.shulkerLid.position.set(0, -f * 0.5 * 16, 0);
         t.shulkerLid.rotation.set(0, 270 * f * D2R, 0);
       } else if (t.type === 'banner' && t.bannerSwing) {
-        const time = this.ticks + partial + t.x * 7 + t.y * 9 + t.z * 13;
+        const time = Number(this.game.world.worldAge ?? this.ticks) + partial + t.x * 7 + t.y * 9 + t.z * 13;
         t.bannerSwing.rotation.x = bannerSwing(time);
       } else if (t.type === 'beacon' && t.beamNode) {
         this._buildBeam(t, partial);

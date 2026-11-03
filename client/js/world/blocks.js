@@ -228,3 +228,8 @@ export function blockFaceSupports(state,face,center=false){
  if(!native)throw Error('Missing native placement support data for state '+state);
  return !!(native[center?0:1]&(1<<face));
 }
+
+export function nativePlacementRule(name){return shapesData?.placementRules?.rules[name]||null;}
+export function nativeReplaceable(state){return shapesData?.placementRules?.replaceable[state];}
+export function nativeRigidTop(state){return shapesData?.placementRules?.rigidTop[state]===true;}
+export function nativePlantSoil(name,state){const data=shapesData?.placementRules,rule=data?.rules[name];if(rule?.soil===undefined)return false;return data.soilPatterns[rule.soil].some(([first,last])=>state>=first&&state<=last);}

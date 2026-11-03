@@ -56,6 +56,10 @@ public class ExtractSupport {
    List<?> wrappers=nativeVersion.equals("1.16.5")?(List<?>)m(c("net.minecraft.tags.BlockTags"),"getWrappers").invoke(null):(List<?>)f(c("net.minecraft.tags.StaticTagHelper"),"wrappers").get(f(c("net.minecraft.tags.BlockTags"),"HELPER").get(null));
    for(Object wrapper:wrappers){String name=m(c("net.minecraft.tags.Tag$Named"),"getName").invoke(wrapper).toString();f(wrapper.getClass(),"tag").set(wrapper,m(c("net.minecraft.tags.Tag"),"fromSet",Set.class).invoke(null,blockTag(name,blocksRegistry,tags)));}
   }
+  if(classNames.containsKey("net.minecraft.tags.TagKey")){
+   Object registry=f(c(classNames.containsKey("net.minecraft.core.registries.BuiltInRegistries")?"net.minecraft.core.registries.BuiltInRegistries":"net.minecraft.core.Registry"),"BLOCK").get(null);Map<String,Set<Object>> tags=new LinkedHashMap<>();Map<Object,List<Object>> bindings=new LinkedHashMap<>();
+   for(Field tf:c("net.minecraft.tags.BlockTags").getDeclaredFields())if(Modifier.isStatic(tf.getModifiers())&&tf.getType()==c("net.minecraft.tags.TagKey")){tf.setAccessible(true);Object key=tf.get(null);String name=m(c("net.minecraft.tags.TagKey"),"location").invoke(key).toString();List<Object> holders=new ArrayList<>();for(Object value:blockTag(name,registry,tags)){int id=(int)m(c("net.minecraft.core.Registry"),"getId",Object.class).invoke(registry,value);holders.add(((Optional<?>)m(c("net.minecraft.core.Registry"),"getHolder",int.class).invoke(registry,id)).orElseThrow());}bindings.put(key,holders);}m(c("net.minecraft.core.Registry"),"bindTags",Map.class).invoke(registry,bindings);
+  }
   Method center=m(block,"canSupportCenter",reader,pos,dir),full=m(state,"isFaceSturdy",access,pos,dir);
   Object[] directions=(Object[])m(dir,"values").invoke(null);List<Object> result=new ArrayList<>();
   for(int id=0;id<Integer.parseInt(args[2]);id++){Object s=m(block,"stateById",int.class).invoke(null,id);current[0]=s;int centers=0,faces=0;for(int i=0;i<directions.length;i++){if((boolean)center.invoke(null,world,origin,directions[i]))centers|=1<<i;if((boolean)full.invoke(s,world,origin,directions[i]))faces|=1<<i;}result.add(Arrays.asList(centers,faces));}

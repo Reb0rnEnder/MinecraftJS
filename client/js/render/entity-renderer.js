@@ -1,3 +1,4 @@
+import{paintingTiles,paintingTileLight}from'./painting.js';
 import {isSquid,squidTentacle,squidMatrix} from '../game/squid-animation.js';
 import {bedFacing} from '../game/bed-sleep.js';
 import {foxAnimationArgs} from '../game/fox.js';
@@ -411,6 +412,7 @@ export class EntityRenderer {
   }
 
   _visualKey(e) {
+    if(e.kind==='painting')return 'painting:'+e.title;
     if (e.kind === 'mob') return this._livingKey(e);
     if (e.kind === 'boat') return 'boat:' + (e.boatType || 0);
     if (e.kind === 'minecart') return ['cart', e.cartType, e.customDisplay, e.displayBlock, e.displayOffset, e.furnacePowered].join(':');
@@ -903,17 +905,14 @@ export class EntityRenderer {
         break;
       }
       case 'painting': {
-        v = { root: new Node(), kind: 'painting', materials: [] };
+        v={root:new Node(),kind:'painting',materials:[],tiles:[]};
         const art = PAINTINGS[e.title] || PAINTINGS.Kebab;
-        const w = art[0] / 16, h = art[1] / 16;
-        const mesh = this._cachedMesh('painting-front:' + (e.title || 'Kebab'), () => uvBoxMesh(w,h,1/16,{pz:[0,0,art[0],art[1]]},art[0],art[1]));
-        const back=[0,0,16,16],backMesh=this._cachedMesh('painting-back:'+w+':'+h,()=>uvBoxMesh(w,h,1/16,{nz:back,px:back,nx:back,py:back,ny:back},16,16));
-        const name=e.paintingName||'kebab';
-        const mat = this._mat(v, 'painting/'+name+'.png', { alphaTest: 0.1 });
-        v.mesh = new Node().addDrawable(mesh, mat);v.mesh.addDrawable(backMesh,this._mat(v,'painting/back.png',{alphaTest:.1}));
-        v.root.add(v.mesh);
-        e.width = Math.max(w, 0.5); e.height = h;
-        break;
+        const tiles=paintingTiles(art[0],art[1]);const frontTexture='painting/'+(e.paintingName||({'SkullAndRoses':'skull_and_roses','BurningSkull':'burning_skull','DonkeyKong':'donkey_kong'}[e.title]||e.title?.toLowerCase()||'kebab'))+'.png',backTexture='painting/back.png';
+        tiles.forEach((tile,index)=>{const front=this._mat(v,frontTexture,{alphaTest:.1}),back=this._mat(v,backTexture,{alphaTest:.1}),prefix='painting:'+(e.title||e.paintingName)+':'+art[0]+':'+art[1]+':'+index+':';
+          const frontMesh=this._cachedMesh(prefix+'front',()=>this.device.createMesh(FORMAT.entity,tile.front,{quads:true})),backMesh=this._cachedMesh(prefix+'back',()=>this.device.createMesh(FORMAT.entity,tile.back,{quads:true}));
+          v.root.add(new Node().addDrawable(frontMesh,front).addDrawable(backMesh,back));v.tiles.push({...tile,front,back});
+        });
+        e.width=art[0]/16;e.height=art[1]/16;break;
       }
       case 'itemframe': {
         v = atlasOnly('itemframe');
@@ -1800,8 +1799,7 @@ export class EntityRenderer {
       const alongZ = fx === 0, hw = art[0] / 32, hh = art[1] / 32;
       e.box = [x - (alongZ ? hw : 1 / 32), y - hh, z - (alongZ ? 1 / 32 : hw), x + (alongZ ? hw : 1 / 32), y + hh, z + (alongZ ? 1 / 32 : hw)];
     }
-    const light = this._light(x + fx * 0.5, y, z + fz * 0.5);
-    v.materials[0].params.setLight(light[0], light[1]);
+    for(const tile of v.tiles){const light=paintingTileLight((a,b,c)=>this._light(a,b,c),x,y,z,f,tile);tile.front.params.setLight(...light);tile.back.params.setLight(...light);}
   }
 
   _renderFrame(e, v) {
