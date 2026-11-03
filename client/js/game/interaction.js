@@ -1,3 +1,4 @@
+import{attachmentPlacement}from'./attachment-placement.js';
 import {predictDoorPair,reconcileDoorPair} from './door-prediction.js';
 import {placementIntersects} from './placement-collision.js';
 // Player interaction (port of PlayerControllerMP + Minecraft.clickMouse/rightClickMouse).
@@ -621,10 +622,17 @@ export class Interaction {
   _placementState(t,held,block){
     const stacked=this._stackingProperty(t,held);
     if(stacked){const props={...getStateProperties(this.game.world.getState(t.x,t.y,t.z))};props[stacked]=String(Number(props[stacked])+1);return findState(block.name,props);}
+    const attached=this._attachmentState(t,held,block);
+    if(attached!==undefined)return attached;
     const props={...getStateProperties(block.defaultState)};
     if('axis' in props)props.axis=['y','y','z','z','x','x'][t.face]||'y';
     if('type' in props&&block.name.endsWith('_slab'))props.type=t.face===0||t.face!==1&&t.hit[1]-t.y>.5?'top':'bottom';
     return findState(block.name,props);
+  }
+
+  _attachmentState(t,held,block){
+    const {p}=this._placementPos(t,held);
+    return attachmentPlacement(this.game.world,block,p,this.player,t.face,this._replaceable(this.game.world.getState(t.x,t.y,t.z)));
   }
 
   _canPlaceBlockOnSide(t, held) {
@@ -635,7 +643,8 @@ export class Interaction {
     if (p.y < 0 || p.y > 255) return false;
     if (!this._stackingProperty(t,held) && !this._replaceable(w.getState(p.x, p.y, p.z))) return false;
     // entities in the way of a block with a collision box (EntityLivingBase, boats, minecarts, TNT, falling blocks)
-    const placed=this._placementState(t,held,nb),boxes=staticCollisionBoxes(placed,p.x,p.y,p.z);
+    const placed=this._placementState(t,held,nb);if(placed===null)return false;
+    const boxes=staticCollisionBoxes(placed,p.x,p.y,p.z);
     if (boxes.length) {
       const hit = b => placementIntersects(boxes,p,b);
       if (hit(this.player.bb())) return false;
@@ -654,7 +663,7 @@ export class Interaction {
     if (/^(dandelion|poppy|sapling|tall_grass|dead_bush|fern|sunflower|lilac|rose_bush|peony|large_fern)$/.test(n) && !(below && /^(grass_block|dirt|farmland|sand)$/.test(below.name) && (n !== 'dead_bush' || below.name === 'sand'))) return false;
     if (/^(brown_mushroom|red_mushroom)$/.test(n) && !(below && below.opaque)) return false;
     if (n === 'sugar_cane' && !(below && (below.name === 'sugar_cane' || /^(grass_block|dirt|sand)$/.test(below.name)))) return false;
-    if (/^(torch|redstone_torch|lever|stone_button|wooden_button|ladder|wall_sign|tripwire_hook)$/.test(n)) {
+    if (/^(lever|stone_button|wooden_button|ladder|wall_sign|tripwire_hook)$/.test(n)) {
        if (face === 0 && n !== 'lever' && !/button/.test(n)) return false;
       const d = FACE_DIR[face] || [0, 1, 0];
     const sup = getBlock(w.getState(p.x - d[0], p.y - d[1], p.z - d[2]));
@@ -674,7 +683,7 @@ export class Interaction {
       if (!this._canPlaceBlockOnSide(t, held)) return false;
       if (held.count <= 0) return false;
       const { p } = this._placementPos(t, held);
-      this._predictPlace(p, held, placer);
+      this._predictPlace(p, held, placer, t);
       // Sound belongs to successful item use, including states left for the server to resolve.
       g.sound.playBlockPlace(p.x, p.y, p.z, placer.defaultState);
       held.count--; // the server's slot update follows
@@ -715,14 +724,14 @@ export class Interaction {
 
   // ItemBlock.onItemUse sets the block on the client right away; only for blocks whose placed state is just
   // the item damage (no facing / orientation logic), the server's block change follows either way
-  _predictPlace(p, held, nb) {
+  _predictPlace(p, held, nb, context = this.target) {
     // Only predict states whose native placement can be resolved here. A
     // default-state guess for doors, beds, stairs, fluids or multipart blocks
     // can create colliders inside players and overwrite legitimate neighbours.
-    const t=this.target,stacked=t?.type==='block'&&this._stackingProperty(t,held);
-    if(!nb||!stacked&&nb.stateProperties?.some(p=>p.name!=='axis'))return;
+    const t=context,stacked=t?.type==='block'&&this._stackingProperty(t,held),attached=nb&&t?this._attachmentState(t,held,nb):undefined;
+    if(!nb||attached===null||attached===undefined&&!stacked&&nb.stateProperties?.some(p=>p.name!=='axis'))return;
     const previous=this.game.world.getState(p.x,p.y,p.z),axis=nb.stateProperties?.some(p=>p.name==='axis');
-    const predicted=(stacked||axis&&t?.type==='block')?this._placementState(t,held,nb):nb.defaultState;
+    const predicted=attached??((stacked||axis&&t?.type==='block')?this._placementState(t,held,nb):nb.defaultState);
     if(predicted===undefined||predicted===previous)return;
     const key=p.x+','+p.y+','+p.z,old=this.predictedBlocks.get(key);
     this.predictedBlocks.set(key,{previous:old?.previous??previous,predicted,dimension:this.game.dimension});
@@ -918,22 +927,21 @@ export class Interaction {
       const b = t.box;
       r.setOutline([t.x + b[0], t.y + b[1], t.z + b[2], t.x + b[3], t.y + b[4], t.z + b[5]]);
     } else r.setOutline(null);
-    if (this.isHitting && this.curBlock.y >= 0) {
-      const dmg = this.prevDamage + (this.curDamage - this.prevDamage) * partial;
-      const stage = Math.floor(dmg * 10) - 1;
-      const st = g.world.getState(this.curBlock.x, this.curBlock.y, this.curBlock.z);
-      r.setBreakProgress(this.curBlock, stage, st, this._lightAround(this.curBlock));
-    } else {
-      let shown = false;
-      for (const rb of this.remoteBreaks.values()) {
-        if (g.ticks - rb.time > 400) continue;
-        const st = g.world.getState(rb.pos.x, rb.pos.y, rb.pos.z);
-        r.setBreakProgress(rb.pos, rb.stage, st, this._lightAround(rb.pos));
-        shown = true;
-        break;
-      }
-      if (!shown) r.setBreakProgress(null, -1);
+    const entries = new Map();
+    const add = (pos, stage) => {
+      if (stage < 0) return;
+      const key = `${pos.x},${pos.y},${pos.z}`, previous = entries.get(key);
+      if (!previous || stage > previous.stage) entries.set(key, {pos, stage,
+        state: g.world.getState(pos.x, pos.y, pos.z), light: this._lightAround(pos)});
+    };
+    for (const rb of this.remoteBreaks.values()) {
+      const p = g.player;
+      if (g.ticks - rb.time > 400 || (p && (p.x-rb.pos.x)**2 + (p.y-rb.pos.y)**2 + (p.z-rb.pos.z)**2 > 1024)) continue;
+      add(rb.pos, rb.stage);
     }
+    // Native destruction stages change on simulation ticks, without frame interpolation.
+    if (this.isHitting && this.curBlock.y >= (g.world.minY ?? 0)) add(this.curBlock, Math.floor(this.curDamage * 10) - 1);
+    r.setBreakProgresses([...entries.values()]);
   }
 }
 
