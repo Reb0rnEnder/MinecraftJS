@@ -472,9 +472,8 @@ export class Renderer {
       const t = this.assets.texture(breaking.tex,{wrap:'repeat'});
       if (t) {
         // RenderGlobal.preRenderDamagedBlocks: blendFunc(DST_COLOR, SRC_COLOR), alpha test 0.1
-        const { sky, block } = breaking.light;
-        const i = (sky * 16 + block) * 4, L = this.lightmapData;
-        colorParams(L[i] / 255, L[i + 1] / 255, L[i + 2] / 255, 1, 0.1, 0, P_BREAK);
+        // Native RenderType.crumbling disables lightmaps and diffuse lighting.
+        colorParams(1,1,1,1,.1,0,P_BREAK);
         d.draw({ mesh: breaking.mesh, pipeline: 'color', textures: [t], params: P_BREAK, model: breaking.model, state: { blend: 'multiply', depthWrite: false, polygonOffset: true } });
       }
     }

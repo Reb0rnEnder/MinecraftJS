@@ -790,3 +790,8 @@ test(version + ': simultaneous destruction merges stages per block without inter
 test(version + ': hand lighting owns built-in item materials independently of cached world items',()=>{
  const g=fixture(),source={pipeline:'entity',params:new EntityParams()};source.params.p[9]=2;g.itemRenderer.objectFor=()=>({obj:new Node().addDrawable({},source),model:{}});const object=g.handRenderer._itemObject(item(g,'chest')),mat=object.obj.drawables[0].mat;assert.notEqual(mat,source);assert.notEqual(mat.params,source.params);mat.params.p[9]=14;assert.equal(source.params.p[9],2);
 });
+
+
+test(version + ': large paintings build native tile surfaces and light every tile',()=>{
+ const g=fixture(),e={...g.entities._base(123,4,64,4),kind:'painting',title:'Pointer',paintingName:'pointer',blockPos:{x:4,y:64,z:4},facing:0,width:4,height:4};const r=g.entityRenderer,samples=[];r._light=(...p)=>{samples.push(p);return[12,3];};const v=r._build(e);assert.ok(v);assert.equal(v.tiles.length,16);assert.equal(v.materials.length,32);r._renderPainting(e,v);assert.equal(samples.length,16);assert.equal(new Set(samples.map(p=>p.map(n=>n.toFixed(3)).join(','))).size,16);assert.ok(v.materials.every(m=>m.params.p[8]===12&&m.params.p[9]===3));assert.equal(v.materials[0].tex,['1.8.9','1.12.2','1.13.2'].includes(version)?'painting/paintings_kristoffer_zetterstrand.png':'painting/pointer.png');
+});
