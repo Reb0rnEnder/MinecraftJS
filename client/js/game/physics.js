@@ -1,3 +1,4 @@
+import{applyBubbleColumn}from'./bubble-column.js';
 import {DEFAULT_TAGS} from './default-tags.js';
 import { frozenFraction, FREEZING_UUID } from '../world/powder-snow.js';
 // Port of vanilla 1.13.2 player movement physics (EntityPlayerSP / EntityPlayer / EntityLivingBase / Entity).
@@ -191,22 +192,24 @@ export class LocalPlayer {
     this._bb = [x - w, y, z - w, x + w, y + this.height, z + w];
   }
 
-  // EntityPlayerSP.pushOutOfBlocks: only acts when this corner is inside a normal cube (block or the one
-  // above it), then sets a fixed 0.1 sideways motion towards the nearest open neighbour. Never vertical,
-  // never random, and never just for touching a wall (anything else desyncs from the server).
+  // Native LocalPlayer horizontal escape from a blocked column. Use current
+  // pose dimensions so crawling never tests the standing-height ceiling.
   pushOutOfBlocks(world, x, y, z) {
     if (this.noClip) return false;
     const bx = Math.floor(x), by = Math.floor(y), bz = Math.floor(z);
     const d0 = x - bx, d1 = z - bz;
     const cube = (xx, yy, zz) => { const b = getBlock(world.getState(xx, yy, zz)); return !!(b && (b.suffocates??b.opaque) && !b.isLiquid); };
-    const open = (xx, yy, zz) => !cube(xx, yy, zz) && !cube(xx, yy + 1, zz);
+    // Native LocalPlayer.suffocatesAt intersects a column with the current
+    // pose's bounding box, deflated by 1e-7. A ceiling above a crawling player
+    // must not trigger the standing-height push-out inherited from older code.
+    const open = (xx, yy, zz) => {const bb=this.bb(),eps=1e-7,column=[xx+eps,bb[1]+eps,zz+eps,xx+1-eps,bb[4]-eps,zz+1-eps];for(let y=Math.floor(column[1]);y<Math.ceil(column[4]);y++){if(!cube(xx,y,zz))continue;const boxes=[];world.collisionBoxes(xx,y,zz,boxes,world.getState(xx,y,zz),this);if(boxes.some(b=>b[3]>column[0]&&b[0]<column[3]&&b[4]>column[1]&&b[1]<column[4]&&b[5]>column[2]&&b[2]<column[5]))return false;}return true;};
     if (open(bx, by, bz)) return false;
     let i = -1, d2 = 9999;
     if (open(bx - 1, by, bz) && d0 < d2) { d2 = d0; i = 0; }
     if (open(bx + 1, by, bz) && 1 - d0 < d2) { d2 = 1 - d0; i = 1; }
     if (open(bx, by, bz - 1) && d1 < d2) { d2 = d1; i = 4; }
     if (open(bx, by, bz + 1) && 1 - d1 < d2) { d2 = 1 - d1; i = 5; }
-    const f = 0.10000000149011612; // 0.1F
+    const f = 0.1; // Native LocalPlayer horizontal escape impulse is a double
     if (i === 0) this.motionX = -f;
     if (i === 1) this.motionX = f;
     if (i === 4) this.motionZ = -f;
@@ -591,6 +594,7 @@ export class LocalPlayer {
         if ((this.prevX !== this.x || this.prevZ !== this.z) && Math.random() < .5)
           this.onPowderSnow?.(this.x, y + 1, this.z, (Math.random() * 2 - 1) * Math.fround(.083333336), Math.fround(.05), (Math.random() * 2 - 1) * Math.fround(.083333336));
       }
+      if(b.name==='bubble_column')applyBubbleColumn(this,getStateProperties(world.getState(x,y,z)).drag==='true',!!getBlock(world.getState(x,y+1,z)).isAir);
       if (b.name === 'cobweb') this.inWeb = true;
       else if (b.name === 'honey_block') {
         const edge=.4375+this.width/2;

@@ -1,3 +1,4 @@
+import{markHotbarPickup,tickPickupAnimations}from'./pickup-animation.js';
 import{collectDynamicLights}from'../render/dynamic-lights.js';
 import {handleDamage762} from './damage-1.19.4.js';
 import {factorData762,tickFactor762,darkness762} from './darkness-1.19.4.js';
@@ -1249,7 +1250,7 @@ export class Game {
     if (p.windowId === -1 && p.slot === -1) { this.inventory.cursor = p.item; return; }
     if (p.windowId === 0 || p.windowId === -2) {
       if (p.windowId === -2) this.inventory.setPlayerSlotByInventoryIndex(p.slot, p.item);
-      else this.inventory.setSlot(p.slot, p.item);
+      else {if(p.slot>=36&&p.slot<45)markHotbarPickup(this.inventory.get(p.slot),p.item);this.inventory.setSlot(p.slot,p.item);}
       if (this.window && p.windowId === 0) return;
       return;
     }
@@ -1618,6 +1619,7 @@ export class Game {
     this.screens.tick();
     this.hud.tick();
     if (!this.inWorld || !this.doneLoadingTerrain) { this.sound.tick(); return; } // menus still run the MusicTicker
+    tickPickupAnimations(this.inventory);
     const pl = this.player;
     const world = this.world;
 

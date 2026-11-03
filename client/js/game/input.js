@@ -1,10 +1,12 @@
 // Keyboard/mouse input on top of the platform events. Codes: KeyboardEvent.code names or 'mouseN'.
+import {FunctionKeyChords} from './function-keys.js';
 import { platform } from '../platform/platform.js';
 
 export class Input {
   constructor(settings) {
     const P = platform();
     this.settings = settings;
+    this.functionKeys = new FunctionKeyChords();
     this.down = new Set();
     this.heldKeys = new Set(); // Physical keys survive pointer unlock; gameplay bindings are reset.
     this.toggled = {};
@@ -55,8 +57,11 @@ export class Input {
     });
     P.on('keydown', (e) => {
       this.heldKeys.add(e.code);
-      if (!e.repeat) { if(this.locked)this.togglePress(e.code); this.down.add(e.code); this.pressed.push(e.code); }
-      this.emit('key', { ...e, down: true });
+      for(const key of this.functionKeys.keyDown(e,this.settings.functionKeyChords!==false&&this.locked&&!this.down.has('F3'))){
+        this.heldKeys.add(key.code);
+        if(!key.repeat){if(this.locked)this.togglePress(key.code);this.down.add(key.code);this.pressed.push(key.code);}
+        this.emit('key',{...key,down:true});
+      }
     });
     P.on('char', (text) => {
       // A key that opened a screen (e.g. T for chat) must not also type into it
@@ -66,10 +71,13 @@ export class Input {
     });
     P.on('keyup', (e) => {
       this.heldKeys.delete(e.code);
-      this.down.delete(e.code);
-      this.emit('key', { ...e, down: false });
+      for(const key of this.functionKeys.keyUp(e)){
+        if(key.code!==e.code&&key.code==='KeyF')continue;
+        if(key.chordReplay){this.pressed.push(key.code);this.emit('key',{...key,down:true});continue;}
+        this.heldKeys.delete(key.code);this.down.delete(key.code);this.emit('key',{...key,down:false});
+      }
     });
-    P.on('blur', () => {this.heldKeys.clear();this.down.clear();this.toggled={};});
+    P.on('blur', () => {this.heldKeys.clear();this.down.clear();this.toggled={};this.functionKeys.reset();});
   }
 
   on(ev, fn) { this.listeners[ev].push(fn); }
