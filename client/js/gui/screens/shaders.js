@@ -43,6 +43,7 @@ export class ShaderPacksScreen extends Screen {
   gui.textCentered('Shaders',Math.floor(this.width/2),15,0xffffff,true);
   if(!this.game.device.createFinalShaderPass)gui.textCentered('Shader packs require WebGL 2.',this.width/2,this.height-40,0xffaaaa,false);
   else if(this.message)gui.textCentered(gui.font.trimToWidth(this.message,this.width-20),this.width/2,this.height-40,0xffffaa,false);
+  else if(this.game.shaderPack.compatibilityNote)gui.textCentered(gui.font.trimToWidth(this.game.shaderPack.compatibilityNote,this.width-20),this.width/2,this.height-40,0xffffaa,false);
   else if(gui.textWidth(this.graphicsInfo)<this.width-5)gui.textCentered(this.graphicsInfo,Math.floor(this.width/2),this.height-40,0x808080,false);
   else gui.text(this.graphicsInfo,5,this.height-40,0x808080,false);
  }

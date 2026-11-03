@@ -32,7 +32,7 @@ The feature is backported to 1.13.2, 1.12.2 and 1.8.9 with each version's native
 block mapping and MC_VERSION value. No newer vanilla content is backported.
 
 Basic BSL terrain lighting is available; full world lighting, shadow maps,
-reflections, bloom/composite history and
+pack-native reflections, bloom/composite history and
 TAA remain unimplemented. Water/lava/fire/lantern vertex programs are outside
 the vegetation hook. Existing final-pass support and saved pack selections are
 preserved. The user's pack is loaded locally; its shader source is not bundled
@@ -46,3 +46,7 @@ use PLAYWRIGHT_MODULE and BSL_SHADER_PACK; an original ZIP fixture exercises the
 baseline without requiring externally supplied shader-pack files.
 
 See [the current implementation and validation details](pushing-leads-and-shader-settings.md).
+
+The newer [input and shader compatibility guide](input-and-shader-compatibility.md)
+covers partial Complementary/Photon final programs, custom depth/PNG inputs,
+and optional MinecraftJS screen-space water reflections.
