@@ -13,7 +13,7 @@ export const DEFAULT_KEYS = {
 };
 
 const DEFAULTS = {
-  zoomEnabled:true,dynamicLights:false,dynamicLightsOthers:true,fullBright:false,
+  shaderReflections:true,functionKeyChords:true,zoomEnabled:true,dynamicLights:false,dynamicLightsOthers:true,fullBright:false,
   fov: 70,
   sensitivity: 0.5,
   invertMouse: false,

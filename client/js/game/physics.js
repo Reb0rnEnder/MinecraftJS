@@ -1,3 +1,4 @@
+import{applyBubbleColumn}from'./bubble-column.js';
 // Port of vanilla 1.13.2 player movement physics (EntityPlayerSP / EntityPlayer / EntityLivingBase / Entity).
 import { getBlock, getStateProperties } from '../world/blocks.js';
 import { getFluidState, fluidHeightAt } from '../world/fluids.js';
@@ -566,6 +567,7 @@ export class LocalPlayer {
     for (let x = x0; x <= x1; x++) for (let y = y0; y <= y1; y++) for (let z = z0; z <= z1; z++) {
       const b = getBlock(world.getState(x, y, z));
       if (!b || b.id === 0) continue;
+      if(b.name==='bubble_column')applyBubbleColumn(this,getStateProperties(world.getState(x,y,z)).drag==='true',!!getBlock(world.getState(x,y+1,z)).isAir);
       if (b.name === 'cobweb') this.inWeb = true;
       else if (b.name === 'soul_sand') { this.motionX *= 0.4; this.motionZ *= 0.4; }
     }

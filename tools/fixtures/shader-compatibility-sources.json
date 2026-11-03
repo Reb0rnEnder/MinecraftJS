@@ -1,0 +1,18 @@
+[
+  {
+    "name": "complementary",
+    "repository": "https://github.com/ComplementaryDevelopment/ComplementaryReimagined",
+    "commit": "c09950df0650b27dac260c1b0f69afc11387aa6f",
+    "download": "https://codeload.github.com/ComplementaryDevelopment/ComplementaryReimagined/zip/c09950df0650b27dac260c1b0f69afc11387aa6f",
+    "downloadedMainArchiveSha256": "73007f7a1bc3efcb628d7e8c87c5d311eced6f32a325456984e9f722790f9f81",
+    "coverage": "final image program only; native deferred lighting and reflections unsupported"
+  },
+  {
+    "name": "photon",
+    "repository": "https://github.com/sixthsurge/photon",
+    "commit": "40c887116c70d47c9e7e36cbad3178e04e622746",
+    "download": "https://codeload.github.com/sixthsurge/photon/zip/40c887116c70d47c9e7e36cbad3178e04e622746",
+    "downloadedMainArchiveSha256": "c21efb069b16bdb6b63d0305d5bfd895180fe2630f34c5c6569db46675363c4c",
+    "coverage": "final image program only; native deferred lighting and reflections unsupported"
+  }
+]

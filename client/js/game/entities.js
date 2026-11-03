@@ -563,10 +563,7 @@ export class EntityManager {
     // EntityPickupFX: fly to collector over 3 ticks
     e.pickup = { tick: 0, target: collector, start: [e.x, e.y, e.z] };
     e.pickable = false;
-    if (p.collectorEntityId === this.game.entityId && e.item) {
-      const inv = this.game.inventory;
-      for (let i = 0; i < 36; i++) { const s = inv.main[i]; if (s && s.id === e.item.id && s.damage === e.item.damage) { s.popTime = 5; break; } }
-    }
+
   }
 
   attach(id, vehicleId) {

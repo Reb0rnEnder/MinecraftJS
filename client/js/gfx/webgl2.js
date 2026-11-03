@@ -1,3 +1,5 @@
+import{WATER_REFLECTION_VERTEX,WATER_REFLECTION_FRAGMENT}from'./water-reflections.js';
+import{mat4}from'./math.js';
 import{DYNAMIC_GLSL,EMPTY_DYNAMIC_LIGHTS}from'./dynamic-lighting.js';
 import {INVENTORY_LIGHT0, INVENTORY_LIGHT1} from './inventory-lighting.js';
 import {FINAL_UNIFORMS,shaderFrameUniforms} from '../render/shader-frame.js';
@@ -322,12 +324,11 @@ export class WebGL2Device {
   }
 
   // Optional terrain position hook. Reuses the existing terrain program/format and its unused position.w.
-  createTerrainAnimation(source,lookup,lighting=''){
+  createTerrainAnimation(source,lookup,lighting='',reflections=false){
     const ids=this.createTexture({...lookup||{width:1,height:1,data:new Uint8Array(4)},filter:'nearest'});let program;const programs={};
     try{
       const declaration=`
 ${source}
-uniform sampler2D uWaveIds;
 vec3 mcjsWave(vec3 p){
  int packed=int(aPos.w*65535.0+0.5);
  int state=packed&32767;
@@ -338,9 +339,12 @@ vec3 mcjsWave(vec3 p){
  return p+WavingBlocks(world-cameraPosition,category,(packed&32768)!=0?1.0:0.0)-(world-cameraPosition);
 }
 `;
-      const vs=source?SHADERS.terrain.vs.replace('void main() {',declaration+'void main() {').replace('  vec4 mv =','  p=mcjsWave(p);\n  vec4 mv ='):SHADERS.terrain.vs;
-      program=this._program('pack terrain animation',{vs,fs:lighting?lighting+SHADERS.terrain.fs.replace('lightmap(vLight)','mcjsPackLight(vLight)'):SHADERS.terrain.fs});
-      const gl=this.gl;programs.terrain=program;
+      let vs=source?SHADERS.terrain.vs.replace('void main() {',declaration+'void main() {').replace('  vec4 mv =','  p=mcjsWave(p);\n  vec4 mv ='):SHADERS.terrain.vs;
+      let fs=lighting?lighting+SHADERS.terrain.fs.replace('lightmap(vLight)','mcjsPackLight(vLight)'):SHADERS.terrain.fs;
+      vs='uniform sampler2D uWaveIds;\n'+vs.replace('void main() {',(reflections?WATER_REFLECTION_VERTEX:'')+'void main() {');
+      if(reflections){vs=vs.replace('vDepth = length(mv.xyz);','vDepth = length(mv.xyz);vReflectionPosition=mv.xyz;int state=int(aPos.w*65535.0+.5)&32767;vReflectionWater=texelFetch(uWaveIds,ivec2(state&255,state>>8),0).b;');fs=fs.replace('void main() {',WATER_REFLECTION_FRAGMENT+'void main() {').replace('o = vec4(mix(c, uFogColor, fogFactor(vDepth)), t.a * uP[0].y);','vec4 reflected=mcjsWaterReflection(c,t.a*uP[0].y);o=vec4(mix(reflected.rgb,uFogColor,fogFactor(vDepth)),reflected.a);');}
+      program=this._program('pack terrain animation',{vs,fs});
+      const gl=this.gl;programs.terrain=program;program.reflections=reflections;program.uReflections=['Active','Scene','Depth','InverseProj','Sky'].map(n=>gl.getUniformLocation(program.p,'uReflection'+n));
       if(lighting)for(const name of ['entity','lit']){
         const shader=SHADERS[name],old=name==='entity'?'lightmap(vec2(uP[2].x,vDynamicLight))':'lightmap(vLight)';
         programs[name]=this._program('pack '+name+' lighting',{vs:shader.vs,fs:lighting+shader.fs.replace(old,name==='entity'?'mcjsPackLight(vec2(uP[2].x,vDynamicLight))':'mcjsPackLight(vLight)')});
@@ -350,11 +354,22 @@ vec3 mcjsWave(vec3 p){
     }catch(e){for(const p of Object.values(programs))this.gl.deleteProgram(p.p);this.destroyTexture(ids);throw e;}
   }
 
+  captureWaterReflection(projection,sky){
+    const gl=this.gl;let r=this.waterReflection;
+    if(!r||r.width!==this.width||r.height!==this.height){this.clearWaterReflection();r=this.waterReflection=this.createRenderTarget(this.width,this.height,{sampleDepth:true});}
+    const source=this.target?.fbo||null;
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER,source);gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER,r.fbo);
+    gl.blitFramebuffer(0,0,this.width,this.height,0,0,r.width,r.height,gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT,gl.NEAREST);
+    gl.bindFramebuffer(gl.FRAMEBUFFER,source);this.boundTex.fill(null);
+    this.reflectionInverseProj=mat4.invert(this.reflectionInverseProj||mat4.create(),projection);this.reflectionSky=sky;this.reflectionActive=true;
+  }
+  clearWaterReflection(){const r=this.waterReflection;if(r){this.destroyTexture(r);}this.waterReflection=null;this.reflectionActive=false;}
+
   setTerrainAnimation(animation,frame){this.terrainAnimation=animation;if(animation)animation.frame=frame;}
 
   // Isolated GLSL ES final pass; regular scene pipelines and vertex formats stay intact.
   createFinalShaderPass(fragment,vertex,resources={}){
-    const gl=this.gl,shaders=[];let program,noise;
+    const gl=this.gl,shaders=[];let program,noise;const customTextures=new Map();
     const compile=(type,source)=>{const shader=gl.createShader(type);shaders.push(shader);gl.shaderSource(shader,source);gl.compileShader(shader);if(!gl.getShaderParameter(shader,gl.COMPILE_STATUS))throw Error('Shader pack: '+gl.getShaderInfoLog(shader));return shader;};
     try{
       program=gl.createProgram();
@@ -366,21 +381,25 @@ vec3 mcjsWave(vec3 p){
       const uniforms=[];const supported=FINAL_UNIFORMS;
       for(let i=0;i<gl.getProgramParameter(program,gl.ACTIVE_UNIFORMS);i++){
         const u=gl.getActiveUniform(program,i);if(u.size!==1)throw Error('Final-pass uniform arrays are unsupported: '+u.name);
-        if(u.type===gl.SAMPLER_2D){if(!['colortex0','colortex1','colortex4','noisetex','gcolor','composite'].includes(u.name))throw Error('Final pass needs an unavailable scene buffer: '+u.name);}
-        else if(!supported.has(u.name)||![gl.FLOAT,gl.INT,gl.BOOL,gl.INT_VEC2,gl.FLOAT_VEC2,gl.FLOAT_VEC3,gl.FLOAT_MAT4].includes(u.type))throw Error('Unsupported final-pass uniform: '+u.name);
+        if(u.type===gl.SAMPLER_2D){if(!['colortex0','colortex1','colortex3','colortex4','depthtex0','noisetex','gcolor','composite'].includes(u.name)&&!resources.textures?.[u.name])throw Error('Final pass needs an unavailable scene buffer: '+u.name);}
+        else if(!supported.has(u.name)||![gl.FLOAT,gl.INT,gl.BOOL,gl.INT_VEC2,gl.FLOAT_VEC2,gl.FLOAT_VEC3,gl.FLOAT_VEC4,gl.FLOAT_MAT4].includes(u.type))throw Error('Unsupported final-pass uniform: '+u.name);
         uniforms.push({name:u.name,type:u.type,location:gl.getUniformLocation(program,u.name)});
       }
       if(uniforms.some(u=>u.name==='noisetex')){if(!resources.noise)throw Error('Final pass needs its pack noise texture');noise=this.createTexture({...resources.noise,filter:'linear',wrap:'repeat'});}
-      const vao=gl.createVertexArray(),defaults=shaderFrameUniforms({});
-      return {destroy:()=>{gl.deleteProgram(program);gl.deleteVertexArray(vao);if(noise)this.destroyTexture(noise);},draw:(scene,frame)=>{
+      for(const u of uniforms)if(resources.textures?.[u.name])customTextures.set(u.name,{texture:this.createTexture({...resources.textures[u.name],filter:'linear',wrap:'repeat'}),unit:customTextures.size+3});
+      if(customTextures.size+3>gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS))throw Error('Final pass uses too many textures');
+      const vao=gl.createVertexArray(),defaults=shaderFrameUniforms({device:this});
+      return {needsDepth:uniforms.some(u=>u.name==='depthtex0'),destroy:()=>{gl.deleteProgram(program);gl.deleteVertexArray(vao);if(noise)this.destroyTexture(noise);for(const c of customTextures.values())this.destroyTexture(c.texture);},draw:(scene,frame)=>{
         gl.useProgram(program);gl.bindVertexArray(vao);gl.disable(gl.DEPTH_TEST);gl.depthMask(false);gl.disable(gl.CULL_FACE);gl.disable(gl.BLEND);gl.disable(gl.SCISSOR_TEST);gl.colorMask(true,true,true,true);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,scene.tex);
         if(noise){gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,noise.tex);gl.activeTexture(gl.TEXTURE0);}
+        if(uniforms.some(u=>u.name==='depthtex0')){if(!scene.depthTexture)throw Error('Final pass requires captured scene depth');gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,scene.depthTexture);}
+        for(const c of customTextures.values()){gl.activeTexture(gl.TEXTURE0+c.unit);gl.bindTexture(gl.TEXTURE_2D,c.texture.tex);}gl.activeTexture(gl.TEXTURE0);
         const values={viewWidth:this.width,viewHeight:this.height,aspectRatio:this.width/this.height,frameTimeCounter:frame.time,frameTime:frame.delta,worldTime:frame.worldTime,frameCounter:frame.frame,isEyeInWater:frame.underwater?1:0,screenBrightness:frame.gamma,rainStrength:frame.rain||0};
-        for(const u of uniforms){const v=u.type===gl.SAMPLER_2D?(u.name==='noisetex'?1:0):(frame.uniforms?.[u.name]??values[u.name]??defaults[u.name]);if(u.type===gl.FLOAT)gl.uniform1f(u.location,v);else if(u.type===gl.INT_VEC2)gl.uniform2iv(u.location,v);else if(u.type===gl.FLOAT_VEC2)gl.uniform2fv(u.location,v);else if(u.type===gl.FLOAT_VEC3)gl.uniform3fv(u.location,v);else if(u.type===gl.FLOAT_MAT4)gl.uniformMatrix4fv(u.location,false,v);else gl.uniform1i(u.location,v);}
+        for(const u of uniforms){const v=u.type===gl.SAMPLER_2D?(customTextures.get(u.name)?.unit??(u.name==='noisetex'?1:u.name==='depthtex0'?2:0)):(frame.uniforms?.[u.name]??values[u.name]??defaults[u.name]);if(u.type===gl.FLOAT)gl.uniform1f(u.location,v);else if(u.type===gl.INT_VEC2)gl.uniform2iv(u.location,v);else if(u.type===gl.FLOAT_VEC2)gl.uniform2fv(u.location,v);else if(u.type===gl.FLOAT_VEC3)gl.uniform3fv(u.location,v);else if(u.type===gl.FLOAT_VEC4)gl.uniform4fv(u.location,v);else if(u.type===gl.FLOAT_MAT4)gl.uniformMatrix4fv(u.location,false,v);else gl.uniform1i(u.location,v);}
         gl.drawArrays(gl.TRIANGLES,0,3);
-        this.curProgram=null;this.curVao=null;this.curState='';this.curStateObj=null;this.boundTex[0]=null;this.boundTex[1]=null;
+        this.curProgram=null;this.curVao=null;this.curState='';this.curStateObj=null;this.boundTex.fill(null);
       }};
-    }catch(e){if(program)gl.deleteProgram(program);if(noise)this.destroyTexture(noise);throw e;}
+    }catch(e){if(program)gl.deleteProgram(program);if(noise)this.destroyTexture(noise);for(const c of customTextures.values())this.destroyTexture(c.texture);throw e;}
     finally{for(const shader of shaders)gl.deleteShader(shader);}
   }
 
@@ -423,16 +442,20 @@ vec3 mcjsWave(vec3 p){
   }
 
   // Offscreen colour + depth target; the returned object is also a normal (linear, clamped) texture
-  createRenderTarget(w, h) {
+  createRenderTarget(w, h, {sampleDepth=false}={}) {
     const gl = this.gl;
     const t = this.createTexture({ width: w, height: h, filter: 'linear', wrap: 'clamp' });
     t.fbo = gl.createFramebuffer();
-    t.depth = gl.createRenderbuffer();
-    gl.bindRenderbuffer(gl.RENDERBUFFER, t.depth);
-    gl.renderbufferStorage(gl.RENDERBUFFER, gl.DEPTH_COMPONENT24, w, h);
+    if(sampleDepth){
+      t.depthTexture=gl.createTexture();gl.bindTexture(gl.TEXTURE_2D,t.depthTexture);
+      gl.texImage2D(gl.TEXTURE_2D,0,gl.DEPTH_COMPONENT24,w,h,0,gl.DEPTH_COMPONENT,gl.UNSIGNED_INT,null);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MAG_FILTER,gl.NEAREST);
+      gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);this.boundTex.fill(null);
+    }else{t.depth=gl.createRenderbuffer();gl.bindRenderbuffer(gl.RENDERBUFFER,t.depth);gl.renderbufferStorage(gl.RENDERBUFFER,gl.DEPTH_COMPONENT24,w,h);}
     gl.bindFramebuffer(gl.FRAMEBUFFER, t.fbo);
     gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, t.tex, 0);
-    gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, t.depth);
+    if(t.depthTexture)gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.TEXTURE_2D,t.depthTexture,0);
+    else gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.RENDERBUFFER, t.depth);
     gl.bindFramebuffer(gl.FRAMEBUFFER, this.target ? this.target.fbo : null);
     return t;
   }
@@ -481,7 +504,9 @@ vec3 mcjsWave(vec3 p){
     if (t.mipmaps && x === 0 && y === 0 && w === t.width && h === t.height) this._uploadMips(t, data);
   }
 
-  destroyTexture(t) { if(!t)return;const gl=this.gl;if(t.tex)gl.deleteTexture(t.tex);if(t.fbo)gl.deleteFramebuffer(t.fbo);if(t.depth)gl.deleteRenderbuffer(t.depth); }
+  destroyTexture(t) { if(!t)return;const gl=this.gl;if(t.tex)gl.deleteTexture(t.tex);if(t.fbo)gl.deleteFramebuffer(t.fbo);if(t.depth)gl.deleteRenderbuffer(t.depth);if(t.depthTexture)gl.deleteTexture(t.depthTexture); }
+  copyColor(from,to=null){const gl=this.gl;gl.disable(gl.SCISSOR_TEST);gl.bindFramebuffer(gl.READ_FRAMEBUFFER,from.fbo);gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER,to?.fbo||null);gl.blitFramebuffer(0,0,from.width,from.height,0,0,to?.width||this.width,to?.height||this.height,gl.COLOR_BUFFER_BIT,gl.NEAREST);gl.bindFramebuffer(gl.FRAMEBUFFER,this.target?.fbo||null);this.curState='';this.curStateObj=null;this.curProgram=null;this.curVao=null;this.boundTex.fill(null);}
+  copyDepth(from,to){const gl=this.gl;gl.bindFramebuffer(gl.READ_FRAMEBUFFER,from.fbo);gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER,to.fbo);gl.blitFramebuffer(0,0,from.width,from.height,0,0,to.width,to.height,gl.DEPTH_BUFFER_BIT,gl.NEAREST);gl.bindFramebuffer(gl.FRAMEBUFFER,this.target?.fbo||null);}
 
   // ---------------------------------------------------------------- meshes
 
@@ -535,6 +560,7 @@ vec3 mcjsWave(vec3 p){
   // ---------------------------------------------------------------- frame
 
   beginFrame(clear) {
+    this.reflectionActive=false;
     const gl = this.gl;
     if (this.target) { this.target = null; gl.bindFramebuffer(gl.FRAMEBUFFER, null); }
     gl.viewport(0, 0, this.width, this.height);
@@ -636,6 +662,7 @@ vec3 mcjsWave(vec3 p){
       const f=animation.frame,c=f.camera,e=f.eye;
       if(f.lighting){const l=f.lighting;for(const [i,key]of ['ambient','direct','block','minimum'].entries())gl.uniform3fv(prog.uLighting[i],l[key]);gl.uniform1f(prog.uLighting[4],l.dimension);gl.uniform1f(prog.uLighting[5],f.fullBright?1:0);}
       if(d.pipeline==='terrain'){gl.uniform1i(animation.uIds,2);gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,animation.ids.tex);gl.activeTexture(gl.TEXTURE0);
+      if(prog.reflections){const r=this.waterReflection,active=this.reflectionActive&&!!r;gl.uniform1f(prog.uReflections[0],active?1:0);gl.uniform1i(prog.uReflections[1],3);gl.uniform1i(prog.uReflections[2],4);gl.activeTexture(gl.TEXTURE3);gl.bindTexture(gl.TEXTURE_2D,(r||this.white).tex);gl.activeTexture(gl.TEXTURE4);gl.bindTexture(gl.TEXTURE_2D,r?.depthTexture||this.white.tex);gl.activeTexture(gl.TEXTURE0);gl.uniformMatrix4fv(prog.uReflections[3],false,this.reflectionInverseProj||IDENTITY);gl.uniform3fv(prog.uReflections[4],this.reflectionSky||[0,0,0]);}
       gl.uniform4f(animation.uFrame,f.time,f.worldTime,0,0);gl.uniform3fv(animation.uCamera,c);gl.uniform3f(animation.uEye,c[0]-e[0],c[1]-e[1],c[2]-e[2]);}
     }
     this._applyState(d.state || EMPTY_STATE);
