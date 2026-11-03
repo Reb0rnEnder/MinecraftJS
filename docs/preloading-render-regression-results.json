@@ -1,0 +1,95 @@
+{
+  "recordedAt": "2026-11-03T22:20:50.390565+00:00",
+  "regressions": [
+    {
+      "version": "1.8.9",
+      "passed": 28,
+      "failed": 0,
+      "scope": "Preload, visibility/cache integration, Extras/loading, actual post-stage order/pixels/rollback, final/depth and vegetation; native BSL expected unsupported-buffer rejection, not full BSL rendering"
+    },
+    {
+      "version": "1.12.2",
+      "passed": 28,
+      "failed": 0,
+      "scope": "Preload, visibility/cache integration, Extras/loading, actual post-stage order/pixels/rollback, final/depth and vegetation; native BSL expected unsupported-buffer rejection, not full BSL rendering"
+    },
+    {
+      "version": "1.13.2",
+      "passed": 28,
+      "failed": 0,
+      "scope": "Preload, visibility/cache integration, Extras/loading, actual post-stage order/pixels/rollback, final/depth and vegetation; native BSL expected unsupported-buffer rejection, not full BSL rendering"
+    },
+    {
+      "version": "1.14.4",
+      "passed": 29,
+      "failed": 0,
+      "scope": "Preload, visibility/cache integration, Extras/loading, actual post-stage order/pixels/rollback, final/depth and vegetation; native BSL expected unsupported-buffer rejection, not full BSL rendering"
+    },
+    {
+      "version": "1.15.2",
+      "passed": 29,
+      "failed": 0,
+      "scope": "Preload, visibility/cache integration, Extras/loading, actual post-stage order/pixels/rollback, final/depth and vegetation; native BSL expected unsupported-buffer rejection, not full BSL rendering"
+    },
+    {
+      "version": "1.16.5",
+      "passed": 29,
+      "failed": 0,
+      "scope": "Preload, visibility/cache integration, Extras/loading, actual post-stage order/pixels/rollback, final/depth and vegetation; native BSL expected unsupported-buffer rejection, not full BSL rendering"
+    },
+    {
+      "version": "1.17.1",
+      "passed": 29,
+      "failed": 0,
+      "scope": "Preload, visibility/cache integration, Extras/loading, actual post-stage order/pixels/rollback, final/depth and vegetation; native BSL expected unsupported-buffer rejection, not full BSL rendering"
+    },
+    {
+      "version": "1.18.2",
+      "passed": 29,
+      "failed": 0,
+      "scope": "Preload, visibility/cache integration, Extras/loading, actual post-stage order/pixels/rollback, final/depth and vegetation; native BSL expected unsupported-buffer rejection, not full BSL rendering"
+    },
+    {
+      "version": "1.19.4",
+      "passed": 29,
+      "failed": 0,
+      "scope": "Preload, visibility/cache integration, Extras/loading, actual post-stage order/pixels/rollback, final/depth and vegetation; native BSL expected unsupported-buffer rejection, not full BSL rendering"
+    }
+  ],
+  "sourceBoots": {
+    "versions": [
+      "1.8.9",
+      "1.12.2",
+      "1.13.2",
+      "1.14.4",
+      "1.15.2",
+      "1.16.5",
+      "1.17.1",
+      "1.18.2",
+      "1.19.4"
+    ],
+    "api": "WebGL 2 (headless Chromium/SwiftShader)",
+    "result": "All reached title without page errors; decoded/uploaded textures and warmed sound buffers verified"
+  },
+  "cpuMicrobenchmark": {
+    "scope": "Node CPU, 200 identical stationary-camera visibility walks and sorts; not whole-frame FPS",
+    "node": "v22.23.3",
+    "sections": 4624,
+    "visible": 4624,
+    "baselineMs": 173.83462400000002,
+    "cachedMs": 0.20327499999999077,
+    "walks": 1,
+    "hits": 200
+  },
+  "nativePackStatus": {
+    "BSL": "Missing real colortex1; rejected, not substituted",
+    "Complementary": "Missing real colortex3; rejected, not substituted",
+    "Photon": "Unsupported post-stage requirements; rejected",
+    "Sildur/Astra": "Missing native pipeline resources; rejected"
+  },
+  "limitations": [
+    "Full native pack sky/water/shadow rendering unfinished",
+    "No desktop GPU/FPS or JVM performance claims",
+    "No reference shader-client screenshot parity gate has passed"
+  ]
+}

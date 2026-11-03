@@ -381,7 +381,7 @@ vec3 mcjsWave(vec3 p){
       const uniforms=[];const supported=FINAL_UNIFORMS;
       for(let i=0;i<gl.getProgramParameter(program,gl.ACTIVE_UNIFORMS);i++){
         const u=gl.getActiveUniform(program,i);if(u.size!==1)throw Error('Final-pass uniform arrays are unsupported: '+u.name);
-        if(u.type===gl.SAMPLER_2D){if(!['colortex0','colortex1','colortex3','colortex4','depthtex0','noisetex','gcolor','composite'].includes(u.name)&&!resources.textures?.[u.name])throw Error('Final pass needs an unavailable scene buffer: '+u.name);}
+        if(u.type===gl.SAMPLER_2D){if(!(resources.sceneSamplers||new Set(['colortex0','depthtex0','noisetex','gcolor'])).has(u.name)&&!resources.textures?.[u.name])throw Error('Final pass needs an unavailable scene buffer: '+u.name);}
         else if(!supported.has(u.name)||![gl.FLOAT,gl.INT,gl.BOOL,gl.INT_VEC2,gl.FLOAT_VEC2,gl.FLOAT_VEC3,gl.FLOAT_VEC4,gl.FLOAT_MAT4].includes(u.type))throw Error('Unsupported final-pass uniform: '+u.name);
         uniforms.push({name:u.name,type:u.type,location:gl.getUniformLocation(program,u.name)});
       }
