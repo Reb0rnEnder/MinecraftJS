@@ -1,17 +1,24 @@
 {
-  "name": "minecraftjs",
+  "name": "gravrust",
   "version": "1.0.0",
-  "description": "Web-based Minecraft 1.15.2 client with WebSocket proxy",
+  "description": "Gravrust - Minecraft 1.15.2 client in Rust/WASM with ViaVersion relay",
   "scripts": {
     "start": "node proxy.js",
     "dev": "node proxy.js",
-    "assets": "node tools/build.js assets",
-    "build": "node tools/build.js html"
+    "assets": "node tools/build.cjs assets",
+    "build": "node tools/build.cjs html",
+    "wasm": "node rust/build.mjs",
+    "test:rust": "cargo test --manifest-path rust/Cargo.toml",
+    "test:wasm": "node rust/build.mjs && node tools/wasm-parity.mjs",
+    "port:status": "node tools/rust-port-status.mjs",
+    "bench:wasm": "node tools/wasm-bench.mjs",
+    "via": "node tools/via-server.cjs"
   },
   "dependencies": {
     "express": "^4.18.2",
+    "glob": "^14.0.3",
     "pako": "^2.1.0",
-    "ws": "^8.16.0"
+    "ws": "^8.22.1"
   },
   "devDependencies": {
     "esbuild": "^0.25.12",

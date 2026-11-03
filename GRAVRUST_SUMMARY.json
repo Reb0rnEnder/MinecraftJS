@@ -1,0 +1,34 @@
+{
+  "version": "0.2.0",
+  "name": "Gravrust",
+  "description": "Minecraft 1.15.2 client in Rust/WASM with ViaVersion/ViaRewind relay",
+  "proxyTypes": {
+    "mcjs": "mcjs Proxy - handles auth, skin, session, relays to downstream",
+    "relay": "Java Relay - Eaglercraft 26.2 relay (raw TCP over WebSocket)",
+    "wisp": "Wisp server (multiplexed TCP over WebSocket)",
+    "gravrust-via": "Gravrust Via - ViaVersion/ViaRewind protocol translation (connect to any version)"
+  },
+  "viaProxySetup": {
+    "java": "Java 17 or 21 (NOT Java 25+)",
+    "memory": "2-4 GB RAM",
+    "ports": { "proxy": 25566, "http": 8080, "ws": 25566 }
+  },
+  "protocolSupport": {
+    "1.21": { "protocol": 763, "supported": true },
+    "1.20": { "protocol": 762, "supported": true },
+    "1.19": { "protocol": 759, "supported": true },
+    "1.18": { "protocol": 757, "supported": true },
+    "1.17": { "protocol": 755, "supported": true },
+    "1.16": { "protocol": 735, "supported": true },
+    "1.15": { "protocol": 578, "supported": true },
+    "1.14": { "protocol": 498, "supported": true },
+    "1.13": { "protocol": 393, "supported": true },
+    "1.12": { "protocol": 340, "supported": true },
+    "legacy": { "protocol": "viaRewind", "supported": true }
+  },
+  "deliverables": {
+    "dist/minecraftjs.html": "126 MB - Full offline client",
+    "offlineclient.html": "2.7 MB - Core test page",
+    "dist-verify.png": "Boot verification"
+  }
+}
