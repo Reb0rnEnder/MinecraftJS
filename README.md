@@ -191,3 +191,5 @@ Static website output: `npm run build -- --static --out=dist/site`. Separate bac
 
 Parity status: [supported-version wiki/runtime audit](docs/supported-version-parity-audit.md).
 No branch is certified as implementing every vanilla feature or patch fix.
+
+Shader compatibility currently covers genuine scene-colour/depth post stages and compatible vegetation functions, not full BSL/Complementary/Photon rendering. Missing shader attachments now produce an unsupported-pipeline error instead of substituted scene buffers or MinecraftJS cloud/wave/lighting effects. See [preloading, renderer measurements and the real shader pipeline plan](docs/preloading-and-real-shader-pipeline.md). Startup warms title/UI/world textures within a bounded budget and common short sounds; the Extras preload option controls additional world texture warmup.

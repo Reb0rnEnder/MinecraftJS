@@ -1,0 +1,10 @@
+import{test}from'node:test';import assert from'node:assert/strict';import{VisibilityCache}from'../client/js/render/visibility-cache.js';
+test('unchanged geometry inputs reuse the completed list; every movement, frustum, fog and revision change rebuilds',()=>{const cache=new VisibilityCache();let builds=0;const build=()=>[{generation:++builds}],input=[0,64,0,1,0,0,128,16,Infinity];const a=cache.get(input,0,build);assert.equal(cache.get([...input],0,build),a);for(let i=0;i<input.length;i++){const moved=[...input];moved[i]=Number.isFinite(moved[i])?moved[i]+.00001:256;assert.notEqual(cache.get(moved,0,build),a);}const b=cache.get(input,1,build);assert.notEqual(b,a);cache.invalidate();assert.notEqual(cache.get(input,1,build),b);});
+test('failed rebuilds are never cached as a valid list',()=>{const cache=new VisibilityCache(),old=cache.get([0],0,()=>[1]);assert.throws(()=>cache.get([1],0,()=>{throw Error('failure');}));const restored=cache.get([0],0,()=>[2]);assert.notEqual(restored,old);assert.deepEqual(restored,[2]);});
+
+import{Renderer}from'../client/js/render/renderer.js';
+test('renderer reuses sorted visibility and invalidates when section geometry is replaced or removed',()=>{
+ const r=Object.create(Renderer.prototype);Object.assign(r,{device:{createMesh:()=>({}),destroyMesh:()=>{}},sections:new Map(),breaking:new Map(),visibilityCache:new VisibilityCache(),visibilityRevision:0,camPos:[0,64,0],frustum:Array.from({length:6},()=>[0,0,0,1]),fog:{mode:0,end:256},renderDistance:8,opaqueAt:()=>false,columnLoaded:()=>true,culler:{enabled:true,update:sections=>[...sections.values()]}});
+ const mesh={solid:new Uint8Array(80)};r.setSectionMesh(2,4,0,mesh);r.setSectionMesh(0,4,0,mesh);const first=r.cull();assert.deepEqual(first.map(s=>s.cx),[0,2]);assert.equal(r.cull(),first);assert.equal(r.visibilityCache.stats.hits,1);
+ r.setSectionMesh(1,4,0,mesh);assert.deepEqual(r.cull().map(s=>s.cx),[0,1,2]);r.removeChunk(0,0);assert.deepEqual(r.cull().map(s=>s.cx),[1,2]);const before=r.cull();r.camPos[0]+=.00001;assert.notEqual(r.cull(),before);r.clearSections();assert.deepEqual(r.cull(),[]);
+});
