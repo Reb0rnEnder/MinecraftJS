@@ -1,11 +1,14 @@
 // Keyboard/mouse input on top of the platform events. Codes: KeyboardEvent.code names or 'mouseN'.
+import {FunctionKeyChords} from './function-keys.js';
 import { platform } from '../platform/platform.js';
 
 export class Input {
   constructor(settings) {
     const P = platform();
     this.settings = settings;
+    this.functionKeys = new FunctionKeyChords();
     this.down = new Set();
+    this.heldKeys = new Set();
     this.pressed = []; // queued presses for the next tick: codes
     this.dx = 0;
     this.dy = 0;
@@ -52,8 +55,12 @@ export class Input {
       if (this.locked){if(Math.sign(d)!==Math.sign(this.wheelCarry||0))this.wheelCarry=0;this.wheelCarry=(this.wheelCarry||0)+d;const steps=Math.trunc(this.wheelCarry);this.wheel+=steps;this.wheelCarry-=steps;}
     });
     P.on('keydown', (e) => {
-      if (!e.repeat) { this.down.add(e.code); this.pressed.push(e.code); }
-      this.emit('key', { ...e, down: true });
+      this.heldKeys.add(e.code);
+      for(const key of this.functionKeys.keyDown(e,this.settings.functionKeyChords!==false&&this.locked&&!this.down.has('F3'))){
+        this.heldKeys.add(key.code);
+        if(!key.repeat){if(this.locked)this.togglePress?.(key.code);this.down.add(key.code);this.pressed.push(key.code);}
+        this.emit('key',{...key,down:true});
+      }
     });
     P.on('char', (text) => {
       // A key that opened a screen (e.g. T for chat) must not also type into it
@@ -62,14 +69,20 @@ export class Input {
       if(allowed)this.emit('char',allowed);
     });
     P.on('keyup', (e) => {
-      this.down.delete(e.code);
-      this.emit('key', { ...e, down: false });
+      this.heldKeys.delete(e.code);
+      for(const key of this.functionKeys.keyUp(e)){
+        if(key.code!==e.code&&key.code==='KeyF')continue;
+        if(key.chordReplay){this.pressed.push(key.code);this.emit('key',{...key,down:true});continue;}
+        this.heldKeys.delete(key.code);this.down.delete(key.code);this.emit('key',{...key,down:false});
+      }
     });
-    P.on('blur', () => this.down.clear());
+    P.on('blur', () => {this.heldKeys.clear();this.down.clear();this.toggled={};this.functionKeys.reset();});
   }
 
   on(ev, fn) { this.listeners[ev].push(fn); }
   emit(ev, a) { for (const fn of this.listeners[ev]) fn(a); }
+
+  isKeyHeld(code){return this.heldKeys.has(code);}
 
   isDown(bind) {
     const code = this.settings.keys[bind];
