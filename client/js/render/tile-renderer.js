@@ -604,7 +604,7 @@ export class TileEntityRenderer {
         P.pagesRight.px = Math.sin(f); P.pagesLeft.px = Math.sin(f); P.flipRight.px = Math.sin(f); P.flipLeft.px = Math.sin(f);
         for (const p of Object.values(P)) p.sync();
       } else if (t.type === 'banner' && t.bannerSwing) {
-        const time = this.ticks + partial + t.x * 7 + t.y * 9 + t.z * 13;
+        const time = Number(this.game.world.worldAge ?? this.ticks) + partial + t.x * 7 + t.y * 9 + t.z * 13;
         t.bannerSwing.rotation.x = bannerSwing(time);
       } else if (t.type === 'beacon' && t.beamNode) {
         this._buildBeam(t, partial);

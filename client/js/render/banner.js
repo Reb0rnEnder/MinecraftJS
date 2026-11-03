@@ -1,3 +1,5 @@
+import{DYE_TEXTURE_COLORS}from'./dye-colors.js';
+import{mcCos}from'../game/physics.js';
 // Banners: pattern texture compositing (LayeredColorMaskTexture) and the banner model
 // (ModelBanner / TileEntityBannerRenderer), shared by placed banners and banner items.
 import { blockModel } from './entity-models.js';
@@ -14,11 +16,11 @@ export const BANNER_CODES = {
   bri: 'bricks', sku: 'skull', flo: 'flower', moj: 'mojang',
 };
 // EnumDyeColor map colours, indexed by dye damage (0 = black ... 15 = white)
-export const DYE_MAP_COLORS = [1644825, 10040115, 6717235, 6704179, 3361970, 8339378, 5013401, 10066329, 5000268, 15892389, 8375321, 15066419, 6724056, 11685080, 14188339, 16777215];
+export const DYE_MAP_COLORS = DYE_TEXTURE_COLORS.slice().reverse().map(c=>(Math.round(c[0]*255)<<16)|(Math.round(c[1]*255)<<8)|Math.round(c[2]*255));
 
 // Banner contents from tile entity data or an item (BlockEntityTag, base colour from the damage value)
 export function bannerLayers(base, patterns) {
-  return [{ Pattern: 'b', Color: base }, ...(patterns || [])].slice(0, 7);
+  return [{ Pattern: 'b', Color: base }, ...(patterns || [])].slice(0, 17);
 }
 
 // LayeredColorMaskTexture: start from banner_base.png; every pattern mask pixel with a non-zero blue channel
@@ -36,9 +38,12 @@ export function composeBanner(assets, layers) {
     const r = (col >> 16) & 255, g = (col >> 8) & 255, b = col & 255;
     const m = img.data;
     for (let i = 0; i < out.length; i += 4) {
-      const a = m[i + 2]; // getRGB(..) & 255 -> blue channel
-      if (!a) continue;
-      out[i] = (src[i] * r / 255) | 0; out[i + 1] = (src[i + 1] * g / 255) | 0; out[i + 2] = (src[i + 2] * b / 255) | 0; out[i + 3] = a;
+      if(m[i+3]===0)continue;
+      const alpha=m[i]/255,targetAlpha=out[i+3]/255;
+      const alphaByte=m[i],destinationAlpha=out[i+3],resultAlpha=alphaByte+Math.round(destinationAlpha*(255-alphaByte)/255);if(resultAlpha===0)continue;
+      // BufferedImage's SrcOver operates on quantized premultiplied channels.
+      for(let channel=0;channel<3;channel++){const tint=[r,g,b][channel],source=Math.floor(src[i+channel]*tint/255),sourcePre=Math.round(source*alphaByte/255),destinationPre=Math.round(out[i+channel]*destinationAlpha/255);out[i+channel]=Math.round((sourcePre+Math.round(destinationPre*(255-alphaByte)/255))*255/resultAlpha);}
+      out[i+3]=resultAlpha;
     }
   });
   return { width: W, height: H, data: out };
@@ -73,4 +78,4 @@ export function buildBanner(mat, standing, meta) {
 }
 
 // Flag sway: (-0.0125 + 0.01 * cos(time * PI * 0.02)) * PI around X
-export function bannerSwing(time) { return (-0.0125 + 0.01 * Math.cos(time * Math.PI * 0.02)) * Math.PI; }
+export function bannerSwing(time) { const f=Math.fround,phase=f(((time%100)+100)%100/100);return f(f(f(-.0125)+f(f(.01)*mcCos(f(f(Math.PI*2)*phase))))*f(Math.PI)); }
