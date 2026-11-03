@@ -213,7 +213,7 @@ export class MinecraftJSExtrasScreen extends OptionsBase{
   constructor(game,parent,options){super(game,parent,'minecraftjs.extras.title');this.options=options||[];}
   init(){const g=this.game,s=this.s,toggle=(key,field)=>({label:()=>trOption(key,onOff(!!s[field])),click:()=>{s[field]=!s[field];}});
     const items=this.options.map(it=>it.extra==='shaders'?{...it,click:()=>import('./shaders.js').then(m=>g.screens.open(new m.ShaderPacksScreen(g,this)))}:it);
-    items.push(toggle('minecraftjs.extras.zoom','zoomEnabled'),toggle('minecraftjs.extras.dynamicLights','dynamicLights'),toggle('minecraftjs.extras.otherLights','dynamicLightsOthers'),toggle('minecraftjs.extras.fullBright','fullBright'));
+    items.push(toggle('minecraftjs.extras.shaderReflections','shaderReflections'),toggle('minecraftjs.extras.functionKeys','functionKeyChords'),toggle('minecraftjs.extras.zoom','zoomEnabled'),toggle('minecraftjs.extras.dynamicLights','dynamicLights'),toggle('minecraftjs.extras.otherLights','dynamicLightsOthers'),toggle('minecraftjs.extras.fullBright','fullBright'));
     this.grid(items);this.doneButton();
   }
   done(){this.game.applyGraphicsSettings?.();super.done();}
@@ -374,7 +374,7 @@ const KEY_BINDINGS = {
   chat: ['key.chat', 'key.categories.multiplayer'], playerlist: ['key.playerlist', 'key.categories.multiplayer'],
   pickItem: ['key.pickItem', 'key.categories.gameplay'], command: ['key.command', 'key.categories.multiplayer'],
   screenshot: ['key.screenshot', 'key.categories.misc'], perspective: ['key.togglePerspective', 'key.categories.misc'],
-  zoom: ['minecraftjs.key.zoom', 'key.categories.misc'],
+  zoom: ['minecraftjs.key.zoom', 'minecraftjs.extras.title'],
   smoothCamera: ['key.smoothCamera', 'key.categories.misc'],
   swapHands: ['key.swapHands', 'key.categories.inventory'], advancements: ['key.advancements', 'key.categories.misc'],
   saveToolbarActivator: ['key.saveToolbarActivator', 'key.categories.creative'], loadToolbarActivator: ['key.loadToolbarActivator', 'key.categories.creative'],
@@ -400,7 +400,8 @@ class ControlsScreen extends OptionsBase {
     const keys = Object.keys(KEY_BINDINGS).sort((a, b) => {
       const ca=KEY_BINDINGS[a][1], cb=KEY_BINDINGS[b][1];
       const order=VANILLA_UI.categoryOrder;
-      const c=order.length ? order.indexOf(ca)-order.indexOf(cb) : compareText(tr(ca),tr(cb));
+      const index=c=>{const i=order.indexOf(c);return i<0?order.length:i;};
+      const c=order.length ? index(ca)-index(cb) : compareText(tr(ca),tr(cb));
       return c || compareText(tr(KEY_BINDINGS[a][0]),tr(KEY_BINDINGS[b][0]));
     });
     this.entries = [];

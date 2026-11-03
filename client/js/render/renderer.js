@@ -484,6 +484,7 @@ export class Renderer {
     }
     const extras = [...this.extraDraws].sort((a, b) => (a.order || 0) - (b.order || 0));
     for (const e of extras) if ((e.order || 0) < 10) e(d);
+    post?.captureOpaque?.(this.proj,this.env.skyColor||this.fog.color.slice(0,3));
     if(fabulous){fabulous.prepare();d.setRenderTarget(fabulous.targets.translucent);}
     // Translucent terrain, far to near
     const transState = { blend: 'alpha', cull: true, depthWrite: true };
@@ -512,6 +513,7 @@ export class Renderer {
     if(fabulous)d.setRenderTarget(fabulous.targets.main);
     for(const e of extras)if((e.order||0)>=20)e(d);
     if(fabulous)fabulous.finish();
+    post?.captureDepth?.(fabulous?.targets.translucent);
     // EntityRenderer.renderWorldPass: clear depth, renderHand, then renderWorldDirections
     if (hand || this.afterHand.some((f) => f.active && f.active())) {
       d.clearDepth();
