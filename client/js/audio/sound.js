@@ -157,7 +157,11 @@ export class SoundManager {
   reload() {
     this.stopAll();
     this.buffers.clear();
-    this.game.assets.loadSoundDefinitions().then((d) => { this.defs = d; }).catch(() => { this.defs = {}; });
+    const generation=this.generation=(this.generation||0)+1;this.defs=null;this.ready=this.game.assets.loadSoundDefinitions().then(d=>{if(this.generation===generation)this.defs=d;}).catch(()=>{if(this.generation===generation)this.defs={};});return this.ready;
+  }
+
+  async preload(names=['ui.button.click','gui.button.press','random.click','entity.player.hurt','entity.generic.explode','block.stone.place','block.grass.place']){
+    await this.ready;const files=new Set(),seen=new Set();const visit=name=>{if(seen.has(name))return;seen.add(name);for(const raw of this.defs?.[name]?.sounds||[]){const item=typeof raw==='string'?{name:raw}:raw;if(item.type==='event')visit(item.name);else if(!item.stream)files.add(item.name);}};for(const name of names)visit(name);await Promise.all([...files].slice(0,64).map(file=>this._buffer(file)));return files.size;
   }
 
   // SoundHandler.playSound -> GuiSubtitleOverlay: events with a "subtitle" in sounds.json (global sounds at the player)
