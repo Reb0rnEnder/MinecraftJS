@@ -13,7 +13,7 @@ export const DEFAULT_KEYS = {
 };
 
 const DEFAULTS = {
-  shaderReflections:true,functionKeyChords:true,zoomEnabled:true,dynamicLights:false,dynamicLightsOthers:true,fullBright:false,
+  preloadTextures:true,functionKeyChords:true,zoomEnabled:true,dynamicLights:false,dynamicLightsOthers:true,fullBright:false,
   skipMultiplayerWarning: false,
   darkMojangStudiosBackground: false,
   hideLightningFlashes:false,
