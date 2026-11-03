@@ -1,3 +1,4 @@
+import{bundleContents,bundleContentWeight}from'./bundle.js';
 const attributeKey = name => 'attribute.name.' + name.replace(/^minecraft:/, '').replace(/[A-Z]/g, c => '_' + c.toLowerCase());
 // Item metadata helpers: names, tooltips, stack sizes, durability, use actions, tool speeds.
 import { simplify } from '../net/nbt.js';
@@ -249,6 +250,7 @@ export class Items {
     else if (registryName === 'lingering_potion') this.potionTooltip(item, lines, 0.25);
     else if (registryName === 'tipped_arrow') this.potionTooltip(item, lines, 0.125);
     if (tag && tag.author && registryName === 'written_book') lines.push('§7' + t('book.byAuthor', tag.author));
+    if(registryName==='bundle'){const weight=bundleContentWeight(item,this);lines.push('§7'+t('item.minecraft.bundle.fullness',weight,64));lines.bundleTooltip={items:bundleContents(item,this),weight};}
     if (registryName.startsWith('music_disc_')) lines.push('§7' + t(translationKey('item', registryName) + '.desc'));
     if (!(tag?.HideFlags & 1)) for (const e of this.enchantments(item)) lines.push('§7' + this.enchantmentName(e.id, e.lvl));
     if (tag && tag.display) {
