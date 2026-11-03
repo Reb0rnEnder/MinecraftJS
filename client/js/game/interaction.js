@@ -1,10 +1,11 @@
+import{familyCanSurvive}from'./placement-families.js';
 import{attachmentPlacement}from'./attachment-placement.js';
 import {growingPlantSurvives} from '../world/growing-plant-placement.js';
 import {predictDoorPair,reconcileDoorPair} from './door-prediction.js';
 import {placementIntersects} from './placement-collision.js';
 // Player interaction (port of PlayerControllerMP + Minecraft.clickMouse/rightClickMouse).
 import { C } from '../net/packets.js';
-import { blocks, blocksByName, findState, getBlock, getStateProperties, staticCollisionBoxes } from '../world/blocks.js';
+import { blocks, blocksByName, findState, getBlock, getStateProperties, staticCollisionBoxes, nativeReplaceable } from '../world/blocks.js';
 import { isPointInFluid } from '../world/fluids.js';
 import { rayBox } from '../world/world.js';
 import { armorType, copy, stackable } from './container.js';
@@ -596,7 +597,7 @@ export class Interaction {
     const b = getBlock(st);
     if (!b || b.id === 0 || b.isLiquid) return true;
     if (b.name === 'snow') return Number(getStateProperties(st).layers || 1) === 1;
-    return /^(tall_grass|dead_bush|vine|fire|kelp|kelp_plant|seagrass|tall_seagrass)$/.test(b.name);
+    return nativeReplaceable(st) ?? b.replaceable;
   }
 
   // World.canBlockBePlaced (+ Block.canPlaceBlockOnSide basics) at the position the item would use
@@ -644,6 +645,7 @@ export class Interaction {
     const nb = this._placedBlock(held);
     if (!nb) return false;
     const { p, face } = this._placementPos(t, held);
+    const family=familyCanSurvive(w,nb.name,p);if(family===false)return false;
     if(growingPlantSurvives(w,nb.name,p.x,p.y,p.z)===false)return false;
     if (p.y < 0 || p.y > 255) return false;
     if (!this._stackingProperty(t,held) && !this._replaceable(w.getState(p.x, p.y, p.z))) return false;
@@ -660,6 +662,7 @@ export class Interaction {
         if (hit([e.x - hw, e.y, e.z - hw, e.x + hw, e.y + (e.height || 0), e.z + hw])) return false;
       }
     }
+    if(family===true)return true;
     // support for blocks that need something under them / beside them
     const below = getBlock(w.getState(p.x, p.y - 1, p.z));
     const solidBelow = !!(below && below.opaque);

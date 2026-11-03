@@ -78,3 +78,6 @@ await import('../extract-block-offsets.mjs');
 
 // Native support predicates are also placement data; refresh them with runtime tables.
 await import('../extract-support.mjs');
+
+await import('../extract-placement.mjs');
+await import('../extract-dyes.mjs');
