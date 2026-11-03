@@ -1,3 +1,4 @@
+import{bundleBar,bundleContentWeight}from'../game/bundle.js';
 import {blocksByName} from '../world/blocks.js';
 import {compassProperty} from './compass.js';
 // Item rendering: GUI icons (2D sprites + 3D block icons), counts/durability/glint,
@@ -113,6 +114,7 @@ export class ItemRenderer {
     if (max > 0) { pv.damaged = g.items.isDamageable(item) && damage > 0 ? 1 : 0; pv.damage = Math.min(1, damage / max); }
     const using = local ? g.player.usingItem && (g.inventory.held() === item || g.inventory.offhand === item) : holder && holder.usingItem;
     switch (g.items.name(item.id)) {
+      case 'bundle':pv.filled=bundleContentWeight(item,g.items)/64;break;
       case 'bow':
         pv.pulling = 0; pv.pull = 0;
         if (using) { pv.pulling = 1; pv.pull = local && it ? Math.min(1, it.useTicks / 20) : 0; }
@@ -261,6 +263,7 @@ export class ItemRenderer {
       gui.rect(x + 2, y + 13, x + 15, y + 15, 0xff000000);
       gui.rect(x + 2, y + 13, x + 2 + i, y + 14, (0xff000000 | hsvToRgb(f2 / 3, 1, 1)) >>> 0);
     }
+    if(g.items.name(item.id)==='bundle'){const bar=bundleBar(item,g.items);if(bar){gui.rect(x+2,y+13,x+15,y+15,0xff000000);gui.rect(x+2,y+13,x+2+bar.width,y+14,(0xff000000|bar.color)>>>0);}}
     const cd = g.cooldownFraction ? g.cooldownFraction(item.id, g.partial || 0) : 0;
     if (cd > 0) gui.rect(x, y + Math.floor(16 * (1 - cd)), x + 16, y + Math.floor(16 * (1 - cd)) + Math.ceil(16 * cd), 0x7fffffff);
   }

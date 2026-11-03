@@ -83,3 +83,8 @@ await writeFile(join(root,'client/js/net/block-entity-types-1.18.2.js'),'// Nati
 
 // Native support predicates are also placement data; refresh them with runtime tables.
 await import('../extract-support.mjs');
+
+await import('../extract-bundle.mjs');
+
+await import('../extract-placement.mjs');
+await import('../extract-dyes.mjs');

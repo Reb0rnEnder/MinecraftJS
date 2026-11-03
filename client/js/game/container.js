@@ -1,3 +1,4 @@
+import{bundleSlotClick}from'./bundle.js';
 import {smithingRecipe,smithingResult,smithingRecipes} from './workstations-1.16.5.js';
 // Inventory/container model with a faithful port of vanilla Container.slotClick and
 // per-container transferStackInSlot (1.8 servers don't echo accepted clicks back).
@@ -260,6 +261,7 @@ class ContainerBase {
         const st = slot.item;
         const cur = inv.cursor;
         if (st) result = copy(st);
+        if(bundleSlotClick(this,slotId,button,stackable))return result;
         if (!st) {
           if (cur && this.isValid(slotId, cur)) {
             let k = button === 0 ? cur.count : 1;
