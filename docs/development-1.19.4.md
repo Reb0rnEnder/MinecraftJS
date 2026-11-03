@@ -36,8 +36,7 @@ Cherry, bamboo wood/rafts, camels, sniffers, archaeology and armor trims are
 **1.20 experimental content in the 1.19.4 jar**, not normal 1.19.4 content. Native
 registry IDs and model definitions must remain intact for decoding. Normal and
 operator creative catalogs are extracted with `FeatureFlags.VANILLA_SET`; tests
-assert experimental items stay absent. Enabling a server's experimental creative
-catalog is still pending. None of these features is backported to older targets.
+assert experimental items stay absent. Server feature flags select the matching native experimental creative catalog. None of these features is backported to older targets.
 
 References: [historical 1.19.4 Wiki](https://minecraft.wiki/w/Java_Edition_1.19.4),
 [Cherry history](https://minecraft.wiki/w/Cherry), and
@@ -71,16 +70,16 @@ headless Chromium did not establish audible playback on a physical device.
 ## Remaining work
 
 - Display entity rendering/transformation interpolation and interaction entity
-  bounds; unified painting spawning/variants.
+  bounds. Unified painting spawning and all native variants are implemented.
 - Complete new mob animation state transitions, emissive layers, held-item
   transforms and entity-specific sounds/particles.
 - Signed account chat sessions, signature verification/cache, message deletion,
   social/reporting UI. Current outgoing chat is unsigned; trust is not fabricated.
 - World-border initialization and remaining explicitly unsupported packet bodies;
   detailed respawn data-to-keep behavior and additional live prediction round trips.
-- Exact new glint passes, additional damage/fog behavior, experimental feature
-  switching and full native GUI/container/recipe behavior review.
-- Native three-backend visual checks and a fresh distribution build/release gate.
+- Exact new glint passes, additional damage/fog behavior, full native GUI/container/recipe behavior review.
+- Additional native screenshot comparisons and the full-parity release gate.
+  Chest destruction and the shared lighting checks pass on all three backends.
 
 The inherited broad regression suite has stale version/ID fixtures from earlier
 ports; it is not reported as passing. Targeted tests and live checks above do
@@ -90,5 +89,26 @@ not establish that every feature is correct.
 
 The user's running `server1194` and its world are preserved. Tests that issue
 commands use a separate ignored server under
-`cache/validation-1.19.4-graphics/server`, port 25567, world `client-parity`.
+an ignored cache directory, port 25567. The presentation fixture creates a
+unique `cache/presentation-fixtures/server-*` folder and `presentation-fixture`
+world. `run-presentation-fixture.mjs` refuses an occupied port, and
+`probe-presentation.mjs` verifies its unique MOTD before issuing any commands.
 No existing world is upgraded, and servers/configurations are not committed.
+
+## Presentation and interaction reproduction
+
+```sh
+node --test tools/test-paintings-1194.mjs tools/test-painting-tiles.mjs tools/test-banner-native.mjs tools/test-bundles.mjs tools/test-placement-families.mjs tools/test-attachment-placement.mjs tools/test-sculk-particles-1194.mjs
+# Set PLAYWRIGHT_MODULE to the installed Playwright index.mjs:
+node --test tools/test-breaking-browser.mjs tools/test-clipboard-browser.mjs
+# In separate terminals, only against the isolated fixture (not server1194):
+node tools/port-1.19.4/run-presentation-fixture.mjs
+node tools/port-1.19.4/probe-presentation.mjs
+# Send 'stop' in the fixture terminal after the probe.
+```
+
+Native extraction tools pin the client jar hash in generated fixtures; runtime
+finalization regenerates bundle, painting, dye and placement data. The native
+presentation probe confirmed server-enabled bundles, painting dimensions and
+bundle slot reconciliation. See the [release audit](release-audit-1.19.4.md)
+for remaining feature gaps; successful targeted tests do not imply full parity.

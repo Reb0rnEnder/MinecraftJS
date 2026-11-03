@@ -140,11 +140,12 @@ export class Game {
     this.gui.narrator=this.narrator;
     this.tutorial = new Tutorial(this);
     this.itemRenderer = new ItemRenderer(this);
+    this.gui.itemRenderer=this.itemRenderer;
     this.entityRenderer = new EntityRenderer(this);
     this.eaglerTextures = new EaglerTextures(this);
     this.handRenderer = new HandRenderer(this);
     this.tileRenderer = new TileEntityRenderer(this);
-    this.renderer.breakContext=()=>({world:this.world,tileRenderer:this.tileRenderer,tileProps:this.tileProps,alternatives:this.settings.blockAlternatives!==false,fancy:!!this.settings.fancyGraphics});
+    this.renderer.breakContext=()=>({world:this.world,tileRenderer:this.tileRenderer,tileProps:this.tileProps,alternatives:this.settings.blockAlternatives!==false,fancy:!!this.settings.fancyGraphics,smooth:(this.settings.smoothLighting|0)>0});
     this.structureBlocks = new Map(); // "x,y,z" -> structure block tile entity data
     this.jigsawBlocks = new Map();
     this.pistons = new Pistons(this);

@@ -53,7 +53,7 @@ export function vibrationParticle(system,data){
  const origin=data.origin;if(!origin||!Number.isFinite(data.ticks)||data.ticks<=0)return;
  const destination=()=>{if(typeof data.destination==='number'){const e=system.game.entities.get(data.destination);return e?{x:Math.floor(e.x),y:Math.floor(e.y),z:Math.floor(e.z)}:null;}return data.destination;};
  if(!destination())return;
- const p={x:origin.x+.5,y:origin.y+.5,z:origin.z+.5,sprite:'vibration',scale:3,maxAge:data.ticks,collide:false,fullBright:true,yaw:0,prevYaw:0};
+ const p={x:origin.x+.5,y:origin.y+.5,z:origin.z+.5,sprite:'vibration',scale:3,maxAge:data.ticks,collide:false,lightFn:()=>[0,15],yaw:0,prevYaw:0};
  p.update=q=>{const end=destination();if(!end)return false;const t=q.age/q.maxAge;q.x=origin.x+.5+(end.x-origin.x)*t;q.y=origin.y+.5+(end.y-origin.y)*t;q.z=origin.z+.5+(end.z-origin.z)*t;q.prevYaw=q.yaw;q.yaw=Math.atan2(q.x-end.x,q.z-end.z);};
  p.geometryFn=(q,partial,x,y,z)=>{
   const roll=Math.sin((q.age+partial-Math.PI*2)*.05)*2,yaw=q.prevYaw+(q.yaw-q.prevYaw)*partial;

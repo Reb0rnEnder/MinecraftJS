@@ -1622,5 +1622,13 @@
     "fields": [
       "head"
     ]
+  },
+  "piglinHead": {
+    "layer": "minecraft:piglin_head#main",
+    "fields": [
+      "head",
+      "left_ear",
+      "right_ear"
+    ]
   }
 }

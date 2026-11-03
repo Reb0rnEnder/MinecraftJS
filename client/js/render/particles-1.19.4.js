@@ -14,7 +14,7 @@ export function vibrationParticle762(system,x,y,z,data){
 // ShriekParticle: delayed, expanding/fading pairs of tilted rings.
 export function shriekParticle762(system,x,y,z,data={}){
  const p={x,y,z,mx:0,my:.1,mz:0,sprite:'shriek',scale:8.5,maxAge:30,gravity:0,collide:true,delay:Math.max(0,data.delayInTicksBeforeShown|0),lightFn:()=>[0,15]};p.invisible=p.delay>0;
- p.update=q=>{if(q.delay>0){q.delay--;q.age--;return;}q.invisible=false;system.move(q,system.game.world);q.my*=.98;};
+ p.update=q=>{if(q.delay>0){q.delay--;q.age--;q.invisible=q.delay>0;return;}q.invisible=false;system.move(q,system.game.world);q.my*=.98;};
  p.alphaFn=(q,t)=>1-clamp((q.age+t)/q.maxAge);
  p.geometryFn=(q,t,x,y,z)=>quads(x,y,z,.85*clamp((q.age+t)/q.maxAge*.75),[[0,-1.0472],[-Math.PI,1.0472]]);
  return system.add(p);

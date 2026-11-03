@@ -1,3 +1,4 @@
+import{bundleTooltipLayout,drawBundleTooltip}from'./bundle-tooltip.js';
 import{EMPTY_DYNAMIC_LIGHTS}from'../gfx/dynamic-lighting.js';
 import {VANILLA_UI} from './vanilla-layout.js';
 // 2D GUI layer rendered through the graphics device (vanilla-like drawing helpers).
@@ -248,9 +249,11 @@ export class Gui {
     if (!lines.length) return;
     let w = 0;
     for (const l of lines) w = Math.max(w, this.textWidth(l));
+    const image=lines.bundleTooltip,layout=image?bundleTooltipLayout(image):null;if(layout)w=Math.max(w,layout.width);
     let x = mx + 12, y = my - 12;
     let h = 8;
     if (lines.length > 1) h += 2 + (lines.length - 1) * 10;
+    if(layout)h+=layout.height+(lines.length===1?2:0);
     if (x + w > this.width) x -= 28 + w;
     if (y + h + 6 > this.height) y = this.height - h - 6;
     const bg = 0xf0100010, b1 = 0x505000ff, b2 = 0x5028007f;
@@ -266,6 +269,7 @@ export class Gui {
     for (let i = 0; i < lines.length; i++) {
       this.text(lines[i], x, y, 0xffffff, true);
       y += i === 0 ? 12 : 10;
+      if(i===0&&image){drawBundleTooltip(this,image,x,y);y+=layout.height;}
     }
   }
 

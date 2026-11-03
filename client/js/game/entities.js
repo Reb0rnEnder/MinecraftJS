@@ -1,3 +1,4 @@
+import{paintingFacing762,configurePainting762,PAINTING_VARIANT_INDEX_762}from'./painting-1.19.4.js';
 import {isSquid,initSquid,tickSquid,squidInWater} from './squid-animation.js';
 import {detachRemovedEntities} from './riding-lifecycle.js';
 import {applyNetherMetadata} from './nether-metadata.js';
@@ -206,6 +207,7 @@ export class EntityManager {
         e.blockPos = { x: Math.floor(p.x), y: Math.floor(p.y), z: Math.floor(p.z) };
         e.box = itemFrameBox(p.x, p.y, p.z, e.facing);
         break;
+      case 'painting':e.blockPos={x:Math.floor(p.x),y:Math.floor(p.y),z:Math.floor(p.z)};e.facing=paintingFacing762(p.objectData);configurePainting762(e,0);break;
       case 'armor_stand': e.armorFlags = 0; break;
       case 'fishing_bobber': e.owner = p.objectData; break;
       case 'area_effect_cloud': e.radius = 3; break;
@@ -277,7 +279,7 @@ export class EntityManager {
   }
 
   _setTarget(e, x, y, z, yaw, pitch, inc = 3) {
-    if (e.kind === 'painting') return;
+    if(e.kind==='painting'){e.blockPos={x:Math.floor(x),y:Math.floor(y),z:Math.floor(z)};configurePainting762(e);return;}
     if(e.kind==='leash'){placeLeashKnot(e,x,y,z);return;}
     e.newX = x; e.newY = y; e.newZ = z;
     e.newYaw = yaw; e.newPitch = pitch;
@@ -372,6 +374,7 @@ export class EntityManager {
     } else if(native[6]!==undefined&&native[6]!==2){e.sleeping=false;e.bedPos=null;e.sleepingPosition=null;}
     m={};for(const [key,value] of Object.entries(native)){const i=Number(key);if(i===6||living498&&i===12)continue;m[i-(i>=7?living498&&i>=13?2:1:0)]=value;}
     const name = e.entityName;
+    if(name==='painting'&&wire[PAINTING_VARIANT_INDEX_762]!==undefined)configurePainting762(e,wire[PAINTING_VARIANT_INDEX_762]);
     const own=WIRE_METADATA[name]||{},assign=(symbol,key)=>{const id=own[symbol];if(id!==undefined&&wire[id]!==undefined){if(['snifferState','dashing'].includes(key)&&e[key]!==wire[id])e.wildAnimationStart=e.ticks;e[key]=wire[id];}};
     if(name==='frog'){assign('DATA_VARIANT_ID','frogVariant');assign('DATA_TONGUE_TARGET_ID','tongueTarget');}
     if(name==='allay'){assign('DATA_DANCING','dancing');assign('DATA_CAN_DUPLICATE','canDuplicate');}

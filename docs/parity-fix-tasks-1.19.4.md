@@ -14,7 +14,7 @@ required evidence. This is a work ledger, not a full-parity completion claim.
 - [x] Correct first Shift+Tab, scrolling selection, usage/error rows and redirects.
 - [x] Complete the audited enum/registry arguments and native selector option suggestions,
       especially `/kill @e[type=`.
-- [ ] Verify Ctrl+A/C/X/V in chat, search, command blocks, books and other native
+- [x] Verify Ctrl+A/C/X/V in chat, search, command blocks, books and other native
       editable fields, including browsers without Clipboard API access.
 
 ## 2. Native menus and MinecraftJS Extras
@@ -28,23 +28,23 @@ required evidence. This is a work ledger, not a full-parity completion claim.
 
 - [x] Match native wall-torch facing immediately, before server correction.
 - [x] Reject unsupported lantern-on-stairs placements before sound/swing.
-- [ ] Audit support/placement checks for other shapes; add native regressions for
+- [x] Audit support/placement checks for other shapes; add native regressions for
       supported and rejected placements. Do not promise universal prevention
       from an incomplete generic placement rule.
 
 ## 4. Breaking and first-person obstruction
 
-- [ ] Compare damage-stage timing, texture blending and geometry with native code.
-- [ ] Show damage on chests and other native eligible block entities.
+- [x] Compare damage-stage timing, texture blending and geometry with native code.
+- [x] Show damage on chests and other native eligible block entities.
 - [x] Render the native suffocation/block obstruction overlay when inside blocks,
       while preserving blocks that do not produce the overlay.
 
 ## 5. Entity/block-entity presentation
 
-- [ ] Fix placed player/mob heads: model, orientation, profile/default textures.
-- [ ] Port unified painting spawning and native variant metadata/size/orientation.
-- [ ] Verify standing/wall banners, patterns, cloth transforms and damage rendering.
-- [ ] Verify sculk sensor vibration visuals separately from shrieker ring effects;
+- [x] Fix placed player/mob heads: model, orientation, profile/default textures.
+- [x] Port unified painting spawning and native variant metadata/size/orientation.
+- [x] Verify standing/wall banners, patterns, cloth transforms and damage rendering.
+- [x] Verify sculk sensor vibration visuals separately from shrieker ring effects;
       add only effects emitted by the corresponding native block.
 
 ## 6. Loading and broader release audit
@@ -71,8 +71,9 @@ shader packs, network captures and configuration remain local inputs.
 - Breaking: simulation-tick stages, negative-height worlds, simultaneous damage
   positions and greatest stage per position. Native chest/lid geometry and the
   modern position-projected decal UVs have regression coverage. The 24 UV oracle
-  samples come from native `SheetedDecalTextureGenerator`. In-world visual
-  comparison of all eligible block entities remains pending.
+  samples come from native `SheetedDecalTextureGenerator`. Pixel checks additionally exercise closed and open chest lids using native
+  damage textures on WebGL2, WebGPU and Software in every target. These checks
+  establish surface coverage, not an exhaustive screenshot match for all entities.
 - Native placement predicates are extracted for every state in 1.14.4 through
   1.19.4. Lanterns use center support, wall torches use full-face support, and
   native look/face ordering selects an attachment. No waterlogged lantern state
@@ -81,12 +82,13 @@ shader packs, network captures and configuration remain local inputs.
 - Wall skull north/south rotations are repaired across all targets; the native
   0.74/0.26 offsets remain through 1.15 and 0.75/0.25 apply from 1.16. Modern
   zombie heads use their native layer and player hats retain their child
-  hierarchy. Powered head animations and experimental piglin heads still need
-  their own audit.
+  hierarchy. The experimental piglin head now uses its native model and texture only when
+  the server enables it. Powered dragon/piglin head animation remains a separate gap.
 - Flattened placed banners now derive base dye from their block and convert NBT
   dye IDs at the legacy compositor boundary. Standing poles and wall metadata
-  are corrected. Pattern blending/limits and cloth animation still need a full
-  native visual comparison.
+  are corrected. Native dye palettes, the 17-layer limit and position/world-age cloth phase
+  now have native-derived regressions. Legacy layered-mask blending preserves
+  AWT versus NativeImage differences; modern masks retain their own alpha.
 - 1.19 vibration trails use packet origin coordinates and track block/entity
   destinations. Shriekers emit the native event 3007 delayed ring sequence.
   These new ring effects are not backported into sensor-only releases.
@@ -97,9 +99,34 @@ shader packs, network captures and configuration remain local inputs.
   the lighting implementation. BSL's basic lighting bridge also passed its
   browser regression with the local pack; this is not full shaderpack emulation.
 
-Still outstanding: actual browser clipboard checks across every editor, unified
-painting variants/spawns, bundle inventory interactions, broader placement
-families, native visual review, the release-history audit and remaining parity
-items. The bundles creative catalog is feature-gated correctly; this does not
-by itself establish functional bundle interactions. Distribution rebuilds must
-use the eventual committed source heads and refresh manifests/checksums.
+## Additional verified fixes
+
+- Paintings use native 16-pixel tiles, repeating backs/edges and separate world
+  lighting per tile. Legacy versions retain their atlas; modern versions use
+  individual textures. The 1.19.4 unified spawn/metadata path covers all 30 native
+  variants and four wall directions. A separate native server confirmed a 4×4
+  painting through the real packet and entity paths.
+- Bundles now implement typed-NBT capacity, nested weight, right-click insertion
+  and extraction, item-use emptying, item predicates, durability bar and native
+  tooltip grid. Invalid/output-slot transactions preserve contents. The native
+  1.19.4 server confirmed insertion/extraction and authoritative slot snapshots.
+  Backports start at 1.17; bundle sounds start at the native 1.18 behavior.
+- Real Chromium clipboard tests cover chat, creative search, command blocks,
+  book pages and signing titles over secure and insecure HTTP origins. Older
+  book editors preserve their native selection limitations.
+- Native placement-family extraction classifies the implementation owning
+  `canSurvive`, exports support/replacement predicates and plant soils, and
+  lists unreviewed context-dependent overrides. It covers rails, plates,
+  carpets, ordinary/double plants and, where present, roots/spore blossoms.
+  Native support extraction now binds newer tag registries before evaluating
+  support. This prevents silently accepting unstable bottom-center supports.
+- The targeted placement, banner, painting and bundle regressions pass on every
+  applicable existing worktree. Browser chest-crack and clipboard checks pass
+  on all nine targets. The inherited entire broad suite still has stale port
+  fixtures and is not reported as passing.
+
+Still outstanding: [broader release audit and known gaps](release-audit-1.19.4.md),
+powered head animations, additional context-dependent placement rules and an
+exhaustive native screenshot comparison. Full 1.19.4 parity remains unfinished.
+Distribution rebuilds must use committed source heads and refresh manifests and
+checksums together.

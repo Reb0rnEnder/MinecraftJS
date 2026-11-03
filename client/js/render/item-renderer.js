@@ -1,3 +1,4 @@
+import{bundleBar,bundleContentWeight}from'../game/bundle.js';
 import {DEFAULT_SKIN} from './default-skins.js';
 import {blocksByName} from '../world/blocks.js';
 import {compassProperty} from './compass.js';
@@ -23,7 +24,7 @@ const rgbOf = (c) => [((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255)
 const COLORS = ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'light_gray',
   'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black'];
 const GRASS_ITEMS = new Set(['grass_block', 'grass', 'fern', 'tall_grass', 'large_fern']);
-const SKULLS = { skeleton_skull: 0, wither_skeleton_skull: 1, zombie_head: 2, player_head: 3, creeper_head: 4, dragon_head: 5 };
+const SKULLS = { skeleton_skull: 0, wither_skeleton_skull: 1, zombie_head: 2, player_head: 3, creeper_head: 4, dragon_head: 5, piglin_head: 6 };
 const POTIONS = new Set(['potion', 'splash_potion', 'lingering_potion', 'tipped_arrow']);
 const modelPath = (name) => name.replace(/^minecraft:/, '');
 // Shared banner compositor still indexes dyes black-first. Only adapt its colour input;
@@ -114,6 +115,7 @@ export class ItemRenderer {
     if (max > 0) { pv.damaged = g.items.isDamageable(item) && damage > 0 ? 1 : 0; pv.damage = Math.min(1, damage / max); }
     const using = local ? g.player.usingItem && (g.inventory.held() === item || g.inventory.offhand === item) : holder && holder.usingItem;
     switch (g.items.name(item.id)) {
+      case 'bundle':pv.filled=bundleContentWeight(item,g.items)/64;break;
       case 'bow':
         pv.pulling = 0; pv.pull = 0;
         if (using) { pv.pulling = 1; pv.pull = local && it ? Math.min(1, it.useTicks / 20) : 0; }
@@ -263,6 +265,7 @@ export class ItemRenderer {
       gui.rect(x + 2, y + 13, x + 15, y + 15, 0xff000000);
       gui.rect(x + 2, y + 13, x + 2 + i, y + 14, (0xff000000 | hsvToRgb(f2 / 3, 1, 1)) >>> 0);
     }
+    if(g.items.name(item.id)==='bundle'){const bar=bundleBar(item,g.items);if(bar){gui.rect(x+2,y+13,x+15,y+15,0xff000000);gui.rect(x+2,y+13,x+2+bar.width,y+14,(0xff000000|bar.color)>>>0);}}
     const cd = g.cooldownFraction ? g.cooldownFraction(item.id, g.partial || 0) : 0;
     if (cd > 0) gui.rect(x, y + Math.floor(16 * (1 - cd)), x + 16, y + Math.floor(16 * (1 - cd)) + Math.ceil(16 * cd), 0x7fffffff);
   }
@@ -364,7 +367,7 @@ export class ItemRenderer {
     if (SKULLS[name] !== undefined) {
       const type = SKULLS[name];
       const texPath = ['entity/skeleton/skeleton.png', 'entity/skeleton/wither_skeleton.png', 'entity/zombie/zombie.png',
-        DEFAULT_SKIN, 'entity/creeper/creeper.png', 'entity/enderdragon/dragon.png'][type];
+        DEFAULT_SKIN, 'entity/creeper/creeper.png', 'entity/enderdragon/dragon.png', 'entity/piglin/piglin.png'][type];
       // the skull node is in scale(-1, -1, 1) 1/16 units; this item space flips z instead of x
       const g = new Node();
       const sk = skullModel(type, mat(type===3&&this.game.items.nbt(item)?.SkullOwner?this.game.entityRenderer.skullTexture(this.game.items.nbt(item).SkullOwner):texPath));

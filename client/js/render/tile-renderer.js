@@ -27,7 +27,7 @@ const FLOWER_POT_IDS = { 38: 'minecraft:red_flower', 37: 'minecraft:yellow_flowe
 
 const key = (x, y, z) => x + ',' + y + ',' + z;
 // Skull identity moved from tile NBT into the block registry in 1.13.
-const SKULL_TYPES = new Map(['skeleton_skull', 'wither_skeleton_skull', 'zombie_head', 'player_head', 'creeper_head', 'dragon_head']
+const SKULL_TYPES = new Map(['skeleton_skull', 'wither_skeleton_skull', 'zombie_head', 'player_head', 'creeper_head', 'dragon_head', 'piglin_head']
   .map((name, type) => [name, type]));
 const skullType = (name) => SKULL_TYPES.get(name.replace('_wall_', '_'));
 // EnumFacing order: down, up, north, south, west, east
@@ -486,7 +486,7 @@ export class TileEntityRenderer {
       case 'skull': {
         const name = getBlock(st).name;
         const type = skullType(name) ?? 0;
-        const tex = ['entity/skeleton/skeleton.png', 'entity/skeleton/wither_skeleton.png', 'entity/zombie/zombie.png', DEFAULT_SKIN, 'entity/creeper/creeper.png', 'entity/enderdragon/dragon.png'][type] || 'entity/skeleton/skeleton.png';
+        const tex = ['entity/skeleton/skeleton.png', 'entity/skeleton/wither_skeleton.png', 'entity/zombie/zombie.png', DEFAULT_SKIN, 'entity/creeper/creeper.png', 'entity/enderdragon/dragon.png', 'entity/piglin/piglin.png'][type] || 'entity/skeleton/skeleton.png';
         mat = entityMaterial(type===3&&t.data?.SkullOwner?this.game.entityRenderer.skullTexture(t.data.SkullOwner):tex, { alphaTest: 0.1 });
         const model = skullModel(type, mat);
         const outer = new Node();
@@ -766,7 +766,7 @@ export class TileEntityRenderer {
         t.shulkerLid.position.set(0, -f * 0.5 * 16, 0);
         t.shulkerLid.rotation.set(0, 270 * f * D2R, 0);
       } else if (t.type === 'banner' && t.bannerSwing) {
-        const time = this.ticks + partial + t.x * 7 + t.y * 9 + t.z * 13;
+        const time = Number(this.game.world.worldAge ?? this.ticks) + partial + t.x * 7 + t.y * 9 + t.z * 13;
         t.bannerSwing.rotation.x = bannerSwing(time);
       } else if (t.type === 'beacon' && t.beamNode) {
         this._buildBeam(t, partial);
@@ -833,6 +833,7 @@ export function skullModel(type, mat) {
   const model = new Node();
   model.scale.set(-1 / 16, -1 / 16, 1 / 16);
   let parts;
+  if(type===6){const p=blockModel('piglinHead',['head','leftEar','rightEar']);p.leftEar.rz=-.7;p.rightEar.rz=.7;model.add(p.head.build());p.head.setMaterial(mat);return model;}
   if (type === 5) {
     const d = blockModel('dragonHead', ['head', 'jaw']);
     d.jaw.rx = 0.2;

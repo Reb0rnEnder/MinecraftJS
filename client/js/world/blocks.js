@@ -15,7 +15,7 @@ export const stateById = states;
 
 const STAIRS = (name) => name.endsWith('_stairs');
 
-const HEAD_BLOCKS = new Set(['skeleton_skull','wither_skeleton_skull','zombie_head','player_head','creeper_head','dragon_head'].flatMap(name=>[name,name.replace(/_(head|skull)$/,'_wall_$1')]));
+const HEAD_BLOCKS = new Set(['skeleton_skull','wither_skeleton_skull','zombie_head','player_head','creeper_head','dragon_head','piglin_head'].flatMap(name=>[name,name.replace(/_(head|skull)$/,'_wall_$1')]));
 
 const SHULKER_BOXES = new Set(['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'light_gray',
   'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black'].map((c) => c + '_shulker_box'));
@@ -229,3 +229,8 @@ export function blockFaceSupports(state,face,center=false){
  if(!native)throw Error('Missing native placement support data for state '+state);
  return !!(native[center?0:1]&(1<<face));
 }
+
+export function nativePlacementRule(name){return shapesData?.placementRules?.rules[name]||null;}
+export function nativeReplaceable(state){return shapesData?.placementRules?.replaceable[state];}
+export function nativeRigidTop(state){return shapesData?.placementRules?.rigidTop[state]===true;}
+export function nativePlantSoil(name,state){const data=shapesData?.placementRules,rule=data?.rules[name];if(rule?.soil===undefined)return false;return data.soilPatterns[rule.soil].some(([first,last])=>state>=first&&state<=last);}
