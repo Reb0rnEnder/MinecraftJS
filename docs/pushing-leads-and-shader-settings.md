@@ -59,3 +59,7 @@ errors. This is scoped validation, not a claim of complete game/shader parity.
 Follow-up: [world entity lighting, corrected sky/block coordinates and fence
 knot alignment](entity-lighting-and-fence-knots.md) supersedes the terrain-only
 lighting limitation above and records the shadow implementation scope.
+
+Later updates add entity lighting and optional MinecraftJS water reflections;
+see [the current compatibility guide](input-and-shader-compatibility.md). The
+pack-native deferred/shadow/reflection pipelines remain outside this bridge.

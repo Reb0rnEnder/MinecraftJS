@@ -479,6 +479,7 @@ export class Renderer {
     }
     const extras = [...this.extraDraws].sort((a, b) => (a.order || 0) - (b.order || 0));
     for (const e of extras) if ((e.order || 0) < 10) e(d);
+    post?.captureOpaque?.(this.proj,this.env.skyColor||this.fog.color.slice(0,3));
     // Translucent terrain, far to near
     const transState = { blend: 'alpha', cull: true, depthWrite: true };
     for (let i = vis.length - 1; i >= 0; i--) {
@@ -497,6 +498,7 @@ export class Renderer {
       } else if (ct) d.draw({ mesh: this.cloudMesh, pipeline: 'color', textures: [ct], params: colorParams(cc[0], cc[1], cc[2], 0.8, 0.004, 1), state: { blend: 'alpha', depthWrite: false } });
     }
     for (const e of extras) if ((e.order || 0) >= 10) e(d);
+    post?.captureDepth?.();
     // EntityRenderer.renderWorldPass: clear depth, renderHand, then renderWorldDirections
     if (hand || this.afterHand.some((f) => f.active && f.active())) {
       d.clearDepth();
