@@ -101,7 +101,7 @@ const TICK_MS = 50;
 const SOUND_CATEGORIES = ['master', 'music', 'record', 'weather', 'block', 'hostile', 'neutral', 'player', 'ambient', 'voice'];
 
 export class Game {
-  constructor(assets, settings, device) {
+  constructor(assets, settings, device, {deferStart=false}={}) {
     this.assets = assets;
     this.settings = settings;
     this.device = device;
@@ -190,7 +190,7 @@ export class Game {
     this.fps = 0;
     this.frames = 0;
     this.fpsTimer = platform().now();
-    platform().requestFrame((t) => this.frame(t));
+    if(!deferStart)platform().requestFrame((t) => this.frame(t));
   }
 
   reset() {
@@ -386,6 +386,7 @@ export class Game {
       finally{if(this.screens.current===loading){if(parent||this.inWorld)this.screens.open(parent);else this.screens.openMainMenu();}}
       return;
     }
+    this.assets.preloadWorldTextures=this.settings.preloadTextures!==false;
     await this.assets.loadResources(progress);
     this.eaglerTextures?.clear();
     this.applyLanguage();
@@ -395,7 +396,7 @@ export class Game {
     this.tileRenderer.clear();
     this.pistons.clear();
     this.postEffects.clear();
-    this.sound.reload();
+    await this.sound.reload();await this.sound.preload();
     this.worker = this.assets.worker;
     this._setupWorker();
     this._meshOptsKey = null;
@@ -463,6 +464,7 @@ export class Game {
   _setupWorldListeners() {
     const w = this.world;
     w.on('chunkLoaded', (c, bitMap, groundUp) => {
+      this.renderer.invalidateVisibility();
       void bitMap; void groundUp;
       for (let y = 0; y < 16; y++) if (c.sections[y]) this.dirty.add(c.x + ',' + y + ',' + c.z);
       this.tileRenderer.scanChunk(c);
@@ -476,6 +478,7 @@ export class Game {
       }
     });
     w.on('chunkUnloaded', (c) => {
+      this.renderer.invalidateVisibility();
       this.renderer.removeChunk(c.x, c.z);
       this.meshedChunks.delete(c.x + ',' + c.z);
       for (let y = 0; y < 16; y++) { const key=c.x+','+y+','+c.z;this.dirty.delete(key);this.inFlight.delete(key);this.buildTokens.delete(key); }

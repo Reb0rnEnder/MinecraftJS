@@ -14,4 +14,4 @@ async function renderPack(file,dimensions){
 }
 test('final pass produces correct WebGL2 pixels with no GL errors',{skip:!process.env.PLAYWRIGHT_MODULE},async()=>renderPack(new URL('fixtures/shader-pack-final-test.zip',import.meta.url),[0]));
 const bsl=process.env.BSL_SHADER_PACK||fileURLToPath(new URL('../BSL_v10.1.8.zip',import.meta.url));const hasBSL=await access(bsl).then(()=>true,()=>false);
-test('locally supplied BSL final programs compile and render in all three dimensions',{skip:!process.env.PLAYWRIGHT_MODULE||!hasBSL},async()=>renderPack(bsl,[0,-1,1]));
+test('native BSL final needs its actual deferred colour attachment',{skip:!process.env.PLAYWRIGHT_MODULE||!hasBSL},async()=>assert.rejects(()=>renderPack(bsl,[0]),/unavailable scene buffer: colortex1/));

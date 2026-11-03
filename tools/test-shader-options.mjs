@@ -1,7 +1,6 @@
 import{test}from'node:test';import assert from'node:assert/strict';import{readFileSync,existsSync}from'node:fs';
 import{parseShaderOptions,validateShaderOptions,applyShaderOptions}from'../client/js/render/shader-options.js';
 import{supportedShaderOptions,finalShaderSource,ShaderPackFinal}from'../client/js/render/shader-pack.js';
-import{packLighting,lightingFrame}from'../client/js/render/shader-lighting.js';
 import{ShaderOptionsScreen}from'../client/js/gui/screens/shaders.js';
 const source=`/*\n#define EXAMPLE\n*/\n#define WAVE\n//#define FILTER\n#define SPEED 1.0 //[0.0 1.0 2.0]\nconst float amount = 0.5; //[0.0 0.5 1.0]\n//Undefine//\n#define INTERNAL\n`;
 test('shader authoring options parse toggles, choices and constants without exposing internal macros',()=>{
@@ -21,9 +20,7 @@ test('native shader options use automatic columns, cycle/reset values, and apply
 });
 
 const file=process.env.BSL_SHADER_PACK||new URL('../BSL_v10.1.8.zip',import.meta.url);
-test('BSL exposes working stages only and light colours respond to settings, time and dimensions',{skip:!existsSync(file)},()=>{
- const bytes=readFileSync(file),options=supportedShaderOptions(bytes),names=options.map(o=>o.name);for(const key of ['WAVING_GRASS','ANIMATION_SPEED','SHARPEN','BLOCKLIGHT_I','LIGHT_DI'])assert.ok(names.includes(key),key);for(const key of ['SHADOW','REFLECTION','TAA','FSH','NETHER','WAVING_LAVA','WAVING_FIRE','WAVING_LANTERN'])assert.ok(!names.includes(key),key);
- const colors=packLighting(options,{}),noon=lightingFrame(colors,6000),night=lightingFrame(colors,18000);assert.ok(noon.direct.some((v,i)=>v>night.direct[i]));
- const off=lightingFrame(packLighting(options,{BLOCKLIGHT_I:'0.05'}),6000);assert.ok(off.block.every((v,i)=>v<noon.block[i]));for(const d of [-1,1]){const f=lightingFrame(colors,6000,d);assert.equal(f.dimension,d);assert.ok([...f.ambient,...f.direct,...f.block].every(Number.isFinite));}
+test('BSL authoring options do not expose fabricated lightmap controls',{skip:!existsSync(file)},()=>{
+ const bytes=readFileSync(file),options=supportedShaderOptions(bytes),names=options.map(o=>o.name);for(const key of ['WAVING_GRASS','ANIMATION_SPEED','SHARPEN'])assert.ok(names.includes(key),key);for(const key of ['SHADOW','REFLECTION','TAA','FSH','NETHER','WAVING_LAVA','WAVING_FIRE','WAVING_LANTERN','BLOCKLIGHT_I','LIGHT_DI','AMBIENT_DI','BLOCKLIGHT_R'])assert.ok(!names.includes(key),key);
  assert.match(finalShaderSource(bytes,0,{SHARPEN:'2'}),/#define SHARPEN 2/);
 });

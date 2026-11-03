@@ -14,7 +14,7 @@ export const onOff = (v) => tr(v ? 'options.on' : 'options.off');
 
 export const MINECRAFTJS_EN = {
   'minecraftjs.extras.title':'MinecraftJS Extras',
-  'minecraftjs.extras.shaderReflections':'Shader Water Reflections',
+  'minecraftjs.extras.preloadTextures':'Preload World Textures',
   'minecraftjs.extras.functionKeys':'F + Number Function Keys',
   'minecraftjs.extras.zoom':'Zoom',
   'minecraftjs.extras.dynamicLights':'Held Item Lights',
