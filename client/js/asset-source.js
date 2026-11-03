@@ -11,6 +11,7 @@ export class FolderSource {
   url(rel) { return this.base + rel + '?v=1.19.4-native-v1'; }
   bytes(rel) { return platform().fetchBytes(this.url(rel)).catch(() => null); }
   data(name) { return platform().fetchJson(`data/${name}.json`); }
+  textureIndex(){return platform().fetchJson(this.url('bundles/texture-index.json')).catch(()=>[]);}
   models() { return platform().fetchJson(this.url('bundles/models.json')); }
   recipes() { return platform().fetchJson(this.url('bundles/recipes.json')).catch(() => []); }
   entityModels() { return platform().fetchJson(this.url('bundles/entity-models.json')).catch(() => null); }
@@ -38,6 +39,7 @@ export class ZipSource {
     return JSON.parse(t);
   }
 
+  async textureIndex(){const text=this.zip.readText('bundles/texture-index.json');return text?JSON.parse(text):this.zip.list('minecraft/textures/').filter(n=>n.endsWith('.png')).map(n=>[n.slice(19)]);}
   async recipes() { const t = this.zip.readText('bundles/recipes.json'); return t ? JSON.parse(t) : []; }
   async entityModels() { const t = this.zip.readText('bundles/entity-models.json'); return t ? JSON.parse(t) : null; }
 

@@ -38,8 +38,12 @@ export class ShaderPacksScreen extends Screen {
  key(e){if(e.code==='Delete'&&this.library.enabled&&this.library.selected&&this.library.selected!=='(internal)'){this.removePack();return true;}return super.key(e);}
  async selectPack(id){try{await this.library.select(id);this.message='';this.onResize();}catch(e){this.message=e.message;}}
 
+ render(gui,mx,my){super.render(gui,mx,my);
+  const report=this.game.shaderPack.pipelineReport;if(report&&my>=this.height-42&&my<this.height-29){const lines=['Real post stages: '+(report.running.join(', ')||'none'),...report.unsupported,'Unsupported geometry stages: '+(report.geometry.join(', ')||'none'),'Unsupported shadow stages: '+(report.shadow.join(', ')||'none')];gui.tooltip(lines.flatMap(l=>gui.font.wrap(l,Math.min(340,this.width-20))),mx,my);}
+ }
  renderContent(gui,mx,my){
   this.list.render(gui,mx,my);
+
   gui.textCentered('Shaders',Math.floor(this.width/2),15,0xffffff,true);
   if(!this.game.device.createFinalShaderPass)gui.textCentered('Shader packs require WebGL 2.',this.width/2,this.height-40,0xffaaaa,false);
   else if(this.message)gui.textCentered(gui.font.trimToWidth(this.message,this.width-20),this.width/2,this.height-40,0xffffaa,false);
