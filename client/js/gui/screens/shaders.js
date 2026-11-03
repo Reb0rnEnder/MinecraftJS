@@ -20,7 +20,7 @@ export class ShaderPacksScreen extends Screen {
   this.buttons.push(new Button(210,folderX+folderWidth-23,this.height-25,22,20,'↓',()=>platform().openUrl('https://optifine.net/shaderPacks')));this.buttons.at(-1).description='Download shader packs';
   this.buttons.push(new Button(3,Math.floor(width/4)*3-Math.floor(folderWidth/2),this.height-25,folderWidth,20,tr('gui.done'),()=>this.game.screens.open(this.parent)));
  }
- render(gui,mx,my,partial){super.render(gui,mx,my,partial);drawShaderTooltip(this,gui,mx,my);}
+ render(gui,mx,my,partial){super.render(gui,mx,my,partial);drawShaderTooltip(this,gui,mx,my);this.pipelineTooltip(gui,mx,my);}
 
  mouseDown(x,y,button,e){return super.mouseDown(x,y,button)||this.list.mouseDown(x,y,button,e);}
  mouseUp(x,y,button){super.mouseUp(x,y,button);this.list.mouseUp();}
@@ -38,7 +38,7 @@ export class ShaderPacksScreen extends Screen {
  key(e){if(e.code==='Delete'&&this.library.enabled&&this.library.selected&&this.library.selected!=='(internal)'){this.removePack();return true;}return super.key(e);}
  async selectPack(id){try{await this.library.select(id);this.message='';this.onResize();}catch(e){this.message=e.message;}}
 
- render(gui,mx,my){super.render(gui,mx,my);
+ pipelineTooltip(gui,mx,my){
   const report=this.game.shaderPack.pipelineReport;if(report&&my>=this.height-42&&my<this.height-29){const lines=['Real post stages: '+(report.running.join(', ')||'none'),...report.unsupported,'Unsupported geometry stages: '+(report.geometry.join(', ')||'none'),'Unsupported shadow stages: '+(report.shadow.join(', ')||'none')];gui.tooltip(lines.flatMap(l=>gui.font.wrap(l,Math.min(340,this.width-20))),mx,my);}
  }
  renderContent(gui,mx,my){
