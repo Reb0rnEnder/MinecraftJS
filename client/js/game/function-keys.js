@@ -9,7 +9,6 @@ export class FunctionKeyChords{
   if(this.keys.has(e.code)){const code=this.keys.get(e.code);return code?[{...e,code,key:code}]:[];}
   if(e.code==='KeyF'&&enabled&&!e.ctrl&&!e.alt){if(!e.repeat){this.prefix=e;this.used=false;}return [];}
   if(this.prefix&&FUNCTION_CODES[e.code]){const code=FUNCTION_CODES[e.code];this.used=true;this.keys.set(e.code,code);return[{...e,code,key:code}];}
-  if(this.prefix&&!this.used&&e.code!=='KeyF'){const f=this.prefix;this.prefix=null;return[f,e];}
   return[e];
  }
  keyUp(e){
