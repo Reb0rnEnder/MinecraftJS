@@ -1,4 +1,4 @@
-// Port of `client/js/game/containers.js`
+﻿// Port of `client/js/game/containers.js`
 
 //! Inventory/container model with slot click handling, stack merging,
 //! transfer logic, and NBT comparison.
@@ -372,7 +372,6 @@ fn slot_limit_val(limit: Option<i32>, item: Option<&Value>, max_stack: i32, item
 }
 
 // Perform a click and send it to the server (simplified - core logic in slot_click)
-#[wasm_bindgen]
 pub fn container_slot_click(
     slot_id: i32,
     button: i32,

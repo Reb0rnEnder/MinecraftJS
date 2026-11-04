@@ -1,4 +1,4 @@
-//! Port of `client/js/render/shader-lighting.js`: lighting computation logic.
+﻿//! Port of `client/js/render/shader-lighting.js`: lighting computation logic.
 //! Pure algorithmic port - extracts the pack lighting computation and frame lighting.
 //! The GLSL shader string cannot be ported without a GLSL compiler, but the
 //! lighting calculation algorithms can be implemented in Rust.
@@ -86,7 +86,7 @@ fn weather(a: [f32; 3], rain: f32) -> [f32; 3] {
     // JS: `const weather = a => mix(a, a.map(() => a[0]*.299 + a[1]*.587 + a[2]*.114), Math.max(0, Math.min(1, rain)));`
     //
     // The callback ignores its argument, so every component of the second
-    // operand is the *same* luminance value — the colour is desaturated toward
+    // operand is the *same* luminance value â€” the colour is desaturated toward
     // its own luma as `rain` rises, not mixed with a per-component variant.
     let gray = a[0] * 0.299 + a[1] * 0.587 + a[2] * 0.114;
     let t = rain.max(0.0).min(1.0);
@@ -144,12 +144,10 @@ pub fn lighting_frame(colors: &std::collections::HashMap<String, [f32; 3]>, worl
 // ------------------------------------------------------------ Exports
 
 // JS: `export { packLighting, lightingFrame }`
-#[wasm_bindgen]
 pub fn js_pack_lighting(options: &[&str], values: &std::collections::HashMap<&str, f32>) -> Option<std::collections::HashMap<String, [f32; 3]>> {
     pack_lighting(options, values)
 }
 
-#[wasm_bindgen]
 pub fn js_lighting_frame(colors: &std::collections::HashMap<String, [f32; 3]>, world_time: i32, dimension: i32, rain: f32) -> LightingResult {
     lighting_frame(colors, world_time, dimension, rain)
 }
@@ -191,3 +189,5 @@ mod tests {
         assert_eq!(result.dimension, 0);
     }
 }
+
+

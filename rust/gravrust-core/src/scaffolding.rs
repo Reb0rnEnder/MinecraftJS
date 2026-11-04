@@ -1,4 +1,4 @@
-//! Port of `client/js/world/scaffolding.js`: scaffolding collision detection.
+﻿//! Port of `client/js/world/scaffolding.js`: scaffolding collision detection.
 //!
 //! Provides collision shape determination for scaffolding blocks in Minecraft 1.14.4.
 
@@ -28,7 +28,6 @@ const BOTTOM: [[f32; 6]; 1] = [
 /// * `Some(&'static [['f32; 6]; 5])` - STABLE collision shape if conditions met
 /// * `Some(&'static [['f32; 6]; 1])` - BOTTOM collision shape if conditions met
 /// * `None` - No collision shape
-#[wasm_bindgen]
 pub fn scaffolding_collision(
     distance: f32,
     bottom: bool,
@@ -56,7 +55,6 @@ pub fn scaffolding_collision(
     }
 }
 
-#[wasm_bindgen]
 pub fn scaffolding_collision_bottom(
     distance: f32,
     bottom: bool,
@@ -70,3 +68,4 @@ pub fn scaffolding_collision_bottom(
         None
     }
 }
+

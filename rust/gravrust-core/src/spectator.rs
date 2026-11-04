@@ -1,4 +1,4 @@
-//! Port of `client/js/gui/spectator.js`
+﻿//! Port of `client/js/gui/spectator.js`
 //!
 //! Spectator mode hotbar menu ported from the JavaScript implementation.
 //! Handles the spectator menu for teleporting to players or teams.
@@ -27,7 +27,7 @@ const WIDGETS: &str = "gui/widgets.png";
 ///
 /// This mirrors the JS plain-object pattern used in `spectator.js`.  The `icon`
 /// function handles rendering; actual drawing calls (`gui.blit`, etc.) are
-/// invoked from the JS host side — this struct holds the algorithmic data.
+/// invoked from the JS host side â€” this struct holds the algorithmic data.
 #[wasm_bindgen]
 #[derive(Clone, Debug)]
 pub struct SpectatorItem {
@@ -68,7 +68,7 @@ impl SpectatorItem {
 }
 
 // ---------------------------------------------------------------------------
-// SpectatorMenu – page-managed menu state
+// SpectatorMenu â€“ page-managed menu state
 // ---------------------------------------------------------------------------
 
 /// The spectator menu manages a category of teleport targets (players or teams)
@@ -105,11 +105,11 @@ impl SpectatorMenu {
     /// Get the menu item at the given global index (accounting for page offset).
     ///
     /// Index mapping:
-    ///   - `i < 0` or beyond range → empty item
-    ///   - `i == 0` with `page > 0` → scroll left button
-    ///   - `i == 7` → scroll right (enabled/disabled based on item count)
-    ///   - `i == 8` → close button
-    ///   - otherwise → item at `j = i + page * 6`
+    ///   - `i < 0` or beyond range â†’ empty item
+    ///   - `i == 0` with `page > 0` â†’ scroll left button
+    ///   - `i == 7` â†’ scroll right (enabled/disabled based on item count)
+    ///   - `i == 8` â†’ close button
+    ///   - otherwise â†’ item at `j = i + page * 6`
     #[wasm_bindgen]
     pub fn get_item(&self, i: i32) -> SpectatorItem {
         let j = i + self.page * 6;
@@ -201,7 +201,7 @@ const EMPTY: SpectatorItem = SpectatorItem::empty();
 const CLOSE: SpectatorItem = SpectatorItem::close();
 
 // ---------------------------------------------------------------------------
-// SpectatorGui – hotbar overlay rendering logic
+// SpectatorGui â€“ hotbar overlay rendering logic
 // ---------------------------------------------------------------------------
 
 /// The spectator GUI overlay that appears when the player opens the spectator
@@ -357,7 +357,7 @@ pub fn platform_now() -> f64 {
 
 /// Port of `face(gui, game, info, alpha, b)` from `spectator.js`.
 ///
-/// Draws a player's face (8×8 pixels at 12×12) tinted like
+/// Draws a player's face (8Ã—8 pixels at 12Ã—12) tinted like
 /// `GlStateManager.color(b, b, b, alpha)`.  The actual GUI drawing calls remain
 /// on the JS side; this function is kept for API completeness.
 fn ported_face(_game: &str, _info: &str, _alpha: f32, _b: f32) {
@@ -396,7 +396,7 @@ fn ported_teleport_to_player(_infos: &[String]) -> Vec<SpectatorItem> {
 fn ported_teleport_to_team(_game: &str, _scoreboard_teams: &[(&str, &str)]) -> Vec<SpectatorItem> {
     // JS implementation builds items per team with colour tinting and random member faces.
     // The full port would need the scoreboard data structure and COLOR_CODES mapping.
-    // For now return an empty vec – the JS side handles team teleport rendering.
+    // For now return an empty vec â€“ the JS side handles team teleport rendering.
     vec![]
 }
 
@@ -409,7 +409,6 @@ fn ported_teleport_to_team(_game: &str, _scoreboard_teams: &[(&str, &str)]) -> V
 /// This mirrors the `constructor` logic in `SpectatorMenu` where
 /// `this.category = { items: [teleportToPlayer(g, g.scoreboard.players.values()),
 ///                            teleportToTeam(g)] }`.
-#[wasm_bindgen]
 pub fn build_root_category(players: &[String], teams: &[(&str, &str)]) -> Vec<SpectatorItem> {
     let mut items: Vec<SpectatorItem> = Vec::new();
 

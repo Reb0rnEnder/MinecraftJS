@@ -1,4 +1,4 @@
-//! Port of `client/js/gui/text-editor.js`.
+﻿//! Port of `client/js/gui/text-editor.js`.
 //! Text editor component for book pages and titles with cursor/selection navigation.
 
 use wasm_bindgen::prelude::*;
@@ -70,7 +70,8 @@ pub struct TextEditor {
     anchor: usize,
 }
 
-#[wasm_bindgen]
+// The callbacks (Box<dyn Fn>) cannot cross the WASM boundary, so the editor
+// stays an internal Rust type rather than a wasm_bindgen export.
 impl TextEditor {
     /// Creates a new TextEditor with the given callbacks.
     /// 
