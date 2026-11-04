@@ -17,8 +17,8 @@ Work starts with small, independently reviewable corrections. Push each validate
 
 ## Then: distance rendering and performance
 
-- [ ] Reproduce and fix opaque/black distant grass. Identify alpha-test, mipmapping and LOD interactions before changing unrelated graphics settings.
-- [ ] Expose separate controls for intentional distant terrain simplification and distant fire/mob animation reductions. Keep native-quality alpha correctness independent of optimisations.
+- [x] Fix the confirmed opaque distant foliage LOD path and stale animated atlas mipmaps. Preserve Fancy alpha by default. A separate distant-grass screenshot reproduction remains open if it persists.
+- [x] Expose separate controls for intentional distant terrain simplification and distant fire/mob animation reductions. Keep native-quality alpha correctness independent of optimisations.
 - [ ] Instrument and profile CPU ticks, meshing/worker uploads, entity rendering, draw submission and GPU passes. Compare the same world/camera/settings; do not fabricate vanilla FPS or assume the new preload budget improves steady-state FPS.
 - [ ] Investigate recent performance regressions before adding more expensive shader/rendering work.
 
