@@ -23,7 +23,7 @@ export function bundleAdd(bundle,item,items,equal){
  list.unshift(entry);setEntries(bundle,list);return count;
 }
 export function bundleRemove(bundle,items){const list=structuredClone(entries(bundle));if(!list.length)return null;const first=decode(list.shift(),items);setEntries(bundle,list);return first;}
-export function bundleSound(game,kind){if(BUNDLE_NATIVE.sounds)game.sound?.playAtPlayer?.('item.bundle.'+kind,.8,.8+Math.random()*.4);}
+export function bundleSound(game,kind){if(BUNDLE_NATIVE.sounds)game.sound?.playAtPlayer?.('item.bundle.'+kind,.8,.8+Math.random()*.4,'player');}
 export function emptyBundle(game,item){if(!Object.hasOwn(root(item).v,'Items'))return false;setEntries(item,[]);bundleSound(game,'drop_contents');return true;}
 export function bundleSlotClick(container,slotId,button,equal){
  if(button!==1)return false;

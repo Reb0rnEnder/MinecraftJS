@@ -71,3 +71,7 @@ choosing a module. No new WASM build or module was made for this audit.
 
 The integration model is described by the official
 [WebAssembly goals](https://webassembly.org/docs/high-level-goals/).
+
+## Follow-up client trigger audit
+
+[The native trigger audit](client-sound-trigger-audit.md) fixes throwable potion routing, local pickup/button/comparator audio and consume effects. It rechecks all nine versions through browser decoding, preserves 1.8.9 server ownership, and lists remaining tool/bucket prediction gaps explicitly.
