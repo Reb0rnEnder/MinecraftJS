@@ -284,11 +284,11 @@ export class Mesher {
   }
 
   // world: a SliceWorld around the section
-  // lod (MinecraftJS level of detail, far sections): flat lighting, fast leaves, no small plants
+  // lod (MinecraftJS level of detail, far sections): flat lighting, optional fast leaves, no small plants
   buildSection(world, cx, sy, cz, lod = false) {
     if (lod) {
       const saved = this.options;
-      this.options = { ...saved, fancy: false, smooth: 0, lod: true };
+      this.options = { ...saved, fancy: saved.lodFastLeaves ? false : saved.fancy, smooth: 0, lod: true };
       try { return this.buildSection(world, cx, sy, cz, false); } finally { this.options = saved; }
     }
     this.world = world;

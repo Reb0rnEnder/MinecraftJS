@@ -1,3 +1,4 @@
+import { dirtyMipRegions } from './dirty-mips.js';
 import{DYNAMIC_WGSL}from'./dynamic-lighting.js';
 import {INVENTORY_LIGHT0, INVENTORY_LIGHT1} from './inventory-lighting.js';
 // WebGPU implementation of the graphics device contract (see device.js).
@@ -372,13 +373,13 @@ export class WebGPUDevice {
     return t;
   }
 
-  updateTexture(t, data, x = 0, y = 0, w = t.width, h = t.height) {
+  updateTexture(t, data, x = 0, y = 0, w = t.width, h = t.height, options = null) {
     const u8 = data instanceof Uint8Array ? data : new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
     this.device.queue.writeTexture({ texture: t.gpu, origin: [x, y] }, u8, { bytesPerRow: w * 4, rowsPerImage: h }, [w, h]);
     if (t.mipmaps && x === 0 && y === 0 && w === t.width && h === t.height) {
       const mips = buildMips(t.width, t.height, u8, t.levels - 1);
       mips.forEach((m, i) => this.device.queue.writeTexture({ texture: t.gpu, mipLevel: i + 1 }, m.data, { bytesPerRow: m.width * 4, rowsPerImage: m.height }, [m.width, m.height]));
-    }
+    }else if(t.mipmaps&&options?.mipmapSource)for(const m of dirtyMipRegions(t.width,t.height,options.mipmapSource,x,y,w,h,t.levels-1))this.device.queue.writeTexture({texture:t.gpu,mipLevel:m.level,origin:[m.x,m.y]},m.data,{bytesPerRow:m.width*4,rowsPerImage:m.height},[m.width,m.height]);
   }
 
   destroyTexture(t) { if(t?.gpu)this.deferredDestroy.push(t.gpu);if(t?.depthTex)this.deferredDestroy.push(t.depthTex); }
