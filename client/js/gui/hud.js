@@ -1,3 +1,4 @@
+import { fillToastSlots, drawMultilineToast } from './system-toast.js';
 import{renderBlockOverlay}from'../render/block-overlay.js';
 import {DEFAULT_SKIN} from '../render/default-skins.js';
 import { frozenFraction } from '../world/powder-snow.js';
@@ -173,7 +174,7 @@ export class Hud {
     const toasts = this.toasts || (this.toasts = []);
     const queue = this.toastQueue || (this.toastQueue = []);
     const now = platform().now();
-    for (let slot = 0; slot < 5; slot++) if (!toasts[slot] && queue.length) toasts[slot] = { toast: queue.shift(), animationTime: -1, visibleTime: -1, visibility: 'show' };
+    fillToastSlots(toasts,queue);
     for (let slot = 0; slot < toasts.length; slot++) {
       const t = toasts[slot];
       if (!t) continue;
@@ -181,7 +182,7 @@ export class Hud {
       if (t.visibility === 'show' && now - t.animationTime <= 600) t.visibleTime = now;
       const vis = () => { let f = Math.max(0, Math.min(1, (now - t.animationTime) / 600)); f *= f; return t.visibility === 'hide' ? 1 - f : f; };
       gui.pushMatrix();
-      gui.translate(gui.width - 160 * vis(), slot * 32, 500 + slot);
+      gui.translate(gui.width - (t.toast.width||160) * vis(), slot * 32, 500 + slot);
       const v = this._drawToast(gui, t.toast, (now - t.visibleTime)/(this.game.settings.notificationDisplayTime||1));
       gui.popMatrix();
       if (v !== t.visibility) {
@@ -210,6 +211,7 @@ export class Hud {
   // SystemToast.draw: yellow title (and white subtitle) for 5 seconds from the last update
   _drawSystemToast(gui, toast, delta) {
     if (toast.hasNew) { toast.firstDraw = delta; toast.hasNew = false; }
+    if(toast.lines){drawMultilineToast(gui,toast);return delta-(toast.firstDraw||0)<(toast.duration||5000)?'show':'hide';}
     gui.blit('gui/toasts.png', 0, 0, 0, 64, 160, 32);
     if (toast.subtitle == null) gui.text(toast.title, 18, 12, 0xffff00, false);
     else { gui.text(toast.title, 18, 7, 0xffff00, false); gui.text(toast.subtitle, 18, 18, 0xffffff, false); }

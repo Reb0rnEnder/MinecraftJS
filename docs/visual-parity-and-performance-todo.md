@@ -25,7 +25,8 @@ Work starts with small, independently reviewable corrections. Push each validate
 
 ## Version-specific UI and chat
 
-- [ ] Audit native 1.19.4 chat signing/trust state and its message-verification warning/dialog. Unsigned/system messages must retain their proper native distinctions; do not claim cryptographic verification that was not performed.
+- [x] Restore the native 1.19.4 server-policy verification warning toast, including multiline dimensions and ten-second lifetime. This feature starts in 1.19.1 and is not backported to 1.18.2.
+- [ ] Complete native 1.19.4 session/message cryptographic verification, trust indicators and reportable chat logs. Unsigned/system messages must retain their proper distinctions.
 - [ ] Compare the social interaction screen with the exact native source: tabs, row geometry, icons, filtering, tooltips and blocking/reporting behavior. Apply only to versions where this screen exists.
 
 ## Validation/publication

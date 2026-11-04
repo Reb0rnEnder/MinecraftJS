@@ -1,3 +1,4 @@
+import { multilineToast } from '../gui/system-toast.js';
 import{markHotbarPickup,tickPickupAnimations}from'./pickup-animation.js';
 import{collectDynamicLights}from'../render/dynamic-lights.js';
 import {handleDamage762} from './damage-1.19.4.js';
@@ -771,6 +772,7 @@ export class Game {
   on_update_view_distance(p) { this.serverViewDistance=p.viewDistance; }
 
   on_login(p) {
+    this.serverData=null;this.enforcesSecureChat=false;
     this.enabledFeatures=new Set(['minecraft:vanilla']);this.commandTags={};
     this.blockPrediction?.reset();chatState762.reset();
     resetPlayerView(this);
@@ -838,6 +840,13 @@ export class Game {
     this.eaglerTextures?.handle(p.channel,p.data);
   }
 
+  on_server_data(p){
+    this.serverData={motd:p.motd,iconBytes:p.iconBytes??null,enforcesSecureChat:!!p.enforcesSecureChat};
+    this.enforcesSecureChat=!!p.enforcesSecureChat;
+    // Native ClientPacketListener.handleServerData: the server's policy triggers
+    // the warning, independently of whether an individual message was received.
+    if(!p.enforcesSecureChat)this.hud.addToast(multilineToast(this.gui,'unsecureServer',this.assets.translate('multiplayer.unsecureserver.toast.title'),this.assets.translate('multiplayer.unsecureserver.toast'),10000));
+  }
   on_feature_flags(p){this.enabledFeatures=new Set(p.features);}
   on_system_chat(p){this.on_chat({message:p.content,position:p.isActionBar?2:1});}
   on_profileless_chat(p){this.on_chat({message:JSON.stringify(decorateChat762(simplify(this.dimensionCodec),p,JSON.parse(p.message))),position:1});}
