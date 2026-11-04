@@ -59,7 +59,7 @@ test('translated announcements retain nested hover events and align hit regions 
  const segments=chatSegments(JSON.stringify(component));assert.ok(segments.some(s=>s.hover));
  g.hud.addChat(chatToLegacy(component,{parsed:true}),JSON.stringify(component));
  let found=0;for(let i=0;i<g.hud.chatLines.length;i++){
-  const line=g.hud.chatLines[i];let x=2;for(const segment of line.comps){const hit=g.hud.chatComponentAt(x+1,g.gui.height-28-i*9-4);assert.equal(hit?.hover,segment.hover);if(segment.hover){found++;assert.deepEqual(chatHoverTooltip(g,hit),['Title','Hover description']);}x+=font.width(segment.text);}
+  const line=g.hud.chatLines[i];let x=version==='1.19.4'?4:2;for(const segment of line.comps){const hit=g.hud.chatComponentAt(x+1,g.gui.height-28-i*9-4);assert.equal(hit?.hover,segment.hover);if(segment.hover){found++;assert.deepEqual(chatHoverTooltip(g,hit),['Title','Hover description']);}x+=font.width(segment.text);}
  }
  assert.ok(found>0);assert.ok(g.hud.chatLines.length>1,'covers wrapped hit regions');
  const literal='{"text":"literal"}';assert.deepEqual(chatHoverTooltip(g,{hover:{action:'show_text',value:literal}}),[literal]);
