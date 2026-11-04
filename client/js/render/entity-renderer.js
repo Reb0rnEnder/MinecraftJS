@@ -1,3 +1,4 @@
+import {updateGolemCracks} from './iron-golem-cracks.js';
 import{updateGuiEquipment,guiHandPoses}from'./gui-player-equipment.js';
 import{paintingTiles,paintingTileLight}from'./painting.js';
 import {isSquid,squidTentacle,squidMatrix} from '../game/squid-animation.js';
@@ -513,6 +514,7 @@ export class EntityRenderer {
         addLayer(layerModel,layer.texture,{hideHat:!!layer.hideHat,cull:false});
       }
       if(e.type==='trader_llama')addLayer(M.llama(true),'entity/llama/decor/trader_llama.png',{cull:false});
+      if (e.type === 99) v.golemCracks = addLayer(M.ironGolem(), 'entity/iron_golem/iron_golem_crackiness_low.png', { golemCracks: true });
       if (e.type === 91) v.wool = addLayer(M.sheep(true), 'entity/sheep/sheep_fur.png');
       if (e.type === 52 || e.type === 59) addLayer(M.spider(), 'entity/spider_eyes.png', { fullBright: true, transparent: true, additive: true, depthWrite: false, eyes: true });
       if (e.type === 58) addLayer(M.enderman(), 'entity/enderman/enderman_eyes.png', { fullBright: true, transparent: true, additive: true, depthWrite: false, eyes: true });
@@ -1296,6 +1298,8 @@ export class EntityRenderer {
       args.showArms = !!e.showArms; args.noBasePlate = !!e.noBasePlate;
       if (e.small) v.scaleGroup.scale.multiplyScalar(0.5);
     }
+    // Health and invisibility changes must apply even when distant poses are throttled.
+    if (v.golemCracks) updateGolemCracks(e, v.golemCracks);
     if (v.lodSkip && v.posed && v.wasInvisible === !!e.invisible) {
       // Keep the previous pose; only the transforms above were updated
       this._updateHeld(e, v, held, args);
@@ -1339,7 +1343,8 @@ export class EntityRenderer {
     }
     if (v.cape) this._poseCape(e, v, partial);
     for (const L of v.layers) {
-      L.model.animate(L.model, args);
+      if (L.golemCracks && !L.obj.visible) continue;
+      if (!L.golemCracks) L.model.animate(L.model, args);
       copyPose(model, L.model);
       if(L.hideHat){for(const key of ['head','hat','hatRim','headwear'])if(L.model.parts[key])L.model.parts[key].visible=false;}
       for (const r of L.model.roots) r.sync();
