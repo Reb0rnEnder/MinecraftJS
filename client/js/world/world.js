@@ -1,3 +1,4 @@
+import {sameLightBytes} from './light-update.js';
 import {sectionKey,sectionCoords} from './section-key.js';
 import {BiomeZoom} from './biome-zoom.js';
 import {scaffoldingCollision} from './scaffolding.js';
@@ -113,15 +114,19 @@ export class World {
       for(let i=0;i<18;i++) {
         const bytes=arrays?.[i-1];if(!bytes&&!(empty&(1<<i)))continue;
         if(bytes?.length!==2048&&bytes)throw new Error('Invalid light section');
-        light[name][i]=bytes?bytes.slice():new Uint8Array(2048);if(name==='sky'){light.skyKnown=true;light.skyDataMask=bytes?(light.skyDataMask||0)|(1<<i):(light.skyDataMask||0)&~(1<<i); }changed.add(i-1);
+        const oldMask=light.skyDataMask,oldKnown=light.skyKnown,same=sameLightBytes(light[name][i],bytes);
+        if(name==='sky'){light.skyKnown=true;light.skyDataMask=bytes?(light.skyDataMask||0)|(1<<i):(light.skyDataMask||0)&~(1<<i); }
+        if(same&&(name!=='sky'||oldKnown===light.skyKnown&&oldMask===light.skyDataMask))continue;
+        if(!same)light[name][i]=bytes?bytes.slice():new Uint8Array(2048);changed.add(i-1);
       }
     }
     const c=this.getChunk(packet.chunkX,packet.chunkZ);if(!c)return;
-    c.nativeLight=light;
+    c.nativeLight=light;const dirtyY=new Set();
     for(const sy of changed) {
       const sec=c.sections[sy];if(sec){sec.skyLight=light.sky[sy+1]||sec.skyLight;sec.blockLight=light.block[sy+1]||sec.blockLight;}
-      for(let dy=-1;dy<=1;dy++)if(sy+dy>=0&&sy+dy<16)for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)this.emit('sectionDirty',c.x+dx,sy+dy,c.z+dz);
+      for(let dy=-1;dy<=1;dy++)if(sy+dy>=0&&sy+dy<16)dirtyY.add(sy+dy);
     }
+    for(const sy of dirtyY)for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)this.emit('sectionDirty',c.x+dx,sy,c.z+dz);
   }
 
   unloadChunk(x, z) {

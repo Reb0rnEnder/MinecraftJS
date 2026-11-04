@@ -43,3 +43,5 @@ This is the project-wide tracker; each feature applies only to its native versio
 The preceding build's 18 actual Gofile URLs and hashes are recorded in `/home/ender/minecraftjs/dist/uploads/README.md` and `gofile-uploads.json`. Full native shader sky/water/shadow support remains a separate unfinished renderer task described in `preloading-and-real-shader-pipeline.md`.
 
 - [x] Iron golem native crack overlays (1.15+ only): damage/repair thresholds, invisibility, lighting and LOD updates. See [native audit](iron-golem-cracks.md).
+
+- [x] Server/client view-distance mismatch: indexed pending meshes, cached column occupancy, bounded GPU terrain retention; identical light and overlapping invalidation work removed where native separate-light packets exist. [Backports, replays and remaining candidates](view-distance-performance.md).

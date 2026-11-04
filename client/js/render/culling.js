@@ -23,19 +23,26 @@ export class SectionCuller {
     this.dirs = new Uint8Array(n);      // directions travelled to reach this section
     this.queue = new Int32Array(n);
     this.columns = new Uint8Array(this.W * this.W);
+    this.columnCache = null;
   }
 
   // sections: Map sectionKey -> { vis?: Uint8Array(6), ... }. columnLoaded(cx, cz) -> bool.
   // Returns the reached sections that have geometry, in walk order (roughly near to far).
   // maxDist: fog end; sections entirely beyond it render as pure fog colour and are skipped (Sodium's fog occlusion)
-  update(sections, frustum, cam, renderDistance, columnLoaded, cameraInOpaque, maxDist = Infinity) {
+  update(sections, frustum, cam, renderDistance, columnLoaded, cameraInOpaque, maxDist = Infinity, bounds = {}, columnRevision) {
     const R = renderDistance + 1;
     if (R !== this.R) this._alloc(R);
     const W = this.W, state = this.state, dirs = this.dirs, queue = this.queue;
     state.fill(0);
     const ccx = Math.floor(cam[0] / 16), ccy = Math.floor(cam[1] / 16), ccz = Math.floor(cam[2] / 16);
     this.ccx = ccx; this.ccz = ccz;
-    for (let i = 0; i < W; i++) for (let j = 0; j < W; j++) this.columns[i * W + j] = columnLoaded(ccx - R + j, ccz - R + i) ? 1 : 0;
+    // Camera motion/frustum changes require a new walk, not new world lookups
+    // for every column. Only an explicit world revision permits this reuse.
+    const cached=this.columnCache;
+    if(columnRevision===undefined||!cached||cached.revision!==columnRevision||cached.x!==ccx||cached.z!==ccz||cached.source!==columnLoaded){
+      for (let i = 0; i < W; i++) for (let j = 0; j < W; j++) this.columns[i * W + j] = columnLoaded(ccx - R + j, ccz - R + i) ? 1 : 0;
+      this.columnCache={revision:columnRevision,x:ccx,z:ccz,source:columnLoaded};
+    }
     const idx = (cx, sy, cz) => ((cz - ccz + R) * W + (cx - ccx + R)) * 16 + sy;
     const out = [];
     let head = 0, tail = 0;

@@ -1,3 +1,5 @@
+import {trimMeshResidency} from '../render/mesh-residency.js';
+import {DirtySections} from '../render/dirty-sections.js';
 import {scrollZoom} from './zoom.js';
 import{markHotbarPickup,tickPickupAnimations}from'./pickup-animation.js';
 import{collectDynamicLights}from'../render/dynamic-lights.js';
@@ -144,6 +146,7 @@ export class Game {
     this.weather = new Weather(this);
     this.renderer.drawEntities = (d, camRot) => this.entityRenderer.draw(d, camRot);
     this.renderer.columnLoaded = (cx, cz) => !!this.world.getChunk(cx, cz);
+    this.renderer.columnRevision = () => this.world._gen;
     this.renderer.opaqueAt = (x, y, z) => { const b = getBlock(this.world.getState(Math.floor(x), Math.floor(y), Math.floor(z))); return !!(b && b.opaque); };
     platform().on('resize', () => { this.gui.resize(); this.renderer.resize(); });
 
@@ -415,7 +418,7 @@ export class Game {
 
   _setupWorker() {
     this.worker = this.assets.worker;
-    this.dirty = new Set();
+    this.dirty = new DirtySections();
     this.inFlight = new Map();
     this.buildTokens = new Map(); this.buildSerial = 0;
     this.maxInFlight = 3 * (this.worker.size || 1) + 2;
@@ -556,6 +559,7 @@ export class Game {
   }
 
   _scheduleMeshes() {
+    trimMeshResidency(this,this._lodCamera());
     if(this._meshUploads?.length)this._uploadMeshes();
     const started=platform().now();let posted=0;
     this._updateLod();
@@ -564,11 +568,8 @@ export class Game {
     const px = camera[0] / 16, py = camera[1] / 16, pz = camera[2] / 16;
     const rd = this.settings.renderDistance + 1;
     const candidates = [];
-    for (const key of this.dirty) {
+    for (const [key,cx,sy,cz] of this.dirty.within(Math.floor(px),Math.floor(pz),rd)) {
       if (this.inFlight.has(key)) continue;
-      const parts = key.split(',');
-      const cx = +parts[0], sy = +parts[1], cz = +parts[2];
-      if (Math.abs(cx - Math.floor(px)) > rd || Math.abs(cz - Math.floor(pz)) > rd) continue;
       // Wait for horizontal neighbours so edge faces are culled correctly
       let ready = true;
       for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
