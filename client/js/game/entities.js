@@ -1,3 +1,4 @@
+import{pickupVisual,pickupPosition,tickPickupVisuals}from'./item-pickup.js';
 import {isSquid,initSquid,tickSquid,squidInWater} from './squid-animation.js';
 import {detachRemovedEntities} from './riding-lifecycle.js';
 import {placeLeashKnot} from './leash-knot.js';
@@ -49,7 +50,7 @@ function gauss() { let u = 0; while (u === 0) u = Math.random(); return Math.sqr
 export class EntityManager {
   constructor(game) {
     this.game = game;
-    this.map = new Map();
+    this.map = new Map();this.pickups=[];this.nextPickupId=-2147483649;
     this.fishingCast = false;
   }
 
@@ -59,12 +60,14 @@ export class EntityManager {
       if (e.rollSound) e.rollSound.stop();
       if (e.insideSound) e.insideSound.stop();
     }
+    for(const e of this.pickups||[])this.game.entityRenderer.remove(e);this.pickups=[];
     this.map.clear();
     if (this.self) { this.game.entityRenderer.remove(this.self); this.self = null; }
   }
 
   get(id) { return this.map.get(id); }
-  all() { return this.map.values(); }
+  all() { return this.pickups?.length?this._allWithPickups():this.map.values(); }
+  *_allWithPickups(){yield* this.map.values();yield* this.pickups;}
   count() { return this.map.size; }
 
   _base(id, x, y, z, yaw = 0, pitch = 0) {
@@ -400,9 +403,8 @@ export class EntityManager {
     const collector = p.collectorEntityId === this.game.entityId ? null : this.map.get(p.collectorEntityId);
     if (!e) return;
     // (the pop / orb sound comes from the server: client-side World.playSoundAtEntity is a no-op in 1.8.9)
-    // EntityPickupFX: fly to collector over 3 ticks
-    e.pickup = { tick: 0, target: collector, start: [e.x, e.y, e.z] };
-    e.pickable = false;
+    // The pickup survives removal or metadata changes of the real server entity.
+    (this.pickups||=[]).push(pickupVisual(e,collector,this.nextPickupId--));
 
   }
 
@@ -464,6 +466,7 @@ export class EntityManager {
 
   // Interpolated render position
   interp(e, partial) {
+    if(e.pickupVisual)return pickupPosition(e,this.game.player,partial);
     return {
       x: e.prevX + (e.x - e.prevX) * partial,
       y: e.prevY + (e.y - e.prevY) * partial,
@@ -627,6 +630,7 @@ export class EntityManager {
     const g = this.game;
     this.updateSelf();
     this._minecartSounds();
+    tickPickupVisuals(this);
     for (const e of [...this.map.values()]) {
       // the vehicle we steer was already moved this tick (Game._tickRiding set its previous position)
       if (!e.controlled) {
@@ -640,18 +644,6 @@ export class EntityManager {
       e.prevSwingProgress = e.swingProgress;
       e.ticks++;
       if (e.id !== g.entityId) g.particles?.sprint?.(e);
-      if (e.pickup) {
-        e.pickup.tick++;
-        if (e.pickup.tick >= 3) { this.game.entityRenderer.remove(e); this.map.delete(e.id); continue; }
-        const t = e.pickup.tick / 3;
-        let tx, ty, tz;
-        if (e.pickup.target) { tx = e.pickup.target.x; ty = e.pickup.target.y + 0.5; tz = e.pickup.target.z; }
-        else { tx = g.player.x; ty = g.player.y + 0.5; tz = g.player.z; }
-        e.x = e.pickup.start[0] + (tx - e.pickup.start[0]) * t;
-        e.y = e.pickup.start[1] + (ty - e.pickup.start[1]) * t;
-        e.z = e.pickup.start[2] + (tz - e.pickup.start[2]) * t;
-        continue;
-      }
       if (e.kind === 'lightning') {
         e.lightningState--;
         if (e.lightningState < 0) {
