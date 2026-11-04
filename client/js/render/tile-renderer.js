@@ -1,3 +1,4 @@
+import{isShulkerBox,shulkerTexture}from'./shulker-box.js';
 // Tile entity (block entity) rendering: chests, signs, skulls, banners, enchanting book, beacon beam, end portal,
 // beds and shulker boxes.
 import { composeBanner, bannerLayers, buildBanner, bannerSwing, placedBannerLayers } from './banner.js';
@@ -142,7 +143,7 @@ export class TileEntityRenderer {
     else if (n === 'beacon') type = 'beacon';
     else if (n === 'end_portal' || n === 'end_gateway') type = 'endportal';
     else if (n.endsWith('_bed')) type = 'bed';
-    else if (n.endsWith('_shulker_box')) type = 'shulker';
+    else if (isShulkerBox(n)) type = 'shulker';
     if (!type) return null;
     t = { x, y, z, type, state, data: null, lid: 0, prevLid: 0, open: 0 };
     this.tiles.set(k, t);
@@ -175,7 +176,7 @@ export class TileEntityRenderer {
          const state = s.blocks[i], name = getBlock(state).name;
          if (name === 'chest' || name === 'trapped_chest' || name === 'ender_chest' || isSign(name) || name === 'campfire' || name === 'lectern' ||
             name.endsWith('_bed') || name.endsWith('_banner') || name.endsWith('_wall_banner') || skullType(name) !== undefined ||
-            name === 'flower_pot' || name === 'end_portal' || name === 'end_gateway' || name.endsWith('_shulker_box') ||
+            name === 'flower_pot' || name === 'end_portal' || name === 'end_gateway' || isShulkerBox(name) ||
            name === 'enchanting_table' || name === 'beacon' || name === 'bell') {
            const x = c.x * 16 + (i & 15), y = sy * 16 + (i >> 8), z = c.z * 16 + ((i >> 4) & 15);
            this._ensure(x, y, z, state);
@@ -222,7 +223,7 @@ export class TileEntityRenderer {
       const t=this._ensure(p.location.x,p.location.y,p.location.z,this.game.world.getState(p.location.x,p.location.y,p.location.z));
       if(t){t.bellTime=0;t.bellDirection=p.byte2;t.bellShaking=true;}
     }
-    if (b.name === 'chest' || b.name === 'trapped_chest' || b.name === 'ender_chest' || b.name.endsWith('_shulker_box')) {
+    if (b.name === 'chest' || b.name === 'trapped_chest' || b.name === 'ender_chest' || isShulkerBox(b.name)) {
       const t = this._ensure(p.location.x, p.location.y, p.location.z, this.game.world.getState(p.location.x, p.location.y, p.location.z));
       if (t && p.byte1 === 1) {
         const n = (p.byte2 << 24) >> 24; // the event parameter is a signed byte (closing twice sends -1)
@@ -443,8 +444,7 @@ export class TileEntityRenderer {
       case 'shulker': {
         // TileEntityShulkerBoxRenderer + ModelShulker: base and lid, the lid rises and turns as it opens
         const id = getBlock(st).id;
-        const color = getBlock(st).name.replace('_shulker_box', '').replace('light_gray', 'silver');
-        mat = entityMaterial('entity/shulker/shulker_' + color + '.png', { alphaTest: 0.1 });
+        mat = entityMaterial(shulkerTexture(getBlock(st).name), { alphaTest: 0.1 });
         const sb = shulkerBox(mat, ['down', 'up', 'north', 'south', 'west', 'east'].indexOf(props.facing));
         obj.add(sb.node);
         t.shulkerLid = sb.lid;
