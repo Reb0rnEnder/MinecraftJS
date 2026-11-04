@@ -27,7 +27,8 @@ Work starts with small, independently reviewable corrections. Push each validate
 
 - [x] Restore the native 1.19.4 server-policy verification warning toast, including multiline dimensions and ten-second lifetime. This feature starts in 1.19.1 and is not backported to 1.18.2.
 - [ ] Complete native 1.19.4 session/message cryptographic verification, trust indicators and reportable chat logs. Unsigned/system messages must retain their proper distinctions.
-- [ ] Compare the social interaction screen with the exact native source: tabs, row geometry, icons, filtering, tooltips and blocking/reporting behavior. Apply only to versions where this screen exists.
+- [x] Compare and correct Social Interactions native geometry, tabs, row spacing/icons, version-specific search fields, scrollbar input and resize behavior (1.16.5+ only).
+- [ ] Finish Social Interactions reference-image, keyboard/narrator, recent signed-message/offline-history and reporting gates.
 
 ## Validation/publication
 
