@@ -519,8 +519,10 @@ export class Game {
   // Graphics options that affect meshing (fancy leaves, smooth lighting)
   applyGraphicsSettings(initial = false) {
     const s = this.settings;
+    if(this._distantTextures===false&&s.animateDistantTextures!==false&&this.assets.atlasTexture)this.device.updateTexture(this.assets.atlasTexture,this.assets.atlas.data);
+    this._distantTextures=s.animateDistantTextures!==false;
     // Minimum and Maximum smooth lighting render the same in 1.8.9 (only 'ambient occlusion on' is checked)
-    const opts = { fancy: !!s.fancyGraphics, smooth: (s.smoothLighting | 0) > 0 ? 2 : 0, alt: s.blockAlternatives !== false, biomeBlendRadius: s.biomeBlendRadius ?? 2 };
+    const opts = { lodFastLeaves: !!s.lodFastLeaves, fancy: !!s.fancyGraphics, smooth: (s.smoothLighting | 0) > 0 ? 2 : 0, alt: s.blockAlternatives !== false, biomeBlendRadius: s.biomeBlendRadius ?? 2 };
     this.assets.setMipmapLevels(s.mipmapLevels === undefined ? 4 : s.mipmapLevels);
     platform().vsync = s.enableVsync !== false;
     const key = JSON.stringify(opts);
@@ -1558,7 +1560,7 @@ export class Game {
     const A = this.assets;
     const changed = A.atlas.tick();
     for (const e of this._updateCompassClock()) changed.push(e);
-    for (const e of changed) this.device.updateTexture(A.atlasTexture, A.atlas.region(e), e.x, e.y, e.w, e.h);
+    for (const e of changed) this.device.updateTexture(A.atlasTexture, A.atlas.region(e), e.x, e.y, e.w, e.h, this.settings.animateDistantTextures===false?null:{mipmapSource:A.atlas.data});
     this.screens.tick();
     this.hud.tick();
     if (!this.inWorld || !this.doneLoadingTerrain) { this.sound.tick(); return; } // menus still run the MusicTicker
