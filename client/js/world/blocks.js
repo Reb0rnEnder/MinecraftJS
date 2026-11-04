@@ -19,6 +19,7 @@ const HEAD_BLOCKS = new Set(['skeleton_skull','wither_skeleton_skull','zombie_he
 
 const SHULKER_BOXES = new Set(['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'light_gray',
   'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black'].map((c) => c + '_shulker_box'));
+SHULKER_BOXES.add('shulker_box');
 
 // Blocks with a full "block" bounding box that are NOT opaque cubes in vanilla
 const NOT_OPAQUE = new Set([
@@ -87,7 +88,7 @@ export function initBlocks(blocksJson, shapesJson) {
       translucent: renderLayer?renderLayer==='translucent':(TRANSLUCENT.has(name) || name.endsWith('_stained_glass') || name.endsWith('_stained_glass_pane')),
       hasModel: !NO_MODEL.has(name) && !name.endsWith('_bed') && !name.endsWith('_banner') && !name.endsWith('_wall_banner') &&
         !HEAD_BLOCKS.has(name) &&
-        !name.endsWith('_shulker_box') && name !== 'conduit' &&
+        name !== 'shulker_box' && !name.endsWith('_shulker_box') && name !== 'conduit' &&
         name !== 'bubble_column' && name !== 'void_air' && name !== 'cave_air',
       isStairs: stairs,
       isFence: FENCES(name),
