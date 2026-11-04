@@ -155,6 +155,7 @@ export class EntityManager {
     const fam = MOB_FAMILIES[e.entityName];
     e.type = fam ? fam[0] : e.entityName || `unknown:${p.type}`;
     if (fam && fam[1]) Object.assign(e, fam[1]);
+    if (e.type === 99) e.health = e.maxHealth = 100;
     e.kind = e.entityName === 'armor_stand' ? 'armorstand' : def && def.mob ? 'mob' : 'unknown_mob';
     e.typeName = MOB_NAMES[e.type] || e.entityName || 'Unknown entity';
     e.headYaw = e.prevHeadYaw = p.headPitch; // packet's "headPitch" is the head yaw
