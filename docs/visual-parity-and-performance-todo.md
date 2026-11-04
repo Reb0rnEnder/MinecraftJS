@@ -13,7 +13,7 @@ Work starts with small, independently reviewable corrections. Push each validate
 
 - [x] Draw armour, held main-hand items and offhand shields/items on the inventory player preview, using native-version equipment/pose rules.
 - [ ] Correct dropped-item collision/ground support so items do not fall into solid blocks.
-- [ ] Preserve item entities for the native collection flight into the collector rather than immediately deleting them on inventory update.
+- [x] Preserve item entities for the native collection flight into the collector rather than immediately deleting them on inventory update.
 
 ## Then: distance rendering and performance
 

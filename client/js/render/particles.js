@@ -59,7 +59,7 @@ export class Particles {
     r.extraDraws.push(draw);
   }
 
-  count() { return this.list.length; }
+  count() { return this.list.length+(this.game?.entities?.pickups?.length||0); }
   clear() { this.explosionEmitters = []; this.list.length = 0; this.barrierIndex?.clear(); }
 
   setting() { return this.game.settings.particles || 0; }

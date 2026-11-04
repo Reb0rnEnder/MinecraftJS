@@ -1004,7 +1004,7 @@ export class EntityRenderer {
     this.glints = [];
     this.frame = (this.frame || 0) + 1;
     const viewScale=Math.max(1,Math.min(2.5,g.settings.renderDistance/8))*(g.settings.entityDistanceScaling??1);
-    this.stats = { total: list.length, culled: 0, lod: 0 };
+    this.stats = { total: list.length-(g.entities.pickups?.length||0), culled: 0, lod: 0 };
     const burning = [];
     for (const e of list) {
       let v = this.visuals.get(e.id);
@@ -1020,7 +1020,7 @@ export class EntityRenderer {
       if (d2 > far || (e.invisible && !living)) { if (v) v.root.visible = false; continue; }
       // Entity culling: frustum + sections hidden behind terrain (never the camera's own entity)
       let tagOnly = false;
-      if (CULLABLE.has(e.kind) && e.id !== -1) {
+      if (CULLABLE.has(e.kind) && e.id !== -1 && !e.pickupVisual) {
         const hw = (e.width || 0.6) / 2 + 0.5, h = (e.height || 1.8) * (e.type === 56 ? 4.5 : 1) + 0.5;
         const visible = this.r.boxVisible(p.x - hw, p.y - 0.5, p.z - hw, p.x + hw, p.y + h, p.z + hw);
         if (!visible) {
