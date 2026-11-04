@@ -981,7 +981,7 @@ export class Game {
     if (p.entityId === this.entityId) {
       if (p.entityStatus === 2) { this.hurtTime = 10; this.sound.playAtPlayer('entity.player.hurt', 1, 1); }
       else if(p.entityStatus===53||p.entityStatus===54)this.particles.honeyBlockEffect(this.player,p.entityStatus===53?5:10);
-      else if (p.entityStatus === 9) { this.interaction.finishSpyglass(); this.player.usingItem = false; } // item use finished
+      else if (p.entityStatus === 9) { this.interaction.finishItemUse(); this.interaction.finishSpyglass(); this.player.usingItem = false; } // item use finished
       else if (p.entityStatus === 22) this.reducedDebug = true;
       else if (p.entityStatus === 23) this.reducedDebug = false;
       else if (p.entityStatus >= 24 && p.entityStatus <= 28) this.permissionLevel = p.entityStatus - 24; // EntityPlayer op level
