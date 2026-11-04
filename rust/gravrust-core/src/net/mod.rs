@@ -5,4 +5,9 @@
 
 pub mod connection;
 
+/// `client/js/net/address.js` -> the flat `src/address.rs`.
+pub mod address {
+    pub use crate::address::*;
+}
+
 pub use connection::Connection;

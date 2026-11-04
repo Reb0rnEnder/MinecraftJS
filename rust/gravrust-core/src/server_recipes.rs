@@ -1,5 +1,5 @@
 // Port of `client/js/game/server-recipes.js` (server recipe handling).
-use crate::items::Items;
+use crate::items::ItemTable;
 
 // Clone helper matching JS structuredClone behavior for recipe data.
 fn clone_recipe_data(data: &Option<serde_json::Value>) -> Option<serde_json::Value> {

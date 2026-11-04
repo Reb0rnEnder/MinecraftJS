@@ -1,4 +1,4 @@
-//! `crate::gui` — compatibility tree matching the `client/js/gui/` layout.
+//! `crate::gui` â€” compatibility tree matching the `client/js/gui/` layout.
 //!
 //! The ported modules reference `crate::gui::<name>` because the JavaScript they
 //! came from lives under `client/js/gui/`. In Rust the drawing surface is the
@@ -12,6 +12,16 @@
 
 pub mod font;
 
+// The widget types, under the JS paths the ported screens import.
+pub use crate::widgets::{Button, KeyEvent, Slider, TextField, WidgetHost};
+
+// The Screen trait lives in the screens manager (client/js/gui/screens/manager.js).
+pub use crate::screens::manager::Screen;
+
+/// JS: `ListOf` from `client/js/gui/slot-list.js` — the scrollable slot list.
+/// The ported implementation is `ScrollList` in the screens manager.
+pub type ListOf = crate::screens::manager::ScrollList;
+
 // The drawing contract, re-exported under the JS path.
 pub use crate::widgets::Gui;
 
@@ -20,3 +30,4 @@ pub use crate::widgets::Gui;
 pub mod screens {
     pub use crate::screens::*;
 }
+

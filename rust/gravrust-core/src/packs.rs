@@ -7,7 +7,7 @@
 //! Ported from `client/js/gui/screens/packs.js`.
 
 use crate::assets::{AssetManager, Pack};
-use crate::gui::{Button, ListOf, Screen, Gui, Text};
+use crate::gui::{Button, ListOf, Screen, Gui};
 use crate::i18n::tr;
 use crate::platform::platform;
 use crate::util::png::decode_png;

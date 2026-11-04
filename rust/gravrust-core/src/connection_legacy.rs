@@ -10,7 +10,7 @@
 use wasm_bindgen::prelude::*;
 
 use crate::packets::{decodePacket, PROTOCOL_VERSION};
-use crate::net::address::parseAddress;
+use crate::net::address::parse_address;
 
 // Events emitted by the Connection.
 pub enum ConnectionEvent {
@@ -83,7 +83,7 @@ impl Connection {
 
     /// Connect to a host.
     pub async fn connect(&mut self, host: &str, port: u16, username: &str, auth: Option<js_sys::Object>) {
-        let a = parseAddress(host);
+        let a = parse_address(host);
         let eagler = a.map_or(false, |addr| addr.kind == "eagler");
         // TODO: Implement connection logic
         self.state = "login".to_string();
@@ -94,7 +94,7 @@ impl Connection {
 
     /// Ping a host.
     pub async fn ping(&mut self, host: &str, port: u16) {
-        let a = parseAddress(host);
+        let a = parse_address(host);
         // TODO: Implement ping logic
     }
 
@@ -109,3 +109,4 @@ impl Connection {
         self.state = "closed".to_string();
     }
 }
+

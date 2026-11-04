@@ -5,7 +5,7 @@
 
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::regex::Regex;
+use regex::Regex;
 
 /// Represents a parsed shader option.
 ///
