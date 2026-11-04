@@ -10,4 +10,4 @@ Unfinished: incoming session/profile certificate verification, message signature
 
 Tests decode a real 762 server_data payload, check both policies, verify multiline dimensions/slot reservation, drawing bounds and the ten-second lifetime.
 
-Focused warning/social-blocking regressions: 9 passed. The older chat-hover regression file still has two failures (item enchantment/lore tooltip and translated hover hit regions); both reproduce unchanged at the parent commit. Those remain separate chat parity work, not a passing compatibility claim.
+Focused warning/social-blocking regressions: 9 passed. The older chat-hover regression file still has two failures (item enchantment/lore tooltip and translated hover hit regions); both reproduce unchanged at the parent commit. A follow-up audit traced these to stale version-whitelisted fixtures (legacy item NBT and HUD baseline); corrected native-version fixtures now pass. See chat-regression-fixture-audit.md.

@@ -1,0 +1,11 @@
+# Native chat trust indicators (1.19.4)
+
+The player-chat handler passed trust metadata into on_chat, but on_chat discarded it before queuing/storing/rendering the message. Trust tags now survive the complete HUD path, including delayed messages, wrapped lines, scrolling and retained history.
+
+Native references from the exact pinned client jar: GuiMessageTag emc; ChatComponent eod; ChatScreen erw. Unsigned/unverified messages have a two-chat-pixel #d0d0d0 left bar and “Unverified message. Cannot be reported.” tooltip. System messages use the same color with their separate system explanation. Secure input has no tag. The modified-message rendering path uses #606060, reserves 15 pixels for the 9x9 native icon and retains original text in its tooltip. Merely receiving a signature does not select the secure/modified path: cryptographic/session verification remains unfinished and current incoming player messages stay unverified.
+
+The native 1.19.4 scaled four-pixel text origin, left background margin, integer line-height calculation, visible-line count and right-side scrollbar were corrected with the tag placement. Hovering any wrapped row resolves the tag for the message's bottom line; normal component links/tooltips still use the correctly aligned text origin. The tag uses text opacity/fade independently of text-background opacity, so disabling the black chat background does not hide it.
+
+Historical cross-check: [Minecraft Wiki Java 1.19.3](https://minecraft.wiki/w/Java_Edition_1.19.3), where the not-secure indicator became light gray without an icon. Exact dimensions/colors and hover rules come from native 1.19.4 code, not a newer Wiki implementation. No bars/signature fields or 1.19.4 coordinate/spacing rules were added to 1.18.2 or earlier. Native 1.16.5/1.17.1/1.18.2 source comparison confirms their older floating-spacing behavior differs and is retained.
+
+Validation: six trust-tag regressions cover dispatch/queue/wrap/history, opacity/scale/fade, message categories, hover regions, modified icon space and fractional spacing/scrolling. A real headless WebGL HUD readback verifies gray pixels at the native positions, no bar for explicit secure input, half-scale width, expiry and zero background opacity, without GL errors. This is rendering coverage, not verification of signed messages.

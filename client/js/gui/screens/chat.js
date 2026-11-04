@@ -1,3 +1,4 @@
+import {chatTagTooltip} from '../chat-tags.js';
 import { chatHoverTooltip } from '../chat-hover.js';
 import { playerSuggestions } from '../../game/commands.js';
 // GuiChat: chat input with history, tab completion and clickable messages.
@@ -51,6 +52,8 @@ export class ChatScreen extends Screen {
     gui.rect(2, this.height - 14, this.width - 2, this.height - 2, 0x80000000);
     this.input.render(gui);
     this.renderSuggestions(gui,mx,my);
+    const tag=this.game.hud.chatTagAt(mx,my);
+    if(tag){gui.tooltip(chatTagTooltip(tag).flatMap(line=>gui.font.wrap(line,210)),mx,my);return;}
     const hover = this.game.hud.chatComponentAt(mx, my);
     const tooltip=chatHoverTooltip(this.game,hover);
     if(tooltip)gui.tooltip(hover?.hover?.action==='show_text'&&gui.font.wrap?tooltip.flatMap(line=>gui.font.wrap(line,Math.max(this.width/2,200))):tooltip,mx,my);

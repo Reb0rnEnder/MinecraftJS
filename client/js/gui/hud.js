@@ -1,3 +1,4 @@
+import { SYSTEM_CHAT_TAG } from './chat-tags.js';
 import { fillToastSlots, drawMultilineToast } from './system-toast.js';
 import{renderBlockOverlay}from'../render/block-overlay.js';
 import {DEFAULT_SKIN} from '../render/default-skins.js';
@@ -81,25 +82,26 @@ export class Hud {
 
   // ---------------------------------------------------------------- Chat
 
-  addChat(text, raw, local = false) {
+  addChat(text, raw, local = false, tag = SYSTEM_CHAT_TAG) {
     const g = this.game;
     console.log('[chat]', stripCodes(text));
-    const entry = { text, raw, tick: this.updateCounter };
+    const entry = { text, raw, tick: this.updateCounter, tag };
     this.chat.unshift(entry);
     if (this.chat.length > 100) this.chat.pop();
     const width = this.chatWidth();
-    const lines = g.gui.font.wrap(text, Math.floor(width / (this.chatScale() || 1)));
+    const lines = g.gui.font.wrap(text, Math.floor(width / (this.chatScale() || 1))-(tag?.icon?15:0));
     const comps = wrapChatSegments(raw ? chatSegments(raw) : null,lines);
     // GuiNewChat.setChatLine: each wrapped line is pushed to the front in order, so the message's last
     // line ends up at the bottom and its first line above it
     for (let i = 0; i < lines.length; i++) {
-      this.chatLines.unshift({ text: lines[i], tick: this.updateCounter, comps:comps[i], first: i === 0 });
+      this.chatLines.unshift({ text: lines[i], tick: this.updateCounter, comps:comps[i], first: i === 0, tag, endOfEntry:i===lines.length-1 });
     }
     while (this.chatLines.length > 100) this.chatLines.pop();
-    if (this.chatScroll > 0) this.chatScroll += lines.length;
+    if (this.chatScroll > 0){this.chatScroll += lines.length;this.chatUnreadWhileScrolled=true;}
     void local;
   }
 
+  chatLineHeight(){return Math.floor(9*(1+(this.game.settings.chatLineSpacing||0)));}
   chatScale() { return this.game.settings.chatScale ?? 1; }
   chatWidth() { return Math.floor((this.game.settings.chatWidth ?? 1) * 280 + 40); }
   chatOpen() { return !!this.game.screens.current?.isChatScreen; }
@@ -107,25 +109,25 @@ export class Hud {
   chatLinesVisible() {
     const s = this.game.settings;
     const f = this.chatOpen() ? (s.chatHeightFocused ?? 1) : (s.chatHeightUnfocused ?? 0.44366196);
-    return Math.floor(Math.floor(f/(1+(s.chatLineSpacing||0))*160+20)/9);
+    return Math.floor(Math.floor(f*160+20)/this.chatLineHeight());
   }
 
   scrollChat(n) {
     this.chatScroll += n;
     const max = Math.max(0, this.chatLines.length - this.chatLinesVisible());
     if (this.chatScroll > max) this.chatScroll = max;
-    if (this.chatScroll < 0) this.chatScroll = 0;
+    if (this.chatScroll <= 0){this.chatScroll=0;this.chatUnreadWhileScrolled=false;}
   }
 
-  queueChatMessage(text,raw){
+  queueChatMessage(text,raw,tag=SYSTEM_CHAT_TAG){
     const delay=(this.game.settings.chatDelay||0)*1000,now=platform().now();
-    if(!delay||now-(this.lastQueuedChatAt??-Infinity)>=delay){this.addChat(text,raw);this.lastQueuedChatAt=now;}
-    else (this.queuedChat||=[]).push({text,raw});
+    if(!delay||now-(this.lastQueuedChatAt??-Infinity)>=delay){this.addChat(text,raw,false,tag);this.lastQueuedChatAt=now;}
+    else (this.queuedChat||=[]).push({text,raw,tag});
   }
   processQueuedChat(force=false){
     if(!this.queuedChat?.length)return false;
     const now=platform().now(),delay=(this.game.settings.chatDelay||0)*1000;
-    if(force||now-(this.lastQueuedChatAt??-Infinity)>=delay){const message=this.queuedChat.shift();this.addChat(message.text,message.raw);this.lastQueuedChatAt=now;return true;}return false;
+    if(force||now-(this.lastQueuedChatAt??-Infinity)>=delay){const message=this.queuedChat.shift();this.addChat(message.text,message.raw,false,message.tag);this.lastQueuedChatAt=now;return true;}return false;
   }
   queuedChatClick(mx,my){const scale=this.chatScale(),y=this.gui.height-40;return this.queuedChat?.length&&this.chatOpen()&&mx>=2&&mx<=2+this.chatWidth()&&my>=y&&my<y+9*scale?this.processQueuedChat(true):false;}
 
@@ -135,7 +137,7 @@ export class Hud {
   clearChat() {
     this.chat = [];
     this.chatLines = [];
-    this.chatScroll = 0;this.queuedChat=[];this.lastQueuedChatAt=-Infinity;
+    this.chatScroll = 0;this.chatUnreadWhileScrolled=false;this.queuedChat=[];this.lastQueuedChatAt=-Infinity;
   }
 
   // Forget everything that belongs to the server we left (chat history stays, like vanilla)
@@ -265,11 +267,11 @@ export class Hud {
     const scale = this.chatScale();
     if(scale<=0)return null;
     const baseY = gui.height - 40;
-    const x = (mx - 2) / scale;
+    const x = mx/scale-4;
     const y = (baseY - my) / scale;
     if (x < 0 || y < 0) return null;
-    const idx = Math.floor(y / (9*(1+(this.game.settings.chatLineSpacing||0)))) + this.chatScroll;
-    if (idx >= this.chatLines.length || Math.floor(y / (9*(1+(this.game.settings.chatLineSpacing||0)))) >= this.chatLinesVisible()) return null;
+    const idx = Math.floor(y / (this.chatLineHeight())) + this.chatScroll;
+    if (idx >= this.chatLines.length || Math.floor(y / (this.chatLineHeight())) >= this.chatLinesVisible()) return null;
     const line = this.chatLines[idx];
     if (!line.comps) return null;
     // Find which component the x position lands on (components are sliced to each wrapped line)
@@ -282,6 +284,20 @@ export class Hud {
     return null;
   }
 
+  chatTagIndexAt(mx,my){
+    if(!this.chatOpen()||this.game.settings.chatVisibility===2||this.game.settings.hideGui)return -1;
+    const scale=this.chatScale();if(scale<=0)return -1;
+    const x=mx/scale-4,y=(this.gui.height-my-40)/(scale*this.chatLineHeight());
+    if(x< -4||x>Math.floor(this.chatWidth()/scale)||y<0||y>=Math.min(this.chatLinesVisible(),this.chatLines.length))return -1;
+    let idx=Math.floor(y+this.chatScroll);while(idx>=0&&!this.chatLines[idx]?.endOfEntry)idx--;
+    return idx;
+  }
+  chatTagAt(mx,my){
+    const idx=this.chatTagIndexAt(mx,my),line=this.chatLines[idx],tag=line?.tag;if(!tag)return null;
+    const x=mx/this.chatScale()-4,iconX=this.gui.font.width(line.text)+4;
+    return x<0||(tag.icon&&x>=iconX&&x<=iconX+9)?tag:null;
+  }
+
   renderChat(gui) {
     const g = this.game;
     if (g.settings.chatVisibility === 2) return;
@@ -292,9 +308,10 @@ export class Hud {
     if(scale<=0)return;
     const w = Math.ceil(this.chatWidth() / scale);
     gui.pushMatrix();
-    gui.translate(2, gui.height - 40);
-    const lineHeight=9*(1+(g.settings.chatLineSpacing||0)),textOffset=-8-4*(g.settings.chatLineSpacing||0);
-    gui.scaleBy(scale, scale);
+    gui.scaleBy(scale,scale);
+    gui.translate(4,Math.floor((gui.height-40)/scale));
+    const lineHeight=this.chatLineHeight(),textOffset=Math.round(-8-4*(g.settings.chatLineSpacing||0));
+    const mouse=g.screens._mouse?.()||[-Infinity,-Infinity],hoveredTag=this.chatTagIndexAt(...mouse);
     let drawn = 0;
     for (let i = 0; i + this.chatScroll < this.chatLines.length && i < lines; i++) {
       const line = this.chatLines[i + this.chatScroll];
@@ -305,8 +322,12 @@ export class Hud {
       let a = open ? 255 : Math.floor(255 * d);
       a = Math.floor(a * opacity);
       if (a <= 3) continue;
-      const y = Math.floor(-i*lineHeight);
-      gui.rect(0, y - lineHeight, w + 4, y, (Math.floor(255*(open?1:d)*(g.settings.textBackgroundOpacity??.5)) << 24) >>> 0);
+      const y = Math.floor(-i*lineHeight)||0;
+      gui.rect(-4, y - lineHeight, w + 8, y, (Math.floor(255*(open?1:d)*(g.settings.textBackgroundOpacity??.5)) << 24) >>> 0);
+      if(line.tag){
+        gui.rect(-4,y-lineHeight,-2,y,((a<<24)|line.tag.color)>>>0);
+        if(line.tag.icon&&i+this.chatScroll===hoveredTag){gui.setAlpha(a/255);gui.blit('gui/chat_tags.png',gui.font.width(line.text)+4,Math.floor(y+textOffset)-1,0,0,9,9,32,32);gui.resetColor();}
+      }
       gui.font.draw(line.text, 0, Math.floor(y+textOffset), 0xffffff, true, a / 255);
       drawn++;
     }
@@ -316,9 +337,9 @@ export class Hud {
       const barH = h * h / (total * lineHeight);
       const barY = (this.chatScroll * h / total);
       const alpha = this.chatScroll > 0 ? 0xaa : 0x60;
-      const color = this.chatScroll > 0 ? 0x3333aa : 0x333333;
-      gui.rect(0, -barY, 2, -barY - barH, ((alpha << 24) | color) >>> 0);
-      gui.rect(2, -barY, 1, -barY - barH, ((alpha << 24) | 0xcccccc) >>> 0);
+      const color = this.chatUnreadWhileScrolled ? 0xcc3333 : 0x3333aa;
+      gui.rect(w+4, -barY, w+6, -barY - barH, ((alpha << 24) | color) >>> 0);
+      gui.rect(w+6, -barY, w+5, -barY - barH, ((alpha << 24) | 0xcccccc) >>> 0);
     }
     if(this.queuedChat?.length){gui.rect(0,0,w+4,9,0x80000000);gui.font.draw(this.game.assets.translate('chat.queue',[String(this.queuedChat.length)]),0,1,0xffffff,false);}
     gui.popMatrix();

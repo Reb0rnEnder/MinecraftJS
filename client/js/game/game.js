@@ -1,3 +1,4 @@
+import { SYSTEM_CHAT_TAG, chatTrustTag } from '../gui/chat-tags.js';
 import { multilineToast } from '../gui/system-toast.js';
 import{markHotbarPickup,tickPickupAnimations}from'./pickup-animation.js';
 import{collectDynamicLights}from'../render/dynamic-lights.js';
@@ -869,8 +870,8 @@ export class Game {
     if(this.settings.hideMatchedNames){const name=chatToLegacy(p.message).replace(/§./g,'').match(/<([^>]+)>/)?.[1],id=[...(this.scoreboard?.players||[])].find(([,player])=>player.name===name)?.[0];if(id&&(this.hiddenPlayers?.has(id)||(this.socialBlocking?.isBlocked(id)||this.blockedPlayers?.has(id))))return;}
     const text = chatToLegacy(p.message);
     if (p.position === 2) this.hud.setActionBar(text);
-    else if(p.position===0)this.hud.queueChatMessage(text,p.message);
-    else this.hud.addChat(text, p.message);
+    else if(p.position===0)this.hud.queueChatMessage(text,p.message,p.trust?chatTrustTag(p.trust,p.originalMessage):SYSTEM_CHAT_TAG);
+    else this.hud.addChat(text,p.message,false,p.trust?chatTrustTag(p.trust,p.originalMessage):SYSTEM_CHAT_TAG);
     this.narrator.onChat(p.position, p.message);
   }
 
