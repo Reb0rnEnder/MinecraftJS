@@ -434,8 +434,8 @@ export class Renderer {
     const f = this.fog;
     const fogEnd = f.mode === 0 ? f.end : f.mode === 1 ? 4.6 / Math.max(0.001, f.density) : f.mode === 3 ? Math.sqrt(4.6) / Math.max(0.001,f.density) : Infinity; // exp fog: 99% at 4.6/density
     const opaque=this.opaqueAt(c[0],c[1],c[2]),bounds=this.verticalBounds||{};
-    const inputs=[...c,...this.frustum.flat(),this.renderDistance,opaque?1:0,this.culler.enabled?1:0,fogEnd,bounds.minSection??0,bounds.sectionCount??16];
-    this.visibleList=this.visibilityCache.get(inputs,this.visibilityRevision,()=>{const list=this.culler.update(this.sections,this.frustum,c,this.renderDistance,this.columnLoaded,opaque,this.culler.enabled?fogEnd:Infinity,this.verticalBounds);for(const section of list){const dx=section.cx*16+8-c[0],dy=section.sy*16+8-c[1],dz=section.cz*16+8-c[2];section.dist=dx*dx+dy*dy+dz*dz;}list.sort((a,b)=>a.dist-b.dist);return list;});
+    const inputs=[...c,...this.frustum.flat(),this.renderDistance,opaque?1:0,this.culler.enabled?1:0,fogEnd,bounds.minSection??0,bounds.sectionCount??16,this.columnRevision?.()??0];
+    this.visibleList=this.visibilityCache.get(inputs,this.visibilityRevision,()=>{const list=this.culler.update(this.sections,this.frustum,c,this.renderDistance,this.columnLoaded,opaque,this.culler.enabled?fogEnd:Infinity,this.verticalBounds,this.columnRevision?.());for(const section of list){const dx=section.cx*16+8-c[0],dy=section.sy*16+8-c[1],dz=section.cz*16+8-c[2];section.dist=dx*dx+dy*dy+dz*dz;}list.sort((a,b)=>a.dist-b.dist);return list;});
     return this.visibleList;
   }
 
