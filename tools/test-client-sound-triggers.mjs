@@ -1,10 +1,10 @@
 import{test}from'node:test';import assert from'node:assert/strict';import{readFileSync}from'node:fs';
 import{SoundManager,soundAssetName,soundTypeOf}from'../client/js/audio/sound.js';import{initBlocks,blocksByName}from'../client/js/world/blocks.js';import{Interaction}from'../client/js/game/interaction.js';import{ENTITY_TYPES}from'../client/js/game/entity-types.js';
 const read=name=>JSON.parse(readFileSync(new URL('../client/'+name,import.meta.url))),defs=read('assets/minecraft/sounds.json');initBlocks(read('data/blocks.json'),read('data/blockCollisionShapes.json'));
-test('all living mob hurt/death and block sound-type references resolve',()=>{
+test('living mob and block sound references resolve or use the native intentional silence marker',()=>{
  const sound=Object.create(SoundManager.prototype);
  for(const entity of ENTITY_TYPES.filter(e=>e.mob))for(const size of[1,4])for(const name of sound._mobSounds({entityName:entity.name,size}))assert.ok(defs[soundAssetName(name)],entity.name+': '+name);
- for(const block of Object.values(blocksByName))for(const index of[0,1,2,5,6]){const name=soundTypeOf(block)[index];assert.ok(defs[soundAssetName(name)],block.name+': '+name);}
+ for(const block of Object.values(blocksByName))for(const index of[0,1,2,5,6]){const name=soundTypeOf(block)[index];assert.ok(name==='intentionally_empty'||defs[soundAssetName(name)],block.name+': '+name);}
 });
 test('composter, lava, torch burnout and portal-frame events play native sounds',()=>{
  const calls=[],sound=Object.assign(Object.create(SoundManager.prototype),{play:(...args)=>calls.push(args)});

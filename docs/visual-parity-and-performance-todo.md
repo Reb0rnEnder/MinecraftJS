@@ -46,3 +46,6 @@ The preceding build's 18 actual Gofile URLs and hashes are recorded in `/home/en
 - [x] Villager offer decoder/screen field mismatch: [packet-to-screen regression and backport audit](merchant-crash-1.19.4.md).
 
 - [x] Server/client view-distance mismatch: indexed pending meshes, cached column occupancy, bounded GPU terrain retention; identical light and overlapping invalidation work removed where native separate-light packets exist. [Backports, replays and remaining candidates](view-distance-performance.md).
+
+- [x] Splash/lingering potion use, native pickup/button/comparator sounds and consume effects: [version-specific trigger audit and Ogg decode results](client-sound-trigger-audit.md).
+- [ ] Complete native tool/bucket/bottle success predicates and their player-excluded local sound paths; audio asset tests do not prove these interactions complete.
