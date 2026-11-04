@@ -4,7 +4,7 @@
 //! - Written book page management
 //! - Enchanting book functionality
 //! - Signing and editing books
-//!!
+//!
 //! Note: GUI drawing (gui.blit, gui.text, gui.rect, etc.) and widget interactions
 //! remain in JavaScript. This module provides the algorithmic/data-handling parts.
 
@@ -76,12 +76,12 @@ pub fn has_pages(state: &const BookState) -> bool {
 }
 
 /// Returns the number of pages in the book.
-pub fn page_count(state: &const BookState) -> usize {
+pub fn page_count(state: &BookState) -> usize {
     state.pages.len()
 }
 
 /// Serializes the book state into an NBT compound tag.
-//! Equivalent to the JS `sendBook` function's tagObj construction.
+/// Equivalent to the JS `sendBook` function's tagObj construction.
 pub fn to_nbt_compound(state: &BookState) -> Value {
     let pages: Vec<Value> = state.pages.iter().map(|p| json!(p.text)).collect();
     let mut tag_obj = json!({
@@ -101,7 +101,7 @@ pub fn to_nbt_compound(state: &BookState) -> Value {
 }
 
 /// Deserializes an NBT compound tag into a BookState.
-//! Equivalent to reading NBT data when opening a book.
+/// Equivalent to reading NBT data when opening a book.
 pub fn from_nbt_compound(tag: &Value) -> BookState {
     let mut pages = Vec::new();
     if let Some(pages_arr) = tag.get("pages").and_then(|p| p.as_array()) {

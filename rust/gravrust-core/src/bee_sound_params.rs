@@ -16,7 +16,7 @@
 /// ```
 /// ```
 /// Ported from `client/js/game/bee-sound.js` `beeSoundParameters(e)`.
-//! Computes volume and pitch from bee entity motion parameters.
+/// Computes volume and pitch from bee entity motion parameters.
 
 /// Input parameters for bee sound computation.
 #[derive(Debug, Clone)]

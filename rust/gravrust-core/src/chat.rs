@@ -7,7 +7,7 @@
 //! - Click event URL extraction
 
 use wasm_bindgen::prelude::*;
-use serde_json::Value;
+use serde_json::{Map, Value};
 
 /// Maps Minecraft color names to § color codes.
 /// Keys are lower-case; lookup is case-sensitive.
@@ -304,11 +304,11 @@ pub fn chat_segments(raw: &Value) -> Option<::alloc::vec::Vec<Value>> {
         if !c.is_object() {
             // Primitive value
             if let Some(text) = c.as_str() {
-                out.push(Value::Object([
-                    ("text".to_string(), Value::String(format!("{}{}", parent_style, text)))),
-                    ("click".to_string(), parent.get("click").cloned().unwrap_or(Value::Null)),
-                    ("hover".to_string(), parent.get("hover").cloned().unwrap_or(Value::Null)),
-                ]));
+                let mut m = Map::new();
+                m.insert("text".to_string(), Value::String(format!("{}{}", parent_style, text)));
+                m.insert("click".to_string(), parent.get("click").cloned().unwrap_or(Value::Null));
+                m.insert("hover".to_string(), parent.get("hover").cloned().unwrap_or(Value::Null));
+                out.push(Value::Object(m));
             }
             return;
         }
@@ -328,10 +328,10 @@ pub fn chat_segments(raw: &Value) -> Option<::alloc::vec::Vec<Value>> {
             // Split marked by position placeholders (\u0000N\u0000)
             // For simplicity, just push the text
             if let Some(text) = map.get("text").and_then(|v| v.as_str()) {
-                out.push(Value::Object([(
+                out.push(Value::Object(Map::from_iter([(
                     "text".to_string(),
                     Value::String(format!("{}{}", style_str, text)),
-                )]));
+                )])));
             }
             // Process args recursively
             let args_array = map.get("with").and_then(|w| w.as_array());
@@ -341,27 +341,27 @@ pub fn chat_segments(raw: &Value) -> Option<::alloc::vec::Vec<Value>> {
                 }
             }
         } else if let Some(text) = map.get("text").and_then(|v| v.as_str()) {
-            out.push(Value::Object([(
+            out.push(Value::Object(Map::from_iter([(
                 "text".to_string(),
                 Value::String(format!("{}{}", style_str, text)),
-            )]));
+            )])));
         } else if map.get("score").is_some() {
             if let Some(value) = map.get("value").and_then(|v| v.as_str()) {
-                out.push(Value::Object([(
+                out.push(Value::Object(Map::from_iter([(
                     "text".to_string(),
                     Value::String(value.to_string()),
-                )]));
+                )])));
             }
         } else if let Some(selector) = map.get("selector").and_then(|v| v.as_str()) {
-            out.push(Value::Object([(
+            out.push(Value::Object(Map::from_iter([(
                 "text".to_string(),
                 Value::String(selector.to_string()),
-            )]));
+            )])));
         } else if let Some(keybind) = map.get("keybind").and_then(|v| v.as_str()) {
-            out.push(Value::Object([(
+            out.push(Value::Object(Map::from_iter([(
                 "text".to_string(),
                 Value::String(keybind.to_string()),
-            )]));
+            )])));
         }
 
         // Process extra
@@ -397,9 +397,11 @@ fn slice_legacy_segment(text: &str, start: usize, end: usize) -> ::alloc::string
     let len = bytes.len();
 
     while at < len && at < end {
-        if bytes[at] == b'§' && at + 1 < len {
+        // `§` is U+00A7, which is two bytes in UTF-8 (0xC2 0xA7). A byte literal
+        // cannot hold it, so match the encoded pair and step over both bytes.
+        if bytes[at] == 0xC2 && at + 1 < len && bytes[at + 1] == 0xA7 {
             let code = ::core::str::from_utf8(&bytes[at..at + 2]).unwrap_or("");
-            at += 1; // skip the §
+            at += 2; // skip both bytes of `§`
             if started {
                 out.push_str(code);
             }

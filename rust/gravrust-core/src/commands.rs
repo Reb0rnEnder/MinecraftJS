@@ -868,10 +868,10 @@ mod tests {
         assert!(balanced("\"hello\"", 0).error.is_none());
         assert!(balanced("'hello'", 0).error.is_none());
         assert!(balanced("{test}", 0).error.is_none());
-        assert!balanced("[test]", 0).error.is_none());
-        assert!balanced("{nested{inner}}", 0).error.is_none());
+        assert!(balanced("[test]", 0).error.is_none());
+        assert!(balanced("{nested{inner}}", 0).error.is_none());
         assert!(balanced("unclosed{", 0).error.is_some());
-        assert!balanced("unclosed[", 0).error.is_some());
+        assert!(balanced("unclosed[", 0).error.is_some());
     }
 
     #[test]

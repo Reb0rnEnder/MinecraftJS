@@ -8,9 +8,9 @@
 use wasm_bindgen::prelude::*;
 use serde_json::Value;
 
-//! Inline chat-to-legacy conversion (mirrors chatToLegacy from client/js/gui/chat.js
-//! with {parsed:true}, without depending on the chat module).
-
+/// Inline chat-to-legacy conversion (mirrors chatToLegacy from client/js/gui/chat.js
+/// with {parsed:true}, without depending on the chat module).
+///
 /// Convert a JSON chat component to legacy formatted string (§ codes).
 fn chat_to_legacy_json(json: &Value) -> ::alloc::string::String {
     if json.is_null() {

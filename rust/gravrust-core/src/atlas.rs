@@ -214,9 +214,16 @@ impl Atlas {
                     let anim = meta.animation;
                     let frametime = anim.frametime.unwrap_or(1);
                     if anim.frames.is_some() {
+                        // JS: a.frames.map((f) => (typeof f === 'number'
+                        //       ? { index: f, time: frametime }
+                        //       : { index: f.index, time: f.time || frametime }))
+                        // The number-or-object distinction is already resolved by
+                        // `AnimationFrame::from`, which records a per-frame `time`
+                        // of 0 when the JSON entry carried no explicit time, so a
+                        // 0 here means "inherit frametime" (JS `f.time || frametime`).
                         anim.frames.as_ref().unwrap().iter().map(|f| AtlasFrame {
-                            index: if typeof f === "number" { f } else { f.index },
-                            time: frametime,
+                            index: f.index,
+                            time: if f.time == 0 { frametime } else { f.time },
                         }).collect()
                     } else {
                         (0..it.frames).map(|i| AtlasFrame { index: i, time: frametime }).collect()
@@ -486,11 +493,22 @@ struct AnimationMetaInner {
     frames: Option<Vec<AnimationFrame>>,
 }
 
-// Implement AnimationFrame from plain object
+// Implement AnimationFrame from a number or a plain object.
+//
+// Mirrors the JS in `client/js/render/atlas.js`:
+//   typeof f === 'number' ? { index: f, time: frametime }
+//                         : { index: f.index, time: f.time || frametime }
+// `frametime` is not known at parse time, so an absent/zero per-frame `time`
+// is recorded as 0 and resolved to `frametime` by the caller.
 impl From<serde_json::Value> for AnimationFrame {
     fn from(v: serde_json::Value) -> Self {
+        // Bare number: { index: f, time: frametime } -> time resolved later.
+        if let Some(n) = v.as_u64() {
+            return AnimationFrame { index: n as usize, time: 0 };
+        }
         let index = v.get("index").and_then(|v| v.as_u64()).unwrap_or(0) as usize;
-        let time = v.get("time").and_then(|v| v.as_u64()).unwrap_or(1) as u32;
+        // `f.time || frametime`: 0/absent both fall back to frametime.
+        let time = v.get("time").and_then(|v| v.as_u64()).unwrap_or(0) as u32;
         AnimationFrame { index, time }
     }
 }
