@@ -1,0 +1,382 @@
+{
+  "date": "2026-11-04",
+  "timedRuns": [
+    {
+      "version": "1.8.9",
+      "node": "v22.23.3",
+      "scope": "Synthetic Node CPU replay using the real Game collision callback and World.getCollisions; 600 nearby entities, no renderer/GPU/Java FPS measurement",
+      "entityCandidates": {
+        "baseline": {
+          "medianMs": 18.549153000000018,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 4.657713999999999,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "worldCollision": {
+        "baseline": {
+          "medianMs": 16.14739800000001,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 5.231280000000027,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "bodyBoxReadsPerQuery": {
+        "baseline": 600,
+        "optimized": 20,
+        "scope": "Separate instrumented query, excluded from timed runs"
+      }
+    },
+    {
+      "version": "1.12.2",
+      "node": "v22.23.3",
+      "scope": "Synthetic Node CPU replay using the real Game collision callback and World.getCollisions; 600 nearby entities, no renderer/GPU/Java FPS measurement",
+      "entityCandidates": {
+        "baseline": {
+          "medianMs": 15.681294999999992,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 4.763043999999979,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "worldCollision": {
+        "baseline": {
+          "medianMs": 22.156558999999987,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 10.209769999999992,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "bodyBoxReadsPerQuery": {
+        "baseline": 600,
+        "optimized": 20,
+        "scope": "Separate instrumented query, excluded from timed runs"
+      }
+    },
+    {
+      "version": "1.13.2",
+      "node": "v22.23.3",
+      "scope": "Synthetic Node CPU replay using the real Game collision callback and World.getCollisions; 600 nearby entities, no renderer/GPU/Java FPS measurement",
+      "entityCandidates": {
+        "baseline": {
+          "medianMs": 15.672899999999998,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 5.007545999999991,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "worldCollision": {
+        "baseline": {
+          "medianMs": 21.809001999999964,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 9.850161000000014,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "bodyBoxReadsPerQuery": {
+        "baseline": 600,
+        "optimized": 20,
+        "scope": "Separate instrumented query, excluded from timed runs"
+      }
+    },
+    {
+      "version": "1.14.4",
+      "node": "v22.23.3",
+      "scope": "Synthetic Node CPU replay using the real Game collision callback and World.getCollisions; 600 nearby entities, no renderer/GPU/Java FPS measurement",
+      "entityCandidates": {
+        "baseline": {
+          "medianMs": 32.27711199999999,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 5.1648739999999975,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "worldCollision": {
+        "baseline": {
+          "medianMs": 28.97688599999998,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 10.31916799999999,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "bodyBoxReadsPerQuery": {
+        "baseline": 600,
+        "optimized": 20,
+        "scope": "Separate instrumented query, excluded from timed runs"
+      }
+    },
+    {
+      "version": "1.15.2",
+      "node": "v22.23.3",
+      "scope": "Synthetic Node CPU replay using the real Game collision callback and World.getCollisions; 600 nearby entities, no renderer/GPU/Java FPS measurement",
+      "entityCandidates": {
+        "baseline": {
+          "medianMs": 22.528053,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 5.573597000000007,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "worldCollision": {
+        "baseline": {
+          "medianMs": 27.174514999999985,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 10.279534000000012,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "bodyBoxReadsPerQuery": {
+        "baseline": 600,
+        "optimized": 20,
+        "scope": "Separate instrumented query, excluded from timed runs"
+      }
+    },
+    {
+      "version": "1.16.5",
+      "node": "v22.23.3",
+      "scope": "Synthetic Node CPU replay using the real Game collision callback and World.getCollisions; 600 nearby entities, no renderer/GPU/Java FPS measurement",
+      "entityCandidates": {
+        "baseline": {
+          "medianMs": 20.55017000000001,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 5.120328999999998,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "worldCollision": {
+        "baseline": {
+          "medianMs": 25.410087000000033,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 9.817188999999985,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "bodyBoxReadsPerQuery": {
+        "baseline": 600,
+        "optimized": 20,
+        "scope": "Separate instrumented query, excluded from timed runs"
+      }
+    },
+    {
+      "version": "1.17.1",
+      "node": "v22.23.3",
+      "scope": "Synthetic Node CPU replay using the real Game collision callback and World.getCollisions; 600 nearby entities, no renderer/GPU/Java FPS measurement",
+      "entityCandidates": {
+        "baseline": {
+          "medianMs": 19.85941200000002,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 5.03195199999999,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "worldCollision": {
+        "baseline": {
+          "medianMs": 26.27840900000001,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 10.018558999999982,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "bodyBoxReadsPerQuery": {
+        "baseline": 600,
+        "optimized": 20,
+        "scope": "Separate instrumented query, excluded from timed runs"
+      }
+    },
+    {
+      "version": "1.18.2",
+      "node": "v22.23.3",
+      "scope": "Synthetic Node CPU replay using the real Game collision callback and World.getCollisions; 600 nearby entities, no renderer/GPU/Java FPS measurement",
+      "entityCandidates": {
+        "baseline": {
+          "medianMs": 22.45760900000002,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 5.27448099999998,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "worldCollision": {
+        "baseline": {
+          "medianMs": 25.4914,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 9.84148399999998,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "bodyBoxReadsPerQuery": {
+        "baseline": 600,
+        "optimized": 20,
+        "scope": "Separate instrumented query, excluded from timed runs"
+      }
+    },
+    {
+      "version": "1.19.4",
+      "node": "v22.23.3",
+      "scope": "Synthetic Node CPU replay using the real Game collision callback and World.getCollisions; 600 nearby entities, no renderer/GPU/Java FPS measurement",
+      "entityCandidates": {
+        "baseline": {
+          "medianMs": 20.840659000000016,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 4.8758170000000405,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "worldCollision": {
+        "baseline": {
+          "medianMs": 25.220788000000027,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        },
+        "optimized": {
+          "medianMs": 9.869096000000013,
+          "queriesPerRound": 5000,
+          "rounds": 5
+        }
+      },
+      "bodyBoxReadsPerQuery": {
+        "baseline": 600,
+        "optimized": 20,
+        "scope": "Separate instrumented query, excluded from timed runs"
+      }
+    }
+  ],
+  "sampledV8": {
+    "scope": "V8 sampled self CPU in synthetic collision benchmark; startup and both baseline/optimized phases included; not a frame/FPS profile",
+    "top": [
+      {
+        "function": "baselineCollider",
+        "file": "tools/fixtures/entity-collision-baseline.js",
+        "line": 3,
+        "sampledMs": 211.231
+      },
+      {
+        "function": "getCollisions",
+        "file": "client/js/world/world.js",
+        "line": 493,
+        "sampledMs": 46.763
+      },
+      {
+        "function": "w.entityCollider",
+        "file": "client/js/game/game.js",
+        "line": 521,
+        "sampledMs": 44.873
+      },
+      {
+        "function": "(garbage collector)",
+        "file": "",
+        "line": 0,
+        "sampledMs": 40.977
+      },
+      {
+        "function": "initBlocks",
+        "file": "client/js/world/blocks.js",
+        "line": 59,
+        "sampledMs": 29.314
+      },
+      {
+        "function": "collisionBoxes",
+        "file": "client/js/world/world.js",
+        "line": 375,
+        "sampledMs": 7.136
+      },
+      {
+        "function": "decodeProperties",
+        "file": "client/js/world/blocks.js",
+        "line": 156,
+        "sampledMs": 6.078
+      },
+      {
+        "function": "",
+        "file": "client/js/game/physics.js",
+        "line": 1,
+        "sampledMs": 1.748
+      },
+      {
+        "function": "propertyValues",
+        "file": "client/js/world/blocks.js",
+        "line": 149,
+        "sampledMs": 1.581
+      },
+      {
+        "function": "",
+        "file": "client/js/util/png.js",
+        "line": 101,
+        "sampledMs": 1.499
+      },
+      {
+        "function": "",
+        "file": "client/js/game/entity-metadata-1.19.4.js",
+        "line": 1,
+        "sampledMs": 1.26
+      }
+    ]
+  }
+}

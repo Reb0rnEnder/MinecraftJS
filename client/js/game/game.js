@@ -413,10 +413,11 @@ export class Game {
       for (const e of this.entities.map.values()) {
         if (e === self || e.dead) continue;
         if (self ? e.riding === self.id : e.id === this.ridingEntityId) continue;
+        if(e.kind!=='boat'&&!(self&&self.kind==='boat'))continue;
         const hw = (e.width || 0) / 2;
+        if(e.kind!=='boat'&&hw<=0)continue;
         const eb = [e.x - hw, e.y, e.z - hw, e.x + hw, e.y + (e.height || 0), e.z + hw];
         if (!(eb[3] > g[0] && eb[0] < g[3] && eb[4] > g[1] && eb[1] < g[4] && eb[5] > g[2] && eb[2] < g[5])) continue;
-        if (e.kind !== 'boat' && !(self && self.kind === 'boat' && hw > 0)) continue;
         if (eb[3] > bb[0] && eb[0] < bb[3] && eb[4] > bb[1] && eb[1] < bb[4] && eb[5] > bb[2] && eb[2] < bb[5]) out.push(eb);
       }
       return out;
