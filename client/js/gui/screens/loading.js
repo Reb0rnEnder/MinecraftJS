@@ -4,6 +4,7 @@ import {renderLoadingOverlay,loadingProgress} from '../../render/loading-overlay
 // Native reload overlay: .5 s fade-in, smoothed progress, then two-stage 2 s fade-out.
 export class ResourceLoadingScreen extends Screen{
  constructor(game,parent,{startup=false,progress=0}={}){super(game);this.parent=parent;this.startup=startup;this.progress=progress;this.pct=progress*100;this.startedAt=platform().now();}
+ get panorama(){const now=platform().now();return !!this.parent?.panorama&&((!this.startup&&now-this.startedAt<500)||(this.completedAt!==undefined&&now-this.completedAt>=1000));}
  init(){if(this.parent){this.parent.buttons=[];this.parent.fields=[];this.parent.init();}}
  finish(){this.pct=100;this.completedAt=platform().now();return new Promise(resolve=>this.resolve=resolve);}
  render(gui,mx,my,partial){
