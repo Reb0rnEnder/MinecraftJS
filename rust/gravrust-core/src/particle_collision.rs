@@ -42,12 +42,13 @@ pub fn move_particle(p: &mut Particle, world: &dyn WorldContext) {
     let mut y = dy;
     let mut z = dz;
 
-    for box in &boxes {
-        y = calc_y_offset(box, &bb, y);
+    // `box` is a reserved keyword in Rust, so the loop binding is named `b`.
+    for b in &boxes {
+        y = calc_y_offset(b, &bb, y);
         bb[1] += y;
         bb[4] += y;
     }
-    for box in &boxes {
+    for b in &boxes {
         x = calc_x_offset(box, &bb, x);
         bb[0] += x;
         bb[3] += x;

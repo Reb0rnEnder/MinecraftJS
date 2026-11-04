@@ -14,32 +14,87 @@
 /// # Returns
 /// * `String` - GLSL source with integer literals bridged to float
 pub fn glsl_float_literals(source: &str) -> String {
+    use std::collections::HashSet;
+
     // JS: `const names=[...new Set([...source.matchAll(/\b(?:float|vec[234]|mat[234])\s+([A-Za-z_]\w*)/g)].map(m=>m[1]))];`
-    // Find all type declarations: float, vec2/3/4, mat2/3/4 followed by variable names
-    let names: std::collections::HashSet<String> = std::collections::HashSet::new();
-    
-    // Regex: \b(?:float|vec[234]|mat[234])\s+([A-Za-z_]\w*)
-    let re = regex_literal("\b(?:float|vec[234]|mat[234])\s+([A-Za-z_]\w*)");
-    if let Some(caps) = re.captures(source) {
-        // This is simplified - full implementation would need regex crate
+    // Collect the distinct variable names declared with a float/vector/matrix type.
+    let decl = regex_literal(r"\b(?:float|vec[234]|mat[234])\s+([A-Za-z_]\w*)");
+    let mut names: HashSet<String> = HashSet::new();
+    for caps in decl.captures_iter(source) {
+        if let Some(m) = caps.get(1) {
+            names.insert(m.as_str().to_string());
+        }
     }
-    
+
     // JS: `if(!names.length)return source;`
     // if no type declarations, return source unchanged
-    
+    if names.is_empty() {
+        return source.to_string();
+    }
+
     // JS: `const symbols='(?:'+names.join('|')+')';`
-    // JS: `return source.replace(new RegExp('(?<![\\w.])(\\d+)\\s*([*/+\\-])\\s*('+symbols+')\\b','g'),'$1.0 $2 $3')`
-    //     .replace(new RegExp('\\b('+symbols+')\\s*([*/+\\-])\\s*(\\d+)(?![.\\w])','g'),'$1 $2 $3.0');
-    
-    // Simplified: just return source for now - full regex implementation needs the regex crate
-    source.to_string()
+    // HashSet iteration order is not stable and JS uses insertion order; sort so
+    // the generated alternation is deterministic across runs.
+    let mut sorted: Vec<String> = names.into_iter().collect();
+    sorted.sort();
+    let symbols = format!("(?:{})", sorted.join("|"));
+
+    // JS pass 1: `(?<![\w.])(\d+)\s*([*/+\-])\s*(SYMBOLS)\b` -> `$1.0 $2 $3`
+    //   e.g. `12/speed` -> `12.0 / speed`
+    // The `regex` crate has no lookbehind, so the `(?<![\w.])` guard is checked
+    // manually against the preceding character of each candidate match.
+    let num_first = regex_literal(&format!(r"(\d+)\s*([*/+\-])\s*({})\b", symbols));
+    let mut out = String::with_capacity(source.len());
+    let mut last = 0usize;
+    for caps in num_first.captures_iter(source) {
+        let whole = caps.get(0).unwrap();
+        // Reject when the digit is preceded by a word character or a dot.
+        if whole.start() > 0 {
+            let prev = source[..whole.start()].chars().next_back().unwrap();
+            if prev.is_alphanumeric() || prev == '_' || prev == '.' {
+                continue;
+            }
+        }
+        out.push_str(&source[last..whole.start()]);
+        out.push_str(caps.get(1).unwrap().as_str());
+        out.push_str(".0 ");
+        out.push_str(caps.get(2).unwrap().as_str());
+        out.push(' ');
+        out.push_str(caps.get(3).unwrap().as_str());
+        last = whole.end();
+    }
+    out.push_str(&source[last..]);
+
+    // JS pass 2: `\b(SYMBOLS)\s*([*/+\-])\s*(\d+)(?![.\w])` -> `$1 $2 $3.0`
+    //   e.g. `speed*12` -> `speed * 12.0`
+    let num_last = regex_literal(&format!(r"\b({})\s*([*/+\-])\s*(\d+)", symbols));
+    let mut out2 = String::with_capacity(out.len());
+    let mut last2 = 0usize;
+    for caps in num_last.captures_iter(&out) {
+        let whole = caps.get(0).unwrap();
+        // Reject when the digits are followed by a dot or word character.
+        if let Some(next) = out[whole.end()..].chars().next() {
+            if next.is_alphanumeric() || next == '_' || next == '.' {
+                continue;
+            }
+        }
+        out2.push_str(&out[last2..whole.start()]);
+        out2.push_str(caps.get(1).unwrap().as_str());
+        out2.push(' ');
+        out2.push_str(caps.get(2).unwrap().as_str());
+        out2.push(' ');
+        out2.push_str(caps.get(3).unwrap().as_str());
+        out2.push_str(".0");
+        last2 = whole.end();
+    }
+    out2.push_str(&out[last2..]);
+    out2
 }
 
-/// Helper: regex literal (simplified - would use regex crate in full implementation)
-fn regex_literal(_pattern: &str) -> regex::Regex {
-    // In full implementation, would use regex crate
-    // For now, just return a mock
-    unimplemented!("Full regex support requires regex crate")
+/// Compile a regex literal. The patterns are static and valid, so a failure here
+/// is a programming error rather than a runtime input problem.
+fn regex_literal(pattern: &str) -> regex::Regex {
+    regex::Regex::new(pattern).unwrap_or_else(|e| panic!("invalid regex {:?}: {}", pattern, e))
 }
 
 // ------------------------------------------------------------ Exports

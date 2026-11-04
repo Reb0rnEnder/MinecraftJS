@@ -4,11 +4,14 @@
 //! This module provides the NATIVE_METADATA constant containing entity
 //! metadata indices, which can be used for accessing entity data fields.
 
+// NOTE: `NATIVE_METADATA` is built with `serde_json::json!`, which allocates at
+// runtime, so it cannot be a `const`. It is exposed as a function instead.
+
 use serde_json::Value;
 
 /// The native entity metadata indices for Minecraft 1.15.2, extracted from
 //! the JavaScript port. Structure: { entity_type: { field_id: value, ... }, ... }
-pub const NATIVE_METADATA: Value = serde_json::json!({
+pub static NATIVE_METADATA: std::sync::LazyLock<Value> = std::sync::LazyLock::new(|| serde_json::json!({
     "player": {
         "DATA_PLAYER_ABSORPTION_ID": 14,
         "DATA_SCORE_ID": 15,
@@ -121,4 +124,4 @@ pub const NATIVE_METADATA: Value = serde_json::json!({
         "DATA_NO_GRAVITY": 5,
         "DATA_POSE": 6
     }
-});
+}));

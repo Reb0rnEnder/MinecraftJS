@@ -1,5 +1,4 @@
-// Port of `client/js/game/nbt-queries.js`
-//!!
+//! Port of `client/js/game/nbt-queries.js`: pending block/entity NBT queries.
 
 use crate::nbt::Tag;
 use wasm_bindgen::prelude::*;
@@ -10,12 +9,23 @@ use wasm_bindgen::prelude::*;
 pub struct NbtQueries {
     serial: u32,
     pending: Option<PendingQuery>,
+    /// Identity of the connection these queries belong to. The JS reads this
+    /// live from `this.game.conn`; here the host updates it on (re)connect.
+    conn: ConnectionId,
 }
+
+/// A connection identity token.
+///
+/// The JS keeps the live connection object in `pending.conn` and compares it by
+/// reference to drop responses that arrive after a reconnect. Rust has no
+/// equivalent object identity here, so the host passes an opaque generation
+/// number instead: equal values mean "same connection".
+pub type ConnectionId = u64;
 
 struct PendingQuery {
     id: u32,
     callback: Box<dyn Fn(Tag) + 'static>,
-    conn: /* connection identifier - adapt to your game type */,
+    conn: ConnectionId,
 }
 
 impl NbtQueries {
@@ -24,6 +34,7 @@ impl NbtQueries {
         Self {
             serial: 0,
             pending: None,
+            conn: 0,
         }
     }
 
@@ -32,52 +43,76 @@ impl NbtQueries {
         self.pending = None;
     }
 
+    /// Record the current connection identity. Pending queries issued against a
+    /// previous connection will no longer be matched by `handle`.
+    pub fn set_connection(&mut self, conn: ConnectionId) {
+        self.conn = conn;
+    }
+
     /// Query block NBT at the given position.
-    /// Returns the transaction ID for later response handling.
-    /// Adapt the `C::queryBlockNbt` call to your packets module.
-    pub fn block(&mut self, position: (i32, i32, i32), callback: Box<dyn Fn(Tag) + 'static>) -> u32 {
-        self._request(move |id| {
-            // C::queryBlockNbt(id, position) - from client/js/net/packets.js
-            unimplemented!("C::queryBlockNbt integration")
-        }, callback)
+    ///
+    /// Returns the transaction id and the encoded packet body. The caller sends
+    /// the bytes; this matches the JS, where `_request` calls `game.send(...)`.
+    pub fn block(
+        &mut self,
+        position: (i32, i32, i32),
+        callback: Box<dyn Fn(Tag) + 'static>,
+    ) -> (u32, Vec<u8>) {
+        self._request(
+            move |id| crate::protocol_1152::query_block_nbt(id, position.0, position.1, position.2),
+            callback,
+        )
     }
 
     /// Query entity NBT by entity ID.
-    /// Returns the transaction ID for later response handling.
-    /// Adapt the `C::queryEntityNbt` call to your packets module.
-    pub fn entity(&mut self, entity_id: u32, callback: Box<dyn Fn(Tag) + 'static>) -> u32 {
-        self._request(move |id| {
-            // C::queryEntityNbt(id, entityId) - from client/js/net/packets.js
-            unimplemented!("C::queryEntityNbt integration")
-        }, callback)
+    ///
+    /// Returns the transaction id and the encoded packet body.
+    pub fn entity(
+        &mut self,
+        entity_id: u32,
+        callback: Box<dyn Fn(Tag) + 'static>,
+    ) -> (u32, Vec<u8>) {
+        self._request(
+            move |id| crate::protocol_1152::query_entity_nbt(id, entity_id as i32),
+            callback,
+        )
     }
 
+    /// JS: `_request(encode,callback){const id=++this.serial;this.pending={id,callback,conn:this.game.conn};this.game.send(encode(id));return id;}`
     fn _request(
         &mut self,
-        encode: impl FnOnce(u32) + 'static,
+        encode: impl FnOnce(i32) -> Result<Vec<u8>, crate::buffer::BufferError>,
         callback: Box<dyn Fn(Tag) + 'static>,
-    ) -> u32 {
-        let id = ++self.serial;
+    ) -> (u32, Vec<u8>) {
+        // Rust has no prefix increment: `++this.serial` becomes increment-then-use.
+        self.serial = self.serial.wrapping_add(1);
+        let id = self.serial;
         self.pending = Some(PendingQuery {
             id,
             callback,
-            conn: /* self.game.conn() or appropriate connection identifier */,
+            conn: self.conn,
         });
-        encode(id);
-        id
+        let bytes = encode(id as i32).unwrap_or_default();
+        (id, bytes)
     }
 
     /// Handle an incoming NBT query response packet.
+    ///
     /// Returns `true` if the packet was handled and the callback invoked,
     /// `false` otherwise.
-    pub fn handle(&mut self, packet_transaction_id: u32, conn: /* connection identifier */) -> bool {
-        let p = self.pending.as_ref();
-        if p.is_none() || p.unwrap().id != packet_transaction_id || p.unwrap().conn != conn {
+    pub fn handle(&mut self, packet_transaction_id: u32, conn: ConnectionId, nbt: Tag) -> bool {
+        // JS: `const p=this.pending;if(!p||p.id!==packet.transactionId||p.conn!==this.game.conn)return false;`
+        let matches = match self.pending.as_ref() {
+            Some(p) => p.id == packet_transaction_id && p.conn == conn,
+            None => false,
+        };
+        if !matches {
             return false;
         }
-        self.pending = None;
-        // p.unwrap().callback(nbt_tag_from_packet);
-        // Adapt: extract the Tag from the deserialized packet NBT data.
+        // JS: `this.pending=null;p.callback(packet.nbt);return true;`
+        if let Some(p) = self.pending.take() {
+            (p.callback)(nbt);
+        }
         true
     }
 }

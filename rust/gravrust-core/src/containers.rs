@@ -1,7 +1,7 @@
 // Port of `client/js/game/containers.js`
 
-#! inventory/container model with
-#! slot click handling, stack merging, transfer logic, and NBT comparison.
+//! Inventory/container model with slot click handling, stack merging,
+//! transfer logic, and NBT comparison.
 
 use serde_json::{Value, Number};
 use std::collections::HashSet;

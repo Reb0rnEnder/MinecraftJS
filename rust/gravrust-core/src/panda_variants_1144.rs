@@ -3,7 +3,7 @@
 
 /// The 7 possible panda gene variants, each is a 7-element array matching the JS PANDA_VARIANTS.
 /// Index corresponds to gene position: [gene0, gene1, gene2, gene3, gene4, gene5, gene6]
-pub const PANDA_VARIANTS: [&'static str; 7][7] = [
+pub const PANDA_VARIANTS: [[&'static str; 7]; 7] = [
     // normal: all normal
     [
         "normal", "normal", "normal", "normal", "normal", "normal", "normal",
