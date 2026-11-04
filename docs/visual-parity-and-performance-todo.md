@@ -26,10 +26,11 @@ This is the project-wide tracker; each feature applies only to its native versio
 ## Version-specific UI and chat
 
 - [x] Restore the native 1.19.4 server-policy verification warning toast, including multiline dimensions and ten-second lifetime. This feature starts in 1.19.1 and is not backported to 1.18.2.
-- [ ] Complete native 1.19.4 session/message cryptographic verification, trust indicators and reportable chat logs. Unsigned/system messages must retain their proper distinctions.
+- [x] Render native 1.19.4 trust bars and hover explanations; preserve tags through delayed/wrapped messages and distinguish system messages.
+- [ ] Complete native 1.19.4 session/message cryptographic verification and reportable chat logs. Signature presence alone must not mark a message verified.
 - [x] Compare and correct Social Interactions native geometry, tabs, row spacing/icons, version-specific search fields, scrollbar input and resize behavior (1.16.5+ only).
 - [ ] Finish Social Interactions reference-image, keyboard/narrator, recent signed-message/offline-history and reporting gates.
-- [ ] Resolve the two pre-existing 1.19.4 chat-hover regression failures (item tooltip metadata and wrapped translated hover hit regions), reproduced at the parent commit.
+- [x] Audit the former chat-hover/UI regression failures: correct target-version fixture metadata, native HUD baselines and scrolling option-list expectations. Native item tooltip/hover behavior passes across all nine targets.
 
 ## Validation/publication
 
