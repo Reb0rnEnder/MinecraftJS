@@ -3,11 +3,18 @@ name = "gravrust"
 version = "0.2.0"
 edition = "2021"
 description = "Gravrust core - Minecraft 1.15.2 client ported to Rust/WASM"
-license = "MIT"
+license = "Unlicense"
 repository = "https://github.com/pkSmp/Gravrust"
 
 [lib]
+name = "gravrust"
 crate-type = ["cdylib", "rlib"]
+
+[features]
+# Compiles the unfinished ported files (see src/lib.rs). These do not build yet;
+# the feature exists so the default `cargo check` is green without deleting or
+# hiding any source file.
+unsupported = []
 
 [dependencies]
 wasm-bindgen = "0.2"
@@ -17,14 +24,25 @@ web-sys = { version = "0.3", features = [
     "WebGlTexture", "WebGlUniformLocation", "WebGlVertexArrayObject",
     "GpuDevice", "GpuRenderPipeline", "GpuBindGroupLayout",
     "AudioContext", "AudioBuffer", "AudioBufferSourceNode", "GainNode",
-    "RequestAnimationFrame", "KeyboardEvent", "MouseEvent", "WheelEvent",
+    "KeyboardEvent", "MouseEvent", "WheelEvent",
     "WebSocket", "MessageEvent", "CloseEvent", "ErrorEvent",
-    "Fetch", "Response", "Headers", "Request",
-    "Console", "Performance", "Navigator", "Screen", "WindowOrWorkerGlobalScope"
+    "Response", "Headers", "Url", "UrlSearchParams",
+    "Location", "Storage", "Navigator", "Element", "HtmlElement", "Node",
+    "Event", "EventTarget", "Blob", "File", "FileReader",
+    "ImageData", "DomRect", "NodeList", "PerformanceNavigationTiming",
 ] }
 serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+serde_json = { version = "1.0", features = ["preserve_order"] }
 hashbrown = "0.14"
 parking_lot = "0.12"
-getrandom = { version = "0.2", features = ["js"] }
 rand = "0.8"
+once_cell = "1.19"
+miniz_oxide = "0.8"
+regex = "1.10"
+js-sys = "0.3"
+fastrand = "2"
+num-bigint = "0.4"
+num-traits = "0.2"
+serde-wasm-bindgen = "0.6"
+phf = { version = "0.11", features = ["macros"] }
+getrandom = { version = "0.2", features = ["js"] }

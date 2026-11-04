@@ -2,6 +2,7 @@
   "name": "gravrust",
   "version": "1.0.0",
   "description": "Gravrust - Minecraft 1.15.2 client in Rust/WASM with ViaVersion relay",
+  "license": "Unlicense",
   "scripts": {
     "start": "node proxy.js",
     "dev": "node proxy.js",

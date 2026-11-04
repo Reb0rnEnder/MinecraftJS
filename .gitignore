@@ -20,3 +20,9 @@ server189/
 1.14.4/
 server1144/
 logs/
+
+# Rust build artifacts (cargo output must never be committed)
+target/
+**/target/
+*.rs.bk
+
