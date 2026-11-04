@@ -44,3 +44,5 @@ The preceding build's 18 actual Gofile URLs and hashes are recorded in `/home/en
 
 - [x] Iron golem native crack overlays (1.15+ only): damage/repair thresholds, invisibility, lighting and LOD updates. See [native audit](iron-golem-cracks.md).
 - [x] Villager offer decoder/screen field mismatch: [packet-to-screen regression and backport audit](merchant-crash-1.19.4.md).
+
+- [x] Server/client view-distance mismatch: indexed pending meshes, cached column occupancy, bounded GPU terrain retention; identical light and overlapping invalidation work removed where native separate-light packets exist. [Backports, replays and remaining candidates](view-distance-performance.md).

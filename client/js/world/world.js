@@ -1,3 +1,4 @@
+import {sameLightBytes} from './light-update.js';
 import { verticalBounds } from './vertical-bounds.js';
 import { sectionKey, sectionCoords } from './section-key.js';
 import { maskHas, maskFits, maskValue } from '../net/bitset.js';
@@ -121,15 +122,19 @@ export class World {
       for(let i=0;i<this.sectionCount+2;i++) {
         const bytes=arrays?.[i-1];if(!bytes&&!maskHas(empty??0,i))continue;
         if(bytes?.length!==2048&&bytes)throw new Error('Invalid light section');
-        light[name][i]=bytes?bytes.slice():new Uint8Array(2048);if(name==='sky'){light.skyKnown=true;light.skyDataMask=bytes?maskValue(light.skyDataMask||0)|(1n<<BigInt(i)):maskValue(light.skyDataMask||0)&~(1n<<BigInt(i)); }changed.add(this.minSection+i-1);
+        const oldMask=light.skyDataMask,oldKnown=light.skyKnown,same=sameLightBytes(light[name][i],bytes);
+        if(name==='sky'){light.skyKnown=true;light.skyDataMask=bytes?maskValue(light.skyDataMask||0)|(1n<<BigInt(i)):maskValue(light.skyDataMask||0)&~(1n<<BigInt(i)); }
+        if(same&&(name!=='sky'||oldKnown===light.skyKnown&&oldMask===light.skyDataMask))continue;
+        if(!same)light[name][i]=bytes?bytes.slice():new Uint8Array(2048);changed.add(this.minSection+i-1);
       }
     }
     const c=this.getChunk(packet.chunkX,packet.chunkZ);if(!c)return;
-    c.nativeLight=light;
+    c.nativeLight=light;const dirtyY=new Set();
     for(const sy of changed) {
       const sec=c.getSection(sy);if(sec){sec.skyLight=light.sky[sy-this.minSection+1]||sec.skyLight;sec.blockLight=light.block[sy-this.minSection+1]||sec.blockLight;}
-      for(let dy=-1;dy<=1;dy++)if(sy+dy>=this.minSection&&sy+dy<this.maxSection)for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)this.emit('sectionDirty',c.x+dx,sy+dy,c.z+dz);
+      for(let dy=-1;dy<=1;dy++)if(sy+dy>=this.minSection&&sy+dy<this.maxSection)dirtyY.add(sy+dy);
     }
+    for(const sy of dirtyY)for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)this.emit('sectionDirty',c.x+dx,sy,c.z+dz);
   }
 
   unloadChunk(x, z) {
