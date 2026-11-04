@@ -43,619 +43,619 @@ pub static ENTITY_REGISTRY_MAP: phf::Map<&'static str, &'static EntityRegistryEn
 /// The `id` field is the 0-based index in this array, matching the JavaScript array index.
 pub static ENTITY_REGISTRY_1144: phf::Map<i32, &'static EntityRegistryEntry> = {
     phf::phf_map! {
-0 => &EntityRegistryEntry {
+0i32 => &EntityRegistryEntry {
     id: 0,
     name: "area_effect_cloud",
     width: 6.0,
     height: 0.5,
 },
-1 => &EntityRegistryEntry {
+1i32 => &EntityRegistryEntry {
     id: 1,
     name: "armor_stand",
     width: 0.5,
     height: 1.975,
 },
-2 => &EntityRegistryEntry {
+2i32 => &EntityRegistryEntry {
     id: 2,
     name: "arrow",
     width: 0.5,
     height: 0.5,
 },
-3 => &EntityRegistryEntry {
+3i32 => &EntityRegistryEntry {
     id: 3,
     name: "bat",
     width: 0.5,
     height: 0.9,
 },
-4 => &EntityRegistryEntry {
+4i32 => &EntityRegistryEntry {
     id: 4,
     name: "bee",
     width: 0.7,
     height: 0.6,
 },
-5 => &EntityRegistryEntry {
+5i32 => &EntityRegistryEntry {
     id: 5,
     name: "blaze",
     width: 0.6,
     height: 1.8,
 },
-6 => &EntityRegistryEntry {
+6i32 => &EntityRegistryEntry {
     id: 6,
     name: "boat",
     width: 1.375,
     height: 0.5625,
 },
-7 => &EntityRegistryEntry {
+7i32 => &EntityRegistryEntry {
     id: 7,
     name: "cat",
     width: 0.6,
     height: 0.7,
 },
-8 => &EntityRegistryEntry {
+8i32 => &EntityRegistryEntry {
     id: 8,
     name: "cave_spider",
     width: 0.7,
     height: 0.5,
 },
-9 => &EntityRegistryEntry {
+9i32 => &EntityRegistryEntry {
     id: 9,
     name: "chicken",
     width: 0.4,
     height: 0.7,
 },
-10 => &EntityRegistryEntry {
+10i32 => &EntityRegistryEntry {
     id: 10,
     name: "cod",
     width: 0.5,
     height: 0.3,
 },
-11 => &EntityRegistryEntry {
+11i32 => &EntityRegistryEntry {
     id: 11,
     name: "cow",
     width: 0.9,
     height: 1.4,
 },
-12 => &EntityRegistryEntry {
+12i32 => &EntityRegistryEntry {
     id: 12,
     name: "creeper",
     width: 0.6,
     height: 1.7,
 },
-13 => &EntityRegistryEntry {
+13i32 => &EntityRegistryEntry {
     id: 13,
     name: "donkey",
     width: 1.39648,
     height: 1.5,
 },
-14 => &EntityRegistryEntry {
+14i32 => &EntityRegistryEntry {
     id: 14,
     name: "dolphin",
     width: 0.9,
     height: 0.6,
 },
-15 => &EntityRegistryEntry {
+15i32 => &EntityRegistryEntry {
     id: 15,
     name: "dragon_fireball",
     width: 1.0,
     height: 1.0,
 },
-16 => &EntityRegistryEntry {
+16i32 => &EntityRegistryEntry {
     id: 16,
     name: "drowned",
     width: 0.6,
     height: 1.95,
 },
-17 => &EntityRegistryEntry {
+17i32 => &EntityRegistryEntry {
     id: 17,
     name: "elder_guardian",
     width: 1.9975,
     height: 1.9975,
 },
-18 => &EntityRegistryEntry {
+18i32 => &EntityRegistryEntry {
     id: 18,
     name: "end_crystal",
     width: 2.0,
     height: 2.0,
 },
-19 => &EntityRegistryEntry {
+19i32 => &EntityRegistryEntry {
     id: 19,
     name: "ender_dragon",
     width: 16.0,
     height: 8.0,
 },
-20 => &EntityRegistryEntry {
+20i32 => &EntityRegistryEntry {
     id: 20,
     name: "enderman",
     width: 0.6,
     height: 2.9,
 },
-21 => &EntityRegistryEntry {
+21i32 => &EntityRegistryEntry {
     id: 21,
     name: "endermite",
     width: 0.4,
     height: 0.3,
 },
-22 => &EntityRegistryEntry {
+22i32 => &EntityRegistryEntry {
     id: 22,
     name: "evoker_fangs",
     width: 0.5,
     height: 0.8,
 },
-23 => &EntityRegistryEntry {
+23i32 => &EntityRegistryEntry {
     id: 23,
     name: "evoker",
     width: 0.6,
     height: 1.95,
 },
-24 => &EntityRegistryEntry {
+24i32 => &EntityRegistryEntry {
     id: 24,
     name: "experience_orb",
     width: 0.5,
     height: 0.5,
 },
-25 => &EntityRegistryEntry {
+25i32 => &EntityRegistryEntry {
     id: 25,
     name: "eye_of_ender",
     width: 0.25,
     height: 0.25,
 },
-26 => &EntityRegistryEntry {
+26i32 => &EntityRegistryEntry {
     id: 26,
     name: "falling_block",
     width: 0.98,
     height: 0.98,
 },
-27 => &EntityRegistryEntry {
+27i32 => &EntityRegistryEntry {
     id: 27,
     name: "firework_rocket",
     width: 0.25,
     height: 0.25,
 },
-28 => &EntityRegistryEntry {
+28i32 => &EntityRegistryEntry {
     id: 28,
     name: "fox",
     width: 0.6,
     height: 0.7,
 },
-29 => &EntityRegistryEntry {
+29i32 => &EntityRegistryEntry {
     id: 29,
     name: "ghast",
     width: 4.0,
     height: 4.0,
 },
-30 => &EntityRegistryEntry {
+30i32 => &EntityRegistryEntry {
     id: 30,
     name: "giant",
     width: 3.6,
     height: 12.0,
 },
-31 => &EntityRegistryEntry {
+31i32 => &EntityRegistryEntry {
     id: 31,
     name: "guardian",
     width: 0.85,
     height: 0.85,
 },
-32 => &EntityRegistryEntry {
+32i32 => &EntityRegistryEntry {
     id: 32,
     name: "horse",
     width: 1.39648,
     height: 1.6,
 },
-33 => &EntityRegistryEntry {
+33i32 => &EntityRegistryEntry {
     id: 33,
     name: "husk",
     width: 0.6,
     height: 1.95,
 },
-34 => &EntityRegistryEntry {
+34i32 => &EntityRegistryEntry {
     id: 34,
     name: "illusioner",
     width: 0.6,
     height: 1.95,
 },
-35 => &EntityRegistryEntry {
+35i32 => &EntityRegistryEntry {
     id: 35,
     name: "item",
     width: 0.25,
     height: 0.25,
 },
-36 => &EntityRegistryEntry {
+36i32 => &EntityRegistryEntry {
     id: 36,
     name: "item_frame",
     width: 0.5,
     height: 0.5,
 },
-37 => &EntityRegistryEntry {
+37i32 => &EntityRegistryEntry {
     id: 37,
     name: "fireball",
     width: 1.0,
     height: 1.0,
 },
-38 => &EntityRegistryEntry {
+38i32 => &EntityRegistryEntry {
     id: 38,
     name: "leash_knot",
     width: 0.5,
     height: 0.5,
 },
-39 => &EntityRegistryEntry {
+39i32 => &EntityRegistryEntry {
     id: 39,
     name: "llama",
     width: 0.9,
     height: 1.87,
 },
-40 => &EntityRegistryEntry {
+40i32 => &EntityRegistryEntry {
     id: 40,
     name: "llama_spit",
     width: 0.25,
     height: 0.25,
 },
-41 => &EntityRegistryEntry {
+41i32 => &EntityRegistryEntry {
     id: 41,
     name: "magma_cube",
     width: 2.04,
     height: 2.04,
 },
-42 => &EntityRegistryEntry {
+42i32 => &EntityRegistryEntry {
     id: 42,
     name: "minecart",
     width: 0.98,
     height: 0.7,
 },
-43 => &EntityRegistryEntry {
+43i32 => &EntityRegistryEntry {
     id: 43,
     name: "chest_minecart",
     width: 0.98,
     height: 0.7,
 },
-44 => &EntityRegistryEntry {
+44i32 => &EntityRegistryEntry {
     id: 44,
     name: "command_block_minecart",
     width: 0.98,
     height: 0.7,
 },
-45 => &EntityRegistryEntry {
+45i32 => &EntityRegistryEntry {
     id: 45,
     name: "furnace_minecart",
     width: 0.98,
     height: 0.7,
 },
-46 => &EntityRegistryEntry {
+46i32 => &EntityRegistryEntry {
     id: 46,
     name: "hopper_minecart",
     width: 0.98,
     height: 0.7,
 },
-47 => &EntityRegistryEntry {
+47i32 => &EntityRegistryEntry {
     id: 47,
     name: "spawner_minecart",
     width: 0.98,
     height: 0.7,
 },
-48 => &EntityRegistryEntry {
+48i32 => &EntityRegistryEntry {
     id: 48,
     name: "tnt_minecart",
     width: 0.98,
     height: 0.7,
 },
-49 => &EntityRegistryEntry {
+49i32 => &EntityRegistryEntry {
     id: 49,
     name: "mule",
     width: 1.39648,
     height: 1.6,
 },
-50 => &EntityRegistryEntry {
+50i32 => &EntityRegistryEntry {
     id: 50,
     name: "mooshroom",
     width: 0.9,
     height: 1.4,
 },
-51 => &EntityRegistryEntry {
+51i32 => &EntityRegistryEntry {
     id: 51,
     name: "ocelot",
     width: 0.6,
     height: 0.7,
 },
-52 => &EntityRegistryEntry {
+52i32 => &EntityRegistryEntry {
     id: 52,
     name: "painting",
     width: 0.5,
     height: 0.5,
 },
-53 => &EntityRegistryEntry {
+53i32 => &EntityRegistryEntry {
     id: 53,
     name: "panda",
     width: 1.3,
     height: 1.25,
 },
-54 => &EntityRegistryEntry {
+54i32 => &EntityRegistryEntry {
     id: 54,
     name: "parrot",
     width: 0.5,
     height: 0.9,
 },
-55 => &EntityRegistryEntry {
+55i32 => &EntityRegistryEntry {
     id: 55,
     name: "pig",
     width: 0.9,
     height: 0.9,
 },
-56 => &EntityRegistryEntry {
+56i32 => &EntityRegistryEntry {
     id: 56,
     name: "pufferfish",
     width: 0.7,
     height: 0.7,
 },
-57 => &EntityRegistryEntry {
+57i32 => &EntityRegistryEntry {
     id: 57,
     name: "zombie_pigman",
     width: 0.6,
     height: 1.95,
 },
-58 => &EntityRegistryEntry {
+58i32 => &EntityRegistryEntry {
     id: 58,
     name: "polar_bear",
     width: 1.4,
     height: 1.4,
 },
-59 => &EntityRegistryEntry {
+59i32 => &EntityRegistryEntry {
     id: 59,
     name: "tnt",
     width: 0.98,
     height: 0.98,
 },
-60 => &EntityRegistryEntry {
+60i32 => &EntityRegistryEntry {
     id: 60,
     name: "rabbit",
     width: 0.4,
     height: 0.5,
 },
-61 => &EntityRegistryEntry {
+61i32 => &EntityRegistryEntry {
     id: 61,
     name: "salmon",
     width: 0.7,
     height: 0.4,
 },
-62 => &EntityRegistryEntry {
+62i32 => &EntityRegistryEntry {
     id: 62,
     name: "sheep",
     width: 0.9,
     height: 1.3,
 },
-63 => &EntityRegistryEntry {
+63i32 => &EntityRegistryEntry {
     id: 63,
     name: "shulker",
     width: 1.0,
     height: 1.0,
 },
-64 => &EntityRegistryEntry {
+64i32 => &EntityRegistryEntry {
     id: 64,
     name: "shulker_bullet",
     width: 0.3125,
     height: 0.3125,
 },
-65 => &EntityRegistryEntry {
+65i32 => &EntityRegistryEntry {
     id: 65,
     name: "silverfish",
     width: 0.4,
     height: 0.3,
 },
-66 => &EntityRegistryEntry {
+66i32 => &EntityRegistryEntry {
     id: 66,
     name: "skeleton",
     width: 0.6,
     height: 1.99,
 },
-67 => &EntityRegistryEntry {
+67i32 => &EntityRegistryEntry {
     id: 67,
     name: "skeleton_horse",
     width: 1.39648,
     height: 1.6,
 },
-68 => &EntityRegistryEntry {
+68i32 => &EntityRegistryEntry {
     id: 68,
     name: "slime",
     width: 2.04,
     height: 2.04,
 },
-69 => &EntityRegistryEntry {
+69i32 => &EntityRegistryEntry {
     id: 69,
     name: "small_fireball",
     width: 0.3125,
     height: 0.3125,
 },
-70 => &EntityRegistryEntry {
+70i32 => &EntityRegistryEntry {
     id: 70,
     name: "snow_golem",
     width: 0.7,
     height: 1.9,
 },
-71 => &EntityRegistryEntry {
+71i32 => &EntityRegistryEntry {
     id: 71,
     name: "snowball",
     width: 0.25,
     height: 0.25,
 },
-72 => &EntityRegistryEntry {
+72i32 => &EntityRegistryEntry {
     id: 72,
     name: "spectral_arrow",
     width: 0.5,
     height: 0.5,
 },
-73 => &EntityRegistryEntry {
+73i32 => &EntityRegistryEntry {
     id: 73,
     name: "spider",
     width: 1.4,
     height: 0.9,
 },
-74 => &EntityRegistryEntry {
+74i32 => &EntityRegistryEntry {
     id: 74,
     name: "squid",
     width: 0.8,
     height: 0.8,
 },
-75 => &EntityRegistryEntry {
+75i32 => &EntityRegistryEntry {
     id: 75,
     name: "stray",
     width: 0.6,
     height: 1.99,
 },
-76 => &EntityRegistryEntry {
+76i32 => &EntityRegistryEntry {
     id: 76,
     name: "trader_llama",
     width: 0.9,
     height: 1.87,
 },
-77 => &EntityRegistryEntry {
+77i32 => &EntityRegistryEntry {
     id: 77,
     name: "tropical_fish",
     width: 0.5,
     height: 0.4,
 },
-78 => &EntityRegistryEntry {
+78i32 => &EntityRegistryEntry {
     id: 78,
     name: "turtle",
     width: 1.2,
     height: 0.4,
 },
-79 => &EntityRegistryEntry {
+79i32 => &EntityRegistryEntry {
     id: 79,
     name: "egg",
     width: 0.25,
     height: 0.25,
 },
-80 => &EntityRegistryEntry {
+80i32 => &EntityRegistryEntry {
     id: 80,
     name: "ender_pearl",
     width: 0.25,
     height: 0.25,
 },
-81 => &EntityRegistryEntry {
+81i32 => &EntityRegistryEntry {
     id: 81,
     name: "experience_bottle",
     width: 0.25,
     height: 0.25,
 },
-82 => &EntityRegistryEntry {
+82i32 => &EntityRegistryEntry {
     id: 82,
     name: "potion",
     width: 0.25,
     height: 0.25,
 },
-83 => &EntityRegistryEntry {
+83i32 => &EntityRegistryEntry {
     id: 83,
     name: "trident",
     width: 0.5,
     height: 0.5,
 },
-84 => &EntityRegistryEntry {
+84i32 => &EntityRegistryEntry {
     id: 84,
     name: "vex",
     width: 0.4,
     height: 0.8,
 },
-85 => &EntityRegistryEntry {
+85i32 => &EntityRegistryEntry {
     id: 85,
     name: "villager",
     width: 0.6,
     height: 1.95,
 },
-86 => &EntityRegistryEntry {
+86i32 => &EntityRegistryEntry {
     id: 86,
     name: "iron_golem",
     width: 1.4,
     height: 2.7,
 },
-87 => &EntityRegistryEntry {
+87i32 => &EntityRegistryEntry {
     id: 87,
     name: "vindicator",
     width: 0.6,
     height: 1.95,
 },
-88 => &EntityRegistryEntry {
+88i32 => &EntityRegistryEntry {
     id: 88,
     name: "pillager",
     width: 0.6,
     height: 1.95,
 },
-89 => &EntityRegistryEntry {
+89i32 => &EntityRegistryEntry {
     id: 89,
     name: "wandering_trader",
     width: 0.6,
     height: 1.95,
 },
-90 => &EntityRegistryEntry {
+90i32 => &EntityRegistryEntry {
     id: 90,
     name: "witch",
     width: 0.6,
     height: 1.95,
 },
-91 => &EntityRegistryEntry {
+91i32 => &EntityRegistryEntry {
     id: 91,
     name: "wither",
     width: 0.9,
     height: 3.5,
 },
-92 => &EntityRegistryEntry {
+92i32 => &EntityRegistryEntry {
     id: 92,
     name: "wither_skeleton",
     width: 0.7,
     height: 2.4,
 },
-93 => &EntityRegistryEntry {
+93i32 => &EntityRegistryEntry {
     id: 93,
     name: "wither_skull",
     width: 0.3125,
     height: 0.3125,
 },
-94 => &EntityRegistryEntry {
+94i32 => &EntityRegistryEntry {
     id: 94,
     name: "wolf",
     width: 0.6,
     height: 0.85,
 },
-95 => &EntityRegistryEntry {
+95i32 => &EntityRegistryEntry {
     id: 95,
     name: "zombie",
     width: 0.6,
     height: 1.95,
 },
-96 => &EntityRegistryEntry {
+96i32 => &EntityRegistryEntry {
     id: 96,
     name: "zombie_horse",
     width: 1.39648,
     height: 1.6,
 },
-97 => &EntityRegistryEntry {
+97i32 => &EntityRegistryEntry {
     id: 97,
     name: "zombie_villager",
     width: 0.6,
     height: 1.95,
 },
-98 => &EntityRegistryEntry {
+98i32 => &EntityRegistryEntry {
     id: 98,
     name: "phantom",
     width: 0.9,
     height: 0.5,
 },
-99 => &EntityRegistryEntry {
+99i32 => &EntityRegistryEntry {
     id: 99,
     name: "ravager",
     width: 1.95,
     height: 2.2,
 },
-100 => &EntityRegistryEntry {
+100i32 => &EntityRegistryEntry {
     id: 100,
     name: "lightning_bolt",
     width: 0.0,
     height: 0.0,
 },
-101 => &EntityRegistryEntry {
+101i32 => &EntityRegistryEntry {
     id: 101,
     name: "player",
     width: 0.6,
     height: 1.8,
 },
-102 => &EntityRegistryEntry {
+102i32 => &EntityRegistryEntry {
     id: 102,
     name: "fishing_bobber",
     width: 0.25,

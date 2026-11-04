@@ -4,7 +4,7 @@
 
 //! Credits screen rendering and tick logic ported from vanilla Minecraft.
 
-use crate::gui::gui::Gui;
+use crate::gui::Gui;
 
 /// Split text into lines on `\r\n`, `\n` or `\r`, matching the JavaScript
 /// `text.split(/\r?\n/)` used by the credits loader.

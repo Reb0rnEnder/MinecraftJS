@@ -95,7 +95,7 @@ static ENTITY_REGISTRY_1152: phf::Map<&'static str, &'static [f64; 3]> = phf::ph
     "vex" => &[0.4, 0.8, 0.0],
     "villager" => &[0.6, 1.95, 0.0],
     "iron_golem" => &[1.4, 2.7, 0.0],
-    ("vindicator", &[0.6, 1.95, 0.0]), // truncated from original, full data would continue
+    "vindicator" => &[0.6, 1.95, 0.0], // truncated from original, full data would continue
 };
 
 // MOB_FAMILIES: numeric family IDs for entity rendering.
@@ -186,7 +186,7 @@ static ZOMBIES: phf::Map<&'static str, bool> = phf::phf_map! {
     "zombie" => &true,
     "husk" => &true,
     "zombie_villager" => &true,
-    ("drowned", &true), // drowned are zombies in water
+    "drowned" => &true, // drowned are zombies in water
 };
 
 static FISH: phf::Map<&'static str, bool> = phf::phf_map! {

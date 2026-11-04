@@ -2,7 +2,7 @@
 //! Jigsaw screen for setting target pool, attachment type, and final state.
 
 use crate::i18n::tr;
-use crate::gui::{Button, Screen, TextField};
+use crate::screens::manager::Screen;`nuse crate::widgets::{Button, TextField};
 use crate::net::packets;
 use crate::util::regex::resource;
 

@@ -13,7 +13,6 @@ use crate::packets::{decodePacket, PROTOCOL_VERSION};
 use crate::net::address::parseAddress;
 
 // Events emitted by the Connection.
-#[wasm_bindgen]
 pub enum ConnectionEvent {
     Close,
     Control(js_sys::Object),

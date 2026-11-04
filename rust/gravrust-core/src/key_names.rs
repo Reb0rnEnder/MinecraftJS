@@ -53,36 +53,52 @@ static NAMES: phf::Map<&'static str, &'static str> = phf::phf_map! {
 
 /// Port of the `keyName` function from `client/js/game/key-names.js`.
 /// Translates a key code string into a human-readable name.
-pub fn key_name(code: &str) -> &str {
+pub fn key_name(code: &str) -> String {
+    // JS: `if(!code)return tr('key.keyboard.unknown');`
+    if code.is_empty() {
+        return crate::i18n::tr("key.keyboard.unknown");
+    }
     if code.starts_with("mouse") {
-        let n = match code[5..].parse::<usize>() {
-            Ok(n) => n,
-            Err(_) => return code,
+        // JS: `const n=Number(code.slice(5)),name=['left','middle','right'][n]||String(n+1);`
+        let n: usize = code[5..].parse().unwrap_or(usize::MAX);
+        let name = match ["left", "middle", "right"].get(n) {
+            Some(s) => s.to_string(),
+            None => (n.wrapping_add(1)).to_string(),
         };
-        let name = ["left", "middle", "right"].get(n).unwrap_or(&(n + 1).to_string());
+        // JS: `return n < 3 ? tr('key.mouse.'+name) : tr('key.mouse', n+1);`
         if n < 3 {
-            return &format!("key.mouse.{}", name);
+            return crate::i18n::tr(&format!("key.mouse.{}", name));
         }
-        return &format!("key.mouse", n + 1);
+        return crate::i18n::tr_args("key.mouse", &[(n.wrapping_add(1)).to_string()]);
     }
     // GLFW supplies printable key names directly; the language file has no a-z/0-9 entries.
-    if code.starts_with("Key") && code.len() > 3 {
-        return &code[3..].to_lowercase();
+    // JS: `if(/^Key[A-Z]$/.test(code))return code.slice(3).toLowerCase();` (raw, not tr'd)
+    if code.len() == 4 && code.starts_with("Key") {
+        return code[3..].to_lowercase();
     }
-    if code.starts_with("Digit") && code.len() > 5 {
-        return &code[5..];
+    // JS: `if(/^Digit[0-9]$/.test(code))return code.slice(5);` (raw)
+    if code.len() == 6 && code.starts_with("Digit") {
+        return code[5..].to_string();
     }
-    let name = NAMES.get(code);
-    if let Some(n) = name {
-        return n;
+    // JS: `const name=NAMES[code] || (/^Numpad[0-9]$/.test(code)?'keypad.'+code.slice(6)
+    //        :/^F\d+$/.test(code)?code.toLowerCase():null);`
+    let name = match NAMES.get(code) {
+        Some(n) => Some(n.to_string()),
+        None => {
+            if code.len() == 7 && code.starts_with("Numpad") {
+                Some(format!("keypad.{}", &code[6..]))
+            } else if code.len() > 1 && code.starts_with('F') && code[1..].chars().all(|c| c.is_ascii_digit()) {
+                Some(code.to_lowercase())
+            } else {
+                None
+            }
+        }
+    };
+    // JS: `return name?tr('key.keyboard.'+name):code;`
+    match name {
+        Some(n) => crate::i18n::tr(&format!("key.keyboard.{}", n)),
+        None => code.to_string(),
     }
-    if code.starts_with("Numpad") && code.len() > 6 {
-        return &format!("keypad.{}", &code[6..]);
-    }
-    if code.starts_with("F") && code.len() > 1 {
-        return &code.to_lowercase();
-    }
-    code
 }
 
 #[cfg(test)]

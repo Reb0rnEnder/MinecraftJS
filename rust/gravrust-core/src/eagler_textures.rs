@@ -107,6 +107,7 @@ struct PresetTexture {
     texture: wasm_bindgen::JsValue,
 }
 
+#[wasm_bindgen]
 impl EaglerTextures {
     /// Create a new EaglerTextures instance
     #[wasm_bindgen(constructor)]

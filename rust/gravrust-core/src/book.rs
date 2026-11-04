@@ -71,7 +71,7 @@ pub fn set_title(state: &mut BookState, title: String) {
 }
 
 /// Returns whether the book has any pages.
-pub fn has_pages(state: &const BookState) -> bool {
+pub fn has_pages(state: &BookState) -> bool {
     !state.pages.is_empty()
 }
 

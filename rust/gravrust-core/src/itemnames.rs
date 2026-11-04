@@ -83,349 +83,83 @@ type VariantFunc = Box<dyn Fn(u32) -> String>;
 
 /// VARIANTS: item ID -> function that generates translation key from meta.
 /// Ported from the JS VARIANTS constant.
-static VARIANTS: phf::Map<u32, VariantFunc> = {
-    use phf::phf_map;
-    phf::phf_map! {
-        1 => Box::new(|m| format!("tile.stone.{}", match m {
-            0 => "stone",
-            1 => "granite",
-            2 => "graniteSmooth",
-            3 => "diorite",
-            4 => "dioriteSmooth",
-            5 => "andesite",
-            6 => "andesiteSmooth",
-            _ => "stone",
-        })),
-        3 => Box::new(|m| format!("tile.dirt.{}", match m {
-            0 => "default",
-            1 => "coarse",
-            2 => "podzol",
-            _ => "default",
-        })),
-        5 => Box::new(|m| format!("tile.wood.{}", match m & 7 {
-            0 => "oak",
-            1 => "spruce",
-            2 => "birch",
-            3 => "jungle",
-            4 => "acacia",
-            5 => "big_oak",
-            _ => "oak",
-        })),
-        6 => Box::new(|m| format!("tile.sapling.{}", match m & 7 {
-            0 => "oak",
-            1 => "spruce",
-            2 => "birch",
-            3 => "jungle",
-            4 => "acacia",
-            5 => "big_oak",
-            6 => "big_oak",
-            7 => "big_oak",
-        })),
-        12 => Box::new(|m| format!("tile.sand.{}", if m == 1 { "red" } else { "default" })),
-        17 => Box::new(|m| format!("tile.log.{}", WOOD_TYPES[m & 3])),
-        18 => Box::new(|m| format!("tile.leaves.{}", WOOD_TYPES[m & 3])),
-        19 => Box::new(|m| {
-            let s = match m {
-                0 => "wet",
-                _ => "dry",
-            };
-            format!("tile.sponge.{}", s)
-        }),
-        24 => Box::new(|m| format!("tile.sandStone.{}", match m {
-            0 => "default",
-            1 => "chiseled",
-            2 => "smooth",
-            _ => "default",
-        })),
-        31 => Box::new(|m| format!("tile.tallgrass.{}", match m {
-            0 => "shrub",
-            1 => "grass",
-            2 => "fern",
-            _ => "grass",
-        })),
-        35 => Box::new(|m| format!("tile.cloth.{}", match m & 15 {
-            0 => "white",
-            1 => "orange",
-            2 => "magenta",
-            3 => "light_blue",
-            4 => "yellow",
-            5 => "lime",
-            6 => "pink",
-            7 => "gray",
-            8 => "light_gray",
-            9 => "cyan",
-            10 => "purple",
-            11 => "blue",
-            12 => "brown",
-            13 => "green",
-            14 => "red",
-            15 => "black",
-        })),
-        37 => Box::new(|_| "tile.flower1.dandelion".to_string()),
-        38 => Box::new(|m| {
-            let names = [
-                "poppy", "blueOrchid", "allium", "houstonia", "tulipRed",
-                "tulipOrange", "tulipWhite", "tulipPink", "oxeyeDaisy",
-            ];
-            let idx = m % names.len();
-            format!("tile.flower2.{}", names[idx])
-        }),
-        39 => Box::new(|_| "tile.mushroom".to_string()),
-        40 => Box::new(|_| "tile.mushroom".to_string()),
-        43 => Box::new(|m| format!("tile.stoneSlab.{}", match m & 7 {
-            0 => "stone",
-            1 => "sand",
-            2 => "wood",
-            3 => "cobble",
-            4 => "brick",
-            5 => "smoothStoneBrick",
-            6 => "netherBrick",
-            7 => "quartz",
-        })),
-        44 => Box::new(|m| format!("tile.stoneSlab.{}", match m & 7 {
-            0 => "stone",
-            1 => "sand",
-            2 => "wood",
-            3 => "cobble",
-            4 => "brick",
-            5 => "smoothStoneBrick",
-            6 => "netherBrick",
-            7 => "quartz",
-        })),
-        77 => Box::new(|_| "tile.button".to_string()),
-        143 => Box::new(|_| "tile.button".to_string()),
-        78 => Box::new(|_| "tile.snow".to_string()),
-        85 => Box::new(|_| "tile.fence".to_string()),
-        95 => Box::new(|m| format!("tile.stainedGlass.{}", match m & 15 {
-            0 => "white",
-            1 => "orange",
-            2 => "magenta",
-            3 => "light_blue",
-            4 => "yellow",
-            5 => "lime",
-            6 => "pink",
-            7 => "gray",
-            8 => "light_gray",
-            9 => "cyan",
-            10 => "purple",
-            11 => "blue",
-            12 => "brown",
-            13 => "green",
-            14 => "red",
-            15 => "black",
-        })),
-        96 => Box::new(|_| "tile.trapdoor".to_string()),
-        97 => Box::new(|m| format!("tile.monsterStoneEgg.{}", match m {
-            0 => "stone",
-            1 => "cobble",
-            2 => "brick",
-            3 => "mossybrick",
-            4 => "crackedbrick",
-            5 => "chiseledbrick",
-            _ => "stone",
-        })),
-        98 => Box::new(|m| format!("tile.stonebricksmooth.{}", match m {
-            0 => "default",
-            1 => "mossy",
-            2 => "cracked",
-            3 => "chiseled",
-            _ => "default",
-        })),
-        99 => Box::new(|_| "tile.mushroom".to_string()),
-        100 => Box::new(|_| "tile.mushroom".to_string()),
-        107 => Box::new(|_| "tile.fenceGate".to_string()),
-        120 => Box::new(|_| "tile.endPortalFrame".to_string()),
-        123 => Box::new(|_| "tile.redstoneLight".to_string()),
-        125 => Box::new(|m| format!("tile.woodSlab.{}", match m & 7 {
-            0 => "oak",
-            1 => "spruce",
-            2 => "birch",
-            3 => "jungle",
-            4 => "acacia",
-            5 => "big_oak",
-            6 => "big_oak",
-            7 => "big_oak",
-        })),
-        126 => Box::new(|m| format!("tile.woodSlab.{}", match m & 7 {
-            0 => "oak",
-            1 => "spruce",
-            2 => "birch",
-            3 => "jungle",
-            4 => "acacia",
-            5 => "big_oak",
-            6 => "big_oak",
-            7 => "big_oak",
-        })),
-        139 => Box::new(|m| format!("tile.cobbleWall.{}", if m == 1 { "mossy" } else { "normal" })),
-        145 => Box::new(|m| format!("tile.anvil.{}", match m >> 2 {
-            0 => "intact",
-            1 => "slightlyDamaged",
-            2 => "veryDamaged",
-            _ => "intact",
-        })),
-        151 => Box::new(|_| "tile.daylightDetector".to_string()),
-        155 => Box::new(|m| format!("tile.quartzBlock.{}", match std::cmp::min(m, 2) {
-            0 => "default",
-            1 => "chiseled",
-            2 => "lines",
-        })),
-        159 => Box::new(|m| format!("tile.clayHardenedStained.{}", match m & 15 {
-            0 => "white",
-            1 => "orange",
-            2 => "magenta",
-            3 => "light_blue",
-            4 => "yellow",
-            5 => "lime",
-            6 => "pink",
-            7 => "gray",
-            8 => "light_gray",
-            9 => "cyan",
-            10 => "purple",
-            11 => "blue",
-            12 => "brown",
-            13 => "green",
-            14 => "red",
-            15 => "black",
-        })),
-        160 => Box::new(|m| format!("tile.thinStainedGlass.{}", match m & 15 {
-            0 => "white",
-            1 => "orange",
-            2 => "magenta",
-            3 => "light_blue",
-            4 => "yellow",
-            5 => "lime",
-            6 => "pink",
-            7 => "gray",
-            8 => "light_gray",
-            9 => "cyan",
-            10 => "purple",
-            11 => "blue",
-            12 => "brown",
-            13 => "green",
-            14 => "red",
-            15 => "black",
-        })),
-        161 => Box::new(|m| format!("tile.leaves.{}", WOOD_TYPES[4 + (m & 1)])),
-        162 => Box::new(|m| format!("tile.log.{}", WOOD_TYPES[4 + (m & 1)])),
-        168 => Box::new(|m| format!("tile.prismarine.{}", match m {
-            0 => "rough",
-            1 => "bricks",
-            2 => "dark",
-            _ => "rough",
-        })),
-        171 => Box::new(|m| format!("tile.woolCarpet.{}", match m & 15 {
-            0 => "white",
-            1 => "orange",
-            2 => "magenta",
-            3 => "light_blue",
-            4 => "yellow",
-            5 => "lime",
-            6 => "pink",
-            7 => "gray",
-            8 => "light_gray",
-            9 => "cyan",
-            10 => "purple",
-            11 => "blue",
-            12 => "brown",
-            13 => "green",
-            14 => "red",
-            15 => "black",
-        })),
-        175 => Box::new(|m| format!("tile.doublePlant.{}", match m & 7 {
-            0 => "sunflower",
-            1 => "syringa",
-            2 => "grass",
-            3 => "fern",
-            4 => "rose",
-            5 => "paeonia",
-            _ => "sunflower",
-        })),
-        179 => Box::new(|m| format!("tile.redSandStone.{}", match m {
-            0 => "default",
-            1 => "chiseled",
-            2 => "smooth",
-            _ => "default",
-        })),
-        181 => Box::new(|_| "tile.stoneSlab2.red_sandstone".to_string()),
-        182 => Box::new(|_| "tile.stoneSlab2.red_sandstone".to_string()),
-        263 => Box::new(|m| {
-            if m == 1 { "item.charcoal".to_string() } else { "item.coal".to_string() }
-        }),
-        322 => Box::new(|_| "item.appleGold".to_string()),
-        338 => Box::new(|_| "item.reeds".to_string()),
-        349 => Box::new(|m| format!("item.fish.{}.raw", match m {
-            0 => "cod",
-            1 => "salmon",
-            2 => "clownfish",
-            3 => "pufferfish",
-            _ => "cod",
-        })),
-        350 => Box::new(|m| format!("item.fish.{}.cooked", match m {
-            0 => "cod",
-            1 => "salmon",
-            _ => "cod",
-        })),
-        351 => Box::new(|m| format!("item.dyePowder.{}", match 15 - (m & 15) {
-            0 => "white",
-            1 => "orange",
-            2 => "magenta",
-            3 => "light_blue",
-            4 => "yellow",
-            5 => "lime",
-            6 => "pink",
-            7 => "gray",
-            8 => "light_gray",
-            9 => "cyan",
-            10 => "purple",
-            11 => "blue",
-            12 => "brown",
-            13 => "green",
-            14 => "red",
-            15 => "black",
-        })),
-        397 => Box::new(|m| format!("item.skull.{}", match m {
-            0 => "skeleton",
-            1 => "wither",
-            2 => "zombie",
-            3 => "char",
-            4 => "creeper",
-            _ => "skeleton",
-        })),
-        425 => Box::new(|m| format!("item.banner.{}", match 15 - (m & 15) {
-            0 => "white",
-            1 => "orange",
-            2 => "magenta",
-            3 => "light_blue",
-            4 => "yellow",
-            5 => "lime",
-            6 => "pink",
-            7 => "gray",
-            8 => "light_gray",
-            9 => "cyan",
-            10 => "purple",
-            11 => "blue",
-            12 => "brown",
-            13 => "green",
-            14 => "red",
-            15 => "black",
-        })),
-    }
-};
+///
+/// phf cannot hold heap-allocated closures in a static initializer, so the
+/// map is built once at runtime instead (same keys, same functions).
+static VARIANTS: std::sync::LazyLock<std::collections::HashMap<u32, VariantFunc>> =
+    std::sync::LazyLock::new(|| {
+        let mut m: std::collections::HashMap<u32, VariantFunc> = std::collections::HashMap::new();
+        m.insert(1u32, Box::new(|m| format!("tile.stone.{}", match m { 0 => "stone", 1 => "granite", 2 => "graniteSmooth", 3 => "diorite", 4 => "dioriteSmooth", 5 => "andesite", 6 => "andesiteSmooth", _ => "stone", })));
+        m.insert(3u32, Box::new(|m| format!("tile.dirt.{}", match m { 0 => "default", 1 => "coarse", 2 => "podzol", _ => "default", })));
+        m.insert(5u32, Box::new(|m| format!("tile.wood.{}", match m & 7 { 0 => "oak", 1 => "spruce", 2 => "birch", 3 => "jungle", 4 => "acacia", 5 => "big_oak", _ => "oak", })));
+        m.insert(6u32, Box::new(|m| format!("tile.sapling.{}", match m & 7 { 0 => "oak", 1 => "spruce", 2 => "birch", 3 => "jungle", 4 => "acacia", 5 => "big_oak", 6 => "big_oak", 7 => "big_oak", })));
+        m.insert(12u32, Box::new(|m| format!("tile.sand.{}", if m == 1 { "red" } else { "default" })));
+        m.insert(17u32, Box::new(|m| format!("tile.log.{}", WOOD_TYPES[m & 3])));
+        m.insert(18u32, Box::new(|m| format!("tile.leaves.{}", WOOD_TYPES[m & 3])));
+        m.insert(19u32, Box::new(|m| { let s = match m { 0 => "wet", _ => "dry", }; format!("tile.sponge.{}", s) }));
+        m.insert(24u32, Box::new(|m| format!("tile.sandStone.{}", match m { 0 => "default", 1 => "chiseled", 2 => "smooth", _ => "default", })));
+        m.insert(31u32, Box::new(|m| format!("tile.tallgrass.{}", match m { 0 => "shrub", 1 => "grass", 2 => "fern", _ => "grass", })));
+        m.insert(35u32, Box::new(|m| format!("tile.cloth.{}", match m & 15 { 0 => "white", 1 => "orange", 2 => "magenta", 3 => "light_blue", 4 => "yellow", 5 => "lime", 6 => "pink", 7 => "gray", 8 => "light_gray", 9 => "cyan", 10 => "purple", 11 => "blue", 12 => "brown", 13 => "green", 14 => "red", 15 => "black", })));
+        m.insert(37u32, Box::new(|_| "tile.flower1.dandelion".to_string()));
+        m.insert(38u32, Box::new(|m| { let names = [ "poppy", "blueOrchid", "allium", "houstonia", "tulipRed", "tulipOrange", "tulipWhite", "tulipPink", "oxeyeDaisy", ]; let idx = m % names.len(); format!("tile.flower2.{}", names[idx]) }));
+        m.insert(39u32, Box::new(|_| "tile.mushroom".to_string()));
+        m.insert(40u32, Box::new(|_| "tile.mushroom".to_string()));
+        m.insert(43u32, Box::new(|m| format!("tile.stoneSlab.{}", match m & 7 { 0 => "stone", 1 => "sand", 2 => "wood", 3 => "cobble", 4 => "brick", 5 => "smoothStoneBrick", 6 => "netherBrick", 7 => "quartz", })));
+        m.insert(44u32, Box::new(|m| format!("tile.stoneSlab.{}", match m & 7 { 0 => "stone", 1 => "sand", 2 => "wood", 3 => "cobble", 4 => "brick", 5 => "smoothStoneBrick", 6 => "netherBrick", 7 => "quartz", })));
+        m.insert(77u32, Box::new(|_| "tile.button".to_string()));
+        m.insert(143u32, Box::new(|_| "tile.button".to_string()));
+        m.insert(78u32, Box::new(|_| "tile.snow".to_string()));
+        m.insert(85u32, Box::new(|_| "tile.fence".to_string()));
+        m.insert(95u32, Box::new(|m| format!("tile.stainedGlass.{}", match m & 15 { 0 => "white", 1 => "orange", 2 => "magenta", 3 => "light_blue", 4 => "yellow", 5 => "lime", 6 => "pink", 7 => "gray", 8 => "light_gray", 9 => "cyan", 10 => "purple", 11 => "blue", 12 => "brown", 13 => "green", 14 => "red", 15 => "black", })));
+        m.insert(96u32, Box::new(|_| "tile.trapdoor".to_string()));
+        m.insert(97u32, Box::new(|m| format!("tile.monsterStoneEgg.{}", match m { 0 => "stone", 1 => "cobble", 2 => "brick", 3 => "mossybrick", 4 => "crackedbrick", 5 => "chiseledbrick", _ => "stone", })));
+        m.insert(98u32, Box::new(|m| format!("tile.stonebricksmooth.{}", match m { 0 => "default", 1 => "mossy", 2 => "cracked", 3 => "chiseled", _ => "default", })));
+        m.insert(99u32, Box::new(|_| "tile.mushroom".to_string()));
+        m.insert(100u32, Box::new(|_| "tile.mushroom".to_string()));
+        m.insert(107u32, Box::new(|_| "tile.fenceGate".to_string()));
+        m.insert(120u32, Box::new(|_| "tile.endPortalFrame".to_string()));
+        m.insert(123u32, Box::new(|_| "tile.redstoneLight".to_string()));
+        m.insert(125u32, Box::new(|m| format!("tile.woodSlab.{}", match m & 7 { 0 => "oak", 1 => "spruce", 2 => "birch", 3 => "jungle", 4 => "acacia", 5 => "big_oak", 6 => "big_oak", 7 => "big_oak", })));
+        m.insert(126u32, Box::new(|m| format!("tile.woodSlab.{}", match m & 7 { 0 => "oak", 1 => "spruce", 2 => "birch", 3 => "jungle", 4 => "acacia", 5 => "big_oak", 6 => "big_oak", 7 => "big_oak", })));
+        m.insert(139u32, Box::new(|m| format!("tile.cobbleWall.{}", if m == 1 { "mossy" } else { "normal" })));
+        m.insert(145u32, Box::new(|m| format!("tile.anvil.{}", match m >> 2 { 0 => "intact", 1 => "slightlyDamaged", 2 => "veryDamaged", _ => "intact", })));
+        m.insert(151u32, Box::new(|_| "tile.daylightDetector".to_string()));
+        m.insert(155u32, Box::new(|m| format!("tile.quartzBlock.{}", match std::cmp::min(m, 2) { 0 => "default", 1 => "chiseled", 2 => "lines", })));
+        m.insert(159u32, Box::new(|m| format!("tile.clayHardenedStained.{}", match m & 15 { 0 => "white", 1 => "orange", 2 => "magenta", 3 => "light_blue", 4 => "yellow", 5 => "lime", 6 => "pink", 7 => "gray", 8 => "light_gray", 9 => "cyan", 10 => "purple", 11 => "blue", 12 => "brown", 13 => "green", 14 => "red", 15 => "black", })));
+        m.insert(160u32, Box::new(|m| format!("tile.thinStainedGlass.{}", match m & 15 { 0 => "white", 1 => "orange", 2 => "magenta", 3 => "light_blue", 4 => "yellow", 5 => "lime", 6 => "pink", 7 => "gray", 8 => "light_gray", 9 => "cyan", 10 => "purple", 11 => "blue", 12 => "brown", 13 => "green", 14 => "red", 15 => "black", })));
+        m.insert(161u32, Box::new(|m| format!("tile.leaves.{}", WOOD_TYPES[4 + (m & 1)])));
+        m.insert(162u32, Box::new(|m| format!("tile.log.{}", WOOD_TYPES[4 + (m & 1)])));
+        m.insert(168u32, Box::new(|m| format!("tile.prismarine.{}", match m { 0 => "rough", 1 => "bricks", 2 => "dark", _ => "rough", })));
+        m.insert(171u32, Box::new(|m| format!("tile.woolCarpet.{}", match m & 15 { 0 => "white", 1 => "orange", 2 => "magenta", 3 => "light_blue", 4 => "yellow", 5 => "lime", 6 => "pink", 7 => "gray", 8 => "light_gray", 9 => "cyan", 10 => "purple", 11 => "blue", 12 => "brown", 13 => "green", 14 => "red", 15 => "black", })));
+        m.insert(175u32, Box::new(|m| format!("tile.doublePlant.{}", match m & 7 { 0 => "sunflower", 1 => "syringa", 2 => "grass", 3 => "fern", 4 => "rose", 5 => "paeonia", _ => "sunflower", })));
+        m.insert(179u32, Box::new(|m| format!("tile.redSandStone.{}", match m { 0 => "default", 1 => "chiseled", 2 => "smooth", _ => "default", })));
+        m.insert(181u32, Box::new(|_| "tile.stoneSlab2.red_sandstone".to_string()));
+        m.insert(182u32, Box::new(|_| "tile.stoneSlab2.red_sandstone".to_string()));
+        m.insert(263u32, Box::new(|m| { if m == 1 { "item.charcoal".to_string() } else { "item.coal".to_string() } }));
+        m.insert(322u32, Box::new(|_| "item.appleGold".to_string()));
+        m.insert(338u32, Box::new(|_| "item.reeds".to_string()));
+        m.insert(349u32, Box::new(|m| format!("item.fish.{}.raw", match m { 0 => "cod", 1 => "salmon", 2 => "clownfish", 3 => "pufferfish", _ => "cod", })));
+        m.insert(350u32, Box::new(|m| format!("item.fish.{}.cooked", match m { 0 => "cod", 1 => "salmon", _ => "cod", })));
+        m.insert(351u32, Box::new(|m| format!("item.dyePowder.{}", match 15 - (m & 15) { 0 => "white", 1 => "orange", 2 => "magenta", 3 => "light_blue", 4 => "yellow", 5 => "lime", 6 => "pink", 7 => "gray", 8 => "light_gray", 9 => "cyan", 10 => "purple", 11 => "blue", 12 => "brown", 13 => "green", 14 => "red", 15 => "black", })));
+        m.insert(397u32, Box::new(|m| format!("item.skull.{}", match m { 0 => "skeleton", 1 => "wither", 2 => "zombie", 3 => "char", 4 => "creeper", _ => "skeleton", })));
+        m.insert(425u32, Box::new(|m| format!("item.banner.{}", match 15 - (m & 15) { 0 => "white", 1 => "orange", 2 => "magenta", 3 => "light_blue", 4 => "yellow", 5 => "lime", 6 => "pink", 7 => "gray", 8 => "light_gray", 9 => "cyan", 10 => "purple", 11 => "blue", 12 => "brown", 13 => "green", 14 => "red", 15 => "black", })));
+        m
+    });
 
 /// Records map: item ID -> record name prefix.
 static RECORDS: phf::Map<u32, &str> = phf::phf_map! {
-    2256 => "13",
-    2257 => "cat",
-    2258 => "blocks",
-    2259 => "chirp",
-    2260 => "far",
-    2261 => "mall",
-    2262 => "mellohi",
-    2263 => "stal",
-    2264 => "strad",
-    2265 => "ward",
-    2266 => "11",
-    2267 => "wait",
+    2256u32 => "13",
+    2257u32 => "cat",
+    2258u32 => "blocks",
+    2259u32 => "chirp",
+    2260u32 => "far",
+    2261u32 => "mall",
+    2262u32 => "mellohi",
+    2263u32 => "stal",
+    2264u32 => "strad",
+    2265u32 => "ward",
+    2266u32 => "11",
+    2267u32 => "wait",
 };
 
 /// Asset trait for looking up translations.
@@ -478,7 +212,7 @@ impl ItemNames {
             return self._rev.as_ref().unwrap();
         }
         let en = self.assets.lang_en();
-        let mut rev = phf::phf_map!();
+        let mut rev: std::collections::HashMap<String, Vec<String>> = std::collections::HashMap::new();
         for (k, val) in en.iter() {
             if !k.starts_with("tile.") && !k.starts_with("item.") {
                 continue;
