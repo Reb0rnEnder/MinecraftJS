@@ -10,7 +10,7 @@
 use serde_json::Value;
 
 /// The native entity metadata indices for Minecraft 1.15.2, extracted from
-//! the JavaScript port. Structure: { entity_type: { field_id: value, ... }, ... }
+/// the JavaScript port. Structure: `{ entity_type: { field_id: value, ... }, ... }`
 pub static NATIVE_METADATA: std::sync::LazyLock<Value> = std::sync::LazyLock::new(|| serde_json::json!({
     "player": {
         "DATA_PLAYER_ABSORPTION_ID": 14,

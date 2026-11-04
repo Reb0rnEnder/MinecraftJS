@@ -90,8 +90,9 @@ pub fn decode_chunk_data_498(
         for i in 0..longs_count {
             let lo = r.read_i32()?;
             let hi = r.read_i32()?;
-            words[i * 2 + 1] = lo >>> 0;
-            words[i * 2] = hi >>> 0;
+            // JS: `lo >>> 0` reinterprets a signed 32-bit value as unsigned.
+            words[i * 2 + 1] = lo as u32;
+            words[i * 2] = hi as u32;
         }
 
         let mut blocks = vec![0u32; 4096];

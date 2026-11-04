@@ -4,7 +4,7 @@
 use phf::phf_map;
 use std::fmt;
 
-//! Entity registry entry for 1.14.4.
+// Entity registry entry for 1.14.4.
 #[derive(Debug, Clone, PartialEq)]
 pub struct EntityRegistryEntry {
     /// The numeric registry index (matches position in the full registry).
@@ -27,11 +27,11 @@ impl fmt::Display for EntityRegistryEntry {
     }
 }
 
-//! The full 1.14.4 entity registry, ported from `client/js/game/EntityRegistry-1.14.4.js`.
-//!
-//! This static array contains all entity type entries for Minecraft 1.14.4.
-//! The ordering and values match the JavaScript original generated from
-//! `client/data/entities.json` (1.14.4 baseline).
+// The full 1.14.4 entity registry, ported from `client/js/game/EntityRegistry-1.14.4.js`.
+//
+// This static array contains all entity type entries for Minecraft 1.14.4.
+// The ordering and values match the JavaScript original generated from
+// `client/data/entities.json` (1.14.4 baseline).
 
 /// Map of entity names to their registry entries, built from the registry below.
 pub static ENTITY_REGISTRY_MAP: phf::Map<&'static str, &'static EntityRegistryEntry> = {

@@ -92,7 +92,7 @@ fn selector_options(value: &str) -> Option<Map<String, Vec<String>>> {
         if key == "sort" && !["nearest", "furthest", "random", "arbitrary"].contains(&v) { return None; }
         if key == "gamemode" {
             let vm = v.trim_start_matches('!');
-            !["survival", "creative", "adventure", "spectator"].contains(&vm) { return None; }
+            if !["survival", "creative", "adventure", "spectator"].contains(&vm) { return None; }
         }
         options.entry(key.to_string()).or_default().push(v.to_string());
     }

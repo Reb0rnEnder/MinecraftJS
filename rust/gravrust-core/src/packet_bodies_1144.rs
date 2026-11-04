@@ -69,9 +69,9 @@ fn read_slot(reader: &mut PacketReader) -> crate::inventory::Slot {
 }
 
 /// Packet bodies for protocol 498 (Minecraft 1.14.4).
-//!
-//! Mirrors the `PACKET_BODIES_498` object from `client/js/net/packet-bodies-1.14.4.js`.
-//! Each function takes a `PacketReader` and returns a packet struct.
+//
+// Mirrors the `PACKET_BODIES_498` object from `client/js/net/packet-bodies-1.14.4.js`.
+// Each function takes a `PacketReader` and returns a packet struct.
 
 /// Spawn an experience orb entity.
 pub fn spawn_entity_experience_orb(reader: &mut PacketReader) -> crate::entities::SpawnEntityExperienceOrb {

@@ -11,7 +11,8 @@ fn clone_recipe_data(data: &Option<serde_json::Value>) -> Option<serde_json::Val
 pub struct ServerRecipe {
     pub id: String,
     pub name: String,
-    pub type: String,
+    /// JS: `record.type` — `type` is a Rust keyword, so the field is raw-named.
+    pub r#type: String,
     pub group: String,
     pub result: Option<serde_json::Value>,
     pub shaped: bool,
@@ -81,7 +82,7 @@ pub fn server_recipe(record: &serde_json::Value) -> Option<ServerRecipe> {
     Some(ServerRecipe {
         id: record.get("recipeId")?.as_str()?.to_string(),
         name: record.get("recipeId")?.as_str()?.to_string(),
-        type: type_val,
+        r#type: type_val,
         group: d.get("group")?.as_str()?.unwrap_or("").to_string(),
         result,
         shaped,
@@ -106,7 +107,7 @@ pub fn server_craft_result(grid: &[IngredientCell], n: i32, recipes: &[ServerRec
         return None;
     }
     for r in recipes {
-        let kind = r.type.as_str();
+        let kind = r.r#type.as_str();
         if kind != "crafting_shaped" && kind != "crafting_shapeless" {
             continue;
         }

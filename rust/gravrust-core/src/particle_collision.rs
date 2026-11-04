@@ -49,12 +49,12 @@ pub fn move_particle(p: &mut Particle, world: &dyn WorldContext) {
         bb[4] += y;
     }
     for b in &boxes {
-        x = calc_x_offset(box, &bb, x);
+        x = calc_x_offset(b, &bb, x);
         bb[0] += x;
         bb[3] += x;
     }
-    for box in &boxes {
-        z = calc_z_offset(box, &bb, z);
+    for b in &boxes {
+        z = calc_z_offset(b, &bb, z);
         bb[2] += z;
         bb[5] += z;
     }

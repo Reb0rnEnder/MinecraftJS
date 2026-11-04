@@ -37,7 +37,7 @@ pub fn sign_text_color(color: u32) -> u32 {
 // ------------------------------------------------------------ Dye Color Mapping
 
 /// Map dye color name to ARGB value.
-//! Port of the DyeColor enum and mapping from itemnames.rs/blocks.rs
+// Port of the DyeColor enum and mapping from itemnames.rs/blocks.rs
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[wasm_bindgen]
 pub enum DyeColor {

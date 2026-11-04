@@ -30,17 +30,17 @@ impl fmt::Display for EntityRegistryEntry {
     }
 }
 
-//! The full 1.15.2 entity registry, ported from `client/js/game/EntityRegistry-1.15.2.js`.
-//!
-//! This static array contains all entity type entries for Minecraft 1.15.2.
-//! The ordering and values match the JavaScript original generated from
-//! `client/data/entities.json` (1.15.2 baseline).
-//!
-//! # Note
-//!
-//! The full registry is extensive (over 200 entries). This static provides
-//! the complete data; individual modules (e.g. `EntityTypes.rs`) may
-//! subset or transform this data as needed.
+// The full 1.15.2 entity registry, ported from `client/js/game/EntityRegistry-1.15.2.js`.
+//
+// This static array contains all entity type entries for Minecraft 1.15.2.
+// The ordering and values match the JavaScript original generated from
+// `client/data/entities.json` (1.15.2 baseline).
+//
+// # Note
+//
+// The full registry is extensive (over 200 entries). This static provides
+// the complete data; individual modules (e.g. `EntityTypes.rs`) may
+// subset or transform this data as needed.
 
 /// Map of entity names to their registry entries, built from the registry below.
 pub static ENTITY_REGISTRY_MAP: phf::Map<&'static str, &'static EntityRegistryEntry> = {

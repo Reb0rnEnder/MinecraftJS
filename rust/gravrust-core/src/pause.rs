@@ -108,8 +108,8 @@ impl PauseScreen {
             200,
             20,
             tr("menu.disconnect"),
-            || { /* disconnect callback */ }
-        ));
+            || { /* disconnect callback */ },
+        )));
 
         PauseScreen {
             game,

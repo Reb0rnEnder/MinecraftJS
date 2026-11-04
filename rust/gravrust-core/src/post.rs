@@ -6,6 +6,7 @@
 //! spectator modes (creeper, spider, enderman) and various post-processing
 //! effects like blur, color convolution, inversion, and more.
 
+use once_cell::sync::Lazy;
 use std::collections::HashMap;
 use wasm_bindgen::prelude::*;
 
@@ -33,11 +34,10 @@ pub const PROGRAMS: Lazy<HashMap<String, ProgramInfo>> = Lazy::new(|| {
         uniforms: [(
             "ColorModulate".to_string(),
             vec![1.0, 1.0, 1.0, 1.0],
-        )
-        .iter()
-        .cloned()
+        )]
+        .into_iter()
         .collect(),
-        ]),
+    });
     m.insert("invert".to_string(), ProgramInfo {
         mode: 1,
         uniforms: [("InverseAmount".to_string(), vec![0.0]).iter().cloned().collect()],
