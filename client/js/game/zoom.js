@@ -3,7 +3,7 @@ import {platform} from '../platform/platform.js';
 // transient state keeps the user's cinematic-camera preference unchanged.
 export function zoomActive(game){return !!(game.settings?.zoomEnabled!==false&&game.inWorld&&!game.dead&&!game.screens?.current&&game.input?.locked&&game.input.isDown('zoom')&&!game.input.down?.has('F3'));}
 export function zoomFov(game,fov){
- if(!game.inWorld||game.dead||game.screens?.current||!game.input?.locked){game._zoomLens=null;return fov;}
+ if(!game.inWorld||game.dead||game.screens?.current||!game.input?.locked){game._zoomLens=null;game._zoomFactor=.25;return fov;}
  const active=zoomActive(game);if(!active)game._zoomFactor=.25;
  const now=platform().now(),target=active?(game._zoomFactor??.25):1;
  let lens=game._zoomLens;if(!lens)lens=game._zoomLens={from:1,to:1,started:now};
