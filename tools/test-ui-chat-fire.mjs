@@ -4,22 +4,22 @@ import {ChatOptionsScreen} from '../client/js/gui/screens/options.js';import {Se
 import {VANILLA_UI} from '../client/js/gui/vanilla-layout.js';import {setPlatform} from '../client/js/platform/platform.js';import {setTranslator} from '../client/js/gui/i18n.js';
 import * as Blocks from '../client/js/world/blocks.js';const {initBlocks,findState}=Blocks;import {LocalPlayer} from '../client/js/game/physics.js';
 const data=Object.fromEntries(['blocks','blockCollisionShapes'].map(n=>[n,JSON.parse(readFileSync(new URL('../client/data/'+n+'.json',import.meta.url)))]));initBlocks(data.blocks,data.blockCollisionShapes);
-const modern=['1.14.4','1.15.2'].includes(VANILLA_UI.version),native=['1.13.2','1.14.4','1.15.2'].includes(VANILLA_UI.version);
+const modern=['1.14.4','1.15.2'].includes(VANILLA_UI.version),native=!['1.8.9','1.12.2'].includes(VANILLA_UI.version);
 const Narrator=VANILLA_UI.version!=='1.8.9'?(await import('../client/js/gui/narrator.js')).Narrator:null;
 let now=0;setPlatform({now:()=>now,loadSetting:()=>null,saveSetting(){}});setTranslator((key,args)=>key+(args.length?' '+args.join('|'):''));
 function fixture(){return {settings:new Settings(),gui:{width:420,height:300,textWidth:s=>s.length*6},narrator:{active:true,label:()=> 'Narrator',cycle(){}},screens:{open(s){this.current=s;}},world:{getState:()=>0},player:new LocalPlayer(),gameMode:1,send(){}};}
 test('button text uses the native per-version normal/hover/disabled colors',()=>{
  const colors=[],gui={blit(){},textCentered:(label,x,y,color)=>colors.push(color)};
  for(const [hover,enabled]of[[false,true],[true,true],[true,false]])Gui.prototype.button.call(gui,0,0,150,20,'Button',hover,enabled);
- assert.deepEqual(colors,VANILLA_UI.version==='1.15.2'?[0xffffff,0xffffff,0xa0a0a0]:[0xe0e0e0,0xffffa0,0xa0a0a0]);
+ assert.deepEqual(colors,!['1.8.9','1.12.2','1.13.2','1.14.4'].includes(VANILLA_UI.version)?[0xffffff,0xffffff,0xa0a0a0]:[0xe0e0e0,0xffffa0,0xa0a0a0]);
 });
 test('Chat Settings uses jar-derived ordering, matching row positions, and working link switches',()=>{
- const g=fixture(),s=new ChatOptionsScreen(g,null);s.init();assert.deepEqual(s.buttons.slice(0,-1).map(b=>b.optionKey),VANILLA_UI.chatOptions);
- assert.equal(s.buttons[0].y,50);assert.equal(s.buttons.at(-1).y,50+(modern?168:144));
- const links=s.buttons.find(b=>b.optionKey==='options.chat.links');links.onClick();assert.equal(g.settings.chatLinks,false);links.onClick();assert.equal(g.settings.chatLinks,true);
- const prompt=s.buttons.find(b=>b.optionKey==='options.chat.links.prompt');prompt.onClick();assert.equal(g.settings.chatLinksPrompt,false);
- if(modern)assert.ok(s.buttons.some(b=>b.optionKey==='options.accessibility.text_background_opacity'));
- if(native)assert.ok(s.buttons.some(b=>b.optionKey==='options.autoSuggestCommands'));
+ const g=fixture(),s=new ChatOptionsScreen(g,null);s.init();const options=s.rows?s.rows.flat():s.buttons.slice(0,-1);assert.deepEqual(options.map(b=>b.optionKey),VANILLA_UI.chatOptions);
+ if(s.rows){assert.equal(s.list.top,32);assert.equal(s.list.bottom,g.gui.height-32);assert.equal(s.buttons.at(-1).y,g.gui.height-27);}else{assert.equal(s.buttons[0].y,50);assert.equal(s.buttons.at(-1).y,50+(modern?168:144));}
+ const links=options.find(b=>b.optionKey==='options.chat.links');links.onClick();assert.equal(g.settings.chatLinks,false);links.onClick();assert.equal(g.settings.chatLinks,true);
+ const prompt=options.find(b=>b.optionKey==='options.chat.links.prompt');prompt.onClick();assert.equal(g.settings.chatLinksPrompt,false);
+ if(modern)assert.ok(options.some(b=>b.optionKey==='options.accessibility.text_background_opacity'));
+ if(native)assert.ok(options.some(b=>b.optionKey==='options.autoSuggestCommands'));
 });
 test('creative local fire/lava contact renders fire without requiring an authoritative burning flag',()=>{
  const g=fixture(),hud=Object.create(Hud.prototype);hud.game=g;g.player.setPosition(.5,64,.5);
@@ -59,7 +59,7 @@ if(Narrator)test('narrator modes filter chat/system and decode raw translated pa
  }finally{globalThis.speechSynthesis=oldSpeech;globalThis.SpeechSynthesisUtterance=oldUtterance;}
 });
 if(modern)test('narrator reads selected completion index, text and tooltip',()=>{
- const g=fixture(),spoken=[];g.narrator.saySystem=text=>spoken.push(text);const s=new ChatScreen(g,'/give');
+ const g=fixture(),spoken=[];g.narrator.saySystem=text=>spoken.push(text);const s=new ChatScreen(g,'/give');s.input={text:'/give',cursor:5};
  s._showMatches([{match:'stone'},{match:'sand',tooltip:{text:'A block'}}]);assert.equal(spoken[0],'narration.suggestion 1|2|stone');
  s._selectTab(1);assert.equal(spoken[1],'narration.suggestion.tooltip 2|2|sand|A block');
 });
