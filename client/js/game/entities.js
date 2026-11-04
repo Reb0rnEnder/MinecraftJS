@@ -1,3 +1,4 @@
+import { tickDroppedItem } from './dropped-item.js';
 import{pickupVisual,pickupPosition,tickPickupVisuals}from'./item-pickup.js';
 import{paintingFacing762,configurePainting762,PAINTING_VARIANT_INDEX_762}from'./painting-1.19.4.js';
 import {isSquid,initSquid,tickSquid,squidInWater} from './squid-animation.js';
@@ -955,6 +956,8 @@ export class EntityManager {
         e.yaw += wrap(e.newYaw - e.yaw) / e.inc;
         e.pitch += (e.newPitch - e.pitch) / e.inc;
         e.inc--;
+      } else if(e.kind==='item'){
+        tickDroppedItem(e,g.world);
       } else if(e.kind==='falling'){
         tickFallingBlock(e,g.world);
       } else if (SNAP_KINDS.has(e.kind) && e.kind !== 'fishhook' && e.entityName !== 'firework_rocket') {
