@@ -1,3 +1,4 @@
+import{updateGuiEquipment,guiHandPoses}from'./gui-player-equipment.js';
 import{paintingTiles,paintingTileLight}from'./painting.js';
 import {isSquid,squidTentacle,squidMatrix} from '../game/squid-animation.js';
 import {bedFacing} from '../game/bed-sleep.js';
@@ -119,7 +120,7 @@ export class EntityRenderer {
     for (const id of [...this.visuals.keys()]) this.remove({ id });
     for (const m of this.meshCache.values()) this.device.destroyMesh(m);
     this.meshCache.clear();
-    this._guiModel = null;
+    this._guiModel = null;this._guiEquipment=null;
   }
 
   _cachedMesh(key, make) {
@@ -1222,7 +1223,7 @@ export class EntityRenderer {
         const c = tag && tag.display && tag.display.color !== undefined ? tag.display.color : 10511680;
         A.mat.params.setTint(((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255, 1);
       } else A.mat.params.setTint(1, 1, 1, 1);
-      for (const M2 of [A.model, A.overlay.model]) {
+      for (const M2 of idx===0?[A.model,A.overlay.model]:[A.model]) {
         M2.animate(M2, args);
         copyPose(model, M2);
         const pp = M2.parts;
@@ -1741,8 +1742,10 @@ export class EntityRenderer {
     const yaw = Math.atan(mouseDX / 40) * 40;
     const pitch = -Math.atan(mouseDY / 40) * 20;
     const m = this._guiModel;
-    m.animate(m, { ls: 0, lsa: 0, age: g.ticks, yaw: yaw - body, pitch, swing: -9999, sneak: pl.sneaking, heldRight: g.inventory.held() ? 1 : 0 });
+    const args={ls:0,lsa:0,age:g.ticks,yaw:yaw-body,pitch,swing:-9999,sneak:pl.sneaking,...guiHandPoses(g)};
+    m.animate(m,args);
     for (const r of m.roots) r.sync();
+    updateGuiEquipment(this,m,this._guiRoot,args);
     // translate(x, y, 50), scale(-s, s, s), rotate 180 Z, rotate X (-atan(my/40)*20), then the living renderer
     const mm = mat4.create();
     mat4.translate(mm, mm, x, y, 50);
