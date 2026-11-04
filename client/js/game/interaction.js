@@ -1,3 +1,4 @@
+import {consumeEffect} from '../audio/consume-sounds.js';
 import {predictDoorPair,reconcileDoorPair} from './door-prediction.js';
 import {staticCollisionBoxes} from '../world/blocks.js';
 import {placementIntersects} from './placement-collision.js';
@@ -119,9 +120,7 @@ export class Interaction {
         this.useTicks = 0;
       }
       if (held && (g.items.useAction(held) === 'eat' || g.items.useAction(held) === 'drink') && this.useTicks > 4 && this.useTicks % 4 === 0) {
-        if (g.items.useAction(held) === 'eat') g.sound.playAtPlayer('random.eat', 0.5 + 0.5 * Math.round(Math.random()), (Math.random() - Math.random()) * 0.2 + 1);
-        else g.sound.playAtPlayer('random.drink', 0.5, Math.random() * 0.1 + 0.9);
-        g.particles.itemCrack(held, this.player, 5);
+        consumeEffect(g,held);
       }
     } else {
       for (const code of presses) {
@@ -637,6 +636,7 @@ export class Interaction {
       const food = action === 'eat' && !canEat;
       if (!food) {
         this.player.usingItem = true;
+        this.consumeSnapshot=action==='eat'||action==='drink'?copy(held):null;
         this.useTicks = 0;
       }
     }
@@ -645,9 +645,11 @@ export class Interaction {
     const t = this.target;
     const lookingAtFrame = t && t.type === 'block' && blocks[t.state >> 4] && blocks[t.state >> 4].name === 'end_portal_frame';
     const thrown = [332, 344, 368, 384].includes(held.id) || (held.id === 373 && (held.damage & 16384)) || (held.id === 381 && !lookingAtFrame);
-    if (thrown && survival) {
-      held.count--;
-      if (held.count <= 0) g.inventory.setHeld(null);
+    if (thrown) {
+      if (survival) {
+        held.count--;
+        if (held.count <= 0) g.inventory.setHeld(null);
+      }
       return true;
     }
     // armour equips itself when that slot is empty
@@ -656,6 +658,12 @@ export class Interaction {
       if (!g.inventory.armor[slot]) return true;
     }
     return false;
+  }
+
+  // The server's completion status also emits the final use effect locally.
+  finishItemUse() {
+    const item=this.consumeSnapshot;this.consumeSnapshot=null;
+    if(item)consumeEffect(this.game,item,16);
   }
 
   stopUsingItem() {

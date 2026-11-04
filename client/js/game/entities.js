@@ -403,7 +403,7 @@ export class EntityManager {
     const e = this.map.get(p.collectedEntityId);
     const collector = p.collectorEntityId === this.game.entityId ? null : this.map.get(p.collectorEntityId);
     if (!e) return;
-    // (the pop / orb sound comes from the server: client-side World.playSoundAtEntity is a no-op in 1.8.9)
+    // Native 1.8.9 RenderGlobal sound callbacks are no-ops; server packets own pickup audio.
     // The pickup survives removal or metadata changes of the real server entity.
     (this.pickups||=[]).push(pickupVisual(e,collector,this.nextPickupId--));
 

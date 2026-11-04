@@ -834,7 +834,7 @@ export class Game {
   on_entity_status(p) {
     if (p.entityId === this.entityId) {
       if (p.entityStatus === 2) { this.hurtTime = 10; this.sound.playAtPlayer('game.player.hurt', 1, 1); }
-      else if (p.entityStatus === 9) this.player.usingItem = false; // item use finished
+      else if (p.entityStatus === 9) { this.interaction.finishItemUse(); this.player.usingItem = false; } // item use finished
       else if (p.entityStatus === 22) this.reducedDebug = true;
       else if (p.entityStatus === 23) this.reducedDebug = false;
     }
