@@ -138,8 +138,8 @@ export class Hud {
 
   deleteChatMessage(signature){
     const same=s=>s?.length===signature.length&&s.every((v,i)=>v===signature[i]);
-    const queued=this.queuedChat?.findIndex(e=>same(e.signature))??-1;
-    if(queued>=0){this.queuedChat.splice(queued,1);return true;}
+    const queue=this.queuedChat||[],kept=queue.filter(e=>!same(e.signature));
+    if(kept.length!==queue.length){this.queuedChat=kept;return true;}
     const entry=this.chat.find(e=>same(e.signature));if(!entry)return false;
     const due=entry.tick+60;
     if(this.updateCounter<due){
