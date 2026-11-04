@@ -1,3 +1,4 @@
+import { tickDroppedItem } from './dropped-item.js';
 import{pickupVisual,pickupPosition,tickPickupVisuals}from'./item-pickup.js';
 import {isSquid,initSquid,tickSquid,squidInWater} from './squid-animation.js';
 import {detachRemovedEntities} from './riding-lifecycle.js';
@@ -662,6 +663,8 @@ export class EntityManager {
         e.yaw += wrap(e.newYaw - e.yaw) / e.inc;
         e.pitch += (e.newPitch - e.pitch) / e.inc;
         e.inc--;
+      } else if(e.kind==='item'){
+        tickDroppedItem(e,g.world);
       } else if(e.kind==='falling'){
         tickFallingBlock(e,g.world);
       } else if ((e.kind === 'item' || e.kind === 'xp' || e.kind === 'arrow' || e.kind === 'projectile' || e.kind === 'falling' || e.kind === 'tnt') && !(e.kind === 'projectile' && e.type === 76)) {
