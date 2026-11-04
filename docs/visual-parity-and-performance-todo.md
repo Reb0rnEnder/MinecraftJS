@@ -43,3 +43,6 @@ This is the project-wide tracker; each feature applies only to its native versio
 The preceding build's 18 actual Gofile URLs and hashes are recorded in `/home/ender/minecraftjs/dist/uploads/README.md` and `gofile-uploads.json`. Full native shader sky/water/shadow support remains a separate unfinished renderer task described in `preloading-and-real-shader-pipeline.md`.
 
 - [x] Server/client view-distance mismatch: indexed pending meshes, cached column occupancy, bounded GPU terrain retention; identical light and overlapping invalidation work removed where native separate-light packets exist. [Backports, replays and remaining candidates](view-distance-performance.md).
+
+- [x] Splash/lingering potion use, native pickup/button/comparator sounds and consume effects: [version-specific trigger audit and Ogg decode results](client-sound-trigger-audit.md).
+- [ ] Complete native tool/bucket/bottle success predicates and their player-excluded local sound paths; audio asset tests do not prove these interactions complete.
