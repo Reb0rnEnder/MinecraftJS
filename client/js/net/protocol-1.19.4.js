@@ -1,6 +1,6 @@
 import {decodeUtf8} from '../util/utf8.js';
 // Active protocol-762 codec. Unsupported bodies remain explicit; signed chat
-// account/session verification is still a separate unfinished milestone.
+// outgoing account/session signing remains a separate unfinished milestone.
 import {readCommands762} from './commands-1.19.4.js';
 import {readRecipes762} from './recipes-1.19.4.js';
 import {PARTICLES_762,BLOCK_ENTITIES_762} from './registries-1.19.4.js';
@@ -68,7 +68,7 @@ function changed(name,r){switch(name){
  case 'player_info':{const actions=r.u8();if(actions&~63)throw Error('Unknown 762 player-list action');return{actions,data:list(r,()=>{const p={uuid:r.uuid()};if(actions&1){p.name=r.string();p.properties=list(r,()=>({name:r.string(),value:r.string(),signature:r.bool()?r.string():null}));}if(actions&2)p.chatSession=r.bool()?{uuid:r.uuid(),expireTime:r.i64(),keyBytes:r.bytesN(r.varint()).slice(),keySignature:r.bytesN(r.varint()).slice()}:null;if(actions&4)p.gamemode=r.varint();if(actions&8)p.listed=r.bool();if(actions&16)p.ping=r.varint();if(actions&32)p.displayName=r.bool()?r.string():null;return p;})};}
  case 'damage_event':return{entityId:r.varint(),sourceTypeId:r.varint(),sourceCauseId:r.varint()-1,sourceDirectId:r.varint()-1,sourcePosition:r.bool()?{x:r.f64(),y:r.f64(),z:r.f64()}:null};
  case 'hurt_animation':return{entityId:r.varint(),yaw:r.f32()};
- case 'trade_list':{const windowId=r.varint(),trades=list(r,()=>({inputItem1:r.slot(),outputItem:r.slot(),inputItem2:r.slot(),tradeDisabled:r.bool(),nbTradeUses:r.i32(),maximumNbTradeUses:r.i32(),xp:r.i32(),specialPrice:r.i32(),priceMultiplier:r.f32(),demand:r.i32()}));return{windowId,trades,villagerLevel:r.varint(),experience:r.varint(),isRegularVillager:r.bool(),canRestock:r.bool()};}
+ case 'trade_list':{const windowId=r.varint(),trades=list(r,()=>({a:r.slot(),out:r.slot(),b:r.slot(),disabled:r.bool(),uses:r.i32(),max:r.i32(),xp:r.i32(),specialPrice:r.i32(),priceMultiplier:r.f32(),demand:r.i32()}));return{windowId,trades,villagerLevel:r.varint(),experience:r.varint(),isRegularVillager:r.bool(),canRestock:r.bool()};}
 
  case 'login':{
   const entityId=r.i32(),isHardcore=r.bool(),gameMode=r.u8(),previousGameMode=r.i8(),worldNames=list(r,()=>r.string(),1024),dimensionCodec=readNbtRoot(r),worldType=r.string(),worldName=r.string(),dimensionData=resolveDimension762(dimensionCodec,worldType),effects=dimensionData.effects||worldName;
