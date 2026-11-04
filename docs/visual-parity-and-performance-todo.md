@@ -19,7 +19,8 @@ Work starts with small, independently reviewable corrections. Push each validate
 
 - [x] Fix the confirmed opaque distant foliage LOD path and stale animated atlas mipmaps. Preserve Fancy alpha by default. A separate distant-grass screenshot reproduction remains open if it persists.
 - [x] Expose separate controls for intentional distant terrain simplification and distant fire/mob animation reductions. Keep native-quality alpha correctness independent of optimisations.
-- [ ] Instrument and profile CPU ticks, meshing/worker uploads, entity rendering, draw submission and GPU passes. Compare the same world/camera/settings; do not fabricate vanilla FPS or assume the new preload budget improves steady-state FPS.
+- [x] Add opt-in bounded CPU/frame/draw/mesh performance capture with hook cleanup and local JSON download.
+- [ ] Collect representative gameplay profiles and GPU timing; compare the same world/camera/settings with separately measured native FPS. CPU capture is not GPU execution time.
 - [ ] Investigate recent performance regressions before adding more expensive shader/rendering work.
 
 ## Version-specific UI and chat
