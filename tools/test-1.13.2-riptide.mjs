@@ -43,7 +43,7 @@ test('Riptide charges only when wet and releases into a boost without losing the
     assert.equal(player.motionZ, 3, 'Riptide III adds three blocks per tick facing forward');
     assert.equal(player.riptideTicks, 20); assert.equal(player.usingItem, false);
     assert.equal(g.inventory.getHand(hand), stack); assert.equal(stack.count, 1);
-    assert.deepEqual(sounds, [['item.trident.riptide_3', 1, 1]]);
+    assert.deepEqual(sounds, [['item.trident.riptide_3', 1, 1, 'player']]);
     const initial = player.z;
     player.tick(g.world, {});
     assert.ok(player.z > initial + 2, 'normal movement consumes the impulse on the next tick');
