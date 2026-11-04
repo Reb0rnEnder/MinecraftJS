@@ -39,3 +39,7 @@ No vendor source was copied. Existing WebGL draw code already caches programs, u
 Differential collision tests compare the previous callback with the optimized one over randomized movers/entities, including boats, shulkers where present, passengers and dead entities. Item floor/collision and pushing regressions pass. Shared zoom/input tests pass on all nine versions. User configurations, worlds and packs are untouched.
 
 The opt-in capture in performance-capture.md collects real gameplay CPU sections, draw submissions, mesh queue sizes and frame intervals. A representative capture on the user's slow scene and actual hardware is still needed to identify remaining rendering/GPU bottlenecks. No live native-client, Java/server profiler or user-GPU numbers are available from this run.
+
+## Follow-up: server/client view-distance mismatch
+
+[The measured follow-up](view-distance-performance.md) implements camera-local dirty-section indexing, loaded-column occupancy reuse, bounded GPU terrain residency and native separate-light update coalescing where applicable. It also audits EntityCulling and ImmediatelyFast without claiming their code or full algorithms were ported.

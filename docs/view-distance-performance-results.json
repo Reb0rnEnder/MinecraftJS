@@ -1,0 +1,497 @@
+{
+  "1.8.9": {
+    "node": "v22.23.3",
+    "scope": "Synthetic CPU replay of actual Game scheduler and SectionCuller; not whole-frame FPS or user GPU measurements",
+    "scheduling": {
+      "serverRadius": 32,
+      "clientRadius": 10,
+      "pendingSections": 88704,
+      "framesPerRound": 15,
+      "before": {
+        "medianMsPerCall": 8.586025666666668,
+        "roundsMsPerCall": [
+          8.721218533333332,
+          8.585272866666665,
+          8.586025666666668,
+          8.560015799999997,
+          8.668291
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.0005718000000039562,
+        "roundsMsPerCall": [
+          0.013087466666668964,
+          0.0005718000000039562,
+          0.0005476666666633415,
+          0.002472666666661401,
+          0.0003312666666640022
+        ]
+      }
+    },
+    "culling": {
+      "clientRadius": 32,
+      "serverRadius": 10,
+      "framesPerRound": 30,
+      "before": {
+        "medianMsPerCall": 0.42436976666666626,
+        "roundsMsPerCall": [
+          0.42436976666666626,
+          0.4497123999999985,
+          0.4110438666666672,
+          0.42277606666666545,
+          0.4347868000000024
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.26501619999999854,
+        "roundsMsPerCall": [
+          0.2722127999999998,
+          0.25360056666666725,
+          0.25602716666666464,
+          0.3047467000000021,
+          0.26501619999999854
+        ]
+      }
+    }
+  },
+  "1.12.2": {
+    "node": "v22.23.3",
+    "scope": "Synthetic CPU replay of actual Game scheduler and SectionCuller; not whole-frame FPS or user GPU measurements",
+    "scheduling": {
+      "serverRadius": 32,
+      "clientRadius": 10,
+      "pendingSections": 88704,
+      "framesPerRound": 15,
+      "before": {
+        "medianMsPerCall": 8.832455333333337,
+        "roundsMsPerCall": [
+          8.916116333333333,
+          8.915799733333332,
+          8.832455333333337,
+          8.707619466666666,
+          8.818877666666662
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.0005624000000049516,
+        "roundsMsPerCall": [
+          0.013642466666662282,
+          0.0005624000000049516,
+          0.000543000000000878,
+          0.0023364666666642127,
+          0.0003266000000015386
+        ]
+      }
+    },
+    "culling": {
+      "clientRadius": 32,
+      "serverRadius": 10,
+      "framesPerRound": 30,
+      "before": {
+        "medianMsPerCall": 0.4271650333333355,
+        "roundsMsPerCall": [
+          0.45460996666666537,
+          0.4080438666666661,
+          0.4271650333333355,
+          0.4214428666666663,
+          0.43266010000000205
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.2584664666666678,
+        "roundsMsPerCall": [
+          0.2584664666666678,
+          0.30181146666666336,
+          0.2775636000000001,
+          0.2552313333333321,
+          0.2550666666666681
+        ]
+      }
+    }
+  },
+  "1.13.2": {
+    "node": "v22.23.3",
+    "scope": "Synthetic CPU replay of actual Game scheduler and SectionCuller; not whole-frame FPS or user GPU measurements",
+    "scheduling": {
+      "serverRadius": 32,
+      "clientRadius": 10,
+      "pendingSections": 88704,
+      "framesPerRound": 15,
+      "before": {
+        "medianMsPerCall": 8.42578773333333,
+        "roundsMsPerCall": [
+          8.411528066666666,
+          8.456756466666665,
+          8.436314333333334,
+          8.42578773333333,
+          8.383318066666668
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.000554399999994833,
+        "roundsMsPerCall": [
+          0.013307866666665783,
+          0.000554399999994833,
+          0.0005449999999958284,
+          0.0025260666666705824,
+          0.0003380000000030729
+        ]
+      }
+    },
+    "culling": {
+      "clientRadius": 32,
+      "serverRadius": 10,
+      "framesPerRound": 30,
+      "before": {
+        "medianMsPerCall": 0.4203227666666673,
+        "roundsMsPerCall": [
+          0.42892219999999953,
+          0.42554699999999834,
+          0.4203227666666673,
+          0.4114539999999996,
+          0.41025536666666845
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.2515286666666649,
+        "roundsMsPerCall": [
+          0.2696566333333332,
+          0.2515286666666649,
+          0.2513343000000001,
+          0.25000446666666676,
+          0.30138486666666797
+        ]
+      }
+    }
+  },
+  "1.14.4": {
+    "node": "v22.23.3",
+    "scope": "Synthetic CPU replay of actual Game scheduler and SectionCuller; not whole-frame FPS or user GPU measurements",
+    "scheduling": {
+      "serverRadius": 32,
+      "clientRadius": 10,
+      "pendingSections": 88704,
+      "framesPerRound": 15,
+      "before": {
+        "medianMsPerCall": 8.678352733333334,
+        "roundsMsPerCall": [
+          8.663798799999999,
+          8.762513733333332,
+          8.714718466666671,
+          8.678352733333334,
+          8.618039933333337
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.0005891333333314226,
+        "roundsMsPerCall": [
+          0.01400580000000294,
+          0.0005891333333314226,
+          0.0005811333333288833,
+          0.002250933333334615,
+          0.0003620000000031117
+        ]
+      }
+    },
+    "culling": {
+      "clientRadius": 32,
+      "serverRadius": 10,
+      "framesPerRound": 30,
+      "before": {
+        "medianMsPerCall": 0.4259834666666658,
+        "roundsMsPerCall": [
+          0.4076482999999977,
+          0.4353191333333333,
+          0.4259834666666658,
+          0.40598063333333506,
+          0.4361934666666684
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.25867250000000014,
+        "roundsMsPerCall": [
+          0.25867250000000014,
+          0.25583946666666485,
+          0.25652679999999844,
+          0.32198769999999965,
+          0.25894570000000006
+        ]
+      }
+    }
+  },
+  "1.15.2": {
+    "node": "v22.23.3",
+    "scope": "Synthetic CPU replay of actual Game scheduler and SectionCuller; not whole-frame FPS or user GPU measurements",
+    "scheduling": {
+      "serverRadius": 32,
+      "clientRadius": 10,
+      "pendingSections": 88704,
+      "framesPerRound": 15,
+      "before": {
+        "medianMsPerCall": 8.7525364,
+        "roundsMsPerCall": [
+          8.808570133333331,
+          8.669475599999998,
+          8.781297533333335,
+          8.7525364,
+          8.586898333333329
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.0005537333333298496,
+        "roundsMsPerCall": [
+          0.011701466666666722,
+          0.0005537333333298496,
+          0.0005409999999983484,
+          0.002158799999998943,
+          0.0003299333333264561
+        ]
+      }
+    },
+    "culling": {
+      "clientRadius": 32,
+      "serverRadius": 10,
+      "framesPerRound": 30,
+      "before": {
+        "medianMsPerCall": 0.41195723333333184,
+        "roundsMsPerCall": [
+          0.41195723333333184,
+          0.4087414999999964,
+          0.433763833333334,
+          0.39925856666666654,
+          0.4263017333333323
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.26579230000000204,
+        "roundsMsPerCall": [
+          0.26579230000000204,
+          0.2605827999999974,
+          0.26827769999999873,
+          0.3133796666666702,
+          0.2526270666666695
+        ]
+      }
+    }
+  },
+  "1.16.5": {
+    "node": "v22.23.3",
+    "scope": "Synthetic CPU replay of actual Game scheduler and SectionCuller; not whole-frame FPS or user GPU measurements",
+    "scheduling": {
+      "serverRadius": 32,
+      "clientRadius": 10,
+      "pendingSections": 88704,
+      "framesPerRound": 15,
+      "before": {
+        "medianMsPerCall": 9.262294066666668,
+        "roundsMsPerCall": [
+          9.387091333333334,
+          9.262294066666668,
+          9.2079222,
+          9.109433199999996,
+          9.295587733333331
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.0005790666666674345,
+        "roundsMsPerCall": [
+          0.011945933333337658,
+          0.0005790666666674345,
+          0.0005523999999998826,
+          0.0054035333333331435,
+          0.0003445999999939886
+        ]
+      }
+    },
+    "culling": {
+      "clientRadius": 32,
+      "serverRadius": 10,
+      "framesPerRound": 30,
+      "before": {
+        "medianMsPerCall": 0.4264506999999981,
+        "roundsMsPerCall": [
+          0.4286687333333324,
+          0.40595726666666676,
+          0.4872080333333353,
+          0.41707093333333206,
+          0.4264506999999981
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.25810943333333397,
+        "roundsMsPerCall": [
+          0.2638239333333331,
+          0.26787493333333334,
+          0.25598443333333687,
+          0.2541165666666681,
+          0.25810943333333397
+        ]
+      }
+    }
+  },
+  "1.17.1": {
+    "node": "v22.23.3",
+    "scope": "Synthetic CPU replay of actual Game scheduler and SectionCuller; not whole-frame FPS or user GPU measurements",
+    "scheduling": {
+      "serverRadius": 32,
+      "clientRadius": 10,
+      "pendingSections": 88704,
+      "framesPerRound": 15,
+      "before": {
+        "medianMsPerCall": 9.067143466666668,
+        "roundsMsPerCall": [
+          9.067238266666665,
+          9.067143466666668,
+          9.6252536,
+          8.989378333333336,
+          9.02909013333333
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.0005711333333389727,
+        "roundsMsPerCall": [
+          0.016499199999998382,
+          0.0005711333333389727,
+          0.0005603999999948428,
+          0.0022930000000011812,
+          0.00034533333333304955
+        ]
+      }
+    },
+    "culling": {
+      "clientRadius": 32,
+      "serverRadius": 10,
+      "framesPerRound": 30,
+      "before": {
+        "medianMsPerCall": 0.4490290666666662,
+        "roundsMsPerCall": [
+          0.4551499999999995,
+          0.4424559666666672,
+          0.4538448666666682,
+          0.43854156666666694,
+          0.4490290666666662
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.2968888333333325,
+        "roundsMsPerCall": [
+          0.2968888333333325,
+          0.31431146666666715,
+          0.31120659999999895,
+          0.2950824333333306,
+          0.29337886666666385
+        ]
+      }
+    }
+  },
+  "1.18.2": {
+    "node": "v22.23.3",
+    "scope": "Synthetic CPU replay of actual Game scheduler and SectionCuller; not whole-frame FPS or user GPU measurements",
+    "scheduling": {
+      "serverRadius": 32,
+      "clientRadius": 10,
+      "pendingSections": 88704,
+      "framesPerRound": 15,
+      "before": {
+        "medianMsPerCall": 8.70149153333333,
+        "roundsMsPerCall": [
+          8.657870933333335,
+          8.70149153333333,
+          8.614538933333332,
+          8.722882000000004,
+          8.865464533333336
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.000585799999998926,
+        "roundsMsPerCall": [
+          0.020594266666663922,
+          0.000585799999998926,
+          0.0005570666666623463,
+          0.005056199999997565,
+          0.0003439333333290051
+        ]
+      }
+    },
+    "culling": {
+      "clientRadius": 32,
+      "serverRadius": 10,
+      "framesPerRound": 30,
+      "before": {
+        "medianMsPerCall": 0.4825340000000021,
+        "roundsMsPerCall": [
+          0.4959019666666677,
+          0.4825340000000021,
+          0.49782376666667005,
+          0.44416853333333395,
+          0.45832400000000084
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.29371920000000196,
+        "roundsMsPerCall": [
+          0.29371920000000196,
+          0.29044933333333345,
+          0.3126423333333302,
+          0.30714126666666364,
+          0.29308230000000324
+        ]
+      }
+    }
+  },
+  "1.19.4": {
+    "node": "v22.23.3",
+    "scope": "Synthetic CPU replay of actual Game scheduler and SectionCuller; not whole-frame FPS or user GPU measurements",
+    "scheduling": {
+      "serverRadius": 32,
+      "clientRadius": 10,
+      "pendingSections": 88704,
+      "framesPerRound": 15,
+      "before": {
+        "medianMsPerCall": 8.50619526666667,
+        "roundsMsPerCall": [
+          8.608036,
+          8.898513733333335,
+          8.50619526666667,
+          8.459293133333336,
+          8.469837800000004
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.0005797999999989163,
+        "roundsMsPerCall": [
+          0.021204133333329385,
+          0.0005797999999989163,
+          0.0005684000000049612,
+          0.0023157333333377514,
+          0.00034066666667058597
+        ]
+      }
+    },
+    "culling": {
+      "clientRadius": 32,
+      "serverRadius": 10,
+      "framesPerRound": 30,
+      "before": {
+        "medianMsPerCall": 0.45451679999999894,
+        "roundsMsPerCall": [
+          0.483135466666666,
+          0.4405202999999991,
+          0.47056820000000243,
+          0.45451679999999894,
+          0.4395180666666685
+        ]
+      },
+      "after": {
+        "medianMsPerCall": 0.295460433333335,
+        "roundsMsPerCall": [
+          0.295460433333335,
+          0.32079676666666423,
+          0.29186799999999946,
+          0.297340033333334,
+          0.2914438666666683
+        ]
+      }
+    }
+  }
+}
