@@ -17,6 +17,7 @@ export function sectionLod(settings, camera, cx, sy, cz, previous = false) {
 }
 
 export function poseInterval(settings, distanceSquared) {
+  if(settings.reduceDistantAnimations===false)return 1;
   const distance = lodDistance(settings);
   return distance <= 0 || distanceSquared <= distance * distance ? 1
     : distanceSquared <= 4 * distance * distance ? 2 : 4;

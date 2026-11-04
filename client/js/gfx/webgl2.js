@@ -1,3 +1,4 @@
+import { dirtyMipRegions } from './dirty-mips.js';
 import{WATER_REFLECTION_VERTEX,WATER_REFLECTION_FRAGMENT}from'./water-reflections.js';
 import{mat4}from'./math.js';
 import{DYNAMIC_GLSL,EMPTY_DYNAMIC_LIGHTS}from'./dynamic-lighting.js';
@@ -495,13 +496,14 @@ vec3 mcjsWave(vec3 p){
     mips.forEach((m, i) => gl.texImage2D(gl.TEXTURE_2D, i + 1, gl.RGBA, m.width, m.height, 0, gl.RGBA, gl.UNSIGNED_BYTE, m.data));
   }
 
-  updateTexture(t, data, x = 0, y = 0, w = t.width, h = t.height) {
+  updateTexture(t, data, x = 0, y = 0, w = t.width, h = t.height, options = null) {
     const gl = this.gl;
     gl.bindTexture(gl.TEXTURE_2D, t.tex);
     this.boundTex[0] = null;
     gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
     gl.texSubImage2D(gl.TEXTURE_2D, 0, x, y, w, h, gl.RGBA, gl.UNSIGNED_BYTE, toU8(data));
     if (t.mipmaps && x === 0 && y === 0 && w === t.width && h === t.height) this._uploadMips(t, data);
+    else if(t.mipmaps&&options?.mipmapSource)for(const m of dirtyMipRegions(t.width,t.height,options.mipmapSource,x,y,w,h,t.mipLevels))gl.texSubImage2D(gl.TEXTURE_2D,m.level,m.x,m.y,m.width,m.height,gl.RGBA,gl.UNSIGNED_BYTE,m.data);
   }
 
   destroyTexture(t) { if(!t)return;const gl=this.gl;if(t.tex)gl.deleteTexture(t.tex);if(t.fbo)gl.deleteFramebuffer(t.fbo);if(t.depth)gl.deleteRenderbuffer(t.depth);if(t.depthTexture)gl.deleteTexture(t.depthTexture); }
