@@ -26,7 +26,8 @@ Work starts with small, independently reviewable corrections. Push each validate
 ## Version-specific UI and chat
 
 - [ ] Audit native 1.19.4 chat signing/trust state and its message-verification warning/dialog. Unsigned/system messages must retain their proper native distinctions; do not claim cryptographic verification that was not performed.
-- [ ] Compare the social interaction screen with the exact native source: tabs, row geometry, icons, filtering, tooltips and blocking/reporting behavior. Apply only to versions where this screen exists.
+- [x] Compare and correct Social Interactions native geometry, tabs, row spacing/icons, version-specific search fields, scrollbar input and resize behavior (1.16.5+ only).
+- [ ] Finish Social Interactions reference-image, keyboard/narrator, recent signed-message/offline-history and reporting gates.
 
 ## Validation/publication
 
