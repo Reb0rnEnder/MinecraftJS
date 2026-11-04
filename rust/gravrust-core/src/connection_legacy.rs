@@ -57,11 +57,18 @@ impl Connection {
     }
 
     /// Emit an event to all registered handlers.
-    pub fn emit(&self, ev: &str, ...a: js_sys::Val) {
+    ///
+    /// JS: `emit(ev, ...a)` — Rust has no rest parameters, so the handler
+    /// arguments are passed as a slice.
+    pub fn emit(&self, ev: &str, a: &[js_sys::Val]) {
+        let args = js_sys::Array::new();
+        for v in a {
+            args.push(v);
+        }
         if let Some(array) = self.handlers.get(&js_sys::Value::from(ev)).and_then(|v| v.dyn_into::<js_sys::Array>().ok()) {
             for i in 0..array.length() {
                 if let Some(fn) = array.get(i).dyn_into::<js_sys::Function>().ok() {
-                    let _ = fn.call1(&JsValue::NULL, &a);
+                    let _ = fn.apply(&JsValue::NULL, &args);
                 }
             }
         }

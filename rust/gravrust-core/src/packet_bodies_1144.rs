@@ -295,7 +295,7 @@ pub fn tab_complete(reader: &mut PacketReader) -> crate::chat::TabComplete {
     let n = reader.varint().unwrap_or(0) as usize;
     for _ in 0..n {
         matches.push(crate::chat::TabMatch {
-            match: reader.string().unwrap_or_default(),
+            r#match: reader.string().unwrap_or_default(),
             tooltip: if reader.bool().unwrap_or(false) {
                 Some(reader.string().unwrap_or_default())
             } else {
@@ -1146,4 +1146,4 @@ pub fn entity_update_attributes(reader: &mut PacketReader) -> crate::entities::E
     }
 }
 
-/// End of packet bodies for protocol 498.
+// End of packet bodies for protocol 498.

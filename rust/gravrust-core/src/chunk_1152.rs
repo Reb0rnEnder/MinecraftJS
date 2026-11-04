@@ -51,7 +51,8 @@ pub fn decode_chunk_data_578(
             continue;
         }
 
-    const wire_non_air = r.read_u16()?;
+        // JS: a runtime read, not a compile-time constant.
+        let wire_non_air = r.read_u16()?;
         let bits = r.read_u8()?;
 
         if bits < 4 || (bits > 8 && bits != global_bits) {

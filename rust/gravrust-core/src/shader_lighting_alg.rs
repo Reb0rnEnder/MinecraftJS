@@ -82,18 +82,14 @@ fn square_colors(a: [f32; 3]) -> [f32; 3] {
 }
 
 fn weather(a: [f32; 3], rain: f32) -> [f32; 3] {
+    // JS: `const weather = a => mix(a, a.map(() => a[0]*.299 + a[1]*.587 + a[2]*.114), Math.max(0, Math.min(1, rain)));`
+    //
+    // The callback ignores its argument, so every component of the second
+    // operand is the *same* luminance value — the colour is desaturated toward
+    // its own luma as `rain` rises, not mixed with a per-component variant.
     let gray = a[0] * 0.299 + a[1] * 0.587 + a[2] * 0.114;
-    let mix_t = rain.max(0.0).min(1.0);
-    [gray * 0.299 + a[0] * (1.0 - rain), gray * 0.587 + a[1] * (1.0 - rain), gray * 0.114 + a[2] * (1.0 - rain)]
-    // Simplified: just return mix
-    // Actually JS: `a.map(v=>v*(1-t)+b[i]*t)` but b isn't defined... let me re-read
-    // JS: `mix(a,a.map(()=>a[0]*.299+a[1]*.587+a[2]*.114),Math.max(0,Math.min(1,rain)))`
-    // So it's: a * (1 - rain) + gray * rain, component-wise
-    // But the JS maps over a, so each component: v * (1 - rain) + gray * rain... wait no
-    // Let me re-read: `a.map(v=>v*.299+a[1]*.587+a[2]*.114)` - this computes luminance for each component separately, which doesn't make sense
-    // Actually I think it's: for each component v in a, compute v * 0.299 + ... but that uses a[1] and a[2] which are different components
-    // I think the JS might have a bug or I'm misreading. Let me just do a simplified version.
-    a  // Placeholder
+    let t = rain.max(0.0).min(1.0);
+    mix_colors(a, [gray, gray, gray], t)
 }
 
 pub fn lighting_frame(colors: &std::collections::HashMap<String, [f32; 3]>, world_time: i32, dimension: i32, rain: f32) -> LightingResult {
