@@ -1,3 +1,4 @@
+import {scrollZoom} from './zoom.js';
 import{markHotbarPickup,tickPickupAnimations}from'./pickup-animation.js';
 import{collectDynamicLights}from'../render/dynamic-lights.js';
 import {captureNetwork} from '../debug/capture-network.js';
@@ -1575,6 +1576,7 @@ export class Game {
 
     if (this.hurtTime > 0) this.hurtTime--;
 
+    scrollZoom(this);
     // Mouse wheel hotbar scroll
     if (this.input.wheel !== 0 && !this.screens.current) {
       let s = this.heldSlot + this.input.wheel;
