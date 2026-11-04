@@ -1,3 +1,5 @@
+import {consumeEffect} from '../audio/consume-sounds.js';
+import {playActivatedBlockSound} from '../audio/client-sound-triggers.js';
 import{familyCanSurvive}from'./placement-families.js';
 import{attachmentPlacement}from'./attachment-placement.js';
 import {predictDoorPair,reconcileDoorPair} from './door-prediction.js';
@@ -161,9 +163,7 @@ export class Interaction {
         this.useTicks = 0;
       }
       if (held && (g.items.useAction(held) === 'eat' || g.items.useAction(held) === 'drink') && this.useTicks > 4 && this.useTicks % 4 === 0) {
-        if (g.items.useAction(held) === 'eat') g.sound.playAtPlayer('entity.generic.eat', 0.5 + 0.5 * Math.round(Math.random()), (Math.random() - Math.random()) * 0.2 + 1);
-        else g.sound.playAtPlayer('entity.generic.drink', 0.5, Math.random() * 0.1 + 0.9);
-        g.particles.itemCrack(held, this.player, 5);
+        consumeEffect(g,held);
       }
     } else {
       for (const code of presses) {
@@ -450,7 +450,7 @@ export class Interaction {
       held.damage++;
       if (held.damage > g.items.maxDurability(held.id)) {
         g.inventory.setHeld(null);
-        g.sound.playAtPlayer('entity.item.break', 0.8, 0.8 + Math.random() * 0.4);
+        g.sound.playAtPlayer('entity.item.break', 0.8, 0.8 + Math.random() * 0.4, 'player');
       }
     }
     // vanilla moves currentBlock below the world instead of clearing it; isHitting may still be true here (an
@@ -561,6 +561,7 @@ export class Interaction {
     // CPacketPlayerTryUseItemOnBlock (cursor position on the face)
     g.send(C.blockPlace(t.x, t.y, t.z, t.face, hand, fx, fy, fz));
     if (activated) {
+      playActivatedBlockSound(g,t,b);
       if (COMMAND_BLOCKS.has(b.name)) g.screens.open(new CommandBlockScreen(g, { x: t.x, y: t.y, z: t.z }));
       if (b.name === 'structure_block') g.screens.open(new StructureBlockScreen(g, { x: t.x, y: t.y, z: t.z }, g.structureBlocks.get(t.x + ',' + t.y + ',' + t.z)));
       if (b.name === 'jigsaw') g.screens.open(new JigsawScreen(g,{x:t.x,y:t.y,z:t.z},g.jigsawBlocks.get(t.x+','+t.y+','+t.z)));
@@ -773,6 +774,11 @@ export class Interaction {
       if (g.items.enchantLevel(held, 'riptide') > 0 && !this._wetForRiptide()) return false;
     }
     if (name === 'firework_rocket' && this.player.elytraFlying) return true;
+    // ThrowablePotionItem.use overrides PotionItem.use even though its inherited animation is DRINK.
+    if(name==='splash_potion'||name==='lingering_potion'){
+      if(g.gameMode!==1&&--held.count<=0)g.inventory.setHand(hand,null);
+      return true;
+    }
     const action = g.items.useAction(held);
     if (name === 'crossbow' && g.items.crossbowCharged(held)) return true; // Server fires and clears Charged NBT.
     if (action === 'bow' || action === 'crossbow') {
@@ -786,6 +792,7 @@ export class Interaction {
       const food = action === 'eat' && !canEat;
       if (!food) {
         this.player.usingItem = true;
+        this.consumeSnapshot=action==='eat'||action==='drink'?copy(held):null;
         this.activeHand = hand;
         this.useTicks = 0;
         return true;
@@ -828,6 +835,12 @@ export class Interaction {
     return bodyWet||!!(w?.isRainingAt?.(p.x,p.y,p.z)||w?.isRainingAt?.(p.x,p.y+p.height,p.z));
   }
 
+  // The server's completion status also emits the final use effect locally.
+  finishItemUse() {
+    const item=this.consumeSnapshot;this.consumeSnapshot=null;
+    if(item)consumeEffect(this.game,item,16);
+  }
+
   stopUsingItem() {
     const g = this.game;
     const held = g.inventory.getHand(this.activeHand);
@@ -837,7 +850,7 @@ export class Interaction {
       const level = g.items.enchantLevel(held, 'riptide');
       if (level > 0 && this._wetForRiptide()) {
         this.player.startRiptide(level, g.world);
-        g.sound?.playAtPlayer('item.trident.riptide_' + Math.min(level, 3), 1, 1);
+        g.sound?.playAtPlayer('item.trident.riptide_' + Math.min(level, 3), 1, 1, 'player');
       }
     }
     this.player.usingItem = false;
