@@ -1,3 +1,4 @@
+import {MessageSignatureCache762,filteredChat762} from '../net/chat-state-1.19.4.js';
 import { SYSTEM_CHAT_TAG, chatTrustTag } from '../gui/chat-tags.js';
 import { multilineToast } from '../gui/system-toast.js';
 import{markHotbarPickup,tickPickupAnimations}from'./pickup-animation.js';
@@ -773,7 +774,7 @@ export class Game {
   on_update_view_distance(p) { this.serverViewDistance=p.viewDistance; }
 
   on_login(p) {
-    this.serverData=null;this.enforcesSecureChat=false;
+    this.serverData=null;this.enforcesSecureChat=false;this.chatSignatures=new MessageSignatureCache762();
     this.enabledFeatures=new Set(['minecraft:vanilla']);this.commandTags={};
     this.blockPrediction?.reset();chatState762.reset();
     resetPlayerView(this);
@@ -852,11 +853,19 @@ export class Game {
   on_system_chat(p){this.on_chat({message:p.content,position:p.isActionBar?2:1});}
   on_profileless_chat(p){this.on_chat({message:JSON.stringify(decorateChat762(simplify(this.dimensionCodec),p,JSON.parse(p.message))),position:1});}
   on_player_chat(p){
+   const cache=this.chatSignatures||=new MessageSignatureCache762(),previous=(p.previousMessages||[]).map(entry=>cache.resolve(entry));
+   if(previous.some(s=>s===null)){this.disconnect(false,tr('multiplayer.disconnect.invalid_packet'));return;}
+   cache.push(previous,p.signature);
    const blocked=this.hiddenPlayers?.has(p.sender)||this.socialBlocking?.isBlocked(p.sender)||this.blockedPlayers?.has(p.sender),shown=p.filterType!==1&&!blocked&&this.settings.chatVisibility===0;
    if(chatState762.process(p.signature,shown)&&chatState762.offset>64)this.send(chatState762.flush());if(!shown||this.settings.onlyShowSecureChat)return;
    let content=p.unsignedChatContent?JSON.parse(p.unsignedChatContent):{text:p.plainMessage};
-   if(p.filterType===2){const chars=p.plainMessage.split('');for(let i=0;i<chars.length;i++)if(p.filterTypeMask[i>>6]!==undefined&&(BigInt.asUintN(64,p.filterTypeMask[i>>6])&(1n<<BigInt(i&63))))chars[i]='#';content={text:chars.join('')};}
-   this.on_chat({sender:p.sender,message:JSON.stringify(decorateChat762(simplify(this.dimensionCodec),p,content)),position:0,trust:'unverified'});
+   if(p.filterType===2)content=filteredChat762(p.plainMessage,p.filterTypeMask);
+   this.on_chat({sender:p.sender,message:JSON.stringify(decorateChat762(simplify(this.dimensionCodec),p,content)),position:0,trust:'unverified',signature:p.signature});
+  }
+  on_hide_message(p){
+   const signature=(this.chatSignatures||=new MessageSignatureCache762()).resolve({id:p.signatureId,signature:p.signature});
+   if(!signature){this.disconnect(false,tr('multiplayer.disconnect.invalid_packet'));return;}
+   chatState762.ignore(signature);this.hud.deleteChatMessage(signature);
   }
   on_player_remove(p){this.on_player_info({action:4,data:p.players.map(uuid=>({uuid}))});}
   on_hurt_animation(p){if(p.entityId===this.entityId){this.hurtTime=10;this.attackedAtYaw=p.yaw;}else{const e=this.entities.get(p.entityId);if(e){e.hurtTime=10;e.attackedAtYaw=p.yaw;}}}
@@ -870,8 +879,8 @@ export class Game {
     if(this.settings.hideMatchedNames){const name=chatToLegacy(p.message).replace(/§./g,'').match(/<([^>]+)>/)?.[1],id=[...(this.scoreboard?.players||[])].find(([,player])=>player.name===name)?.[0];if(id&&(this.hiddenPlayers?.has(id)||(this.socialBlocking?.isBlocked(id)||this.blockedPlayers?.has(id))))return;}
     const text = chatToLegacy(p.message);
     if (p.position === 2) this.hud.setActionBar(text);
-    else if(p.position===0)this.hud.queueChatMessage(text,p.message,p.trust?chatTrustTag(p.trust,p.originalMessage):SYSTEM_CHAT_TAG);
-    else this.hud.addChat(text,p.message,false,p.trust?chatTrustTag(p.trust,p.originalMessage):SYSTEM_CHAT_TAG);
+    else if(p.position===0)this.hud.queueChatMessage(text,p.message,p.trust?chatTrustTag(p.trust,p.originalMessage):SYSTEM_CHAT_TAG,p.signature);
+    else this.hud.addChat(text,p.message,false,p.trust?chatTrustTag(p.trust,p.originalMessage):SYSTEM_CHAT_TAG,p.signature);
     this.narrator.onChat(p.position, p.message);
   }
 

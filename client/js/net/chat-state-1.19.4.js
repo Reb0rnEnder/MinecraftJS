@@ -18,3 +18,35 @@ export function decorateChat762(codec,packet,content){
  if(!entry)return {translate:'chat.type.text',with:[sender,content]};
  const args=entry.parameters.map(name=>name==='sender'?sender:name==='content'?content:target?JSON.parse(target):{text:''});return{...(entry.style||{}),translate:entry.translation_key,with:args};
 }
+
+// Native MessageSignatureCache: packed signature IDs use zero for a full
+// signature and cache index + 1 otherwise. This is separate from last-seen ACKs.
+export class MessageSignatureCache762 {
+ constructor(){this.reset();}
+ reset(){this.entries=Array(128).fill(null);}
+ resolve(packed){
+  if(packed.id===0)return packed.signature?.length===256?packed.signature.slice():null;
+  return Number.isInteger(packed.id)&&packed.id>0&&packed.id<=128?this.entries[packed.id-1]:null;
+ }
+ push(previous,signature){
+  const incoming=[...previous,...(signature?[signature]:[])];if(!incoming.length)return;
+  const key=s=>String.fromCharCode(...s),keys=new Set(incoming.map(key));
+  // A bounded deque preserves native duplicate/tail behavior; flattening to a
+  // deduplicated MRU list would change the IDs used by subsequent packets.
+  const queue=new Array(128+incoming.length);let head=128,tail=128+incoming.length;
+  incoming.forEach((s,i)=>queue[128+i]=s.slice());
+  for(let i=0;head<tail&&i<128;i++){
+   const old=this.entries[i];this.entries[i]=queue[--tail];
+   if(old&&!keys.has(key(old)))queue[--head]=old;
+  }
+ }
+}
+
+// FilterMask.applyWithFormatting uses UTF-16 positions, as does Java String.
+export function filteredChat762(text,mask){
+ const extra=[],filtered=i=>!!(BigInt.asUintN(64,mask[i>>6]??0n)&(1n<<BigInt(i&63)));
+ for(let start=0;start<text.length;){const hidden=filtered(start);let end=start+1;while(end<text.length&&filtered(end)===hidden)end++;
+  extra.push(hidden?{text:'#'.repeat(end-start),color:'dark_gray',hoverEvent:{action:'show_text',contents:{translate:'chat.filtered'}}}:{text:text.slice(start,end)});start=end;
+ }
+ return{text:'',extra};
+}

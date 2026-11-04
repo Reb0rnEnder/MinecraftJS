@@ -67,6 +67,7 @@ export class Hud {
   tick() {
     packetRates(this.game.conn, performanceNow());
     this.updateCounter++;
+    this.processChatDeletions();
     this.processQueuedChat();
     if (this.actionBarTicks > 0) this.actionBarTicks--;
     if (this.titleTimer > 0) { this.titleTimer--; if (this.titleTimer <= 0) { this.title = ''; this.subtitle = ''; } }
@@ -82,23 +83,27 @@ export class Hud {
 
   // ---------------------------------------------------------------- Chat
 
-  addChat(text, raw, local = false, tag = SYSTEM_CHAT_TAG) {
-    const g = this.game;
+  addChat(text, raw, local = false, tag = SYSTEM_CHAT_TAG, signature = null) {
     console.log('[chat]', stripCodes(text));
-    const entry = { text, raw, tick: this.updateCounter, tag };
+    const entry = { text, raw, tick: this.updateCounter, tag, signature:signature?signature.slice():null };
     this.chat.unshift(entry);
     if (this.chat.length > 100) this.chat.pop();
+    this._wrapChatEntry(entry,true);
+    void local;
+  }
+
+  _wrapChatEntry(entry,adjustScroll=false){
+    const {text,raw,tag,tick}=entry,g=this.game;
     const width = this.chatWidth();
     const lines = g.gui.font.wrap(text, Math.floor(width / (this.chatScale() || 1))-(tag?.icon?15:0));
     const comps = wrapChatSegments(raw ? chatSegments(raw) : null,lines);
     // GuiNewChat.setChatLine: each wrapped line is pushed to the front in order, so the message's last
     // line ends up at the bottom and its first line above it
     for (let i = 0; i < lines.length; i++) {
-      this.chatLines.unshift({ text: lines[i], tick: this.updateCounter, comps:comps[i], first: i === 0, tag, endOfEntry:i===lines.length-1 });
+      this.chatLines.unshift({ text: lines[i], tick, comps:comps[i], first: i === 0, tag, endOfEntry:i===lines.length-1 });
     }
     while (this.chatLines.length > 100) this.chatLines.pop();
-    if (this.chatScroll > 0){this.chatScroll += lines.length;this.chatUnreadWhileScrolled=true;}
-    void local;
+    if (adjustScroll&&this.chatScroll > 0){this.chatScroll += lines.length;this.chatUnreadWhileScrolled=true;}
   }
 
   chatLineHeight(){return Math.floor(9*(1+(this.game.settings.chatLineSpacing||0)));}
@@ -119,17 +124,35 @@ export class Hud {
     if (this.chatScroll <= 0){this.chatScroll=0;this.chatUnreadWhileScrolled=false;}
   }
 
-  queueChatMessage(text,raw,tag=SYSTEM_CHAT_TAG){
+  queueChatMessage(text,raw,tag=SYSTEM_CHAT_TAG,signature=null){
     const delay=(this.game.settings.chatDelay||0)*1000,now=platform().now();
-    if(!delay||now-(this.lastQueuedChatAt??-Infinity)>=delay){this.addChat(text,raw,false,tag);this.lastQueuedChatAt=now;}
-    else (this.queuedChat||=[]).push({text,raw,tag});
+    if(!delay||now-(this.lastQueuedChatAt??-Infinity)>=delay){this.addChat(text,raw,false,tag,signature);this.lastQueuedChatAt=now;}
+    else (this.queuedChat||=[]).push({text,raw,tag,signature:signature?signature.slice():null});
   }
   processQueuedChat(force=false){
     if(!this.queuedChat?.length)return false;
     const now=platform().now(),delay=(this.game.settings.chatDelay||0)*1000;
-    if(force||now-(this.lastQueuedChatAt??-Infinity)>=delay){const message=this.queuedChat.shift();this.addChat(message.text,message.raw,false,message.tag);this.lastQueuedChatAt=now;return true;}return false;
+    if(force||now-(this.lastQueuedChatAt??-Infinity)>=delay){const message=this.queuedChat.shift();this.addChat(message.text,message.raw,false,message.tag,message.signature);this.lastQueuedChatAt=now;return true;}return false;
   }
   queuedChatClick(mx,my){const scale=this.chatScale(),y=this.gui.height-40;return this.queuedChat?.length&&this.chatOpen()&&mx>=2&&mx<=2+this.chatWidth()&&my>=y&&my<y+9*scale?this.processQueuedChat(true):false;}
+
+  deleteChatMessage(signature){
+    const same=s=>s?.length===signature.length&&s.every((v,i)=>v===signature[i]);
+    const queued=this.queuedChat?.findIndex(e=>same(e.signature))??-1;
+    if(queued>=0){this.queuedChat.splice(queued,1);return true;}
+    const entry=this.chat.find(e=>same(e.signature));if(!entry)return false;
+    const due=entry.tick+60;
+    if(this.updateCounter<due){
+      this.chatDeletions||=[];if(!this.chatDeletions.some(e=>same(e.signature)))this.chatDeletions.push({signature:signature.slice(),due});return true;
+    }
+    Object.assign(entry,{text:'§7§o'+tr('chat.deleted_marker'),raw:null,signature:null,tag:SYSTEM_CHAT_TAG});
+    this.chatLines=[];for(let i=this.chat.length-1;i>=0;i--)this._wrapChatEntry(this.chat[i]);this.scrollChat(0);return true;
+  }
+  processChatDeletions(){
+    if(!this.chatDeletions?.length)return;
+    const pending=this.chatDeletions;this.chatDeletions=[];
+    for(const request of pending)if(this.updateCounter>=request.due)this.deleteChatMessage(request.signature);else this.chatDeletions.push(request);
+  }
 
   setActionBar(text) { this.actionBar = text; this.actionBarTicks = 60; }
 
@@ -137,12 +160,12 @@ export class Hud {
   clearChat() {
     this.chat = [];
     this.chatLines = [];
-    this.chatScroll = 0;this.chatUnreadWhileScrolled=false;this.queuedChat=[];this.lastQueuedChatAt=-Infinity;
+    this.chatScroll = 0;this.chatUnreadWhileScrolled=false;this.chatDeletions=[];this.queuedChat=[];this.lastQueuedChatAt=-Infinity;
   }
 
   // Forget everything that belongs to the server we left (chat history stays, like vanilla)
   resetServerState() {
-    this.queuedChat=[];this.lastQueuedChatAt=-Infinity;
+    this.queuedChat=[];this.chatDeletions=[];this.lastQueuedChatAt=-Infinity;
     this.actionBar = null; this.actionBarTicks = 0;
     this.title = ''; this.subtitle = ''; this.titleTimer = 0;
     this.titleFadeIn = 10; this.titleStay = 70; this.titleFadeOut = 20;

@@ -68,7 +68,9 @@ block/entity pages are not used to infer older bundle or particle behavior.
 ## Open gates
 
 - Display entity transforms, interpolation and interaction bounds.
-- Signed chat sessions, verification/cache, deletion and social/reporting UI.
+- Signed chat sessions, message verification and authenticated reporting. Native trust
+  bars, signature references, deletion and partial-filter formatting are implemented;
+  see chat-deletion-and-filtering-1.19.4.md for exact scope.
 - Remaining new-mob animation transitions, emissive layers, held items and
   entity-specific sound/particle behavior.
 - Powered dragon/piglin head animation and exhaustive native screenshots of

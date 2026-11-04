@@ -73,8 +73,9 @@ headless Chromium did not establish audible playback on a physical device.
   bounds. Unified painting spawning and all native variants are implemented.
 - Complete new mob animation state transitions, emissive layers, held-item
   transforms and entity-specific sounds/particles.
-- Signed account chat sessions, signature verification/cache, message deletion,
-  social/reporting UI. Current outgoing chat is unsigned; trust is not fabricated.
+- Signed account chat sessions, signature verification and authenticated reporting.
+  Native trust indicators, cache references, deletion and partial-filter formatting now work;
+  outgoing chat remains unsigned and trust is not fabricated.
 - World-border initialization and remaining explicitly unsupported packet bodies;
   detailed respawn data-to-keep behavior and additional live prediction round trips.
 - Exact new glint passes, additional damage/fog behavior, full native GUI/container/recipe behavior review.
