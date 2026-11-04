@@ -1,3 +1,5 @@
+#![recursion_limit = "512"]
+
 //! Rust/WebAssembly core for the Gravrust browser client.
 //!
 //! Every module in this crate is a port of a JavaScript module from
@@ -472,4 +474,4 @@ mod unsupported_port {
 // Missing, needed by `unsupported_port`: assets, audio, graphics, gui, i18n,
 // input, inventory, network, runtime, util.
 // These are JavaScript directory names under client/js/, not Rust modules.
-// ---------------------------------------------------------------------------
+// ---------------------------------------------------------------------------// MARKER_TEST_12345

@@ -19,6 +19,7 @@
 /// Computes volume and pitch from bee entity motion parameters.
 
 /// Input parameters for bee sound computation.
+use wasm_bindgen::prelude::*;
 #[derive(Debug, Clone)]
 #[wasm_bindgen(getter_with_clone)]
 pub struct BeeSoundParams {

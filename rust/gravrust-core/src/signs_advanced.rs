@@ -18,6 +18,7 @@
 ///
 /// ARGB color value with each channel dimmed to ~40% brightness (multiplied by 0.4),
 /// suitable for sign text rendering.
+use wasm_bindgen::prelude::*;
 #[wasm_bindgen]
 pub fn sign_text_color(color: u32) -> u32 {
     // JS: `Math.trunc((rgb>>16&255)*.4)<<16 | Math.trunc((rgb>>8&255)*.4)<<8 | Math.trunc((rgb&255)*.4);`

@@ -60,7 +60,8 @@ impl DeathState {
     #[wasm_bindgen(getter)]
     pub fn death_ticks(&self) -> i32 { self.death_ticks }
 
-    #[wasm_bindgen(setter)]
+    // Not a `#[wasm_bindgen(setter)]`: the attribute requires a `set_` prefix,
+    // and this is a mutator rather than a property assignment.
     pub fn increment_death_ticks(&mut self) { self.death_ticks += 1; }
 
     #[wasm_bindgen(getter)]

@@ -67,8 +67,9 @@ impl Connection {
         }
         if let Some(array) = self.handlers.get(&js_sys::Value::from(ev)).and_then(|v| v.dyn_into::<js_sys::Array>().ok()) {
             for i in 0..array.length() {
-                if let Some(fn) = array.get(i).dyn_into::<js_sys::Function>().ok() {
-                    let _ = fn.apply(&JsValue::NULL, &args);
+                // `fn` is a reserved keyword in Rust, so the binding is raw-named.
+                if let Some(r#fn) = array.get(i).dyn_into::<js_sys::Function>().ok() {
+                    let _ = r#fn.apply(&JsValue::NULL, &args);
                 }
             }
         }

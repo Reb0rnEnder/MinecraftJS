@@ -14,7 +14,10 @@ use wasm_bindgen::prelude::*;
 /// - Toggle buttons (on/off)
 /// - Select-from-three options (full/system/hidden)
 /// - Slider options with value/label
-#[wasm_bindgen]
+// NOTE: not `#[wasm_bindgen]`. wasm_bindgen enums may only have fieldless
+// (C-style) variants, and these variants carry Rust data used by the ported
+// screen code. Nothing passes `ChatOption` across the WASM boundary, so the
+// attribute is unnecessary as well as illegal here.
 #[derive(Clone, Debug)]
 pub enum ChatOption {
     /// A simple on/off toggle

@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 // Port of `client/js/game/default-tags.js`
 //! Default tag registries for Minecraft 1.15.2.
 //!
@@ -7,8 +8,12 @@
 use serde_json::Value;
 
 /// The default 1.15.2 tag registries, extracted from the JavaScript port.
-/// Structure matches the DEFAULT_TAGS format: { blocks: {tag_name: [id, ...]}, items: {...}, fluids: {...}, entities: {...} }
-pub const DEFAULT_TAGS: Value = serde_json::json!({
+/// Structure matches the DEFAULT_TAGS format: `{ blocks: {tag_name: [id, ...]}, items: {...}, fluids: {...}, entities: {...} }`
+///
+/// Built with `serde_json::json!`, which allocates at runtime, so this cannot be
+/// a `const`. A `LazyLock` static is the correct form; it also avoids the macro
+/// recursion limit that a single deeply nested `json!` literal would hit.
+pub static DEFAULT_TAGS: std::sync::LazyLock<Value> = std::sync::LazyLock::new(|| serde_json::json!({
     "blocks": {
         "minecraft:acacia_logs": [38, 43, 50, 56],
         "minecraft:anvil": [318, 319, 320],
@@ -121,4 +126,4 @@ pub const DEFAULT_TAGS: Value = serde_json::json!({
         "minecraft:raiders": [23, 34, 87, 88, 90, 99],
         "minecraft:skeletons": [66, 75, 92]
     }
-});
+}));

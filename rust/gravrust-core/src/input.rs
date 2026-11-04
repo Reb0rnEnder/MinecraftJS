@@ -11,6 +11,7 @@
 //! plain function pointers or a small trait so the WASM glue can
 //! connect to the browser/OS event loop.
 
+use wasm_bindgen::prelude::*;
 use std::collections::HashSet;
 use std::collections::HashMap;
 

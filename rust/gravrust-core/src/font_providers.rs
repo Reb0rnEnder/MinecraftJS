@@ -514,18 +514,6 @@ pub async fn load_font_sets(assets: &wasm_bindgen::JsValue) -> std::collections:
     result
 }
 
-// Public exports
-pub use resolve_location;
-pub use font_bytes;
-pub use bitmap_provider;
-pub use legacy_provider;
-pub use true_type_provider;
-pub use load_font_sets;
-pub use FontSet;
-pub use FontProvider;
-pub use FontProviderDef;
-pub use BitmapDef;
-pub use LegacyDef;
-pub use TtfDef;
-pub use Glyph;
-pub use FontProviderType;
+// The items above are already defined in this module, so no `pub use`
+// re-export block is needed here. Such a block re-imports each name into the
+// module that defines it, which Rust rejects as a duplicate definition.

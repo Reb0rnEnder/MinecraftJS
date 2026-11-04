@@ -41,7 +41,7 @@ pub fn push_vector(
     if !(e_x + w > bb[0] && e_x - w < bb[3] && e_y + e_height > bb[1] && e_y < bb[4] && e_z + w > bb[2] && e_z - w < bb[5]) {
         return (0.0, 0.0);
     }
-    const dx = p_x - e_x;
+    let dx = p_x - e_x;
     let dz = p_z - e_z;
     let d = f64::max(f64::abs(dx), f64::abs(dz));
     if d < f64::EPSILON {

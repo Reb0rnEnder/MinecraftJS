@@ -13,6 +13,7 @@
 ///
 /// # Returns
 /// * `String` - GLSL source with integer literals bridged to float
+use wasm_bindgen::prelude::*;
 pub fn glsl_float_literals(source: &str) -> String {
     use std::collections::HashSet;
 

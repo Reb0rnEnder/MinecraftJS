@@ -18,13 +18,9 @@ const KEEP: usize = 10;
 const ORDER_KEY: &str = "Gravrust.serverPacks";
 
 // C18PacketResourcePackStatus.Action
-#[wasm_bindgen]
 pub const PACK_STATUS_SUCCESSFULLY_LOADED: i32 = 0;
-#[wasm_bindgen]
 pub const PACK_STATUS_DECLINED: i32 = 1;
-#[wasm_bindgen]
 pub const PACK_STATUS_FAILED_DOWNLOAD: i32 = 2;
-#[wasm_bindgen]
 pub const PACK_STATUS_ACCEPTED: i32 = 3;
 
 // GuiScreenWorking: the title at y 70 and "stage N%" at y 90; closes itself once the work is done

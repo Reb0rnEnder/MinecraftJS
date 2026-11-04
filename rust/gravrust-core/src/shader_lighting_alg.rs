@@ -14,6 +14,7 @@
 ///
 /// # Returns
 /// * `Option<HashMap<String, [f32; 3]>>` - Lighting colors, or None if defaults missing
+use wasm_bindgen::prelude::*;
 pub fn pack_lighting(options: &[&str], values: &std::collections::HashMap<&str, f32>) -> Option<std::collections::HashMap<String, [f32; 3]>> {
     // JS: `const defaults=Object.fromEntries(options.map(o=>[o.name,o.default]));`
     // JS: `if(!['BLOCKLIGHT_R','BLOCKLIGHT_G','BLOCKLIGHT_B','BLOCKLIGHT_I','LIGHT_DR','AMBIENT_DR'].every(k=>defaults[k]!==undefined))return null;`

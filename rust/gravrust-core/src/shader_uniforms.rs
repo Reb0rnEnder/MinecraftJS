@@ -3,6 +3,7 @@
 //! The actual WebGL context calls cannot be ported without a WebGL implementation,
 //! but the underlying uniform/attribute calculations can be.
 
+use wasm_bindgen::prelude::*;
 use crate::gfx_math::{Mat4, Quat, Vec3, identity, mul, normalize};
 
 // ------------------------------------------------------------ Uniform Locations

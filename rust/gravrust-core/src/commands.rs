@@ -279,6 +279,12 @@ pub struct CommandTree {
     game_assets: Option<GameAssets>,
 }
 
+// `#[wasm_bindgen]` belongs on the `impl` block, not on individual methods:
+// inside an `impl` only `(constructor)`, `(getter)` and `(setter)` attributes
+// are accepted, and a bare `#[wasm_bindgen]` on a method makes the compiler
+// treat it as a free function (hence "`self` argument is only allowed for
+// functions in `impl` blocks").
+#[wasm_bindgen]
 impl CommandTree {
     #[wasm_bindgen(constructor)]
     pub fn new(packet_json: &str, game_assets_json: &str) -> Result<CommandTree, JsValue> {
@@ -663,7 +669,6 @@ impl CommandTree {
 
     // ------------------------------------------------------------ public API
 
-    #[wasm_bindgen]
     pub fn parse(&self, text: &str, slash: bool) -> Result<String, JsValue> {
         let start = if slash && text.starts_with('/') { 1 } else { 0 };
         let result = self.visit(self.root, start, vec![], vec![], 0, 0, text);
@@ -752,7 +757,6 @@ impl CommandTree {
         potentials.into_iter().next().unwrap_or({ best.has_exceptions = true; best })
     }
 
-    #[wasm_bindgen]
     pub fn format(&self, text: &str, offset: usize, full: &str, slash: bool) -> String {
         if slash && !full.starts_with('/') { return text.to_string(); }
         let parse = self.parse(full, slash).unwrap_or_default();
@@ -787,7 +791,6 @@ impl CommandTree {
         }
     }
 
-    #[wasm_bindgen]
     pub fn suggestions(&self, text: &str, cursor: usize, slash: bool) -> Result<String, JsValue> {
         let prefix = &text[..cursor];
         let parse = self.parse(prefix, slash).unwrap_or_default();
