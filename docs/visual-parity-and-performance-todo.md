@@ -41,3 +41,5 @@ This is the project-wide tracker; each feature applies only to its native versio
 - [ ] Record which tasks and native-image gates remain unfinished. Existing Gofile artifacts are the earlier build snapshot, not future commits from this list.
 
 The preceding build's 18 actual Gofile URLs and hashes are recorded in `/home/ender/minecraftjs/dist/uploads/README.md` and `gofile-uploads.json`. Full native shader sky/water/shadow support remains a separate unfinished renderer task described in `preloading-and-real-shader-pipeline.md`.
+
+- [x] Iron golem native crack overlays (1.15+ only): damage/repair thresholds, invisibility, lighting and LOD updates. See [native audit](iron-golem-cracks.md).
