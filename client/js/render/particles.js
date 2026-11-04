@@ -1,3 +1,4 @@
+import{Mesher}from'./mesher.js';
 import {moveParticle} from './particle-collision.js';
 // Particle system (port of EffectRenderer + common EntityFX subclasses), batched into one buffer per texture.
 import { getBlock, getStateProperties } from '../world/blocks.js';
@@ -191,17 +192,24 @@ export class Particles {
     return uv;
   }
 
+  // Native TerrainParticle: block-colour index 0, with the dirt-particle grass-block exception.
+  _blockTint(state,x,y,z){
+    const b=getBlock(state),n=b?.name;if(!b||n==='grass_block')return 0xffffff;
+    if(n.endsWith('_leaves')&&!['oak_leaves','spruce_leaves','birch_leaves','jungle_leaves','acacia_leaves','dark_oak_leaves','mangrove_leaves'].includes(n))return 0xffffff;
+    const g=this.game,context={world:g.world,options:g.settings||{},biomeBlend:Mesher.prototype.biomeBlend};
+    return Mesher.prototype.tintFor.call(context,state,0,Math.floor(x),Math.floor(y),Math.floor(z));
+  }
+
   // EntityDiggingFX
-  digging(x, y, z, mx, my, mz, state, tint) {
+  digging(x, y, z, mx, my, mz, state, tint, source) {
     const uv = this._blockSprite(state);
     if (!uv) return;
     const du = (uv[2] - uv[0]) / 4, dv = (uv[3] - uv[1]) / 4;
     const ju = rand() * 3, jv = rand() * 3;
     const u0 = uv[0] + ju * du, v0 = uv[1] + jv * dv;
     const p = this.fx(x, y, z, mx, my, mz, { atlas: [u0, v0, u0 + du, v0 + dv], gravity: 1, scale: (rand() * 0.5 + 0.5), r: 0.6, g: 0.6, b: 0.6 });
-    const b = getBlock(state);
-    if (b && b.name === 'grass') { p.r = 0.6 * 0.5; p.g = 0.6 * 0.7; p.b = 0.6 * 0.2; }
-    if (tint) { p.r *= ((tint >> 16) & 255) / 255; p.g *= ((tint >> 8) & 255) / 255; p.b *= (tint & 255) / 255; }
+    tint ??= this._blockTint(state, source?.[0]??x, source?.[1]??y, source?.[2]??z);
+    if (tint !== undefined && tint !== null) { p.r *= ((tint >> 16) & 255) / 255; p.g *= ((tint >> 8) & 255) / 255; p.b *= (tint & 255) / 255; }
     p.scale /= 2;
     return this.add(p);
   }
@@ -213,16 +221,17 @@ export class Particles {
     if (isPointInFluid(w,e.x,e.y+.1,e.z) || isPointInFluid(w,e.x,e.y+.1,e.z,true)) return;
     const state = w.getState(Math.floor(e.x),Math.floor(e.y-Math.fround(.2)),Math.floor(e.z)), b = getBlock(state);
     if (!b || b.renderType === 0 || ['air','cave_air','void_air','barrier','structure_void','light'].includes(b.name)) return;
-    return this.digging(e.x+(rand()-.5)*(e.width||.6),e.y+.1,e.z+(rand()-.5)*(e.width||.6),-(e.motionX||0)*4,1.5,-(e.motionZ||0)*4,state);
+    return this.digging(e.x+(rand()-.5)*(e.width||.6),e.y+.1,e.z+(rand()-.5)*(e.width||.6),-(e.motionX||0)*4,1.5,-(e.motionZ||0)*4,state,undefined,[Math.floor(e.x),Math.floor(e.y-Math.fround(.2)),Math.floor(e.z)]);
   }
 
   blockBreak(x, y, z, state) {
     const b = getBlock(state);
     if (!b || b.id === 0) return;
+    const tint=this._blockTint(state,x,y,z);
     const n = 4;
     for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) for (let k = 0; k < n; k++) {
       const px = x + (i + 0.5) / n, py = y + (j + 0.5) / n, pz = z + (k + 0.5) / n;
-      this.digging(px, py, pz, px - x - 0.5, py - y - 0.5, pz - z - 0.5, state);
+      this.digging(px, py, pz, px - x - 0.5, py - y - 0.5, pz - z - 0.5, state, tint);
     }
   }
 
@@ -235,7 +244,7 @@ export class Particles {
     if (face === 0) py = y - f; if (face === 1) py = y + 1 + f;
     if (face === 2) pz = z - f; if (face === 3) pz = z + 1 + f;
     if (face === 4) px = x - f; if (face === 5) px = x + 1 + f;
-    const p = this.digging(px, py, pz, 0, 0, 0, st);
+    const p = this.digging(px, py, pz, 0, 0, 0, st, undefined, [x,y,z]);
     if (p) { p.mx *= 0.2; p.my = (p.my - 0.1) * 0.2 + 0.1; p.mz *= 0.2; p.scale *= 0.6; }
   }
 
