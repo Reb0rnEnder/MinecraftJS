@@ -15,6 +15,7 @@ const STAIRS = new Set(['oak_stairs', 'stone_stairs', 'brick_stairs', 'stone_bri
 
 const SHULKER_BOXES = ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'silver', 'cyan', 'purple',
   'blue', 'brown', 'green', 'red', 'black'].map((c) => c + '_shulker_box');
+SHULKER_BOXES.push('light_gray_shulker_box');
 
 // Blocks with a full "block" bounding box that are NOT opaque cubes in vanilla
 const NOT_OPAQUE = new Set([

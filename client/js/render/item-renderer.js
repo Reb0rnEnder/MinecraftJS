@@ -318,7 +318,7 @@ export class ItemRenderer {
     }
     // TileEntityItemStackRenderer: shulker boxes facing up, beds as head + foot (foot one block towards -z)
     if (name.endsWith('_shulker_box')) {
-      const color = name.slice(0, -'_shulker_box'.length);
+      const color = name.slice(0, -'_shulker_box'.length).replace('light_gray','silver');
       root.add(shulkerBox(mat('entity/shulker/shulker_' + color + '.png'), 1).node);
       return root;
     }
