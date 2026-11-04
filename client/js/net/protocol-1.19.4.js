@@ -1,3 +1,4 @@
+import {decodeUtf8} from '../util/utf8.js';
 // Active protocol-762 codec. Unsupported bodies remain explicit; signed chat
 // account/session verification is still a separate unfinished milestone.
 import {readCommands762} from './commands-1.19.4.js';
@@ -11,6 +12,8 @@ import {registryEntries} from './registry-codec.js';
 import {bitsetValue,maskValue,maskHighest,maskHas,compactMask} from './bitset.js';
 export const PROTOCOL_762=762;
 export class Reader762 extends Reader758 {
+ chatMessage(){const length=this.varint();if(length<0||length>768)throw Error('Oversized 762 chat message');const text=decodeUtf8(this.bytesN(length));if(text.length>256)throw Error('Oversized 762 chat message');return text;}
+
  particleData(id){switch(PARTICLES_762[id]){
   case 'block':case 'block_marker':case 'falling_dust':return{blockState:this.varint()};
   case 'dust':case 'dust_color_transition':{const p={red:this.f32(),green:this.f32(),blue:this.f32(),scale:this.f32()};if(PARTICLES_762[id]==='dust_color_transition')Object.assign(p,{toRed:this.f32(),toGreen:this.f32(),toBlue:this.f32()});return p;}
@@ -46,7 +49,7 @@ export function resolveDimension762(codec,worldType){
 function changed(name,r){switch(name){
  case 'chunk_biomes':return{biomes:list(r,()=>{const z=r.i32(),x=r.i32();return{x,z,data:r.bytesN(r.varint()).slice()};})};
  case 'profileless_chat':return{message:r.string(),type:r.varint(),networkName:r.string(),networkTargetName:r.bool()?r.string():null};
- case 'player_chat':{const p={sender:r.uuid(),index:r.varint(),signature:r.bool()?r.bytesN(256).slice():null,plainMessage:r.string(),timestamp:r.i64(),salt:r.i64()};p.previousMessages=list(r,()=>{const id=r.varint();return{id,signature:id===0?r.bytesN(256).slice():null};},20);p.unsignedChatContent=r.bool()?r.string():null;p.filterType=r.varint();if(p.filterType===2)p.filterTypeMask=list(r,()=>r.i64(),4096);else if(p.filterType!==0&&p.filterType!==1)throw Error('Invalid 762 chat filter');return{...p,type:r.varint(),networkName:r.string(),networkTargetName:r.bool()?r.string():null};}
+ case 'player_chat':{const p={sender:r.uuid(),index:r.varint(),signature:r.bool()?r.bytesN(256).slice():null,plainMessage:r.chatMessage(),timestamp:r.i64(),salt:r.i64()};p.previousMessages=list(r,()=>{const id=r.varint();return{id,signature:id===0?r.bytesN(256).slice():null};},20);p.unsignedChatContent=r.bool()?r.string():null;p.filterType=r.varint();if(p.filterType===2)p.filterTypeMask=list(r,()=>r.i64(),4096);else if(p.filterType!==0&&p.filterType!==1)throw Error('Invalid 762 chat filter');return{...p,type:r.varint(),networkName:r.string(),networkTargetName:r.bool()?r.string():null};}
  case 'hide_message':{const signatureId=r.varint();return{signatureId,signature:signatureId===0?r.bytesN(256).slice():null};}
  case 'chat_suggestions':return{action:r.varint(),entries:list(r,()=>r.string())};
  case 'bundle_delimiter':return{};

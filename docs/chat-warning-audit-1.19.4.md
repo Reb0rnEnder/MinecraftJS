@@ -6,7 +6,7 @@ Native reference: exact 1.19.4 ClientPacketListener fdk.handleServerData (xw ove
 
 Version boundary verified against the [Minecraft 1.19.1 release notes](https://www.minecraft.net/en-us/article/minecraft-java-edition-1-19-1) and [Minecraft Wiki 1.19.1 RC2 history](https://minecraft.wiki/w/Java_Edition_1.19.1_Release_Candidate_2). This feature is intentionally absent from supported 1.18.2 and earlier clients.
 
-Unfinished: incoming session/profile certificate verification, message signature chains, reportable logs and signed outbound chat. The existing player-chat path conservatively marks messages unverified and secure-only chat is not claimed complete. The server policy warning does not establish trust in any individual message. No cryptographic verification was added by this patch.
+Incoming certificate/session/message verification is now implemented separately (chat-cryptographic-verification-1.19.4.md). Outgoing signing, reportable logs and reporting remain unfinished. The server-policy warning itself still does not establish trust in any individual message.
 
 Tests decode a real 762 server_data payload, check both policies, verify multiline dimensions/slot reservation, drawing bounds and the ten-second lifetime.
 

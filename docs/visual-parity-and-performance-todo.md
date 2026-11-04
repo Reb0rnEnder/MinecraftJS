@@ -21,14 +21,16 @@ This is the project-wide tracker; each feature applies only to its native versio
 - [x] Expose separate controls for intentional distant terrain simplification and distant fire/mob animation reductions. Keep native-quality alpha correctness independent of optimisations.
 - [x] Add opt-in bounded CPU/frame/draw/mesh performance capture with hook cleanup and local JSON download.
 - [ ] Collect representative gameplay profiles and GPU timing; compare the same world/camera/settings with separately measured native FPS. CPU capture is not GPU execution time.
-- [ ] Investigate recent performance regressions before adding more expensive shader/rendering work.
+- [x] Profile actual collision code, remove unnecessary entity body-box work, backport the behavior-preserving optimization, and record mod applicability and CPU replay measurements.
+- [ ] Profile remaining rendering/GPU regressions in representative gameplay before larger batching changes.
 
 ## Version-specific UI and chat
 
 - [x] Restore the native 1.19.4 server-policy verification warning toast, including multiline dimensions and ten-second lifetime. This feature starts in 1.19.1 and is not backported to 1.18.2.
 - [x] Render native 1.19.4 trust bars and hover explanations; preserve tags through delayed/wrapped messages and distinguish system messages.
 - [x] Implement 1.19.4 cached signature references, native queued/displayed message deletion, minimum display timing and styled partial filtering.
-- [ ] Complete native 1.19.4 session/message cryptographic verification and reportable chat logs. Signature presence alone must not mark a message verified.
+- [x] Verify native 1.19.4 incoming Mojang certificates, session/message signatures and replay chains; drive native trust tags from validated results.
+- [ ] Complete outgoing signed account sessions/command arguments, reportable logs and authenticated report submission.
 - [x] Compare and correct Social Interactions native geometry, tabs, row spacing/icons, version-specific search fields, scrollbar input and resize behavior (1.16.5+ only).
 - [ ] Finish Social Interactions reference-image, keyboard/narrator, recent signed-message/offline-history and reporting gates.
 - [x] Audit the former chat-hover/UI regression failures: correct target-version fixture metadata, native HUD baselines and scrolling option-list expectations. Native item tooltip/hover behavior passes across all nine targets.

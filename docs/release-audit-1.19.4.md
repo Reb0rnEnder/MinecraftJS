@@ -68,7 +68,7 @@ block/entity pages are not used to infer older bundle or particle behavior.
 ## Open gates
 
 - Display entity transforms, interpolation and interaction bounds.
-- Signed chat sessions, message verification and authenticated reporting. Native trust
+- Outgoing account/session signing, signed command arguments and authenticated reporting. Incoming certificate/message verification, native trust
   bars, signature references, deletion and partial-filter formatting are implemented;
   see chat-deletion-and-filtering-1.19.4.md for exact scope.
 - Remaining new-mob animation transitions, emissive layers, held items and

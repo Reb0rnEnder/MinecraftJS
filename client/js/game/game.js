@@ -1,3 +1,4 @@
+import {ChatVerifier762,hasNonDefaultChatFont} from '../net/chat-verifier-1.19.4.js';
 import {scrollZoom} from './zoom.js';
 import {MessageSignatureCache762,filteredChat762} from '../net/chat-state-1.19.4.js';
 import { SYSTEM_CHAT_TAG, chatTrustTag } from '../gui/chat-tags.js';
@@ -64,7 +65,7 @@ import { RecipeBook } from './recipebook.js';
 import { Input } from './input.js';
 import { Renderer } from '../render/renderer.js';
 import { Gui } from '../gui/gui.js';
-import { chatToLegacy, setTranslator } from '../gui/chat.js';
+import { chatToLegacy, chatComponentString, setTranslator } from '../gui/chat.js';
 import { Hud } from '../gui/hud.js';
 import { Narrator } from '../gui/narrator.js';
 import { Tutorial } from './tutorial.js';
@@ -524,12 +525,12 @@ export class Game {
       for (const e of this.entities.map.values()) {
         if (e === self || e.dead) continue;
         if (self ? e.riding === self.id : e.id === this.ridingEntityId) continue;
-        const hw = (e.width || 0) / 2;
-        const eb = e.kind === 'mob' && e.type === 69 ? shulkerBox(e) : [e.x - hw, e.y, e.z - hw, e.x + hw, e.y + (e.height || 0), e.z + hw];
-        if (!(eb[3] > g[0] && eb[0] < g[3] && eb[4] > g[1] && eb[1] < g[4] && eb[5] > g[2] && eb[2] < g[5])) continue;
         const solid = e.kind === 'boat' || (e.kind === 'mob' && e.type === 69);
         const pushable = self && self.kind === 'boat' && (e.kind === 'player' || e.kind === 'mob' || e.kind === 'boat' || e.kind === 'minecart') && e.riding < 0;
         if (!solid && !pushable) continue;
+        const hw = (e.width || 0) / 2;
+        const eb = e.kind === 'mob' && e.type === 69 ? shulkerBox(e) : [e.x - hw, e.y, e.z - hw, e.x + hw, e.y + (e.height || 0), e.z + hw];
+        if (!(eb[3] > g[0] && eb[0] < g[3] && eb[4] > g[1] && eb[1] < g[4] && eb[5] > g[2] && eb[2] < g[5])) continue;
         if (eb[3] > bb[0] && eb[0] < bb[3] && eb[4] > bb[1] && eb[1] < bb[4] && eb[5] > bb[2] && eb[2] < bb[5]) out.push(eb);
       }
       return out;
@@ -775,7 +776,7 @@ export class Game {
   on_update_view_distance(p) { this.serverViewDistance=p.viewDistance; }
 
   on_login(p) {
-    this.serverData=null;this.enforcesSecureChat=false;this.chatSignatures=new MessageSignatureCache762();
+    this.serverData=null;this.enforcesSecureChat=false;this.chatSignatures=new MessageSignatureCache762();this.chatVerifier?.reset();
     this.enabledFeatures=new Set(['minecraft:vanilla']);this.commandTags={};
     this.blockPrediction?.reset();chatState762.reset();
     resetPlayerView(this);
@@ -856,12 +857,18 @@ export class Game {
   on_player_chat(p){
    const cache=this.chatSignatures||=new MessageSignatureCache762(),previous=(p.previousMessages||[]).map(entry=>cache.resolve(entry));
    if(previous.some(s=>s===null)){this.disconnect(false,tr('multiplayer.disconnect.invalid_packet'));return;}
+   if(this.scoreboard?.players&&!this.scoreboard.players.has(p.sender)){this.disconnect(false,tr('multiplayer.disconnect.chat_validation_failed'));return;}
+   const verified=(this.chatVerifier||=new ChatVerifier762()).validate(p,previous,{enforced:!!this.enforcesSecureChat});
+   if(!verified.valid){this.disconnect(false,tr('multiplayer.disconnect.chat_validation_failed'));return;}
    cache.push(previous,p.signature);
-   const blocked=this.hiddenPlayers?.has(p.sender)||this.socialBlocking?.isBlocked(p.sender)||this.blockedPlayers?.has(p.sender),shown=p.filterType!==1&&!blocked&&this.settings.chatVisibility===0;
-   if(chatState762.process(p.signature,shown)&&chatState762.offset>64)this.send(chatState762.flush());if(!shown||this.settings.onlyShowSecureChat)return;
    let content=p.unsignedChatContent?JSON.parse(p.unsignedChatContent):{text:p.plainMessage};
+   const codec=simplify(this.dimensionCodec),decorated=decorateChat762(codec,p,content);
+   let trust=verified.signed&&!verified.stale?'secure':'unverified';
+   if(trust==='secure'&&(!chatComponentString(decorated).includes(p.plainMessage)||p.unsignedChatContent&&hasNonDefaultChatFont(JSON.parse(p.unsignedChatContent))))trust='modified';
+   const blocked=this.hiddenPlayers?.has(p.sender)||this.socialBlocking?.isBlocked(p.sender)||this.blockedPlayers?.has(p.sender),shown=p.filterType!==1&&!blocked&&this.settings.chatVisibility===0&&!(this.settings.onlyShowSecureChat&&trust==='unverified');
+   if(chatState762.process(p.signature,shown)&&chatState762.offset>64)this.send(chatState762.flush());if(!shown)return;
    if(p.filterType===2)content=filteredChat762(p.plainMessage,p.filterTypeMask);
-   this.on_chat({sender:p.sender,message:JSON.stringify(decorateChat762(simplify(this.dimensionCodec),p,content)),position:0,trust:'unverified',signature:p.signature});
+   this.on_chat({sender:p.sender,message:JSON.stringify(p.filterType===2?decorateChat762(codec,p,content):decorated),position:0,trust,originalMessage:p.plainMessage,signature:p.signature});
   }
   on_hide_message(p){
    const signature=(this.chatSignatures||=new MessageSignatureCache762()).resolve({id:p.signatureId,signature:p.signature});
@@ -877,7 +884,7 @@ export class Game {
   }
   on_chat(p) {
     if(this.hiddenPlayers?.has(p.sender)||(this.socialBlocking?.isBlocked(p.sender)||this.blockedPlayers?.has(p.sender)))return;
-    if(this.settings.hideMatchedNames){const name=chatToLegacy(p.message).replace(/§./g,'').match(/<([^>]+)>/)?.[1],id=[...(this.scoreboard?.players||[])].find(([,player])=>player.name===name)?.[0];if(id&&(this.hiddenPlayers?.has(id)||(this.socialBlocking?.isBlocked(id)||this.blockedPlayers?.has(id))))return;}
+    if(this.settings.hideMatchedNames&&p.position!==0){const name=chatToLegacy(p.message).replace(/§./g,'').match(/<([^>]+)>/)?.[1],id=[...(this.scoreboard?.players||[])].find(([,player])=>player.name===name)?.[0];if(id&&(this.hiddenPlayers?.has(id)||(this.socialBlocking?.isBlocked(id)||this.blockedPlayers?.has(id))))return;}
     const text = chatToLegacy(p.message);
     if (p.position === 2) this.hud.setActionBar(text);
     else if(p.position===0)this.hud.queueChatMessage(text,p.message,p.trust?chatTrustTag(p.trust,p.originalMessage):SYSTEM_CHAT_TAG,p.signature);
@@ -1329,6 +1336,11 @@ export class Game {
 
   on_player_info(p) {
     this.scoreboard.onPlayerInfo(p);
+    const verifier=this.chatVerifier||=new ChatVerifier762();
+    for(const d of p.data||[]){
+      try{if(p.action===4)verifier.remove(d.uuid);else if(p.actions&2){if(this.scoreboard.players.has(d.uuid))verifier.install(d.uuid,d.chatSession);}else if(p.actions&1)verifier.remove(d.uuid);}
+      catch(error){this.disconnect(false,tr(error.key||'multiplayer.disconnect.invalid_public_key_signature'));return;}
+    }
     // skins and capes follow the tab list's textures property (it can arrive after the player is first drawn)
     for (const d of p.data || []) if (d.uuid) {
       if(p.action===4)this.eaglerTextures?.drop(d.uuid);

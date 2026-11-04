@@ -218,6 +218,16 @@ export function chatToPlain(json, options) {
   return chatToLegacy(json, options).replace(/§./g, '');
 }
 
+// Component.getString for trust comparisons: presentation style is omitted,
+// but literal section signs remain part of the message's actual text.
+export function chatComponentString(c){
+ if(c===null||c===undefined)return '';
+ if(typeof c!=='object')return String(c);
+ if(Array.isArray(c))return c.map(chatComponentString).join('');
+ let text=c.text!==undefined?String(c.text):c.translate!==undefined?translateFn(c.translate,(c.with||[]).map(chatComponentString)):c.score?.value!==undefined?String(c.score.value):c.selector??c.keybind??'';
+ return text+(c.extra||[]).map(chatComponentString).join('');
+}
+
 // Extract first click event URL (for chat links)
 export function chatClickUrl(json) {
   let obj = json;
