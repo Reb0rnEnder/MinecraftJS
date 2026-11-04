@@ -1,3 +1,4 @@
+import {scrollZoom} from './zoom.js';
 import {MessageSignatureCache762,filteredChat762} from '../net/chat-state-1.19.4.js';
 import { SYSTEM_CHAT_TAG, chatTrustTag } from '../gui/chat-tags.js';
 import { multilineToast } from '../gui/system-toast.js';
@@ -1654,6 +1655,7 @@ export class Game {
 
     if (this.hurtTime > 0) this.hurtTime--;
 
+    scrollZoom(this);
     // Mouse wheel hotbar scroll
     if (this.input.wheel !== 0 && !this.screens.current) {
       let s = this.heldSlot + this.input.wheel;
