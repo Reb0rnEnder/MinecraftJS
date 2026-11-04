@@ -39,7 +39,7 @@ export class ShaderPacksScreen extends Screen {
  async selectPack(id){try{await this.library.select(id);this.message='';this.onResize();}catch(e){this.message=e.message;}}
 
  pipelineTooltip(gui,mx,my){
-  const report=this.game.shaderPack.pipelineReport;if(report&&my>=this.height-42&&my<this.height-29){const lines=['Real post stages: '+(report.running.join(', ')||'none'),...report.unsupported,'Unsupported geometry stages: '+(report.geometry.join(', ')||'none'),'Unsupported shadow stages: '+(report.shadow.join(', ')||'none')];gui.tooltip(lines.flatMap(l=>gui.font.wrap(l,Math.min(340,this.width-20))),mx,my);}
+  const report=this.game.shaderPack.pipelineReport;if(report&&my>=this.height-42&&my<this.height-29){const lines=['Real post stages: '+(report.running.join(', ')||'none'),...(report.warnings||[]),...report.unsupported,'Unsupported geometry stages: '+(report.geometry.join(', ')||'none'),'Unsupported shadow stages: '+(report.shadow.join(', ')||'none')];const wrapped=lines.flatMap(l=>gui.font.wrap(l,Math.min(340,this.width-20))),limit=Math.max(3,Math.floor((this.height-24)/10));if(wrapped.length>limit){const remaining=wrapped.length-limit+1;wrapped.length=limit-1;wrapped.push('... '+remaining+' more limitation lines');}gui.tooltip(wrapped,mx,my);}
  }
  renderContent(gui,mx,my){
   this.list.render(gui,mx,my);
