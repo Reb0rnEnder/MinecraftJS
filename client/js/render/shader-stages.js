@@ -5,8 +5,8 @@ export function shaderStagePlan(zip,root,dimension=0){
  const ordered=[...stages.keys()].filter(n=>/^(deferred|composite)\d*$/.test(n)).sort((a,b)=>{const group=n=>n.startsWith('deferred')?0:1;return group(a)-group(b)||(Number(a.match(/\d+$/)?.[0]||0)-Number(b.match(/\d+$/)?.[0]||0));});
  return {post:ordered,geometry:[...stages.keys()].filter(n=>/^gbuffers_/.test(n)).sort(),shadow:[...stages.keys()].filter(n=>/^shadow/.test(n)).sort(),files:Object.fromEntries(stages)};
 }
-// Only real scene colour/depth are available to a post stage. Aliasing material,
-// normal, shadow or temporal buffers to colour would manufacture pack output.
+// The native scene inputs available to a post stage. Best-effort imports may
+// explicitly report colour/depth fallbacks; this does not implement those buffers.
 export const POST_SCENE_SAMPLERS=new Set(['colortex0','gcolor','depthtex0','noisetex']);
 export function validatePostOutputs(source,name){
  for(const m of source.matchAll(/const\s+int\s+colortex\d+Format\s*=\s*(\w+)/g))if(!['RGBA','RGBA8'].includes(m[1]))throw Error(name+' needs unsupported scene format: '+m[1]);

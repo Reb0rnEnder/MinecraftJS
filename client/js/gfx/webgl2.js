@@ -381,7 +381,7 @@ vec3 mcjsWave(vec3 p){
       const uniforms=[];const supported=FINAL_UNIFORMS;
       for(let i=0;i<gl.getProgramParameter(program,gl.ACTIVE_UNIFORMS);i++){
         const u=gl.getActiveUniform(program,i);if(u.size!==1)throw Error('Final-pass uniform arrays are unsupported: '+u.name);
-        if(u.type===gl.SAMPLER_2D){if(!(resources.sceneSamplers||new Set(['colortex0','depthtex0','noisetex','gcolor'])).has(u.name)&&!resources.textures?.[u.name])throw Error('Final pass needs an unavailable scene buffer: '+u.name);}
+        if(u.type===gl.SAMPLER_2D){if(!(resources.sceneSamplers||new Set(['colortex0','depthtex0','noisetex','gcolor'])).has(u.name)&&!resources.textures?.[u.name]){if(resources.bestEffort&&/^(?:colortex\d+|gdepth|gnormal|gaux[1-4]|composite|depthtex[12])$/.test(u.name))resources.warn?.(u.name+': using '+(/^depthtex/.test(u.name)?'captured scene depth':'scene colour')+' fallback; native attachment is unavailable');else throw Error('Final pass needs an unavailable scene buffer: '+u.name);}}
         else if(!supported.has(u.name)||![gl.FLOAT,gl.INT,gl.BOOL,gl.INT_VEC2,gl.FLOAT_VEC2,gl.FLOAT_VEC3,gl.FLOAT_VEC4,gl.FLOAT_MAT4].includes(u.type))throw Error('Unsupported final-pass uniform: '+u.name);
         uniforms.push({name:u.name,type:u.type,location:gl.getUniformLocation(program,u.name)});
       }
@@ -389,13 +389,13 @@ vec3 mcjsWave(vec3 p){
       for(const u of uniforms)if(resources.textures?.[u.name])customTextures.set(u.name,{texture:this.createTexture({...resources.textures[u.name],filter:'linear',wrap:'repeat'}),unit:customTextures.size+3});
       if(customTextures.size+3>gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS))throw Error('Final pass uses too many textures');
       const vao=gl.createVertexArray(),defaults=shaderFrameUniforms({device:this});
-      return {needsDepth:uniforms.some(u=>u.name==='depthtex0'),destroy:()=>{gl.deleteProgram(program);gl.deleteVertexArray(vao);if(noise)this.destroyTexture(noise);for(const c of customTextures.values())this.destroyTexture(c.texture);},draw:(scene,frame)=>{
+      return {needsDepth:uniforms.some(u=>/^depthtex[012]$/.test(u.name)),destroy:()=>{gl.deleteProgram(program);gl.deleteVertexArray(vao);if(noise)this.destroyTexture(noise);for(const c of customTextures.values())this.destroyTexture(c.texture);},draw:(scene,frame)=>{
         gl.useProgram(program);gl.bindVertexArray(vao);gl.disable(gl.DEPTH_TEST);gl.depthMask(false);gl.disable(gl.CULL_FACE);gl.disable(gl.BLEND);gl.disable(gl.SCISSOR_TEST);gl.colorMask(true,true,true,true);gl.activeTexture(gl.TEXTURE0);gl.bindTexture(gl.TEXTURE_2D,scene.tex);
         if(noise){gl.activeTexture(gl.TEXTURE1);gl.bindTexture(gl.TEXTURE_2D,noise.tex);gl.activeTexture(gl.TEXTURE0);}
-        if(uniforms.some(u=>u.name==='depthtex0')){if(!scene.depthTexture)throw Error('Final pass requires captured scene depth');gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,scene.depthTexture);}
+        if(uniforms.some(u=>/^depthtex[012]$/.test(u.name))){if(!scene.depthTexture)throw Error('Final pass requires captured scene depth');gl.activeTexture(gl.TEXTURE2);gl.bindTexture(gl.TEXTURE_2D,scene.depthTexture);}
         for(const c of customTextures.values()){gl.activeTexture(gl.TEXTURE0+c.unit);gl.bindTexture(gl.TEXTURE_2D,c.texture.tex);}gl.activeTexture(gl.TEXTURE0);
         const values={viewWidth:this.width,viewHeight:this.height,aspectRatio:this.width/this.height,frameTimeCounter:frame.time,frameTime:frame.delta,worldTime:frame.worldTime,frameCounter:frame.frame,isEyeInWater:frame.underwater?1:0,screenBrightness:frame.gamma,rainStrength:frame.rain||0};
-        for(const u of uniforms){const v=u.type===gl.SAMPLER_2D?(customTextures.get(u.name)?.unit??(u.name==='noisetex'?1:u.name==='depthtex0'?2:0)):(frame.uniforms?.[u.name]??values[u.name]??defaults[u.name]);if(u.type===gl.FLOAT)gl.uniform1f(u.location,v);else if(u.type===gl.INT_VEC2)gl.uniform2iv(u.location,v);else if(u.type===gl.FLOAT_VEC2)gl.uniform2fv(u.location,v);else if(u.type===gl.FLOAT_VEC3)gl.uniform3fv(u.location,v);else if(u.type===gl.FLOAT_VEC4)gl.uniform4fv(u.location,v);else if(u.type===gl.FLOAT_MAT4)gl.uniformMatrix4fv(u.location,false,v);else gl.uniform1i(u.location,v);}
+        for(const u of uniforms){const v=u.type===gl.SAMPLER_2D?(customTextures.get(u.name)?.unit??(u.name==='noisetex'?1:/^depthtex[012]$/.test(u.name)?2:0)):(frame.uniforms?.[u.name]??values[u.name]??defaults[u.name]);if(u.type===gl.FLOAT)gl.uniform1f(u.location,v);else if(u.type===gl.INT_VEC2)gl.uniform2iv(u.location,v);else if(u.type===gl.FLOAT_VEC2)gl.uniform2fv(u.location,v);else if(u.type===gl.FLOAT_VEC3)gl.uniform3fv(u.location,v);else if(u.type===gl.FLOAT_VEC4)gl.uniform4fv(u.location,v);else if(u.type===gl.FLOAT_MAT4)gl.uniformMatrix4fv(u.location,false,v);else gl.uniform1i(u.location,v);}
         gl.drawArrays(gl.TRIANGLES,0,3);
         this.curProgram=null;this.curVao=null;this.curState='';this.curStateObj=null;this.boundTex.fill(null);
       }};
