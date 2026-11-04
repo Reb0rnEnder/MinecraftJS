@@ -255,8 +255,8 @@ export class SoundManager {
     return handle;
   }
 
-  playAtPlayer(name, volume = 1, pitch = 1) {
-    return this.play(name, 0, 0, 0, volume, pitch, { global: true });
+  playAtPlayer(name, volume = 1, pitch = 1, category) {
+    return this.play(name, 0, 0, 0, volume, pitch, category?{global:true,category}:{global:true});
   }
 
   playUi(name, pitch = 1) { return this.play(name, 0, 0, 0, 0.25, pitch, { global: true, category: 'master' }); }

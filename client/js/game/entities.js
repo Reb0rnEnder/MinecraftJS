@@ -1,3 +1,4 @@
+import {playPickupSound} from '../audio/client-sound-triggers.js';
 import { tickDroppedItem } from './dropped-item.js';
 import{pickupVisual,pickupPosition,tickPickupVisuals}from'./item-pickup.js';
 import {isSquid,initSquid,tickSquid,squidInWater} from './squid-animation.js';
@@ -619,7 +620,7 @@ export class EntityManager {
     const e = this.map.get(p.collectedEntityId);
     const collector = p.collectorEntityId === this.game.entityId ? null : this.map.get(p.collectorEntityId);
     if (!e) return;
-    // (the pop / orb sound comes from the server: client-side World.playSoundAtEntity is a no-op in 1.8.9)
+    playPickupSound(this.game,e);
     // The pickup survives removal or metadata changes of the real server entity.
     (this.pickups||=[]).push(pickupVisual(e,collector,this.nextPickupId--));
 
