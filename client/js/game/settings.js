@@ -74,6 +74,9 @@ const DEFAULTS = {
   skinProxy: '', // Optional HTTP/CORS proxy template for public skin/profile URLs.
   resourcePacks: [], // active pack ids, highest priority first
   entityShadows: true,
+  lodFastLeaves: false, // Opt-in opaque foliage in distant simplified terrain.
+  reduceDistantAnimations: true,
+  animateDistantTextures: true,
   lodDistance: 128, // World blocks from the camera; 0 disables terrain and entity LOD.
   language: 'en_us',
   forceUnicodeFont: false,
