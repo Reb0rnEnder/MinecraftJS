@@ -236,6 +236,30 @@ pub mod widgets_alg2;
 pub mod widgets_alg3;
 
 // ---------------------------------------------------------------------------
+// Compatibility trees matching the `client/js/` directory layout.
+//
+// The ported modules were written against paths such as `crate::gui::font` and
+// `crate::assets::VANILLA_UI` because that is where their JavaScript originals
+// live. Those Rust trees did not exist, which is why the gated sources could
+// not compile. Each tree below re-exports the real implementation from the flat
+// module that holds it (or provides the small missing piece), so no logic is
+// duplicated and no invented parallel API is introduced.
+//
+// These names are JavaScript *directory* names, not Rust concepts: `crate::gui`
+// exposes the `crate::widgets::Gui` drawing contract, `crate::network` exposes
+// `crate::buffer`/`crate::packets`, and so on.
+// ---------------------------------------------------------------------------
+pub mod assets;
+pub mod audio;
+pub mod graphics;
+pub mod gui;
+pub mod i18n;
+pub mod inventory;
+pub mod network;
+pub mod runtime;
+pub mod util;
+
+// ---------------------------------------------------------------------------
 // Unfinished ports - not compiled by default.
 //
 // Every `mod` below names a real .rs file in this directory, but the file (and

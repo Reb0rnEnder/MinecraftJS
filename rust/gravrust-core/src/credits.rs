@@ -61,7 +61,8 @@ impl CreditsScreen {
         // Load and process end.txt
         if let Ok(end) = A.read_text("texts/end.txt").await {
             let mark = "§f§k§a§b";
-            let rnd = crate::util::jrandom::JavaRandom::new(8124371);
+            // JS: `const rnd = new JavaRandom(8124371);`
+            let mut rnd = crate::jrandom::JavaRandom::new(Some(8124371));
             // JS: `(end || "").split(/\r?\n/)` - split on CRLF or LF.
             for s in split_lines(&end) {
                 let s = s.replace("PLAYERNAME", &name);
@@ -70,7 +71,11 @@ impl CreditsScreen {
                 // The JS marker is the double-encoded sequence read from the file;
                 // the replacement re-emits a plain `§f§k` prefix plus 3-6 X's.
                 while let Some(j) = s.find(mark) {
-                    let xs: String = "XXXXXXXX".chars().take(rnd.next_int(4) as usize + 3).collect();
+                    // JS: `'XXXXXXXX'.slice(0, rnd.nextInt(4) + 3)`
+                    let xs: String = "XXXXXXXX"
+                        .chars()
+                        .take(rnd.next_int(Some(4)) as usize + 3)
+                        .collect();
                     let replacement = format!("\u{00a7}f\u{00a7}k{}", xs);
                     s = format!("{}{}{}", &s[..j], replacement, &s[j + mark.len()..]);
                 }
