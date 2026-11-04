@@ -7,7 +7,7 @@ Work starts with small, independently reviewable corrections. Push each validate
 - [x] Show the preloaded panorama behind the loading overlay while it fades, rather than waiting for the loading screen to close.
 - [x] Tint terrain/breaking particles from the source block and biome; preserve grass-block and already-coloured-texture exceptions.
 - [x] Restore shulker boxes, including the undyed variant and the native light-gray texture name. Undyed boxes start at 1.13; 1.12 keeps its native silver naming.
-- [ ] Keep attempts to run real shader code when capabilities are missing, with explicit per-stage/buffer warnings. Do not restore generated cloud/wave/lightmap replacements.
+- [x] Keep attempts to run real shader code when capabilities are missing, with explicit per-stage/buffer warnings. Do not restore generated cloud/wave/lightmap replacements.
 
 ## Next: entity and inventory rendering
 
