@@ -161,6 +161,8 @@ pub mod snbt;
 pub mod software;
 pub mod tags;
 pub mod technical;
+pub mod wisp_net;
+pub mod proxies_js;
 pub mod utf8;
 pub mod uuid;
 pub mod vehicle;
@@ -486,8 +488,6 @@ mod unsupported_port {
     pub mod villager_data;
     #[path = "../wisp.rs"]
     pub mod wisp;
-pub mod wisp_net;
-pub mod proxies_js;
 
     // Files renamed during the illegal-filename / duplicate-name pass.
     #[path = "../chunk_1144.rs"]
