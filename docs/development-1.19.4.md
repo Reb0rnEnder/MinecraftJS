@@ -116,7 +116,9 @@ for remaining feature gaps; successful targeted tests do not imply full parity.
 
 ## Native audit follow-up
 
-See [the ongoing native audit](native-audit-1.19.4.md) for exact source inputs,
-284 targeted regressions, the recipe-category and mining-hit category fixes,
-and the unresolved authenticated-webmc double-sound investigation. Full parity
-remains unfinished.
+See [the full-scope review](full-parity-review-1.19.4.md) for prioritized confirmed
+gaps, exact native inputs and acceptance work. The selected suite has 296 passing
+regressions in 49 files. Interaction-entity picking/metadata/response is fixed and
+verified against the isolated native server. The supplied webmc sound and death
+captures are resolved as explicit server sound/literal text behavior; see
+[the capture findings](webmc-capture-findings.md). Full parity remains unfinished.

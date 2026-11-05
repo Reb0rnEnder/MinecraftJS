@@ -1,17 +1,18 @@
 # Native 1.19.4 parity audit — ongoing
 
 This is an audit of the exact pinned client, not a full-parity certification.
-The remaining double sound on authenticated webmc is still open. A disposable native 1.19.4 server confirmed one local wood break and zero
-server break broadcasts to the initiating player. Reproduce with
-`tools/port-1.19.4/probe-break-sounds.mjs` against the isolated presentation
-fixture. The earlier silent-air fix does not establish the webmc cause, and no guessed duplicate suppression
-is being shipped.
+The [full-scope review](full-parity-review-1.19.4.md) records confirmed open
+protocol, border, respawn, display, Adventure, secure-chat and resource gaps.
+The supplied webmc captures have now been analyzed; see
+[their native-code/JVM findings](webmc-capture-findings.md). Explicit server
+sounds and literal plugin text are preserved, as requested.
 
 ## Reproduce this pass
 
 ```sh
 node tools/port-1.19.4/reports.mjs --check
 node tools/port-1.19.4/verify-protocol.mjs
+node tools/port-1.19.4/review-packets.mjs
 node tools/port-1.19.4/audit-native.mjs --test
 ```
 
@@ -25,8 +26,8 @@ Native source was decompiled with CFR 0.152; generated source/jars are not commi
 On 2026-11-05: 998 blocks, all 23,725 state names/properties, native default states,
 1,454 sound registry IDs, and state sound-type access matched the pinned native
 reports/extracted data. The sound asset check validates the native sounds.json
-hash and referenced Ogg files. The protocol gate passed. The selected 48-file
-regression pass has **291 passes, no failures or skips**. The explicit file list
+hash and referenced Ogg files. The protocol gate passed. The selected 49-file
+regression pass has **296 passes, no failures or skips**. The explicit file list
 is audit-cases.json. These are targeted tests, not coverage of every Java method.
 
 The first broad run exposed three stale test-fixture failures: pre-1.16 packet
@@ -66,37 +67,34 @@ backported to 1.18.2 or older. The 1.20.6 graphical baseline carries the fix.
 
 | Area | Exact native reference | Evidence and remaining work |
 |---|---|---|
-| Block interaction | MultiPlayerGameMode fdn, Block cpi, SlabBlock cwh, ServerPlayerGameMode air | Break/hit/event paths reviewed; slab native-server gate from prior pass. Authenticated webmc event trace pending. Other context-dependent placements remain partial. |
+| Block interaction | MultiPlayerGameMode fdn, Block cpi, SlabBlock cwh, ServerPlayerGameMode air | Break/hit/event paths reviewed; slab native-server gate from prior pass. Supplied webmc event trace shows explicit server sounds; Adventure predicates and other use paths remain open. Other context-dependent placements remain partial. |
 | Sound | SoundEngine fxg, SimpleSoundInstance fwa, SoundSource ams, SoundType cwq | Category mismatch fixed; registry/state/asset checks pass. Full trigger coverage and gain/attenuation equivalence are not certified. |
 | Protocol/registries | ClientPacketListener fdk; exact packet mappings and codecs | Native reports, packet compatibility and first-play gates pass. This does not prove every optional packet's gameplay consequence. |
 | Movement | Entity bfh, LivingEntity bfx, Player bym, LocalPlayer fhk | Existing crawl/bubbles/spectator/mouse-look regressions pass. Floating-boat jitter remains unresolved; earlier client mitigations failed native server validation. |
 | Terrain/light | ClientLevel fdj, LevelLightEngine (mapped in source index) | State/property/biome/shape regression checks pass. Exhaustive light propagation and all boundary sequences need reference acceptance. |
 | Entities/rendering | LevelRenderer fie, GameRenderer fhz, EntityRenderDispatcher (source index) | Native keyframe/projectile/painting/preview/shulker regressions pass; all states/layers and graphics backends are not visually certified. |
 | Inventory/recipes | InventoryScreen, CreativeModeInventoryScreen, MerchantScreen, AbstractContainerMenu (source index), ClientRecipeBook elv | Category loss fixed; merchant/inventory/equipment/recipe tests pass. All workstation screens still need pixel and interaction acceptance. |
-| Text/chat | Component tj, TranslatableContents ut, Language qz, Font (source index) | Fallback/format/hover/trust tests pass. Outgoing signed chat/commands/reporting remain partial. Raw webmc death component has not been captured. |
+| Text/chat | Component tj, TranslatableContents ut, Language qz, Font (source index) | Fallback/format/hover/trust tests pass. Outgoing signed chat/commands/reporting remain partial. Raw webmc death component and native JVM parsing confirm literal plugin text. |
 | GUI/accessibility | OptionsScreen, VideoSettingsScreen, AccessibilityOptionsScreen, ChatOptionsScreen, SocialInteractionsScreen, DeathScreen ese | Targeted GUI checks pass; exact pixels, focus/navigation and full narration are not certified. |
 | Resources | PackSelectionScreen, PackRepository (source index) | Existing pack/font/texture paths remain under audit. Arbitrary OptiFine shader execution is not vanilla parity and remains incomplete. |
 | Server-authoritative behavior | Exact native server jar/release boundaries | AI, drops, recipes and other server decisions must not be invented client-side. Experiments retain native feature gating. |
 
-The source index includes 41 exact classes spanning these areas. It is an input
+The source index includes 55 exact classes spanning these areas. It is an input
 map for continued comparisons, not a claim that all 41 classes have been fully
 reviewed. Existing development/parity ledgers remain open.
 
-## Trace the remaining double sound
+## Expanded review and interaction correction
 
-After reloading the client, run in the console on webmc:
+The new packet inventory covers all 111 clientbound IDs, accounting for inherited
+name adapters and connection-level bundle delimiters. Three bodies explicitly
+remain unsupported. Reader/handler presence does not prove gameplay parity.
+The [review](full-parity-review-1.19.4.md) documents each finding's native source,
+impact, release boundary and required acceptance checks.
 
-```js
-var sc = (await import('/js/debug/capture-sounds.js')).captureSounds(game);
-// Break one wooden block, then:
-sc.download(); sc.stop();
-```
-
-Save minecraftjs-sound-capture.json in the 1.19.4 worktree. The bounded trace
-separates local hit/break/place requests from server world-event/sound packets,
-and includes IDs, block states and mixer categories. It excludes chat, server
-addresses, credentials and custom payloads. It observes requested sounds; it does
-not claim to measure played audio, device latency or native Java FPS.
+Interaction-entity defaults, synchronized dimensions, picking and response-based
+Use consumption now match the reviewed native paths. Five regressions and the
+isolated native-server probe pass. The correction is forwarded to 1.20.6, whose
+graphical baseline shares it; no older release gains this 1.19.4 entity.
 
 ## Captured-server follow-up
 

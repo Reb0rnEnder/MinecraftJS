@@ -1,7 +1,8 @@
 # Release-history audit and remaining gates
 
 This is a bounded audit of the changes relevant to the current parity batch,
-not a certificate that every feature in 1.19–1.19.4 works. Registry/model presence,
+not a certificate that every feature in 1.19–1.19.4 works. The newer
+[full-scope review](full-parity-review-1.19.4.md) lists confirmed functional gaps. Registry/model presence,
 a decoded packet, a functional interaction and a screenshot match are separate
 levels of evidence. The pinned **1.19.4** native jar is the implementation
 reference for this target; older worktrees extract their own native tables.
@@ -11,17 +12,19 @@ reference for this target; older worktrees extract their own native tables.
 | Release | Historical boundary | Client evidence / remaining work |
 | --- | --- | --- |
 | 1.19 | Wild Update content, including sculk-related effects | Registry, block models and protocol data exist. Vibration trails and shrieker rings have targeted tests; new mobs still require animation/layer/sound review. Full release page could not be fetched because of robots restrictions; this row does not claim a complete Wiki review. |
-| 1.19.1 | Allay dancing/duplication and player chat changes | Duplication is server-authoritative; client animation transitions remain in the mob audit. Signed sessions, trust verification and reporting are unfinished. |
+| 1.19.1 | Allay dancing/duplication and player chat changes | Duplication is server-authoritative; client animation transitions remain in the mob audit. Incoming signature/trust checks exist; outgoing signing and reporting are unfinished. |
 | 1.19.2 | Secure-chat disconnect and social-screen crash fixes | These are not new blocks/assets. Unsigned chat support does not establish parity with either secure-chat fix. |
 | 1.19.3 | New default skins and creative/feature-flag changes | Native UUID selection, 18 skin/model combinations, feature-filtered suggestions and four native creative catalogs are implemented and tested. No new skins or catalog rows are backported into older releases. |
-| 1.19.4 | Display/interaction entities and further client changes; Update 1.20 experiments remain gated | Painting unified-spawn metadata is verified against native packets. Complete display transforms/interpolation and interaction bounds remain open. Cherry/piglin-head/other 1.20 experiment assets remain registry entries, but commands and creative visibility require server flags. |
+| 1.19.4 | Display/interaction entities and further client changes; Update 1.20 experiments remain gated | Painting unified-spawn metadata is verified against native packets. Interaction bounds/metadata/Use response are fixed and native-server tested; display rendering/transforms/interpolation remain open. Cherry/piglin-head/other 1.20 experiment assets remain registry entries, but commands and creative visibility require server flags. |
 
 History references: [1.19](https://minecraft.wiki/w/Java_Edition_1.19),
 [1.19.1](https://minecraft.wiki/w/Java_Edition_1.19.1),
 [1.19.2](https://minecraft.wiki/w/Java_Edition_1.19.2),
 [1.19.3](https://minecraft.wiki/w/Java_Edition_1.19.3),
 [1.19.4](https://minecraft.wiki/w/Java_Edition_1.19.4).
-The latter four historical pages were available for this review. Current general
+The earlier presentation review accessed the latter four historical pages. In the
+2026-11-05 full-scope pass, only the 1.19.4 Wiki history page was readable; official
+1.19.1–1.19.4 release notes were available as additional references. Current general
 block/entity pages are not used to infer older bundle or particle behavior.
 
 ## Native implementation evidence for this batch
@@ -67,7 +70,8 @@ block/entity pages are not used to infer older bundle or particle behavior.
 
 ## Open gates
 
-- Display entity transforms, interpolation and interaction bounds.
+- Display entity rendering, transforms and interpolation. Interaction bounds are
+  fixed; see the new full-scope review and native-server probe.
 - Outgoing account/session signing, signed command arguments and authenticated reporting. Incoming certificate/message verification, native trust
   bars, signature references, deletion and partial-filter formatting are implemented;
   see chat-deletion-and-filtering-1.19.4.md for exact scope.

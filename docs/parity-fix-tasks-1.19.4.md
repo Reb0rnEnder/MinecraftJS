@@ -3,6 +3,8 @@
 Target: the existing 1.19.4 worktree, with correctness fixes backported to every
 applicable supported target. Native jar behavior and exact release history are
 required evidence. This is a work ledger, not a full-parity completion claim.
+The [full-scope review](full-parity-review-1.19.4.md) records remaining functional
+gaps that are not covered by the completed tasks below.
 
 ## 1. Commands, editing and skins
 

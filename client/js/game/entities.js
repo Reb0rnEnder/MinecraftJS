@@ -187,10 +187,15 @@ export class EntityManager {
     e.typeName = e.entityName || 'Unknown object';
     e.objectData = p.objectData;
     if(e.entityName==='chest_boat')e.chestBoat=true;
-    if(e.kind==='interaction'){e.width=e.height=1;e.pickable=true;e.noPhysics=true;}
     if(e.kind==='minecart')e.cartType=Math.max(0,MINECART_NAMES.indexOf(e.entityName));
     e.width = def ? def.width : 0; e.height = def ? def.height : 0; e.eyeHeight = def ? def.eyeHeight : 0;
     e.pickable = ['boat', 'minecart', 'crystal', 'itemframe', 'leash', 'armorstand', 'shulker_bullet'].includes(e.kind) || e.entityName === 'fireball';
+    // Interaction defines its own dimensions, independent of EntityType's zero
+    // registration size. Native bfs defaults to 1x1 and is always pickable.
+    if (e.kind === 'interaction') {
+      e.width = e.height = 1; e.eyeHeight = Math.fround(.85);
+      e.pickable = true; e.pickRadius = 0; e.noPhysics = true; e.response = false;
+    }
     // crd.a(iz) consumes velocity in constructors for spit/bullets and acceleration
     // for fireballs, then clears data for these and several immobile objects.
     const ignoresVelocity = ['fishing_bobber', 'glow_item_frame', 'item_frame', 'leash_knot', 'potion', 'experience_bottle', 'falling_block'];
@@ -383,6 +388,11 @@ export class EntityManager {
     const name = e.entityName;
     if(name==='painting'&&wire[PAINTING_VARIANT_INDEX_762]!==undefined)configurePainting762(e,wire[PAINTING_VARIANT_INDEX_762]);
     const own=WIRE_METADATA[name]||{},assign=(symbol,key)=>{const id=own[symbol];if(id!==undefined&&wire[id]!==undefined){if(['snifferState','dashing'].includes(key)&&e[key]!==wire[id])e.wildAnimationStart=e.ticks;e[key]=wire[id];}};
+    if (name === 'interaction') {
+      assign('DATA_WIDTH_ID', 'width'); assign('DATA_HEIGHT_ID', 'height');
+      assign('DATA_RESPONSE_ID', 'response');
+      e.eyeHeight = Math.fround(e.height * Math.fround(.85));
+    }
     if(name==='frog'){assign('DATA_VARIANT_ID','frogVariant');assign('DATA_TONGUE_TARGET_ID','tongueTarget');}
     if(name==='allay'){assign('DATA_DANCING','dancing');assign('DATA_CAN_DUPLICATE','canDuplicate');}
     if(name==='warden')assign('CLIENT_ANGER_LEVEL','angerLevel');

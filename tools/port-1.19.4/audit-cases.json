@@ -22,6 +22,7 @@
   "tools/test-experimental-gating-1194.mjs",
   "tools/test-fire-event-sound.mjs",
   "tools/test-inventory-preview-equipment.mjs",
+  "tools/test-interaction-entities-1194.mjs",
   "tools/test-iron-golem-cracks.mjs",
   "tools/test-merchant-offers-1194.mjs",
   "tools/test-native-keyframes-1194.mjs",
