@@ -22,7 +22,7 @@ export function decodeChunkData498(packet,{stateCount=BLOCK_STATE_COUNT_498}={})
     const longs=r.varint();if(longs!==64*bits)throw new Error('Invalid packed section length');
     const words=new Uint32Array(longs*2);
     for(let i=0;i<longs;i++){words[i*2+1]=r.i32()>>>0;words[i*2]=r.i32()>>>0;}
-    const blocks=new Uint32Array(4096),mask=(1<<bits)-1;
+    const blocks=new (stateCount <= 65536 ? Uint16Array : Uint32Array)(4096),mask=(1<<bits)-1;
     for(let i=0;i<4096;i++) {
       const offset=i*bits,word=offset>>>5,shift=offset&31;
       let value=words[word]>>>shift;if(shift+bits>32)value|=words[word+1]<<(32-shift);value&=mask;
