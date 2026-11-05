@@ -1,3 +1,4 @@
+import {MeshBuildQueue} from './mesh-build-queue.js';
 // Pending mesh dirtiness retains Set semantics, with a column index for the
 // active camera range. Server-sent terrain outside that range is kept pending
 // without scanning or parsing it on every rendered frame.
@@ -19,7 +20,9 @@ export class DirtySections extends Set {
     if (!zs) this.columns.set(cx, zs = new Map());
     let column = zs.get(cz);
     if (!column) zs.set(cz, column = new Map());
-    column.set(key, [key,cx,sy,cz]);
+    const entry=[key,cx,sy,cz];
+    column.set(key, entry);
+    this.priority?.add(entry);
     super.add(key);
     this._invalidate(cx,cz);
     return this;
@@ -37,6 +40,11 @@ export class DirtySections extends Set {
     super.clear();
     this.columns.clear();
     this.range = null;
+    this.priority = null;
+  }
+  prioritized(x,y,z,radius){
+    if(!this.priority?.matches(x,y,z,radius))this.priority=new MeshBuildQueue(this,x,y,z,radius);
+    return this.priority;
   }
   within(cx,cz,radius) {
     const r=this.range;
