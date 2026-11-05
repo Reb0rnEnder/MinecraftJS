@@ -1,3 +1,4 @@
+import {formatComponentTranslation} from './component-translation.js';
 import {formatCode,activeFormatting,rgbCode,fontCode} from './format-codes.js';
 // JSON chat component -> legacy formatted string (with section-sign codes)
 
@@ -9,8 +10,14 @@ const COLOR_NAMES = {
 
 import { setTranslator as setI18nTranslator } from './i18n.js';
 
-let translateFn = (k) => k;
-export function setTranslator(fn) { translateFn = fn; setI18nTranslator(fn); }
+let translateFn = (k) => k,translationTemplate=null;
+export function setTranslator(fn,lookup=null) { translateFn = fn; translationTemplate=lookup; setI18nTranslator(fn); }
+function componentTranslation(c,args){
+  if(translationTemplate)return formatComponentTranslation(translationTemplate(c.translate,c.fallback),args);
+  // Preserve injected translators used outside Game; unknown keys can still use native fallback text.
+  const translated=translateFn(c.translate,args);
+  return c.fallback!==undefined&&c.fallback!==null&&translated===c.translate?formatComponentTranslation(String(c.fallback),args):translated;
+}
 
 function styleCodes(style) {
   // A false flag needs an actual reset even at the root (e.g. a custom item name
@@ -61,7 +68,7 @@ function toText(c, parentStyle) {
     // Reset BEFORE an argument as well as after it: bold:false (etc.) has no
     // enabling code of its own and otherwise leaks the translation's style.
     const args = (c.with || []).map((w) => '§r' + toText(w, style) + '§r' + codes);
-    text = translateFn(c.translate, args);
+    text = componentTranslation(c, args);
   } else if (c.score) text = c.score.value !== undefined ? String(c.score.value) : '';
   else if (c.selector !== undefined) text = c.selector;
   else if (c.keybind !== undefined) text = c.keybind; // vanilla's fallback without a keybinding resolver
@@ -224,7 +231,7 @@ export function chatComponentString(c){
  if(c===null||c===undefined)return '';
  if(typeof c!=='object')return String(c);
  if(Array.isArray(c))return c.map(chatComponentString).join('');
- let text=c.text!==undefined?String(c.text):c.translate!==undefined?translateFn(c.translate,(c.with||[]).map(chatComponentString)):c.score?.value!==undefined?String(c.score.value):c.selector??c.keybind??'';
+ let text=c.text!==undefined?String(c.text):c.translate!==undefined?componentTranslation(c,(c.with||[]).map(chatComponentString)):c.score?.value!==undefined?String(c.score.value):c.selector??c.keybind??'';
  return text+(c.extra||[]).map(chatComponentString).join('');
 }
 
@@ -252,7 +259,7 @@ export function chatSegments(raw) {
     if(next.hover?.action==='show_text')next.hoverText=chatToLegacy(next.hover.contents??next.hover.value,{parsed:true});
     const push=text=>{if(text)out.push({text:styleCodes(style)+text,...next,style});};
     if(c.translate!==undefined){
-      const args=c.with||[],marked=translateFn(c.translate,args.map((_,i)=>'\u0000'+i+'\u0000'));
+      const args=c.with||[],marked=componentTranslation(c,args.map((_,i)=>'\u0000'+i+'\u0000'));
       let end=0;for(const match of marked.matchAll(/\u0000(\d+)\u0000/g)){push(marked.slice(end,match.index));walk(args[Number(match[1])],style,next);end=match.index+match[0].length;}push(marked.slice(end));
     }else if(c.text!==undefined)push(String(c.text));
     else if(c.score)push(String(c.score.value??''));

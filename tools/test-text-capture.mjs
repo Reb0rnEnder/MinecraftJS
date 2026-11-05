@@ -10,3 +10,9 @@ test('text capture preserves packets and formatting, exports locally, then resto
  capture.download();assert.equal(downloaded.name,'minecraftjs-text-capture.json');assert.ok(JSON.parse(new TextDecoder().decode(downloaded.data)).packets.length===2);
  capture.stop();assert.equal(Object.hasOwn(g,'on_chat'),false);assert.equal(g.on_chat,prototype.on_chat);
 });
+
+test('death-message capture preserves raw server components and restores the handler',()=>{
+ const original=function(p){this.deathMessage=p.message;},g={on_combat_event:original,assets:{translate:()=> 'MinecraftJS',lang:{}},hud:{chat:[]}},capture=captureText(g);
+ const packet={event:2,playerId:1,message:JSON.stringify({translate:'death.attack.player',with:[{text:'Player'},{translate:'<chat=uuid>',fallback:'Zombie'}]})};g.on_combat_event(packet);packet.message='changed';
+ const entry=capture.dump().packets[0];assert.equal(entry.type,'combat_event');assert.ok(entry.packet.message.includes('<chat=uuid>'));assert.ok(entry.packet.message.includes('Zombie'));capture.stop();assert.equal(g.on_combat_event,original);
+});
