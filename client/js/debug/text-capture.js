@@ -18,14 +18,14 @@ export function captureText(game,{limit=100}={}){
   for(const v of Object.values(value))if(v&&typeof v==='object'||typeof v==='string')collect(v);
  };
  for(const message of initial.chat)collect(message.raw);
- for(const name of ['chat','scoreboard_objective','scoreboard_score','scoreboard_display_objective','scoreboard_team','playerlist_header','player_info','title']){
+ for(const name of ['chat','scoreboard_objective','scoreboard_score','scoreboard_display_objective','scoreboard_team','playerlist_header','player_info','title','combat_event']){
   const key='on_'+name,original=game[key];if(typeof original!=='function')continue;
   const wrapper=function(packet,...rest){
    const raw=clone(packet);collect(raw);
    try{return original.call(this,packet,...rest);}
    finally{
     const entry={type:name,packet:raw};
-    if(name==='chat')entry.formatted=chatToLegacy(packet.message);
+    if(name==='chat'||name==='combat_event'&&packet.event===2)entry.formatted=chatToLegacy(packet.message);
     if(name.startsWith('scoreboard_')||name==='playerlist_header')entry.scoreboard=scoreboard(game);
     packets.push(entry);if(packets.length>limit)packets.shift();
    }
