@@ -1,3 +1,4 @@
+import {encodeEntityPosition,relativeEntityPosition} from './entity-position.js';
 import {playPickupSound} from '../audio/client-sound-triggers.js';
 import { tickDroppedItem } from './dropped-item.js';
 import{pickupVisual,pickupPosition,tickPickupVisuals}from'./item-pickup.js';
@@ -114,7 +115,8 @@ export class EntityManager {
     return {
       id, x, y, z, prevX: x, prevY: y, prevZ: z, lastTickX: x, lastTickY: y, lastTickZ: z,
       // EntityTracker server position, in 1/4096 block (1.9+)
-      serverX: Math.round(x * 4096), serverY: Math.round(y * 4096), serverZ: Math.round(z * 4096),
+      serverX: encodeEntityPosition(x), serverY: encodeEntityPosition(y), serverZ: encodeEntityPosition(z),
+      packetX:x,packetY:y,packetZ:z,
       newX: x, newY: y, newZ: z, newYaw: yaw, newPitch: pitch, inc: 0,
       yaw, pitch, prevYaw: yaw, prevPitch: pitch, headYaw: yaw, prevHeadYaw: yaw, bodyYaw: yaw, prevBodyYaw: yaw,
       limbSwing: 0, limbSwingAmount: 0, prevLimbSwingAmount: 0, swingProgress: 0, prevSwingProgress: 0, swingTicks: 0, swinging: false,
@@ -302,31 +304,30 @@ export class EntityManager {
   relMove(p, move, look) {
     const e = this.map.get(p.entityId);
     if (!e) return;
-    e.serverX += Math.round(p.dX * 4096);
-    e.serverY += Math.round(p.dY * 4096);
-    e.serverZ += Math.round(p.dZ * 4096);
-    if (e.controlled) return; // NetHandlerPlayClient: !entity.canPassengerSteer()
-    const yaw = look ? p.yaw : (e.inc > 0 ? e.newYaw : e.yaw);
-    const pitch = look ? p.pitch : (e.inc > 0 ? e.newPitch : e.pitch);
-    this._setTarget(e, e.serverX / 4096, e.serverY / 4096, e.serverZ / 4096, yaw, pitch);
+    if(e.controlled)return; // native ignores relative movement for a locally steered vehicle
+    e.packetX=relativeEntityPosition(e.packetX??e.serverX/4096,p.dX);
+    e.packetY=relativeEntityPosition(e.packetY??e.serverY/4096,p.dY);
+    e.packetZ=relativeEntityPosition(e.packetZ??e.serverZ/4096,p.dZ);
+    e.serverX=encodeEntityPosition(e.packetX);e.serverY=encodeEntityPosition(e.packetY);e.serverZ=encodeEntityPosition(e.packetZ);
+    this._setTarget(e,e.packetX,e.packetY,e.packetZ,look?p.yaw:e.yaw,look?p.pitch:e.pitch);
     e.onGround = p.onGround;
   }
 
   look(p) {
     const e = this.map.get(p.entityId);
     if (!e || e.controlled) return;
-    this._setTarget(e, e.inc > 0 ? e.newX : e.x, e.inc > 0 ? e.newY : e.y, e.inc > 0 ? e.newZ : e.z, p.yaw, p.pitch);
+    this._setTarget(e,e.x,e.y,e.z,p.yaw,p.pitch);
     e.onGround = p.onGround;
   }
 
   teleport(p) {
     const e = this.map.get(p.entityId);
     if (!e) return;
-    e.serverX = Math.round(p.x * 4096); e.serverY = Math.round(p.y * 4096); e.serverZ = Math.round(p.z * 4096);
-    if (e.controlled) return;
-    // handleEntityTeleport (1.9+): close to the current position only the rotation changes
-    if (Math.abs(e.x - p.x) < 0.03125 && Math.abs(e.y - p.y) < 0.015625 && Math.abs(e.z - p.z) < 0.03125) this._setTarget(e, e.x, e.y, e.z, p.yaw, p.pitch);
-    else this._setTarget(e, p.x, p.y, p.z, p.yaw, p.pitch);
+    e.packetX=p.x;e.packetY=p.y;e.packetZ=p.z;
+    e.serverX=encodeEntityPosition(p.x);e.serverY=encodeEntityPosition(p.y);e.serverZ=encodeEntityPosition(p.z);
+    if(e.controlled)return;
+    // Since 1.16, absolute teleports always supply their exact coordinates to lerpTo.
+    this._setTarget(e,p.x,p.y,p.z,p.yaw,p.pitch);
     e.onGround = p.onGround;
   }
 
@@ -682,8 +683,8 @@ export class EntityManager {
     const y = v.y + this.mountedOffset(v) + (riderKind === 'player' ? -0.35 : 0);
     if (v.kind !== 'boat') return [v.x, y, v.z];
     const list = this.passengersOf(v.id);
-    if (list.length < 2) return [v.x, y, v.z];
-    let f = list.indexOf(riderId) === 0 ? Math.fround(0.2) : Math.fround(-0.6);
+    if (list.length < 2 && !v.chestBoat) return [v.x, y, v.z];
+    let f = v.chestBoat ? Math.fround(0.15) : list.indexOf(riderId) === 0 ? Math.fround(0.2) : Math.fround(-0.6);
     const r = this.map.get(riderId);
     if (r && r.kind === 'mob' && ANIMALS.has(r.entityName)) f = Math.fround(f + 0.2);
     const a = Math.fround(Math.fround(-v.yaw * Math.fround(Math.PI / 180)) - Math.fround(Math.PI / 2));
@@ -691,7 +692,7 @@ export class EntityManager {
   }
 
   mountedOffset(v) {
-    if (v.kind === 'boat') return -0.1;     // EntityBoat.getMountedYOffset (1.9+)
+    if (v.kind === 'boat') return v.boatType===8?0.3:-0.1; // native 1.19.4 bamboo raft offset
     if (v.kind === 'minecart') return 0;    // EntityMinecart.getMountedYOffset (1.9+)
     if (v.kind === 'mob') {
       if(v.entityName==='strider')return v.height-.19+.24*Math.cos((v.limbSwing||0)*1.5)*Math.min(.25,v.limbSwingAmount||0);
