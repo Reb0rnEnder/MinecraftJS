@@ -1,3 +1,4 @@
+import {isSlab,canMergeSlab,slabPlacementState} from './slab-placement.js';
 import {consumeEffect} from '../audio/consume-sounds.js';
 import {predictDoorPair,reconcileDoorPair} from './door-prediction.js';
 import {staticCollisionBoxes} from '../world/blocks.js';
@@ -493,6 +494,7 @@ export class Interaction {
 
   // Block a placer item puts down (ItemBlock or ItemReed-style items)
   _placedBlock(held) {
+    if(!held)return null;
     if (this._itemBlock(held)) return blocks[held.id];
     const n = { 331: 'redstone_wire', 338: 'reeds', 354: 'cake', 356: 'unpowered_repeater', 379: 'brewing_stand', 380: 'cauldron', 390: 'flower_pot',
       404: 'unpowered_comparator', 287: 'tripwire' }[held.id];
@@ -512,6 +514,7 @@ export class Interaction {
     const cur = blocks[g.world.getState(t.x, t.y, t.z) >> 4];
     let face = t.face;
     let p = { x: t.x, y: t.y, z: t.z };
+    if(canMergeSlab(g.world,this._placedBlock(held),held,p,t))return {p,face};
     if (cur && cur.name === 'snow_layer' && (g.world.getState(t.x, t.y, t.z) & 7) < 1) face = 1;
     else if (!this._replaceable(g.world.getState(t.x, t.y, t.z))) {
       const d = FACE_DIR[t.face] || [0, 1, 0];
@@ -526,9 +529,10 @@ export class Interaction {
     if (!nb) return false;
     const { p, face } = this._placementPos(t, held);
     if (p.y < 0 || p.y > 255) return false;
-    if (!this._replaceable(w.getState(p.x, p.y, p.z))) return false;
+    if (!canMergeSlab(w,nb,held,p) && !this._replaceable(w.getState(p.x, p.y, p.z))) return false;
     // entities in the way of a block with a collision box (EntityLivingBase, boats, minecarts, TNT, falling blocks)
-    const boxes=staticCollisionBoxes(nb.id,held.damage&15);
+    const placed=isSlab(nb)?slabPlacementState(w,nb,held,p,t):(nb.id<<4)|(held.damage&15);
+    const boxes=staticCollisionBoxes(placed>>4,placed&15);
     if(boxes.length){
       const hit=b=>placementIntersects(boxes,p,b);
       if (hit(this.player.bb())) return false;
@@ -567,7 +571,7 @@ export class Interaction {
       if (!this._canPlaceBlockOnSide(t, held)) return false;
       if (held.count <= 0) return false;
       const { p } = this._placementPos(t, held);
-      this._predictPlace(p, held, placer);
+      this._predictPlace(p, held, placer,t);
       // Sound belongs to successful item use, including states left for the server to resolve.
       g.sound.playBlockPlace(p.x, p.y, p.z, (placer.id << 4) | (held.damage & 15));
       held.count--; // the server's slot update follows
@@ -596,8 +600,9 @@ export class Interaction {
 
   // ItemBlock.onItemUse sets the block on the client right away; only for blocks whose placed state is just
   // the item damage (no facing / orientation logic), the server's block change follows either way
-  _predictPlace(p, held, nb) {
+  _predictPlace(p, held, nb,context=this.target) {
     if (!this._itemBlock(held)) return;
+    if(isSlab(nb)&&context){const state=slabPlacementState(this.game.world,nb,held,p,context);this.game.world.setState(p.x,p.y,p.z,state);return;}
     const SIMPLE = /^(stone|grass|dirt|cobblestone|planks|sand|gravel|gold_ore|iron_ore|coal_ore|sponge|glass|lapis_ore|lapis_block|sandstone|wool|gold_block|iron_block|brick_block|tnt|bookshelf|mossy_cobblestone|obsidian|diamond_ore|diamond_block|crafting_table|snow|ice|clay|netherrack|soul_sand|glowstone|stonebrick|melon_block|mycelium|nether_brick|end_stone|redstone_lamp|emerald_ore|emerald_block|redstone_block|quartz_ore|stained_hardened_clay|stained_glass|slime|barrier|prismarine|sea_lantern|hardened_clay|coal_block|packed_ice|red_sandstone|noteblock)$/;
     if (!SIMPLE.test(nb.name)) return;
     let meta = held.damage & 15;

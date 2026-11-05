@@ -220,7 +220,9 @@ export class SoundManager {
   }
 
   playBlockBreak(x, y, z, state) {
-    const st = soundTypeOf(blocks[state >> 4]);
+    const block=blocks[state>>4];
+    if(!block||block.id===0)return;
+    const st = soundTypeOf(block);
     this.play(st[1], x + 0.5, y + 0.5, z + 0.5, (st[3] + 1) / 2, st[4] * 0.8);
   }
 
