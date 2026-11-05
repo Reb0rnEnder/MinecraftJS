@@ -108,7 +108,7 @@ export class Interaction {
     let bestDist = hit ? hit.dist : entityReach;
     for (const e of g.entities.pickable()) {
       if (!e.pickable || e.id === g.entityId || e.id === g.ridingEntityId) continue;
-      const border = 0.1;
+      const border = e.pickRadius ?? 0.1;
       let r;
       if (e.box) { // hanging entities: exact box from EntityHanging.updateBoundingBox
         const b = e.box;
@@ -521,6 +521,12 @@ export class Interaction {
         g.send(C.useEntity(e.id, 2, t.hit[0] - p.x, t.hit[1] - p.y, t.hit[2] - p.z, hand, !!g.player.sneaking));
         if (e.kind === 'armorstand' && !((e.armorFlags || 0) & 16)) return;
         g.send(C.useEntity(e.id, 0, 0, 0, 0, hand, !!g.player.sneaking)); // interactWithEntity (INTERACT)
+        // Interaction.interact consumes either response value; only SUCCESS
+        // (response=true) swings. Do not fall through to item/offhand use.
+        if (e.kind === 'interaction' && g.gameMode !== 3) {
+          if (e.response) this.swing(hand);
+          return;
+        }
         // EntityMinecartCommandBlock.processInitialInteract: GuiEditCommandBlockMinecart (COMMAND 12, LAST_OUTPUT 13)
         if (e.kind === 'minecart' && e.cartType === 6 && g.canUseCommandBlock()) { g.screens.open(new CommandMinecartScreen(g, e, 12, 13)); return; }
         if (g.entities.isInteractive(e, stack)) return;

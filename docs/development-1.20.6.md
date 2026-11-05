@@ -30,3 +30,18 @@ misreading component stacks. Target-specific network formats are not backported.
 The local server jar is verified against target.json; only server properties and
 EULA were copied from the existing 1.19.4 fixture. User worlds/configs/captures
 are not committed or loaded by the isolated probe. No distribution was rebuilt.
+
+## Forwarded interaction-entity correction
+
+The 1.19.4 parity review (source commit `59853ce`) found zero registration dimensions overwriting the
+interaction entity's own 1x1 spawn bounds and pickability. This shared graphical
+baseline now retains its defaults, applies width/height/response metadata, uses
+zero pick-radius inflation and consumes Use with response-controlled arm swing.
+Native 1.20.6 Interaction (`btm`) confirms the same dimensions/response semantics;
+client jar SHA-1 is `05b6f1c6b46a29d6ea82b4e0d42190e42402030f`.
+
+The forwarded interaction/chest-boat tests pass (8 tests), and the client bundle
+compiles. These use the existing 1.19.4 graphical/metadata baseline, not a
+completed 1.20.6 Play codec. A broader projectile test was attempted but cannot
+load the absent generated entity-model bundle. Native 1.20.6 live/render parity
+is not inferred. No pre-1.19.4 target receives this newer entity feature.
