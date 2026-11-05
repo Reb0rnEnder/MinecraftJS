@@ -1,3 +1,4 @@
+import {clampBoatYaw} from './mouse-look.js';
 // Vehicles the local player controls (1.9+: the client moves its vehicle and reports it with CPacketVehicleMove).
 // Boats are ports of EntityBoat (water status, glide, paddles), horses of AbstractHorse.travel; both move with
 // the player's collision code (a LocalPlayer used as the vehicle's body).
@@ -177,10 +178,7 @@ export class BoatController {
   // EntityBoat.updatePassenger + applyYawToEntity: the rider turns with the boat, at most 105 degrees off its heading
   applyToRider(pl) {
     pl.yaw += this.deltaRotation;
-    const f = wrap(pl.yaw - this.yaw);
-    const f1 = Math.max(-105, Math.min(105, f));
-    pl.prevYaw += f1 - f;
-    pl.yaw += f1 - f;
+    clampBoatYaw(pl,this.yaw);
   }
 
   setFromServer(x, y, z, yaw) { this.body.setPosition(x, y, z); this.yaw = yaw; }
