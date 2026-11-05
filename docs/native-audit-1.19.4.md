@@ -25,8 +25,8 @@ Native source was decompiled with CFR 0.152; generated source/jars are not commi
 On 2026-11-05: 998 blocks, all 23,725 state names/properties, native default states,
 1,454 sound registry IDs, and state sound-type access matched the pinned native
 reports/extracted data. The sound asset check validates the native sounds.json
-hash and referenced Ogg files. The protocol gate passed. The selected 46-file
-regression pass has **286 passes, no failures or skips**. The explicit file list
+hash and referenced Ogg files. The protocol gate passed. The selected 48-file
+regression pass has **291 passes, no failures or skips**. The explicit file list
 is audit-cases.json. These are targeted tests, not coverage of every Java method.
 
 The first broad run exposed three stale test-fixture failures: pre-1.16 packet
@@ -97,3 +97,11 @@ separates local hit/break/place requests from server world-event/sound packets,
 and includes IDs, block states and mixer categories. It excludes chat, server
 addresses, credentials and custom payloads. It observes requested sounds; it does
 not claim to measure played audio, device latency or native Java FPS.
+
+## Captured-server follow-up
+
+[The supplied captures](webmc-capture-findings.md) establish explicit server
+sound packets and a literal plugin marker in the death packet; native playback
+and literal text are preserved at the user’s request. [Fluid-preserving
+destruction](fluid-breaking-parity.md) fixes another native prediction gap.
+Full parity remains unverified.

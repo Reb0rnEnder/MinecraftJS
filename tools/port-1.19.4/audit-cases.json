@@ -44,5 +44,7 @@
   "tools/test-synchronized-recipes-1194.mjs",
   "tools/test-text-capture.mjs",
   "tools/test-terrain-particle-colours.mjs",
-  "tools/test-sound-gain.mjs"
+  "tools/test-sound-gain.mjs",
+  "tools/test-breaking-fluid-preservation.mjs",
+  "tools/test-block-break-durability.mjs"
 ]

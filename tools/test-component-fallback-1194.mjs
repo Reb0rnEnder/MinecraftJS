@@ -27,3 +27,10 @@ test('native language normalization applies to language entries but not server f
  assert.equal(componentTemplate({numeric:'%1$03d / %.2f'},'numeric','other'),'%1$s / %s');
  assert.equal(componentTemplate({},'absent','%d'),'%d');
 });
+
+test('literal plugin markers in combat messages stay literal, while item components in broadcast messages render',()=>{
+ const marker='<chat=11111111-2222-3333-4444-555555555555:[item]:>',combat={color:'gray',text:'Player was killed by Opponent using '+marker+'.'};
+ assert.equal(chatToPlain(combat),combat.text);
+ const broadcast={text:'Player was killed by Opponent using ',extra:[{text:'[Dirt x64]',hoverEvent:{action:'show_item',contents:{id:'minecraft:dirt',count:64}}},{text:'.'}]};
+ assert.equal(chatToPlain(broadcast),'Player was killed by Opponent using [Dirt x64].');assert.equal(chatSegments(broadcast).find(s=>s.text.includes('Dirt')).hover.contents.id,'minecraft:dirt');
+});
