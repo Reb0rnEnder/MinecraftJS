@@ -60,7 +60,10 @@ impl Proxy {
 
 /// The settings object fields this module reads and writes (the JS mutates
 /// `settings.proxies` / `settings.proxy` in place).
-#[derive(Debug, Clone, Default)]
+///
+/// Not `Debug`/`Clone`: the `save` hook is a boxed closure (JS stores the
+/// settings object by reference; the save callback is host state).
+#[derive(Default)]
 pub struct ProxySettings {
     pub proxies: Vec<Proxy>,
     pub proxy: i32,
