@@ -1,3 +1,4 @@
+import {componentTemplate} from '../gui/component-translation.js';
 import {turnPlayer} from './mouse-look.js';
 import {capturePerformance} from '../debug/capture-performance.js';
 import {sectionKey} from '../world/section-key.js';
@@ -130,7 +131,7 @@ export class Game {
     this.settings = settings;
     this.device = device;
     setModelDevice(device);
-    setTranslator((k, a) => assets.translate(k, a));
+    setTranslator((k, a) => assets.translate(k, a),(key,fallback)=>componentTemplate(assets.lang,key,fallback));
 
     this.input = new Input(settings);
     this.gui = new Gui(device, assets);
