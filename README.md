@@ -1,4 +1,33 @@
-# MinecraftJS 1.19.4 development client
+# MinecraftJS 1.20.6 port
+
+The named **1.20.6** branch is under development. Native protocol **766** offline
+login, Configuration and the first Play handshake are implemented and tested
+against a disposable vanilla 1.20.6 server. **Graphical gameplay still uses the
+1.19.4 baseline below**: its assets and version advertising have deliberately not
+been relabelled. Do not use this graphical build to join a 1.20.6 server yet.
+
+See the [transition plan](docs/transition-1.20.6.md) and
+[native transport evidence](docs/development-1.20.6.md) for remaining gates.
+
+```sh
+npm ci
+npm run prepare:1.20.6
+npm run test:1.20.6
+# In one terminal (Java 21+, with JAVA set if java is not on PATH):
+npm run fixture:1.20.6
+# In another terminal:
+npm run probe:1.20.6
+```
+
+The fixture binds only `127.0.0.1:25568` in a fresh temporary world and refuses an
+occupied port. `server1206/` contains the downloaded native server and copies of
+the existing server properties/EULA for later manual testing; the fixture never
+loads or upgrades those worlds. Stop the fixture with Ctrl+C when finished.
+
+Encrypted login, item components, full Play codecs and graphical integration
+are pending. No prebuilt 1.20.6 distribution is claimed.
+
+## Inherited graphical baseline
 
 This branch targets Java **1.19.4, protocol 762**, with native 1.19.4 assets and
 resource-pack format 13. The graphical client can join a native offline-mode

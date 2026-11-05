@@ -1,12 +1,16 @@
 {
   "name": "minecraftjs",
   "version": "1.0.0",
-  "description": "Web-based Minecraft 1.19.4 development client with WebSocket proxy",
+  "description": "MinecraftJS 1.20.6 port; native configuration transport milestone, graphical 1.19.4 baseline",
   "scripts": {
     "start": "node proxy.js",
     "dev": "node proxy.js",
     "assets": "node tools/build.js assets",
-    "build": "node tools/build.js html"
+    "build": "node tools/build.js html",
+    "prepare:1.20.6": "node tools/port-1.20.6/prepare.mjs",
+    "test:1.20.6": "node tools/port-1.20.6/generate-ids.mjs --check && node --test tools/test-1.20.6-configuration.mjs",
+    "fixture:1.20.6": "node tools/port-1.20.6/run-protocol-fixture.mjs",
+    "probe:1.20.6": "node tools/port-1.20.6/probe-configuration.mjs"
   },
   "dependencies": {
     "express": "^4.18.2",

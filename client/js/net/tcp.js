@@ -263,8 +263,10 @@ export class VanillaSocket extends Emitter {
     this._send(handshake(protocol, host, port, 2));
     // ServerboundHelloPacket in 1.19.4 appends an optional profile UUID.
     // Absence is valid for both offline login and authenticated session join.
-    this._send(concat([new Uint8Array([0x00]), mcString((msg.username || 'Player').slice(0, 16)), ...(protocol === 762 ? [new Uint8Array([0])] : [])]));
+    this._send(this._loginStart(msg,protocol));
   }
+
+  _loginStart(msg,protocol){return concat([new Uint8Array([0x00]),mcString((msg.username||'Player').slice(0,16)),...(protocol===762?[new Uint8Array([0])]:[])]);}
 
   _packet(p) {
     if (this.state === 'play') { this.emit('binary', p); return; }

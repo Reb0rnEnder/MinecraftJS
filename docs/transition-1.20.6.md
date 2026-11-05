@@ -53,3 +53,14 @@ Gate: per-family native behavior and visual tests; honest remaining-gaps invento
 Regress applicable shared fixes across existing targets, preserving native differences. Test WebGL2/WebGPU/software, fixed and camera-motion scenes, shader boundaries, screenshots and real network transfers. Use the opt-in profiler for measured CPU/GPU/memory comparisons; no arbitrary FPS promise.
 
 Publish source commits and distributions separately. When rebuilding all clients, regenerate source SHAs, manifests and checksums together. Keep local servers/worlds/configuration, screenshots, shader packs and captures out of commits. Do not mark full parity complete while the carried-forward ledger or target-native gates remain open.
+
+## Progress on the 1.20.6 branch
+
+Milestone 0 has pinned/verified jars, mappings, metadata, assets index and protocol
+schemas. Native runtime report extraction and mixed-build graphical gates remain.
+Milestone 1's offline transport gate passes: native compression, mandatory UUID,
+login acknowledgement, full streamed registries, tags/features, first Play join,
+teleport confirmation, chunk-batch acknowledgement and a real keepalive.
+Reconfiguration, cookies and malformed inputs have regression coverage; actual
+server transfer, resource-pack presentation and encrypted login remain open.
+See development-1.20.6.md for exact evidence. Milestones 2–4 remain pending.
