@@ -6,8 +6,8 @@ const isAir=state=>state===0||!!getBlock(state)?.isAir;
 // nibble arrays for block light and sky light, and a 16x16 biome array.
 
 export class Section {
-  constructor(hasSky) {
-    this.blocks = new Uint32Array(4096);
+  constructor(hasSky, blocks = new Uint16Array(4096)) {
+    this.blocks = blocks;
     this.blockLight = new Uint8Array(2048);
     this.skyLight = new Uint8Array(2048);
     if (hasSky) this.skyLight.fill(0xff);
@@ -23,6 +23,7 @@ export class Section {
     const old = this.blocks[i];
     if (isAir(old) && !isAir(state)) this.nonAir++;
     else if (!isAir(old) && isAir(state)) this.nonAir--;
+    if (state > 65535 && this.blocks instanceof Uint16Array) this.blocks = new Uint32Array(this.blocks);
     this.blocks[i] = state;
   }
 
