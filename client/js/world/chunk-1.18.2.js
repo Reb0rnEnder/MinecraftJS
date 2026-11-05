@@ -6,10 +6,10 @@ export function readPalette758(r,size,registrySize,kind){
  const wireBits=r.u8(),localMax=kind==='blocks'?8:3,minLocal=kind==='blocks'?4:1;
  if(wireBits>32||registrySize<1||!Number.isSafeInteger(registrySize))throw Error('Invalid palette registry or width');
  let bits=wireBits===0?0:wireBits<=localMax?Math.max(minLocal,wireBits):Math.max(1,Math.ceil(Math.log2(registrySize))),palette;
- if(bits===0){const id=r.varint();if(id<0||id>=registrySize)throw Error(`Invalid single palette value: ${kind} id ${id}, registry size ${registrySize}, palette byte ${r.offset-1}`);if(r.varint()!==0)throw Error('Single palette must have no longs');if(size===4096)r.nativeSizePadding=(r.nativeSizePadding||0)+1;return new Uint32Array(size).fill(id);}
+ if(bits===0){const id=r.varint();if(id<0||id>=registrySize)throw Error(`Invalid single palette value: ${kind} id ${id}, registry size ${registrySize}, palette byte ${r.offset-1}`);if(r.varint()!==0)throw Error('Single palette must have no longs');if(size===4096)r.nativeSizePadding=(r.nativeSizePadding||0)+1;return new (registrySize <= 65536 ? Uint16Array : Uint32Array)(size).fill(id);}
  if(wireBits<=localMax){const n=r.varint();if(n<1||n>2**bits)throw Error('Invalid local palette length');palette=new Uint32Array(n);for(let i=0;i<n;i++){const id=r.varint();if(id<0||id>=registrySize)throw Error(`Invalid palette registry value: ${kind} id ${id}, registry size ${registrySize}, palette byte ${r.offset-1}`);palette[i]=id;}}
  const perLong=Math.floor(64/bits),length=r.varint();if(length!==Math.ceil(size/perLong))throw Error('Invalid padded palette length');
- const result=new Uint32Array(size),mask=2**bits-1;let index=0;
+ const result=new (registrySize <= 65536 ? Uint16Array : Uint32Array)(size),mask=2**bits-1;let index=0;
  for(let i=0;i<length;i++){const high=r.i32()>>>0,low=r.i32()>>>0;for(let e=0;e<perLong&&index<size;e++,index++){
   const shift=e*bits;let value=shift<32?low>>>shift:high>>>(shift-32);if(shift<32&&shift+bits>32)value|=high<<(32-shift);value=(value&mask)>>>0;
   if(palette){if(value>=palette.length)throw Error('Invalid local palette index');value=palette[value];}else if(value>=registrySize)throw Error('Invalid direct palette value');result[index]=value;

@@ -101,7 +101,9 @@ export class World {
     for(let index=0;index<this.sectionCount;index++) {
       const sy=this.minSection+index,data=decoded.sections[index];
       if(!data){if(groundUp)c.setSection(sy,null);continue;}
-      const sec=new Section(false);sec.blocks=data.blocks;sec.nonAir=data.nonAir;sec.wireNonAir=data.wireNonAir;
+      // Canonical air is implicit; cave/void-air IDs and separate light columns remain intact.
+      if(data.nonAir===0&&data.blocks.every(state=>state===0)){c.setSection(sy,null);continue;}
+      const sec=new Section(false,data.blocks);sec.nonAir=data.nonAir;sec.wireNonAir=data.wireNonAir;
       sec.skyLight=c.nativeLight.sky[sy-this.minSection+1] ||= new Uint8Array(2048);
       sec.blockLight=c.nativeLight.block[sy-this.minSection+1] ||= new Uint8Array(2048);
       c.setSection(sy,sec);
