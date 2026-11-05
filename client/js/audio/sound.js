@@ -1,3 +1,4 @@
+import {soundGain} from './sound-gain.js';
 import {tickBiomeSounds} from './biome-sounds.js';
 import {biomeInfo} from '../world/biomes.js';
 import { tr } from '../gui/i18n.js';
@@ -243,7 +244,7 @@ export class SoundManager {
     if (!buf || generation !== this.generation) return null;
     const handle = { name: assetName, stream:!!def.stream, category: cat, onEnd: null, entity:opts.entity };
     const voice = this.audio.play(buf, {
-      volume: Math.min(1, volume) * def.volume * catVol,
+      volume: soundGain(volume*def.volume,cat,this.game.settings),
       pitch: Math.max(0.5, Math.min(2, pitch * def.pitch)),
       pos: !opts.global && x !== undefined ? [x, y, z] : null,
       maxDistance: Math.max(16, volume * 16),
@@ -319,15 +320,15 @@ export class SoundManager {
     const base = def.volume * this.volumeFor(cat);
     const voice = this.audio.play(buf, { volume: 0, pitch: def.pitch, pos: opts.global ? null : [x, y, z], maxDistance: 16, loop: true });
     if (!voice) return null;
-    const handle = { name, stream:!!def.stream, category: cat, voice, base, stop: () => { voice.stop(); this.playing.delete(handle); }, setVolume: (v) => voice.setVolume && voice.setVolume(Math.min(1, v) * base), setPosition: (p) => voice.setPosition && voice.setPosition(p), setPitch: (v) => voice.setPitch?.(Math.max(0.5, Math.min(2, v * def.pitch))) };
+    const handle = { name, stream:!!def.stream, category: cat, voice, base, stop: () => { voice.stop(); this.playing.delete(handle); }, setVolume: (v) => voice.setVolume && voice.setVolume(soundGain(v*def.volume,cat,this.game.settings)), setPosition: (p) => voice.setPosition && voice.setPosition(p), setPitch: (v) => voice.setPitch?.(Math.max(0.5, Math.min(2, v * def.pitch))) };
     this.playing.add(handle);
     return handle;
   }
 
-  // PlayerControllerMP.onPlayerDamageBlock: the hit sound, NEUTRAL
+  // MultiPlayerGameMode.continueDestroyBlock: mining-hit sound, BLOCKS (1.15+).
   playBlockHit(x, y, z, state) {
     const st = soundTypeOf(getBlock(state));
-    this.play(st[5], x + 0.5, y + 0.5, z + 0.5, (st[3] + 1) / 8, st[4] * 0.5, { category: 'neutral' });
+    this.play(st[5], x + 0.5, y + 0.5, z + 0.5, (st[3] + 1) / 8, st[4] * 0.5, { category: 'block' });
   }
 
   playBlockBreak(x, y, z, state) {
