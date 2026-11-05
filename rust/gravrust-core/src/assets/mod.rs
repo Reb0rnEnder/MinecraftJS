@@ -1,8 +1,8 @@
-//! `crate::assets` â€” compatibility tree matching `client/js/assets/`.
+﻿//! `crate::assets` Ã¢â‚¬â€ compatibility tree matching `client/js/assets/`.
 //!
 //! The asset pipeline is browser-bound in the JavaScript client (`fetch`,
-//! `ImageBitmap`, `DecompressionStream`). What is portable â€” pack selection and
-//! the texture/metadata containers â€” already exists in this crate as the flat
+//! `ImageBitmap`, `DecompressionStream`). What is portable Ã¢â‚¬â€ pack selection and
+//! the texture/metadata containers Ã¢â‚¬â€ already exists in this crate as the flat
 //! modules `packs`, `atlas` and `eagler_textures`. This tree re-exports those
 //! under the JS paths so the ported call sites resolve.
 
@@ -10,12 +10,12 @@
 // compile yet), so their re-exports are gated identically. When those modules
 // move into the default build, these lines start working with no further edit.
 #[cfg(feature = "unsupported")]
-pub use crate::atlas::{TextureEntry, TextureImage, TextureMeta};
+pub use crate::unsupported_port::atlas::{TextureEntry, TextureImage, TextureMeta};
 
-/// `client/js/assets/packs.js` â€” resource pack handling.
+/// `client/js/assets/packs.js` Ã¢â‚¬â€ resource pack handling.
 #[cfg(feature = "unsupported")]
 pub mod packs {
-    pub use crate::packs::*;
+    pub use crate::unsupported_port::packs::*;
 }
 
 /// Texture lookup, as the JS `assets.texture(name, opts)` surface.
@@ -56,7 +56,7 @@ pub mod texture {
 pub mod vanilla_layout {
     pub use crate::widgets::{BUTTON_TEXT_HOVER, BUTTON_TEXT_NORMAL};
 
-    /// JS: `VANILLA_UI` â€” the subset of the layout table the ported call sites
+    /// JS: `VANILLA_UI` Ã¢â‚¬â€ the subset of the layout table the ported call sites
     /// read. Extend as more of the table is ported.
     #[derive(Debug, Clone, Copy)]
     pub struct VanillaUi {
@@ -80,9 +80,9 @@ pub use vanilla_layout::VANILLA_UI;
 /// (client/js/gui/screens/packs.js reads `p.id` and `pack.name`).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Pack {
-    /// JS: `pack.id` — unique pack identifier used in `settings.resourcePacks`.
+    /// JS: `pack.id` â€” unique pack identifier used in `settings.resourcePacks`.
     pub id: String,
-    /// JS: `pack.name` — display name shown in the packs screen.
+    /// JS: `pack.name` â€” display name shown in the packs screen.
     pub name: String,
 }
 
@@ -93,7 +93,7 @@ pub struct Pack {
 /// stays platform-side; this trait carries the pack-list contract the ported
 /// screens call.
 pub trait AssetManager {
-    /// JS: `await A.listPacks()` — every discovered pack, selected or not.
+    /// JS: `await A.listPacks()` â€” every discovered pack, selected or not.
     fn list_packs(&self) -> Vec<Pack>;
 }
 
@@ -107,3 +107,5 @@ pub struct ResourcePack {
     /// JS: the required SHA-1 hash, when the server supplied one.
     pub hash: Option<String>,
 }
+
+

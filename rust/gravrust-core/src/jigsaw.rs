@@ -1,8 +1,9 @@
-//! Port of `client/js/gui/screens/jigsaw.js`:
+﻿//! Port of `client/js/gui/screens/jigsaw.js`:
 //! Jigsaw screen for setting target pool, attachment type, and final state.
 
 use crate::i18n::tr;
-use crate::screens::manager::Screen;`nuse crate::widgets::{Button, TextField};
+use crate::screens::manager::Screen;
+use crate::widgets::{Button, TextField};
 use crate::net::packets;
 use crate::util::regex::resource;
 
@@ -124,3 +125,4 @@ impl Screen for JigsawScreen {
         }
     }
 }
+

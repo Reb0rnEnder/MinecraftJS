@@ -1,4 +1,4 @@
-#![recursion_limit = "512"]
+﻿#![recursion_limit = "512"]
 
 //! Rust/WebAssembly core for the Gravrust browser client.
 //!
@@ -261,6 +261,16 @@ pub mod network;
 pub mod runtime;
 pub mod util;
 
+// Gated modules that other gated sources import at the crate root. These
+// re-exports exist only while the sources remain behind the unsupported gate;
+// when a module graduates to the default build its entry here is removed.
+#[cfg(feature = "unsupported")]
+pub use crate::unsupported_port::chat;
+#[cfg(feature = "unsupported")]
+pub use crate::unsupported_port::gfx_math;
+#[cfg(feature = "unsupported")]
+pub use crate::unsupported_port::input;
+
 // ---------------------------------------------------------------------------
 // Unfinished ports - not compiled by default.
 //
@@ -475,3 +485,4 @@ mod unsupported_port {
 // input, inventory, network, runtime, util.
 // These are JavaScript directory names under client/js/, not Rust modules.
 // ---------------------------------------------------------------------------// MARKER_TEST_12345
+

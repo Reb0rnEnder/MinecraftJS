@@ -1,10 +1,10 @@
-//! Port of `client/js/gfx/webgl2.js`: shader uniform and attribute operations.
+﻿//! Port of `client/js/gfx/webgl2.js`: shader uniform and attribute operations.
 //! Pure algorithmic port - extracts the math operations from WebGL calls.
 //! The actual WebGL context calls cannot be ported without a WebGL implementation,
 //! but the underlying uniform/attribute calculations can be.
 
 use wasm_bindgen::prelude::*;
-use crate::gfx_math::{Mat4, Quat, Vec3, identity, mul, normalize};
+use crate::gfx_math::{Mat4, Vec3};
 
 // ------------------------------------------------------------ Uniform Locations
 
@@ -89,3 +89,4 @@ mod tests {
         assert!(locs.normal >= 0);
     }
 }
+

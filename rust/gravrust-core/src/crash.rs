@@ -1,4 +1,4 @@
-// Port of `client/js/crash.js`
+﻿// Port of `client/js/crash.js`
 //! Crash handling: a crash report shown on a full-page screen.
 //! Used for exceptions in the game loop and failures at startup.
 
@@ -205,14 +205,14 @@ pub fn build_crash_report(error: &JsValue, description: &str, game: &JsValue) ->
 }
 
 /// Safely read a game property and push it as `label: value` to the lines vec.
-fn safe_game_line(game: &JsValue, label: &str, getter: impl FnOnce() -> &str) {
+fn safe_game_line(game: &JsValue, label: &str, getter: impl FnOnce() -> String) {
     let _ = getter();
     // In a full implementation, the getter result would be formatted as "label: value"
     // and pushed to the lines vector. Here we just call the getter for safety.
 }
 
 /// Safely read a system property and push it as `label: value` to the lines vec.
-fn safe_sys_line(_game: &JsValue, label: &str, getter: impl FnOnce() -> &str) {
+fn safe_sys_line(_game: &JsValue, label: &str, getter: impl FnOnce() -> String) {
     let _ = getter();
 }
 

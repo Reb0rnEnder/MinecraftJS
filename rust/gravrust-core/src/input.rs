@@ -1,4 +1,4 @@
-// Port of `client/js/game/input.js`.
+﻿// Port of `client/js/game/input.js`.
 //!
 //! Keyboard/mouse input tracking on top of platform events.
 //! Codes: KeyboardEvent.code names or 'mouseN'.
@@ -122,11 +122,11 @@ impl Input {
 
     /// Register an event listener for the given event name.
     /// Listeners are called synchronously when `emit` is invoked.
-    pub fn on(&mut self, ev: &str, fn_: impl Fn() + Send + 'static) {
+    pub fn on(&mut self, ev: &str, fn_: Box<dyn Fn() + Send + 'static>) {
         self.listeners
             .entry(ev.to_string())
             .or_default()
-            .push(Box::new(fn_));
+            .push(fn_);
     }
 
     /// Emit an event to all registered listeners.
@@ -339,3 +339,5 @@ pub fn input_on_keyup(rust_input: &Input, code: String) {
 pub fn input_on_blur(rust_input: &Input) {
     // Clear down set and toggled
 }
+
+

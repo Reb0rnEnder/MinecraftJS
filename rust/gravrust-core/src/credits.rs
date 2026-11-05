@@ -257,11 +257,3 @@ impl CreditsScreen {
         WIDTH
     }
 }
-
-// Mock methods that would be implemented by the GUI framework
-impl Gui {
-    fn text_width(&self, s: &str) -> f32 {
-        // Simple approximation
-        s.len() as f32 * 8.0
-    }
-}

@@ -33,8 +33,8 @@ pub const COLOR_NAMES: &[(&'static str, &'static str)] = &[
 
 /// Translation function used when a chat component has a `translate` field.
 /// Defaults to the identity function.
-pub static TRANSLATE_FN: ::std::sync::LazyLock<::std::cell::RefCell<dyn FnMut(&str, &[String]) -> String + ::core::marker::Sync + ::core::marker::Send>> =
-    ::std::sync::LazyLock::new(|| ::std::sync::LazyLock::force(&::std::cell::RefCell::new(|k: &str, _args: &[String]| -> String { k.to_string() })));
+pub static TRANSLATE_FN: ::std::sync::LazyLock<::std::cell::RefCell<::std::boxed::Box<dyn FnMut(&str, &[String]) -> String + ::core::marker::Send>>> =
+    ::std::sync::LazyLock::new(|| ::std::cell::RefCell::new(::std::boxed::Box::new(|k: &str, _args: &[String]| -> String { k.to_string() })));
 
 /// Convert a style object into §-prefixed code string.
 /// Returns empty string if no applicable styles are present.
@@ -271,6 +271,7 @@ pub fn chat_segments(raw: &Value) -> Option<::alloc::vec::Vec<Value>> {
 
     fn walk(
         c: &Value,
+        parent: &Value,
         parent_style: &str,
         events: &Value,
         out: &mut ::alloc::vec::Vec<Value>,
@@ -294,7 +295,7 @@ pub fn chat_segments(raw: &Value) -> Option<::alloc::vec::Vec<Value>> {
                 };
                 // Process each element from its own style (not previous element's style)
                 for x in c.as_array().unwrap_or(&::alloc::vec::Vec::new()) {
-                    walk(x, &base_style, &base_events, out, translate_fn);
+                    walk(x, c, &base_style, &base_events, out, translate_fn);
                 }
                 return;
             }
@@ -337,7 +338,7 @@ pub fn chat_segments(raw: &Value) -> Option<::alloc::vec::Vec<Value>> {
             let args_array = map.get("with").and_then(|w| w.as_array());
             if let Some(args) = args_array {
                 for arg in args {
-                    walk(arg, &style_str, &next_events, out, translate_fn);
+                    walk(arg, c, &style_str, &next_events, out, translate_fn);
                 }
             }
         } else if let Some(text) = map.get("text").and_then(|v| v.as_str()) {
@@ -367,12 +368,12 @@ pub fn chat_segments(raw: &Value) -> Option<::alloc::vec::Vec<Value>> {
         // Process extra
         if let Some(extra) = map.get("extra").and_then(|v| v.as_array()) {
             for e in extra {
-                walk(e, &style_str, &next_events, out, translate_fn);
+                walk(e, c, &style_str, &next_events, out, translate_fn);
             }
         }
     }
 
-    walk(&obj, "".to_string(), &events, &mut out, &|k, _args| k.to_string());
+    walk(&obj, &parent, "", &events, &mut out, &|k, _args| k.to_string());
     // Return segments only if some have click or hover events
     if out.iter().any(|c| c.get("click").and_then(|v| v.as_str()) != Some("null") || c.get("hover").and_then(|v| v.as_str()) != Some("null")) {
         Some(out)

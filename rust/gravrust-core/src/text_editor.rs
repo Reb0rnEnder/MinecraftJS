@@ -21,7 +21,6 @@ pub struct KeyEvent {
 #[wasm_bindgen]
 impl KeyEvent {
     /// Creates a new KeyEvent.
-    #[wasm_bindgen(constructor)]
     pub fn new(code: &str, ctrl: bool) -> KeyEvent {
         KeyEvent {
             code: Some(code.to_string()),
@@ -80,7 +79,6 @@ impl TextEditor {
     /// * `get` - Function that returns the current text
     /// * `set` - Function that sets new text
     /// * `validate` - Function that validates text changes (returns true if valid)
-    #[wasm_bindgen(constructor)]
     pub fn new(
         get: Box<dyn Fn() -> String + 'static>,
         set: Box<dyn Fn(String) + 'static>,
@@ -388,3 +386,4 @@ impl Default for TextEditor {
         }
     }
 }
+

@@ -165,7 +165,7 @@ fn strip_codes(s: &str) -> String {
     while let Some(c) = chars.next() {
         if c == '\u{00a7}' || c == '\u{00c2}' {
             // '§' or the mojibake prefix seen in the JS search tooltip
-            // ('Â§9'): drop the marker and, for 'Â', the following byte.
+            // ('§9'): drop the marker and, for 'Â', the following byte.
             if c == '\u{00c2}' {
                 chars.next();
             } else {
@@ -1530,7 +1530,7 @@ pub fn screen_containers_search_hit(
 /// on the search tab.
 ///
 /// Returns a JSON array of the lines to splice in, in JS order (the group line
-/// first, then the `Â§5#tag` lines).
+/// first, then the `§5#tag` lines).
 #[wasm_bindgen]
 pub fn screen_containers_search_tooltip_lines(
     group: Option<String>,

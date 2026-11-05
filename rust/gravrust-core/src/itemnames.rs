@@ -1,4 +1,4 @@
-//! Port of `client/js/game/itemnames.js`.
+﻿//! Port of `client/js/game/itemnames.js`.
 
 /// Enum dye color names (matching the JS COLORS array order).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -79,7 +79,7 @@ pub const WOOD_TYPES: &[&str] = &[
 ];
 
 /// Variant function: generates a translation key from metadata.
-type VariantFunc = Box<dyn Fn(u32) -> String>;
+type VariantFunc = std::boxed::Box<dyn Fn(u32) -> String + Send + Sync>;
 
 /// VARIANTS: item ID -> function that generates translation key from meta.
 /// Ported from the JS VARIANTS constant.
@@ -298,3 +298,4 @@ mod tests {
         assert!(RECORDS.get(&999).is_none());
     }
 }
+
