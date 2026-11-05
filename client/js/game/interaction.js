@@ -1,3 +1,4 @@
+import {isSlab,canMergeSlab,slabPlacementState} from './slab-placement.js';
 import {consumeEffect} from '../audio/consume-sounds.js';
 import {playActivatedBlockSound} from '../audio/client-sound-triggers.js';
 import{familyCanSurvive}from'./placement-families.js';
@@ -582,6 +583,7 @@ export class Interaction {
 
   // Block a placer item puts down (ItemBlock or ItemReed-style items)
   _placedBlock(held) {
+    if(!held)return null;
     if (this._itemBlock(held)) return this.game.items.blockFor(held.id);
     const n = { redstone: 'redstone_wire', string: 'tripwire' }[this.game.items.name(held.id)];
     return n ? blocksByName[n] || null : null;
@@ -609,7 +611,7 @@ export class Interaction {
     const cur = getBlock(g.world.getState(t.x, t.y, t.z));
     let face = t.face;
     let p = { x: t.x, y: t.y, z: t.z };
-    if (this._stackingProperty(t, held)) return { p, face };
+    if (this._stackingProperty(t, held) || canMergeSlab(g.world,this._placedBlock(held),p,t)) return { p, face };
     if (cur && cur.name === 'snow' && Number(getStateProperties(g.world.getState(t.x, t.y, t.z)).layers || 1) < 1) face = 1;
     else if (!this._replaceable(g.world.getState(t.x, t.y, t.z))) {
       const d = FACE_DIR[t.face] || [0, 1, 0];
@@ -621,11 +623,12 @@ export class Interaction {
   _placementState(t,held,block){
     const stacked=this._stackingProperty(t,held);
     if(stacked){const props={...getStateProperties(this.game.world.getState(t.x,t.y,t.z))};props[stacked]=String(Number(props[stacked])+1);return findState(block.name,props);}
+    const slab=isSlab(block)?slabPlacementState(this.game.world,block,this._placementPos(t,held).p,t):undefined;
+    if(slab!==undefined)return slab;
     const attached=this._attachmentState(t,held,block);
     if(attached!==undefined)return attached;
     const props={...getStateProperties(block.defaultState)};
     if('axis' in props)props.axis=['y','y','z','z','x','x'][t.face]||'y';
-    if('type' in props&&block.name.endsWith('_slab'))props.type=t.face===0||t.face!==1&&t.hit[1]-t.y>.5?'top':'bottom';
     return findState(block.name,props);
   }
 
@@ -641,7 +644,7 @@ export class Interaction {
     const { p, face } = this._placementPos(t, held);
     const family=familyCanSurvive(w,nb.name,p);if(family===false)return false;
     if (p.y < 0 || p.y > 255) return false;
-    if (!this._stackingProperty(t,held) && !this._replaceable(w.getState(p.x, p.y, p.z))) return false;
+    if (!this._stackingProperty(t,held) && !canMergeSlab(w,nb,p) && !this._replaceable(w.getState(p.x, p.y, p.z))) return false;
     // entities in the way of a block with a collision box (EntityLivingBase, boats, minecarts, TNT, falling blocks)
     const placed=this._placementState(t,held,nb);if(placed===null)return false;
     const boxes=staticCollisionBoxes(placed,p.x,p.y,p.z);
@@ -728,9 +731,9 @@ export class Interaction {
     // default-state guess for doors, beds, stairs, fluids or multipart blocks
     // can create colliders inside players and overwrite legitimate neighbours.
     const t=context,stacked=t?.type==='block'&&this._stackingProperty(t,held),attached=nb&&t?this._attachmentState(t,held,nb):undefined;
-    if(!nb||attached===null||attached===undefined&&!stacked&&nb.stateProperties?.some(p=>p.name!=='axis'))return;
+    if(!nb||attached===null||attached===undefined&&!stacked&&!isSlab(nb)&&nb.stateProperties?.some(p=>p.name!=='axis'))return;
     const previous=this.game.world.getState(p.x,p.y,p.z),axis=nb.stateProperties?.some(p=>p.name==='axis');
-    const predicted=attached??((stacked||axis&&t?.type==='block')?this._placementState(t,held,nb):nb.defaultState);
+    const predicted=attached??((stacked||isSlab(nb)||axis&&t?.type==='block')?this._placementState(t,held,nb):nb.defaultState);
     if(predicted===undefined||predicted===previous)return;
     const key=p.x+','+p.y+','+p.z,old=this.predictedBlocks.get(key);
     this.predictedBlocks.set(key,{previous:old?.previous??previous,predicted,dimension:this.game.dimension});
