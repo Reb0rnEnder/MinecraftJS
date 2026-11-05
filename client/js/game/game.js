@@ -1,3 +1,4 @@
+import {turnPlayer} from './mouse-look.js';
 import {capturePerformance} from '../debug/capture-performance.js';
 import {sectionKey} from '../world/section-key.js';
 import {trimMeshResidency} from '../render/mesh-residency.js';
@@ -1843,10 +1844,7 @@ export class Game {
       }
       if (this.cameraEntity === null || this.cameraEntity === undefined || true) {
         // Entity.setAngles: rotations are floats
-        this.player.yaw = Math.fround(this.player.yaw + dx);
-        this.player.pitch = Math.fround(this.player.pitch + dy);
-        if (this.player.pitch < -90) this.player.pitch = -90;
-        if (this.player.pitch > 90) this.player.pitch = 90;
+        turnPlayer(this.player,dx,dy);
       }
     }
 
