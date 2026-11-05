@@ -8,7 +8,7 @@ import {placementIntersects} from './placement-collision.js';
 // Player interaction (port of PlayerControllerMP + Minecraft.clickMouse/rightClickMouse).
 import { C } from '../net/packets.js';
 import { blocks, blocksByName, findState, getBlock, getStateProperties, staticCollisionBoxes, nativeReplaceable } from '../world/blocks.js';
-import { isPointInFluid } from '../world/fluids.js';
+import { isPointInFluid, getFluidState } from '../world/fluids.js';
 import { rayBox } from '../world/world.js';
 import { armorType, copy, stackable } from './container.js';
 import { COMMAND_BLOCKS, CommandBlockScreen, CommandMinecartScreen } from '../gui/screens/commandblock.js';
@@ -433,27 +433,23 @@ export class Interaction {
   // PlayerControllerMP.onPlayerDestroyBlock
   destroyBlockClient(pos) {
     const g = this.game;
-    const held = g.inventory.held();
     if (this._holdingCreativeSword()) return false;
     const state = g.world.getState(pos.x, pos.y, pos.z);
     const b = getBlock(state);
     if (!b || b.id === 0) return false;
     g.particles.blockBreak(pos.x, pos.y, pos.z, state);
     g.sound.playBlockBreak(pos.x, pos.y, pos.z, state);
-    g.world.setState(pos.x, pos.y, pos.z, 0);
+    // Native destruction retains the block's fluid state.
+    const fluid=getFluidState(state);
+    const replacement=fluid?findState(fluid.isWater?'water':'lava',{level:String(fluid.level)}):0;
+    g.world.setState(pos.x, pos.y, pos.z, replacement);
     // Doors/double plants/beds: the other half goes too (server will confirm)
     if (b.isDoor) {
       const other = getStateProperties(state).half === 'upper' ? pos.y - 1 : pos.y + 1;
       const otherState = g.world.getState(pos.x, other, pos.z);
       if (getBlock(otherState)?.name === b.name) g.world.setState(pos.x, other, pos.z, 0);
     }
-    if (g.gameMode !== 1 && held && g.items.isDamageable(held)) {
-      held.damage++;
-      if (held.damage > g.items.maxDurability(held.id)) {
-        g.inventory.setHeld(null);
-        g.sound.playAtPlayer('entity.item.break', 0.8, 0.8 + Math.random() * 0.4, 'player');
-      }
-    }
+    // Native 1.14+ clients wait for the server's tool durability/slot update.
     // vanilla moves currentBlock below the world instead of clearing it; isHitting may still be true here (an
     // insta-broken block while another was being hit), and the next click aborts that position
     this.curBlock = { x: this.curBlock.x, y: -1, z: this.curBlock.z };
