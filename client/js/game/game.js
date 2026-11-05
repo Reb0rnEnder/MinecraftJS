@@ -1,3 +1,5 @@
+import {capturePerformance} from '../debug/capture-performance.js';
+import {sectionKey} from '../world/section-key.js';
 import {trimMeshResidency} from '../render/mesh-residency.js';
 import {DirtySections} from '../render/dirty-sections.js';
 import {scrollZoom} from './zoom.js';
@@ -303,7 +305,7 @@ export class Game {
       case 'KeyI':copyInspect(this,!!e.shift);return true;
       case 'KeyC':platform().setClipboard(`/execute in ${this.dimension===-1?'minecraft:the_nether':this.dimension===1?'minecraft:the_end':'minecraft:overworld'} run tp @s ${this.player.x.toFixed(2)} ${this.player.y.toFixed(2)} ${this.player.z.toFixed(2)} ${this.player.yaw.toFixed(2)} ${this.player.pitch.toFixed(2)}`);this.debugFeedback('debug.copy_location.message');return true;
       case 'KeyA': // RenderGlobal.loadRenderers
-        for (const c of this.world.chunks.values()) for (let y = 0; y < 16; y++) if (c.sections[y]) this.dirty.add(c.x + ',' + y + ',' + c.z);
+        for (const c of this.world.chunks.values()) for (let y = 0; y < 16; y++) this._markSectionDirty(c.x,y,c.z);
         this.debugFeedback('debug.reload_chunks.message');
         return true;
       case 'KeyB':
@@ -409,7 +411,7 @@ export class Game {
     this.renderer.clearSections();
     if(this._meshUploads)this._meshUploads.length=0;
     for (const c of this.world.chunks.values()) {
-      for (let y = 0; y < 16; y++) if (c.sections[y]) this.dirty.add(c.x + ',' + y + ',' + c.z);
+      for (let y = 0; y < 16; y++) this._markSectionDirty(c.x,y,c.z);
       this.tileRenderer.scanChunk(c);
     }
   }
@@ -451,7 +453,7 @@ export class Game {
       if(!this.world.getChunk(m.x,m.z)||this.dirty.has(key))continue;
       this.meshStats.builds++;this.meshStats.ms+=m.ms||0;
       this._chunkUpdatesCount=(this._chunkUpdatesCount||0)+1;
-      this.renderer.setSectionMesh(m.x,m.y,m.z,m);this._lodKey=null;applied++;
+      this.renderer.setSectionMesh(m.x,m.y,m.z,m);if(m.lod||lodDistance(this.settings)!==0)this._lodKey=null;applied++;
     }
   }
 
@@ -465,12 +467,26 @@ export class Game {
     this.meshGen++;
   }
 
+  _markSectionDirty(cx,sy,cz) {
+    const chunk=this.world.getChunk(cx,cz);
+    if(!chunk)return;
+    const section=chunk.getSection?chunk.getSection(sy):chunk.sections[sy],key=cx+','+sy+','+cz;
+    if(section&&section.nonAir!==0){this.dirty.add(key);return;}
+    // Empty sections need no worker job, even if a light packet dirties them.
+    // Cancel the old lease as well, so a late worker result cannot restore geometry.
+    this.dirty.delete(key);this.inFlight.delete(key);this.buildTokens.delete(key);
+    this.playerAffectedSections?.delete(key);this.renderer.removeSection(key);
+  }
+
+  // Console-only diagnostics, also reachable in bundled/offline clients.
+  microprofile(options) { return capturePerformance(this,options); }
+
   _setupWorldListeners() {
     const w = this.world;
     w.on('chunkLoaded', (c, bitMap, groundUp) => {
       this.renderer.invalidateVisibility();
       void bitMap; void groundUp;
-      for (let y = 0; y < 16; y++) if (c.sections[y]) this.dirty.add(c.x + ',' + y + ',' + c.z);
+      for (let y = 0; y < 16; y++) this._markSectionDirty(c.x,y,c.z);
       this.tileRenderer.scanChunk(c);
       // Neighbours that were already meshed need their edges rebuilt
       for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
@@ -490,7 +506,7 @@ export class Game {
     });
     w.on('sectionDirty', (cx, sy, cz) => {
       if (!w.getChunk(cx, cz)) return;
-      this.dirty.add(cx + ',' + sy + ',' + cz);
+      this._markSectionDirty(cx,sy,cz);
     });
     // World.getCollisionBoxes' entity part (1.12): boats and live shulkers are solid to every mover
     // (getCollisionBoundingBox); a moving boat also collides with pushable entities (EntityBoat.getCollisionBox).
@@ -534,7 +550,7 @@ export class Game {
     this._meshOptsKey = key;
     this.worker.postMessage({ type: 'options', options: opts });
     if (!initial) {
-      for (const c of this.world.chunks.values()) for (let y = 0; y < 16; y++) if (c.sections[y]) this.dirty.add(c.x + ',' + y + ',' + c.z);
+      for (const c of this.world.chunks.values()) for (let y = 0; y < 16; y++) this._markSectionDirty(c.x,y,c.z);
     }
   }
 
@@ -543,18 +559,19 @@ export class Game {
   }
 
   _lodFor(cx, cz, sy = 0) {
-    const previous = !!this.renderer.sections.get(cx + ',' + sy + ',' + cz)?.lod;
+    const previous = !!this.renderer.sections.get(sectionKey(cx,sy,cz))?.lod;
     return sectionLod(this.settings, this._lodCamera(), cx, sy, cz, previous);
   }
 
   // Recheck at block boundaries and after sections arrive, rather than chunk borders.
   _updateLod() {
-    const camera = this._lodCamera();
-    const key = Math.floor(camera[0]) + ',' + Math.floor(camera[1]) + ',' + Math.floor(camera[2]) + ',' + lodDistance(this.settings) + ',' + this.renderer.sections.size;
+    const camera = this._lodCamera(),distance=lodDistance(this.settings);
+    if(distance===0&&this._lodKey==='disabled')return;
+    const key = distance===0?'disabled':Math.floor(camera[0]) + ',' + Math.floor(camera[1]) + ',' + Math.floor(camera[2]) + ',' + distance + ',' + this.renderer.sections.size;
     if (key === this._lodKey) return;
     this._lodKey = key;
     for (const section of this.renderer.sections.values()) {
-      if (section.lod !== this._lodFor(section.cx, section.cz, section.sy)) this.dirty.add(section.cx + ',' + section.sy + ',' + section.cz);
+      if (section.lod !== sectionLod(this.settings,camera,section.cx,section.sy,section.cz,section.lod)) this.dirty.add(section.cx + ',' + section.sy + ',' + section.cz);
     }
   }
 
@@ -562,43 +579,39 @@ export class Game {
     trimMeshResidency(this,this._lodCamera());
     if(this._meshUploads?.length)this._uploadMeshes();
     const started=platform().now();let posted=0;
+    // A lost lease must become dirty again, including when the pool is full.
+    for(const [key,time] of this.inFlight)if(started-time>10000){this.inFlight.delete(key);this.buildTokens.delete(key);this.dirty.add(key);}
     this._updateLod();
     if (!this.dirty.size || this.inFlight.size >= this.maxInFlight) return;
     const camera = this._lodCamera();
     const px = camera[0] / 16, py = camera[1] / 16, pz = camera[2] / 16;
     const rd = this.settings.renderDistance + 1;
-    const candidates = [];
-    for (const [key,cx,sy,cz] of this.dirty.within(Math.floor(px),Math.floor(pz),rd)) {
-      if (this.inFlight.has(key)) continue;
-      // Wait for horizontal neighbours so edge faces are culled correctly
-      let ready = true;
-      for (const [dx, dz] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
-        if (!this.world.getChunk(cx + dx, cz + dz)) {
-          const age = this._chunkWaitStart.get(cx + ',' + cz) || 0;
-          if (!age) { this._chunkWaitStart.set(cx + ',' + cz, platform().now()); ready = false; }
-          else if (platform().now() - age < 1500) ready = false;
-          break;
-        }
+    const queue=this.dirty.prioritized(px,py,pz,rd),deferred=[];
+    let inspected=0;
+    try { for(;;){
+      if(this.inFlight.size>=this.maxInFlight||inspected&&platform().now()-started>=2)break;
+      const entry=queue.pop();if(!entry)break;
+      const [key,cx,sy,cz]=entry;inspected++;
+      if(this.inFlight.has(key)){deferred.push(entry);continue;}
+      const chunk=this.world.getChunk(cx,cz),sec=chunk&&(chunk.getSection?chunk.getSection(sy):chunk.sections[sy]);
+      if(!sec||sec.nonAir===0){this.dirty.delete(key);this.inFlight.delete(key);this.buildTokens.delete(key);this.renderer.removeSection(key);continue;}
+      let ready=true;
+      for(const [dx,dz] of [[1,0],[-1,0],[0,1],[0,-1]])if(!this.world.getChunk(cx+dx,cz+dz)){
+        const column=cx+','+cz,age=this._chunkWaitStart.get(column);
+        if(age===undefined){this._chunkWaitStart.set(column,platform().now());ready=false;}
+        else if(platform().now()-age<1500)ready=false;
+        break;
       }
-      if (!ready) continue;
-      const dx = cx + 0.5 - px, dy = sy + 0.5 - py, dz = cz + 0.5 - pz;
-      candidates.push([dx * dx + dy * dy * 0.5 + dz * dz, key, cx, sy, cz]);
-    }
-    candidates.sort((a, b) => a[0] - b[0]);
-    for (const [, key, cx, sy, cz] of candidates) {
-      if (this.inFlight.size >= this.maxInFlight || posted&&platform().now()-started>=2) break;
+      if(!ready){deferred.push(entry);continue;}
       this.dirty.delete(key);
       this.inFlight.set(key, platform().now());
       this.meshedChunks.add(cx + ',' + cz);
-      const sec = this.world.getChunk(cx, cz).sections[sy];
-      if (!sec || sec.nonAir === 0) { this.inFlight.delete(key); this.renderer.removeSection(key); continue; }
       const slice = buildSlice(this.world, cx, sy, cz, this.tileProps, this.settings.biomeBlendRadius ?? 2);
       const token=++this.buildSerial;this.buildTokens.set(key,token);
       this.worker.postMessage({ type: 'build', gen: this.meshGen, token, slice, lod: this._lodFor(cx, cz, sy) }, [slice.states.buffer, slice.light.buffer, slice.biomes.buffer]);
       posted++;
-    }
-    // Recover from lost builds
-    for (const [k, t] of this.inFlight) if (platform().now() - t > 10000) this.inFlight.delete(k);
+    }}finally{for(const entry of deferred)if(this.dirty.has(entry[0]))queue.add(entry);}
+
   }
 
   // ---------------------------------------------------------------- Connection

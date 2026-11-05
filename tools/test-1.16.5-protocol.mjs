@@ -74,6 +74,6 @@ test('word-based palette decoding matches an independent BigInt encoder at every
   if(local){w.varint(paletteSize);for(let i=0;i<paletteSize;i++)w.varint(i+1);}w.varint(length);
   let seed=0x12345678;
   for(let i=0;i<length;i++){let packed=0n;for(let j=0;j<perLong&&i*perLong+j<4096;j++){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const raw=local?seed%paletteSize:seed%17112;expected[i*perLong+j]=local?raw+1:raw;packed|=BigInt(raw)<<BigInt(j*bits);}w.i64(BigInt.asIntN(64,packed));}
-  assert.deepEqual(decodeChunkData754({bitMap:1,chunkData:w.build()}).sections[0].blocks,expected,'width '+bits);
+  assert.deepEqual([...decodeChunkData754({bitMap:1,chunkData:w.build()}).sections[0].blocks],[...expected],'width '+bits);
  }
 });

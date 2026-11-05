@@ -43,3 +43,7 @@ The opt-in capture in performance-capture.md collects real gameplay CPU sections
 ## Follow-up: server/client view-distance mismatch
 
 [The measured follow-up](view-distance-performance.md) implements camera-local dirty-section indexing, loaded-column occupancy reuse, bounded GPU terrain residency and native separate-light update coalescing where applicable. It also audits EntityCulling and ImmediatelyFast without claiming their code or full algorithms were ported.
+
+## Follow-up: true 32-chunk captures and hidden microprofiler
+
+[The 2026-11-05 follow-up](large-distance-performance-2026-11-05.md) records the user's actual CPU/GPU and known-buffer captures, the full-range scheduler and disabled-LOD fixes, compact/implicit-air storage, conservative batching, native boat coordinate corrections and remaining server-side boat jitter. Earlier statements here that no user capture was available are historical.

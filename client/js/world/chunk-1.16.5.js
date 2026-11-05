@@ -31,7 +31,7 @@ export function decodeChunkData754(packet, {stateCount = BLOCK_STATE_COUNT_754} 
       }
       const perLong = Math.floor(64 / bits), length = r.varint();
       if (length !== Math.ceil(4096 / perLong)) throw Error('Invalid padded palette length');
-      const blocks = new Uint32Array(4096), mask = (1 << bits) - 1;
+      const blocks = new (stateCount <= 65536 ? Uint16Array : Uint32Array)(4096), mask = (1 << bits) - 1;
       let index = 0, nonAir = 0;
       for (let i = 0; i < length; i++) {
         // Read the big-endian long as two words. Entries never cross long boundaries.
