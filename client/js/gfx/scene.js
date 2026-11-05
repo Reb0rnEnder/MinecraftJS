@@ -131,6 +131,23 @@ export function toDraw(d, world, resolve) {
   return { mesh: d.mesh, pipeline: m.pipeline, textures: tex ? [tex] : null, params, model: world, state: m.state, primitive: d.primitive, first: d.first, count: d.count };
 }
 
+// Separate entities own separate uniforms/state objects even when their values match.
+// Only merge consecutive draws; texture layers, translucent ordering and targets stay ordered.
+function equalParams(a, b) {
+  if (a === b) return true;
+  if (!a || !b || a.length === undefined || a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) if (!Object.is(a[i], b[i])) return false;
+  return true;
+}
+function equalState(a, b) {
+  if (a === b) return true;
+  if (!a || !b || Object.getPrototypeOf(a) !== Object.getPrototypeOf(b)) return false;
+  const keys=Reflect.ownKeys(a);
+  if(keys.length!==Reflect.ownKeys(b).length)return false;
+  for(const key of keys)if(!Object.hasOwn(b,key)||!Object.is(a[key],b[key]))return false;
+  return true;
+}
+
 // Submit a node tree to the device, ordered by drawable.order (stable). With opts.batcher, runs of consecutive
 // drawables that share a material and have CPU vertices (entity model parts) become one draw: their vertices are
 // transformed into a shared buffer uploaded once per call, and drawn with the identity model matrix. The output
@@ -162,12 +179,13 @@ export function drawTree(device, root, opts = {}) {
     const m = dr.mesh;
     const batchable = m.cpu && m.quads && dr.pipeline === 'entity' && !dr.primitive && dr.first === undefined && dr.count === undefined;
     if (!batchable) { flush(); cmds.push(dr); continue; }
-    if (run && run.dr.params === dr.params && run.dr.state === dr.state && run.dr.textures && dr.textures && run.dr.textures[0] === dr.textures[0]) {
+    if (run && (run.lastParams===dr.params||equalParams(run.dr.params,dr.params)) && (run.lastState===dr.state||equalState(run.dr.state,dr.state)) && run.dr.textures && dr.textures && run.dr.textures[0] === dr.textures[0]) {
+      run.lastParams=dr.params;run.lastState=dr.state;
       run.items.push([m, world]);
       continue;
     }
     flush();
-    run = { dr, items: [[m, world]] };
+    run = { dr, lastParams:dr.params,lastState:dr.state,items: [[m, world]] };
   }
   flush();
   B.upload();
