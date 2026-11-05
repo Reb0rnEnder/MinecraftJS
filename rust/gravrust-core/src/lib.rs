@@ -486,6 +486,8 @@ mod unsupported_port {
     pub mod villager_data;
     #[path = "../wisp.rs"]
     pub mod wisp;
+pub mod wisp_net;
+pub mod proxies_js;
 
     // Files renamed during the illegal-filename / duplicate-name pass.
     #[path = "../chunk_1144.rs"]
