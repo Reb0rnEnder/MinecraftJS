@@ -113,3 +113,10 @@ finalization regenerates bundle, painting, dye and placement data. The native
 presentation probe confirmed server-enabled bundles, painting dimensions and
 bundle slot reconciliation. See the [release audit](release-audit-1.19.4.md)
 for remaining feature gaps; successful targeted tests do not imply full parity.
+
+## Native audit follow-up
+
+See [the ongoing native audit](native-audit-1.19.4.md) for exact source inputs,
+284 targeted regressions, the recipe-category and mining-hit category fixes,
+and the unresolved authenticated-webmc double-sound investigation. Full parity
+remains unfinished.

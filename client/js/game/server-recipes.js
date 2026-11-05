@@ -2,7 +2,7 @@ const clone=stack=>stack?structuredClone(stack):null;
 export function serverRecipe(record){
  const d=record.data,type=record.type.replace(/^minecraft:/,''),shaped=type==='crafting_shaped';
  if(!d.result)return null;const raw=shaped||type==='crafting_shapeless'?d.ingredients:[d.ingredient||[]];
- return {id:record.recipeId,name:record.recipeId,type:record.type,group:d.group||'',result:clone(d.result),shaped,
+ return {id:record.recipeId,name:record.recipeId,type:record.type,group:d.group||'',category:d.category,result:clone(d.result),shaped,
  width:shaped?d.width:type==='crafting_shapeless'?Math.ceil(Math.sqrt(raw.length)):1,
  height:shaped?d.height:type==='crafting_shapeless'?Math.ceil(Math.sqrt(raw.length)):1,
  cells:raw.map(alternatives=>alternatives.length?alternatives.filter(Boolean).map(s=>({...clone(s),data:0})):null),experience:d.experience,cookingTime:d.cookingTime};

@@ -1,7 +1,6 @@
 import {serverRecipe} from './server-recipes.js';
 // Recipe book (1.12): RecipeBook (known / new recipes, open and filtering flags), RecipeBookClient (recipe lists per
 // tab, grouped by the recipe's "group") and RecipeList craftability against the player's items.
-import { creativeTabOf } from '../gui/screens/containers.js';
 import {DEFAULT_TAGS} from './default-tags.js';
 
 export const FIRST_JSON_ID = 11; // CraftingManager: ids 0 - 10 are the special (dynamic) recipes
@@ -43,7 +42,7 @@ export class RecipeBook {
       });
       const result = stackOf(g, r.result || {});
       if (!result) return;
-      const rec = { id, type:r.type, name: r.name, group: r.group || '', result, shaped: r.type.replace(/^minecraft:/,'') === 'crafting_shaped' };
+      const rec = { id, type:r.type, name: r.name, group: r.group || '', category:r.category??'misc', result, shaped: r.type.replace(/^minecraft:/,'') === 'crafting_shaped' };
       if (rec.shaped) {
         rec.height = r.pattern.length;
         rec.width = Math.max(...r.pattern.map((row) => row.length));
@@ -81,11 +80,18 @@ export class RecipeBook {
   // RecipeBookClient.getItemCategory: tools / building blocks / redstone, combat with tools, the rest misc
   stateFor(kind='crafting'){return kind==='crafting'?this:this.cookingStates[kind];}
 
+  // ClientRecipeBook categorizes the recipe itself, not its output's creative tab.
   categoryOf(rec) {
-    if(['smelting','blasting','smoking'].includes(rec.type?.replace(/^minecraft:/,''))){if(this.game.items?.isFood(rec.result))return 'food';if(this.game.items?.isBlockItem(rec.result.id))return 'buildingBlocks';return 'misc';}
-    const t = creativeTabOf(this.game, rec.result.id);
-    if (t === 'buildingBlocks' || t === 'tools' || t === 'redstone') return t;
-    return t === 'combat' ? 'tools' : 'misc';
+    const kind=rec.type?.replace(/^minecraft:/,''),category=rec.category;
+    const cooking=['food','blocks','misc'],crafting=['building','redstone','equipment','misc'];
+    if(['smelting','blasting','smoking','campfire_cooking'].includes(kind)){
+      if(kind==='smoking'||kind==='campfire_cooking')return 'food';
+      const name=typeof category==='number'?cooking[category]:category;
+      if(kind==='blasting')return name==='blocks'?'buildingBlocks':'misc';
+      return name==='food'?'food':name==='blocks'?'buildingBlocks':'misc';
+    }
+    const name=typeof category==='number'?crafting[category]:category;
+    return {building:'buildingBlocks',redstone:'redstone',equipment:'tools'}[name]||'misc';
   }
 
   recipe(id) { this._parse(); return this.recipes[id] || null; }
