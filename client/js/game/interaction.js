@@ -1,3 +1,4 @@
+import {isSlab,canMergeSlab,slabPlacementState} from './slab-placement.js';
 import {consumeEffect} from '../audio/consume-sounds.js';
 import {playActivatedBlockSound} from '../audio/client-sound-triggers.js';
 import {predictDoorPair,reconcileDoorPair} from './door-prediction.js';
@@ -553,6 +554,7 @@ export class Interaction {
 
   // Block a placer item puts down (ItemBlock or ItemReed-style items)
   _placedBlock(held) {
+    if(!held)return null;
     if (this._itemBlock(held)) return this.game.items.blockFor(held.id);
     const n = { redstone: 'redstone_wire', string: 'tripwire' }[this.game.items.name(held.id)];
     return n ? blocksByName[n] || null : null;
@@ -580,7 +582,7 @@ export class Interaction {
     const cur = getBlock(g.world.getState(t.x, t.y, t.z));
     let face = t.face;
     let p = { x: t.x, y: t.y, z: t.z };
-    if (this._stackingProperty(t, held)) return { p, face };
+    if (this._stackingProperty(t, held) || canMergeSlab(g.world,this._placedBlock(held),p,t)) return { p, face };
     if (cur && cur.name === 'snow' && Number(getStateProperties(g.world.getState(t.x, t.y, t.z)).layers || 1) < 1) face = 1;
     else if (!this._replaceable(g.world.getState(t.x, t.y, t.z))) {
       const d = FACE_DIR[t.face] || [0, 1, 0];
@@ -592,10 +594,11 @@ export class Interaction {
   _placementState(t,held,block){
     const stacked=this._stackingProperty(t,held);
     if(stacked){const props={...getStateProperties(this.game.world.getState(t.x,t.y,t.z))};props[stacked]=String(Number(props[stacked])+1);return findState(block.name,props);}
+    const slab=isSlab(block)?slabPlacementState(this.game.world,block,this._placementPos(t,held).p,t):undefined;
+    if(slab!==undefined)return slab;
     if(/^(redstone_)?torch$/.test(block.name)&&t.face>=2){const wall=blocksByName[block.name.replace(/torch$/,'wall_torch')];return findState(wall.name,{...getStateProperties(wall.defaultState),facing:['down','up','north','south','west','east'][t.face]});}
     const props={...getStateProperties(block.defaultState)};
     if('axis' in props)props.axis=['y','y','z','z','x','x'][t.face]||'y';
-    if('type' in props&&block.name.endsWith('_slab'))props.type=t.face===0||t.face!==1&&t.hit[1]-t.y>.5?'top':'bottom';
     return findState(block.name,props);
   }
 
@@ -605,10 +608,11 @@ export class Interaction {
     if (!nb) return false;
     const { p, face } = this._placementPos(t, held);
     if (p.y < 0 || p.y > 255) return false;
-    if (!this._stackingProperty(t,held) && !this._replaceable(w.getState(p.x, p.y, p.z))) return false;
+    if (!this._stackingProperty(t,held) && !canMergeSlab(w,nb,p) && !this._replaceable(w.getState(p.x, p.y, p.z))) return false;
     // entities in the way of a block with a collision box (EntityLivingBase, boats, minecarts, TNT, falling blocks)
-    if (nb.boundingBox === 'block') {
-      const hit = (b) => b[3] > p.x && b[0] < p.x + 1 && b[4] > p.y && b[1] < p.y + 1 && b[5] > p.z && b[2] < p.z + 1;
+    if (isSlab(nb) || nb.boundingBox === 'block') {
+      const slabBoxes=isSlab(nb)?staticCollisionBoxes(this._placementState(t,held,nb),p.x,p.y,p.z):null;
+      const hit = (b) => slabBoxes?placementIntersects(slabBoxes,p,b):b[3] > p.x && b[0] < p.x + 1 && b[4] > p.y && b[1] < p.y + 1 && b[5] > p.z && b[2] < p.z + 1;
       if (hit(this.player.bb())) return false;
       for (const e of g.entities.all()) {
         if(e.kind==='falling'&&w.getState(Math.floor(e.x),Math.floor(e.y),Math.floor(e.z))===e.blockState)continue;
@@ -686,9 +690,9 @@ export class Interaction {
     // default-state guess for doors, beds, stairs, fluids or multipart blocks
     // can create colliders inside players and overwrite legitimate neighbours.
     const t=context,stacked=t?.type==='block'&&this._stackingProperty(t,held),torch=nb&&/^(redstone_)?torch$/.test(nb.name)&&t;
-    if(!nb||!torch&&!stacked&&nb.stateProperties?.some(p=>p.name!=='axis'))return;
+    if(!nb||!torch&&!stacked&&!isSlab(nb)&&nb.stateProperties?.some(p=>p.name!=='axis'))return;
     const previous=this.game.world.getState(p.x,p.y,p.z),axis=nb.stateProperties?.some(p=>p.name==='axis');
-    const predicted=(torch||stacked||axis&&t?.type==='block')?this._placementState(t,held,nb):nb.defaultState;
+    const predicted=(torch||stacked||isSlab(nb)||axis&&t?.type==='block')?this._placementState(t,held,nb):nb.defaultState;
     if(predicted===undefined||predicted===previous)return;
     const key=p.x+','+p.y+','+p.z,old=this.predictedBlocks.get(key);
     this.predictedBlocks.set(key,{previous:old?.previous??previous,predicted,dimension:this.game.dimension});

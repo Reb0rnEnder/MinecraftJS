@@ -321,7 +321,9 @@ export class SoundManager {
   }
 
   playBlockBreak(x, y, z, state) {
-    const st = soundTypeOf(getBlock(state));
+    const block=getBlock(state);
+    if(!block||block.isAir||block.name==='air'||block.name==='cave_air'||block.name==='void_air')return;
+    const st = soundTypeOf(block);
     this.play(st[1], x + 0.5, y + 0.5, z + 0.5, (st[3] + 1) / 2, st[4] * 0.8, { category: 'block' });
   }
 
