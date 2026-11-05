@@ -1,3 +1,4 @@
+import {soundGain} from './sound-gain.js';
 import { tr } from '../gui/i18n.js';
 // Sound engine: vanilla sounds.json (+ resource packs), played through the platform audio interface.
 import { getBlock, getBlockById, getStateProperties } from '../world/blocks.js';
@@ -234,7 +235,7 @@ export class SoundManager {
     if (!buf || generation !== this.generation) return null;
     const handle = { name: assetName, category: cat, onEnd: null };
     const voice = this.audio.play(buf, {
-      volume: Math.min(1, volume) * def.volume * catVol,
+      volume: soundGain(volume*def.volume,cat,this.game.settings),
       pitch: Math.max(0.5, Math.min(2, pitch * def.pitch)),
       pos: !opts.global && x !== undefined ? [x, y, z] : null,
       maxDistance: Math.max(16, volume * 16),
@@ -309,7 +310,7 @@ export class SoundManager {
     const base = def.volume * this.volumeFor(cat);
     const voice = this.audio.play(buf, { volume: 0, pitch: def.pitch, pos: opts.global ? null : [x, y, z], maxDistance: 16, loop: true });
     if (!voice) return null;
-    const handle = { name, category: cat, voice, base, stop: () => { voice.stop(); this.playing.delete(handle); }, setVolume: (v) => voice.setVolume && voice.setVolume(Math.min(1, v) * base), setPosition: (p) => voice.setPosition && voice.setPosition(p), setPitch: (v) => voice.setPitch?.(Math.max(0.5, Math.min(2, v * def.pitch))) };
+    const handle = { name, category: cat, voice, base, stop: () => { voice.stop(); this.playing.delete(handle); }, setVolume: (v) => voice.setVolume && voice.setVolume(soundGain(v*def.volume,cat,this.game.settings)), setPosition: (p) => voice.setPosition && voice.setPosition(p), setPitch: (v) => voice.setPitch?.(Math.max(0.5, Math.min(2, v * def.pitch))) };
     this.playing.add(handle);
     return handle;
   }
