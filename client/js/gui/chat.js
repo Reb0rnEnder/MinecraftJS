@@ -9,6 +9,10 @@ const COLOR_NAMES = {
 
 import { setTranslator as setI18nTranslator } from './i18n.js';
 
+let resolveKeybind=null;
+export function setKeybindResolver(resolver){resolveKeybind=resolver;}
+function keybindText(name){return String(resolveKeybind?resolveKeybind(name):name);}
+
 let translateFn = (k) => k;
 export function setTranslator(fn) { translateFn = fn; setI18nTranslator(fn); }
 
@@ -64,7 +68,7 @@ function toText(c, parentStyle) {
     text = translateFn(c.translate, args);
   } else if (c.score) text = c.score.value !== undefined ? String(c.score.value) : '';
   else if (c.selector !== undefined) text = c.selector;
-  else if (c.keybind !== undefined) text = c.keybind; // vanilla's fallback without a keybinding resolver
+  else if (c.keybind !== undefined) text = keybindText(c.keybind);
   let out = text ? codes + text : '';
   if (c.extra) for (const e of c.extra) {
     const part = toText(e, style);
@@ -247,7 +251,7 @@ export function chatSegments(raw) {
     }else if(c.text!==undefined)push(String(c.text));
     else if(c.score)push(String(c.score.value??''));
     else if(c.selector!==undefined)push(c.selector);
-    else if(c.keybind!==undefined)push(c.keybind);
+    else if(c.keybind!==undefined)push(keybindText(c.keybind));
     for(const extra of c.extra||[])walk(extra,style,next);
   };
   walk(obj);return out.some(c=>c.click||c.hover)?out:null;
