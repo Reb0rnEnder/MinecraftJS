@@ -1,3 +1,4 @@
+import {adventureAllows} from './adventure.js';
 import {entityPickRadius} from './entity-pick-radius.js';
 import {isSlab,canMergeSlab,slabPlacementState} from './slab-placement.js';
 import {consumeEffect} from '../audio/consume-sounds.js';
@@ -297,10 +298,7 @@ export class Interaction {
   clickBlock(t, face) {
     const g = this.game;
     const pos = { x: t.x, y: t.y, z: t.z };
-    if (g.gameMode === 2 || g.gameMode === 3) {
-      // Adventure: only with tools able to "destroy" (CanDestroy not supported); spectator nothing
-      if (g.gameMode === 3) return;
-    }
+    if(g.gameMode===3||g.gameMode===2&&!adventureAllows(g,g.inventory.held(),'CanDestroy',pos))return false;
     if(this._creativeSwordBlocksMining(pos,face)){this.resetBreaking();return false;}
     if (g.gameMode === 1) {
       g.tutorial.onHitBlock(g.world.getState(pos.x, pos.y, pos.z), 1);
@@ -393,6 +391,7 @@ export class Interaction {
   onPlayerDamageBlock(t, face) {
     const g = this.game;
     const pos = { x: t.x, y: t.y, z: t.z };
+    if(g.gameMode===3||g.gameMode===2&&!adventureAllows(g,g.inventory.held(),'CanDestroy',pos))return false;
     if (this.blockHitDelay > 0) { this.blockHitDelay--; return true; }
     if(this._creativeSwordBlocksMining(pos,face)){this.resetBreaking();return false;}
     if (g.gameMode === 1) {
@@ -578,6 +577,7 @@ export class Interaction {
       return true;
     }
     if (g.gameMode === 3) return true;
+    if(g.gameMode===2&&!adventureAllows(g,held,'CanPlaceOn',t))return false;
     if (held && g.items.name(held.id)==='scaffolding') return true; // authoritative extension/support/falling rules
     if (!held) return false;
     if (g.gameMode === 1) {
@@ -693,6 +693,7 @@ export class Interaction {
   // Item.onItemUse on the client: whether the click "worked" (decides the swing), with the client-side effects
   _onItemUse(t, held) {
     const g = this.game, w = g.world, id = held.id, name = g.items.name(id);
+    if(g.gameMode===2&&!adventureAllows(g,held,'CanPlaceOn',t))return false;
     const st = w.getState(t.x, t.y, t.z), b = getBlock(st);
     const above = (y) => getBlock(w.getState(t.x, y, t.z));
     const air = (bb) => !bb || bb.id === 0;
