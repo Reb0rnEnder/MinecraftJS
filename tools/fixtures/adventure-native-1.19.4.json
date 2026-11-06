@@ -1,0 +1,392 @@
+{
+  "version": "1.19.4",
+  "tags": {
+    "minecraft:empty": [],
+    "minecraft:logs": [
+      "minecraft:oak_log",
+      "minecraft:spruce_log"
+    ],
+    "minecraft:mixed": [
+      "minecraft:oak_log",
+      "minecraft:stone"
+    ]
+  },
+  "cases": [
+    {
+      "state": "minecraft:stone",
+      "predicate": "stone",
+      "matched": true
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "minecraft:stone",
+      "matched": true
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "dirt",
+      "matched": false
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": ":stone",
+      "matched": true
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "stone garbage",
+      "matched": true
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "stone?",
+      "matched": true
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "stone []",
+      "matched": true
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "stone{}",
+      "matched": false
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "stone[foo=undefined]",
+      "matched": false,
+      "error": "com.mojang.brigadier.exceptions.CommandSyntaxException"
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "stone[foo=bar]",
+      "matched": false,
+      "error": "com.mojang.brigadier.exceptions.CommandSyntaxException"
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "STONE",
+      "matched": false,
+      "error": "com.mojang.brigadier.exceptions.CommandSyntaxException"
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "minecraft:missing",
+      "matched": false,
+      "error": "com.mojang.brigadier.exceptions.CommandSyntaxException"
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "1",
+      "matched": false,
+      "error": "com.mojang.brigadier.exceptions.CommandSyntaxException"
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "",
+      "matched": false,
+      "error": "com.mojang.brigadier.exceptions.CommandSyntaxException"
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": " stone",
+      "matched": false,
+      "error": "com.mojang.brigadier.exceptions.CommandSyntaxException"
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "stone[",
+      "matched": false,
+      "error": "com.mojang.brigadier.exceptions.CommandSyntaxException"
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "stone[]",
+      "matched": true
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "stone[ ]",
+      "matched": true
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "stone[foo=bar,]",
+      "matched": false,
+      "error": "com.mojang.brigadier.exceptions.CommandSyntaxException"
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "#mixed",
+      "matched": true
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "#empty",
+      "matched": false
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "#missing",
+      "matched": false,
+      "error": "com.mojang.brigadier.exceptions.CommandSyntaxException"
+    },
+    {
+      "state": "minecraft:stone",
+      "predicate": "#logs",
+      "matched": false
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "oak_log",
+      "matched": true
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "oak_log[axis=x]",
+      "matched": true
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "oak_log[axis=y]",
+      "matched": false
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "oak_log[axis=x,]",
+      "matched": true
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "oak_log[axis=x,axis=x]",
+      "matched": false,
+      "error": "com.mojang.brigadier.exceptions.CommandSyntaxException"
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "oak_log[axis=x]suffix",
+      "matched": true
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "oak_log [axis=y]",
+      "matched": true
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "oak_log[ axis = x ]",
+      "matched": true
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "oak_log[\"axis\"=\"x\"]",
+      "matched": true
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "oak_log['axis'='x']",
+      "matched": true
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "#logs",
+      "matched": true
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "#logs[axis=x]",
+      "matched": true
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "#logs[axis=y]",
+      "matched": false
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "#mixed[axis=x]",
+      "matched": true
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "#mixed[foo=undefined]",
+      "matched": false
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "#logs[axis=x,axis=x]",
+      "matched": false,
+      "error": "com.mojang.brigadier.exceptions.CommandSyntaxException"
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "oak_log[axis=x]{}",
+      "matched": false
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "oak_log{}",
+      "matched": false
+    },
+    {
+      "state": "minecraft:oak_log[axis=x]",
+      "predicate": "oak_log[axis=X]",
+      "matched": false,
+      "error": "com.mojang.brigadier.exceptions.CommandSyntaxException"
+    },
+    {
+      "state": "minecraft:chest",
+      "predicate": "chest{}",
+      "matched": true,
+      "blockEntityNbt": "{Items:[],id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:chest",
+      "predicate": "chest{Items:[]}",
+      "matched": true,
+      "blockEntityNbt": "{Items:[],id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:chest",
+      "predicate": "chest{Items:[{}]}",
+      "matched": false,
+      "blockEntityNbt": "{Items:[],id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:chest",
+      "predicate": "chest{x:0,y:64,z:0}",
+      "matched": true,
+      "blockEntityNbt": "{Items:[],id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:chest",
+      "predicate": "chest{x:0b}",
+      "matched": false,
+      "blockEntityNbt": "{Items:[],id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:chest",
+      "predicate": "chest{Lock:\"\"}",
+      "matched": false,
+      "blockEntityNbt": "{Items:[],id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:chest",
+      "predicate": "chest{unknown:1}",
+      "matched": false,
+      "blockEntityNbt": "{Items:[],id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:chest",
+      "predicate": "chest{}suffix",
+      "matched": true,
+      "blockEntityNbt": "{Items:[],id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:chest",
+      "predicate": "chest{Items:[]} trailing",
+      "matched": true,
+      "blockEntityNbt": "{Items:[],id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:chest",
+      "predicate": "chest{Items:[],}",
+      "matched": true,
+      "blockEntityNbt": "{Items:[],id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:chest",
+      "predicate": "chest{Items:[0:{}]}",
+      "matched": false,
+      "error": "com.mojang.brigadier.exceptions.CommandSyntaxException",
+      "blockEntityNbt": "{Items:[],id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:chest",
+      "predicate": "chest{x:128b}",
+      "matched": false,
+      "blockEntityNbt": "{Items:[],id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:chest",
+      "predicate": "chest{LootTable:\"\"}",
+      "matched": false,
+      "blockEntityNbt": "{Items:[],id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:chest",
+      "predicate": "chest{Lock:''}",
+      "matched": false,
+      "blockEntityNbt": "{Items:[],id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:chest",
+      "predicate": "chest[waterlogged=false]{Items:[]}",
+      "matched": true,
+      "blockEntityNbt": "{Items:[],id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:oak_sign",
+      "predicate": "oak_sign{}",
+      "matched": true,
+      "blockEntityNbt": "{Color:\"black\",GlowingText:0b,Text1:'{\"text\":\"\"}',Text2:'{\"text\":\"\"}',Text3:'{\"text\":\"\"}',Text4:'{\"text\":\"\"}',id:\"minecraft:sign\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:oak_sign",
+      "predicate": "oak_sign{Text1:\"{\\\"text\\\":\\\"\\\"}\"}",
+      "matched": true,
+      "blockEntityNbt": "{Color:\"black\",GlowingText:0b,Text1:'{\"text\":\"\"}',Text2:'{\"text\":\"\"}',Text3:'{\"text\":\"\"}',Text4:'{\"text\":\"\"}',id:\"minecraft:sign\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:oak_sign",
+      "predicate": "oak_sign{Color:\"black\"}",
+      "matched": true,
+      "blockEntityNbt": "{Color:\"black\",GlowingText:0b,Text1:'{\"text\":\"\"}',Text2:'{\"text\":\"\"}',Text3:'{\"text\":\"\"}',Text4:'{\"text\":\"\"}',id:\"minecraft:sign\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:oak_sign",
+      "predicate": "oak_sign{GlowingText:0b}",
+      "matched": true,
+      "blockEntityNbt": "{Color:\"black\",GlowingText:0b,Text1:'{\"text\":\"\"}',Text2:'{\"text\":\"\"}',Text3:'{\"text\":\"\"}',Text4:'{\"text\":\"\"}',id:\"minecraft:sign\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:oak_sign",
+      "predicate": "oak_sign{Text1:\"\\\"\\\"\"}",
+      "matched": false,
+      "blockEntityNbt": "{Color:\"black\",GlowingText:0b,Text1:'{\"text\":\"\"}',Text2:'{\"text\":\"\"}',Text3:'{\"text\":\"\"}',Text4:'{\"text\":\"\"}',id:\"minecraft:sign\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:chest",
+      "predicate": "chest{Items:[{Slot:1b,id:\"minecraft:stone\"}]}",
+      "matched": true,
+      "blockEntityNbt": "{Items:[{Count:3b,Slot:1b,id:\"minecraft:stone\"}],Lock:\"test\",id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "minecraft:chest",
+      "predicate": "chest{Items:[{id:\"minecraft:stone\"},{id:\"minecraft:stone\"}]}",
+      "matched": true,
+      "blockEntityNbt": "{Items:[{Count:3b,Slot:1b,id:\"minecraft:stone\"}],id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "chest",
+      "predicate": "chest{Items:[0:{}]}",
+      "matched": false,
+      "error": "com.mojang.brigadier.exceptions.CommandSyntaxException",
+      "blockEntityNbt": "{Items:[{Count:3b,Slot:1b,id:\"minecraft:stone\"}],id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "chest",
+      "predicate": "chest{Lock:128b}",
+      "matched": true,
+      "blockEntityNbt": "{Items:[],Lock:\"128b\",id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "stone",
+      "predicate": "stone[__proto__=bad]",
+      "matched": false,
+      "error": "com.mojang.brigadier.exceptions.CommandSyntaxException"
+    }
+  ],
+  "clientJarSha1": "958928a560c9167687bea0cefeb7375da1e552a8"
+}
