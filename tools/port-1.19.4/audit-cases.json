@@ -53,5 +53,6 @@
   "tools/test-world-border.mjs",
   "tools/test-respawn-player.mjs",
   "tools/test-custom-completions.mjs",
-  "tools/test-keybind-components.mjs"
+  "tools/test-keybind-components.mjs",
+  "tools/test-entity-pick-radius.mjs"
 ]
