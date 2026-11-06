@@ -1,6 +1,6 @@
 # Full-scope parity review: Java 1.19.4
 
-Reviewed 2026-11-05. **Full parity is not achieved.** This report covers the
+Reviewed 2026-11-05; implementation follow-ups updated 2026-11-06. **Full parity is not achieved.** This report covers the
 client's major subsystems, confirmed implementation gaps, release boundaries
 and the reference checks still needed. It is not an exhaustive comparison of
 every Java method, screen pixel, sound trigger or possible server sequence.
@@ -12,7 +12,7 @@ mapped names and their exact obfuscated names. CFR source stays in ignored
 `cache/port-1.19.4/audit/decompiled/`; the repeatable source index records class
 hashes. There are 55 indexed classes; indexing is not behavioral validation.
 
-## Confirmed open findings, in implementation order
+## Findings and current implementation status
 
 P1 denotes missing gameplay/protocol behavior; P2 denotes presentation or
 specialized content behavior. Open rows are findings, not claims of shipped fixes. NET-1, NET-2 and WORLD-1 are now
@@ -139,3 +139,5 @@ After each change, run a native fixture or oracle plus the relevant older-target
 regressions; only then perform the full GUI/entity/effect acceptance matrix.
 Record each backport's native release boundary. Regenerated distributions must
 update source commits, manifest and checksums together.
+
+The current cross-version known-work inventory and 1.20.6 progression gate are in [parity-status-all-versions.md](parity-status-all-versions.md). Historical ledgers are not a fresh count of current missing implementations.
