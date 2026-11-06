@@ -402,6 +402,7 @@ export class World {
   // (this.entityCollider, set by the game)
   getCollisions(bb, mover = null) {
     const out = [];
+    this.worldBorder?.collisions(bb,mover,out);
     if (mover && this.entityCollider) for (const c of this.entityCollider(bb, mover)) out.push(c);
     // one cell of margin like World.getCollisionBoxes: shulker boxes and other boxes can reach into the next cell
     const x0 = Math.floor(bb[0]) - 1, x1 = Math.floor(bb[3] + 1) + 1;

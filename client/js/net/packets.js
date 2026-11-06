@@ -202,7 +202,7 @@ const decoders = {
       case 2: p.x = r.f64(); p.z = r.f64(); break;
       case 3:
         p.x = r.f64(); p.z = r.f64(); p.oldRadius = r.f64(); p.newRadius = r.f64();
-        p.speed = Number(r.varlong()); p.portalBoundary = r.varint(); p.warningTime = r.varint(); p.warningBlocks = r.varint();
+        p.speed = Number(r.varlong()); p.portalBoundary = r.varint(); p.warningBlocks = r.varint(); p.warningTime = r.varint();
         break;
       case 4: p.warningTime = r.varint(); break;
       case 5: p.warningBlocks = r.varint(); break;
