@@ -1,3 +1,4 @@
+import {sampleAttenuation} from './sample-attenuation.js';
 import {soundGain} from './sound-gain.js';
 import {tickBiomeSounds} from './biome-sounds.js';
 import {biomeInfo} from '../world/biomes.js';
@@ -216,9 +217,9 @@ export class SoundManager {
     if (!pick) return null;
     if (pick.type === 'event') {
       const sound = this._pick(pick.name, next);
-      return sound ? { ...sound, volume: sound.volume * (pick.volume ?? 1), pitch: sound.pitch * (pick.pitch ?? 1), stream: sound.stream || !!pick.stream } : null;
+      return sound ? { ...sound, volume: Math.fround(sound.volume * Math.fround(pick.volume ?? 1)), pitch: Math.fround(sound.pitch * Math.fround(pick.pitch ?? 1)), stream: sound.stream || !!pick.stream } : null;
     }
-    return { file: pick.name, volume: pick.volume ?? 1, pitch: pick.pitch ?? 1, stream: !!pick.stream };
+    return { file: pick.name, volume: Math.fround(pick.volume ?? 1), pitch: Math.fround(pick.pitch ?? 1), stream: !!pick.stream, attenuationDistance:pick.attenuation_distance??16 };
   }
 
   async _buffer(file) {
@@ -247,7 +248,7 @@ export class SoundManager {
       volume: soundGain(volume*def.volume,cat,this.game.settings),
       pitch: Math.max(0.5, Math.min(2, pitch * def.pitch)),
       pos: !opts.global && x !== undefined ? [x, y, z] : null,
-      maxDistance: Math.max(16, volume * 16),
+      maxDistance: sampleAttenuation(volume,def),
       onEnd: () => { this.playing.delete(handle); if (handle.onEnd) handle.onEnd(); },
     });
     if (!voice) return null;
@@ -318,7 +319,7 @@ export class SoundManager {
     const buf = await this._buffer(def.file);
     if (!buf || generation !== this.generation) return null;
     const base = def.volume * this.volumeFor(cat);
-    const voice = this.audio.play(buf, { volume: 0, pitch: def.pitch, pos: opts.global ? null : [x, y, z], maxDistance: 16, loop: true });
+    const voice = this.audio.play(buf, { volume: 0, pitch: def.pitch, pos: opts.global ? null : [x, y, z], maxDistance: sampleAttenuation(1,def), loop: true });
     if (!voice) return null;
     const handle = { name, stream:!!def.stream, category: cat, voice, base, stop: () => { voice.stop(); this.playing.delete(handle); }, setVolume: (v) => voice.setVolume && voice.setVolume(soundGain(v*def.volume,cat,this.game.settings)), setPosition: (p) => voice.setPosition && voice.setPosition(p), setPitch: (v) => voice.setPitch?.(Math.max(0.5, Math.min(2, v * def.pitch))) };
     this.playing.add(handle);
