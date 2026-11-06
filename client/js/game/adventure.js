@@ -9,7 +9,7 @@ const blockName=b=>normalize(b.name);
 export function matchesAdventureNbt(expected,actual){
   if(expected===null)return true;
   if(!actual||expected.t!==actual.t)return false;
-  if(expected.t===10)return Object.entries(expected.v).every(([key,value])=>matchesAdventureNbt(value,actual.v[key]));
+  if(expected.t===10)return Object.entries(expected.v).every(([key,value])=>Object.hasOwn(actual.v,key)&&matchesAdventureNbt(value,actual.v[key]));
   if(expected.t===9){
     const a=expected.v,b=actual.v;
     if(!a.items.length)return !b.items.length;
@@ -26,7 +26,7 @@ export function adventurePredicate(text){
   let i=0;const tag=text[i]==='#';if(tag)i++;
   const start=i;while(i<text.length&&/[a-z0-9_./:\-]/.test(text[i]))i++;
   const id=normalize(text.slice(start,i));if(!/^[a-z0-9_.-]+:[a-z0-9_./-]+$/.test(id))return null;
-  const properties={};
+  const properties=Object.create(null);
   const skip=()=>{while(i<text.length&&/\s/.test(text[i]))i++;};
   const string=()=>{
     const quote=text[i];if(quote==='"'||quote==="'"){i++;let value='';while(i<text.length){const c=text[i++];if(c===quote)return value;if(c==='\\'){const next=text[i++];if(next!==quote&&next!=='\\')throw Error('Invalid property escape');value+=next;}else value+=c;}throw Error('Unclosed property');}

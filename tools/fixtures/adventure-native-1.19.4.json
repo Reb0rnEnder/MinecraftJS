@@ -1,16 +1,16 @@
 {
+  "version": "1.19.4",
   "tags": {
-    "minecraft:mixed": [
-      "minecraft:oak_log",
-      "minecraft:stone"
-    ],
+    "minecraft:empty": [],
     "minecraft:logs": [
       "minecraft:oak_log",
       "minecraft:spruce_log"
     ],
-    "minecraft:empty": []
+    "minecraft:mixed": [
+      "minecraft:oak_log",
+      "minecraft:stone"
+    ]
   },
-  "version": "1.19.4",
   "cases": [
     {
       "state": "minecraft:stone",
@@ -380,6 +380,12 @@
       "predicate": "chest{Lock:128b}",
       "matched": true,
       "blockEntityNbt": "{Items:[],Lock:\"128b\",id:\"minecraft:chest\",x:0,y:64,z:0}"
+    },
+    {
+      "state": "stone",
+      "predicate": "stone[__proto__=bad]",
+      "matched": false,
+      "error": "com.mojang.brigadier.exceptions.CommandSyntaxException"
     }
   ],
   "clientJarSha1": "958928a560c9167687bea0cefeb7375da1e552a8"

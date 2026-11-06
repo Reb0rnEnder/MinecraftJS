@@ -121,7 +121,7 @@ node tools/port-1.19.4/run-presentation-fixture.mjs
 node tools/port-1.19.4/probe-interaction-entities.mjs
 ```
 
-The selected suite now has **415 passes, zero failures/skips in 59 files**.
+The selected suite now has **416 passes, zero failures/skips in 59 files**.
 The new interaction probe passed against the pinned isolated server. Source-index,
 packet inventory and probe results are written under ignored cache/audit files.
 The packet inventory deliberately labels reader/handler presence without marking

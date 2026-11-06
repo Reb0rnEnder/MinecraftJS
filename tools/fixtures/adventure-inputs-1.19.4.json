@@ -266,5 +266,9 @@
     "state": "chest",
     "predicate": "chest{Lock:128b}",
     "load": "{Lock:\"128b\"}"
+  },
+  {
+    "state": "stone",
+    "predicate": "stone[__proto__=bad]"
   }
 ]
