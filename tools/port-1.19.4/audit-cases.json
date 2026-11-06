@@ -54,5 +54,7 @@
   "tools/test-respawn-player.mjs",
   "tools/test-custom-completions.mjs",
   "tools/test-keybind-components.mjs",
-  "tools/test-entity-pick-radius.mjs"
+  "tools/test-entity-pick-radius.mjs",
+  "tools/test-sample-attenuation.mjs",
+  "tools/test-seeded-sounds.mjs"
 ]

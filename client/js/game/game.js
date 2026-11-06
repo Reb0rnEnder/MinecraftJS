@@ -1244,7 +1244,7 @@ export class Game {
   // SoundEvent registry id (data/sounds.json)
   on_sound_effect(p) {
     const name = p.soundName?.replace(/^minecraft:/,'')||this.assets.soundNames[p.soundId];
-    if (name) this.sound.play(name, p.x, p.y, p.z, p.volume, p.pitch, { category: p.soundCategory });
+    if (name) this.sound.play(name, p.x, p.y, p.z, p.volume, p.pitch, { category: p.soundCategory, seed:p.seed });
   }
 
   on_world_particles(p) { this.particles.onPacket(p); }
@@ -1252,7 +1252,7 @@ export class Game {
   on_entity_sound_effect(p) {
     const e = p.entityId === this.entityId ? this.player : this.entities.get(p.entityId);
     const name = p.soundName?.replace(/^minecraft:/,'')||this.assets.soundNames[p.soundId];
-    if (e && name) this.sound.play(name,e.x,e.y,e.z,p.volume,p.pitch,{category:p.soundCategory,entity:e});
+    if (e && name) this.sound.play(name,e.x,e.y,e.z,p.volume,p.pitch,{category:p.soundCategory,entity:e,seed:p.seed});
   }
 
   on_open_horse_window(p) {
