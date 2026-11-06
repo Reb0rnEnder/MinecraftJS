@@ -193,7 +193,8 @@ export class EntityManager {
     // Interaction defines its own dimensions, independent of EntityType's zero
     // registration size. Native bfs defaults to 1x1 and is always pickable.
     if (e.kind === 'interaction') {
-      e.width = e.height = 1; e.eyeHeight = Math.fround(.85);
+      // Interaction changes its AABB without refreshing the zero registered eye height.
+      e.width = e.height = 1; e.eyeHeight = 0;
       e.pickable = true; e.pickRadius = 0; e.noPhysics = true; e.response = false;
     }
     // crd.a(iz) consumes velocity in constructors for spit/bullets and acceleration
@@ -391,7 +392,6 @@ export class EntityManager {
     if (name === 'interaction') {
       assign('DATA_WIDTH_ID', 'width'); assign('DATA_HEIGHT_ID', 'height');
       assign('DATA_RESPONSE_ID', 'response');
-      e.eyeHeight = Math.fround(e.height * Math.fround(.85));
     }
     if(name==='frog'){assign('DATA_VARIANT_ID','frogVariant');assign('DATA_TONGUE_TARGET_ID','tongueTarget');}
     if(name==='allay'){assign('DATA_DANCING','dancing');assign('DATA_CAN_DUPLICATE','canDuplicate');}

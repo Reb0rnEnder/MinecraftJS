@@ -1,3 +1,4 @@
+import {readLookAt} from './look-at.js';
 import {decodeUtf8} from '../util/utf8.js';
 // Active protocol-762 codec. Unsupported bodies remain explicit; signed chat
 // outgoing account/session signing remains a separate unfinished milestone.
@@ -47,6 +48,10 @@ export function resolveDimension762(codec,worldType){
  return data;
 }
 function changed(name,r){switch(name){
+ case 'face_player':return readLookAt(r);
+ case 'initialize_world_border':return{name:'world_border',action:3,x:r.f64(),z:r.f64(),oldRadius:r.f64(),newRadius:r.f64(),speed:r.varlong(),portalBoundary:r.varint(),warningBlocks:r.varint(),warningTime:r.varint()};
+ case 'world_border_lerp_size':return{name:'world_border',action:1,oldRadius:r.f64(),newRadius:r.f64(),speed:r.varlong()};
+
  case 'chunk_biomes':return{biomes:list(r,()=>{const z=r.i32(),x=r.i32();return{x,z,data:r.bytesN(r.varint()).slice()};})};
  case 'profileless_chat':return{message:r.string(),type:r.varint(),networkName:r.string(),networkTargetName:r.bool()?r.string():null};
  case 'player_chat':{const p={sender:r.uuid(),index:r.varint(),signature:r.bool()?r.bytesN(256).slice():null,plainMessage:r.chatMessage(),timestamp:r.i64(),salt:r.i64()};p.previousMessages=list(r,()=>{const id=r.varint();return{id,signature:id===0?r.bytesN(256).slice():null};},20);p.unsignedChatContent=r.bool()?r.string():null;p.filterType=r.varint();if(p.filterType===2)p.filterTypeMask=list(r,()=>r.i64(),4096);else if(p.filterType!==0&&p.filterType!==1)throw Error('Invalid 762 chat filter');return{...p,type:r.varint(),networkName:r.string(),networkTargetName:r.bool()?r.string():null};}

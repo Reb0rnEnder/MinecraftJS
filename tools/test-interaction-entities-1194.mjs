@@ -37,19 +37,19 @@ test('interaction spawn overrides the zero registration size and can be targeted
   const {entity,interaction}=fixture();
   assert.deepEqual([entity.width,entity.height,entity.pickable,entity.noPhysics,entity.response],[1,1,true,true,false]);
   assert.equal(entity.pickRadius,0);
-  assert.equal(entity.eyeHeight,Math.fround(.85));
+  assert.equal(entity.eyeHeight,0);
   interaction.updateTarget();
   assert.equal(interaction.target.entity,entity);
   assert.deepEqual(interaction.target.hit,[0,64.5,1.5]);
 });
 
-test('wire metadata changes interaction dimensions, eye height and targeting; unrelated deltas retain them',()=>{
+test('wire metadata changes interaction bounds and targeting without refreshing its cached zero eye height',()=>{
   const {entity,game,interaction}=fixture();
   game.eyePosition=()=>[1.2,66,0];
   interaction.updateTarget();assert.equal(interaction.target,null);
   metadata(game.entities,2.5,3.5,true);
   assert.deepEqual([entity.width,entity.height,entity.response],[2.5,3.5,true]);
-  assert.equal(entity.eyeHeight,Math.fround(3.5*Math.fround(.85)));
+  assert.equal(entity.eyeHeight,0);
   interaction.updateTarget();assert.equal(interaction.target.entity,entity);
   game.eyePosition=()=>[1.26,66,0];
   interaction.updateTarget();assert.equal(interaction.target,null,'native pick radius does not inflate the custom bounds');
