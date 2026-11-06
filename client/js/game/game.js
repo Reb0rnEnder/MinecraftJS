@@ -1,3 +1,6 @@
+import {WorldBorder} from '../world/world-border.js';
+import {BorderRenderer} from '../render/world-border.js';
+import {applyLookAt} from './look-at.js';
 import {turnPlayer} from './mouse-look.js';
 import {capturePerformance} from '../debug/capture-performance.js';
 import {sectionKey} from '../world/section-key.js';
@@ -140,6 +143,7 @@ export class Game {
     this.shaderPack = new ShaderPackFinal(this);
     this.particles = new Particles(this);
     this.debugLines = new DebugLines(this);
+    this.borderRenderer = new BorderRenderer(this,{mode:'classic',fadeAtEntity:false});
     this.weather = new Weather(this);
     this.renderer.drawEntities = (d, camRot) => this.entityRenderer.draw(d, camRot);
     this.renderer.columnLoaded = (cx, cz) => !!this.world.getChunk(cx, cz);
@@ -223,7 +227,8 @@ export class Game {
     this.effects = new Map();
     this.dead = false;
     this.ticks = 0;
-    this.worldBorder = { x: 0, z: 0, radius: 29999984, warningTime: 15, warningBlocks: 5 };
+    this.worldBorder = new WorldBorder(()=>Math.floor(platform().now()),{legacyTime:false,legacyBounds:true,collisionMode:'inside'});
+    if(this.world)this.world.worldBorder=this.worldBorder;
     this.cameraEntity = null;
     this.ridingEntityId = -1;
     this.pendingTeleport = false;
@@ -744,6 +749,7 @@ export class Game {
   on_update_view_distance(p) { this.serverViewDistance=p.viewDistance; }
 
   on_login(p) {
+    this.worldBorder?.reset();
     resetPlayerView(this);
     this.interaction?.predictedDoors?.clear();
     this.serverBrand=null;this.serverViewDistance=p.viewDistance??this.settings.renderDistance;
@@ -845,6 +851,7 @@ export class Game {
     if(this.screens.current instanceof SleepScreen)this.screens.close();
     this.interaction?.predictedBlocks?.clear();
     if (p.dimension !== this.dimension) {
+      this.worldBorder?.reset();
       this.world.clear();
       this._resetMeshing();
       this.entities.clear();
@@ -1288,18 +1295,9 @@ export class Game {
     this.cameraEntity = p.cameraId === this.entityId ? null : p.cameraId;
   }
 
-  on_world_border(p) {
-    const b = this.worldBorder;
-    switch (p.action) {
-      case 0: b.radius = p.radius / 2; break;
-      case 1: b.radius = p.newRadius / 2; break;
-      case 2: b.x = p.x; b.z = p.z; break;
-      case 3: b.x = p.x; b.z = p.z; b.radius = p.newRadius / 2; b.warningTime = p.warningTime; b.warningBlocks = p.warningBlocks; break;
-      case 4: b.warningTime = p.warningTime; break;
-      case 5: b.warningBlocks = p.warningBlocks; break;
-      default: break;
-    }
-  }
+  on_world_border(p) { this.worldBorder.apply(p); }
+
+  on_face_player(p) { applyLookAt(this,p); }
 
   on_title(p) { this.hud.onTitle(p); }
 
@@ -1523,6 +1521,7 @@ export class Game {
 
   tick() {
     this.ticks++;
+    this.worldBorder.tick();
     if (smoothCameraActive(this) && this._smoothCam) {
       // EntityRenderer.updateRenderer: MouseFilter.smooth(accumulated, 0.05 * f)
       const sc = this._smoothCam;
