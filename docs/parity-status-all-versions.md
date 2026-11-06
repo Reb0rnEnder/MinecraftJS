@@ -4,7 +4,7 @@ Updated 2026-11-06. **No branch is certified as full vanilla parity.** This is t
 
 ## Shared implementation work
 
-- **Adventure restrictions:** enforce native CanDestroy/CanPlaceOn behavior on each target. Older versions use block-name lists; later versions support block predicates, tags, state and block-entity constraints. Do not prevent valid Adventure container/block interactions or item use in air.
+- **Adventure restrictions:** basic native permission gates are now implemented and regression-tested on all existing targets. Complete item-specific outcomes and native block-entity save-state matching remain open on applicable targets. Older versions use block-name lists; later versions support block predicates, tags, state and block-entity constraints. Do not prevent valid Adventure container/block interactions or item use in air.
 - **Native rendering:** Fabulous multipass/translucency remains absent on 1.16.5 and later. Powered dragon-head animation remains absent on eligible targets (1.12.2 onward among our branches). Piglin-head animation applies only to the enabled 1.20 experiment in 1.19.4 and stable later targets.
 - **Account services:** Microsoft block-list integration and applicable social/account behaviors remain incomplete. Incoming signed player-message verification exists on 1.19.4, but authenticated outgoing signed sessions/command arguments and reporting do not.
 - **Optional products:** integrated singleplayer/world creation and native Realms are not implemented. They are additional product work if full parity includes them, not server behaviors to approximate inside the multiplayer client.
@@ -41,7 +41,7 @@ Full OptiFine shader-pack render graphs, sky/water reflections/shadows and Eagle
 
 The applicable existing branches now include native world-border decoding, interpolation/collision/rendering/warnings and server look-at; fresh-player respawn with release-specific metadata/attribute retention and initial-health handling; current-binding keybind text and native custom chat completions; per-class entity pick radii; seeded sound selection and native sample attenuation. No newer protocol field, entity feature or resource format was added to ineligible older targets.
 
-The selected 1.19.4 native audit passes **344 tests in 58 files, zero failures/skips**. Focused applicable regressions and browser-bundle compilation pass across the ten worktrees. These are concrete checks, not a blanket certification of every GUI, effect or server sequence. Source changes are pushed; offline/static distributions have not been regenerated for this checkpoint.
+The selected 1.19.4 native audit passes **416 tests in 59 files, zero failures/skips**. Focused applicable regressions and browser-bundle compilation pass across the ten worktrees. These are concrete checks, not a blanket certification of every GUI, effect or server sequence. Source changes are pushed; offline/static distributions have not been regenerated for this checkpoint.
 
 ## Execution order and the 1.20.6 gate
 
