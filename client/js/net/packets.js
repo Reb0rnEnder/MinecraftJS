@@ -1,3 +1,4 @@
+import {readLookAt} from './look-at.js';
 import {readRecipes} from './recipes.js';
 import {technicalPackets} from './technical-packets.js';
 import { readCommandTree, readTags } from './command-tree.js';
@@ -203,7 +204,7 @@ const decoders = {
       case 2: p.x = r.f64(); p.z = r.f64(); break;
       case 3:
         p.x = r.f64(); p.z = r.f64(); p.oldRadius = r.f64(); p.newRadius = r.f64();
-        p.speed = Number(r.varlong()); p.portalBoundary = r.varint(); p.warningTime = r.varint(); p.warningBlocks = r.varint();
+        p.speed = Number(r.varlong()); p.portalBoundary = r.varint(); p.warningBlocks = r.varint(); p.warningTime = r.varint();
         break;
       case 4: p.warningTime = r.varint(); break;
       case 5: p.warningBlocks = r.varint(); break;
@@ -321,6 +322,7 @@ const decoders = {
 // mature field decoders above, but expose them under the protocol-404 registration order.
 // Packets without a 1.12 counterpart remain unknown until their feature is ported.
 const decoders404 = {
+  0x31:readLookAt,
   0x00: decoders[0x00], 0x01: decoders[0x01], 0x02: decoders[0x02], 0x03: decoders[0x03],
   0x04: decoders[0x04], 0x05: decoders[0x05], 0x06: decoders[0x06], 0x07: decoders[0x07],
   0x08: decoders[0x08], 0x09: decoders[0x09], 0x0a: decoders[0x0a], 0x0b: decoders[0x0b],
