@@ -1,3 +1,4 @@
+import {entityPickRadius} from './entity-pick-radius.js';
 import {isSlab,canMergeSlab,slabPlacementState} from './slab-placement.js';
 import {consumeEffect} from '../audio/consume-sounds.js';
 import {predictDoorPair,reconcileDoorPair} from './door-prediction.js';
@@ -63,7 +64,7 @@ export class Interaction {
     let bestDist = hit ? hit.dist : entityReach;
     for (const e of g.entities.pickable()) {
       if (!e.pickable || e.id === g.entityId || e.id === g.ridingEntityId) continue;
-      const border = 0.1;
+      const border = entityPickRadius(e);
       let r;
       if (e.box) { // hanging entities: exact box from EntityHanging.updateBoundingBox
         const b = e.box;
