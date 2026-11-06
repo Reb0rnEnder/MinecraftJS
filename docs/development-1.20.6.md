@@ -45,3 +45,9 @@ compiles. These use the existing 1.19.4 graphical/metadata baseline, not a
 completed 1.20.6 Play codec. A broader projectile test was attempted but cannot
 load the absent generated entity-model bundle. Native 1.20.6 live/render parity
 is not inferred. No pre-1.19.4 target receives this newer entity feature.
+
+## Planning checkpoint, 2026-11-06
+
+The user authorized advancing the existing 1.20.6 port while carrying inherited gaps explicitly. The [updated plan](transition-1.20.6.md) and [task ledger](transition-1.20.6.tasks.json) replace the earlier finish-all-baseline-fixes-before-starting gate. Four native input hashes and embedded version fields were rechecked; the existing Configuration suite passed nine tests. No live server probe was rerun and no gameplay milestone is newly accepted by this documentation change.
+
+Next: P02 native reports/default components/resource coverage, then P03/P04 codec work. The first graphical acceptance target is P07. The browser restricted historical release URLs, but direct curl retrieved all seven original Wiki pages; Fandom direct requests returned challenge pages. Their source hashes/topic/fix index, selected-section review and official/native cross-checks are recorded in transition-1.20.6.inputs.json and transition-1.20.6.release-index.json.

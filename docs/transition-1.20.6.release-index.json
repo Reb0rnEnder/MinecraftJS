@@ -1,0 +1,5126 @@
+{
+  "schemaVersion": 1,
+  "target": "1.20.6",
+  "fullParity": false,
+  "attribution": "Historical Minecraft Wiki pages linked per release; article prose stays in ignored cache.",
+  "releases": [
+    {
+      "version": "1.20",
+      "source": "https://minecraft.wiki/w/Java_Edition_1.20",
+      "retrievedOn": "2026-11-06",
+      "method": "curl",
+      "httpStatus": 200,
+      "htmlSha256": "5899f3b6a8c84db272be897807b1618d22e9acee6d067a1041664d13dd785ca2",
+      "htmlBytes": 726006,
+      "coverage": "Section/topic index and issue references; not implementation or acceptance.",
+      "topics": [
+        {
+          "section": "Additions",
+          "path": [
+            "Additions"
+          ],
+          "anchor": "Additions",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks"
+          ],
+          "anchor": "Blocks",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Bamboo mosaic"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Bamboo planks"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Block of bamboo"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Calibrated sculk sensor"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Cherry leaves"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Cherry log"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Cherry planks"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Cherry sapling"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Chiseled bookshelf"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Decorated pot"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Hanging sign"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Piglin head"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Pink petals"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Pitcher plant"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Sniffer egg"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Suspicious gravel"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Suspicious sand"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Blocks",
+            "Torchflower"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Items"
+          ],
+          "anchor": "Items",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Items",
+            "Brush"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Items",
+            "Music disc"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Items",
+            "Pitcher pod"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Items",
+            "Pottery sherds"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Items",
+            "Smithing templates"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Items",
+            "Spawn eggs"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Items",
+            "Torchflower seeds"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Mobs"
+          ],
+          "anchor": "Mobs",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Mobs",
+            "Camel"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Mobs",
+            "Sniffer"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Non-mob entities"
+          ],
+          "anchor": "Non-mob_entities",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Non-mob entities",
+            "Cherry boat"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Non-mob entities",
+            "Bamboo raft"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "World generation"
+          ],
+          "anchor": "World_generation",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "World generation",
+            "Cherry"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "World generation",
+            "Cherry Grove"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "World generation",
+            "Trail ruins"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Command format"
+          ],
+          "anchor": "Command_format",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Command format",
+            "/return"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Gameplay"
+          ],
+          "anchor": "Gameplay",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General"
+          ],
+          "anchor": "General",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Advancement triggers"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Data pack"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Font"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Languages"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Loot tables"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Music"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Particles"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "player.dat format"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Recipe"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Resource pack[verify for Java Edition]"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Splashes"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Tags"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes"
+          ],
+          "anchor": "Changes",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks"
+          ],
+          "anchor": "Blocks_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Beds, carpets, and wool"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Block of amethyst"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Buttons"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Dead coral"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Enchanting table"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Jukebox"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Mangrove roots and muddy mangrove roots"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Note block"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Player head"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Sculk sensor"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Sculk shrieker"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Signs"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Items"
+          ],
+          "anchor": "Items_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Items",
+            "Armor"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Items",
+            "Fish buckets"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Items",
+            "Potions"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Items",
+            "Wither rose"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs"
+          ],
+          "anchor": "Mobs_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs",
+            "Elder guardian"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs",
+            "Slimes and magma cubes"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Non-mob entities"
+          ],
+          "anchor": "Non-mob_entities_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Non-mob entities",
+            "Display"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation"
+          ],
+          "anchor": "World_generation_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation",
+            "Ancient city"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation",
+            "Bastion remnant"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation",
+            "Desert pyramid"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation",
+            "Desert well"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation",
+            "End city"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation",
+            "Jungle temple"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation",
+            "Nether fortress"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation",
+            "Ocean ruins (cold)"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation",
+            "Ocean ruins (warm)"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation",
+            "Pillager outpost"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation",
+            "Shipwreck"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation",
+            "Stronghold"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation",
+            "Woodland mansion"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format"
+          ],
+          "anchor": "Command_format_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "/data"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Gameplay"
+          ],
+          "anchor": "Gameplay_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Gameplay",
+            "Advancements"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Gameplay",
+            "Smithing table functionality"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General"
+          ],
+          "anchor": "General_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Advancements"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Credits"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Damage type"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Data packs"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Death messages"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Debug screen"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Feature flags"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Game events"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Loading world screens"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Loot tables"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Music"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Options"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Predicates"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Recipe"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Resource packs"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "server.properties"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Sounds"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Structure post-processors"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Tags"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Telemetry"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Title screen"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "General"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Fixes",
+          "path": [
+            "Fixes"
+          ],
+          "anchor": "Fixes",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        }
+      ],
+      "unkeyedFixListItems": 0,
+      "fixIds": [
+        "MC-180",
+        "MC-572",
+        "MC-1133",
+        "MC-1310",
+        "MC-2215",
+        "MC-2474",
+        "MC-2604",
+        "MC-18060",
+        "MC-21520",
+        "MC-30939",
+        "MC-35078",
+        "MC-44514",
+        "MC-48923",
+        "MC-58961",
+        "MC-74955",
+        "MC-75721",
+        "MC-107224",
+        "MC-108045",
+        "MC-117125",
+        "MC-117809",
+        "MC-117815",
+        "MC-120158",
+        "MC-121433",
+        "MC-121788",
+        "MC-123081",
+        "MC-124327",
+        "MC-127394",
+        "MC-128011",
+        "MC-130089",
+        "MC-132076",
+        "MC-135809",
+        "MC-138358",
+        "MC-146582",
+        "MC-150183",
+        "MC-151882",
+        "MC-152258",
+        "MC-155084",
+        "MC-157727",
+        "MC-158154",
+        "MC-159633",
+        "MC-159637",
+        "MC-160332",
+        "MC-162253",
+        "MC-165221",
+        "MC-165562",
+        "MC-165773",
+        "MC-166260",
+        "MC-167957",
+        "MC-169498",
+        "MC-170010",
+        "MC-170012",
+        "MC-170468",
+        "MC-172980",
+        "MC-175504",
+        "MC-176309",
+        "MC-179867",
+        "MC-181280",
+        "MC-188295",
+        "MC-188595",
+        "MC-193749",
+        "MC-195781",
+        "MC-195825",
+        "MC-196428",
+        "MC-197241",
+        "MC-197270",
+        "MC-197772",
+        "MC-198202",
+        "MC-199446",
+        "MC-199752",
+        "MC-199952",
+        "MC-201647",
+        "MC-203039",
+        "MC-203317",
+        "MC-203399",
+        "MC-203406",
+        "MC-206548",
+        "MC-207251",
+        "MC-207290",
+        "MC-207803",
+        "MC-209104",
+        "MC-212271",
+        "MC-212278",
+        "MC-212420",
+        "MC-212583",
+        "MC-212892",
+        "MC-213712",
+        "MC-213936",
+        "MC-214619",
+        "MC-217447",
+        "MC-220096",
+        "MC-221864",
+        "MC-224433",
+        "MC-224648",
+        "MC-224976",
+        "MC-225742",
+        "MC-226344",
+        "MC-226454",
+        "MC-227890",
+        "MC-228529",
+        "MC-230792",
+        "MC-230799",
+        "MC-230916",
+        "MC-234681",
+        "MC-236117",
+        "MC-236606",
+        "MC-237042",
+        "MC-237556",
+        "MC-237960",
+        "MC-240098",
+        "MC-241314",
+        "MC-241326",
+        "MC-241347",
+        "MC-241725",
+        "MC-241730",
+        "MC-241732",
+        "MC-241733",
+        "MC-241736",
+        "MC-241741",
+        "MC-241803",
+        "MC-241850",
+        "MC-242105",
+        "MC-244307",
+        "MC-245819",
+        "MC-246459",
+        "MC-249047",
+        "MC-249341",
+        "MC-249450",
+        "MC-249508",
+        "MC-249514",
+        "MC-250197",
+        "MC-250571",
+        "MC-251536",
+        "MC-251537",
+        "MC-251538",
+        "MC-252099",
+        "MC-252216",
+        "MC-252389",
+        "MC-252408",
+        "MC-252786",
+        "MC-254410",
+        "MC-254506",
+        "MC-254588",
+        "MC-256419",
+        "MC-256424",
+        "MC-256477",
+        "MC-256488",
+        "MC-256503",
+        "MC-256506",
+        "MC-256540",
+        "MC-256551",
+        "MC-256585",
+        "MC-256688",
+        "MC-256833",
+        "MC-257052",
+        "MC-257178",
+        "MC-257246",
+        "MC-257268",
+        "MC-257269",
+        "MC-257336",
+        "MC-257370",
+        "MC-257512",
+        "MC-257778",
+        "MC-258360",
+        "MC-258461",
+        "MC-258926",
+        "MC-258939",
+        "MC-259201",
+        "MC-259364",
+        "MC-259574",
+        "MC-259778",
+        "MC-259873",
+        "MC-259879",
+        "MC-259912",
+        "MC-259978",
+        "MC-260020",
+        "MC-260036",
+        "MC-260038",
+        "MC-260042",
+        "MC-260043",
+        "MC-260047",
+        "MC-260053",
+        "MC-260061",
+        "MC-260069",
+        "MC-260075",
+        "MC-260080",
+        "MC-260081",
+        "MC-260086",
+        "MC-260090",
+        "MC-260093",
+        "MC-260105",
+        "MC-260146",
+        "MC-260152",
+        "MC-260197",
+        "MC-260202",
+        "MC-260219",
+        "MC-260221",
+        "MC-260233",
+        "MC-260237",
+        "MC-260238",
+        "MC-260240",
+        "MC-260247",
+        "MC-260251",
+        "MC-260252",
+        "MC-260279",
+        "MC-260282",
+        "MC-260296",
+        "MC-260301",
+        "MC-260307",
+        "MC-260315",
+        "MC-260317",
+        "MC-260320",
+        "MC-260326",
+        "MC-260347",
+        "MC-260348",
+        "MC-260401",
+        "MC-260409",
+        "MC-260411",
+        "MC-260435",
+        "MC-260454",
+        "MC-260459",
+        "MC-260465",
+        "MC-260466",
+        "MC-260467",
+        "MC-260468",
+        "MC-260478",
+        "MC-260503",
+        "MC-260527",
+        "MC-260602",
+        "MC-260632",
+        "MC-260653",
+        "MC-260678",
+        "MC-260693",
+        "MC-260711",
+        "MC-260712",
+        "MC-260713",
+        "MC-260715",
+        "MC-260716",
+        "MC-260750",
+        "MC-260757",
+        "MC-260777",
+        "MC-260778",
+        "MC-260779",
+        "MC-260799",
+        "MC-260810",
+        "MC-260834",
+        "MC-260839",
+        "MC-260849",
+        "MC-260874",
+        "MC-260885",
+        "MC-260897",
+        "MC-260898",
+        "MC-260903",
+        "MC-260974",
+        "MC-260992",
+        "MC-261015",
+        "MC-261020",
+        "MC-261024",
+        "MC-261029",
+        "MC-261080",
+        "MC-261275",
+        "MC-261294",
+        "MC-261417",
+        "MC-261433",
+        "MC-261487",
+        "MC-261626",
+        "MC-261804",
+        "MC-261857",
+        "MC-261900",
+        "MC-262067",
+        "MC-262069",
+        "MC-262325",
+        "MC-262440",
+        "MC-262518",
+        "MC-262684"
+      ]
+    },
+    {
+      "version": "1.20.1",
+      "source": "https://minecraft.wiki/w/Java_Edition_1.20.1",
+      "retrievedOn": "2026-11-06",
+      "method": "curl",
+      "httpStatus": 200,
+      "htmlSha256": "a1b23276f717826adcf7f99ff98a53cacfce5a187f825edbf18956216be188c3",
+      "htmlBytes": 280439,
+      "coverage": "Section/topic index and issue references; not implementation or acceptance.",
+      "topics": [
+        {
+          "section": "Additions",
+          "path": [
+            "Additions"
+          ],
+          "anchor": "Additions",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General"
+          ],
+          "anchor": "General",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Languages"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Fixes",
+          "path": [
+            "Fixes"
+          ],
+          "anchor": "Fixes",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        }
+      ],
+      "unkeyedFixListItems": 1,
+      "fixIds": [
+        "MC-263244",
+        "MC-263245",
+        "MC-263296",
+        "MC-263340"
+      ]
+    },
+    {
+      "version": "1.20.2",
+      "source": "https://minecraft.wiki/w/Java_Edition_1.20.2",
+      "retrievedOn": "2026-11-06",
+      "method": "curl",
+      "httpStatus": 200,
+      "htmlSha256": "67266deb03d70a03aa142e037bb3a1dd52d78d14e4f36409b88a537508a34b0d",
+      "htmlBytes": 548625,
+      "coverage": "Section/topic index and issue references; not implementation or acceptance.",
+      "topics": [
+        {
+          "section": "Additions",
+          "path": [
+            "Additions"
+          ],
+          "anchor": "Additions",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Command format"
+          ],
+          "anchor": "Command_format",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Command format",
+            "/random"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General"
+          ],
+          "anchor": "General",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Attributes"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Experiments"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Game rule"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Loot table"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Options"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "options.txt"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Social interactions"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Tags"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes"
+          ],
+          "anchor": "Changes",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks"
+          ],
+          "anchor": "Blocks",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Barrier"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Chorus flower"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Decorated pot"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Enchanting table"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Jukebox and tripwire hook"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Lever, redstone comparator and redstone repeater"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Pink petals"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Sculk sensor and calibrated sculk sensor"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Smithing table"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Sponge and wet sponge"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Redstone wire, redstone repeaters and redstone comparators"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Heads"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Items"
+          ],
+          "anchor": "Items",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Items",
+            "Chorus fruit"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Items",
+            "Explorer map"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Items",
+            "Music disc"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs"
+          ],
+          "anchor": "Mobs",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs",
+            "Bee"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs",
+            "Camels, frogs, goats and sniffers"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs",
+            "Villagers"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs",
+            "General"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Non-mob entities"
+          ],
+          "anchor": "Non-mob_entities",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Non-mob entities",
+            "Display entities"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation"
+          ],
+          "anchor": "World_generation",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation",
+            "Ore distribution"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format"
+          ],
+          "anchor": "Command_format_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "Functions"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "/function"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "/item"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "General"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Gameplay"
+          ],
+          "anchor": "Gameplay",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Gameplay",
+            "Advancements"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Gameplay",
+            "Recipe books"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Gameplay",
+            "Trading"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General"
+          ],
+          "anchor": "General_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Chat"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Chunk format"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Chunk tick"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Data pack"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Debug screen"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Entity format"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Game events"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Multiplayer and World Selection screens"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Pack metadata"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "player.dat format"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Protocol"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Resource pack"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Scoreboard"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "server.properties"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Social interactions"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Tags"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Telemetry"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "General"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental"
+          ],
+          "anchor": "Experimental",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions"
+          ],
+          "anchor": "Additions_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "General"
+          ],
+          "anchor": "General_3",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "General",
+            "Tags"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes"
+          ],
+          "anchor": "Changes_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "World generation"
+          ],
+          "anchor": "World_generation_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "World generation",
+            "Ancient City"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "World generation",
+            "Desert Pyramid"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "World generation",
+            "Jungle Pyramid"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "World generation",
+            "Mineshaft"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "World generation",
+            "Pillager Outpost"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "Gameplay"
+          ],
+          "anchor": "Gameplay_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "Gameplay",
+            "Trading"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Fixes",
+          "path": [
+            "Fixes"
+          ],
+          "anchor": "Fixes",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        }
+      ],
+      "unkeyedFixListItems": 0,
+      "fixIds": [
+        "MC-1297",
+        "MC-2310",
+        "MC-25088",
+        "MC-29371",
+        "MC-61041",
+        "MC-67532",
+        "MC-69387",
+        "MC-70127",
+        "MC-72721",
+        "MC-80876",
+        "MC-80938",
+        "MC-82239",
+        "MC-85582",
+        "MC-86918",
+        "MC-93320",
+        "MC-93820",
+        "MC-96409",
+        "MC-103800",
+        "MC-103831",
+        "MC-109346",
+        "MC-112133",
+        "MC-118616",
+        "MC-118961",
+        "MC-119873",
+        "MC-121772",
+        "MC-121884",
+        "MC-122296",
+        "MC-122547",
+        "MC-122645",
+        "MC-125046",
+        "MC-131684",
+        "MC-135339",
+        "MC-140646",
+        "MC-147766",
+        "MC-154827",
+        "MC-164080",
+        "MC-164176",
+        "MC-169201",
+        "MC-169464",
+        "MC-169530",
+        "MC-173057",
+        "MC-173643",
+        "MC-177110",
+        "MC-177172",
+        "MC-178787",
+        "MC-181109",
+        "MC-181190",
+        "MC-182820",
+        "MC-190815",
+        "MC-192307",
+        "MC-193457",
+        "MC-197473",
+        "MC-200484",
+        "MC-201166",
+        "MC-202432",
+        "MC-203232",
+        "MC-206182",
+        "MC-208909",
+        "MC-209220",
+        "MC-209798",
+        "MC-210485",
+        "MC-214126",
+        "MC-215768",
+        "MC-217627",
+        "MC-217628",
+        "MC-217629",
+        "MC-219440",
+        "MC-227338",
+        "MC-228420",
+        "MC-229121",
+        "MC-230732",
+        "MC-231898",
+        "MC-232840",
+        "MC-235762",
+        "MC-236966",
+        "MC-237326",
+        "MC-237333",
+        "MC-237427",
+        "MC-237428",
+        "MC-237429",
+        "MC-238793",
+        "MC-242076",
+        "MC-242092",
+        "MC-242385",
+        "MC-242395",
+        "MC-242396",
+        "MC-242397",
+        "MC-242592",
+        "MC-245930",
+        "MC-248778",
+        "MC-248833",
+        "MC-248844",
+        "MC-248846",
+        "MC-249109",
+        "MC-249355",
+        "MC-249702",
+        "MC-249776",
+        "MC-249893",
+        "MC-250985",
+        "MC-251525",
+        "MC-252231",
+        "MC-252295",
+        "MC-252298",
+        "MC-252316",
+        "MC-253137",
+        "MC-253241",
+        "MC-253269",
+        "MC-253270",
+        "MC-253278",
+        "MC-253281",
+        "MC-253283",
+        "MC-253638",
+        "MC-253797",
+        "MC-254100",
+        "MC-255263",
+        "MC-255418",
+        "MC-255829",
+        "MC-255967",
+        "MC-256466",
+        "MC-256482",
+        "MC-256485",
+        "MC-256549",
+        "MC-256641",
+        "MC-256652",
+        "MC-256675",
+        "MC-256690",
+        "MC-256696",
+        "MC-256737",
+        "MC-256777",
+        "MC-257342",
+        "MC-257431",
+        "MC-257628",
+        "MC-257909",
+        "MC-258379",
+        "MC-258620",
+        "MC-259152",
+        "MC-259382",
+        "MC-259401",
+        "MC-259452",
+        "MC-259475",
+        "MC-259769",
+        "MC-259794",
+        "MC-259860",
+        "MC-259915",
+        "MC-260054",
+        "MC-260058",
+        "MC-260085",
+        "MC-260096",
+        "MC-260485",
+        "MC-260490",
+        "MC-260604",
+        "MC-260675",
+        "MC-260819",
+        "MC-260844",
+        "MC-260968",
+        "MC-261119",
+        "MC-261123",
+        "MC-261182",
+        "MC-261261",
+        "MC-261369",
+        "MC-261411",
+        "MC-261420",
+        "MC-261427",
+        "MC-261440",
+        "MC-261502",
+        "MC-261611",
+        "MC-261657",
+        "MC-261739",
+        "MC-261926",
+        "MC-261951",
+        "MC-261965",
+        "MC-262108",
+        "MC-262132",
+        "MC-262295",
+        "MC-262436",
+        "MC-262442",
+        "MC-262591",
+        "MC-262613",
+        "MC-262615",
+        "MC-262620",
+        "MC-262636",
+        "MC-262638",
+        "MC-262720",
+        "MC-262751",
+        "MC-262754",
+        "MC-262766",
+        "MC-262804",
+        "MC-262947",
+        "MC-263011",
+        "MC-263049",
+        "MC-263126",
+        "MC-263133",
+        "MC-263200",
+        "MC-263203",
+        "MC-263283",
+        "MC-263313",
+        "MC-263322",
+        "MC-263387",
+        "MC-263430",
+        "MC-263588",
+        "MC-263833",
+        "MC-263879",
+        "MC-264092",
+        "MC-264233",
+        "MC-264260",
+        "MC-264356",
+        "MC-264467",
+        "MC-264468",
+        "MC-264561",
+        "MC-264574",
+        "MC-264809",
+        "MC-264829",
+        "MC-265151"
+      ]
+    },
+    {
+      "version": "1.20.3",
+      "source": "https://minecraft.wiki/w/Java_Edition_1.20.3",
+      "retrievedOn": "2026-11-06",
+      "method": "curl",
+      "httpStatus": 200,
+      "htmlSha256": "ff9b1d1797b54fa0addb818146ea0dcf48a57604531daaecf73457571ebc3e89",
+      "htmlBytes": 421371,
+      "coverage": "Section/topic index and issue references; not implementation or acceptance.",
+      "topics": [
+        {
+          "section": "Additions",
+          "path": [
+            "Additions"
+          ],
+          "anchor": "Additions",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Command format"
+          ],
+          "anchor": "Command_format",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Command format",
+            "/tick"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General"
+          ],
+          "anchor": "General",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Experiments"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Game rule"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Loading screen"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Options"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "options.txt"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Particles"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Tags"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes"
+          ],
+          "anchor": "Changes",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks"
+          ],
+          "anchor": "Blocks",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Decorated pot"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Grass"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Jigsaw block"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Monster spawner"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Items"
+          ],
+          "anchor": "Items",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Items",
+            "Arrows"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Items",
+            "Ender pearl"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Items",
+            "Shield"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs"
+          ],
+          "anchor": "Mobs",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs",
+            "Bat"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Non-mob entities"
+          ],
+          "anchor": "Non-mob_entities",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Non-mob entities",
+            "General"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format"
+          ],
+          "anchor": "Command_format_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "Function"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "/execute"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "/function"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "/return"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "/scoreboard"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General"
+          ],
+          "anchor": "General_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Custom structure"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Data pack"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Entity format"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Processor list"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Raw JSON text format"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Realms"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Resource pack"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Tags"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Telemetry"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "General"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental"
+          ],
+          "anchor": "Experimental",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions"
+          ],
+          "anchor": "Additions_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Blocks"
+          ],
+          "anchor": "Blocks_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Blocks",
+            "Chiseled copper"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Blocks",
+            "Copper bulb"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Blocks",
+            "Copper door and copper trapdoor"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Blocks",
+            "Copper grate"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Blocks",
+            "Crafter"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Blocks",
+            "Trial spawner"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Blocks",
+            "Tuff family"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Items"
+          ],
+          "anchor": "Items_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Items",
+            "Spawn egg"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Items",
+            "Trial key"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Mobs"
+          ],
+          "anchor": "Mobs_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Mobs",
+            "Breeze"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Non-mob entities"
+          ],
+          "anchor": "Non-mob_entities_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Non-mob entities",
+            "Wind charge"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "World generation"
+          ],
+          "anchor": "World_generation",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "World generation",
+            "Trial chambers"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "General"
+          ],
+          "anchor": "General_3",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "General",
+            "Tags"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes"
+          ],
+          "anchor": "Changes_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "Gameplay"
+          ],
+          "anchor": "Gameplay",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "Gameplay",
+            "Advancements"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "General"
+          ],
+          "anchor": "General_4",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "General",
+            "Resource pack"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "General",
+            "Tags"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Fixes",
+          "path": [
+            "Fixes"
+          ],
+          "anchor": "Fixes",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        }
+      ],
+      "unkeyedFixListItems": 0,
+      "fixIds": [
+        "MC-1981",
+        "MC-5820",
+        "MC-16937",
+        "MC-47607",
+        "MC-50319",
+        "MC-50647",
+        "MC-78314",
+        "MC-81656",
+        "MC-109101",
+        "MC-114761",
+        "MC-118403",
+        "MC-129608",
+        "MC-131646",
+        "MC-136904",
+        "MC-142160",
+        "MC-143266",
+        "MC-143269",
+        "MC-147649",
+        "MC-163943",
+        "MC-164316",
+        "MC-169969",
+        "MC-172398",
+        "MC-173434",
+        "MC-177446",
+        "MC-185117",
+        "MC-186797",
+        "MC-189227",
+        "MC-189261",
+        "MC-189739",
+        "MC-198113",
+        "MC-219293",
+        "MC-221558",
+        "MC-223774",
+        "MC-225364",
+        "MC-225365",
+        "MC-227255",
+        "MC-232719",
+        "MC-233276",
+        "MC-234323",
+        "MC-234472",
+        "MC-234483",
+        "MC-234567",
+        "MC-236341",
+        "MC-236501",
+        "MC-236946",
+        "MC-237009",
+        "MC-247421",
+        "MC-249408",
+        "MC-251126",
+        "MC-253819",
+        "MC-254850",
+        "MC-255173",
+        "MC-255244",
+        "MC-257516",
+        "MC-257786",
+        "MC-259321",
+        "MC-260341",
+        "MC-260576",
+        "MC-261303",
+        "MC-261395",
+        "MC-261682",
+        "MC-262027",
+        "MC-262105",
+        "MC-262888",
+        "MC-263123",
+        "MC-263263",
+        "MC-263272",
+        "MC-263309",
+        "MC-263575",
+        "MC-263660",
+        "MC-264595",
+        "MC-264699",
+        "MC-264710",
+        "MC-264748",
+        "MC-264880",
+        "MC-264966",
+        "MC-265291",
+        "MC-265353",
+        "MC-265426",
+        "MC-265462",
+        "MC-265515",
+        "MC-265516",
+        "MC-265517",
+        "MC-265519",
+        "MC-265551",
+        "MC-265589",
+        "MC-265814",
+        "MC-265899",
+        "MC-265927",
+        "MC-265929",
+        "MC-266196",
+        "MC-266256",
+        "MC-266380"
+      ]
+    },
+    {
+      "version": "1.20.4",
+      "source": "https://minecraft.wiki/w/Java_Edition_1.20.4",
+      "retrievedOn": "2026-11-06",
+      "method": "curl",
+      "httpStatus": 200,
+      "htmlSha256": "ba81667a29b1b9ca466a9b452f0de3cdedb0f52c8b39fc6dab8f209af30d1c80",
+      "htmlBytes": 276999,
+      "coverage": "Section/topic index and issue references; not implementation or acceptance.",
+      "topics": [
+        {
+          "section": "Fixes",
+          "path": [
+            "Fixes"
+          ],
+          "anchor": "Fixes",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        }
+      ],
+      "unkeyedFixListItems": 0,
+      "fixIds": [
+        "MC-267185"
+      ]
+    },
+    {
+      "version": "1.20.5",
+      "source": "https://minecraft.wiki/w/Java_Edition_1.20.5",
+      "retrievedOn": "2026-11-06",
+      "method": "curl",
+      "httpStatus": 200,
+      "htmlSha256": "8564e7f5fd93ce00b151694a264fc3cca339864d68f009506206569952b40d25",
+      "htmlBytes": 554598,
+      "coverage": "Section/topic index and issue references; not implementation or acceptance.",
+      "topics": [
+        {
+          "section": "Additions",
+          "path": [
+            "Additions"
+          ],
+          "anchor": "Additions",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Items"
+          ],
+          "anchor": "Items",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Items",
+            "Armadillo scute"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Items",
+            "Spawn eggs"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Mobs"
+          ],
+          "anchor": "Mobs",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Mobs",
+            "Armadillo"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Mobs",
+            "Wolf"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Command format"
+          ],
+          "anchor": "Command_format",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Command format",
+            "/transfer"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Command format",
+            "Item modifiers"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Command format",
+            "Loot tables"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Gameplay"
+          ],
+          "anchor": "Gameplay",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Gameplay",
+            "Advancements"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Gameplay"
+          ],
+          "anchor": "Gameplay_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Gameplay",
+            "Advancements"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Gameplay",
+            "Creative mode"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Gameplay",
+            "Effects[5]"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "Gameplay",
+            "Enchantments"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General"
+          ],
+          "anchor": "General",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Attributes"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Entity predicate"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Game rule"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Inventory"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Loot tables"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Options"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Particles"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Servers"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Additions",
+          "path": [
+            "Additions",
+            "General",
+            "Tags"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes"
+          ],
+          "anchor": "Changes",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks"
+          ],
+          "anchor": "Blocks",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Cobweb"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Grindstone"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Hopper"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Blocks",
+            "Player head"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Items"
+          ],
+          "anchor": "Items_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Items",
+            "General"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Items",
+            "Turtle scute"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs"
+          ],
+          "anchor": "Mobs_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs",
+            "General"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs",
+            "Bees and parrots"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs",
+            "Cave spiders and spiders"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs",
+            "Horse"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs",
+            "Llama"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs",
+            "Shulkers"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs",
+            "Shulker bullets"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Mobs",
+            "Wolf"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Non-mob entities"
+          ],
+          "anchor": "Non-mob_entities",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Non-mob entities",
+            "Llama spits"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation"
+          ],
+          "anchor": "World_generation",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "World generation",
+            "Grove"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format"
+          ],
+          "anchor": "Command_format_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "General"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "Entity format"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "Item stack format"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "Predicate format"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "Other format changes"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "/attribute"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "/execute"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "/item"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "/playsound"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "Item modifiers"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "Item predicate argument"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "Item sub-predicates"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "Predicates"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "Slots"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "Enchantments"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "End portal"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "Command format",
+            "Spawn chunks"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General"
+          ],
+          "anchor": "General_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "General"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Accessibility"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Attributes"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Background"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Chat"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Controls"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Create New World screen"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Data pack"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Effect"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Font"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Item stack components"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Language"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "options.txt"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Particles"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Protocol"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Recipe"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Resource pack"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Shaders"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Splashes"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Tags"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Tooltip"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Changes",
+          "path": [
+            "Changes",
+            "General",
+            "Other"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental"
+          ],
+          "anchor": "Experimental",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions"
+          ],
+          "anchor": "Additions_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Blocks"
+          ],
+          "anchor": "Blocks_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Blocks",
+            "Heavy core"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Blocks",
+            "Ominous trial spawner"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Blocks",
+            "Ominous vault"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Blocks",
+            "Vault"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Items"
+          ],
+          "anchor": "Items_3",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Items",
+            "Banner patterns"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Items",
+            "Breeze rod"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Items",
+            "Mace"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Items",
+            "Ominous bottle"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Items",
+            "Ominous trial key"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Items",
+            "Pottery sherds"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Items",
+            "Smithing templates"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Items",
+            "Spawn egg"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Items",
+            "Trial chambers map"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Items",
+            "Wind charge"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Mobs"
+          ],
+          "anchor": "Mobs_3",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Mobs",
+            "Bogged"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Command format"
+          ],
+          "anchor": "Command_format_3",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Command format",
+            "Loot functions"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Gameplay"
+          ],
+          "anchor": "Gameplay_3",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Gameplay",
+            "Advancements"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "Gameplay",
+            "Ominous events"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "General"
+          ],
+          "anchor": "General_3",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Additions",
+            "General",
+            "Tags"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes"
+          ],
+          "anchor": "Changes_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "Blocks"
+          ],
+          "anchor": "Blocks_3",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "Blocks",
+            "Crafter"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "Blocks",
+            "Trial spawner"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "Items"
+          ],
+          "anchor": "Items_4",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "Items",
+            "Trial key"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "Mobs"
+          ],
+          "anchor": "Mobs_4",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "Mobs",
+            "Breeze"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "Mobs",
+            "Parrot"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "Mobs",
+            "Villager"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "Non-mob entities"
+          ],
+          "anchor": "Non-mob_entities_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "Non-mob entities",
+            "Wind charge"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "World generation"
+          ],
+          "anchor": "World_generation_2",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "World generation",
+            "Trial chambers"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "Gameplay"
+          ],
+          "anchor": "Gameplay_4",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "Gameplay",
+            "Advancements"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "General"
+          ],
+          "anchor": "General_4",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Experimental",
+          "path": [
+            "Experimental",
+            "Changes",
+            "General",
+            "Tags"
+          ],
+          "kind": "topic",
+          "status": "indexed; acceptance pending"
+        },
+        {
+          "section": "Fixes",
+          "path": [
+            "Fixes"
+          ],
+          "anchor": "Fixes",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        }
+      ],
+      "unkeyedFixListItems": 0,
+      "fixIds": [
+        "MC-19893",
+        "MC-71977",
+        "MC-72151",
+        "MC-94413",
+        "MC-96609",
+        "MC-100016",
+        "MC-100994",
+        "MC-107353",
+        "MC-109286",
+        "MC-117637",
+        "MC-117955",
+        "MC-117977",
+        "MC-118857",
+        "MC-118890",
+        "MC-121621",
+        "MC-123804",
+        "MC-130244",
+        "MC-131636",
+        "MC-132380",
+        "MC-140397",
+        "MC-140565",
+        "MC-142372",
+        "MC-143614",
+        "MC-147710",
+        "MC-148057",
+        "MC-148480",
+        "MC-151793",
+        "MC-153329",
+        "MC-153643",
+        "MC-153879",
+        "MC-155857",
+        "MC-157133",
+        "MC-165435",
+        "MC-165948",
+        "MC-166361",
+        "MC-167324",
+        "MC-167375",
+        "MC-168407",
+        "MC-169389",
+        "MC-170000",
+        "MC-171177",
+        "MC-171981",
+        "MC-172047",
+        "MC-172447",
+        "MC-172898",
+        "MC-173303",
+        "MC-173672",
+        "MC-174496",
+        "MC-175437",
+        "MC-175622",
+        "MC-178410",
+        "MC-184066",
+        "MC-184622",
+        "MC-185379",
+        "MC-185955",
+        "MC-186626",
+        "MC-187267",
+        "MC-187372",
+        "MC-187616",
+        "MC-187746",
+        "MC-188497",
+        "MC-189211",
+        "MC-189484",
+        "MC-193202",
+        "MC-193460",
+        "MC-193511",
+        "MC-193515",
+        "MC-193517",
+        "MC-193521",
+        "MC-193524",
+        "MC-193656",
+        "MC-193753",
+        "MC-194948",
+        "MC-195572",
+        "MC-198492",
+        "MC-198787",
+        "MC-198963",
+        "MC-199973",
+        "MC-200947",
+        "MC-200987",
+        "MC-201722",
+        "MC-204947",
+        "MC-206854",
+        "MC-207353",
+        "MC-208528",
+        "MC-213104",
+        "MC-216071",
+        "MC-217084",
+        "MC-218811",
+        "MC-219899",
+        "MC-219967",
+        "MC-221754",
+        "MC-224343",
+        "MC-225170",
+        "MC-226775",
+        "MC-228486",
+        "MC-229209",
+        "MC-229680",
+        "MC-229919",
+        "MC-230256",
+        "MC-232489",
+        "MC-232560",
+        "MC-234406",
+        "MC-234558",
+        "MC-234889",
+        "MC-238242",
+        "MC-239084",
+        "MC-248076",
+        "MC-248689",
+        "MC-248961",
+        "MC-249136",
+        "MC-249335",
+        "MC-250432",
+        "MC-251027",
+        "MC-251042",
+        "MC-251303",
+        "MC-251509",
+        "MC-252409",
+        "MC-259142",
+        "MC-259355",
+        "MC-259587",
+        "MC-260099",
+        "MC-260867",
+        "MC-260889",
+        "MC-260921",
+        "MC-261577",
+        "MC-261596",
+        "MC-261749",
+        "MC-261846",
+        "MC-262503",
+        "MC-263256",
+        "MC-263315",
+        "MC-263641",
+        "MC-263872",
+        "MC-263873",
+        "MC-263874",
+        "MC-264456",
+        "MC-264597",
+        "MC-264637",
+        "MC-264684",
+        "MC-264821",
+        "MC-265273",
+        "MC-265520",
+        "MC-265541",
+        "MC-265585",
+        "MC-265661",
+        "MC-265669",
+        "MC-265709",
+        "MC-265741",
+        "MC-265749",
+        "MC-265835",
+        "MC-266032",
+        "MC-266055",
+        "MC-266135",
+        "MC-266136",
+        "MC-266144",
+        "MC-266145",
+        "MC-266308",
+        "MC-266334",
+        "MC-266389",
+        "MC-266430",
+        "MC-266432",
+        "MC-266449",
+        "MC-266467",
+        "MC-266469",
+        "MC-266532",
+        "MC-266533",
+        "MC-266557",
+        "MC-266570",
+        "MC-266577",
+        "MC-266589",
+        "MC-266628",
+        "MC-266680",
+        "MC-266685",
+        "MC-266688",
+        "MC-266707",
+        "MC-266738",
+        "MC-266879",
+        "MC-266909",
+        "MC-266960",
+        "MC-266990",
+        "MC-266997",
+        "MC-266999",
+        "MC-267044",
+        "MC-267045",
+        "MC-267086",
+        "MC-267103",
+        "MC-267104",
+        "MC-267133",
+        "MC-267149",
+        "MC-267193",
+        "MC-267194",
+        "MC-267273",
+        "MC-267352",
+        "MC-267384",
+        "MC-267433",
+        "MC-267451",
+        "MC-267465",
+        "MC-267500",
+        "MC-267732",
+        "MC-267742",
+        "MC-267747",
+        "MC-267866",
+        "MC-267975",
+        "MC-267976",
+        "MC-268000",
+        "MC-268011",
+        "MC-268022",
+        "MC-268110",
+        "MC-268236",
+        "MC-268353",
+        "MC-268580",
+        "MC-268597",
+        "MC-268624",
+        "MC-269085",
+        "MC-269279",
+        "MC-269472",
+        "MC-269496",
+        "MC-269755",
+        "MC-269763"
+      ]
+    },
+    {
+      "version": "1.20.6",
+      "source": "https://minecraft.wiki/w/Java_Edition_1.20.6",
+      "retrievedOn": "2026-11-06",
+      "method": "curl",
+      "httpStatus": 200,
+      "htmlSha256": "8f37db14c87bf3275734108f435e46d618e3d3954585172199e2075da39c1b95",
+      "htmlBytes": 278660,
+      "coverage": "Section/topic index and issue references; not implementation or acceptance.",
+      "topics": [
+        {
+          "section": "Fixes",
+          "path": [
+            "Fixes"
+          ],
+          "anchor": "Fixes",
+          "kind": "heading",
+          "status": "indexed; acceptance pending"
+        }
+      ],
+      "unkeyedFixListItems": 0,
+      "fixIds": [
+        "MC-271109"
+      ]
+    }
+  ]
+}

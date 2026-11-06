@@ -45,10 +45,10 @@ The selected 1.19.4 native audit passes **416 tests in 59 files, zero failures/s
 
 ## Execution order and the 1.20.6 gate
 
-1. Finish the confirmed 1.19.4 implementation gaps, preserving exact native behavior. Review and backport/forward each shared change, regress it and push it as an independent batch.
-2. Close outstanding native interaction/visual/reconnect acceptance gates; do not silently mark an unverified feature complete. Account signing/reporting needs authenticated acceptance, not fabricated signatures or a claimed live account test.
-3. Continue the **existing** 1.20.6 worktree with its staged transition plan once the preceding fixes are complete. Do not create a duplicate branch or relabel old assets/protocol as a completed port. Carry remaining validation gates forward explicitly.
-4. Rebuild distributions only as a coordinated checkpoint with source commits, manifest and checksums updated together.
+1. **Updated authorization, 2026-11-06:** advance the **existing** 1.20.6 worktree now using [the revised plan](transition-1.20.6.md) and [ordered task ledger](transition-1.20.6.tasks.json). This supersedes the earlier requirement to finish every baseline fix before starting the port.
+2. Carry inherited implementation and acceptance gaps explicitly. Review each shared repair for every applicable existing branch, newest to oldest, and push validated batches without importing newer features into older targets.
+3. Required inherited and target-native gaps still block a full-parity claim. Account signing/reporting needs real authenticated acceptance; missing rendering or server-sequence checks cannot be marked complete by changing the version label.
+4. Rebuild distributions at coordinated checkpoints with source commits, manifest and checksums updated together. Do not create duplicate branches or present old assets/protocol as a completed native port.
 
 ## Evidence ledgers
 

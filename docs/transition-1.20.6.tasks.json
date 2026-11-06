@@ -1,0 +1,295 @@
+{
+  "schemaVersion": 1,
+  "updatedOn": "2026-11-06",
+  "target": "1.20.6",
+  "branch": "1.20.6",
+  "fullParity": false,
+  "nativeGraphicalGameplayAccepted": false,
+  "planningSourceCommit": "ecd95f4786b951869af59c46a1ad140a54931b72",
+  "nextTask": "P02",
+  "authorization": "Proceed with 1.20.6 now; keep inherited work open rather than requiring its completion before starting.",
+  "executionRule": "Follow dependency order; native evidence and gate completion are required before marking done. Push validated batches and review shared backports as they land, not only at P16.",
+  "tasks": [
+    {
+      "id": "P00",
+      "title": "Verify pinned inputs and preserve the forwarded baseline",
+      "status": "done",
+      "dependsOn": [],
+      "releaseRefs": [
+        "1.20.6"
+      ],
+      "acceptance": "All four native input hashes and embedded version fields match; existing worktrees and local inputs remain intact.",
+      "evidence": [
+        "Four SHA-1 checks and version.json inspection on 2026-11-06."
+      ]
+    },
+    {
+      "id": "P01",
+      "title": "Triage all seven release histories and inherited findings",
+      "status": "partial",
+      "dependsOn": [
+        "P00"
+      ],
+      "releaseRefs": [
+        "1.20",
+        "1.20.1",
+        "1.20.2",
+        "1.20.3",
+        "1.20.4",
+        "1.20.5",
+        "1.20.6"
+      ],
+      "acceptance": "Every release topic/fix has a native-client, server-owned, experiment, product-scope or verification disposition.",
+      "evidence": [
+        "Seven historical Wiki articles fetched via curl with recorded hashes; Fandom challenge responses excluded.",
+        "415 indexed topic/section entries and 806 fix-ID references (806 distinct IDs).",
+        "Selected relevant historical sections and official notes reviewed; per-topic/fix behavioral triage remains pending."
+      ]
+    },
+    {
+      "id": "P02",
+      "title": "Extract native reports, component defaults and resource inventory",
+      "status": "todo",
+      "dependsOn": [
+        "P00"
+      ],
+      "releaseRefs": [
+        "1.20.6"
+      ],
+      "acceptance": "Reproducible native tables, source index, asset hashes and feature gates reject mixed-version data.",
+      "evidence": []
+    },
+    {
+      "id": "P03",
+      "title": "Implement native binary primitives and NBT text components",
+      "status": "todo",
+      "dependsOn": [
+        "P00"
+      ],
+      "releaseRefs": [
+        "1.20.3",
+        "1.20.5"
+      ],
+      "acceptance": "Native byte fixtures preserve typed values/styles/events and reject malformed/trailing payloads.",
+      "evidence": []
+    },
+    {
+      "id": "P04",
+      "title": "Implement all required component-stack codecs and consumer views",
+      "status": "todo",
+      "dependsOn": [
+        "P02",
+        "P03"
+      ],
+      "releaseRefs": [
+        "1.20.5",
+        "1.20.6"
+      ],
+      "acceptance": "Defaults, additions, removals and nested stacks round-trip against native codecs; no legacy slot fallback.",
+      "evidence": []
+    },
+    {
+      "id": "P05",
+      "title": "Complete Configuration lifecycle and registry ownership",
+      "status": "partial",
+      "dependsOn": [
+        "P03"
+      ],
+      "releaseRefs": [
+        "1.20.2",
+        "1.20.5"
+      ],
+      "acceptance": "Repeated Configuration/Play transitions, registry replacement, known-pack behavior and control replies match native behavior.",
+      "evidence": [
+        "Current native phase-ID/Configuration suite: nine passes on 2026-11-06.",
+        "Historical isolated offline handshake in development-1.20.6.md; not rerun during planning."
+      ]
+    },
+    {
+      "id": "P06",
+      "title": "Implement essential native Play packet bodies and Game consumers",
+      "status": "todo",
+      "dependsOn": [
+        "P02",
+        "P03",
+        "P05"
+      ],
+      "releaseRefs": [
+        "1.20.2",
+        "1.20.3",
+        "1.20.5",
+        "1.20.6"
+      ],
+      "acceptance": "Terrain/light, dimensions, entities, attributes, movement, HUD and inventory reach actual handlers with native fixtures.",
+      "evidence": []
+    },
+    {
+      "id": "P07",
+      "title": "Integrate native graphical join and switch public identity atomically",
+      "status": "todo",
+      "dependsOn": [
+        "P02",
+        "P04",
+        "P06"
+      ],
+      "releaseRefs": [
+        "1.20.6"
+      ],
+      "acceptance": "Browser joins isolated vanilla server, renders native terrain/entities/HUD, moves and respawns without old data or essential decode errors.",
+      "evidence": []
+    },
+    {
+      "id": "P08",
+      "title": "Finish inventory, interaction results and target physics attributes",
+      "status": "todo",
+      "dependsOn": [
+        "P04",
+        "P07"
+      ],
+      "releaseRefs": [
+        "1.20",
+        "1.20.2",
+        "1.20.5",
+        "1.20.6"
+      ],
+      "acceptance": "Each supported menu/action reconciles authoritative component stacks and native ranges/poses; rejection side effects match Java.",
+      "evidence": []
+    },
+    {
+      "id": "P09",
+      "title": "Validate authenticated login, transfer, cookies and session continuity",
+      "status": "todo",
+      "dependsOn": [
+        "P05",
+        "P07"
+      ],
+      "releaseRefs": [
+        "1.20.2",
+        "1.20.5"
+      ],
+      "acceptance": "Controlled transfer/reconfiguration and real encrypted/account sessions have separate recorded acceptance; no fabricated account test. Reconfiguration preserves visible chat/input history while correctly renewing signature-session state.",
+      "evidence": []
+    },
+    {
+      "id": "P10",
+      "title": "Finish resource-pack lifecycle, native atlases, GUI sprites and fonts",
+      "status": "todo",
+      "dependsOn": [
+        "P02",
+        "P05",
+        "P07"
+      ],
+      "releaseRefs": [
+        "1.20",
+        "1.20.2",
+        "1.20.3",
+        "1.20.5"
+      ],
+      "acceptance": "Native/default and custom pack stacking, reload, overlays, fonts and sprite scaling pass lifecycle/pixel fixtures.",
+      "evidence": []
+    },
+    {
+      "id": "P11",
+      "title": "Implement stable Trails & Tales and later presentation families",
+      "status": "todo",
+      "dependsOn": [
+        "P08",
+        "P10"
+      ],
+      "releaseRefs": [
+        "1.20",
+        "1.20.3",
+        "1.20.4"
+      ],
+      "acceptance": "Every construction/sign/archaeology/pot/smithing/mob/effect family has native interaction and visual evidence, with server ownership distinguished.",
+      "evidence": []
+    },
+    {
+      "id": "P12",
+      "title": "Implement Armored Paws and final equipment/inventory behavior",
+      "status": "todo",
+      "dependsOn": [
+        "P04",
+        "P08",
+        "P10"
+      ],
+      "releaseRefs": [
+        "1.20.5",
+        "1.20.6"
+      ],
+      "acceptance": "Armadillo, wolf variants/armor and body-equipment/llama slot interpretation match native state and rendering.",
+      "evidence": []
+    },
+    {
+      "id": "P13",
+      "title": "Complete target menus, commands, chat trust/reporting and audio/effects",
+      "status": "todo",
+      "dependsOn": [
+        "P08",
+        "P09",
+        "P10"
+      ],
+      "releaseRefs": [
+        "1.20",
+        "1.20.2",
+        "1.20.3",
+        "1.20.5",
+        "1.20.6"
+      ],
+      "acceptance": "Target GUI/input/narration/text/command and local sound/effect scenarios pass; authenticated signing/reporting has actual acceptance. Cover native jigsaw priorities, menu blur/background exceptions, focus and debug content.",
+      "evidence": []
+    },
+    {
+      "id": "P14",
+      "title": "Close inherited parity defects using target-native formats",
+      "status": "todo",
+      "dependsOn": [
+        "P07"
+      ],
+      "releaseRefs": [
+        "1.20.6"
+      ],
+      "acceptance": "Display interpolation, block-entity predicates, powered heads, Fabulous and known vehicle issues have explicit accepted resolutions or remain visibly open.",
+      "evidence": []
+    },
+    {
+      "id": "P15",
+      "title": "Complete target-wide acceptance and release-fix/experiment accounting",
+      "status": "todo",
+      "dependsOn": [
+        "P01",
+        "P08",
+        "P09",
+        "P10",
+        "P11",
+        "P12",
+        "P13",
+        "P14"
+      ],
+      "releaseRefs": [
+        "1.20",
+        "1.20.1",
+        "1.20.2",
+        "1.20.3",
+        "1.20.4",
+        "1.20.5",
+        "1.20.6"
+      ],
+      "acceptance": "Required implementation/acceptance gaps are closed; all adapters, lifecycle cases, experiments and product exclusions are honestly accounted for.",
+      "evidence": []
+    },
+    {
+      "id": "P16",
+      "title": "Backport eligible shared changes and publish coherent builds",
+      "status": "todo",
+      "dependsOn": [
+        "P15"
+      ],
+      "releaseRefs": [
+        "1.20.6"
+      ],
+      "acceptance": "Applicable old-target regressions pass; source SHAs, asset identity, manifest, checksums and static/offline builds agree.",
+      "evidence": []
+    }
+  ]
+}

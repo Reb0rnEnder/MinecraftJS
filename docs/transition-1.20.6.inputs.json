@@ -1,5 +1,5 @@
 {
-  "reviewedOn": "2026-11-05",
+  "reviewedOn": "2026-11-06",
   "baseline": "1.19.4",
   "nativeTargetVersion": {
     "id": "1.20.6",
@@ -409,5 +409,148 @@
       }
     }
   },
-  "wikiAccess": "Some direct page fetches were robots-blocked; indexed Wiki content was cross-checked with official notes and exact target code."
+  "wikiAccess": "The browser tool restricted all seven historical Wiki pages. Direct curl retrieved all seven minecraft.wiki articles with HTTP 200 on 2026-11-06. Fandom browser requests were restricted/402 and all seven direct requests returned HTTP 403 challenge pages. Topic/section labels and fix IDs are indexed; selected sections were reviewed, not all fixes accepted.",
+  "sourceReview": {
+    "date": "2026-11-06",
+    "fullHistoricalChangeInventoryReviewed": false,
+    "releases": [
+      {
+        "version": "1.20",
+        "wiki": "https://minecraft.wiki/w/Java_Edition_1.20",
+        "wikiStatus": "retrieved_via_curl; topics_indexed_and_selected_sections_reviewed",
+        "official": "https://feedback.minecraft.net/hc/en-us/articles/16499677456781-Minecraft-Java-Edition-1-20-Trails-Tales",
+        "officialStatus": "selected_sections_read",
+        "wikiBrowserStatus": "restricted",
+        "wikiHttpStatus": 200,
+        "wikiHtmlSha256": "5899f3b6a8c84db272be897807b1618d22e9acee6d067a1041664d13dd785ca2",
+        "wikiHtmlBytes": 726006,
+        "fandom": "https://minecraft.fandom.com/wiki/Java_Edition_1.20",
+        "fandomBrowserStatus": "restricted_or_402",
+        "fandomHttpStatus": 403,
+        "fandomStatus": "challenge_page_not_article",
+        "topicAndSectionEntries": 121,
+        "fixIdReferences": 274
+      },
+      {
+        "version": "1.20.1",
+        "wiki": "https://minecraft.wiki/w/Java_Edition_1.20.1",
+        "wikiStatus": "retrieved_via_curl; topics_indexed_and_selected_sections_reviewed",
+        "official": "https://www.minecraft.net/en-us/article/minecraft--java-edition-1-20-1",
+        "officialStatus": "selected_sections_read",
+        "wikiBrowserStatus": "restricted",
+        "wikiHttpStatus": 200,
+        "wikiHtmlSha256": "a1b23276f717826adcf7f99ff98a53cacfce5a187f825edbf18956216be188c3",
+        "wikiHtmlBytes": 280439,
+        "fandom": "https://minecraft.fandom.com/wiki/Java_Edition_1.20.1",
+        "fandomBrowserStatus": "restricted_or_402",
+        "fandomHttpStatus": 403,
+        "fandomStatus": "challenge_page_not_article",
+        "topicAndSectionEntries": 4,
+        "fixIdReferences": 4
+      },
+      {
+        "version": "1.20.2",
+        "wiki": "https://minecraft.wiki/w/Java_Edition_1.20.2",
+        "wikiStatus": "retrieved_via_curl; topics_indexed_and_selected_sections_reviewed",
+        "official": "https://www.minecraft.net/en-us/article/minecraft-java-edition-1-20-2",
+        "officialStatus": "selected_sections_read",
+        "wikiBrowserStatus": "restricted",
+        "wikiHttpStatus": 200,
+        "wikiHtmlSha256": "67266deb03d70a03aa142e037bb3a1dd52d78d14e4f36409b88a537508a34b0d",
+        "wikiHtmlBytes": 548625,
+        "fandom": "https://minecraft.fandom.com/wiki/Java_Edition_1.20.2",
+        "fandomBrowserStatus": "restricted_or_402",
+        "fandomHttpStatus": 403,
+        "fandomStatus": "challenge_page_not_article",
+        "topicAndSectionEntries": 81,
+        "fixIdReferences": 213
+      },
+      {
+        "version": "1.20.3",
+        "wiki": "https://minecraft.wiki/w/Java_Edition_1.20.3",
+        "wikiStatus": "retrieved_via_curl; topics_indexed_and_selected_sections_reviewed",
+        "official": "https://www.minecraft.net/en-us/article/minecraft-java-edition-1-20-3",
+        "officialStatus": "selected_sections_read",
+        "wikiBrowserStatus": "restricted",
+        "wikiHttpStatus": 200,
+        "wikiHtmlSha256": "ff9b1d1797b54fa0addb818146ea0dcf48a57604531daaecf73457571ebc3e89",
+        "wikiHtmlBytes": 421371,
+        "fandom": "https://minecraft.fandom.com/wiki/Java_Edition_1.20.3",
+        "fandomBrowserStatus": "restricted_or_402",
+        "fandomHttpStatus": 403,
+        "fandomStatus": "challenge_page_not_article",
+        "topicAndSectionEntries": 70,
+        "fixIdReferences": 93
+      },
+      {
+        "version": "1.20.4",
+        "wiki": "https://minecraft.wiki/w/Java_Edition_1.20.4",
+        "wikiStatus": "retrieved_via_curl; topics_indexed_and_selected_sections_reviewed",
+        "official": "https://www.minecraft.net/en-us/article/minecraft-java-edition-1-20-4",
+        "officialStatus": "selected_sections_read",
+        "wikiBrowserStatus": "restricted",
+        "wikiHttpStatus": 200,
+        "wikiHtmlSha256": "ba81667a29b1b9ca466a9b452f0de3cdedb0f52c8b39fc6dab8f209af30d1c80",
+        "wikiHtmlBytes": 276999,
+        "fandom": "https://minecraft.fandom.com/wiki/Java_Edition_1.20.4",
+        "fandomBrowserStatus": "restricted_or_402",
+        "fandomHttpStatus": 403,
+        "fandomStatus": "challenge_page_not_article",
+        "topicAndSectionEntries": 1,
+        "fixIdReferences": 1
+      },
+      {
+        "version": "1.20.5",
+        "wiki": "https://minecraft.wiki/w/Java_Edition_1.20.5",
+        "wikiStatus": "retrieved_via_curl; topics_indexed_and_selected_sections_reviewed",
+        "official": "https://www.minecraft.net/en-us/article/minecraft-java-edition-1-20-5",
+        "officialStatus": "selected_sections_read",
+        "wikiBrowserStatus": "restricted",
+        "wikiHttpStatus": 200,
+        "wikiHtmlSha256": "8564e7f5fd93ce00b151694a264fc3cca339864d68f009506206569952b40d25",
+        "wikiHtmlBytes": 554598,
+        "fandom": "https://minecraft.fandom.com/wiki/Java_Edition_1.20.5",
+        "fandomBrowserStatus": "restricted_or_402",
+        "fandomHttpStatus": 403,
+        "fandomStatus": "challenge_page_not_article",
+        "topicAndSectionEntries": 137,
+        "fixIdReferences": 220
+      },
+      {
+        "version": "1.20.6",
+        "wiki": "https://minecraft.wiki/w/Java_Edition_1.20.6",
+        "wikiStatus": "retrieved_via_curl; topics_indexed_and_selected_sections_reviewed",
+        "official": "https://www.minecraft.net/en-us/article/minecraft-java-edition-1-20-6",
+        "officialStatus": "selected_sections_read",
+        "wikiBrowserStatus": "restricted",
+        "wikiHttpStatus": 200,
+        "wikiHtmlSha256": "8f37db14c87bf3275734108f435e46d618e3d3954585172199e2075da39c1b95",
+        "wikiHtmlBytes": 278660,
+        "fandom": "https://minecraft.fandom.com/wiki/Java_Edition_1.20.6",
+        "fandomBrowserStatus": "restricted_or_402",
+        "fandomHttpStatus": 403,
+        "fandomStatus": "challenge_page_not_article",
+        "topicAndSectionEntries": 1,
+        "fixIdReferences": 1
+      }
+    ],
+    "nativeInputsReverified": [
+      "client",
+      "client_mappings",
+      "server",
+      "server_mappings"
+    ],
+    "nativeVersionJsonInspected": true,
+    "configurationTests": {
+      "tests": 9,
+      "pass": 9,
+      "fail": 0
+    },
+    "historicalLiveProbeRerun": false,
+    "wikiInventoryCreated": true,
+    "releaseIndex": "docs/transition-1.20.6.release-index.json",
+    "indexedTopicAndSectionEntries": 415,
+    "fixIdReferences": 806,
+    "distinctFixIds": 806
+  }
 }
