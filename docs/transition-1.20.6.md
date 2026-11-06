@@ -64,3 +64,7 @@ teleport confirmation, chunk-batch acknowledgement and a real keepalive.
 Reconfiguration, cookies and malformed inputs have regression coverage; actual
 server transfer, resource-pack presentation and encrypted login remain open.
 See development-1.20.6.md for exact evidence. Milestones 2–4 remain pending.
+
+## Follow-up gate, 2026-11-06
+
+Per the user's requested order, complete the confirmed baseline fixes before advancing native 1.20.6 implementation. Continue on this existing branch; do not create another target. Shared border/look-at, respawn, keybind/completion, picking and sound fixes are forwarded and tested, with their baseline limitations documented. The remaining scope across all targets is maintained in [parity-status-all-versions.md](parity-status-all-versions.md); the 1.19.4 source review lists the still-open display, Adventure, authenticated chat/reporting, atlas and powered-head implementations. Full parity is a target, not a status inferred from the Configuration handshake.
