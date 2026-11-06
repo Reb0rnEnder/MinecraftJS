@@ -80,6 +80,7 @@ function addCoord(bb, x, y, z) {
 
 export class LocalPlayer {
   constructor() {
+    this.healthInitialized = false; // Native first server-health update does not flash damage.
     this.x = 0; this.y = 0; this.z = 0;
     this.prevX = 0; this.prevY = 0; this.prevZ = 0;
     this.motionX = 0; this.motionY = 0; this.motionZ = 0;
