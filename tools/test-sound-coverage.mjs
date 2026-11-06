@@ -15,7 +15,7 @@ test('every registered sound and referenced event resolves, and every shipped sa
 });
 test('nested sound events use native event weights and multiply volume, pitch and stream flags',()=>{
  const s=Object.create(SoundManager.prototype);s.defs={child:{sounds:[{name:'a',weight:3,volume:.4,pitch:.8}]},parent:{sounds:[{name:'child',type:'event',weight:99,volume:.5,pitch:.5,stream:true}]},cycle:{sounds:[{name:'cycle',type:'event'}]}};
- assert.equal(s._weight('parent'),3);assert.deepEqual(s._pick('minecraft:parent'),{file:'a',volume:.2,pitch:.4,stream:true});assert.equal(s._pick('cycle'),null);
+ assert.equal(s._weight('parent'),3);assert.deepEqual(s._pick('minecraft:parent'),{file:'a',volume:Math.fround(.2),pitch:Math.fround(.4),stream:true});assert.equal(s._pick('cycle'),null);
 });
 test('resource-pack audio resolves explicit namespaces through the pack-aware source',async()=>{
  const paths=[],a=Object.create(Assets.prototype);a.readResourceBytes=async path=>{paths.push(path);return path;};
