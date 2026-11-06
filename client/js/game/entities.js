@@ -201,6 +201,7 @@ export class EntityManager {
       case 90: e.kind = 'fishhook'; e.typeName = 'Fishing Float'; e.pickable = false; e.owner = p.objectData; break;
       default: e.kind = 'projectile'; break;
     }
+    if(e.kind==='projectile'&&p.type===63)e.pickable=true; // Native large fireballs can be punched back.
     this.add(e);
   }
 
