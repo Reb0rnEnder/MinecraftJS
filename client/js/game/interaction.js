@@ -1,3 +1,4 @@
+import {adventureAllows,LEGACY_UNRESTRICTED_USE} from './adventure.js';
 import {entityPickRadius} from './entity-pick-radius.js';
 import {isSlab,canMergeSlab,slabPlacementState} from './slab-placement.js';
 import {consumeEffect} from '../audio/consume-sounds.js';
@@ -233,10 +234,7 @@ export class Interaction {
   clickBlock(t, face) {
     const g = this.game;
     const pos = { x: t.x, y: t.y, z: t.z };
-    if (g.gameMode === 2 || g.gameMode === 3) {
-      // Adventure: only with tools able to "destroy" (CanDestroy not supported); spectator nothing
-      if (g.gameMode === 3) return;
-    }
+    if(g.gameMode===3||g.gameMode===2&&!adventureAllows(g,g.inventory.held(),'CanDestroy',pos))return false;
     if(this._creativeSwordBlocksMining(pos,face)){this.resetBreaking();return false;}
     if (g.gameMode === 1) {
       g.send(C.blockDig(0, pos.x, pos.y, pos.z, face));
@@ -334,6 +332,7 @@ export class Interaction {
   onPlayerDamageBlock(t, face) {
     const g = this.game;
     const pos = { x: t.x, y: t.y, z: t.z };
+    if(g.gameMode===3||g.gameMode===2&&!adventureAllows(g,g.inventory.held(),'CanDestroy',pos))return false;
     if (this.blockHitDelay > 0) { this.blockHitDelay--; return true; }
     if(this._creativeSwordBlocksMining(pos,face)){this.resetBreaking();return false;}
     if (g.gameMode === 1) {
@@ -564,6 +563,7 @@ export class Interaction {
   // Item.onItemUse on the client: whether the click "worked" (decides the swing), with the client-side effects
   _onItemUse(t, held) {
     const g = this.game, w = g.world, id = held.id;
+    if(g.gameMode===2&&!LEGACY_UNRESTRICTED_USE.has(id)&&!adventureAllows(g,held,'CanPlaceOn',t))return false;
     const st = w.getState(t.x, t.y, t.z), b = blocks[st >> 4];
     const above = (y) => blocks[w.getState(t.x, y, t.z) >> 4];
     const air = (bb) => !bb || bb.id === 0;
@@ -588,7 +588,8 @@ export class Interaction {
       case 355: return t.face === 1 && air(above(t.y + 1)); // bed
       case 323: case 425: case 397: return t.face !== 0 && !!(b && b.material !== 'plant' && b.boundingBox === 'block'); // sign, banner, skull
       case 328: case 342: case 343: case 407: case 408: case 422: return !!(b && /rail$/.test(b.name)); // minecarts
-      case 383: case 401: return true; // spawn egg (client returns early), firework
+      case 383: return true; // spawn egg returns early on the client
+      case 401: return false; // 1.8.9 ItemFirework succeeds only on the server
       case 389: case 321: return t.face >= 2; // item frame, painting
       case 416: return t.face !== 0; // armor stand
       case 290: case 291: case 292: case 293: case 294: // hoes
