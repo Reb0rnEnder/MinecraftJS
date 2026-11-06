@@ -55,7 +55,7 @@ function changed(name,r){switch(name){
  case 'profileless_chat':return{message:r.string(),type:r.varint(),networkName:r.string(),networkTargetName:r.bool()?r.string():null};
  case 'player_chat':{const p={sender:r.uuid(),index:r.varint(),signature:r.bool()?r.bytesN(256).slice():null,plainMessage:r.chatMessage(),timestamp:r.i64(),salt:r.i64()};p.previousMessages=list(r,()=>{const id=r.varint();return{id,signature:id===0?r.bytesN(256).slice():null};},20);p.unsignedChatContent=r.bool()?r.string():null;p.filterType=r.varint();if(p.filterType===2)p.filterTypeMask=list(r,()=>r.i64(),4096);else if(p.filterType!==0&&p.filterType!==1)throw Error('Invalid 762 chat filter');return{...p,type:r.varint(),networkName:r.string(),networkTargetName:r.bool()?r.string():null};}
  case 'hide_message':{const signatureId=r.varint();return{signatureId,signature:signatureId===0?r.bytesN(256).slice():null};}
- case 'chat_suggestions':return{action:r.varint(),entries:list(r,()=>r.string())};
+ case 'chat_suggestions':{const action=r.varint();if(action<0||action>2)throw Error('Invalid chat completion action');return{action,entries:list(r,()=>r.string())};}
  case 'bundle_delimiter':return{};
  case 'acknowledge_player_digging':return{sequenceId:r.varint()};
  case 'feature_flags':return{features:list(r,()=>r.string(),256)};

@@ -10,7 +10,7 @@ const normalize=s=>s.includes(':')?s:'minecraft:'+s;
 const matches=(value,prefix)=>value.toLowerCase().startsWith(prefix.toLowerCase())||value.toLowerCase().includes('_'+prefix.toLowerCase());
 export function playerSuggestions(game,text,cursor=text.length) {
   const prefix=text.slice(0,cursor),start=prefix.search(/\S+$/),range=start<0?cursor:start,word=prefix.slice(range);
-  const names=[...(game.scoreboard?.players?.values()||[])].map(p=>p.name).filter(Boolean);
+  const names=[...[...(game.scoreboard?.players?.values()||[])].map(p=>p.name).filter(Boolean),...(game.customChatCompletions||[])];
   return {start:range,end:cursor,matches:[...new Set(names)].filter(n=>matches(n,word)).sort((a,b)=>a.toLowerCase().localeCompare(b.toLowerCase())).map(match=>({match}))};
 }
 function fail(start,key='command.unknown.argument',args=[]) { return {end:start,error:{start,key,args}}; }
