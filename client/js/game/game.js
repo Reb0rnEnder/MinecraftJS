@@ -1,3 +1,5 @@
+import {bindingResolver} from './keybind-components.js';
+import {setKeybindResolver} from '../gui/chat.js';
 import {replaceRespawnPlayer} from './respawn-player.js';
 import {PLAYER_DATA,respawnPolicy,clampMaxHealth} from './player-native.js';
 import {WorldBorder} from '../world/world-border.js';
@@ -119,6 +121,7 @@ export class Game {
     this.device = device;
     setModelDevice(device);
     setTranslator((k, a) => assets.translate(k, a));
+    setKeybindResolver(bindingResolver(settings,key=>assets.translate(key)));
 
     this.input = new Input(settings);
     this.gui = new Gui(device, assets);
