@@ -1,6 +1,7 @@
 [
   "tools/test-attachment-placement.mjs",
   "tools/test-block-state-properties.mjs",
+  "tools/test-border-look-packets.mjs",
   "tools/test-biome-worker-colors.mjs",
   "tools/test-biome-registry-transfer.mjs",
   "tools/test-block-offsets.mjs",
@@ -24,6 +25,7 @@
   "tools/test-inventory-preview-equipment.mjs",
   "tools/test-interaction-entities-1194.mjs",
   "tools/test-iron-golem-cracks.mjs",
+  "tools/test-look-at.mjs",
   "tools/test-merchant-offers-1194.mjs",
   "tools/test-native-keyframes-1194.mjs",
   "tools/test-paintings-1194.mjs",
@@ -47,5 +49,6 @@
   "tools/test-terrain-particle-colours.mjs",
   "tools/test-sound-gain.mjs",
   "tools/test-breaking-fluid-preservation.mjs",
-  "tools/test-block-break-durability.mjs"
+  "tools/test-block-break-durability.mjs",
+  "tools/test-world-border.mjs"
 ]

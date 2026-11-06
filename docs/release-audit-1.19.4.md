@@ -81,8 +81,9 @@ block/entity pages are not used to infer older bundle or particle behavior.
   eligible block-entity destruction, placed heads and banner patterns.
 - Context-dependent placement overrides beyond the audited families. Server
   protection rejections cannot be predicted from local geometry alone.
-- Remaining packet bodies, detailed respawn retention, border initialization,
-  glint/fog changes and complete GUI/container/recipe review.
+- Detailed respawn retention, remaining packet consumers, glint/fog changes and
+  complete GUI/container/recipe review. Border/look-at bodies and border behavior
+  are fixed; see world-border-look-parity.md.
 
 The broad inherited regression file contains stale version fixtures. Only the
 named targeted tests and live/browser checks are reported passing. No native

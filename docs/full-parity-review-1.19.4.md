@@ -15,12 +15,13 @@ hashes. There are 55 indexed classes; indexing is not behavioral validation.
 ## Confirmed open findings, in implementation order
 
 P1 denotes missing gameplay/protocol behavior; P2 denotes presentation or
-specialized content behavior. These are findings, not claims of shipped fixes.
+specialized content behavior. Open rows are findings, not claims of shipped fixes. NET-1 and WORLD-1 are now
+implemented and validated as described in [the border/look-at follow-up](world-border-look-parity.md).
 
 | ID | Priority | Native reference and current discrepancy | Acceptance needed |
 | --- | --- | --- | --- |
-| NET-1 | P1 | `ClientboundInitializeBorderPacket` (`wn`), `ClientboundSetBorderLerpSizePacket` (`xz`) and `ClientboundPlayerLookAtPacket` (`xm`): all three packet bodies return `unsupported` in `protocol-1.19.4.js`. | Valid native wire fixtures with complete consumption, followed by actual border updates and `/tp ... facing` application. Look-at must handle source/target anchors, missing target fallback and current/previous angles. |
-| WORLD-1 | P1 | `WorldBorder` (`ddi`): Game stores a center and radius, but lerp jumps immediately to the destination. No border wall renderer or border collision path was found in world/render/physics. HUD **does** have a static-distance warning vignette; it does not implement the native changing-border warning calculation. | Growing/shrinking/stationary borders, initialization, absolute size limits, movement collision and warning timing compared against native code and a live fixture. Decoding alone does not close this finding. |
+| NET-1 | P1 | `ClientboundInitializeBorderPacket` (`wn`), `ClientboundSetBorderLerpSizePacket` (`xz`) and `ClientboundPlayerLookAtPacket` (`xm`): **Fixed 2026-11-06:** all three bodies decode and apply to Game, with native-server wire/action checks. | Valid native wire fixtures with complete consumption, followed by actual border updates and `/tp ... facing` application. Look-at must handle source/target anchors, missing target fallback and current/previous angles. |
+| WORLD-1 | P1 | `WorldBorder` (`ddi`): **Fixed 2026-11-06:** interpolation, wall rendering, native collision shape/eligibility and moving-border warning calculation are implemented; see the follow-up for release-specific backports and tests. | Growing/shrinking/stationary borders, initialization, absolute size limits, movement collision and warning timing compared against native code and a live fixture. Decoding alone does not close this finding. |
 | NET-2 | P1 | `ClientPacketListener.handleRespawn` (`fdk`, official lines 1095–1153): native replaces LocalPlayer and conditionally retains entity data/attributes. Our decoder exposes both retention bits, but `Game.on_respawn` never consumes them and reuses the player. | Every combination of the two flags, same/different dimensions, death respawn and proxy transfer; check effects, attributes, metadata, camera and riding state individually. |
 | ENTITY-1 | P1 | `Display` (`bfg`) and its renderers: block/item/text displays map to kind `display`, but `EntityRenderer._build` has no display branch. Native transforms, billboard constraints, light overrides, text backgrounds and interpolation are missing. | Native server spawns of all three types; transformed/interpolated scenes, text alignment and alpha, item transforms and all supported graphics APIs. |
 | USE-1 | P1 | `AdventureModeCheck` (`cdf`), `MultiPlayerGameMode` (`fdn`) and item-use paths: Adventure mining explicitly comments that `CanDestroy` is unsupported; neither `CanDestroy` nor `CanPlaceOn` is enforced by local interaction. | Native NBT block predicates, tags, state and block-entity constraints, plus absent/malformed restrictions. Rejected uses must not predict a successful break/place, swing or sound. Server protection remains authoritative. |
@@ -43,8 +44,8 @@ Interaction entities (`Interaction`, `bfs`) registered at zero dimensions were
 assigned 1×1 defaults and then overwritten by generic spawn initialization,
 including `pickable=false`. Native width/height/response metadata was not applied.
 
-The fix retains the native 1×1 defaults, applies synchronized dimensions and eye
-height, uses the inherited zero pick radius and consumes Use once. A true
+The fix retains the native 1×1 defaults, applies synchronized dimensions, retains the cached zero
+eye height, uses the inherited zero pick radius and consumes Use once. A true
 `response` swings; a false response still consumes the interaction without a
 swing or fallback held-item/offhand use. These entities remain invisible, as in
 Java. The server owns recorded attack/interaction actions.
@@ -120,7 +121,7 @@ node tools/port-1.19.4/run-presentation-fixture.mjs
 node tools/port-1.19.4/probe-interaction-entities.mjs
 ```
 
-The selected suite now has **296 passes, zero failures/skips in 49 files**.
+The selected suite now has **308 passes, zero failures/skips in 52 files**.
 The new interaction probe passed against the pinned isolated server. Source-index,
 packet inventory and probe results are written under ignored cache/audit files.
 The packet inventory deliberately labels reader/handler presence without marking

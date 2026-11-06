@@ -833,13 +833,7 @@ export class Hud {
     let target = f;
     // World border warning tint
     const wb = g.worldBorder;
-    let red = 0;
-    if (wb && wb.radius < 29999984) {
-      const d = Math.min(Math.abs(g.player.x - wb.x), Math.abs(g.player.z - wb.z));
-      const dist = wb.radius - Math.max(Math.abs(g.player.x - wb.x), Math.abs(g.player.z - wb.z));
-      void d;
-      if (dist < wb.warningBlocks) red = 1 - dist / wb.warningBlocks;
-    }
+    const red = wb?.warning(g.player.x,g.player.z) || 0;
     this.prevVignette += (target - this.prevVignette) * 0.01;
     // GuiIngame.renderVignette: blend (ZERO, ONE_MINUS_SRC_COLOR); world border warning tints it (0, f, f)
     const t = gui.tex('misc/vignette.png');

@@ -26,8 +26,8 @@ Native source was decompiled with CFR 0.152; generated source/jars are not commi
 On 2026-11-05: 998 blocks, all 23,725 state names/properties, native default states,
 1,454 sound registry IDs, and state sound-type access matched the pinned native
 reports/extracted data. The sound asset check validates the native sounds.json
-hash and referenced Ogg files. The protocol gate passed. The selected 49-file
-regression pass has **296 passes, no failures or skips**. The explicit file list
+hash and referenced Ogg files. The protocol gate passed. The selected 52-file
+regression pass has **308 passes, no failures or skips**. The explicit file list
 is audit-cases.json. These are targeted tests, not coverage of every Java method.
 
 The first broad run exposed three stale test-fixture failures: pre-1.16 packet
@@ -80,14 +80,14 @@ backported to 1.18.2 or older. The 1.20.6 graphical baseline carries the fix.
 | Server-authoritative behavior | Exact native server jar/release boundaries | AI, drops, recipes and other server decisions must not be invented client-side. Experiments retain native feature gating. |
 
 The source index includes 55 exact classes spanning these areas. It is an input
-map for continued comparisons, not a claim that all 41 classes have been fully
+map for continued comparisons, not a claim that all 55 classes have been fully
 reviewed. Existing development/parity ledgers remain open.
 
 ## Expanded review and interaction correction
 
 The new packet inventory covers all 111 clientbound IDs, accounting for inherited
-name adapters and connection-level bundle delimiters. Three bodies explicitly
-remain unsupported. Reader/handler presence does not prove gameplay parity.
+name adapters and connection-level bundle delimiters. The three previously unsupported bodies are now implemented; their native
+server/state checks are described below. Reader/handler presence does not prove gameplay parity.
 The [review](full-parity-review-1.19.4.md) documents each finding's native source,
 impact, release boundary and required acceptance checks.
 
@@ -103,3 +103,10 @@ sound packets and a literal plugin marker in the death packet; native playback
 and literal text are preserved at the user’s request. [Fluid-preserving
 destruction](fluid-breaking-parity.md) fixes another native prediction gap.
 Full parity remains unverified.
+
+## Border and look-at follow-up
+
+[Border and look-at corrections](world-border-look-parity.md) implement the three
+previously unsupported bodies and their state, collision, warning and rendering
+paths. Exact JVM vectors, the isolated native server and browser depth/texture
+checks validate the batch. Native release differences are retained in all targets.

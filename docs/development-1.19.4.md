@@ -117,8 +117,11 @@ for remaining feature gaps; successful targeted tests do not imply full parity.
 ## Native audit follow-up
 
 See [the full-scope review](full-parity-review-1.19.4.md) for prioritized confirmed
-gaps, exact native inputs and acceptance work. The selected suite has 296 passing
-regressions in 49 files. Interaction-entity picking/metadata/response is fixed and
+gaps, exact native inputs and acceptance work. The selected suite has 308 passing
+regressions in 52 files. Interaction-entity picking/metadata/response is fixed and
 verified against the isolated native server. The supplied webmc sound and death
 captures are resolved as explicit server sound/literal text behavior; see
 [the capture findings](webmc-capture-findings.md). Full parity remains unfinished.
+
+Border/look-at packet, movement, warning and rendering gaps are now fixed; see
+[the native follow-up](world-border-look-parity.md) for tests and backports.
