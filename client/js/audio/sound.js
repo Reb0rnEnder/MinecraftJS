@@ -1,3 +1,5 @@
+import {JavaRandom} from '../util/jrandom.js';
+import {sampleAttenuation} from './sample-attenuation.js';
 import {soundGain} from './sound-gain.js';
 import {tickBiomeSounds} from './biome-sounds.js';
 import {biomeInfo} from '../world/biomes.js';
@@ -200,7 +202,7 @@ export class SoundManager {
     }, 0);
   }
 
-  _pick(name, seen = new Set()) {
+  _pick(name, seen = new Set(), random = null) {
     name = soundAssetName(name);
     if (seen.has(name)) return null;
     const entries = this.defs?.[name]?.sounds;
@@ -211,14 +213,14 @@ export class SoundManager {
     });
     const total = weighted.reduce((sum, [, weight]) => sum + weight, 0);
     if (!total) return null;
-    let choice = Math.random() * total, pick;
+    let choice = random ? random.nextInt(total) : Math.floor(Math.random() * total), pick;
     for (const [entry, weight] of weighted) { choice -= weight; if (choice < 0) { pick = entry; break; } }
     if (!pick) return null;
     if (pick.type === 'event') {
-      const sound = this._pick(pick.name, next);
-      return sound ? { ...sound, volume: sound.volume * (pick.volume ?? 1), pitch: sound.pitch * (pick.pitch ?? 1), stream: sound.stream || !!pick.stream } : null;
+      const sound = this._pick(pick.name, next, random);
+      return sound ? { ...sound, volume: Math.fround(sound.volume * Math.fround(pick.volume ?? 1)), pitch: Math.fround(sound.pitch * Math.fround(pick.pitch ?? 1)), stream: sound.stream || !!pick.stream } : null;
     }
-    return { file: pick.name, volume: pick.volume ?? 1, pitch: pick.pitch ?? 1, stream: !!pick.stream };
+    return { file: pick.name, volume: Math.fround(pick.volume ?? 1), pitch: Math.fround(pick.pitch ?? 1), stream: !!pick.stream, attenuationDistance:pick.attenuation_distance??16 };
   }
 
   async _buffer(file) {
@@ -233,7 +235,7 @@ export class SoundManager {
   async play(name, x, y, z, volume = 1, pitch = 1, opts = {}) {
     if (!this.audio) return null;
     const assetName = soundAssetName(name);
-    const def = this._pick(assetName);
+    const def = this._pick(assetName,new Set(),opts.seed===undefined?null:new JavaRandom(opts.seed));
     if (!def) return null;
     this._subtitle(assetName, x, y, z, opts);
     const cat = typeof opts.category === 'number' ? CATEGORIES[opts.category] || 'master' : opts.category || CATEGORY_OF(assetName);
@@ -247,7 +249,7 @@ export class SoundManager {
       volume: soundGain(volume*def.volume,cat,this.game.settings),
       pitch: Math.max(0.5, Math.min(2, pitch * def.pitch)),
       pos: !opts.global && x !== undefined ? [x, y, z] : null,
-      maxDistance: Math.max(16, volume * 16),
+      maxDistance: sampleAttenuation(volume,def),
       onEnd: () => { this.playing.delete(handle); if (handle.onEnd) handle.onEnd(); },
     });
     if (!voice) return null;
@@ -318,7 +320,7 @@ export class SoundManager {
     const buf = await this._buffer(def.file);
     if (!buf || generation !== this.generation) return null;
     const base = def.volume * this.volumeFor(cat);
-    const voice = this.audio.play(buf, { volume: 0, pitch: def.pitch, pos: opts.global ? null : [x, y, z], maxDistance: 16, loop: true });
+    const voice = this.audio.play(buf, { volume: 0, pitch: def.pitch, pos: opts.global ? null : [x, y, z], maxDistance: sampleAttenuation(1,def), loop: true });
     if (!voice) return null;
     const handle = { name, stream:!!def.stream, category: cat, voice, base, stop: () => { voice.stop(); this.playing.delete(handle); }, setVolume: (v) => voice.setVolume && voice.setVolume(soundGain(v*def.volume,cat,this.game.settings)), setPosition: (p) => voice.setPosition && voice.setPosition(p), setPitch: (v) => voice.setPitch?.(Math.max(0.5, Math.min(2, v * def.pitch))) };
     this.playing.add(handle);
