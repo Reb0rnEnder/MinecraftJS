@@ -43,7 +43,7 @@ test('padded five-bit terrain palettes never straddle a long boundary',()=>{
 test('dimension data and world identifiers survive respawn independently',()=>{
  const w=packet('respawn');writeNbtRoot(w,{t:10,name:'',v:{effects:{t:8,v:'minecraft:the_nether'},has_skylight:{t:1,v:0}}});
  const p=decode(w.string('custom:inferno').i64(99n).u8(0).i8(-1).bool(false).bool(false).bool(true));
- assert.equal(p.dimension,-1);assert.equal(p.worldName,'custom:inferno');assert.equal(p.dimensionData.has_skylight,0);assert.equal(p.copyMetadata,true);
+ assert.equal(p.dimension,-1);assert.equal(p.worldName,'custom:inferno');assert.equal(p.dimensionData.has_skylight,0);assert.equal(p.keepAttributes,true);
 });
 test('outgoing abilities are one byte and interactions include sneaking',()=>{
  let r=new Reader(C754.abilities(255));assert.equal(r.varint(),OUT.abilities);assert.equal(r.u8(),2);assert.equal(r.remaining(),0);

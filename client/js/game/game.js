@@ -1,3 +1,5 @@
+import {replaceRespawnPlayer} from './respawn-player.js';
+import {PLAYER_DATA,respawnPolicy,clampMaxHealth} from './player-native.js';
 import {WorldBorder} from '../world/world-border.js';
 import {BorderRenderer} from '../render/world-border.js';
 import {applyLookAt} from './look-at.js';
@@ -769,6 +771,7 @@ export class Game {
   on_update_view_distance(p) { this.serverViewDistance=p.viewDistance; }
 
   on_login(p) {
+    this.spawnPos=null;this.spawnAngle=0;
     this.worldBorder?.reset();
     resetPlayerView(this);
     this.interaction?.predictedDoors?.clear();
@@ -819,6 +822,7 @@ export class Game {
     p.creative = gm === 1;
     p.spectator = gm === 3;
     p.allowFlying = gm === 1 || gm === 3;
+    p.invulnerable = gm === 1 || gm === 3;
     if (gm === 3) p.flying = true;
     if (gm === 0 || gm === 2) p.flying = false;
   }
@@ -851,16 +855,19 @@ export class Game {
 
   on_entity_equipment(p) { for(const equipment of p.equipments)this.entities.setEquipment(p.entityId,equipment.slot,equipment.item); }
 
-  on_spawn_position(p) { this.spawnPos = p.location; }
+  on_spawn_position(p) { this.spawnPos = p.location; this.spawnAngle=p.angle??0; }
 
   on_update_health(p) {
     const wasAlive = this.health > 0;
-    if (p.health < this.health) {
+    const healthKnown = this.player.healthInitialized !== false;
+    this.player.healthInitialized = true;
+    if (healthKnown && p.health < this.health) {
       this.hurtTime = 10;
       this.hud.healthFlash = this.ticks + 20;
-    } else if (p.health > this.health) this.hud.healthFlash = this.ticks + 10;
+    } else if (healthKnown && p.health > this.health) this.hud.healthFlash = this.ticks + 10;
     this.prevHealth = this.health;
     this.health = p.health;
+    (this.selfMetadata??={})[PLAYER_DATA.healthIndex]=p.health;
     this.food = p.food;
     this.player.food = p.food;
     this.player.health = p.health;
@@ -880,6 +887,7 @@ export class Game {
     this.interaction?.predictedBlocks?.clear();
     if (p.dimension !== this.dimension || p.worldName!==this.worldName || (p.dimensionData?.min_y??0)!==this.world.minY || (p.dimensionData?.height??256)!==this.world.height) {
       this.worldBorder?.reset();
+      this.spawnPos=null;this.spawnAngle=0;
       this.world.clear();
       this._resetMeshing();
       this.entities.clear();
@@ -898,9 +906,9 @@ export class Game {
     this.previousGameMode=p.previousGamemode>=0?p.previousGamemode:null;
     this.gameMode = p.gamemode;
     this.levelType = p.levelType;
+    replaceRespawnPlayer(this,respawnPolicy(p));
     this.applyGameMode();
     this.dead = false;
-    this.health = 20;
     this.player.motionX = this.player.motionY = this.player.motionZ = 0;
     if (this.screens.current instanceof DeathScreen) this.screens.close();
   }
@@ -1059,8 +1067,9 @@ export class Game {
   on_update_attributes(p) {
     if (p.entityId === this.entityId) {
       for (const prop of p.properties) {
+        (this.player.attributes??=new Map()).set(prop.key,structuredClone(prop));
         if (prop.key === 'generic.movementSpeed') this.player.speedAttr = { base: prop.value, modifiers: prop.modifiers };
-        if (prop.key === 'generic.maxHealth') this.maxHealth = prop.value;
+        if (prop.key === 'generic.maxHealth') this.maxHealth = clampMaxHealth(attributeValue(prop));
         if (prop.key === 'generic.attackSpeed') this.player.attackSpeed = attributeValue(prop);
       }
     }
