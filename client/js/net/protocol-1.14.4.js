@@ -1,3 +1,4 @@
+import {readLookAt} from './look-at.js';
 import {readRecipes} from './recipes.js';
 // Native Java 1.14.4 protocol 498 codec.
 import {Reader,Writer} from './buffer.js';
@@ -52,6 +53,7 @@ const lightArrays=(r,mask)=>{
   return result;
 };
 const decoders={
+  face_player:readLookAt,
   spawn_entity:r=>({entityId:r.varint(),objectUUID:r.uuid(),type:r.varint(),x:r.f64(),y:r.f64(),z:r.f64(),pitch:r.angle(),yaw:r.angle(),objectData:r.i32(),velocity:{x:r.i16(),y:r.i16(),z:r.i16()}}),
   statistics:r=>({entries:array(r,r=>({categoryId:r.varint(),statisticId:r.varint(),value:r.varint()}))}),
   declare_commands:r=>readCommandTree(r),
