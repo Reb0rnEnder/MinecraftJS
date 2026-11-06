@@ -15,14 +15,14 @@ hashes. There are 55 indexed classes; indexing is not behavioral validation.
 ## Confirmed open findings, in implementation order
 
 P1 denotes missing gameplay/protocol behavior; P2 denotes presentation or
-specialized content behavior. Open rows are findings, not claims of shipped fixes. NET-1 and WORLD-1 are now
+specialized content behavior. Open rows are findings, not claims of shipped fixes. NET-1, NET-2 and WORLD-1 are now
 implemented and validated as described in [the border/look-at follow-up](world-border-look-parity.md).
 
 | ID | Priority | Native reference and current discrepancy | Acceptance needed |
 | --- | --- | --- | --- |
 | NET-1 | P1 | `ClientboundInitializeBorderPacket` (`wn`), `ClientboundSetBorderLerpSizePacket` (`xz`) and `ClientboundPlayerLookAtPacket` (`xm`): **Fixed 2026-11-06:** all three bodies decode and apply to Game, with native-server wire/action checks. | Valid native wire fixtures with complete consumption, followed by actual border updates and `/tp ... facing` application. Look-at must handle source/target anchors, missing target fallback and current/previous angles. |
 | WORLD-1 | P1 | `WorldBorder` (`ddi`): **Fixed 2026-11-06:** interpolation, wall rendering, native collision shape/eligibility and moving-border warning calculation are implemented; see the follow-up for release-specific backports and tests. | Growing/shrinking/stationary borders, initialization, absolute size limits, movement collision and warning timing compared against native code and a live fixture. Decoding alone does not close this finding. |
-| NET-2 | P1 | `ClientPacketListener.handleRespawn` (`fdk`, official lines 1095–1153): native replaces LocalPlayer and conditionally retains entity data/attributes. Our decoder exposes both retention bits, but `Game.on_respawn` never consumes them and reuses the player. | Every combination of the two flags, same/different dimensions, death respawn and proxy transfer; check effects, attributes, metadata, camera and riding state individually. |
+| NET-2 | P1 | `ClientPacketListener.handleRespawn` (`fdk`, official lines 1095–1153): **Fixed 2026-11-06:** native player replacement and independent metadata/attribute retention are implemented, with release-specific backports; see [respawn evidence](respawn-parity.md). | Every combination of the two flags, same/different dimensions, death respawn and proxy transfer; check effects, attributes, metadata, camera and riding state individually. |
 | ENTITY-1 | P1 | `Display` (`bfg`) and its renderers: block/item/text displays map to kind `display`, but `EntityRenderer._build` has no display branch. Native transforms, billboard constraints, light overrides, text backgrounds and interpolation are missing. | Native server spawns of all three types; transformed/interpolated scenes, text alignment and alpha, item transforms and all supported graphics APIs. |
 | USE-1 | P1 | `AdventureModeCheck` (`cdf`), `MultiPlayerGameMode` (`fdn`) and item-use paths: Adventure mining explicitly comments that `CanDestroy` is unsupported; neither `CanDestroy` nor `CanPlaceOn` is enforced by local interaction. | Native NBT block predicates, tags, state and block-entity constraints, plus absent/malformed restrictions. Rejected uses must not predict a successful break/place, swing or sound. Server protection remains authoritative. |
 | CHAT-1 | P1 | Native secure-chat sessions and reporting: incoming certificate/RSA/chain verification exists, but `ChatState762.encode` always emits unsigned messages and zero signed command arguments. Account signing-key/session publication and the reporting flow are missing; the report button is disabled. | An authenticated account against secure-chat-enforcing native servers, key expiry/renewal, signed command arguments, reconnect/session resets and report evidence/context. Never fabricate a verified status. |
@@ -121,7 +121,7 @@ node tools/port-1.19.4/run-presentation-fixture.mjs
 node tools/port-1.19.4/probe-interaction-entities.mjs
 ```
 
-The selected suite now has **308 passes, zero failures/skips in 52 files**.
+The selected suite now has **320 passes, zero failures/skips in 53 files**.
 The new interaction probe passed against the pinned isolated server. Source-index,
 packet inventory and probe results are written under ignored cache/audit files.
 The packet inventory deliberately labels reader/handler presence without marking

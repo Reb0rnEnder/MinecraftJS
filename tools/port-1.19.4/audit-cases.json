@@ -50,5 +50,6 @@
   "tools/test-sound-gain.mjs",
   "tools/test-breaking-fluid-preservation.mjs",
   "tools/test-block-break-durability.mjs",
-  "tools/test-world-border.mjs"
+  "tools/test-world-border.mjs",
+  "tools/test-respawn-player.mjs"
 ]

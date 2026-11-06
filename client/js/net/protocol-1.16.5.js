@@ -23,7 +23,7 @@ function changed(name,r){switch(name){
   const entityId=r.i32(),isHardcore=r.bool(),gameMode=r.u8(),previousGameMode=r.i8(),worldNames=array(r,()=>r.string(),1024),dimensionCodec=readNbtRoot(r),tag=readNbtRoot(r),worldName=r.string();
   return {entityId,isHardcore,gameMode,previousGameMode,worldNames,dimensionCodec,worldName,...dimension(tag,worldName),hashedSeed:r.i64(),maxPlayers:r.varint(),viewDistance:r.varint(),reducedDebugInfo:r.bool(),enableRespawnScreen:r.bool(),isDebug:r.bool(),isFlat:r.bool()};
  }
- case 'respawn':{const tag=readNbtRoot(r),worldName=r.string();return {worldName,...dimension(tag,worldName),hashedSeed:r.i64(),gamemode:r.u8(),previousGamemode:r.i8(),isDebug:r.bool(),isFlat:r.bool(),copyMetadata:r.bool()};}
+ case 'respawn':{const tag=readNbtRoot(r),worldName=r.string();return {worldName,...dimension(tag,worldName),hashedSeed:r.i64(),gamemode:r.u8(),previousGamemode:r.i8(),isDebug:r.bool(),isFlat:r.bool(),keepAttributes:r.bool()};}
  case 'chat':return {message:r.string(),position:r.i8(),sender:r.uuid()};
  case 'map_chunk':{const x=r.i32(),z=r.i32(),groundUp=r.bool(),bitMap=r.varint(),heightmaps=readNbtRoot(r),biomes=groundUp?array(r,()=>r.varint(),1024):null,chunkData=r.bytesN(r.varint()).slice(),blockEntities=array(r,()=>readNbtRoot(r));if(groundUp&&biomes.length!==1024)throw Error('Expected 1024 biome IDs');return {x,z,groundUp,bitMap,heightmaps,biomes,chunkData,blockEntities};}
  case 'multi_block_change':{
