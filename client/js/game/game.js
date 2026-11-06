@@ -1,3 +1,5 @@
+import {bindingResolver} from './keybind-components.js';
+import {setKeybindResolver} from '../gui/chat.js';
 import {replaceRespawnPlayer} from './respawn-player.js';
 import {PLAYER_DATA,respawnPolicy,clampMaxHealth} from './player-native.js';
 import {WorldBorder} from '../world/world-border.js';
@@ -137,6 +139,7 @@ export class Game {
     this.device = device;
     setModelDevice(device);
     setTranslator((k, a) => assets.translate(k, a),(key,fallback)=>componentTemplate(assets.lang,key,fallback));
+    setKeybindResolver(bindingResolver(settings,key=>assets.translate(key)));
 
     this.input = new Input(settings);
     this.gui = new Gui(device, assets);
@@ -808,7 +811,15 @@ export class Game {
 
   on_update_view_distance(p) { this.serverViewDistance=p.viewDistance; }
 
+  on_chat_suggestions(p) {
+    const entries=this.customChatCompletions??=new Set();
+    if(p.action===2)entries.clear();
+    if(p.action===0||p.action===2)for(const entry of p.entries)entries.add(entry);
+    else if(p.action===1)for(const entry of p.entries)entries.delete(entry);
+  }
+
   on_login(p) {
+    this.customChatCompletions=new Set();
     this.spawnPos=null;this.spawnAngle=0;
     this.worldBorder?.reset();
     this.serverData=null;this.enforcesSecureChat=false;this.chatSignatures=new MessageSignatureCache762();this.chatVerifier?.reset();
