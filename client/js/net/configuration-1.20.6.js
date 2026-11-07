@@ -1,17 +1,18 @@
 import {Reader,Writer} from './buffer.js';
 import {readAnonymousNbt} from './nbt-anonymous.js';
 import {readComponentNbt,writeComponentNbt} from './component-nbt-1.20.6.js';
+import {readSlot766,writeSlot766} from './item-components-1.20.6.js';
 import {LOGIN_CLIENTBOUND_766 as LI,LOGIN_SERVERBOUND_766 as LO,CONFIGURATION_CLIENTBOUND_766 as IN,CONFIGURATION_SERVERBOUND_766 as OUT,PLAY_CLIENTBOUND_766 as PI,PLAY_SERVERBOUND_766 as PO} from './protocol-1.20.6-ids.js';
 export class Reader766 extends Reader{
  _check(n){if(!Number.isSafeInteger(n)||n<0)throw Error('Invalid packet length');super._check(n);}
  position(){const v=this.i64();return{x:Number(BigInt.asIntN(26,v>>38n)),y:Number(BigInt.asIntN(12,v)),z:Number(BigInt.asIntN(26,v>>12n))};}
  component(){return readComponentNbt(this);}
- slot(){throw Error('Protocol 766 item-component decoding is not implemented yet');}
+ slot(){return readSlot766(this);}
 }
 export class Writer766 extends Writer{
  position(x,y,z){return this.i64(BigInt.asIntN(64,(BigInt(x)&0x3ffffffn)<<38n|(BigInt(z)&0x3ffffffn)<<12n|(BigInt(y)&0xfffn)));}
  component(value){writeComponentNbt(this,value);return this;}
- slot(){throw Error('Protocol 766 item-component encoding is not implemented yet');}
+ slot(item){return writeSlot766(this,item);}
 }
 const names=ids=>Object.fromEntries(Object.entries(ids).map(([name,id])=>[id,name]));
 const loginNames=names(LI),configNames=names(IN),playNames=names(PI),qualified=name=>name.includes(':')?name:'minecraft:'+name;

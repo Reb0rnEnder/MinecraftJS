@@ -95,3 +95,28 @@ pack prompts and Play disconnects now consume the strict component codec.
 `npm run test:1.20.6` now checks target IDs, native data/resource reports, native
 component fixtures and both regression suites: 17/17 tests pass. P04 item
 component-stack defaults/patches/nested stacks is the next dependency gate.
+
+## P04 native item component stacks, 2026-11-07
+
+P04 is accepted. The pinned protocol-766 Slot/SlotComponent graph now generates
+target-only codecs for all 56 data-component payload types and target-native
+default component sets for all 1,330 item IDs. The runtime preserves the exact
+added/removed patch while also exposing the effective component set after Mojang
+defaults and removals are applied; there is no legacy slot-NBT fallback.
+
+The schema interpreter covers every constructor reachable from ItemStack in the
+1.20.5/1.20.6 minecraft-data graph, including inline/named registry holders,
+holder sets, packed positions, anonymous NBT and recursive nested stacks. All 56
+payload branches have byte-stable encode/decode/re-encode tests. Consumer views
+expose target damage/max-damage/max-stack-size, custom names, lore, written-book
+pages and recursively decorated nested stacks.
+
+`stack-fixtures.mjs` independently bootstraps the SHA-pinned Mojang 1.20.6 server
+and writes stacks through the native `ItemStack.STREAM_CODEC`. Six committed
+fixtures cover empty/default stacks, damage, custom-name addition, default
+component removal and a bundle containing a damaged sword. Every native byte
+sequence decodes through MinecraftJS and re-encodes byte-identically.
+
+The complete target gate now passes 79/79 tests, including all native report,
+component and stack fixture regeneration checks. P05 Configuration lifecycle and
+registry ownership is the next dependency gate before the broad Play codec.

@@ -10,7 +10,9 @@
     "prepare:1.20.6": "node tools/port-1.20.6/prepare.mjs",
     "reports:1.20.6": "node tools/port-1.20.6/reports.mjs",
     "component-fixtures:1.20.6": "node tools/port-1.20.6/component-fixtures.mjs",
-    "test:1.20.6": "node tools/port-1.20.6/generate-ids.mjs --check && node tools/port-1.20.6/reports.mjs --check && node tools/port-1.20.6/component-fixtures.mjs --check && node --test tools/test-1.20.6-configuration.mjs tools/test-1.20.6-primitives.mjs",
+    "component-schema:1.20.6": "node tools/port-1.20.6/generate-component-schema.mjs",
+    "stack-fixtures:1.20.6": "node tools/port-1.20.6/stack-fixtures.mjs",
+    "test:1.20.6": "node tools/port-1.20.6/generate-ids.mjs --check && node tools/port-1.20.6/reports.mjs --check && node tools/port-1.20.6/component-fixtures.mjs --check && node tools/port-1.20.6/generate-component-schema.mjs --check && node tools/port-1.20.6/stack-fixtures.mjs --check && node --test tools/test-1.20.6-configuration.mjs tools/test-1.20.6-primitives.mjs tools/test-1.20.6-components.mjs",
     "fixture:1.20.6": "node tools/port-1.20.6/run-protocol-fixture.mjs",
     "probe:1.20.6": "node tools/port-1.20.6/probe-configuration.mjs"
   },

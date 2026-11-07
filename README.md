@@ -8,7 +8,7 @@ been relabelled. Do not use this graphical build to join a 1.20.6 server yet.
 
 See the [transition plan](docs/transition-1.20.6.md) and
 [native transport evidence](docs/development-1.20.6.md) for remaining gates.
-The [ordered task ledger](docs/transition-1.20.6.tasks.json) tracks dependencies and acceptance criteria. Native data/resource extraction and protocol-766 NBT text components are now reproducible; the next task is the 1.20.5+ item component-stack codec and its consumer views.
+The [ordered task ledger](docs/transition-1.20.6.tasks.json) tracks dependencies and acceptance criteria. Native data/resources, strict protocol-766 NBT text and the complete 1.20.5+ item-component stack codec are now reproducible; the next task is closing Configuration lifecycle/registry ownership before the full Play codec.
 
 ```sh
 npm ci

@@ -6,7 +6,7 @@
   "fullParity": false,
   "nativeGraphicalGameplayAccepted": false,
   "planningSourceCommit": "ecd95f4786b951869af59c46a1ad140a54931b72",
-  "nextTask": "P04",
+  "nextTask": "P05",
   "authorization": "Proceed with 1.20.6 now; keep inherited work open rather than requiring its completion before starting.",
   "executionRule": "Follow dependency order; native evidence and gate completion are required before marking done. Push validated batches and review shared backports as they land, not only at P16.",
   "tasks": [
@@ -86,7 +86,7 @@
     {
       "id": "P04",
       "title": "Implement all required component-stack codecs and consumer views",
-      "status": "todo",
+      "status": "done",
       "dependsOn": [
         "P02",
         "P03"
@@ -96,7 +96,13 @@
         "1.20.6"
       ],
       "acceptance": "Defaults, additions, removals and nested stacks round-trip against native codecs; no legacy slot fallback.",
-      "evidence": []
+      "evidence": [
+        "The pinned protocol-766 Slot/SlotComponent type graph generates exact codecs for all 56 native component IDs and native default component sets for all 1,330 item IDs.",
+        "Every component payload branch byte-round-trips through the schema interpreter, including holders, holder sets, anonymous NBT, packed positions and recursively nested ItemStacks.",
+        "Decoded stacks preserve the exact added/removed patch while exposing effective components after Mojang defaults and removals; damage, max damage, max stack size, names/lore/books and nested stacks have consumer views with no legacy slot-NBT fallback.",
+        "Six independent Mojang ItemStack stream-codec fixtures regenerate from the pinned server and round-trip byte-identically through the JS codec: empty, default stone, damaged diamond sword, named/removed sword, removed default max-stack-size and nested bundle contents.",
+        "npm run test:1.20.6 verifies all generators/oracles and passes 79/79 target regressions."
+      ]
     },
     {
       "id": "P05",

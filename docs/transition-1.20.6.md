@@ -136,7 +136,7 @@ Review shared fixes for every applicable existing branch, newest to oldest; pres
 
 ## Immediate next work
 
-P02 and P03 are complete: pinned native reports cover target IDs/defaults/resources, while protocol-766 anonymous NBT and text components now round-trip against reproducible Mojang codec fixtures with strict 1.20.3+ validation. Start **P04** for item component-stack defaults, additions, removals and nested stack consumers. Keep all 17 target regressions plus the native report/component-fixture regeneration gates green. The next useful user-test milestone is **P07 graphical native-server join**, followed by complete inventory/component interaction; a relabelled title screen is not that milestone.
+P02 through P04 are complete: pinned native reports cover target IDs/defaults/resources, protocol-766 anonymous NBT/text components round-trip against Mojang fixtures, and the 1.20.5+ ItemStack component system now covers all 56 native payload types, defaults, additions, removals and recursively nested stacks without a legacy NBT fallback. Start **P05** by closing Configuration lifecycle/registry ownership, then **P06** for essential Play bodies and Game consumers. Keep all 79 target regressions and every native regeneration gate green. The next useful user-test milestone is **P07 graphical native-server join**.
 
 ## Native implementation anchors
 

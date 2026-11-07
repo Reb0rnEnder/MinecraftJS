@@ -42,5 +42,5 @@ test('transport login acknowledgement and later reconfiguration never leak confi
 });
 test('first-play layout includes numeric dimensions, limited crafting, death position and portal cooldown',()=>{
  const w=packet(PI.login).i32(42).bool(false).varint(1).string('minecraft:overworld').varint(5).varint(2).varint(2).bool(false).bool(true).bool(false).varint(0).string('minecraft:overworld').i64(1n).i8(0).u8(255).bool(false).bool(true).bool(true).string('minecraft:overworld').position(-5,-64,12).varint(0).bool(false);
- const p=decodeBootstrapPlay766(w.build());assert.equal(p.dimensionType,0);assert.equal(p.hashedSeed,1n);assert.deepEqual(p.death.position,{x:-5,y:-64,z:12});assert.equal(p.enforcesSecureChat,false);assert.throws(()=>new Reader766(new Uint8Array()).slot(),/not implemented/);assert.throws(()=>new Writer766().slot({}),/not implemented/);
+ const p=decodeBootstrapPlay766(w.build());assert.equal(p.dimensionType,0);assert.equal(p.hashedSeed,1n);assert.deepEqual(p.death.position,{x:-5,y:-64,z:12});assert.equal(p.enforcesSecureChat,false);assert.equal(new Reader766(new Uint8Array([0])).slot(),null);assert.deepEqual(new Writer766().slot(null).build(),new Uint8Array([0]));
 });

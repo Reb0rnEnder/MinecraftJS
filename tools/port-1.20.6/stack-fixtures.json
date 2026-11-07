@@ -1,0 +1,14 @@
+{
+  "minecraftVersion": "1.20.6",
+  "protocol": 766,
+  "clientSha1": "05b6f1c6b46a29d6ea82b4e0d42190e42402030f",
+  "serverSha1": "145ff0858209bcfc164859ba735d4199aafa1eea",
+  "fixtures": {
+    "empty": "00",
+    "stone": "01010000",
+    "damaged_sword": "01c50601000325",
+    "named_removed_sword": "01c506020103250508000c50617269747920426c61646508",
+    "stone_remove_max_stack": "0101000101",
+    "bundle_nested": "01a20701001e0101c50601000305"
+  }
+}
