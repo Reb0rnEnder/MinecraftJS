@@ -1,0 +1,674 @@
+[
+ {
+  "src": "client/js/render/entity-renderer.js",
+  "mod": "render_entity_renderer_js",
+  "lines": 2134,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/containers.js",
+  "mod": "gui_screens_containers_js",
+  "lines": 1279,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/hud.js",
+  "mod": "gui_hud_js",
+  "lines": 1145,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/interaction.js",
+  "mod": "game_interaction_js",
+  "lines": 936,
+  "pct": 80
+ },
+ {
+  "src": "client/js/game/container.js",
+  "mod": "game_container_js",
+  "lines": 734,
+  "pct": 80
+ },
+ {
+  "src": "client/js/gfx/webgl2.js",
+  "mod": "gfx_webgl2_js",
+  "lines": 683,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gfx/webgpu.js",
+  "mod": "gfx_webgpu_js",
+  "lines": 623,
+  "pct": 0
+ },
+ {
+  "src": "client/js/render/mesher.js",
+  "mod": "render_mesher_js",
+  "lines": 575,
+  "pct": 80
+ },
+ {
+  "src": "client/js/gui/screens/menus.js",
+  "mod": "gui_screens_menus_js",
+  "lines": 536,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/options.js",
+  "mod": "gui_screens_options_js",
+  "lines": 503,
+  "pct": 0
+ },
+ {
+  "src": "client/js/audio/sound.js",
+  "mod": "audio_sound_js",
+  "lines": 472,
+  "pct": 0
+ },
+ {
+  "src": "client/js/platform/browser.js",
+  "mod": "platform_browser_js",
+  "lines": 468,
+  "pct": 0
+ },
+ {
+  "src": "client/js/assets.js",
+  "mod": "assets_js",
+  "lines": 362,
+  "pct": 0
+ },
+ {
+  "src": "client/js/render/hand-renderer.js",
+  "mod": "render_hand_renderer_js",
+  "lines": 356,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/font.js",
+  "mod": "gui_font_js",
+  "lines": 349,
+  "pct": 0
+ },
+ {
+  "src": "client/js/net/tcp.js",
+  "mod": "net_tcp_js",
+  "lines": 343,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/chat.js",
+  "mod": "gui_screens_chat_js",
+  "lines": 329,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/advancements.js",
+  "mod": "gui_screens_advancements_js",
+  "lines": 309,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/stats.js",
+  "mod": "gui_screens_stats_js",
+  "lines": 291,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/gui.js",
+  "mod": "gui_gui_js",
+  "lines": 286,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/chat.js",
+  "mod": "gui_chat_js",
+  "lines": 274,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/proxies.js",
+  "mod": "gui_screens_proxies_js",
+  "lines": 273,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/commands.js",
+  "mod": "game_commands_js",
+  "lines": 268,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/recipebook.js",
+  "mod": "gui_recipebook_js",
+  "lines": 268,
+  "pct": 0
+ },
+ {
+  "src": "client/js/net/eagler.js",
+  "mod": "net_eagler_js",
+  "lines": 237,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/accounts.js",
+  "mod": "gui_screens_accounts_js",
+  "lines": 234,
+  "pct": 0
+ },
+ {
+  "src": "client/js/net/packet-bodies-1.14.4.js",
+  "mod": "net_packet_bodies_1_14_4_js",
+  "lines": 234,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gfx/scene.js",
+  "mod": "gfx_scene_js",
+  "lines": 230,
+  "pct": 0
+ },
+ {
+  "src": "client/js/render/post.js",
+  "mod": "render_post_js",
+  "lines": 219,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/packs.js",
+  "mod": "gui_screens_packs_js",
+  "lines": 215,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/widgets.js",
+  "mod": "gui_widgets_js",
+  "lines": 208,
+  "pct": 0
+ },
+ {
+  "src": "client/js/net/proxies.js",
+  "mod": "net_proxies_js",
+  "lines": 204,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/workstations.js",
+  "mod": "gui_screens_workstations_js",
+  "lines": 202,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/spectator.js",
+  "mod": "gui_spectator_js",
+  "lines": 194,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/serverpacks.js",
+  "mod": "game_serverpacks_js",
+  "lines": 192,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/tutorial.js",
+  "mod": "game_tutorial_js",
+  "lines": 190,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/structure.js",
+  "mod": "gui_screens_structure_js",
+  "lines": 188,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/book.js",
+  "mod": "gui_screens_book_js",
+  "lines": 186,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gfx/device.js",
+  "mod": "gfx_device_js",
+  "lines": 185,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/commandblock.js",
+  "mod": "gui_screens_commandblock_js",
+  "lines": 182,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/slot-list.js",
+  "mod": "gui_slot_list_js",
+  "lines": 171,
+  "pct": 0
+ },
+ {
+  "src": "client/js/render/atlas.js",
+  "mod": "render_atlas_js",
+  "lines": 165,
+  "pct": 0
+ },
+ {
+  "src": "client/js/render/weather.js",
+  "mod": "render_weather_js",
+  "lines": 165,
+  "pct": 0
+ },
+ {
+  "src": "client/js/wasm/kernels.js",
+  "mod": "wasm_kernels_js",
+  "lines": 139,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/settings.js",
+  "mod": "game_settings_js",
+  "lines": 134,
+  "pct": 0
+ },
+ {
+  "src": "client/js/crash.js",
+  "mod": "crash_js",
+  "lines": 133,
+  "pct": 0
+ },
+ {
+  "src": "client/js/net/protocol-1.14.4.js",
+  "mod": "net_protocol_1_14_4_js",
+  "lines": 133,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/itemnames.js",
+  "mod": "game_itemnames_js",
+  "lines": 129,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/manager.js",
+  "mod": "gui_screens_manager_js",
+  "lines": 129,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/credits.js",
+  "mod": "gui_screens_credits_js",
+  "lines": 124,
+  "pct": 0
+ },
+ {
+  "src": "client/js/render/shader-pack.js",
+  "mod": "render_shader_pack_js",
+  "lines": 123,
+  "pct": 0
+ },
+ {
+  "src": "client/js/render/mesh-service.js",
+  "mod": "render_mesh_service_js",
+  "lines": 121,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/shaders.js",
+  "mod": "gui_screens_shaders_js",
+  "lines": 115,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/vanilla-layout.js",
+  "mod": "gui_vanilla_layout_js",
+  "lines": 113,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/font-providers.js",
+  "mod": "gui_font_providers_js",
+  "lines": 108,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/input.js",
+  "mod": "game_input_js",
+  "lines": 106,
+  "pct": 0
+ },
+ {
+  "src": "client/js/net/connection.js",
+  "mod": "net_connection_js",
+  "lines": 103,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/i18n.js",
+  "mod": "gui_i18n_js",
+  "lines": 97,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/accounts.js",
+  "mod": "game_accounts_js",
+  "lines": 87,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/narrator.js",
+  "mod": "gui_narrator_js",
+  "lines": 81,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/entity-types.js",
+  "mod": "game_entity_types_js",
+  "lines": 75,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/profiler.js",
+  "mod": "game_profiler_js",
+  "lines": 73,
+  "pct": 0
+ },
+ {
+  "src": "client/js/asset-source.js",
+  "mod": "asset_source_js",
+  "lines": 69,
+  "pct": 0
+ },
+ {
+  "src": "client/js/net/eagler-textures.js",
+  "mod": "net_eagler_textures_js",
+  "lines": 65,
+  "pct": 0
+ },
+ {
+  "src": "client/js/main.js",
+  "mod": "main_js",
+  "lines": 62,
+  "pct": 0
+ },
+ {
+  "src": "client/js/render/breaking.js",
+  "mod": "render_breaking_js",
+  "lines": 60,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/sign.js",
+  "mod": "gui_screens_sign_js",
+  "lines": 57,
+  "pct": 0
+ },
+ {
+  "src": "client/js/net/protocol-1.15.2.js",
+  "mod": "net_protocol_1_15_2_js",
+  "lines": 50,
+  "pct": 0
+ },
+ {
+  "src": "client/js/platform/platform.js",
+  "mod": "platform_platform_js",
+  "lines": 49,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/death.js",
+  "mod": "gui_screens_death_js",
+  "lines": 47,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/text-editor.js",
+  "mod": "gui_text_editor_js",
+  "lines": 46,
+  "pct": 0
+ },
+ {
+  "src": "client/js/debug/text-capture.js",
+  "mod": "debug_text_capture_js",
+  "lines": 42,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/nbt-queries.js",
+  "mod": "game_nbt_queries_js",
+  "lines": 42,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/pause.js",
+  "mod": "gui_screens_pause_js",
+  "lines": 42,
+  "pct": 0
+ },
+ {
+  "src": "client/js/wasm/core.js",
+  "mod": "wasm_core_js",
+  "lines": 39,
+  "pct": 0
+ },
+ {
+  "src": "client/js/render/shader-options.js",
+  "mod": "render_shader_options_js",
+  "lines": 37,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/demo.js",
+  "mod": "gui_screens_demo_js",
+  "lines": 35,
+  "pct": 0
+ },
+ {
+  "src": "client/js/render/shader-menu.js",
+  "mod": "render_shader_menu_js",
+  "lines": 33,
+  "pct": 0
+ },
+ {
+  "src": "client/js/render/shader-compat.js",
+  "mod": "render_shader_compat_js",
+  "lines": 32,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/chat-hover.js",
+  "mod": "gui_chat_hover_js",
+  "lines": 31,
+  "pct": 0
+ },
+ {
+  "src": "client/js/resource-models.js",
+  "mod": "resource_models_js",
+  "lines": 31,
+  "pct": 0
+ },
+ {
+  "src": "client/js/render/shadows.js",
+  "mod": "render_shadows_js",
+  "lines": 27,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/key-names.js",
+  "mod": "game_key_names_js",
+  "lines": 26,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/portal.js",
+  "mod": "game_portal_js",
+  "lines": 26,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/option-focus.js",
+  "mod": "gui_option_focus_js",
+  "lines": 23,
+  "pct": 0
+ },
+ {
+  "src": "client/js/render/fire-overlay.js",
+  "mod": "render_fire_overlay_js",
+  "lines": 21,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/workstations-1.14.4.js",
+  "mod": "game_workstations_1_14_4_js",
+  "lines": 19,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/jigsaw.js",
+  "mod": "gui_screens_jigsaw_js",
+  "lines": 19,
+  "pct": 0
+ },
+ {
+  "src": "client/js/render/riptide-layer.js",
+  "mod": "render_riptide_layer_js",
+  "lines": 19,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/screens/shader-tooltip.js",
+  "mod": "gui_screens_shader_tooltip_js",
+  "lines": 15,
+  "pct": 0
+ },
+ {
+  "src": "client/js/net/wisp.js",
+  "mod": "net_wisp_js",
+  "lines": 15,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/chat-options.js",
+  "mod": "gui_chat_options_js",
+  "lines": 13,
+  "pct": 0
+ },
+ {
+  "src": "client/js/render/shader-frame.js",
+  "mod": "render_shader_frame_js",
+  "lines": 12,
+  "pct": 0
+ },
+ {
+  "src": "client/js/render/villager-layers.js",
+  "mod": "render_villager_layers_js",
+  "lines": 12,
+  "pct": 0
+ },
+ {
+  "src": "client/js/packed-bootstrap.js",
+  "mod": "packed_bootstrap_js",
+  "lines": 10,
+  "pct": 0
+ },
+ {
+  "src": "client/js/render/mesh-worker.js",
+  "mod": "render_mesh_worker_js",
+  "lines": 10,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/debug-targets.js",
+  "mod": "gui_debug_targets_js",
+  "lines": 9,
+  "pct": 0
+ },
+ {
+  "src": "client/js/gui/effect-icons.js",
+  "mod": "gui_effect_icons_js",
+  "lines": 9,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/leash-knot.js",
+  "mod": "game_leash_knot_js",
+  "lines": 8,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/signs-1.14.4.js",
+  "mod": "game_signs_1_14_4_js",
+  "lines": 8,
+  "pct": 0
+ },
+ {
+  "src": "client/js/net/eagler-presets.js",
+  "mod": "net_eagler_presets_js",
+  "lines": 6,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/villager-data.js",
+  "mod": "game_villager_data_js",
+  "lines": 5,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/block-entity-data-1.14.4.js",
+  "mod": "game_block_entity_data_1_14_4_js",
+  "lines": 3,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/block-entity-data-1.15.2.js",
+  "mod": "game_block_entity_data_1_15_2_js",
+  "lines": 3,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/default-tags.js",
+  "mod": "game_default_tags_js",
+  "lines": 3,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/entity-metadata-1.14.4.js",
+  "mod": "game_entity_metadata_1_14_4_js",
+  "lines": 3,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/entity-metadata-1.15.2.js",
+  "mod": "game_entity_metadata_1_15_2_js",
+  "lines": 3,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/entity-registry-1.15.2.js",
+  "mod": "game_entity_registry_1_15_2_js",
+  "lines": 3,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/menus-1.14.4.js",
+  "mod": "game_menus_1_14_4_js",
+  "lines": 3,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/panda-variants-1.14.4.js",
+  "mod": "game_panda_variants_1_14_4_js",
+  "lines": 3,
+  "pct": 0
+ },
+ {
+  "src": "client/js/game/panda-variants-1.15.2.js",
+  "mod": "game_panda_variants_1_15_2_js",
+  "lines": 3,
+  "pct": 0
+ },
+ {
+  "src": "client/js/lib/truetype-wasm.js",
+  "mod": "lib_truetype_wasm_js",
+  "lines": 3,
+  "pct": 0
+ }
+]

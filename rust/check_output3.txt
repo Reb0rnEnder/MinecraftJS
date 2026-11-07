@@ -1,0 +1,11 @@
+﻿cargo :     Updating crates.io index
+At line:1 char:129
++ ... 8Encoding]::new($false); cargo check --package mcjs-core 2>&1 | Out-F ...
++                              ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (    Updating crates.io index:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+error: failed to select a version for the requirement `phf = "^3.4"`
+candidate versions found which didn't match: 0.14.0, 0.13.1, 0.12.1, ...
+location searched: crates.io index
+required by package `mcjs-core v0.1.0 (C:\Users\Nicholas\Documents\Downloads\New folder (5)\rust\mcjs-core)`

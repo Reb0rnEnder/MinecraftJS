@@ -544,10 +544,9 @@ impl Interaction {
 
     /// `updateTarget`: like Minecraft.getMouseOver - update the target block/entity the player is looking at.
     /// Returns the target if something was hit, None otherwise.
-    pub fn update_target(&mut self, _eye: [f64; 3], _look: [f64; 3], _reach: f64, _game_mode: i32) -> Option<Target> {
-        // Full implementation would raycast against world and entities
-        // For now, return None as a placeholder
-        None
+    pub fn update_target(&mut self, eye: [f64; 3], look: [f64; 3], reach: f64, game_mode: i32, world_get_state: impl Fn(i32, i32, i32) -> u32, entities: &[EntityTarget]) -> Option<EntityTarget> {
+        let (_, target) = raycast_entities(eye, look, reach, entities, game_mode, 0, 0);
+        Some(target)
     }
 
     /// `clickMouse`: like Minecraft.clickMouse (1.9+).

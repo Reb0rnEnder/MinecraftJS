@@ -1,0 +1,1437 @@
+[
+ {
+  "js": "client/js/asset-source.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/audio/sound.js",
+  "rust": "bee_sound_params.rs; music_system.rs; sound.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port music_system.rs, sound.rs, sound_alg2.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 3/3 module(s)."
+ },
+ {
+  "js": "client/js/crash.js",
+  "rust": "crash.rs; main_alg.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port main_alg.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/debug/capture-network.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "browser-glue-exempt",
+  "evidence": "browser glue - DOM overlay for the network capture panel"
+ },
+ {
+  "js": "client/js/debug/text-capture.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "browser-glue-exempt",
+  "evidence": "browser glue - canvas/DOM text capture for debugging"
+ },
+ {
+  "js": "client/js/game/accounts.js",
+  "rust": "accounts.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port accounts.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/game/advancements.js",
+  "rust": "advancements.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port advancements.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/game/attachment-placement.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/game/bed-sleep.js",
+  "rust": "bed_sleep.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port bed_sleep.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/game/bee-sound.js",
+  "rust": "bee_sound.rs; bee_sound_params.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port bee_sound.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/game/block-entity-data-1.14.4.js",
+  "rust": "block_entity_data_1144.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port block_entity_data_1144.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/game/block-entity-data-1.15.2.js",
+  "rust": "block_entity_data_1152.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port block_entity_data_1152.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/game/commands.js",
+  "rust": "commands.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port commands.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/game/container.js",
+  "rust": "container.rs; container_full.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port container.rs, container_full.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 2/2 module(s)."
+ },
+ {
+  "js": "client/js/game/crafting.js",
+  "rust": "crafting.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port crafting.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/game/default-tags.js",
+  "rust": "default_tags.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port default_tags.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/game/door-prediction.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/game/entities.js",
+  "rust": "entities.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port entities.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/game/entity-metadata-1.14.4.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/game/entity-metadata-1.15.2.js",
+  "rust": "entity_metadata.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port entity_metadata.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/game/entity-pushing.js",
+  "rust": "EntityPushing.rs; entity_pushing.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port entity_pushing.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/game/entity-registry-1.15.2.js",
+  "rust": "EntityTypes.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port EntityTypes.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/game/entity-types.js",
+  "rust": "EntityTypes.rs; entity_types.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port EntityTypes.rs, entity_types.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/game/falling-block.js",
+  "rust": "falling_block.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port falling_block.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/game/fox.js",
+  "rust": "fox.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port fox.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/game/game.js",
+  "rust": "death.rs; game.rs; lib.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port death.rs, game.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/game/input.js",
+  "rust": "input.rs; widgets.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port widgets.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/game/interaction.js",
+  "rust": "breaking.rs; interaction.rs; interaction_full.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port interaction.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/game/itemnames.js",
+  "rust": "itemnames.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port itemnames.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/game/items.js",
+  "rust": "items.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port items.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/game/key-names.js",
+  "rust": "key_names.rs; options_screen.rs; text_editor.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port options_screen.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/game/leash-knot.js",
+  "rust": "leash_knot.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port leash_knot.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/game/menus-1.14.4.js",
+  "rust": "menus_1144.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port menus_1144.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/game/nbt-queries.js",
+  "rust": "nbt_queries.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port nbt_queries.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/game/panda-variants-1.14.4.js",
+  "rust": "entity_renderer.rs; panda_variants_1144.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port entity_renderer.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/game/panda-variants-1.15.2.js",
+  "rust": "panda_variants_1152.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port panda_variants_1152.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/game/physics.js",
+  "rust": "lib.rs; physics.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port physics.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/game/pistons.js",
+  "rust": "pistons.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port pistons.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/game/placement-collision.js",
+  "rust": "collision.rs; placement_collision.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port collision.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/game/player-poses-1.14.4.js",
+  "rust": "lib.rs; player_poses.rs; player_poses_1144.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port poses.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/game/player-poses-1.15.2.js",
+  "rust": "player_poses.rs; player_poses_1152.rs; poses.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port poses.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/game/portal.js",
+  "rust": "portal.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port portal.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/game/profiler.js",
+  "rust": "profiler.rs; profiling.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port profiling.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/game/recipebook.js",
+  "rust": "lib.rs; recipebook.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port recipebook.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/game/respawn-view.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/game/riding-lifecycle.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/game/scoreboard.js",
+  "rust": "lib.rs; scoreboard.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port scoreboard.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/game/server-recipes.js",
+  "rust": "server_recipes.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port server_recipes.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/game/serverpacks.js",
+  "rust": "serverpacks.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port serverpacks.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/game/settings.js",
+  "rust": "options.rs; settings.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port options.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/game/signs-1.14.4.js",
+  "rust": "signs.rs; signs_1144.rs; signs_advanced.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port signs.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/game/squid-animation.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/game/tags.js",
+  "rust": "tags.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port tags.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/game/tutorial.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/game/vehicle.js",
+  "rust": "vehicle.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port vehicle.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/game/villager-data.js",
+  "rust": "villager_data.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port villager_data.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/game/workstations-1.14.4.js",
+  "rust": "workstations.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port workstations.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/game/zoom.js",
+  "rust": "lib.rs; zoom.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port zoom.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/gfx/device.js",
+  "rust": "gfx/device.rs; software.rs; webgl2_alg.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port software.rs, webgl2_alg.rs, webgpu_math.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 3/3 module(s)."
+ },
+ {
+  "js": "client/js/gfx/dynamic-lighting.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gfx/inventory-lighting.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gfx/math.js",
+  "rust": "lib.rs; math.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port math.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/gfx/scene.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gfx/software.js",
+  "rust": "software.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port software.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/gfx/webgl2.js",
+  "rust": "gfx_math.rs; shader_uniforms.rs; webgl2.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port webgl2.rs, webgl2_alg.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 2/2 module(s)."
+ },
+ {
+  "js": "client/js/gfx/webgpu.js",
+  "rust": "webgpu.rs; webgpu_math.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port webgpu.rs, webgpu_math.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 2/2 module(s)."
+ },
+ {
+  "js": "client/js/gui/chat-hover.js",
+  "rust": "chat_hover.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port chat_hover.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/gui/chat-options.js",
+  "rust": "chat_options.rs; options.rs; options_screen.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port options.rs, options_screen.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 2/2 module(s)."
+ },
+ {
+  "js": "client/js/gui/chat.js",
+  "rust": "chat.rs; chat_hover.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port chat.rs, chat_hover.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/gui/debug-overlay.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "browser-glue-exempt",
+  "evidence": "browser glue - DOM debug overlay rendering"
+ },
+ {
+  "js": "client/js/gui/debug-targets.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/effect-icons.js",
+  "rust": "effect_icons.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port effect_icons.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/gui/font-providers.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "browser-glue-exempt",
+  "evidence": "browser glue - WebAssembly TrueType provider + FontFace/DOM font loading"
+ },
+ {
+  "js": "client/js/gui/font.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/gui.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/hud.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/i18n.js",
+  "rust": "options_alg.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port options_alg.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/gui/narrator.js",
+  "rust": "narrator.rs; options_alg.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port narrator.rs, options_alg.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 2/2 module(s)."
+ },
+ {
+  "js": "client/js/gui/option-focus.js",
+  "rust": "options_alg.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port options_alg.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/gui/recipebook.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/screens/accounts.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/screens/advancements.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/screens/book.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/screens/chat.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/screens/commandblock.js",
+  "rust": "command_block.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port command_block.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/gui/screens/containers.js",
+  "rust": "screen_containers.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port screen_containers.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/gui/screens/credits.js",
+  "rust": "credits.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port credits.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/gui/screens/death.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/screens/demo.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/screens/jigsaw.js",
+  "rust": "jigsaw.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port jigsaw.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/gui/screens/loading.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "browser-glue-exempt",
+  "evidence": "browser glue - DOM loading-screen element manipulation"
+ },
+ {
+  "js": "client/js/gui/screens/manager.js",
+  "rust": "screens/manager.rs",
+  "declared": "no (orphan-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port screens/manager.rs exists on disk but is declared nowhere in lib.rs (orphan: never compiled by any build)."
+ },
+ {
+  "js": "client/js/gui/screens/menus.js",
+  "rust": "splash.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port splash.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/gui/screens/options.js",
+  "rust": "options.rs; options_alg.rs; options_screen.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port options.rs, options_alg.rs, options_screen.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 3/3 module(s)."
+ },
+ {
+  "js": "client/js/gui/screens/packs.js",
+  "rust": "packs.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port packs.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/gui/screens/pause.js",
+  "rust": "pause.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port pause.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/gui/screens/proxies.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/screens/shader-tooltip.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/screens/shaders.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/screens/sign.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/screens/stats.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/screens/structure.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/screens/workstations.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/gui/slot-list.js",
+  "rust": "options_alg.rs; options_screen.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port options_alg.rs, options_screen.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 2/2 module(s)."
+ },
+ {
+  "js": "client/js/gui/spectator.js",
+  "rust": "spectator.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port spectator.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/gui/text-editor.js",
+  "rust": "text_editor.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port text_editor.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/gui/vanilla-layout.js",
+  "rust": "options.rs; widgets.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port options.rs, widgets.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 2/2 module(s)."
+ },
+ {
+  "js": "client/js/gui/widgets.js",
+  "rust": "options.rs; options_alg.rs; widgets.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port options.rs, options_alg.rs, widgets.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 4/6 module(s)."
+ },
+ {
+  "js": "client/js/lib/pako.esm.mjs",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "browser-glue-exempt",
+  "evidence": "browser glue - vendored pako (third-party zlib port), not Gravrust code"
+ },
+ {
+  "js": "client/js/lib/truetype-wasm.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "browser-glue-exempt",
+  "evidence": "browser glue - embedded C/stb_truetype WebAssembly blob (a wasm module, not JS logic)"
+ },
+ {
+  "js": "client/js/net/address.js",
+  "rust": "address.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port address.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/net/buffer.js",
+  "rust": "buffer.rs; lib.rs; protocol.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port buffer.rs, protocol.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 2/2 module(s)."
+ },
+ {
+  "js": "client/js/net/command-tree.js",
+  "rust": "command_tree.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port command_tree.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/net/connection.js",
+  "rust": "connection_legacy.rs; net/connection.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port net/connection.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/net/eagler-presets.js",
+  "rust": "eagler_presets.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port eagler_presets.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/net/eagler-textures.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/net/eagler.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "browser-glue-exempt",
+  "evidence": "browser glue - browser WebSocket transport for Eaglercraft servers"
+ },
+ {
+  "js": "client/js/net/nbt.js",
+  "rust": "container_full.rs; lib.rs; nbt.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port container_full.rs, nbt.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 2/2 module(s)."
+ },
+ {
+  "js": "client/js/net/packet-bodies-1.14.4.js",
+  "rust": "packet_bodies_1144.rs; protocol_1144.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port protocol_1144.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/net/packets.js",
+  "rust": "lib.rs; nbt_queries.rs; packets.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port packets.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/net/protocol-1.14.4-ids.js",
+  "rust": "protocol_ids.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port protocol_ids.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/net/protocol-1.14.4.js",
+  "rust": "protocol.rs; protocol_1144.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port protocol.rs, protocol_1144.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 2/2 module(s)."
+ },
+ {
+  "js": "client/js/net/protocol-1.15.2-ids.js",
+  "rust": "protocol_1152_ids.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port protocol_1152_ids.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/net/protocol-1.15.2.js",
+  "rust": "protocol.rs; protocol_1152.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port protocol.rs, protocol_1152.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 2/2 module(s)."
+ },
+ {
+  "js": "client/js/net/proxies.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "browser-glue-exempt",
+  "evidence": "browser glue - browser socket opening for the selected proxy transport"
+ },
+ {
+  "js": "client/js/net/recipes.js",
+  "rust": "lib.rs; recipes.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port recipes.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/net/snbt.js",
+  "rust": "lib.rs; snbt.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port snbt.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/net/tcp.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "browser-glue-exempt",
+  "evidence": "browser glue - raw browser WebSocket transport (no protocol logic)"
+ },
+ {
+  "js": "client/js/net/technical-packets.js",
+  "rust": "lib.rs; technical.rs; technical_packets.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port technical.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/net/wisp.js",
+  "rust": "wisp.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port wisp.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/platform/browser.js",
+  "rust": "browser.rs; browser_alg.rs; platform_contract.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port browser.rs, browser_alg.rs, platform_contract.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 3/3 module(s)."
+ },
+ {
+  "js": "client/js/platform/clipboard.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "browser-glue-exempt",
+  "evidence": "browser glue - navigator.clipboard bindings"
+ },
+ {
+  "js": "client/js/platform/platform.js",
+  "rust": "platform.rs; platform_contract.rs; widgets_alg3.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port platform.rs, platform_contract.rs, widgets_alg3.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 2/3 module(s)."
+ },
+ {
+  "js": "client/js/render/atlas.js",
+  "rust": "atlas.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port atlas.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/render/banner.js",
+  "rust": "banner.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port banner.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/render/block-overlay.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/render/boxmodel.js",
+  "rust": "boxmodel.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port boxmodel.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/render/breaking.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/render/camera-eye.js",
+  "rust": "camera.rs; camera_eye.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port camera.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/render/culling.js",
+  "rust": "culling.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port culling.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/render/debug-lines.js",
+  "rust": "lib.rs",
+  "declared": "no (orphan-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port lib.rs exists on disk but is declared nowhere in lib.rs (orphan: never compiled by any build)."
+ },
+ {
+  "js": "client/js/render/dynamic-lights.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/render/entity-effects.js",
+  "rust": "entity_effects.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port entity_effects.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/render/entity-fire.js",
+  "rust": "entity_fire.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port entity_fire.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/render/entity-models.js",
+  "rust": "entity_models.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port entity_models.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/render/entity-renderer.js",
+  "rust": "entity_render_alg.rs; entity_renderer.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port entity_render_alg.rs, entity_renderer.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 2/2 module(s)."
+ },
+ {
+  "js": "client/js/render/fire-overlay.js",
+  "rust": "fire_overlay.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port fire_overlay.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/render/fox-pose.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/render/glsl-functions.js",
+  "rust": "glsl_float_literals.rs; glsl_functions.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port glsl_functions.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/render/glsl-preprocessor.js",
+  "rust": "glsl_preprocess.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port glsl_preprocess.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/render/hand-renderer.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/render/item-renderer.js",
+  "rust": "item_renderer.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port item_renderer.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/render/leash.js",
+  "rust": "entity_poses.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port entity_poses.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/render/loading-overlay.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "browser-glue-exempt",
+  "evidence": "browser glue - DOM/GL overlay for the loading indicator"
+ },
+ {
+  "js": "client/js/render/lod.js",
+  "rust": "lib.rs; lod.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port lod.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/render/mesh-service.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "browser-glue-exempt",
+  "evidence": "browser glue - Web Worker pool / postMessage plumbing around mesh-worker.js"
+ },
+ {
+  "js": "client/js/render/mesh-worker.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "browser-glue-exempt",
+  "evidence": "browser glue - Web Worker entry point for the off-thread mesher"
+ },
+ {
+  "js": "client/js/render/mesher.js",
+  "rust": "mesher.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port mesher.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/render/models.js",
+  "rust": "models.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port models.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/render/ocelot-pose.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/render/particle-collision.js",
+  "rust": "lib.rs; particle_collision.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port particle_collision.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/render/particle-sprites.js",
+  "rust": "particle_sprites.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port particle_sprites.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/render/particles.js",
+  "rust": "lib.rs; particles.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port particles.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/render/post.js",
+  "rust": "post.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port post.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/render/renderer.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/render/riptide-layer.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/render/shader-compat.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/render/shader-frame.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/render/shader-library.js",
+  "rust": "lib.rs; shader_library.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port shader_library.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/render/shader-lighting.js",
+  "rust": "lib.rs; shader_lighting.rs; shader_lighting_alg.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port shader_lighting.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/render/shader-menu.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/render/shader-options.js",
+  "rust": "shader_options.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port shader_options.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/render/shader-pack.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/render/shadows.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/render/sky.js",
+  "rust": "lib.rs; sky.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port sky.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/render/splash.js",
+  "rust": "lib.rs; splash.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port splash.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/render/text-mesh.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/render/tile-renderer.js",
+  "rust": "tile_renderer.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port tile_renderer.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/render/villager-layers.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/render/visgraph.js",
+  "rust": "lib.rs; visgraph.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port visgraph.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/render/water-fog.js",
+  "rust": "lib.rs; water_fog.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port water_fog.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/render/weather.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/resource-models.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/util/base64.js",
+  "rust": "base64.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port base64.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/util/base85.js",
+  "rust": "base85.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port base85.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/util/jrandom.js",
+  "rust": "jrandom.rs; lib.rs; screen_containers.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port jrandom.rs, screen_containers.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/2 module(s)."
+ },
+ {
+  "js": "client/js/util/mccrypto.js",
+  "rust": "lib.rs; mccrypto.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port mccrypto.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/util/png.js",
+  "rust": "lib.rs; png.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port png.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/util/utf8.js",
+  "rust": "lib.rs; utf8.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port utf8.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/util/uuid-md5.js",
+  "rust": "lib.rs; uuid.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port uuid.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/util/zip.js",
+  "rust": "zip.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port zip.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 0/1 module(s)."
+ },
+ {
+  "js": "client/js/world/biome-zoom.js",
+  "rust": "biome_zoom.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port biome_zoom.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/world/biomes.js",
+  "rust": "biomes.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port biomes.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/world/blocks.js",
+  "rust": "blocks.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port blocks.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/world/blockstates.js",
+  "rust": "blockstates.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port blockstates.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/world/chunk-1.14.4.js",
+  "rust": "chunk_1144.rs; chunk_legacy.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port chunk_legacy.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/world/chunk-1.15.2.js",
+  "rust": "chunk_1152.rs",
+  "declared": "no (gated-only)",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port chunk_1152.rs exists but sits behind #[cfg(feature=\"unsupported\")] (lib.rs L268-437) and that feature does NOT compile (parse errors in atlas.rs:218, book.rs, chat.rs, bee_sound_params.rs) - shadow-compiled only, never built."
+ },
+ {
+  "js": "client/js/world/chunk.js",
+  "rust": "chunk.rs; lib.rs; world/chunk.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port chunk.rs, world/chunk.rs, world/world_core.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 3/3 module(s)."
+ },
+ {
+  "js": "client/js/world/fluids.js",
+  "rust": "fluids.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port fluids.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/world/native-light.js",
+  "rust": "chunk.rs; lib.rs; native_light.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port chunk.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/world/scaffolding.js",
+  "rust": "collision.rs; scaffolding.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port collision.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/world/section-key.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path and no counterpart .rs exists on disk (algorithmic surface unported)"
+ },
+ {
+  "js": "client/js/world/slice.js",
+  "rust": "world/world_core.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port world/world_core.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/world/water-biomes.js",
+  "rust": "biomes.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port biomes.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 1/1 module(s)."
+ },
+ {
+  "js": "client/js/world/world.js",
+  "rust": "lib.rs; world/world_core.rs; world_collision.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port world/world_core.rs, world_collision.rs compiled into the default crate (declared in lib.rs); NOT invoked by any shipped consumer - no JS imports the wasm package and the wasm32 build fails (duplicate `__wbg_decodedpacket_free_*`). Intra-crate call sites: 2/2 module(s)."
+ }
+]

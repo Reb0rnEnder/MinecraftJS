@@ -1,0 +1,63 @@
+# ViaProxy Configuration for Gravrust Via Relay
+# This config enables protocol translation between Minecraft versions
+# Run with: java -jar ViaProxy-3.3.2.jar config via-proxy-config.yml
+# Requires Java 17 or 21 (NOT Java 25+ due to ASM compatibility)
+
+server:
+  # The address and port this proxy will listen on
+  address: "0.0.0.0"
+  port: 25566
+  
+  # Enable ViaVersion protocol translation
+  viaversion: true
+  
+  # Enable ViaRewind for 1.7-1.8 protocol translation
+  viarewind: true
+  
+  # Enable ViaBackwards for newer-to-older version translation
+  viabackwards: true
+  
+  # Enable Geyser for Bedrock Edition support (optional)
+  geyser: false
+
+# Upstream servers - the actual Minecraft servers to connect to
+# The proxy will forward connections to these servers
+upstream:
+  - address: "localhost"
+    port: 25565
+    # Protocol version to use when connecting to this server
+    # 762 = 1.20.1, 763 = 1.21, etc.
+    protocol: 762
+    # Enable protocol translation for this server
+    translate: true
+
+# Proxy settings
+proxy:
+  # Maximum number of concurrent connections
+  max-connections: 100
+  
+  # Connection timeout in milliseconds
+  timeout: 30000
+  
+  # Enable compression
+  compression: true
+  
+  # Compression threshold
+  compression-threshold: 256
+
+# Logging
+logging:
+  level: "INFO"
+  console: true
+  file: "logs/via-proxy.log"
+
+# Advanced settings
+advanced:
+  # Enable debug logging for protocol translation
+  debug-protocol: false
+  
+  # Enable packet logging
+  log-packets: false
+  
+  # Custom protocol mappings (advanced)
+  custom-mappings: {}

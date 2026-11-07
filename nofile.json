@@ -1,0 +1,244 @@
+{
+ "noFile": [
+  {
+   "src": "client/js/gui/hud.js",
+   "mod": "gui_hud_js",
+   "lines": 1145,
+   "pct": 0
+  },
+  {
+   "src": "client/js/gui/screens/menus.js",
+   "mod": "gui_screens_menus_js",
+   "lines": 536,
+   "pct": 0
+  },
+  {
+   "src": "client/js/assets.js",
+   "mod": "assets_js",
+   "lines": 362,
+   "pct": 0
+  },
+  {
+   "src": "client/js/net/tcp.js",
+   "mod": "net_tcp_js",
+   "lines": 343,
+   "pct": 0
+  },
+  {
+   "src": "client/js/gui/screens/stats.js",
+   "mod": "gui_screens_stats_js",
+   "lines": 291,
+   "pct": 0
+  },
+  {
+   "src": "client/js/gui/gui.js",
+   "mod": "gui_gui_js",
+   "lines": 286,
+   "pct": 0
+  },
+  {
+   "src": "client/js/gui/screens/proxies.js",
+   "mod": "gui_screens_proxies_js",
+   "lines": 273,
+   "pct": 0
+  },
+  {
+   "src": "client/js/net/eagler.js",
+   "mod": "net_eagler_js",
+   "lines": 237,
+   "pct": 0
+  },
+  {
+   "src": "client/js/gfx/scene.js",
+   "mod": "gfx_scene_js",
+   "lines": 230,
+   "pct": 0
+  },
+  {
+   "src": "client/js/net/proxies.js",
+   "mod": "net_proxies_js",
+   "lines": 204,
+   "pct": 0
+  },
+  {
+   "src": "client/js/gui/screens/structure.js",
+   "mod": "gui_screens_structure_js",
+   "lines": 188,
+   "pct": 0
+  },
+  {
+   "src": "client/js/gui/screens/commandblock.js",
+   "mod": "gui_screens_commandblock_js",
+   "lines": 182,
+   "pct": 0
+  },
+  {
+   "src": "client/js/gui/slot-list.js",
+   "mod": "gui_slot_list_js",
+   "lines": 171,
+   "pct": 0
+  },
+  {
+   "src": "client/js/render/weather.js",
+   "mod": "render_weather_js",
+   "lines": 165,
+   "pct": 0
+  },
+  {
+   "src": "client/js/wasm/kernels.js",
+   "mod": "wasm_kernels_js",
+   "lines": 139,
+   "pct": 0
+  },
+  {
+   "src": "client/js/render/shader-pack.js",
+   "mod": "render_shader_pack_js",
+   "lines": 123,
+   "pct": 0
+  },
+  {
+   "src": "client/js/render/mesh-service.js",
+   "mod": "render_mesh_service_js",
+   "lines": 121,
+   "pct": 0
+  },
+  {
+   "src": "client/js/gui/screens/shaders.js",
+   "mod": "gui_screens_shaders_js",
+   "lines": 115,
+   "pct": 0
+  },
+  {
+   "src": "client/js/gui/vanilla-layout.js",
+   "mod": "gui_vanilla_layout_js",
+   "lines": 113,
+   "pct": 0
+  },
+  {
+   "src": "client/js/gui/i18n.js",
+   "mod": "gui_i18n_js",
+   "lines": 97,
+   "pct": 0
+  },
+  {
+   "src": "client/js/asset-source.js",
+   "mod": "asset_source_js",
+   "lines": 69,
+   "pct": 0
+  },
+  {
+   "src": "client/js/gui/screens/sign.js",
+   "mod": "gui_screens_sign_js",
+   "lines": 57,
+   "pct": 0
+  },
+  {
+   "src": "client/js/debug/text-capture.js",
+   "mod": "debug_text_capture_js",
+   "lines": 42,
+   "pct": 0
+  },
+  {
+   "src": "client/js/wasm/core.js",
+   "mod": "wasm_core_js",
+   "lines": 39,
+   "pct": 0
+  },
+  {
+   "src": "client/js/gui/screens/demo.js",
+   "mod": "gui_screens_demo_js",
+   "lines": 35,
+   "pct": 0
+  },
+  {
+   "src": "client/js/render/shader-menu.js",
+   "mod": "render_shader_menu_js",
+   "lines": 33,
+   "pct": 0
+  },
+  {
+   "src": "client/js/render/shader-compat.js",
+   "mod": "render_shader_compat_js",
+   "lines": 32,
+   "pct": 0
+  },
+  {
+   "src": "client/js/resource-models.js",
+   "mod": "resource_models_js",
+   "lines": 31,
+   "pct": 0
+  },
+  {
+   "src": "client/js/render/shadows.js",
+   "mod": "render_shadows_js",
+   "lines": 27,
+   "pct": 0
+  },
+  {
+   "src": "client/js/gui/option-focus.js",
+   "mod": "gui_option_focus_js",
+   "lines": 23,
+   "pct": 0
+  },
+  {
+   "src": "client/js/game/workstations-1.14.4.js",
+   "mod": "game_workstations_1_14_4_js",
+   "lines": 19,
+   "pct": 0
+  },
+  {
+   "src": "client/js/render/riptide-layer.js",
+   "mod": "render_riptide_layer_js",
+   "lines": 19,
+   "pct": 0
+  },
+  {
+   "src": "client/js/gui/screens/shader-tooltip.js",
+   "mod": "gui_screens_shader_tooltip_js",
+   "lines": 15,
+   "pct": 0
+  },
+  {
+   "src": "client/js/render/shader-frame.js",
+   "mod": "render_shader_frame_js",
+   "lines": 12,
+   "pct": 0
+  },
+  {
+   "src": "client/js/render/villager-layers.js",
+   "mod": "render_villager_layers_js",
+   "lines": 12,
+   "pct": 0
+  },
+  {
+   "src": "client/js/packed-bootstrap.js",
+   "mod": "packed_bootstrap_js",
+   "lines": 10,
+   "pct": 0
+  },
+  {
+   "src": "client/js/render/mesh-worker.js",
+   "mod": "render_mesh_worker_js",
+   "lines": 10,
+   "pct": 0
+  },
+  {
+   "src": "client/js/game/entity-metadata-1.14.4.js",
+   "mod": "game_entity_metadata_1_14_4_js",
+   "lines": 3,
+   "pct": 0
+  },
+  {
+   "src": "client/js/game/entity-metadata-1.15.2.js",
+   "mod": "game_entity_metadata_1_15_2_js",
+   "lines": 3,
+   "pct": 0
+  },
+  {
+   "src": "client/js/lib/truetype-wasm.js",
+   "mod": "lib_truetype_wasm_js",
+   "lines": 3,
+   "pct": 0
+  }
+ ]
+}

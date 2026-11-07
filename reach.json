@@ -1,0 +1,1059 @@
+{
+ "orphans": [
+  "EntityFire.rs",
+  "EntityMetadata_1144.rs",
+  "EntityMetadata_1152.rs",
+  "EntityMetadata_1165.rs",
+  "EntityPushing.rs",
+  "EntityTypes.rs",
+  "accounts.rs",
+  "atlas.rs",
+  "bee_sound_params.rs",
+  "block_entity_data_1144.rs",
+  "block_entity_data_1152.rs",
+  "book.rs",
+  "breaking.rs",
+  "camera_eye.rs",
+  "chat.rs",
+  "chat_hover.rs",
+  "chat_options.rs",
+  "chunk_1144.rs",
+  "chunk_1152.rs",
+  "command_block.rs",
+  "commands.rs",
+  "connection_legacy.rs",
+  "containers.rs",
+  "crash.rs",
+  "credits.rs",
+  "death.rs",
+  "debug_targets.rs",
+  "default_tags.rs",
+  "eagler_presets.rs",
+  "eagler_textures.rs",
+  "effect_icons.rs",
+  "entity_metadata.rs",
+  "entity_registry_1144.rs",
+  "entity_registry_1152.rs",
+  "entity_types.rs",
+  "font.rs",
+  "font_providers.rs",
+  "game.rs",
+  "gfx/device.rs",
+  "gfx_math.rs",
+  "glsl_float_literals.rs",
+  "input.rs",
+  "interaction_full.rs",
+  "itemmetadata_1144.rs",
+  "itemmetadata_1152.rs",
+  "itemnames.rs",
+  "jigsaw.rs",
+  "key_names.rs",
+  "main.rs",
+  "manager_legacy.rs",
+  "menus_1144.rs",
+  "native_light.rs",
+  "nbt_queries.rs",
+  "packet_bodies_1144.rs",
+  "packs.rs",
+  "panda_variants_1144.rs",
+  "panda_variants_1152.rs",
+  "particle_collision.rs",
+  "pause.rs",
+  "placement_collision.rs",
+  "player_poses.rs",
+  "player_poses_1144.rs",
+  "player_poses_1152.rs",
+  "post.rs",
+  "profiler.rs",
+  "scaffolding.rs",
+  "screens/manager.rs",
+  "server_recipes.rs",
+  "serverpacks.rs",
+  "settings.rs",
+  "shader_lighting_alg.rs",
+  "shader_options.rs",
+  "shader_uniforms.rs",
+  "signs_1144.rs",
+  "signs_1152.rs",
+  "signs_advanced.rs",
+  "spectator.rs",
+  "technical_packets.rs",
+  "text_editor.rs",
+  "tutorial.rs",
+  "villager_data.rs",
+  "wisp.rs"
+ ],
+ "default": [
+  "address.rs",
+  "advancements.rs",
+  "banner.rs",
+  "base64.rs",
+  "base85.rs",
+  "bed_sleep.rs",
+  "bee_sound.rs",
+  "biome_zoom.rs",
+  "biomes.rs",
+  "blocks.rs",
+  "blockstates.rs",
+  "boot_alg.rs",
+  "boxmodel.rs",
+  "browser.rs",
+  "browser_alg.rs",
+  "buffer.rs",
+  "camera.rs",
+  "chunk.rs",
+  "chunk_legacy.rs",
+  "collision.rs",
+  "command_tree.rs",
+  "container.rs",
+  "container_full.rs",
+  "crafting.rs",
+  "culling.rs",
+  "day_cycle.rs",
+  "debug_lines.rs",
+  "difficulty.rs",
+  "entities.rs",
+  "entity_effects.rs",
+  "entity_fire.rs",
+  "entity_models.rs",
+  "entity_poses.rs",
+  "entity_pushing.rs",
+  "entity_render_alg.rs",
+  "entity_renderer.rs",
+  "falling_block.rs",
+  "fire_overlay.rs",
+  "fluids.rs",
+  "fox.rs",
+  "glsl_functions.rs",
+  "glsl_preprocess.rs",
+  "hand_renderer.rs",
+  "interaction.rs",
+  "item_renderer.rs",
+  "items.rs",
+  "jrandom.rs",
+  "leash_knot.rs",
+  "lib.rs",
+  "lod.rs",
+  "main_alg.rs",
+  "main_boot.rs",
+  "main_boot2.rs",
+  "math.rs",
+  "mccrypto.rs",
+  "mesher.rs",
+  "models.rs",
+  "music_system.rs",
+  "narrator.rs",
+  "nbt.rs",
+  "net/connection.rs",
+  "net/mod.rs",
+  "options.rs",
+  "options_alg.rs",
+  "options_screen.rs",
+  "packets.rs",
+  "particle_sprites.rs",
+  "particles.rs",
+  "physics.rs",
+  "pistons.rs",
+  "platform.rs",
+  "platform_contract.rs",
+  "png.rs",
+  "portal.rs",
+  "poses.rs",
+  "profiling.rs",
+  "protocol.rs",
+  "protocol_1144.rs",
+  "protocol_1152.rs",
+  "protocol_1152_ids.rs",
+  "protocol_ids.rs",
+  "recipe_book.rs",
+  "recipebook.rs",
+  "recipes.rs",
+  "scoreboard.rs",
+  "screen_containers.rs",
+  "screens.rs",
+  "shader_library.rs",
+  "shader_lighting.rs",
+  "signs.rs",
+  "sky.rs",
+  "snbt.rs",
+  "software.rs",
+  "sound.rs",
+  "sound_alg2.rs",
+  "spawning.rs",
+  "splash.rs",
+  "statistics.rs",
+  "tags.rs",
+  "technical.rs",
+  "tile_renderer.rs",
+  "utf8.rs",
+  "uuid.rs",
+  "vehicle.rs",
+  "visgraph.rs",
+  "wasm_alg.rs",
+  "water_fog.rs",
+  "webgl2.rs",
+  "webgl2_alg.rs",
+  "webgpu.rs",
+  "webgpu_math.rs",
+  "widgets.rs",
+  "widgets_alg.rs",
+  "widgets_alg2.rs",
+  "widgets_alg3.rs",
+  "workstations.rs",
+  "world/chunk.rs",
+  "world/world_core.rs",
+  "world_collision.rs",
+  "zip.rs",
+  "zoom.rs"
+ ],
+ "gated": [],
+ "file_reach": {
+  "lib.rs": {
+   "paths": [
+    "crate"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "advancements.rs": {
+   "paths": [
+    "crate::advancements"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "address.rs": {
+   "paths": [
+    "crate::address"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "net/mod.rs": {
+   "paths": [
+    "crate::net"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "signs.rs": {
+   "paths": [
+    "crate::signs"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "base64.rs": {
+   "paths": [
+    "crate::base64"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "base85.rs": {
+   "paths": [
+    "crate::base85"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "banner.rs": {
+   "paths": [
+    "crate::banner"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "bee_sound.rs": {
+   "paths": [
+    "crate::bee_sound"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "biome_zoom.rs": {
+   "paths": [
+    "crate::biome_zoom"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "blocks.rs": {
+   "paths": [
+    "crate::blocks"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "blockstates.rs": {
+   "paths": [
+    "crate::blockstates"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "biomes.rs": {
+   "paths": [
+    "crate::biomes"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "buffer.rs": {
+   "paths": [
+    "crate::buffer"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "camera.rs": {
+   "paths": [
+    "crate::camera"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "chunk.rs": {
+   "paths": [
+    "crate::chunk"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "chunk_legacy.rs": {
+   "paths": [
+    "crate::chunk_legacy"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "collision.rs": {
+   "paths": [
+    "crate::collision"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "command_tree.rs": {
+   "paths": [
+    "crate::command_tree"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "container.rs": {
+   "paths": [
+    "crate::container"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "container_full.rs": {
+   "paths": [
+    "crate::container_full"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "crafting.rs": {
+   "paths": [
+    "crate::crafting"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "recipebook.rs": {
+   "paths": [
+    "crate::recipebook"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "culling.rs": {
+   "paths": [
+    "crate::culling"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "boxmodel.rs": {
+   "paths": [
+    "crate::boxmodel"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "debug_lines.rs": {
+   "paths": [
+    "crate::debug_lines"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "entity_fire.rs": {
+   "paths": [
+    "crate::entity_fire"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "entities.rs": {
+   "paths": [
+    "crate::entities"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "entity_models.rs": {
+   "paths": [
+    "crate::entity_models"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "fluids.rs": {
+   "paths": [
+    "crate::fluids"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "glsl_functions.rs": {
+   "paths": [
+    "crate::glsl_functions"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "glsl_preprocess.rs": {
+   "paths": [
+    "crate::glsl_preprocess"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "interaction.rs": {
+   "paths": [
+    "crate::interaction"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "items.rs": {
+   "paths": [
+    "crate::items"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "jrandom.rs": {
+   "paths": [
+    "crate::jrandom"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "leash_knot.rs": {
+   "paths": [
+    "crate::leash_knot"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "lod.rs": {
+   "paths": [
+    "crate::lod"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "math.rs": {
+   "paths": [
+    "crate::math"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "mccrypto.rs": {
+   "paths": [
+    "crate::mccrypto"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "mesher.rs": {
+   "paths": [
+    "crate::mesher"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "models.rs": {
+   "paths": [
+    "crate::models"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "nbt.rs": {
+   "paths": [
+    "crate::nbt"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "narrator.rs": {
+   "paths": [
+    "crate::narrator"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "packets.rs": {
+   "paths": [
+    "crate::packets"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "particles.rs": {
+   "paths": [
+    "crate::particles"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "physics.rs": {
+   "paths": [
+    "crate::physics"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "png.rs": {
+   "paths": [
+    "crate::png"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "pistons.rs": {
+   "paths": [
+    "crate::pistons"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "poses.rs": {
+   "paths": [
+    "crate::poses"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "protocol_ids.rs": {
+   "paths": [
+    "crate::protocol_ids"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "recipes.rs": {
+   "paths": [
+    "crate::recipes"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "recipe_book.rs": {
+   "paths": [
+    "crate::recipe_book"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "scoreboard.rs": {
+   "paths": [
+    "crate::scoreboard"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "screen_containers.rs": {
+   "paths": [
+    "crate::screen_containers"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "screens.rs": {
+   "paths": [
+    "crate::screens"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "shader_lighting.rs": {
+   "paths": [
+    "crate::shader_lighting"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "shader_library.rs": {
+   "paths": [
+    "crate::shader_library"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "sky.rs": {
+   "paths": [
+    "crate::sky"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "snbt.rs": {
+   "paths": [
+    "crate::snbt"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "software.rs": {
+   "paths": [
+    "crate::software"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "tags.rs": {
+   "paths": [
+    "crate::tags"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "technical.rs": {
+   "paths": [
+    "crate::technical"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "utf8.rs": {
+   "paths": [
+    "crate::utf8"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "uuid.rs": {
+   "paths": [
+    "crate::uuid"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "vehicle.rs": {
+   "paths": [
+    "crate::vehicle"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "visgraph.rs": {
+   "paths": [
+    "crate::visgraph"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "workstations.rs": {
+   "paths": [
+    "crate::workstations"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "water_fog.rs": {
+   "paths": [
+    "crate::water_fog"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "world/world_core.rs": {
+   "paths": [
+    "crate::world"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "world_collision.rs": {
+   "paths": [
+    "crate::world_collision"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "zip.rs": {
+   "paths": [
+    "crate::zip"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "zoom.rs": {
+   "paths": [
+    "crate::zoom"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "bed_sleep.rs": {
+   "paths": [
+    "crate::bed_sleep"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "day_cycle.rs": {
+   "paths": [
+    "crate::day_cycle"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "portal.rs": {
+   "paths": [
+    "crate::portal"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "difficulty.rs": {
+   "paths": [
+    "crate::difficulty"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "entity_effects.rs": {
+   "paths": [
+    "crate::entity_effects"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "entity_poses.rs": {
+   "paths": [
+    "crate::entity_poses"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "entity_pushing.rs": {
+   "paths": [
+    "crate::entity_pushing"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "falling_block.rs": {
+   "paths": [
+    "crate::falling_block"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "fire_overlay.rs": {
+   "paths": [
+    "crate::fire_overlay"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "fox.rs": {
+   "paths": [
+    "crate::fox"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "particle_sprites.rs": {
+   "paths": [
+    "crate::particle_sprites"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "profiling.rs": {
+   "paths": [
+    "crate::profiling"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "spawning.rs": {
+   "paths": [
+    "crate::spawning"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "splash.rs": {
+   "paths": [
+    "crate::splash"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "statistics.rs": {
+   "paths": [
+    "crate::statistics"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "tile_renderer.rs": {
+   "paths": [
+    "crate::tile_renderer"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "boot_alg.rs": {
+   "paths": [
+    "crate::boot_alg"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "browser.rs": {
+   "paths": [
+    "crate::browser"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "browser_alg.rs": {
+   "paths": [
+    "crate::browser_alg"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "entity_render_alg.rs": {
+   "paths": [
+    "crate::entity_render_alg"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "entity_renderer.rs": {
+   "paths": [
+    "crate::entity_renderer"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "hand_renderer.rs": {
+   "paths": [
+    "crate::hand_renderer"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "item_renderer.rs": {
+   "paths": [
+    "crate::item_renderer"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "main_alg.rs": {
+   "paths": [
+    "crate::main_alg"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "main_boot.rs": {
+   "paths": [
+    "crate::main_boot"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "main_boot2.rs": {
+   "paths": [
+    "crate::main_boot2"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "music_system.rs": {
+   "paths": [
+    "crate::music_system"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "options.rs": {
+   "paths": [
+    "crate::options"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "options_alg.rs": {
+   "paths": [
+    "crate::options_alg"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "options_screen.rs": {
+   "paths": [
+    "crate::options_screen"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "platform.rs": {
+   "paths": [
+    "crate::platform"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "platform_contract.rs": {
+   "paths": [
+    "crate::platform_contract"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "protocol.rs": {
+   "paths": [
+    "crate::protocol"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "protocol_1144.rs": {
+   "paths": [
+    "crate::protocol_1144"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "protocol_1152.rs": {
+   "paths": [
+    "crate::protocol_1152"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "protocol_1152_ids.rs": {
+   "paths": [
+    "crate::protocol_1152_ids"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "sound.rs": {
+   "paths": [
+    "crate::sound"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "sound_alg2.rs": {
+   "paths": [
+    "crate::sound_alg2"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "wasm_alg.rs": {
+   "paths": [
+    "crate::wasm_alg"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "webgl2.rs": {
+   "paths": [
+    "crate::webgl2"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "webgl2_alg.rs": {
+   "paths": [
+    "crate::webgl2_alg"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "webgpu.rs": {
+   "paths": [
+    "crate::webgpu"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "webgpu_math.rs": {
+   "paths": [
+    "crate::webgpu_math"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "widgets.rs": {
+   "paths": [
+    "crate::widgets"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "widgets_alg.rs": {
+   "paths": [
+    "crate::widgets_alg"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "widgets_alg2.rs": {
+   "paths": [
+    "crate::widgets_alg2"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "widgets_alg3.rs": {
+   "paths": [
+    "crate::widgets_alg3"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "net/connection.rs": {
+   "paths": [
+    "crate::net::connection"
+   ],
+   "gated": false,
+   "missing": false
+  },
+  "world/chunk.rs": {
+   "paths": [
+    "crate::world::chunk"
+   ],
+   "gated": false,
+   "missing": false
+  }
+ }
+}

@@ -1,0 +1,66 @@
+error: expected identifier, found reserved identifier `_`
+error: unexpected token: `...`
+error: expected identifier, found `;`
+error: cannot find macro `json` in this scope
+error: cannot find macro `json` in this scope
+error: cannot find macro `json` in this scope
+error: cannot find macro `json` in this scope
+error: cannot find attribute `wasm_bindgen` in this scope
+error: cannot find attribute `wasm_bindgen` in this scope
+error: cannot find attribute `wasm_bindgen` in this scope
+error: cannot find attribute `wasm_bindgen` in this scope
+error: cannot find attribute `wasm_bindgen` in this scope
+error[E0424]: cannot find value `self` in this scope
+error[E0425]: cannot find type `JsValue` in this scope
+error[E0425]: cannot find value `SHULKER_PUSH` in this scope
+error[E0425]: cannot find type `Target` in this scope
+error[E0425]: cannot find type `Target` in this scope
+error[E0425]: cannot find type `Game` in module `crate::game`
+error[E0425]: cannot find function `relative_hardness` in module `super`
+error[E0425]: cannot find type `Target` in this scope
+error[E0425]: cannot find type `Target` in this scope
+error[E0425]: cannot find type `Game` in module `crate::game`
+error[E0425]: cannot find type `Target` in this scope
+error[E0425]: cannot find type `Target` in this scope
+error[E0425]: cannot find type `Target` in this scope
+error[E0425]: cannot find type `Target` in this scope
+error[E0425]: cannot find type `Target` in this scope
+error[E0425]: cannot find type `Target` in this scope
+error[E0425]: cannot find type `BlockInfo` in this scope
+error[E0405]: cannot find trait `WorldInterface` in this scope
+error[E0425]: cannot find type `Game` in module `crate::game`
+error[E0425]: cannot find type `Game` in module `crate::game`
+error[E0425]: cannot find type `Game` in module `crate::game`
+error[E0405]: cannot find trait `WorldInterface` in this scope
+error[E0425]: cannot find type `Game` in module `crate::game`
+error[E0433]: cannot find `alloc` in the list of imported crates
+error[E0433]: cannot find `alloc` in the list of imported crates
+error[E0433]: cannot find `alloc` in the list of imported crates
+error[E0433]: cannot find `alloc` in the list of imported crates
+error[E0433]: cannot find `alloc` in the list of imported crates
+error[E0425]: cannot find type `Lazy` in this scope
+error[E0277]: the trait bound `Result<std::option::Option<serde_json::Value>, wasm_bindgen::JsValue>: ReturnWasmAbi` is not satisfied
+    = note: this error originates in the attribute macro `wasm_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+error[E0277]: the trait bound `wasm_bindgen::JsValue: RefMutFromWasmAbi` is not satisfied
+   = note: this error originates in the attribute macro `wasm_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+error[E0277]: the size for values of type `dyn FnMut(&str, &[String]) -> String + Send + Sync` cannot be known at compilation time
+error[E0277]: the trait bound `WaterFogState: FromWasmAbi` is not satisfied
+             AggregateError
+   = note: this error originates in the attribute macro `wasm_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+error[E0277]: the trait bound `WaterFogTransition: OptionFromWasmAbi` is not satisfied
+             AggregateError
+   = note: this error originates in the attribute macro `wasm_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+error[E0277]: the trait bound `WaterFogResult: IntoWasmAbi` is not satisfied
+             &'__wbg_ref AggregateError
+   = note: this error originates in the attribute macro `wasm_bindgen` (in Nightly builds, run with -Z macro-backtrace for more info)
+error[E0277]: the trait bound `EffectState: IntoWasmAbi` is not satisfied
+              &'__wbg_ref AggregateError
+    = note: this error originates in the attribute macro `wasm_bindgen::prelude::__wasm_bindgen_class_marker` (in Nightly builds, run with -Z macro-backtrace for more info)
+error[E0277]: the trait bound `EffectState: RefFromWasmAbi` is not satisfied
+              AggregateError
+    = note: this error originates in the attribute macro `wasm_bindgen::prelude::__wasm_bindgen_class_marker` (in Nightly builds, run with -Z macro-backtrace for more info)
+error[E0433]: cannot find type `JsValue` in this scope
+error[E0433]: cannot find type `Lazy` in this scope
+Some errors have detailed explanations: E0277, E0405, E0424, E0425, E0433.
+For more information about an error, try `rustc --explain E0277`.
+error: could not compile `mcjs-core` (lib) due to 56 previous errors; 16 warnings emitted

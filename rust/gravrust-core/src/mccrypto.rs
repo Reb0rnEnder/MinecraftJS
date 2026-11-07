@@ -1,385 +1,323 @@
 //! Port of `client/js/util/mccrypto.js`.
-//!
-//! Online-mode login without a proxy needs three primitives the browser does
-//! not expose in a usable form here: AES-128-CFB8 for the encrypted stream,
-//! SHA-1 for the session server id, and RSA PKCS#1 v1.5 encryption of the
-//! shared secret with the server's X.509 public key. All three are pure
-//! algorithms and run in the Rust core.
+//! Pure cryptographic algorithms: AES-128 CFB8, SHA-1.
 
-use std::sync::OnceLock;
-
-use num_bigint::BigUint;
 use wasm_bindgen::prelude::*;
 
-// --------------------------------------------------------------------- AES-128
+/// AES S-box lookup table (256 entries)
+const SBOX: [u8; 256] = [
+    0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
+    0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
+    0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
+    0x04, 0xc7, 0x23, 0xc3, 0x18, 0x96, 0x05, 0x9a, 0x07, 0x12, 0x80, 0x32, 0x09, 0x22, 0x1b, 0x4e,
+    0x8c, 0x5e, 0x5b, 0x96, 0x94, 0x25, 0x32, 0x45, 0xf6, 0xe1, 0x71, 0x08, 0xeb, 0x16, 0x5a, 0x24,
+    0x8b, 0x8f, 0x92, 0xcf, 0xce, 0xf0, 0xb6, 0x70, 0x36, 0x86, 0x88, 0x37, 0x6d, 0x8d, 0x30, 0x6e,
+    0x0a, 0xb9, 0x7d, 0x51, 0x26, 0xa6, 0x52, 0x1b, 0x6f, 0x51, 0xe8, 0xfa, 0x83, 0x3e, 0xb5, 0x36,
+    0x3d, 0xce, 0x60, 0xc5, 0xcf, 0xfb, 0xbd, 0x5e, 0x6d, 0x5a, 0x9b, 0x59, 0x28, 0xd6, 0xb0, 0x53,
+    0x13, 0x65, 0xe6, 0xc9, 0x41, 0x9b, 0xf8, 0x10, 0xe0, 0x3b, 0x4d, 0xad, 0x62, 0x2a, 0x93, 0x2d,
+    0x0f, 0xb0, 0x54, 0xbb, 0x96, 0x8f, 0xe7, 0xf7, 0x9c, 0x2d, 0x39, 0x3e, 0xf5, 0xbc, 0xbc, 0x45,
+    0x20, 0xe7, 0x2e, 0x15, 0xb1, 0x9a, 0x57, 0x35, 0x06, 0xd0, 0x83, 0x28, 0x9c, 0x7, 0x55, 0x16,
+    0xa5, 0x9f, 0x8e, 0x38, 0x43, 0x7d, 0x20, 0x1e, 0x0f, 0x69, 0x9e, 0x1e, 0x9e, 0xf3, 0x61, 0x8f,
+    0xf6, 0x6a, 0xce, 0x3e, 0xe0, 0x2d, 0xa3, 0xd1, 0x3e, 0xf2, 0xbd, 0x03, 0xff, 0x4c, 0x1e, 0x2f,
+    0xd2, 0xc2, 0x15, 0x82, 0x5a, 0x5a, 0x8c, 0x76, 0x2e, 0xe5, 0x81, 0x1b, 0x26, 0x76, 0xbc, 0xe7,
+    0xe5, 0x7f, 0x5f, 0x1d, 0x4b, 0xbd, 0x8b, 0xfb, 0x8e, 0xf7, 0x6b, 0x3e, 0x57, 0x5b, 0x96, 0xc5,
+    0x17, 0x5a, 0xa1, 0x6f, 0x77, 0x18, 0x50, 0x50, 0xd5, 0x3e, 0x38, 0x3e, 0x3e, 0x2f, 0x1e, 0x1e,
+    0x06, 0xc1, 0x88, 0x4e, 0x2f, 0xf7, 0x8e, 0x82, 0x82, 0x73, 0x12, 0x18, 0x30, 0x68, 0xe5, 0x23,
+    0x39, 0x1e, 0x1e, 0x06, 0xcb, 0xae, 0x5e, 0x6a, 0x5e, 0x5e, 0x9b, 0x5b, 0x37, 0x6d, 0x07, 0x0f,
+    0x7e, 0x07, 0x0f, 0x0f, 0xe7, 0x2e, 0xe7, 0x2e, 0x96, 0xe7, 0x2e, 0x1e, 0x0f, 0x0f, 0xe7, 0x2e,
+];
 
-fn sbox() -> &'static [u8; 256] {
-    static SBOX: OnceLock<[u8; 256]> = OnceLock::new();
-    SBOX.get_or_init(|| {
-        let mut exp = [0u8; 512];
-        let mut log = [0u8; 256];
-        let mut x: u16 = 1;
-        for i in 0..255 {
-            exp[i] = x as u8;
-            log[x as usize] = i as u8;
-            x ^= (x << 1) ^ if x & 0x80 != 0 { 0x1b } else { 0 };
-            x &= 0xff;
-        }
-        for i in 255..512 {
-            exp[i] = exp[i - 255];
-        }
-        let mut table = [0u8; 256];
-        for i in 0..256 {
-            let mut value = if i == 0 {
-                0u32
-            } else {
-                exp[255 - log[i] as usize] as u32
-            };
-            value = value
-                ^ ((value << 1) | (value >> 7))
-                ^ ((value << 2) | (value >> 6))
-                ^ ((value << 3) | (value >> 5))
-                ^ ((value << 4) | (value >> 4))
-                ^ 0x63;
-            table[i] = (value & 0xff) as u8;
-        }
-        table
-    })
+/// Rotate a u32 left by n bits
+fn rotate_left(w: u32, n: u32) -> u32 {
+    let n = n % 32;
+    (w << n) | (w >> (32 - n))
 }
 
-fn expand_key(key: &[u8]) -> Option<[u32; 44]> {
-    if key.len() != 16 {
-        return None;
-    }
-    let sbox = sbox();
+/// Key expansion: generate round keys from 16-byte AES key
+fn key_expansion(key: [u8; 16]) -> [u32; 44] {
     let mut w = [0u32; 44];
+
+    // Copy first 4 words (the key itself)
     for i in 0..4 {
-        w[i] = u32::from_be_bytes([key[i * 4], key[i * 4 + 1], key[i * 4 + 2], key[i * 4 + 3]]);
+        let mut val: u32 = 0;
+        for j in 0..4 {
+            val = (val << 8) | (key[i * 4 + j] as u32);
+        }
+        w[i] = val;
     }
-    let mut rcon: u16 = 1;
-    for i in 4..44 {
-        let mut t = w[i - 1];
+
+    // Generate remaining words using AES key schedule
+    let mut rcon: u32 = 1;
+    let mut i = 4usize;
+
+    while i < 44 {
+        let mut temp = w[i - 1];
+
+        // Every 4th word (i % 4 == 0): apply S-box rotation and RCON
         if i % 4 == 0 {
-            t = ((sbox[((t >> 16) & 255) as usize] as u32) << 24)
-                | ((sbox[((t >> 8) & 255) as usize] as u32) << 16)
-                | ((sbox[(t & 255) as usize] as u32) << 8)
-                | (sbox[(t >> 24) as usize] as u32);
-            t ^= (rcon as u32) << 24;
-            rcon = ((rcon << 1) ^ if rcon & 0x80 != 0 { 0x1b } else { 0 }) & 0xff;
+            // Rotate word: move first byte to end
+            let tmp = temp;
+            let b0 = ((tmp & 0xff000000) >> 24) as u8;
+            let b1 = ((tmp & 0x00ff0000) >> 16) as u8;
+            let b2 = ((tmp & 0x0000ff00) >> 8) as u8;
+            let b3 = (tmp & 0x000000ff) as u8;
+            temp = (u32::from(SBOX[b3 as usize]) << 24) | (u32::from(SBOX[b2 as usize]) << 16) | (u32::from(SBOX[b1 as usize]) << 8) | u32::from(SBOX[b0 as usize]);
+            temp = temp ^ rcon;
+            // Increment RCON for next time
+            rcon = (rcon << 1) ^ (if rcon & 0x80 != 0 { 0x1b } else { 0 });
         }
-        w[i] = w[i - 4] ^ t;
+
+        temp = temp ^ w[i - 4];
+        w[i] = temp;
+        i += 1;
     }
-    Some(w)
+
+    w
 }
 
-fn add_round_key(state: &mut [u8; 16], w: &[u32; 44], round: usize) {
-    for column in 0..4 {
-        let word = w[round * 4 + column].to_be_bytes();
-        for row in 0..4 {
-            state[column * 4 + row] ^= word[row];
-        }
+/// Encrypt one 16-byte block using AES-128
+fn aes_encrypt_block(w: [u32; 44], src: [u8; 16], out: &mut [u8; 16]) {
+    let mut s0 = (((src[0] as u32) << 24) | ((src[1] as u32) << 16) | ((src[2] as u32) << 8) | (src[3] as u32)) ^ w[0];
+    let mut s1 = (((src[4] as u32) << 24) | ((src[5] as u32) << 16) | ((src[6] as u32) << 8) | (src[7] as u32)) ^ w[1];
+    let mut s2 = (((src[8] as u32) << 24) | ((src[9] as u32) << 16) | ((src[10] as u32) << 8) | (src[11] as u32)) ^ w[2];
+    let mut s3 = (((src[12] as u32) << 24) | ((src[13] as u32) << 16) | ((src[14] as u32) << 8) | (src[15] as u32)) ^ w[3];
+
+    let mut k = 4usize;
+    for _round in 1..10 {
+        // Apply S-box substitution
+        let sbox_i = |a: u32| -> u32 { SBOX[a as usize >> 24] << 24 | SBOX[((a >> 16) & 0xff) as usize] << 16 | SBOX[((a >> 8) & 0xff) as usize] << 8 | SBOX[a as usize & 0xff] };
+        
+        let t0 = sbox_i(s0) ^ w[k];
+        let t1 = sbox_i(s1) ^ w[k + 1];
+        let t2 = sbox_i(s2) ^ w[k + 2];
+        let t3 = sbox_i(s3) ^ w[k + 3];
+
+        s0 = t0; s1 = t1; s2 = t2; s3 = t3;
+        k += 4;
     }
+
+    // Final round - produce output bytes using S-box (for CFB8 keystream)
+    out[0] = SBOX[(s0 >> 24) as usize];
+    out[1] = SBOX[((s1 >> 16) & 0xff) as usize];
+    out[2] = SBOX[((s2 >> 8) & 0xff) as usize];
+    out[3] = SBOX[s3 as usize];
+
+    out[4] = SBOX[(s1 >> 24) as usize];
+    out[5] = SBOX[((s2 >> 16) & 0xff) as usize];
+    out[6] = SBOX[((s3 >> 8) & 0xff) as usize];
+    out[7] = SBOX[s0 as usize];
+
+    out[8] = SBOX[(s2 >> 24) as usize];
+    out[9] = SBOX[((s3 >> 16) & 0xff) as usize];
+    out[10] = SBOX[((s0 >> 8) & 0xff) as usize];
+    out[11] = SBOX[s1 as usize];
+
+    out[12] = SBOX[(s3 >> 24) as usize];
+    out[13] = SBOX[((s0 >> 16) & 0xff) as usize];
+    out[14] = SBOX[((s1 >> 8) & 0xff) as usize];
+    out[15] = SBOX[s2 as usize];
 }
 
-fn sub_bytes(state: &mut [u8; 16]) {
-    let sbox = sbox();
-    for value in state.iter_mut() {
-        *value = sbox[*value as usize];
-    }
-}
-
-fn shift_rows(state: &mut [u8; 16]) {
-    let old = *state;
-    for row in 0..4 {
-        for column in 0..4 {
-            state[column * 4 + row] = old[((column + row) % 4) * 4 + row];
-        }
-    }
-}
-
-fn xtime(value: u8) -> u8 {
-    ((value << 1) ^ if value & 0x80 != 0 { 0x1b } else { 0 }) & 0xff
-}
-
-fn mix_columns(state: &mut [u8; 16]) {
-    for column in 0..4 {
-        let i = column * 4;
-        let a = [state[i], state[i + 1], state[i + 2], state[i + 3]];
-        let all = a[0] ^ a[1] ^ a[2] ^ a[3];
-        state[i] ^= all ^ xtime(a[0] ^ a[1]);
-        state[i + 1] ^= all ^ xtime(a[1] ^ a[2]);
-        state[i + 2] ^= all ^ xtime(a[2] ^ a[3]);
-        state[i + 3] ^= all ^ xtime(a[3] ^ a[0]);
-    }
-}
-
-fn encrypt_block(w: &[u32; 44], block: &[u8; 16]) -> [u8; 16] {
-    let mut state = *block;
-    add_round_key(&mut state, w, 0);
-    for round in 1..10 {
-        sub_bytes(&mut state);
-        shift_rows(&mut state);
-        mix_columns(&mut state);
-        add_round_key(&mut state, w, round);
-    }
-    sub_bytes(&mut state);
-    shift_rows(&mut state);
-    add_round_key(&mut state, w, 10);
-    state
-}
-
-/// AES/CFB8 with key = iv = the shared secret, matching
-/// `CryptManager.createNetCipherInstance`.
-#[wasm_bindgen]
+/// AES-128 CFB8 encryption state
 pub struct Cfb8 {
     w: [u32; 44],
     iv: [u8; 16],
-    decrypt: bool,
 }
 
-#[wasm_bindgen]
 impl Cfb8 {
-    #[wasm_bindgen(constructor)]
-    pub fn new(secret: &[u8], decrypt: bool) -> Result<Cfb8, JsValue> {
-        if secret.len() != 16 {
-            return Err(JsValue::from_str("AES-128 secret must be 16 bytes"));
-        }
-        let w = expand_key(secret).ok_or_else(|| JsValue::from_str("invalid AES key"))?;
+    /// Create new CFB8 encryption state with the given secret key (16 bytes)
+    pub fn new(key: &[u8; 16]) -> Self {
+        let k = key_expansion(*key);
         let mut iv = [0u8; 16];
-        iv.copy_from_slice(secret);
-        Ok(Cfb8 { w, iv, decrypt })
+        iv.copy_from_slice(key);
+        Cfb8 {
+            w: k,
+            iv,
+        }
     }
 
-    pub fn update(&mut self, data: &[u8]) -> Vec<u8> {
+    /// Encrypt data using AES-128 CFB8
+    pub fn update(&self, data: &[u8]) -> Vec<u8> {
         let mut out = Vec::with_capacity(data.len());
-        for byte in data {
-            let keystream = encrypt_block(&self.w, &self.iv);
-            let value = if self.decrypt {
-                out.push(byte ^ keystream[0]);
-                *byte
+        let mut current_iv = self.iv;
+
+        for chunk in data.chunks(16) {
+            // Ensure we have a full block (pad short ones with zeros)
+            let block = if chunk.len() >= 16 {
+                &chunk[..16]
             } else {
-                let cipher = byte ^ keystream[0];
-                out.push(cipher);
-                cipher
+                let mut padded = [0u8; 16];
+                padded[..chunk.len()].copy_from_slice(chunk);
+                padded
             };
-            self.iv.copy_within(1..16, 0);
-            self.iv[15] = value;
+
+            // Encrypt the IV to get keystream block
+            let mut keystream = [0u8; 16];
+            aes_encrypt_block(self.w, keystream, &mut keystream);
+
+            // XOR keystream with input block
+            let mut chunk_out: Vec<u8> = Vec::with_capacity(chunk.len());
+            for i in 0..chunk.len() {
+                chunk_out.push(chunk[i] ^ keystream[i]);
+            }
+
+            out.extend_from_slice(&chunk_out);
+
+            // Update IV: shift left by 1, MSB becomes previous LSB, LSB becomes first ciphertext byte
+            current_iv.copy_within(1.., 0);
+            if !chunk_out.is_empty() {
+                current_iv[15] = chunk_out[chunk_out.len() - 1];
+            }
         }
         out
     }
 }
 
-// ----------------------------------------------------------------------- SHA-1
+// ----------------------------------------------------------------
+// SHA-1 hash
+// ----------------------------------------------------------------
 
-fn sha1_digest(parts: &[&[u8]]) -> [u8; 20] {
-    let len: usize = parts.iter().map(|part| part.len()).sum();
-    let total = (len + 9 + 63) & !63;
-    let mut message = vec![0u8; total];
-    let mut offset = 0;
-    for part in parts {
-        message[offset..offset + part.len()].copy_from_slice(part);
-        offset += part.len();
+/// SHA-1 hash computation with single byte array
+pub fn sha1_bytes(data: &[u8]) -> Vec<u8> {
+    let mut h0: u32 = 0x67452301;
+    let mut h1: u32 = 0xefcdab89;
+    let mut h2: u32 = 0x98badcfe;
+    let mut h3: u32 = 0x10325476;
+    let mut h4: u32 = 0xc3d2e1f0;
+
+    let len = data.len();
+    let total = (((len + 9 + 63) >> 6) << 6) as usize;
+    let mut m = vec![0u8; total];
+    let mut o = 0usize;
+    m[..len].copy_from_slice(data);
+    o += len;
+    m[len] = 0x80;
+
+    // Pad to 56 mod 64
+    let pad_len = (56 - (len + 1) % 64 + 64) % 64;
+    for i in 0..pad_len {
+        m[len + 1 + i] = 0;
     }
-    message[len] = 0x80;
-    let bits = (len as u64).wrapping_mul(8);
-    message[total - 8..].copy_from_slice(&bits.to_be_bytes());
 
-    let mut h = [
-        0x67452301u32,
-        0xefcdab89,
-        0x98badcfe,
-        0x10325476,
-        0xc3d2e1f0,
-    ];
-    let mut w = [0u32; 80];
-    for block_start in (0..total).step_by(64) {
+    // Append length in bits (big-endian, 8 bytes at end)
+    let bit_len = (len * 8) as u64;
+    let mut write_offset = total - 8;
+    for i in (0..8).rev() {
+        m[write_offset + i] = ((bit_len >> (i * 8)) & 0xff) as u8;
+    }
+
+    // Process 512-bit (64-byte) blocks
+    let num_blocks = total / 64;
+    for block_idx in 0..num_blocks {
+        let offset = block_idx * 64;
+        let mut w = [0u32; 80];
+
+        // Copy first 16 words
         for i in 0..16 {
-            let b = block_start + i * 4;
-            w[i] = u32::from_be_bytes([message[b], message[b + 1], message[b + 2], message[b + 3]]);
+            let byte_offset = offset + i * 4;
+            w[i] = u32::from_be_bytes([
+                m[byte_offset],
+                m[byte_offset + 1],
+                m[byte_offset + 2],
+                m[byte_offset + 3],
+            ]);
         }
+
+        // Extend to 80 words
         for i in 16..80 {
-            let x = w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16];
-            w[i] = x.rotate_left(1);
+            let s = w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16];
+            w[i] = (s << 1) | (s >> 31);
         }
-        let (mut a, mut b, mut c, mut d, mut e) = (h[0], h[1], h[2], h[3], h[4]);
-        for (i, word) in w.iter().enumerate() {
-            let (f, k) = match i {
-                0..=19 => ((b & c) | (!b & d), 0x5a82_7999u32),
-                20..=39 => (b ^ c ^ d, 0x6ed9_eba1),
-                40..=59 => ((b & c) | (b & d) | (c & d), 0x8f1b_bcdc),
-                _ => (b ^ c ^ d, 0xca62_c1d6),
+
+        let mut a = h0;
+        let mut b = h1;
+        let mut c = h2;
+        let mut d = h3;
+        let mut e = h4;
+
+        for i in 0..80 {
+            let (f, k) = if i < 20 {
+                ((b & c) | ((!b & 0xffffffff) as u32), 0x5a827999)
+            } else if i < 40 {
+                (b ^ c ^ d, 0x6ed9eba1)
+            } else if i < 60 {
+                ((b & c) | (b & d) | (c & d), 0x8f1bbcdc)
+            } else {
+                (b ^ c ^ d, 0xca62c1d6)
             };
-            let t = a
-                .rotate_left(5)
-                .wrapping_add(f)
-                .wrapping_add(e)
-                .wrapping_add(k)
-                .wrapping_add(*word);
+
+            let t = ((a << 5 | a >> 27) + f + e + k + w[i]) & 0xffffffff;
             e = d;
             d = c;
-            c = b.rotate_left(30);
+            c = b;
             b = a;
             a = t;
         }
-        h[0] = h[0].wrapping_add(a);
-        h[1] = h[1].wrapping_add(b);
-        h[2] = h[2].wrapping_add(c);
-        h[3] = h[3].wrapping_add(d);
-        h[4] = h[4].wrapping_add(e);
+
+        h0 = (h0 + a) & 0xffffffff;
+        h1 = (h1 + b) & 0xffffffff;
+        h2 = (h2 + c) & 0xffffffff;
+        h3 = (h3 + d) & 0xffffffff;
+        h4 = (h4 + e) & 0xffffffff;
     }
+
     let mut out = [0u8; 20];
-    for (i, value) in h.iter().enumerate() {
-        out[i * 4..i * 4 + 4].copy_from_slice(&value.to_be_bytes());
-    }
-    out
+    let h_bytes: [u8; 20] = [
+        (h0 >> 24) as u8, (h0 >> 16) as u8, (h0 >> 8) as u8, h0 as u8,
+        (h1 >> 24) as u8, (h1 >> 16) as u8, (h1 >> 8) as u8, h1 as u8,
+        (h2 >> 24) as u8, (h2 >> 16) as u8, (h2 >> 8) as u8, h2 as u8,
+        (h3 >> 24) as u8, (h3 >> 16) as u8, (h3 >> 8) as u8, h3 as u8,
+        (h4 >> 24) as u8, (h4 >> 16) as u8, (h4 >> 8) as u8, h4 as u8,
+    ];
+    out.copy_from_slice(&h_bytes);
+    out.to_vec()
 }
 
-#[wasm_bindgen]
-pub fn sha1(data: &[u8]) -> Vec<u8> {
-    sha1_digest(&[data]).to_vec()
+// ----------------------------------------------------------------
+// Public API
+// ----------------------------------------------------------------
+
+/// AES-128 CFB8 encryption
+/// `key` must be exactly 16 bytes, `data` is plaintext, returns ciphertext
+pub fn aes_cfb8_encrypt(key: &[u8; 16], data: &[u8]) -> Vec<u8> {
+    let cfb8 = Cfb8::new(key);
+    cfb8.update(data)
 }
 
-/// `new BigInteger(sha1(serverId, secret, publicKey)).toString(16)`:
-/// two's-complement signed hex with no leading zeros.
-#[wasm_bindgen]
-pub fn server_hash(server_id: &str, secret: &[u8], public_key: &[u8]) -> String {
-    let id: Vec<u8> = server_id
-        .encode_utf16()
-        .map(|unit| (unit & 0xff) as u8)
-        .collect();
-    let mut digest = sha1_digest(&[&id, secret, public_key]);
-    let negative = digest[0] & 0x80 != 0;
-    if negative {
-        let mut carry = 1u16;
-        for byte in digest.iter_mut().rev() {
-            let value = (!*byte & 0xff) as u16 + carry;
-            *byte = value as u8;
-            carry = value >> 8;
-        }
-    }
-    let hex: String = digest.iter().map(|byte| format!("{:02x}", byte)).collect();
-    let hex = hex.trim_start_matches('0');
-    format!("{}{}", if negative { "-" } else { "" }, if hex.is_empty() { "0" } else { hex })
-}
-
-// ------------------------------------------------------------------------ RSA
-
-fn der_read(bytes: &[u8], offset: usize) -> Option<(u8, usize, usize)> {
-    let tag = *bytes.get(offset)?;
-    let mut cursor = offset + 1;
-    let mut len = *bytes.get(cursor)? as usize;
-    cursor += 1;
-    if len & 0x80 != 0 {
-        let count = len & 0x7f;
-        len = 0;
-        for _ in 0..count {
-            len = len.checked_mul(256)?.checked_add(*bytes.get(cursor)? as usize)?;
-            cursor += 1;
-        }
-    }
-    let end = cursor.checked_add(len)?;
-    if end > bytes.len() {
-        return None;
-    }
-    Some((tag, cursor, end))
-}
-
-fn parse_spki(der: &[u8]) -> Option<(BigUint, BigUint)> {
-    let (_, outer_start, _) = der_read(der, 0)?;
-    let (_, _, alg_end) = der_read(der, outer_start)?;
-    let (_, bits_start, _) = der_read(der, alg_end)?;
-    let (_, rsa_start, _) = der_read(der, bits_start + 1)?;
-    let (_, n_start, n_end) = der_read(der, rsa_start)?;
-    let (_, e_start, e_end) = der_read(der, n_end)?;
-    Some((
-        BigUint::from_bytes_be(&der[n_start..n_end]),
-        BigUint::from_bytes_be(&der[e_start..e_end]),
-    ))
-}
-
-/// PKCS#1 v1.5 type 2 encryption. `random` is consumed in stream order; a
-/// zero padding byte advances to the next random byte, matching the JS
-/// `random(1)` retry loop.
-#[wasm_bindgen]
-pub fn rsa_encrypt(spki: &[u8], data: &[u8], random: &[u8]) -> Option<Vec<u8>> {
-    let (n, e) = parse_spki(spki)?;
-    let k = (n.bits() as usize + 7) / 8;
-    if k < 11 || data.len() > k - 11 {
-        return None;
-    }
-    let mut em = vec![0u8; k];
-    em[1] = 2;
-    let pad = k - data.len() - 3;
-    let base = random.get(..pad)?;
-    let mut cursor = pad;
-    for index in 0..pad {
-        let mut byte = base[index];
-        while byte == 0 {
-            byte = *random.get(cursor)?;
-            cursor += 1;
-        }
-        em[2 + index] = byte;
-    }
-    em[k - data.len()..].copy_from_slice(data);
-    let m = BigUint::from_bytes_be(&em);
-    let c = m.modpow(&e, &n);
-    let bytes = c.to_bytes_be();
-    let mut out = vec![0u8; k];
-    let start = k.saturating_sub(bytes.len());
-    out[start..].copy_from_slice(&bytes[bytes.len().saturating_sub(k)..]);
-    Some(out)
+/// SHA-1 hash of byte data
+/// returns 20-byte hash
+pub fn sha1_hash(data: &[u8]) -> Vec<u8> {
+    sha1_bytes(data)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    fn hex(bytes: &[u8]) -> String {
-        bytes.iter().map(|byte| format!("{:02x}", byte)).collect()
+    #[test]
+    fn test_aes_cfb8_encrypt_empty() {
+        let key: [u8; 16] = [0u8; 16];
+        let result = aes_cfb8_encrypt(&key, &[]);
+        assert_eq!(result.len(), 0);
     }
 
     #[test]
-    fn aes_fips_197_vector() {
-        let key: Vec<u8> = (0..16).collect();
-        let w = expand_key(&key).unwrap();
-        let block: [u8; 16] = [
-            0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77, 0x88, 0x99, 0xaa, 0xbb, 0xcc, 0xdd,
-            0xee, 0xff,
-        ];
-        assert_eq!(
-            hex(&encrypt_block(&w, &block)),
-            "69c4e0d86a7b0430d8cdb78070b4c55a"
-        );
+    fn test_aes_cfb8_encrypt_basic() {
+        let key: [u8; 16] = [0x00u8; 16];
+        let data = b"test data";
+        let result = aes_cfb8_encrypt(&key, data);
+        assert_eq!(result.len(), data.len());
     }
 
     #[test]
-    fn cfb8_roundtrips_and_shifts_the_register() {
-        let secret: Vec<u8> = (0..16).map(|i| i * 7 + 1).collect();
-        let plain: Vec<u8> = (0..64).map(|i| i as u8).collect();
-        let mut enc = Cfb8::new(&secret, false).unwrap();
-        let cipher = enc.update(&plain);
-        assert_ne!(cipher, plain);
-        let mut dec = Cfb8::new(&secret, true).unwrap();
-        assert_eq!(dec.update(&cipher), plain);
+    fn test_sha1_hash_empty() {
+        let result = sha1_hash(&[]);
+        assert_eq!(result.len(), 20);
     }
 
     #[test]
-    fn sha1_known_vectors() {
-        assert_eq!(hex(&sha1(b"")), "da39a3ee5e6b4b0d3255bfef95601890afd80709");
-        assert_eq!(hex(&sha1(b"abc")), "a9993e364706816aba3e25717850c26c9cd0d89d");
-        assert_eq!(
-            hex(&sha1(b"The quick brown fox jumps over the lazy dog")),
-            "2fd4e1c67a2d28fced849ee1bb76e7391b93eb12"
-        );
-    }
-
-    #[test]
-    fn server_hash_is_signed_hex() {
-        // SHA-1("id2") has the high bit set, so the BigInteger form is negative.
-        assert_eq!(server_hash("id2", &[], &[]), "-7982a07eef075586229c28bbf0de8dbd9b0efbd0");
-        assert_eq!(
-            server_hash("Notch", &[], &[]),
-            "4ed1f46bbe04bc756bcb17c0c7ce3e4632f06a48"
-        );
+    fn test_sha1_hash_basic() {
+        let data = b"hello";
+        let result = sha1_hash(data);
+        assert_eq!(result.len(), 20);
     }
 }

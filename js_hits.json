@@ -1,0 +1,423 @@
+{
+ "EntityFire.rs": [
+  "strict-equalityx2",
+  "js .push(x10"
+ ],
+ "accounts.rs": [
+  "strict-inequalityx1",
+  "js .push(x2"
+ ],
+ "address.rs": [
+  "js .push(x7"
+ ],
+ "advancements.rs": [
+  "strict-equalityx50",
+  "js .push(x2"
+ ],
+ "atlas.rs": [
+  "typeofx1",
+  "strict-equalityx1",
+  "js .push(x3"
+ ],
+ "banner.rs": [
+  "js .push(x17"
+ ],
+ "base64.rs": [
+  "js .push(x7"
+ ],
+ "bee_sound.rs": [
+  "strict-inequalityx1"
+ ],
+ "blocks.rs": [
+  "js .push(x6"
+ ],
+ "book.rs": [
+  "js .push(x5"
+ ],
+ "boot_alg.rs": [
+  "strict-equalityx4",
+  "js .push(x14",
+  "console.log(x5"
+ ],
+ "boxmodel.rs": [
+  "js .push(x45"
+ ],
+ "browser.rs": [
+  "typeofx3",
+  "strict-equalityx19",
+  "strict-inequalityx4",
+  "js .push(x15",
+  "undefinedx12"
+ ],
+ "browser_alg.rs": [
+  "typeofx2",
+  "strict-equalityx20",
+  "strict-inequalityx5",
+  "js .push(x26",
+  "undefinedx6"
+ ],
+ "buffer.rs": [
+  "js .push(x6"
+ ],
+ "chat.rs": [
+  "js .push(x10"
+ ],
+ "chat_hover.rs": [
+  "js .push(x12"
+ ],
+ "chunk.rs": [
+  "js .push(x2"
+ ],
+ "chunk_legacy.rs": [
+  "js .push(x10"
+ ],
+ "command_tree.rs": [
+  "js .push(x16"
+ ],
+ "commands.rs": [
+  "js .push(x21"
+ ],
+ "connection_legacy.rs": [
+  "js .push(x1"
+ ],
+ "container.rs": [
+  "js .push(x4"
+ ],
+ "container_full.rs": [
+  "js .push(x20"
+ ],
+ "containers.rs": [
+  "js .push(x4"
+ ],
+ "crafting.rs": [
+  "js .push(x3"
+ ],
+ "crash.rs": [
+  "js .push(x14"
+ ],
+ "credits.rs": [
+  "js .push(x3"
+ ],
+ "culling.rs": [
+  "js .push(x1",
+  "undefinedx1"
+ ],
+ "debug_lines.rs": [
+  "js .push(x18",
+  "undefinedx1"
+ ],
+ "eagler_textures.rs": [
+  "strict-equalityx1"
+ ],
+ "entities.rs": [
+  "js .push(x9"
+ ],
+ "entity_effects.rs": [
+  "js .push(x22"
+ ],
+ "entity_fire.rs": [
+  "strict-equalityx2",
+  "js .push(x9"
+ ],
+ "entity_models.rs": [
+  "strict-equalityx450",
+  "js .push(x11"
+ ],
+ "entity_render_alg.rs": [
+  "strict-equalityx141",
+  "strict-inequalityx1",
+  "js .push(x11",
+  "undefinedx2"
+ ],
+ "entity_renderer.rs": [
+  "strict-equalityx201",
+  "js .push(x4",
+  "undefinedx1"
+ ],
+ "fire_overlay.rs": [
+  "strict-equalityx1",
+  "js .push(x10"
+ ],
+ "font_providers.rs": [
+  "strict-equalityx3",
+  "js .push(x5"
+ ],
+ "gfx/device.rs": [
+  "js .push(x1"
+ ],
+ "glsl_functions.rs": [
+  "js .push(x20"
+ ],
+ "glsl_preprocess.rs": [
+  "js .push(x16"
+ ],
+ "input.rs": [
+  "js .push(x1"
+ ],
+ "interaction.rs": [
+  "typeofx2",
+  "strict-equalityx95",
+  "strict-inequalityx25"
+ ],
+ "interaction_full.rs": [
+  "strict-equalityx3",
+  "strict-inequalityx2",
+  "js .push(x2"
+ ],
+ "items.rs": [
+  "js .push(x3"
+ ],
+ "jigsaw.rs": [
+  "js .push(x1"
+ ],
+ "jrandom.rs": [
+  "undefinedx1"
+ ],
+ "leash_knot.rs": [
+  "js .push(x1"
+ ],
+ "lib.rs": [
+  "undefinedx3"
+ ],
+ "main_alg.rs": [
+  "typeofx1",
+  "strict-equalityx2",
+  "strict-inequalityx1",
+  "js .push(x32",
+  "undefinedx4",
+  "console.log(x2"
+ ],
+ "main_boot.rs": [
+  "strict-equalityx3",
+  "js .push(x10"
+ ],
+ "main_boot2.rs": [
+  "strict-equalityx2",
+  "js .push(x1",
+  "console.log(x2"
+ ],
+ "mccrypto.rs": [
+  "js .push(x2"
+ ],
+ "mesher.rs": [
+  "js .push(x8"
+ ],
+ "models.rs": [
+  "js .push(x5"
+ ],
+ "music_system.rs": [
+  "strict-equalityx2",
+  "strict-inequalityx2"
+ ],
+ "narrator.rs": [
+  "js .push(x32",
+  "js function(x1"
+ ],
+ "nbt.rs": [
+  "js .push(x28"
+ ],
+ "net/connection.rs": [
+  "js .push(x3"
+ ],
+ "options.rs": [
+  "strict-equalityx8",
+  "strict-inequalityx4",
+  "js .push(x2",
+  "undefinedx10"
+ ],
+ "options_alg.rs": [
+  "strict-equalityx14",
+  "strict-inequalityx4",
+  "js .push(x5",
+  "undefinedx4"
+ ],
+ "options_screen.rs": [
+  "strict-equalityx7",
+  "strict-inequalityx5",
+  "js .push(x22",
+  "undefinedx2"
+ ],
+ "packet_bodies_1144.rs": [
+  "js .push(x9"
+ ],
+ "packs.rs": [
+  "strict-equalityx1"
+ ],
+ "particle_sprites.rs": [
+  "strict-equalityx250"
+ ],
+ "particles.rs": [
+  "strict-equalityx700",
+  "js .push(x10",
+  "js function(x1"
+ ],
+ "pause.rs": [
+  "js .push(x8"
+ ],
+ "pistons.rs": [
+  "strict-equalityx1",
+  "js .push(x2"
+ ],
+ "platform_contract.rs": [
+  "strict-equalityx4",
+  "undefinedx3"
+ ],
+ "profiler.rs": [
+  "js .push(x2"
+ ],
+ "profiling.rs": [
+  "strict-equalityx5",
+  "js .push(x1"
+ ],
+ "protocol.rs": [
+  "strict-equalityx4",
+  "js .push(x13"
+ ],
+ "protocol_1144.rs": [
+  "js .push(x90",
+  "undefinedx1"
+ ],
+ "protocol_1152.rs": [
+  "strict-equalityx1",
+  "js .push(x19",
+  "undefinedx1"
+ ],
+ "recipe_book.rs": [
+  "js .push(x2"
+ ],
+ "recipebook.rs": [
+  "js .push(x18"
+ ],
+ "recipes.rs": [
+  "js .push(x18"
+ ],
+ "scaffolding.rs": [
+  "strict-equalityx1",
+  "strict-inequalityx1"
+ ],
+ "scoreboard.rs": [
+  "js .push(x3"
+ ],
+ "screen_containers.rs": [
+  "strict-equalityx4",
+  "strict-inequalityx3",
+  "js .push(x35",
+  "undefinedx2"
+ ],
+ "serverpacks.rs": [
+  "strict-equalityx2",
+  "strict-inequalityx4"
+ ],
+ "shader_library.rs": [
+  "js .push(x3"
+ ],
+ "shader_lighting.rs": [
+  "undefinedx1"
+ ],
+ "shader_lighting_alg.rs": [
+  "strict-inequalityx1",
+  "undefinedx1"
+ ],
+ "shader_options.rs": [
+  "js .push(x3"
+ ],
+ "snbt.rs": [
+  "js .push(x16"
+ ],
+ "software.rs": [
+  "strict-inequalityx1",
+  "js .push(x6",
+  "undefinedx2"
+ ],
+ "sound.rs": [
+  "typeofx2",
+  "strict-equalityx7",
+  "js .push(x6",
+  "undefinedx3"
+ ],
+ "sound_alg2.rs": [
+  "strict-equalityx1"
+ ],
+ "spectator.rs": [
+  "strict-inequalityx1",
+  "js .push(x2"
+ ],
+ "tags.rs": [
+  "js .push(x1"
+ ],
+ "technical.rs": [
+  "js .push(x3"
+ ],
+ "technical_packets.rs": [
+  "js .push(x3"
+ ],
+ "text_editor.rs": [
+  "strict-equalityx1",
+  "strict-inequalityx3",
+  "js .push(x6"
+ ],
+ "tile_renderer.rs": [
+  "js .push(x10"
+ ],
+ "utf8.rs": [
+  "js .push(x5"
+ ],
+ "uuid.rs": [
+  "js .push(x2"
+ ],
+ "wasm_alg.rs": [
+  "typeofx1",
+  "strict-equalityx2",
+  "strict-inequalityx2",
+  "js .push(x1"
+ ],
+ "webgl2.rs": [
+  "strict-equalityx1",
+  "strict-inequalityx1",
+  "js .push(x2",
+  "undefinedx1"
+ ],
+ "webgl2_alg.rs": [
+  "strict-equalityx6",
+  "strict-inequalityx4",
+  "js .push(x7",
+  "undefinedx2"
+ ],
+ "webgpu.rs": [
+  "strict-equalityx1",
+  "js .push(x8"
+ ],
+ "webgpu_math.rs": [
+  "js .push(x1"
+ ],
+ "widgets.rs": [
+  "typeofx2",
+  "strict-equalityx4",
+  "strict-inequalityx3",
+  "js .push(x2"
+ ],
+ "widgets_alg.rs": [
+  "strict-equalityx2"
+ ],
+ "widgets_alg2.rs": [
+  "strict-equalityx2",
+  "strict-inequalityx4",
+  "js .push(x1",
+  "undefinedx1"
+ ],
+ "widgets_alg3.rs": [
+  "strict-equalityx5"
+ ],
+ "wisp.rs": [
+  "js .push(x7"
+ ],
+ "world/world_core.rs": [
+  "js .push(x2"
+ ],
+ "world_collision.rs": [
+  "js .push(x6"
+ ],
+ "zip.rs": [
+  "js .push(x1"
+ ]
+}

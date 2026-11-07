@@ -1,0 +1,874 @@
+{
+ "address.rs": {
+  "used_items": 1,
+  "total_items": 5,
+  "used_by": [
+   "main_boot.rs"
+  ]
+ },
+ "advancements.rs": {
+  "used_items": 3,
+  "total_items": 20,
+  "used_by": [
+   "bee_sound.rs",
+   "boxmodel.rs",
+   "recipebook.rs"
+  ]
+ },
+ "banner.rs": {
+  "used_items": 0,
+  "total_items": 11,
+  "used_by": []
+ },
+ "base64.rs": {
+  "used_items": 1,
+  "total_items": 3,
+  "used_by": [
+   "browser_alg.rs"
+  ]
+ },
+ "base85.rs": {
+  "used_items": 1,
+  "total_items": 1,
+  "used_by": [
+   "browser_alg.rs"
+  ]
+ },
+ "bed_sleep.rs": {
+  "used_items": 6,
+  "total_items": 65,
+  "used_by": [
+   "browser.rs",
+   "day_cycle.rs",
+   "falling_block.rs",
+   "fox.rs"
+  ]
+ },
+ "bee_sound.rs": {
+  "used_items": 0,
+  "total_items": 12,
+  "used_by": []
+ },
+ "biome_zoom.rs": {
+  "used_items": 1,
+  "total_items": 2,
+  "used_by": [
+   "buffer.rs"
+  ]
+ },
+ "biomes.rs": {
+  "used_items": 3,
+  "total_items": 4,
+  "used_by": [
+   "mesher.rs"
+  ]
+ },
+ "blocks.rs": {
+  "used_items": 14,
+  "total_items": 29,
+  "used_by": [
+   "blockstates.rs",
+   "boxmodel.rs",
+   "entity_render_alg.rs",
+   "falling_block.rs",
+   "mesher.rs"
+  ]
+ },
+ "blockstates.rs": {
+  "used_items": 1,
+  "total_items": 17,
+  "used_by": [
+   "blocks.rs"
+  ]
+ },
+ "boot_alg.rs": {
+  "used_items": 1,
+  "total_items": 9,
+  "used_by": [
+   "narrator.rs"
+  ]
+ },
+ "boxmodel.rs": {
+  "used_items": 4,
+  "total_items": 19,
+  "used_by": [
+   "advancements.rs",
+   "entity_models.rs",
+   "tile_renderer.rs"
+  ]
+ },
+ "browser.rs": {
+  "used_items": 12,
+  "total_items": 66,
+  "used_by": [
+   "boot_alg.rs",
+   "browser_alg.rs",
+   "main_alg.rs",
+   "platform_contract.rs",
+   "webgpu.rs"
+  ]
+ },
+ "browser_alg.rs": {
+  "used_items": 23,
+  "total_items": 47,
+  "used_by": [
+   "address.rs",
+   "browser.rs"
+  ]
+ },
+ "buffer.rs": {
+  "used_items": 14,
+  "total_items": 15,
+  "used_by": [
+   "address.rs",
+   "banner.rs",
+   "biome_zoom.rs",
+   "chunk_legacy.rs",
+   "command_tree.rs"
+  ]
+ },
+ "camera.rs": {
+  "used_items": 2,
+  "total_items": 3,
+  "used_by": [
+   "bed_sleep.rs",
+   "item_renderer.rs"
+  ]
+ },
+ "chunk.rs": {
+  "used_items": 7,
+  "total_items": 11,
+  "used_by": [
+   "chunk_legacy.rs",
+   "world/chunk.rs",
+   "world/world_core.rs"
+  ]
+ },
+ "chunk_legacy.rs": {
+  "used_items": 2,
+  "total_items": 12,
+  "used_by": [
+   "blockstates.rs",
+   "mesher.rs"
+  ]
+ },
+ "collision.rs": {
+  "used_items": 1,
+  "total_items": 2,
+  "used_by": [
+   "world_collision.rs"
+  ]
+ },
+ "command_tree.rs": {
+  "used_items": 1,
+  "total_items": 1,
+  "used_by": [
+   "protocol_1144.rs"
+  ]
+ },
+ "container.rs": {
+  "used_items": 7,
+  "total_items": 17,
+  "used_by": [
+   "container_full.rs"
+  ]
+ },
+ "container_full.rs": {
+  "used_items": 2,
+  "total_items": 59,
+  "used_by": [
+   "container.rs"
+  ]
+ },
+ "crafting.rs": {
+  "used_items": 1,
+  "total_items": 10,
+  "used_by": [
+   "container_full.rs"
+  ]
+ },
+ "culling.rs": {
+  "used_items": 1,
+  "total_items": 6,
+  "used_by": [
+   "mccrypto.rs"
+  ]
+ },
+ "day_cycle.rs": {
+  "used_items": 1,
+  "total_items": 13,
+  "used_by": [
+   "bed_sleep.rs"
+  ]
+ },
+ "debug_lines.rs": {
+  "used_items": 0,
+  "total_items": 5,
+  "used_by": []
+ },
+ "difficulty.rs": {
+  "used_items": 0,
+  "total_items": 3,
+  "used_by": []
+ },
+ "entities.rs": {
+  "used_items": 1,
+  "total_items": 18,
+  "used_by": [
+   "protocol_1144.rs"
+  ]
+ },
+ "entity_effects.rs": {
+  "used_items": 0,
+  "total_items": 12,
+  "used_by": []
+ },
+ "entity_fire.rs": {
+  "used_items": 3,
+  "total_items": 9,
+  "used_by": [
+   "address.rs",
+   "fire_overlay.rs"
+  ]
+ },
+ "entity_models.rs": {
+  "used_items": 45,
+  "total_items": 71,
+  "used_by": [
+   "boxmodel.rs",
+   "entity_renderer.rs",
+   "sound.rs",
+   "tile_renderer.rs"
+  ]
+ },
+ "entity_poses.rs": {
+  "used_items": 0,
+  "total_items": 5,
+  "used_by": []
+ },
+ "entity_pushing.rs": {
+  "used_items": 0,
+  "total_items": 2,
+  "used_by": []
+ },
+ "entity_render_alg.rs": {
+  "used_items": 2,
+  "total_items": 48,
+  "used_by": [
+   "entity_renderer.rs"
+  ]
+ },
+ "entity_renderer.rs": {
+  "used_items": 17,
+  "total_items": 59,
+  "used_by": [
+   "advancements.rs",
+   "browser.rs",
+   "camera.rs",
+   "culling.rs",
+   "entity_models.rs"
+  ]
+ },
+ "falling_block.rs": {
+  "used_items": 0,
+  "total_items": 10,
+  "used_by": []
+ },
+ "fire_overlay.rs": {
+  "used_items": 3,
+  "total_items": 6,
+  "used_by": [
+   "address.rs",
+   "entity_fire.rs"
+  ]
+ },
+ "fluids.rs": {
+  "used_items": 4,
+  "total_items": 9,
+  "used_by": [
+   "bed_sleep.rs",
+   "interaction.rs",
+   "mesher.rs"
+  ]
+ },
+ "fox.rs": {
+  "used_items": 1,
+  "total_items": 43,
+  "used_by": [
+   "bed_sleep.rs"
+  ]
+ },
+ "glsl_functions.rs": {
+  "used_items": 0,
+  "total_items": 10,
+  "used_by": []
+ },
+ "glsl_preprocess.rs": {
+  "used_items": 0,
+  "total_items": 4,
+  "used_by": []
+ },
+ "hand_renderer.rs": {
+  "used_items": 0,
+  "total_items": 0,
+  "used_by": []
+ },
+ "interaction.rs": {
+  "used_items": 0,
+  "total_items": 45,
+  "used_by": []
+ },
+ "item_renderer.rs": {
+  "used_items": 4,
+  "total_items": 38,
+  "used_by": [
+   "bee_sound.rs",
+   "camera.rs",
+   "entity_effects.rs",
+   "entity_renderer.rs"
+  ]
+ },
+ "items.rs": {
+  "used_items": 6,
+  "total_items": 34,
+  "used_by": [
+   "container.rs",
+   "crafting.rs",
+   "interaction.rs"
+  ]
+ },
+ "jrandom.rs": {
+  "used_items": 4,
+  "total_items": 5,
+  "used_by": [
+   "entity_effects.rs",
+   "screen_containers.rs",
+   "sky.rs"
+  ]
+ },
+ "leash_knot.rs": {
+  "used_items": 0,
+  "total_items": 2,
+  "used_by": []
+ },
+ "lod.rs": {
+  "used_items": 0,
+  "total_items": 3,
+  "used_by": []
+ },
+ "main_alg.rs": {
+  "used_items": 4,
+  "total_items": 15,
+  "used_by": [
+   "boot_alg.rs",
+   "browser.rs",
+   "main_boot2.rs"
+  ]
+ },
+ "main_boot.rs": {
+  "used_items": 19,
+  "total_items": 40,
+  "used_by": [
+   "boot_alg.rs",
+   "main_alg.rs",
+   "main_boot2.rs"
+  ]
+ },
+ "main_boot2.rs": {
+  "used_items": 8,
+  "total_items": 11,
+  "used_by": [
+   "boot_alg.rs"
+  ]
+ },
+ "math.rs": {
+  "used_items": 13,
+  "total_items": 26,
+  "used_by": [
+   "culling.rs",
+   "entity_effects.rs",
+   "fire_overlay.rs",
+   "portal.rs"
+  ]
+ },
+ "mccrypto.rs": {
+  "used_items": 1,
+  "total_items": 3,
+  "used_by": [
+   "culling.rs"
+  ]
+ },
+ "mesher.rs": {
+  "used_items": 1,
+  "total_items": 12,
+  "used_by": [
+   "chunk.rs"
+  ]
+ },
+ "models.rs": {
+  "used_items": 7,
+  "total_items": 19,
+  "used_by": [
+   "mesher.rs",
+   "narrator.rs"
+  ]
+ },
+ "music_system.rs": {
+  "used_items": 3,
+  "total_items": 10,
+  "used_by": [
+   "sound.rs"
+  ]
+ },
+ "narrator.rs": {
+  "used_items": 3,
+  "total_items": 12,
+  "used_by": [
+   "advancements.rs",
+   "boot_alg.rs"
+  ]
+ },
+ "nbt.rs": {
+  "used_items": 4,
+  "total_items": 23,
+  "used_by": [
+   "protocol.rs",
+   "protocol_1144.rs",
+   "recipes.rs"
+  ]
+ },
+ "net/connection.rs": {
+  "used_items": 4,
+  "total_items": 12,
+  "used_by": [
+   "blocks.rs",
+   "browser.rs",
+   "main_boot.rs",
+   "net/mod.rs"
+  ]
+ },
+ "net/mod.rs": {
+  "used_items": 0,
+  "total_items": 0,
+  "used_by": []
+ },
+ "options.rs": {
+  "used_items": 14,
+  "total_items": 58,
+  "used_by": [
+   "boot_alg.rs",
+   "options_screen.rs",
+   "snbt.rs",
+   "sound.rs"
+  ]
+ },
+ "options_alg.rs": {
+  "used_items": 26,
+  "total_items": 80,
+  "used_by": [
+   "address.rs",
+   "advancements.rs",
+   "bed_sleep.rs",
+   "bee_sound.rs",
+   "options.rs"
+  ]
+ },
+ "options_screen.rs": {
+  "used_items": 4,
+  "total_items": 53,
+  "used_by": [
+   "bee_sound.rs",
+   "options_alg.rs",
+   "recipes.rs"
+  ]
+ },
+ "packets.rs": {
+  "used_items": 0,
+  "total_items": 49,
+  "used_by": []
+ },
+ "particle_sprites.rs": {
+  "used_items": 0,
+  "total_items": 13,
+  "used_by": []
+ },
+ "particles.rs": {
+  "used_items": 6,
+  "total_items": 63,
+  "used_by": [
+   "entity_effects.rs"
+  ]
+ },
+ "physics.rs": {
+  "used_items": 4,
+  "total_items": 22,
+  "used_by": [
+   "falling_block.rs",
+   "interaction.rs"
+  ]
+ },
+ "pistons.rs": {
+  "used_items": 0,
+  "total_items": 11,
+  "used_by": []
+ },
+ "platform.rs": {
+  "used_items": 3,
+  "total_items": 4,
+  "used_by": [
+   "boot_alg.rs",
+   "browser.rs"
+  ]
+ },
+ "platform_contract.rs": {
+  "used_items": 9,
+  "total_items": 24,
+  "used_by": [
+   "advancements.rs",
+   "net/connection.rs",
+   "platform.rs"
+  ]
+ },
+ "png.rs": {
+  "used_items": 2,
+  "total_items": 6,
+  "used_by": [
+   "bed_sleep.rs"
+  ]
+ },
+ "portal.rs": {
+  "used_items": 0,
+  "total_items": 3,
+  "used_by": []
+ },
+ "poses.rs": {
+  "used_items": 0,
+  "total_items": 4,
+  "used_by": []
+ },
+ "profiling.rs": {
+  "used_items": 2,
+  "total_items": 18,
+  "used_by": [
+   "address.rs",
+   "options.rs"
+  ]
+ },
+ "protocol.rs": {
+  "used_items": 15,
+  "total_items": 16,
+  "used_by": [
+   "address.rs",
+   "protocol_1144.rs",
+   "protocol_1152.rs"
+  ]
+ },
+ "protocol_1144.rs": {
+  "used_items": 30,
+  "total_items": 39,
+  "used_by": [
+   "advancements.rs",
+   "banner.rs",
+   "biome_zoom.rs",
+   "buffer.rs",
+   "net/connection.rs"
+  ]
+ },
+ "protocol_1152.rs": {
+  "used_items": 15,
+  "total_items": 21,
+  "used_by": [
+   "net/connection.rs",
+   "protocol_1144.rs"
+  ]
+ },
+ "protocol_1152_ids.rs": {
+  "used_items": 0,
+  "total_items": 4,
+  "used_by": []
+ },
+ "protocol_ids.rs": {
+  "used_items": 5,
+  "total_items": 8,
+  "used_by": [
+   "packets.rs",
+   "protocol_1144.rs"
+  ]
+ },
+ "recipe_book.rs": {
+  "used_items": 2,
+  "total_items": 18,
+  "used_by": [
+   "recipebook.rs"
+  ]
+ },
+ "recipebook.rs": {
+  "used_items": 4,
+  "total_items": 31,
+  "used_by": [
+   "address.rs",
+   "advancements.rs",
+   "recipe_book.rs"
+  ]
+ },
+ "recipes.rs": {
+  "used_items": 1,
+  "total_items": 1,
+  "used_by": [
+   "protocol_1144.rs"
+  ]
+ },
+ "scoreboard.rs": {
+  "used_items": 3,
+  "total_items": 25,
+  "used_by": [
+   "camera.rs",
+   "options_alg.rs",
+   "software.rs"
+  ]
+ },
+ "screen_containers.rs": {
+  "used_items": 0,
+  "total_items": 93,
+  "used_by": []
+ },
+ "screens.rs": {
+  "used_items": 0,
+  "total_items": 0,
+  "used_by": []
+ },
+ "shader_library.rs": {
+  "used_items": 0,
+  "total_items": 21,
+  "used_by": []
+ },
+ "shader_lighting.rs": {
+  "used_items": 0,
+  "total_items": 8,
+  "used_by": []
+ },
+ "signs.rs": {
+  "used_items": 0,
+  "total_items": 3,
+  "used_by": []
+ },
+ "sky.rs": {
+  "used_items": 0,
+  "total_items": 20,
+  "used_by": []
+ },
+ "snbt.rs": {
+  "used_items": 0,
+  "total_items": 1,
+  "used_by": []
+ },
+ "software.rs": {
+  "used_items": 23,
+  "total_items": 64,
+  "used_by": [
+   "bed_sleep.rs",
+   "browser.rs",
+   "buffer.rs",
+   "culling.rs",
+   "png.rs"
+  ]
+ },
+ "sound.rs": {
+  "used_items": 1,
+  "total_items": 43,
+  "used_by": [
+   "music_system.rs"
+  ]
+ },
+ "sound_alg2.rs": {
+  "used_items": 13,
+  "total_items": 29,
+  "used_by": [
+   "music_system.rs",
+   "png.rs",
+   "recipebook.rs",
+   "sound.rs"
+  ]
+ },
+ "spawning.rs": {
+  "used_items": 0,
+  "total_items": 4,
+  "used_by": []
+ },
+ "splash.rs": {
+  "used_items": 0,
+  "total_items": 9,
+  "used_by": []
+ },
+ "statistics.rs": {
+  "used_items": 0,
+  "total_items": 63,
+  "used_by": []
+ },
+ "tags.rs": {
+  "used_items": 2,
+  "total_items": 11,
+  "used_by": [
+   "address.rs",
+   "container.rs"
+  ]
+ },
+ "technical.rs": {
+  "used_items": 2,
+  "total_items": 3,
+  "used_by": [
+   "protocol_1144.rs"
+  ]
+ },
+ "tile_renderer.rs": {
+  "used_items": 2,
+  "total_items": 27,
+  "used_by": [
+   "blocks.rs",
+   "webgl2.rs"
+  ]
+ },
+ "utf8.rs": {
+  "used_items": 1,
+  "total_items": 3,
+  "used_by": [
+   "base64.rs"
+  ]
+ },
+ "uuid.rs": {
+  "used_items": 0,
+  "total_items": 2,
+  "used_by": []
+ },
+ "vehicle.rs": {
+  "used_items": 0,
+  "total_items": 5,
+  "used_by": []
+ },
+ "visgraph.rs": {
+  "used_items": 1,
+  "total_items": 8,
+  "used_by": [
+   "mesher.rs"
+  ]
+ },
+ "wasm_alg.rs": {
+  "used_items": 0,
+  "total_items": 11,
+  "used_by": []
+ },
+ "water_fog.rs": {
+  "used_items": 0,
+  "total_items": 5,
+  "used_by": []
+ },
+ "webgl2.rs": {
+  "used_items": 16,
+  "total_items": 52,
+  "used_by": [
+   "browser.rs",
+   "software.rs",
+   "webgpu.rs"
+  ]
+ },
+ "webgl2_alg.rs": {
+  "used_items": 13,
+  "total_items": 44,
+  "used_by": [
+   "software.rs",
+   "webgl2.rs",
+   "webgpu_math.rs"
+  ]
+ },
+ "webgpu.rs": {
+  "used_items": 18,
+  "total_items": 42,
+  "used_by": [
+   "browser.rs",
+   "software.rs",
+   "webgl2.rs"
+  ]
+ },
+ "webgpu_math.rs": {
+  "used_items": 20,
+  "total_items": 62,
+  "used_by": [
+   "entity_renderer.rs",
+   "sky.rs",
+   "software.rs",
+   "webgl2.rs",
+   "webgl2_alg.rs"
+  ]
+ },
+ "widgets.rs": {
+  "used_items": 3,
+  "total_items": 21,
+  "used_by": [
+   "address.rs",
+   "widgets_alg2.rs"
+  ]
+ },
+ "widgets_alg.rs": {
+  "used_items": 0,
+  "total_items": 12,
+  "used_by": []
+ },
+ "widgets_alg2.rs": {
+  "used_items": 2,
+  "total_items": 10,
+  "used_by": [
+   "widgets.rs"
+  ]
+ },
+ "widgets_alg3.rs": {
+  "used_items": 0,
+  "total_items": 5,
+  "used_by": []
+ },
+ "workstations.rs": {
+  "used_items": 1,
+  "total_items": 5,
+  "used_by": [
+   "container_full.rs"
+  ]
+ },
+ "world/chunk.rs": {
+  "used_items": 7,
+  "total_items": 12,
+  "used_by": [
+   "bed_sleep.rs",
+   "chunk.rs",
+   "falling_block.rs",
+   "world/world_core.rs"
+  ]
+ },
+ "world/world_core.rs": {
+  "used_items": 12,
+  "total_items": 33,
+  "used_by": [
+   "advancements.rs",
+   "bed_sleep.rs",
+   "chunk.rs",
+   "chunk_legacy.rs",
+   "falling_block.rs"
+  ]
+ },
+ "world_collision.rs": {
+  "used_items": 2,
+  "total_items": 11,
+  "used_by": [
+   "blocks.rs",
+   "falling_block.rs"
+  ]
+ },
+ "zip.rs": {
+  "used_items": 0,
+  "total_items": 5,
+  "used_by": []
+ },
+ "zoom.rs": {
+  "used_items": 0,
+  "total_items": 1,
+  "used_by": []
+ }
+}

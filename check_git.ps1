@@ -1,0 +1,2 @@
+cd Gravrust
+git status

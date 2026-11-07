@@ -1,0 +1,2530 @@
+[
+ {
+  "js": "client/js/asset-source.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/audio/sound.js",
+  "rust": "bee_sound_params.rs; music_system.rs; sound.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) music_system.rs, sound.rs reachable from lib.rs (default build); cross-module references to its public items: {'music_system.rs': 4, 'sound.rs': 10}",
+  "rs_default": [
+   "music_system.rs",
+   "sound.rs",
+   "sound_alg2.rs"
+  ],
+  "rs_gated": [
+   "bee_sound_params.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/crash.js",
+  "rust": "crash.rs; main_alg.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) main_alg.rs reachable from lib.rs (default build); cross-module references to its public items: {'main_alg.rs': 10}",
+  "rs_default": [
+   "main_alg.rs"
+  ],
+  "rs_gated": [
+   "crash.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/debug/capture-network.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/debug/text-capture.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/accounts.js",
+  "rust": "accounts.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) accounts.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "accounts.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/advancements.js",
+  "rust": "advancements.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) advancements.rs reachable from lib.rs (default build); cross-module references to its public items: {'advancements.rs': 6}",
+  "rs_default": [
+   "advancements.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/game/attachment-placement.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/bed-sleep.js",
+  "rust": "bed_sleep.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) bed_sleep.rs reachable from lib.rs (default build); cross-module references to its public items: {'bed_sleep.rs': 19}",
+  "rs_default": [
+   "bed_sleep.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/bee-sound.js",
+  "rust": "bee_sound.rs; bee_sound_params.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) bee_sound.rs reachable from lib.rs (default build); cross-module references to its public items: {'bee_sound.rs': 0}",
+  "rs_default": [
+   "bee_sound.rs"
+  ],
+  "rs_gated": [
+   "bee_sound_params.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/block-entity-data-1.14.4.js",
+  "rust": "block_entity_data_1144.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) block_entity_data_1144.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "block_entity_data_1144.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/block-entity-data-1.15.2.js",
+  "rust": "block_entity_data_1152.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) block_entity_data_1152.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "block_entity_data_1152.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/commands.js",
+  "rust": "commands.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) commands.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "commands.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/container.js",
+  "rust": "container.rs; container_full.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) container.rs, container_full.rs reachable from lib.rs (default build); cross-module references to its public items: {'container.rs': 7, 'container_full.rs': 10}",
+  "rs_default": [
+   "container.rs",
+   "container_full.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/crafting.js",
+  "rust": "crafting.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) crafting.rs reachable from lib.rs (default build); cross-module references to its public items: {'crafting.rs': 4}",
+  "rs_default": [
+   "crafting.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/game/default-tags.js",
+  "rust": "default_tags.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) default_tags.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "default_tags.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/door-prediction.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/entities.js",
+  "rust": "entities.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) entities.rs reachable from lib.rs (default build); cross-module references to its public items: {'entities.rs': 5}",
+  "rs_default": [
+   "entities.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/entity-metadata-1.14.4.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/entity-metadata-1.15.2.js",
+  "rust": "entity_metadata.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) entity_metadata.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "entity_metadata.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/entity-pushing.js",
+  "rust": "EntityPushing.rs; entity_pushing.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) entity_pushing.rs reachable from lib.rs (default build); cross-module references to its public items: {'entity_pushing.rs': 0}",
+  "rs_default": [
+   "entity_pushing.rs"
+  ],
+  "rs_gated": [
+   "EntityPushing.rs"
+  ],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/game/entity-registry-1.15.2.js",
+  "rust": "EntityTypes.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) EntityTypes.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "EntityTypes.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/entity-types.js",
+  "rust": "EntityTypes.rs; entity_types.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) EntityTypes.rs, entity_types.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "EntityTypes.rs",
+   "entity_types.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/falling-block.js",
+  "rust": "falling_block.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) falling_block.rs reachable from lib.rs (default build); cross-module references to its public items: {'falling_block.rs': 2}",
+  "rs_default": [
+   "falling_block.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/fox.js",
+  "rust": "fox.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) fox.rs reachable from lib.rs (default build); cross-module references to its public items: {'fox.rs': 5}",
+  "rs_default": [
+   "fox.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/game.js",
+  "rust": "death.rs; game.rs; lib.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) death.rs, game.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "death.rs",
+   "game.rs"
+  ],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/game/input.js",
+  "rust": "input.rs; widgets.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) widgets.rs reachable from lib.rs (default build); cross-module references to its public items: {'widgets.rs': 13}",
+  "rs_default": [
+   "widgets.rs"
+  ],
+  "rs_gated": [
+   "input.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/interaction.js",
+  "rust": "breaking.rs; interaction.rs; interaction_full.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) interaction.rs reachable from lib.rs (default build); cross-module references to its public items: {'interaction.rs': 3}",
+  "rs_default": [
+   "interaction.rs"
+  ],
+  "rs_gated": [
+   "breaking.rs",
+   "interaction_full.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/itemnames.js",
+  "rust": "itemnames.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) itemnames.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "itemnames.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/items.js",
+  "rust": "items.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) items.rs reachable from lib.rs (default build); cross-module references to its public items: {'items.rs': 10}",
+  "rs_default": [
+   "items.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/key-names.js",
+  "rust": "key_names.rs; options_screen.rs; text_editor.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) options_screen.rs reachable from lib.rs (default build); cross-module references to its public items: {'options_screen.rs': 13}",
+  "rs_default": [
+   "options_screen.rs"
+  ],
+  "rs_gated": [
+   "key_names.rs",
+   "text_editor.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/leash-knot.js",
+  "rust": "leash_knot.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) leash_knot.rs reachable from lib.rs (default build); cross-module references to its public items: {'leash_knot.rs': 0}",
+  "rs_default": [
+   "leash_knot.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/game/menus-1.14.4.js",
+  "rust": "menus_1144.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) menus_1144.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "menus_1144.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/nbt-queries.js",
+  "rust": "nbt_queries.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) nbt_queries.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "nbt_queries.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/panda-variants-1.14.4.js",
+  "rust": "entity_renderer.rs; panda_variants_1144.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) entity_renderer.rs reachable from lib.rs (default build); cross-module references to its public items: {'entity_renderer.rs': 25}",
+  "rs_default": [
+   "entity_renderer.rs"
+  ],
+  "rs_gated": [
+   "panda_variants_1144.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/panda-variants-1.15.2.js",
+  "rust": "panda_variants_1152.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) panda_variants_1152.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "panda_variants_1152.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/physics.js",
+  "rust": "lib.rs; physics.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) physics.rs reachable from lib.rs (default build); cross-module references to its public items: {'physics.rs': 6}",
+  "rs_default": [
+   "physics.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/game/pistons.js",
+  "rust": "pistons.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) pistons.rs reachable from lib.rs (default build); cross-module references to its public items: {'pistons.rs': 0}",
+  "rs_default": [
+   "pistons.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/placement-collision.js",
+  "rust": "collision.rs; placement_collision.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) collision.rs reachable from lib.rs (default build); cross-module references to its public items: {'collision.rs': 1}",
+  "rs_default": [
+   "collision.rs"
+  ],
+  "rs_gated": [
+   "placement_collision.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/player-poses-1.14.4.js",
+  "rust": "lib.rs; player_poses.rs; player_poses_1144.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) poses.rs reachable from lib.rs (default build); cross-module references to its public items: {'poses.rs': 0}",
+  "rs_default": [
+   "poses.rs"
+  ],
+  "rs_gated": [
+   "player_poses.rs",
+   "player_poses_1144.rs"
+  ],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/game/player-poses-1.15.2.js",
+  "rust": "player_poses.rs; player_poses_1152.rs; poses.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) poses.rs reachable from lib.rs (default build); cross-module references to its public items: {'poses.rs': 0}",
+  "rs_default": [
+   "poses.rs"
+  ],
+  "rs_gated": [
+   "player_poses.rs",
+   "player_poses_1152.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/portal.js",
+  "rust": "portal.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) portal.rs reachable from lib.rs (default build); cross-module references to its public items: {'portal.rs': 0}",
+  "rs_default": [
+   "portal.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/profiler.js",
+  "rust": "profiler.rs; profiling.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) profiling.rs reachable from lib.rs (default build); cross-module references to its public items: {'profiling.rs': 3}",
+  "rs_default": [
+   "profiling.rs"
+  ],
+  "rs_gated": [
+   "profiler.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/recipebook.js",
+  "rust": "lib.rs; recipebook.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) recipebook.rs reachable from lib.rs (default build); cross-module references to its public items: {'recipebook.rs': 10}",
+  "rs_default": [
+   "recipebook.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/game/respawn-view.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/riding-lifecycle.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/scoreboard.js",
+  "rust": "lib.rs; scoreboard.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) scoreboard.rs reachable from lib.rs (default build); cross-module references to its public items: {'scoreboard.rs': 3}",
+  "rs_default": [
+   "scoreboard.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/game/server-recipes.js",
+  "rust": "server_recipes.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) server_recipes.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "server_recipes.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/serverpacks.js",
+  "rust": "serverpacks.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) serverpacks.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "serverpacks.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/settings.js",
+  "rust": "options.rs; settings.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) options.rs reachable from lib.rs (default build); cross-module references to its public items: {'options.rs': 28}",
+  "rs_default": [
+   "options.rs"
+  ],
+  "rs_gated": [
+   "settings.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/signs-1.14.4.js",
+  "rust": "signs.rs; signs_1144.rs; signs_advanced.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) signs.rs reachable from lib.rs (default build); cross-module references to its public items: {'signs.rs': 0}",
+  "rs_default": [
+   "signs.rs"
+  ],
+  "rs_gated": [
+   "signs_1144.rs",
+   "signs_advanced.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/squid-animation.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/tags.js",
+  "rust": "tags.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) tags.rs reachable from lib.rs (default build); cross-module references to its public items: {'tags.rs': 3}",
+  "rs_default": [
+   "tags.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/tutorial.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/vehicle.js",
+  "rust": "vehicle.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) vehicle.rs reachable from lib.rs (default build); cross-module references to its public items: {'vehicle.rs': 1}",
+  "rs_default": [
+   "vehicle.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/villager-data.js",
+  "rust": "villager_data.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) villager_data.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "villager_data.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/workstations-1.14.4.js",
+  "rust": "workstations.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) workstations.rs reachable from lib.rs (default build); cross-module references to its public items: {'workstations.rs': 1}",
+  "rs_default": [
+   "workstations.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/game/zoom.js",
+  "rust": "lib.rs; zoom.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) zoom.rs reachable from lib.rs (default build); cross-module references to its public items: {'zoom.rs': 0}",
+  "rs_default": [
+   "zoom.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/gfx/device.js",
+  "rust": "gfx/device.rs; software.rs; webgl2_alg.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) software.rs, webgl2_alg.rs reachable from lib.rs (default build); cross-module references to its public items: {'software.rs': 33, 'webgl2_alg.rs': 33}",
+  "rs_default": [
+   "software.rs",
+   "webgl2_alg.rs",
+   "webgpu_math.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "gfx/device.rs"
+  ]
+ },
+ {
+  "js": "client/js/gfx/dynamic-lighting.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gfx/inventory-lighting.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gfx/math.js",
+  "rust": "lib.rs; math.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) math.rs reachable from lib.rs (default build); cross-module references to its public items: {'math.rs': 14}",
+  "rs_default": [
+   "math.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/gfx/scene.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gfx/software.js",
+  "rust": "software.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) software.rs reachable from lib.rs (default build); cross-module references to its public items: {'software.rs': 33}",
+  "rs_default": [
+   "software.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gfx/webgl2.js",
+  "rust": "gfx_math.rs; shader_uniforms.rs; webgl2.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) webgl2.rs, webgl2_alg.rs reachable from lib.rs (default build); cross-module references to its public items: {'webgl2.rs': 28, 'webgl2_alg.rs': 33}",
+  "rs_default": [
+   "webgl2.rs",
+   "webgl2_alg.rs"
+  ],
+  "rs_gated": [
+   "gfx_math.rs",
+   "shader_uniforms.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gfx/webgpu.js",
+  "rust": "webgpu.rs; webgpu_math.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) webgpu.rs, webgpu_math.rs reachable from lib.rs (default build); cross-module references to its public items: {'webgpu.rs': 29, 'webgpu_math.rs': 30}",
+  "rs_default": [
+   "webgpu.rs",
+   "webgpu_math.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/chat-hover.js",
+  "rust": "chat_hover.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) chat_hover.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "chat_hover.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/chat-options.js",
+  "rust": "chat_options.rs; options.rs; options_screen.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) options.rs, options_screen.rs reachable from lib.rs (default build); cross-module references to its public items: {'options.rs': 28, 'options_screen.rs': 13}",
+  "rs_default": [
+   "options.rs",
+   "options_screen.rs"
+  ],
+  "rs_gated": [
+   "chat_options.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/chat.js",
+  "rust": "chat.rs; chat_hover.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) chat.rs, chat_hover.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "chat.rs",
+   "chat_hover.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/debug-overlay.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/debug-targets.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/effect-icons.js",
+  "rust": "effect_icons.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) effect_icons.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "effect_icons.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/font-providers.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/font.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/gui.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/hud.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/i18n.js",
+  "rust": "options_alg.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) options_alg.rs reachable from lib.rs (default build); cross-module references to its public items: {'options_alg.rs': 33}",
+  "rs_default": [
+   "options_alg.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/narrator.js",
+  "rust": "narrator.rs; options_alg.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) narrator.rs, options_alg.rs reachable from lib.rs (default build); cross-module references to its public items: {'narrator.rs': 3, 'options_alg.rs': 33}",
+  "rs_default": [
+   "narrator.rs",
+   "options_alg.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/option-focus.js",
+  "rust": "options_alg.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) options_alg.rs reachable from lib.rs (default build); cross-module references to its public items: {'options_alg.rs': 33}",
+  "rs_default": [
+   "options_alg.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/recipebook.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/accounts.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/advancements.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/book.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/chat.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/commandblock.js",
+  "rust": "command_block.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) command_block.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "command_block.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/containers.js",
+  "rust": "screen_containers.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) screen_containers.rs reachable from lib.rs (default build); cross-module references to its public items: {'screen_containers.rs': 0}",
+  "rs_default": [
+   "screen_containers.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/credits.js",
+  "rust": "credits.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) credits.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "credits.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/death.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/demo.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/jigsaw.js",
+  "rust": "jigsaw.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) jigsaw.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "jigsaw.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/loading.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/manager.js",
+  "rust": "screens/manager.rs",
+  "declared": "orphan-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) screens/manager.rs exist on disk but are declared nowhere in lib.rs (orphan: not compiled)",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": [
+   "screens/manager.rs"
+  ]
+ },
+ {
+  "js": "client/js/gui/screens/menus.js",
+  "rust": "splash.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) splash.rs reachable from lib.rs (default build); cross-module references to its public items: {'splash.rs': 0}",
+  "rs_default": [
+   "splash.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/options.js",
+  "rust": "options.rs; options_alg.rs; options_screen.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) options.rs, options_alg.rs reachable from lib.rs (default build); cross-module references to its public items: {'options.rs': 28, 'options_alg.rs': 33}",
+  "rs_default": [
+   "options.rs",
+   "options_alg.rs",
+   "options_screen.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/packs.js",
+  "rust": "packs.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) packs.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "packs.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/pause.js",
+  "rust": "pause.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) pause.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "pause.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/proxies.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/shader-tooltip.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/shaders.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/sign.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/stats.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/structure.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/screens/workstations.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/slot-list.js",
+  "rust": "options_alg.rs; options_screen.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) options_alg.rs, options_screen.rs reachable from lib.rs (default build); cross-module references to its public items: {'options_alg.rs': 33, 'options_screen.rs': 13}",
+  "rs_default": [
+   "options_alg.rs",
+   "options_screen.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/spectator.js",
+  "rust": "spectator.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) spectator.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "spectator.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/text-editor.js",
+  "rust": "text_editor.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) text_editor.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "text_editor.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/vanilla-layout.js",
+  "rust": "options.rs; widgets.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) options.rs, widgets.rs reachable from lib.rs (default build); cross-module references to its public items: {'options.rs': 28, 'widgets.rs': 13}",
+  "rs_default": [
+   "options.rs",
+   "widgets.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/gui/widgets.js",
+  "rust": "options.rs; options_alg.rs; widgets.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) options.rs, options_alg.rs reachable from lib.rs (default build); cross-module references to its public items: {'options.rs': 28, 'options_alg.rs': 33}",
+  "rs_default": [
+   "options.rs",
+   "options_alg.rs",
+   "widgets.rs",
+   "widgets_alg.rs",
+   "widgets_alg2.rs",
+   "widgets_alg3.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/lib/pako.esm.mjs",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/lib/truetype-wasm.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/net/address.js",
+  "rust": "address.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) address.rs reachable from lib.rs (default build); cross-module references to its public items: {'address.rs': 1}",
+  "rs_default": [
+   "address.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/net/buffer.js",
+  "rust": "buffer.rs; lib.rs; protocol.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) buffer.rs, protocol.rs reachable from lib.rs (default build); cross-module references to its public items: {'buffer.rs': 17, 'protocol.rs': 23}",
+  "rs_default": [
+   "buffer.rs",
+   "protocol.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/net/command-tree.js",
+  "rust": "command_tree.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) command_tree.rs reachable from lib.rs (default build); cross-module references to its public items: {'command_tree.rs': 1}",
+  "rs_default": [
+   "command_tree.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/net/connection.js",
+  "rust": "connection_legacy.rs; net/connection.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) net/connection.rs reachable from lib.rs (default build); cross-module references to its public items: {'net/connection.rs': 10}",
+  "rs_default": [
+   "net/connection.rs"
+  ],
+  "rs_gated": [
+   "connection_legacy.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/net/eagler-presets.js",
+  "rust": "eagler_presets.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) eagler_presets.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "eagler_presets.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/net/eagler-textures.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/net/eagler.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/net/nbt.js",
+  "rust": "container_full.rs; lib.rs; nbt.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) container_full.rs, nbt.rs reachable from lib.rs (default build); cross-module references to its public items: {'container_full.rs': 10, 'nbt.rs': 10}",
+  "rs_default": [
+   "container_full.rs",
+   "nbt.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/net/packet-bodies-1.14.4.js",
+  "rust": "packet_bodies_1144.rs; protocol_1144.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) protocol_1144.rs reachable from lib.rs (default build); cross-module references to its public items: {'protocol_1144.rs': 39}",
+  "rs_default": [
+   "protocol_1144.rs"
+  ],
+  "rs_gated": [
+   "packet_bodies_1144.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/net/packets.js",
+  "rust": "lib.rs; nbt_queries.rs; packets.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) packets.rs reachable from lib.rs (default build); cross-module references to its public items: {'packets.rs': 5}",
+  "rs_default": [
+   "packets.rs"
+  ],
+  "rs_gated": [
+   "nbt_queries.rs"
+  ],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/net/protocol-1.14.4-ids.js",
+  "rust": "protocol_ids.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) protocol_ids.rs reachable from lib.rs (default build); cross-module references to its public items: {'protocol_ids.rs': 8}",
+  "rs_default": [
+   "protocol_ids.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/net/protocol-1.14.4.js",
+  "rust": "protocol.rs; protocol_1144.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) protocol.rs, protocol_1144.rs reachable from lib.rs (default build); cross-module references to its public items: {'protocol.rs': 23, 'protocol_1144.rs': 39}",
+  "rs_default": [
+   "protocol.rs",
+   "protocol_1144.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/net/protocol-1.15.2-ids.js",
+  "rust": "protocol_1152_ids.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) protocol_1152_ids.rs reachable from lib.rs (default build); cross-module references to its public items: {'protocol_1152_ids.rs': 2}",
+  "rs_default": [
+   "protocol_1152_ids.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/net/protocol-1.15.2.js",
+  "rust": "protocol.rs; protocol_1152.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) protocol.rs, protocol_1152.rs reachable from lib.rs (default build); cross-module references to its public items: {'protocol.rs': 23, 'protocol_1152.rs': 16}",
+  "rs_default": [
+   "protocol.rs",
+   "protocol_1152.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/net/proxies.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/net/recipes.js",
+  "rust": "lib.rs; recipes.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) recipes.rs reachable from lib.rs (default build); cross-module references to its public items: {'recipes.rs': 1}",
+  "rs_default": [
+   "recipes.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/net/snbt.js",
+  "rust": "lib.rs; snbt.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) snbt.rs reachable from lib.rs (default build); cross-module references to its public items: {'snbt.rs': 0}",
+  "rs_default": [
+   "snbt.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/net/tcp.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/net/technical-packets.js",
+  "rust": "lib.rs; technical.rs; technical_packets.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) technical.rs reachable from lib.rs (default build); cross-module references to its public items: {'technical.rs': 3}",
+  "rs_default": [
+   "technical.rs"
+  ],
+  "rs_gated": [
+   "technical_packets.rs"
+  ],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/net/wisp.js",
+  "rust": "wisp.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) wisp.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "wisp.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/platform/browser.js",
+  "rust": "browser.rs; browser_alg.rs; platform_contract.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) browser.rs, browser_alg.rs reachable from lib.rs (default build); cross-module references to its public items: {'browser.rs': 23, 'browser_alg.rs': 30}",
+  "rs_default": [
+   "browser.rs",
+   "browser_alg.rs",
+   "platform_contract.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/platform/clipboard.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/platform/platform.js",
+  "rust": "platform.rs; platform_contract.rs; widgets_alg3.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) platform.rs, platform_contract.rs reachable from lib.rs (default build); cross-module references to its public items: {'platform.rs': 3, 'platform_contract.rs': 23}",
+  "rs_default": [
+   "platform.rs",
+   "platform_contract.rs",
+   "widgets_alg3.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/atlas.js",
+  "rust": "atlas.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) atlas.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "atlas.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/banner.js",
+  "rust": "banner.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) banner.rs reachable from lib.rs (default build); cross-module references to its public items: {'banner.rs': 1}",
+  "rs_default": [
+   "banner.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/block-overlay.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/boxmodel.js",
+  "rust": "boxmodel.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) boxmodel.rs reachable from lib.rs (default build); cross-module references to its public items: {'boxmodel.rs': 10}",
+  "rs_default": [
+   "boxmodel.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/render/breaking.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/camera-eye.js",
+  "rust": "camera.rs; camera_eye.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) camera.rs reachable from lib.rs (default build); cross-module references to its public items: {'camera.rs': 3}",
+  "rs_default": [
+   "camera.rs"
+  ],
+  "rs_gated": [
+   "camera_eye.rs"
+  ],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/render/culling.js",
+  "rust": "culling.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) culling.rs reachable from lib.rs (default build); cross-module references to its public items: {'culling.rs': 1}",
+  "rs_default": [
+   "culling.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/render/debug-lines.js",
+  "rust": "lib.rs",
+  "declared": "orphan-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) lib.rs exist on disk but are declared nowhere in lib.rs (orphan: not compiled)",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/render/dynamic-lights.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/entity-effects.js",
+  "rust": "entity_effects.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) entity_effects.rs reachable from lib.rs (default build); cross-module references to its public items: {'entity_effects.rs': 0}",
+  "rs_default": [
+   "entity_effects.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/entity-fire.js",
+  "rust": "entity_fire.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) entity_fire.rs reachable from lib.rs (default build); cross-module references to its public items: {'entity_fire.rs': 3}",
+  "rs_default": [
+   "entity_fire.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/render/entity-models.js",
+  "rust": "entity_models.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) entity_models.rs reachable from lib.rs (default build); cross-module references to its public items: {'entity_models.rs': 48}",
+  "rs_default": [
+   "entity_models.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/entity-renderer.js",
+  "rust": "entity_render_alg.rs; entity_renderer.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) entity_render_alg.rs, entity_renderer.rs reachable from lib.rs (default build); cross-module references to its public items: {'entity_render_alg.rs': 25, 'entity_renderer.rs': 25}",
+  "rs_default": [
+   "entity_render_alg.rs",
+   "entity_renderer.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/fire-overlay.js",
+  "rust": "fire_overlay.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) fire_overlay.rs reachable from lib.rs (default build); cross-module references to its public items: {'fire_overlay.rs': 3}",
+  "rs_default": [
+   "fire_overlay.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/fox-pose.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/glsl-functions.js",
+  "rust": "glsl_float_literals.rs; glsl_functions.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) glsl_functions.rs reachable from lib.rs (default build); cross-module references to its public items: {'glsl_functions.rs': 0}",
+  "rs_default": [
+   "glsl_functions.rs"
+  ],
+  "rs_gated": [
+   "glsl_float_literals.rs"
+  ],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/render/glsl-preprocessor.js",
+  "rust": "glsl_preprocess.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) glsl_preprocess.rs reachable from lib.rs (default build); cross-module references to its public items: {'glsl_preprocess.rs': 0}",
+  "rs_default": [
+   "glsl_preprocess.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/render/hand-renderer.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/item-renderer.js",
+  "rust": "item_renderer.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) item_renderer.rs reachable from lib.rs (default build); cross-module references to its public items: {'item_renderer.rs': 12}",
+  "rs_default": [
+   "item_renderer.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/leash.js",
+  "rust": "entity_poses.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) entity_poses.rs reachable from lib.rs (default build); cross-module references to its public items: {'entity_poses.rs': 0}",
+  "rs_default": [
+   "entity_poses.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/render/loading-overlay.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/lod.js",
+  "rust": "lib.rs; lod.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) lod.rs reachable from lib.rs (default build); cross-module references to its public items: {'lod.rs': 1}",
+  "rs_default": [
+   "lod.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/render/mesh-service.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/mesh-worker.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/mesher.js",
+  "rust": "mesher.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) mesher.rs reachable from lib.rs (default build); cross-module references to its public items: {'mesher.rs': 5}",
+  "rs_default": [
+   "mesher.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/models.js",
+  "rust": "models.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) models.rs reachable from lib.rs (default build); cross-module references to its public items: {'models.rs': 12}",
+  "rs_default": [
+   "models.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/ocelot-pose.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/particle-collision.js",
+  "rust": "lib.rs; particle_collision.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) particle_collision.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "particle_collision.rs"
+  ],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/render/particle-sprites.js",
+  "rust": "particle_sprites.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) particle_sprites.rs reachable from lib.rs (default build); cross-module references to its public items: {'particle_sprites.rs': 0}",
+  "rs_default": [
+   "particle_sprites.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/particles.js",
+  "rust": "lib.rs; particles.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) particles.rs reachable from lib.rs (default build); cross-module references to its public items: {'particles.rs': 6}",
+  "rs_default": [
+   "particles.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/render/post.js",
+  "rust": "post.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) post.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "post.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/renderer.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/riptide-layer.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/shader-compat.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/shader-frame.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/shader-library.js",
+  "rust": "lib.rs; shader_library.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) shader_library.rs reachable from lib.rs (default build); cross-module references to its public items: {'shader_library.rs': 1}",
+  "rs_default": [
+   "shader_library.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/render/shader-lighting.js",
+  "rust": "lib.rs; shader_lighting.rs; shader_lighting_alg.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) shader_lighting.rs reachable from lib.rs (default build); cross-module references to its public items: {'shader_lighting.rs': 0}",
+  "rs_default": [
+   "shader_lighting.rs"
+  ],
+  "rs_gated": [
+   "shader_lighting_alg.rs"
+  ],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/render/shader-menu.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/shader-options.js",
+  "rust": "shader_options.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) shader_options.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "shader_options.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/shader-pack.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/shadows.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/sky.js",
+  "rust": "lib.rs; sky.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) sky.rs reachable from lib.rs (default build); cross-module references to its public items: {'sky.rs': 0}",
+  "rs_default": [
+   "sky.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/render/splash.js",
+  "rust": "lib.rs; splash.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) splash.rs reachable from lib.rs (default build); cross-module references to its public items: {'splash.rs': 0}",
+  "rs_default": [
+   "splash.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/render/text-mesh.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/tile-renderer.js",
+  "rust": "tile_renderer.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) tile_renderer.rs reachable from lib.rs (default build); cross-module references to its public items: {'tile_renderer.rs': 3}",
+  "rs_default": [
+   "tile_renderer.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/villager-layers.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/render/visgraph.js",
+  "rust": "lib.rs; visgraph.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) visgraph.rs reachable from lib.rs (default build); cross-module references to its public items: {'visgraph.rs': 2}",
+  "rs_default": [
+   "visgraph.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/render/water-fog.js",
+  "rust": "lib.rs; water_fog.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) water_fog.rs reachable from lib.rs (default build); cross-module references to its public items: {'water_fog.rs': 0}",
+  "rs_default": [
+   "water_fog.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/render/weather.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/resource-models.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/util/base64.js",
+  "rust": "base64.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) base64.rs reachable from lib.rs (default build); cross-module references to its public items: {'base64.rs': 1}",
+  "rs_default": [
+   "base64.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/util/base85.js",
+  "rust": "base85.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) base85.rs reachable from lib.rs (default build); cross-module references to its public items: {'base85.rs': 1}",
+  "rs_default": [
+   "base85.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/util/jrandom.js",
+  "rust": "jrandom.rs; lib.rs; screen_containers.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) jrandom.rs, screen_containers.rs reachable from lib.rs (default build); cross-module references to its public items: {'jrandom.rs': 5, 'screen_containers.rs': 0}",
+  "rs_default": [
+   "jrandom.rs",
+   "screen_containers.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/util/mccrypto.js",
+  "rust": "lib.rs; mccrypto.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) mccrypto.rs reachable from lib.rs (default build); cross-module references to its public items: {'mccrypto.rs': 1}",
+  "rs_default": [
+   "mccrypto.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/util/png.js",
+  "rust": "lib.rs; png.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) png.rs reachable from lib.rs (default build); cross-module references to its public items: {'png.rs': 4}",
+  "rs_default": [
+   "png.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/util/utf8.js",
+  "rust": "lib.rs; utf8.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) utf8.rs reachable from lib.rs (default build); cross-module references to its public items: {'utf8.rs': 1}",
+  "rs_default": [
+   "utf8.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/util/uuid-md5.js",
+  "rust": "lib.rs; uuid.rs",
+  "declared": "yes",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) uuid.rs reachable from lib.rs (default build); cross-module references to its public items: {'uuid.rs': 0}",
+  "rs_default": [
+   "uuid.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/util/zip.js",
+  "rust": "zip.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) zip.rs reachable from lib.rs (default build); cross-module references to its public items: {'zip.rs': 2}",
+  "rs_default": [
+   "zip.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/world/biome-zoom.js",
+  "rust": "biome_zoom.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) biome_zoom.rs reachable from lib.rs (default build); cross-module references to its public items: {'biome_zoom.rs': 3}",
+  "rs_default": [
+   "biome_zoom.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/world/biomes.js",
+  "rust": "biomes.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) biomes.rs reachable from lib.rs (default build); cross-module references to its public items: {'biomes.rs': 3}",
+  "rs_default": [
+   "biomes.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/world/blocks.js",
+  "rust": "blocks.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) blocks.rs reachable from lib.rs (default build); cross-module references to its public items: {'blocks.rs': 23}",
+  "rs_default": [
+   "blocks.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/world/blockstates.js",
+  "rust": "blockstates.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) blockstates.rs reachable from lib.rs (default build); cross-module references to its public items: {'blockstates.rs': 3}",
+  "rs_default": [
+   "blockstates.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/world/chunk-1.14.4.js",
+  "rust": "chunk_1144.rs; chunk_legacy.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) chunk_legacy.rs reachable from lib.rs (default build); cross-module references to its public items: {'chunk_legacy.rs': 4}",
+  "rs_default": [
+   "chunk_legacy.rs"
+  ],
+  "rs_gated": [
+   "chunk_1144.rs"
+  ],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/world/chunk-1.15.2.js",
+  "rust": "chunk_1152.rs",
+  "declared": "gated-only",
+  "verdict": "ported+unwired",
+  "evidence": "Rust port(s) chunk_1152.rs exist but are gated behind #[cfg(feature = \"unsupported\")] (src/lib.rs L268-437) and that feature does not compile",
+  "rs_default": [],
+  "rs_gated": [
+   "chunk_1152.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/world/chunk.js",
+  "rust": "chunk.rs; lib.rs; world/chunk.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) chunk.rs, world/chunk.rs reachable from lib.rs (default build); cross-module references to its public items: {'chunk.rs': 9, 'world/chunk.rs': 11}",
+  "rs_default": [
+   "chunk.rs",
+   "world/chunk.rs",
+   "world/world_core.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/world/fluids.js",
+  "rust": "fluids.rs; lib.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) fluids.rs reachable from lib.rs (default build); cross-module references to its public items: {'fluids.rs': 9}",
+  "rs_default": [
+   "fluids.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/world/native-light.js",
+  "rust": "chunk.rs; lib.rs; native_light.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) chunk.rs reachable from lib.rs (default build); cross-module references to its public items: {'chunk.rs': 9}",
+  "rs_default": [
+   "chunk.rs"
+  ],
+  "rs_gated": [
+   "native_light.rs"
+  ],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ },
+ {
+  "js": "client/js/world/scaffolding.js",
+  "rust": "collision.rs; scaffolding.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) collision.rs reachable from lib.rs (default build); cross-module references to its public items: {'collision.rs': 1}",
+  "rs_default": [
+   "collision.rs"
+  ],
+  "rs_gated": [
+   "scaffolding.rs"
+  ],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/world/section-key.js",
+  "rust": "none",
+  "declared": "no",
+  "verdict": "not-ported",
+  "evidence": "no Rust file names this JS path; no counterpart on disk",
+  "rs_default": [],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/world/slice.js",
+  "rust": "world/world_core.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) world/world_core.rs reachable from lib.rs (default build); cross-module references to its public items: {'world/world_core.rs': 14}",
+  "rs_default": [
+   "world/world_core.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/world/water-biomes.js",
+  "rust": "biomes.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) biomes.rs reachable from lib.rs (default build); cross-module references to its public items: {'biomes.rs': 3}",
+  "rs_default": [
+   "biomes.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": []
+ },
+ {
+  "js": "client/js/world/world.js",
+  "rust": "lib.rs; world/world_core.rs; world_collision.rs",
+  "declared": "yes",
+  "verdict": "ported+wired",
+  "evidence": "Rust port(s) world/world_core.rs, world_collision.rs reachable from lib.rs (default build); cross-module references to its public items: {'world/world_core.rs': 14, 'world_collision.rs': 4}",
+  "rs_default": [
+   "world/world_core.rs",
+   "world_collision.rs"
+  ],
+  "rs_gated": [],
+  "rs_orphan": [
+   "lib.rs"
+  ]
+ }
+]

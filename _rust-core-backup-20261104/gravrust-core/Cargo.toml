@@ -1,0 +1,30 @@
+[package]
+name = "gravrust"
+version = "0.2.0"
+edition = "2021"
+description = "Gravrust core - Minecraft 1.15.2 client ported to Rust/WASM"
+license = "MIT"
+repository = "https://github.com/pkSmp/Gravrust"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+web-sys = { version = "0.3", features = [
+    "Window", "Document", "HtmlCanvasElement", "CanvasRenderingContext2d",
+    "WebGl2RenderingContext", "WebGlProgram", "WebGlShader", "WebGlBuffer",
+    "WebGlTexture", "WebGlUniformLocation", "WebGlVertexArrayObject",
+    "GpuDevice", "GpuRenderPipeline", "GpuBindGroupLayout",
+    "AudioContext", "AudioBuffer", "AudioBufferSourceNode", "GainNode",
+    "RequestAnimationFrame", "KeyboardEvent", "MouseEvent", "WheelEvent",
+    "WebSocket", "MessageEvent", "CloseEvent", "ErrorEvent",
+    "Fetch", "Response", "Headers", "Request",
+    "Console", "Performance", "Navigator", "Screen", "WindowOrWorkerGlobalScope"
+] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+hashbrown = "0.14"
+parking_lot = "0.12"
+getrandom = { version = "0.2", features = ["js"] }
+rand = "0.8"
