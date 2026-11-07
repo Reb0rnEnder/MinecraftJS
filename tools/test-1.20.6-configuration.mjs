@@ -1,6 +1,6 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';
 import {Reader766,Writer766,C766,Configuration766,decodeLogin766,decodeConfiguration766,decodeBootstrapPlay766} from '../client/js/net/configuration-1.20.6.js';
-import {readModifiedUtf,writeModifiedUtf,readAnonymousNbt} from '../client/js/net/nbt-anonymous.js';import {VanillaSocket766} from '../client/js/net/tcp-1.20.6.js';
+import {readModifiedUtf,writeModifiedUtf,readAnonymousNbt} from '../client/js/net/nbt-anonymous.js';import {VanillaSocket766} from '../client/js/net/tcp-1.20.6.js';import {KNOWN_PACK_766,KNOWN_PACK_766_SHA1} from '../client/js/net/known-pack-1.20.6.js';
 import {CONFIGURATION_CLIENTBOUND_766 as IN,CONFIGURATION_SERVERBOUND_766 as OUT,LOGIN_CLIENTBOUND_766 as LI,PLAY_CLIENTBOUND_766 as PI} from '../client/js/net/protocol-1.20.6-ids.js';
 const uuid='12345678-1234-4234-8234-123456789abc',packet=id=>new Writer766().varint(id),registry=()=>{const w=packet(IN.registry_data).string('minecraft:dimension_type').varint(1).string('minecraft:overworld').bool(true).u8(10);w.u8(3);writeModifiedUtf(w,'min_y');w.i32(-64).u8(3);writeModifiedUtf(w,'height');return w.i32(384).u8(0).build();};
 test('phase IDs agree with the pinned schema, including cookies and known packs',()=>{
@@ -20,12 +20,16 @@ test('login success, mandatory UUID and the new encryption flag preserve native 
  const r=new Reader766(C766.loginStart('Probe',uuid));assert.equal(r.varint(),0);assert.equal(r.string(),'Probe');assert.equal(r.uuid(),uuid);assert.equal(r.remaining(),0);
  const e=decodeLogin766(packet(LI.encryption_begin).string('').varint(1).u8(1).varint(1).u8(2).bool(false).build());assert.equal(e.shouldAuthenticate,false);
 });
-test('configuration answers control packets, requests full registry data and atomically finishes',()=>{
+test('configuration selects only the exact native known pack and atomically finishes',()=>{
  const sent=[],events=[],c=new Configuration766(p=>sent.push(p),p=>events.push(p));c.start();assert.equal(new Reader766(sent[0]).varint(),OUT.settings);
- c.handle(packet(IN.select_known_packs).varint(1).string('minecraft').string('core').string('1.20.6').build());const packs=new Reader766(sent.at(-1));assert.equal(packs.varint(),OUT.select_known_packs);assert.equal(packs.varint(),0);
- c.handle(registry());assert.equal(c.registries.get('minecraft:dimension_type')[0].id,0);
+ c.handle(packet(IN.select_known_packs).varint(1).string('minecraft').string('core').string('1.20.6').build());const packs=new Reader766(sent.at(-1));assert.equal(packs.varint(),OUT.select_known_packs);assert.equal(packs.varint(),1);assert.equal(packs.string(),'minecraft');assert.equal(packs.string(),'core');assert.equal(packs.string(),'1.20.6');assert.equal(packs.remaining(),0);
+ const omitted=packet(IN.registry_data).string('minecraft:dimension_type').varint(1).string('minecraft:overworld').bool(false).build();c.handle(omitted);assert.equal(c.cachedRegistryValues,1);assert.ok(c.registries.get('minecraft:dimension_type')[0].value);
  c.handle(packet(IN.keep_alive).i64(123n).build());assert.deepEqual(sent.at(-1),C766.keepAlive(123n));c.handle(packet(IN.ping).i32(42).build());assert.deepEqual(sent.at(-1),C766.pong(42));
  c.handle(packet(IN.feature_flags).varint(1).string('minecraft:vanilla').build());c.handle(packet(IN.finish_configuration).build());assert.equal(c.complete,true);assert.deepEqual(c.features,['minecraft:vanilla']);assert.deepEqual(sent.at(-1),C766.finishConfiguration());assert.throws(()=>c.handle(registry()),/finished/);
+});
+test('known-pack cache is target-pinned and mismatched versions fall back to full registry payloads',()=>{
+ assert.equal(KNOWN_PACK_766.minecraftVersion,'1.20.6');assert.equal(KNOWN_PACK_766.protocol,766);assert.equal(KNOWN_PACK_766.serverSha1,'145ff0858209bcfc164859ba735d4199aafa1eea');assert.equal(KNOWN_PACK_766_SHA1,'4d521dacb3b929382233d5b5b13478ac13056e3d');assert.equal(Object.values(KNOWN_PACK_766.registryCounts).reduce((a,b)=>a+b,0),196);
+ const sent=[],c=new Configuration766(p=>sent.push(p));c.handle(packet(IN.select_known_packs).varint(1).string('minecraft').string('core').string('1.20.5').build());const reply=new Reader766(sent.at(-1));assert.equal(reply.varint(),OUT.select_known_packs);assert.equal(reply.varint(),0);assert.equal(reply.remaining(),0);assert.deepEqual(c.selectedKnownPacks,[]);assert.throws(()=>c.handle(packet(IN.registry_data).string('minecraft:dimension_type').varint(1).string('minecraft:overworld').bool(false).build()),/Omitted/);
 });
 test('unavailable registry payloads, duplicate keys and trailing packets fail explicitly',()=>{
  const c=new Configuration766(()=>{});assert.throws(()=>c.handle(packet(IN.registry_data).string('x').varint(1).string('y').bool(false).build()),/Omitted/);
@@ -35,10 +39,13 @@ test('unavailable registry payloads, duplicate keys and trailing packets fail ex
 test('cookies retain bounded owned bytes and answer with the configuration cookie opcode',()=>{
  const sent=[],c=new Configuration766(p=>sent.push(p)),source=packet(IN.store_cookie).string('minecraft:test').varint(2).u8(1).u8(2).build();c.handle(source);source[source.length-1]=9;c.handle(packet(IN.cookie_request).string('minecraft:test').build());const r=new Reader766(sent.at(-1));assert.equal(r.varint(),OUT.cookie_response);assert.equal(r.string(),'minecraft:test');assert.equal(r.bool(),true);assert.equal(r.varint(),2);assert.deepEqual([...r.rest()],[1,2]);assert.throws(()=>C766.cookieResponse('x',new Uint8Array(5121)),/limit/);
 });
-test('transport login acknowledgement and later reconfiguration never leak configuration into play',()=>{
+test('transport reconfiguration resets ephemeral state while retaining cookies and resource-pack metadata',()=>{
  const s=new VanillaSocket766({}),sent=[],play=[];s._send=p=>sent.push(p);s.state='login';s.on('binary',p=>play.push(p));
- s._packet(packet(LI.success).uuid(uuid).string('Probe').varint(0).bool(true).build());assert.equal(s.state,'configuration');assert.equal(new Reader766(sent[0]).varint(),3);s._packet(registry());s._packet(packet(IN.finish_configuration).build());assert.equal(s.state,'play');assert.equal(play.length,0);
- s._packet(packet(PI.start_configuration).build());assert.equal(s.state,'configuration');assert.equal(s.configurationGeneration,2);assert.equal(s.configuration.registries.size,0);assert.equal(play.length,0);s.close();
+ s._packet(packet(LI.success).uuid(uuid).string('Probe').varint(0).bool(true).build());assert.equal(s.state,'configuration');assert.equal(new Reader766(sent[0]).varint(),3);
+ s._packet(packet(IN.store_cookie).string('minecraft:session').varint(2).u8(4).u8(2).build());const packId='aaaaaaaa-bbbb-4ccc-8ddd-eeeeeeeeeeee';s._packet(packet(IN.add_resource_pack).uuid(packId).string('https://example.com/pack.zip').string('hash').bool(false).bool(false).build());assert.equal(s.resourcePacks.size,1);
+ s._packet(registry());s._packet(packet(IN.finish_configuration).build());assert.equal(s.state,'play');assert.equal(play.length,0);
+ s._packet(packet(PI.start_configuration).build());assert.equal(s.state,'configuration');assert.equal(s.configurationGeneration,2);assert.equal(s.configuration.registries.size,0);assert.deepEqual(s.configuration.selectedKnownPacks,[]);assert.equal(s.configuration.cachedRegistryValues,0);assert.deepEqual([...s.cookies.get('minecraft:session')],[4,2]);assert.equal(s.resourcePacks.size,1);assert.equal(play.length,0);
+ s._packet(packet(IN.remove_resource_pack).bool(true).uuid(packId).build());assert.equal(s.resourcePacks.size,0);s.close();
 });
 test('first-play layout includes numeric dimensions, limited crafting, death position and portal cooldown',()=>{
  const w=packet(PI.login).i32(42).bool(false).varint(1).string('minecraft:overworld').varint(5).varint(2).varint(2).bool(false).bool(true).bool(false).varint(0).string('minecraft:overworld').i64(1n).i8(0).u8(255).bool(false).bool(true).bool(true).string('minecraft:overworld').position(-5,-64,12).varint(0).bool(false);

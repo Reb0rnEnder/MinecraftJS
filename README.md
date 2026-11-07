@@ -8,7 +8,7 @@ been relabelled. Do not use this graphical build to join a 1.20.6 server yet.
 
 See the [transition plan](docs/transition-1.20.6.md) and
 [native transport evidence](docs/development-1.20.6.md) for remaining gates.
-The [ordered task ledger](docs/transition-1.20.6.tasks.json) tracks dependencies and acceptance criteria. Native data/resources, strict protocol-766 NBT text and the complete 1.20.5+ item-component stack codec are now reproducible; the next task is closing Configuration lifecycle/registry ownership before the full Play codec.
+The [ordered task ledger](docs/transition-1.20.6.tasks.json) tracks dependencies and acceptance criteria. Native data/resources, strict protocol-766 NBT text, the complete 1.20.5+ item-component stack codec and Configuration/known-pack lifecycle are now reproducible; the next task is the essential native Play codec and Game consumers.
 
 ```sh
 npm ci
@@ -20,13 +20,9 @@ npm run fixture:1.20.6
 npm run probe:1.20.6
 ```
 
-The fixture binds only `127.0.0.1:25568` in a fresh temporary world and refuses an
-occupied port. `server1206/` contains the downloaded native server and copies of
-the existing server properties/EULA for later manual testing; the fixture never
-loads or upgrades those worlds. Stop the fixture with Ctrl+C when finished.
+The fixture binds only `127.0.0.1:25568` in a fresh cache-local temporary world and refuses an occupied port. It verifies the pinned server SHA-1 and writes its own fixture EULA/properties, so it never loads or upgrades user worlds or configuration. Stop the fixture with Ctrl+C when finished.
 
-Encrypted login, item components, full Play codecs and graphical integration
-are pending. No prebuilt 1.20.6 distribution is claimed.
+Encrypted login, the full Play codec/Game integration and graphical integration remain pending. Item components and Configuration known-pack/registry ownership are native-verified. No prebuilt 1.20.6 distribution is claimed.
 
 ## Inherited graphical baseline
 

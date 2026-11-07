@@ -4,7 +4,7 @@ import {VanillaSocket} from './tcp.js';
 import {C766,Configuration766,decodeLogin766,decodeBootstrapPlay766} from './configuration-1.20.6.js';
 import {nameUuid} from '../util/uuid-md5.js';import {encodeUtf8} from '../util/utf8.js';
 export class VanillaSocket766 extends VanillaSocket{
- constructor(entry,options={}){super(entry);this.options=options;this.cookies=new Map();this.configuration=null;this.profile=null;this.configurationGeneration=0;}
+ constructor(entry,options={}){super(entry);this.options=options;this.cookies=new Map();this.resourcePacks=new Map();this.configuration=null;this.profile=null;this.configurationGeneration=0;}
  _connect(msg){return super._connect({...msg,protocol:766});}
  _loginStart(msg){const username=(msg.username||'Player').slice(0,16),uuid=this.auth?.uuid||nameUuid(encodeUtf8('OfflinePlayer:'+username));return C766.loginStart(username,uuid);}
  _beginConfiguration(){this.state='configuration';this.configurationGeneration++;this.configuration=new Configuration766(b=>this._send(b),p=>this.emit('configuration',p),this.cookies);this.configuration.start(this.options);}
@@ -27,7 +27,8 @@ export class VanillaSocket766 extends VanillaSocket{
     this.state='play';this._control({type:'login_success',uuid:this.profile.uuid,username:this.profile.username});
     this.emit('configuration_complete',this.configuration);
    }else if(p.name==='transfer')this.emit('transfer',p);
-   else if(p.name==='add_resource_pack')this.emit('resource_pack',p);
+   else if(p.name==='add_resource_pack'){this.resourcePacks.set(p.uuid,p);this.emit('resource_pack',p);}
+   else if(p.name==='remove_resource_pack'){if(p.uuid)this.resourcePacks.delete(p.uuid);else this.resourcePacks.clear();this.emit('resource_pack_remove',p);}
    return;
   }
   if(this.state==='play'){

@@ -2,6 +2,7 @@ import {Reader,Writer} from './buffer.js';
 import {readAnonymousNbt} from './nbt-anonymous.js';
 import {readComponentNbt,writeComponentNbt} from './component-nbt-1.20.6.js';
 import {readSlot766,writeSlot766} from './item-components-1.20.6.js';
+import {KNOWN_PACK_766} from './known-pack-1.20.6.js';
 import {LOGIN_CLIENTBOUND_766 as LI,LOGIN_SERVERBOUND_766 as LO,CONFIGURATION_CLIENTBOUND_766 as IN,CONFIGURATION_SERVERBOUND_766 as OUT,PLAY_CLIENTBOUND_766 as PI,PLAY_SERVERBOUND_766 as PO} from './protocol-1.20.6-ids.js';
 export class Reader766 extends Reader{
  _check(n){if(!Number.isSafeInteger(n)||n<0)throw Error('Invalid packet length');super._check(n);}
@@ -57,8 +58,7 @@ export const C766={
  loginCookieResponse:(key,value)=>cookie(LO.cookie_response,key,value),
  settings:(locale='en_us',distance=8)=>packet(OUT.settings).string(locale).i8(distance).varint(0).bool(true).u8(127).varint(1).bool(false).bool(true).build(),
  brand:brand=>packet(OUT.custom_payload).string('minecraft:brand').raw(new Writer().string(brand).build()).build(),
- // No locally cached known packs are claimed: request all registry payloads.
- knownPacks:()=>packet(OUT.select_known_packs).varint(0).build(),
+ knownPacks:(packs=[])=>{const w=packet(OUT.select_known_packs).varint(packs.length);for(const p of packs)w.string(p.namespace).string(p.id).string(p.version);return w.build();},
  finishConfiguration:()=>packet(OUT.finish_configuration).build(),
  keepAlive:id=>packet(OUT.keep_alive).i64(id).build(),pong:id=>packet(OUT.pong).i32(id).build(),
  cookieResponse:(key,value)=>cookie(OUT.cookie_response,key,value),
@@ -71,16 +71,16 @@ export const C766={
 };
 function cookie(id,key,value){const w=packet(id).string(key).bool(!!value);if(value){if(value.length>5120)throw Error('Cookie exceeds native limit');w.varint(value.length).raw(value);}return w.build();}
 export class Configuration766{
- constructor(send,emit=()=>{},cookies=new Map()){this.send=send;this.emit=emit;this.cookies=cookies;this.registries=new Map();this.features=[];this.tags=new Map();this.complete=false;}
+ constructor(send,emit=()=>{},cookies=new Map(),knownPack=KNOWN_PACK_766){this.send=send;this.emit=emit;this.cookies=cookies;this.knownPack=knownPack;this.selectedKnownPacks=[];this.cachedRegistryValues=0;this.registries=new Map();this.features=[];this.tags=new Map();this.complete=false;}
  start({locale='en_us',distance=8}={}){this.send(C766.settings(locale,distance));this.send(C766.brand('MinecraftJS'));}
  handle(data){if(this.complete)throw Error('Configuration already finished');const p=decodeConfiguration766(data);
   switch(p.name){
    case 'keep_alive':this.send(C766.keepAlive(p.keepAliveId));break;
    case 'ping':this.send(C766.pong(p.id));break;
-   case 'select_known_packs':this.send(C766.knownPacks());break;
+   case 'select_known_packs':{const cached=this.knownPack?.pack;this.selectedKnownPacks=cached&&p.packs.some(x=>x.namespace===cached.namespace&&x.id===cached.id&&x.version===cached.version)?[cached]:[];this.send(C766.knownPacks(this.selectedKnownPacks));break;}
    case 'cookie_request':this.send(C766.cookieResponse(p.key,this.cookies.get(p.key)));break;
    case 'store_cookie':this.cookies.set(p.key,p.value.slice());break;
-   case 'registry_data':{const seen=new Set();for(const e of p.entries){if(seen.has(e.key))throw Error('Duplicate registry key '+e.key);seen.add(e.key);if(e.value===null)throw Error('Omitted registry payload without a negotiated known-pack cache');}this.registries.set(p.registry,p.entries.map((e,id)=>({...e,id})));break;}
+   case 'registry_data':{const seen=new Set(),cachedEntries=this.selectedKnownPacks.length?this.knownPack?.registries?.[p.registry]:null,cachedByKey=cachedEntries?new Map(cachedEntries.map(e=>[e.key,e.value])):null;this.registries.set(p.registry,p.entries.map((e,id)=>{if(seen.has(e.key))throw Error('Duplicate registry key '+e.key);seen.add(e.key);let value=e.value;if(value===null){if(!cachedByKey?.has(e.key))throw Error('Omitted registry payload without a matching negotiated known-pack value: '+p.registry+' / '+e.key);value=cachedByKey.get(e.key);this.cachedRegistryValues++;}return{...e,value,id};}));break;}
    case 'feature_flags':this.features=p.features;break;
    case 'tags':for(const registry of p.registries)this.tags.set(registry.registry,registry.tags);break;
    case 'finish_configuration':this.send(C766.finishConfiguration());this.complete=true;break;

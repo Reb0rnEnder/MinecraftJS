@@ -136,7 +136,7 @@ Review shared fixes for every applicable existing branch, newest to oldest; pres
 
 ## Immediate next work
 
-P02 through P04 are complete: pinned native reports cover target IDs/defaults/resources, protocol-766 anonymous NBT/text components round-trip against Mojang fixtures, and the 1.20.5+ ItemStack component system now covers all 56 native payload types, defaults, additions, removals and recursively nested stacks without a legacy NBT fallback. Start **P05** by closing Configuration lifecycle/registry ownership, then **P06** for essential Play bodies and Game consumers. Keep all 79 target regressions and every native regeneration gate green. The next useful user-test milestone is **P07 graphical native-server join**.
+P02 through P05 are complete: native target data/resources, strict protocol-766 NBT text, all 56 item-component payloads and the full Configuration lifecycle now have reproducible/native evidence. Exact minecraft:core@1.20.6 known-pack negotiation was verified against vanilla with all 196 omitted registry values restored from the pinned cache. Start **P06** for essential Play packet bodies and Game consumers. Keep all 80 target regressions and every native regeneration/live-probe gate green. The next useful user-test milestone is **P07 graphical native-server join**.
 
 ## Native implementation anchors
 

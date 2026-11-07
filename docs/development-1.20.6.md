@@ -120,3 +120,26 @@ sequence decodes through MinecraftJS and re-encodes byte-identically.
 The complete target gate now passes 79/79 tests, including all native report,
 component and stack fixture regeneration checks. P05 Configuration lifecycle and
 registry ownership is the next dependency gate before the broad Play codec.
+
+## P05 Configuration lifecycle and known-pack ownership, 2026-11-07
+
+P05 is accepted. A SHA-1-pinned vanilla 1.20.6 capture now provides the exact
+`minecraft:core@1.20.6` synchronized-registry cache used by the native server:
+eight registries and 196 target NBT values. Known-pack negotiation is exact-
+version only; protocol-compatible mismatched patch versions are declined and
+must send full registry payloads.
+
+The isolated live vanilla probe selected `minecraft:core@1.20.6`, observed all
+196 synchronized registry values omitted by the server, restored each value
+from the captured cache, and still transitioned to Play in `minecraft:overworld`
+while confirming teleport, keepalive and chunk-batch control packets. The cache
+capture and fixture both verify the pinned server SHA-1 and remain cache-local.
+
+Configuration generations now own fresh registries, tags, feature flags,
+selected-known-pack state and cache counters. Connection cookies and pushed
+resource-pack metadata survive Play -> Configuration transitions until explicit
+removal. Mismatched known packs and omitted uncached registry values fail
+explicitly instead of silently using the wrong target data.
+
+`npm run test:1.20.6` passes 80/80 target regressions after the P05 changes.
+P06 essential Play packet bodies and Game consumers is now the next gate.

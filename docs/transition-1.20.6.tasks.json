@@ -6,7 +6,7 @@
   "fullParity": false,
   "nativeGraphicalGameplayAccepted": false,
   "planningSourceCommit": "ecd95f4786b951869af59c46a1ad140a54931b72",
-  "nextTask": "P05",
+  "nextTask": "P06",
   "authorization": "Proceed with 1.20.6 now; keep inherited work open rather than requiring its completion before starting.",
   "executionRule": "Follow dependency order; native evidence and gate completion are required before marking done. Push validated batches and review shared backports as they land, not only at P16.",
   "tasks": [
@@ -107,7 +107,7 @@
     {
       "id": "P05",
       "title": "Complete Configuration lifecycle and registry ownership",
-      "status": "partial",
+      "status": "done",
       "dependsOn": [
         "P03"
       ],
@@ -117,8 +117,11 @@
       ],
       "acceptance": "Repeated Configuration/Play transitions, registry replacement, known-pack behavior and control replies match native behavior.",
       "evidence": [
-        "Current native phase-ID/Configuration suite: nine passes on 2026-11-06.",
-        "Historical isolated offline handshake in development-1.20.6.md; not rerun during planning."
+        "A SHA-pinned vanilla 1.20.6 capture provides the exact minecraft:core@1.20.6 synchronized registry cache: eight registries and 196 target NBT values.",
+        "Known-pack negotiation selects only the exact 1.20.6 core version; protocol-compatible mismatched versions are declined and require full registry values.",
+        "A live isolated vanilla 1.20.6 probe selected minecraft:core@1.20.6, observed all 196 registry values omitted by the server, restored them from the cache and still reached Play with teleport/keepalive/chunk-batch acknowledgements.",
+        "Each Configuration generation owns fresh registry/tag/feature/known-pack state while connection cookies and resource-pack metadata persist until explicitly removed.",
+        "The fixture is self-contained and loopback-only; npm run test:1.20.6 passes 80/80 target regressions."
       ]
     },
     {
