@@ -2,6 +2,25 @@
 /* eslint-disable */
 
 /**
+ * Persistent renderer state, driven from JS.
+ */
+export class GameRenderer {
+    free(): void;
+    [Symbol.dispose](): void;
+    /**
+     * Borrow the framebuffer for zero-copy blitting.
+     */
+    frame(): number;
+    constructor(w: number, h: number);
+    /**
+     * Advance time and re-render. Returns the RGBA framebuffer length.
+     */
+    tick(dt: number): number;
+    readonly height: number;
+    readonly width: number;
+}
+
+/**
  * Initialize the Rust WASM core.
  * This is called from client/js/main.js before the game bootstraps.
  */
@@ -16,6 +35,12 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
+    readonly __wbg_gamerenderer_free: (a: number, b: number) => void;
+    readonly gamerenderer_frame: (a: number) => number;
+    readonly gamerenderer_height: (a: number) => number;
+    readonly gamerenderer_new: (a: number, b: number) => number;
+    readonly gamerenderer_tick: (a: number, b: number) => number;
+    readonly gamerenderer_width: (a: number) => number;
     readonly main: (a: number, b: number) => number;
     readonly init_wasm: () => void;
     readonly reset_core: () => void;

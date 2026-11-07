@@ -62,12 +62,25 @@ function Invoke-Build([byte[]]$jarBytes, [string]$filename) {
   } finally { $zip.Dispose() }
   $log.Add("Extracted $assetCount assets ($([math]::Round($assetBytes/1MB,1)) MB) from assets/")
 
-  # 2) compact single-file HTML: WASM inlined as base64
+  # 2) compact single-file HTML: WASM + full wasm-bindgen glue inlined
   $wasmPath  = Join-Path $clientDir 'gravrust_core_bg.wasm'
   $tplPath   = Join-Path $clientDir 'offlineclient-template.html'
   $wasmB64   = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($wasmPath))
   $tpl       = [System.IO.File]::ReadAllText($tplPath)
-  $compact   = $tpl.Replace('__WASM_B64__', $wasmB64)
+
+  # transform the generated glue for classic <script> inlining:
+  #  - strip `export ` keywords
+  #  - neutralize import.meta.url (never used; initSync path only)
+  #  - replace the trailing export list with a global init hook
+  $glue = [System.IO.File]::ReadAllText((Join-Path $clientDir 'gravrust_core.js'))
+  $glue = [regex]::Replace($glue, '(?m)^export function ', 'function ')
+  $glue = [regex]::Replace($glue, '(?m)^export class ', 'class ')
+  $glue = [regex]::Replace($glue, '(?m)^export const ', 'const ')
+  $glue = $glue.Replace('export default function __wbg_init', 'function __wbg_init')
+  $glue = $glue.Replace('import.meta.url', '"./gravrust_core_bg.wasm"')
+  $glue = [regex]::Replace($glue, 'export \{[^}]*\};', 'window.__GRV_INIT = initSync;')
+
+  $compact = $tpl.Replace('__GLUE_JS__', $glue).Replace('__WASM_B64__', $wasmB64)
   # asset manifest so the page knows what was baked
   $manifest = @()
   Get-ChildItem $siteDir -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
