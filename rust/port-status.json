@@ -93,6 +93,7 @@
     "client/js/gui/widgets.js": 100,
     "client/js/audio/sound.js": 100,
     "client/js/game/accounts.js": 100,
+    "client/js/debug/capture-network.js": 100,
     "client/js/net/protocol-1.15.2.js": 100,
     "client/js/wasm/core.js": 100,
     "client/js/render/entity-renderer.js": 100,
