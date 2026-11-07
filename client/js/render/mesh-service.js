@@ -1,7 +1,7 @@
 // Chunk meshing service. Stateless apart from the model data: every build request carries a world slice
 // (world/slice.js), so any number of these can run in parallel workers (see MeshPool).
 import { initBlocks } from '../world/blocks.js';
-import { initBiomes, setServerBiomes } from '../world/biomes.js';
+import { initBiomes, setServerBiomes, setServerBiomeEntries } from '../world/biomes.js';
 import { SliceWorld } from '../world/slice.js';
 import { ModelStore } from './models.js';
 import { AtlasLookup } from './atlas.js';
@@ -28,7 +28,7 @@ export class MeshService {
         break;
       }
       case 'serverBiomes':
-        setServerBiomes(msg.codec);
+        if(msg.entries)setServerBiomeEntries(msg.entries);else setServerBiomes(msg.codec);
         break;
       case 'options':
         if (this.mesher) {

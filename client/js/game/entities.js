@@ -151,8 +151,8 @@ export class EntityManager {
 
   spawnMob(p) {
     const e = this._base(p.entityId, p.x, p.y, p.z, p.yaw, p.pitch);
-    const def = nativeEntityDefinition(this.game, p.type);
-    e.entityType = p.type; // the unmodified wire ID, never an internal family
+    const def = nativeEntityDefinition(this.game, p.type) || (p.entityTypeName ? {name:p.entityTypeName,width:0.6,height:1.8,eyeHeight:1.53,mob:true} : null);
+    e.entityType = p.wireType ?? p.type; //// retain the target wire ID, never an internal family
     e.entityNamespace = 'entity';
     e.entityName = def ? def.name : null;
     e.uuid = p.entityUUID;
@@ -178,9 +178,9 @@ export class EntityManager {
     const e = this._base(p.entityId, p.x, p.y, p.z, p.yaw, p.pitch);
     const def = OBJECT_TYPES[p.type];
     e.kind = def ? def.kind : 'unknown_object';
-    e.entityType = p.type;
+    e.entityType = p.wireType ?? p.type;
     e.entityNamespace = 'object';
-    e.entityName = def ? def.name : null;
+    e.entityName = def ? def.name : (p.entityTypeName || null);
     e.uuid = p.objectUUID;
     // Existing object renderers still select by object ID, in their own namespace.
     e.type = p.type;

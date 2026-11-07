@@ -1,14 +1,14 @@
 # MinecraftJS 1.20.6 port
 
 The named **1.20.6** branch is under development. Native protocol **766** offline
-login, Configuration and the first Play handshake are implemented and tested
-against a disposable vanilla 1.20.6 server. **Graphical gameplay still uses the
-1.19.4 baseline below**: its assets and version advertising have deliberately not
+login, Configuration and the essential Play/Game consumer bridge are implemented
+and tested against a disposable vanilla 1.20.6 server. **Graphical gameplay still
+uses the 1.19.4 baseline below**: its assets and version advertising have deliberately not
 been relabelled. Do not use this graphical build to join a 1.20.6 server yet.
 
 See the [transition plan](docs/transition-1.20.6.md) and
 [native transport evidence](docs/development-1.20.6.md) for remaining gates.
-The [ordered task ledger](docs/transition-1.20.6.tasks.json) tracks dependencies and acceptance criteria. Native data/resources, strict protocol-766 NBT text, the complete 1.20.5+ item-component stack codec and Configuration/known-pack lifecycle are now reproducible; the next task is the essential native Play codec and Game consumers.
+The [ordered task ledger](docs/transition-1.20.6.tasks.json) tracks dependencies and acceptance criteria. Native data/resources, strict protocol-766 NBT text, the complete 1.20.5+ item-component stack codec, Configuration/known-pack lifecycle and the essential Play/Game bridge are now reproducible; the next task is the first graphical native-server join.
 
 ```sh
 npm ci
@@ -22,7 +22,7 @@ npm run probe:1.20.6
 
 The fixture binds only `127.0.0.1:25568` in a fresh cache-local temporary world and refuses an occupied port. It verifies the pinned server SHA-1 and writes its own fixture EULA/properties, so it never loads or upgrades user worlds or configuration. Stop the fixture with Ctrl+C when finished.
 
-Encrypted login, the full Play codec/Game integration and graphical integration remain pending. Item components and Configuration known-pack/registry ownership are native-verified. No prebuilt 1.20.6 distribution is claimed.
+Encrypted login and graphical integration remain pending. Essential Play terrain/light, dimension, entity, HUD and inventory consumers are native-verified, but later feature families still have their own parity gates. No prebuilt 1.20.6 distribution is claimed.
 
 ## Inherited graphical baseline
 

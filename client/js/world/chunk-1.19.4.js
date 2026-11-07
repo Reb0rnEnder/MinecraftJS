@@ -15,13 +15,15 @@ export function readPalette762(r,size,registrySize,kind){
   if(palette){if(value>=palette.length)throw Error('Invalid local palette index');value=palette[value];}else if(value>=registrySize)throw Error('Invalid direct palette value');result[index]=value;
  }}return result;
 }
-export function decodeChunkData762(packet,{stateCount=BLOCK_STATE_COUNT_762,biomeCount,sectionCount=24}={}){
+export function decodeChunkData762(packet,{stateCount=BLOCK_STATE_COUNT_762,biomeCount,sectionCount=24,airStates=AIR_STATES_762}={}){
  // Biome IDs are supplied by the server registry; never assume an older limit.
  if(!Number.isInteger(biomeCount)||biomeCount<1)throw Error('Missing 762 biome registry size');
  if(!Number.isInteger(sectionCount)||sectionCount<1||sectionCount>254)throw Error('Invalid dimension section count');
  const r=new Reader762(packet.chunkData),sections=new Array(sectionCount),biomes=new Uint32Array(sectionCount*64);
+ if(!Array.isArray(airStates)||!airStates.length||airStates.some(state=>!Number.isInteger(state)||state<0||state>=stateCount))throw Error('Invalid air state set');
+ const air=new Set(airStates);
  for(let y=0;y<sectionCount;y++){
-  const offset=r.offset;try{const wireNonAir=r.u16(),blocks=readPalette762(r,4096,stateCount,'blocks'),sectionBiomes=readPalette762(r,64,biomeCount,'biomes');let nonAir=0;for(const state of blocks)if(!AIR_STATES_762.includes(state))nonAir++;sections[y]={blocks,nonAir,wireNonAir};biomes.set(sectionBiomes,y*64);}catch(error){throw Error(`${error.message} (chunk ${packet.x},${packet.z}, section ${y}, byte ${offset})`,{cause:error});}
+  const offset=r.offset;try{const wireNonAir=r.u16(),blocks=readPalette762(r,4096,stateCount,'blocks'),sectionBiomes=readPalette762(r,64,biomeCount,'biomes');let nonAir=0;for(const state of blocks)if(!air.has(state))nonAir++;sections[y]={blocks,nonAir,wireNonAir};biomes.set(sectionBiomes,y*64);}catch(error){throw Error(`${error.message} (chunk ${packet.x},${packet.z}, section ${y}, byte ${offset})`,{cause:error});}
  }
  // Native Data.getSerializedSize sizes the storage's entry count VarInt, but writes
  // the long-array length. Each single-value block palette can leave one zero byte

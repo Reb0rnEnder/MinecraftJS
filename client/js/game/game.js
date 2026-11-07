@@ -26,7 +26,7 @@ import {readPalette762} from '../world/chunk-1.19.4.js';
 import {Reader762} from '../net/protocol-1.19.4.js';
 import {BlockPrediction762} from './block-prediction-1.19.4.js';
 import {resolveDimension762} from '../net/protocol-1.19.4.js';
-import {ENTITY_TYPES} from './entity-types.js';
+import {ENTITY_TYPES,ENTITIES_BY_NAME} from './entity-types.js';
 import {registryEntries} from '../net/registry-codec.js';
 import {captureNetwork} from '../debug/capture-network.js';
 import {resetPlayerView} from './respawn-view.js';
@@ -70,7 +70,7 @@ import { World } from '../world/world.js';
 import { getBlock, getBlockById, getStateProperties } from '../world/blocks.js';
 import { isPointInFluid } from '../world/fluids.js';
 import { resolveState } from '../world/blockstates.js';
-import { biomeInfo,setServerBiomes } from '../world/biomes.js';
+import { biomeInfo,setServerBiomes,setServerBiomeEntries } from '../world/biomes.js';
 import { LocalPlayer } from './physics.js';
 import { BoatController, HorseController, SteerableController } from './vehicle.js';
 import { Advancements } from './advancements.js';
@@ -810,6 +810,9 @@ export class Game {
   on_simulation_distance(p) { this.serverSimulationDistance=p.distance; }
 
   on_update_view_distance(p) { this.serverViewDistance=p.viewDistance; }
+  on_update_view_position(p) { this.serverChunkCenter={x:p.chunkX,z:p.chunkZ}; }
+  on_set_ticking_state(p) { this.serverTickRate=p.tickRate;this.serverFrozen=!!p.isFrozen; }
+  on_step_tick(p) { this.serverStepTicks=p.tickSteps; }
 
   on_chat_suggestions(p) {
     const entries=this.customChatCompletions??=new Set();
@@ -828,8 +831,13 @@ export class Game {
     resetPlayerView(this);
     this.interaction?.predictedDoors?.clear();
     this.serverSimulationDistance=p.simulationDistance;
-    const nativeBiomes=registryEntries(simplify(p.dimensionCodec),'minecraft:worldgen/biome');
-    this.world.biomeRegistrySize=Math.max(1,...nativeBiomes.map(b=>b.id+1));
+    if(p.biomeRegistrySize)this.world.biomeRegistrySize=p.biomeRegistrySize;
+    else {
+      const nativeBiomes=registryEntries(simplify(p.dimensionCodec),'minecraft:worldgen/biome');
+      this.world.biomeRegistrySize=Math.max(1,...nativeBiomes.map(b=>b.id+1));
+    }
+    if(p.blockStateRegistrySize)this.world.blockStateRegistrySize=p.blockStateRegistrySize;
+    if(p.airStates)this.world.airStates=p.airStates.slice();
     this.serverBrand=null;this.serverViewDistance=p.viewDistance??this.settings.renderDistance;
     resetServerRecipes(this);this.nbtQueries?.clear();
     this.eaglerTextures?.clear();
@@ -851,7 +859,8 @@ export class Game {
     this.hardcore = p.isHardcore;
     this.dimension = p.dimension;
     this.worldName=p.worldName;this.dimensionData=p.dimensionData;this.lastDeathLocation=p.death;
-    if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));this.worker?.postMessage({type:'serverBiomes',codec:simplify(p.dimensionCodec)});}
+    if(p.biomeEntries){setServerBiomeEntries(p.biomeEntries);this.worker?.postMessage({type:'serverBiomes',entries:p.biomeEntries});}
+    else if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));this.worker?.postMessage({type:'serverBiomes',codec:simplify(p.dimensionCodec)});}
     if(p.difficulty!==undefined)this.difficulty = p.difficulty;
     this.maxPlayers = p.maxPlayers;
     this.levelType = p.levelType;
@@ -892,11 +901,12 @@ export class Game {
   }
 
   on_server_data(p){
-    this.serverData={motd:p.motd,iconBytes:p.iconBytes??null,enforcesSecureChat:!!p.enforcesSecureChat};
-    this.enforcesSecureChat=!!p.enforcesSecureChat;
-    // Native ClientPacketListener.handleServerData: the server's policy triggers
-    // the warning, independently of whether an individual message was received.
-    if(!p.enforcesSecureChat)this.hud.addToast(multilineToast(this.gui,'unsecureServer',this.assets.translate('multiplayer.unsecureserver.toast.title'),this.assets.translate('multiplayer.unsecureserver.toast'),10000));
+    const secure=p.enforcesSecureChat===undefined?this.enforcesSecureChat:!!p.enforcesSecureChat;
+    this.serverData={motd:p.motd,iconBytes:p.iconBytes??null,enforcesSecureChat:secure};
+    if(p.enforcesSecureChat!==undefined)this.enforcesSecureChat=secure;
+    //// Native ClientPacketListener.handleServerData: only revisions carrying the
+    //// policy field may change the secure-chat warning state here.
+    if(p.enforcesSecureChat!==undefined&&!secure)this.hud.addToast(multilineToast(this.gui,'unsecureServer',this.assets.translate('multiplayer.unsecureserver.toast.title'),this.assets.translate('multiplayer.unsecureserver.toast'),10000));
   }
   on_feature_flags(p){this.enabledFeatures=new Set(p.features);}
   on_system_chat(p){this.on_chat({message:p.content,position:p.isActionBar?2:1});}
@@ -973,7 +983,7 @@ export class Game {
   }
 
   on_respawn(p) {
-    this.blockPrediction?.reset();p.dimensionData=resolveDimension762(this.dimensionCodec,p.worldType);p.dimension=p.dimensionData.effects==='minecraft:the_nether'?-1:p.dimensionData.effects==='minecraft:the_end'?1:0;
+    this.blockPrediction?.reset();if(!p.dimensionData){p.dimensionData=resolveDimension762(this.dimensionCodec,p.worldType);p.dimension=p.dimensionData.effects==='minecraft:the_nether'?-1:p.dimensionData.effects==='minecraft:the_end'?1:0;}
     resetPlayerView(this);
     this.interaction?.predictedDoors?.clear();
     stopSleeping(this);
@@ -992,7 +1002,11 @@ export class Game {
     }
     this.dimension = p.dimension;
     this.worldName=p.worldName;this.dimensionData=p.dimensionData;this.lastDeathLocation=p.death;
-    if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));this.worker?.postMessage({type:'serverBiomes',codec:simplify(p.dimensionCodec)});}
+    if(p.biomeRegistrySize)this.world.biomeRegistrySize=p.biomeRegistrySize;
+    if(p.blockStateRegistrySize)this.world.blockStateRegistrySize=p.blockStateRegistrySize;
+    if(p.airStates)this.world.airStates=p.airStates.slice();
+    if(p.biomeEntries){setServerBiomeEntries(p.biomeEntries);this.worker?.postMessage({type:'serverBiomes',entries:p.biomeEntries});}
+    else if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));this.worker?.postMessage({type:'serverBiomes',codec:simplify(p.dimensionCodec)});}
     this.world.setDimension(p.dimension,p.dimensionData||{});
     if(p.dimensionData)this.world.hasSky=!!p.dimensionData.has_skylight;
     this.world.setBiomeSeed?.(p.hashedSeed);
@@ -1060,7 +1074,13 @@ export class Game {
 
   on_collect(p) { this.entities.onCollect(p); }
 
-  on_spawn_entity(p) { const def=ENTITY_TYPES[p.type];if(def?.mob||def?.name==='armor_stand')this.entities.spawnMob({...p,entityUUID:p.objectUUID,metadata:{}});else this.entities.spawnObject(p); }
+  on_spawn_entity(p) {
+    const canonical=p.entityTypeName?.replace(/^minecraft:/,'');
+    const def=canonical?ENTITIES_BY_NAME[canonical]:ENTITY_TYPES[p.type];
+    const normalized={...p,type:def?.id??-1,wireType:p.wireType??p.type,entityTypeName:canonical||def?.name};
+    if(def?.mob||def?.name==='armor_stand'||['armadillo','bogged','breeze'].includes(canonical))this.entities.spawnMob({...normalized,entityUUID:p.objectUUID,metadata:{}});
+    else this.entities.spawnObject(normalized);
+  }
 
   on_spawn_entity_living(p) { this.entities.spawnMob(p); }
 

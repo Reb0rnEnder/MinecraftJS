@@ -1,31 +1,32 @@
 # Native 1.20.6 development evidence
 
-The graphical runtime is still the 1.19.4 baseline. This branch is an early
-protocol port, not a playable 1.20.6 client or a full-parity release.
+The graphical runtime is still the 1.19.4 baseline. This branch now has the
+native 1.20.6 transport, Configuration, component-stack and essential Play/Game
+consumer layers, but it is not yet a graphically accepted 1.20.6 client or a
+full-parity release.
 
-On 2026-11-05 the SHA-1-pinned native 1.20.6 server (protocol 766) accepted the
-new offline transport in a disposable loopback-only world. The probe observed
-compression threshold 256, full Configuration negotiation, eight streamed
-registries (64 biomes, 7 chat types, 16 trim patterns, 10 trim materials, 9 wolf
-variants, 4 dimension types, 45 damage types, 41 banner patterns), vanilla feature
-flags, native Play join in the overworld, teleport confirmation, a real keepalive
-reply, four chunk-batch replies and 45 received chunk payloads. Those chunks were
-counted as raw packets; no terrain decoding/rendering is claimed.
+The SHA-1-pinned native 1.20.6 server (protocol 766) accepts the offline transport
+in a disposable loopback-only world. The current probe observes compression
+threshold 256, full Configuration negotiation, eight synchronized registries
+(64 biomes, 7 chat types, 16 trim patterns, 10 trim materials, 9 wolf variants,
+4 dimension types, 45 damage types, 41 banner patterns), vanilla feature flags,
+native Play join in the overworld, teleport confirmation, a real keepalive reply,
+five chunk-batch replies and 45 decoded/normalized chunk payloads. Rendering those
+chunks in the browser remains the P07 acceptance gate.
 
 Run `npm run prepare:1.20.6`, `npm run test:1.20.6`, then the fixture and probe
 commands in README.md. Native ConfigurationProtocols registrations, registry
 entries and known-pack packets were cross-checked against the exact client jar
 and official mappings. Java DataOutputStream independently confirmed the modified
 UTF-8 fixture `000b41c080c3a9eda0bcedbcbf` for NUL and supplementary characters.
-Nine target regressions pass. Inherited mouse-look/Wisp regressions have nine
-passes and one intentional browser-only skip.
+The permanent target gate now passes 87/87 regressions. Inherited mouse-look/Wisp
+regressions have nine passes and one intentional browser-only skip.
 
-Cookie limits, absent registry payload rejection, duplicate entries, phase
-acknowledgements, subsequent reconfiguration and malformed input are covered by
-regressions. Real server transfer, encrypted authentication, resource-pack UI,
-item-component stacks, complete Play decoding and graphical integration remain
-open. The old slot codec explicitly throws for this target rather than silently
-misreading component stacks. Target-specific network formats are not backported.
+Cookie limits, registry ownership, phase acknowledgements, reconfiguration,
+component-stack defaults/patches, essential Play decoding and malformed input are
+covered by regressions. Real server transfer, encrypted authentication,
+resource-pack UI and graphical integration remain open. Later feature families
+retain their own ledger gates; target-specific network formats are not backported.
 
 The local server jar is verified against target.json; only server properties and
 EULA were copied from the existing 1.19.4 fixture. User worlds/configs/captures
@@ -143,3 +144,37 @@ explicitly instead of silently using the wrong target data.
 
 `npm run test:1.20.6` passes 80/80 target regressions after the P05 changes.
 P06 essential Play packet bodies and Game consumers is now the next gate.
+
+## P06 essential Play/Game bridge, 2026-11-07
+
+P06 is accepted. A target-only generated schema now covers 53 essential
+clientbound Play packets and 64 reachable helper types. Native 1.20.6 bytecode
+was used to correct three material mistakes in the pinned third-party schema:
+section block-update records and both world-border lerp-time fields are VarLong,
+not VarInt.
+
+The decoder resolves numeric dimension references against Configuration-owned
+dimension registries, forwards simplified biome entries to both the main renderer
+and mesh workers, and supplies the target block-state count and exact air-state
+IDs to the existing compact chunk decoder. Chunk/light, block changes, block
+entities, inventory component stacks, entities, metadata, attributes, movement,
+HUD state and world-border packets are normalized to the established Game/World
+consumer contracts rather than being routed through protocol 762.
+
+`tools/test-1.20.6-play.mjs` drives the resulting packet shapes through actual
+`Game.handlePacket` consumers for Join Game, terrain/light, inventory, entity
+identity/movement/attributes, health/experience/abilities and border state. The
+complete target gate passes 87/87 tests.
+
+The isolated live vanilla probe additionally reached Play with
+`minecraft:core@1.20.6`, resolved the native overworld dimension, confirmed the
+initial teleport, answered a keepalive, acknowledged five chunk batches and
+decoded 45 native chunk packets. A focused shared-baseline pass kept 35 relevant
+world/biome/entity/light/border/respawn tests green. Two selected legacy tests
+were already failing on untouched pre-P06 commit `c35d94a`, which was confirmed
+in a detached worktree rather than attributed to this milestone.
+
+P07 is next: route protocol 766 through the actual graphical browser connection,
+build target assets/runtime data, join the isolated server and accept rendered
+terrain/entities/HUD plus movement/respawn before changing the public version
+identity.

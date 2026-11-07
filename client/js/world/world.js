@@ -93,7 +93,7 @@ export class World {
   }
 
   loadChunk762(packet) {
-    const decoded=decodeChunkData762(packet,{sectionCount:this.sectionCount,biomeCount:this.biomeRegistrySize}),{x,z,groundUp}=packet;const bitMap=(1n<<BigInt(this.sectionCount))-1n;
+    const decoded=decodeChunkData762(packet,{sectionCount:this.sectionCount,biomeCount:this.biomeRegistrySize,stateCount:this.blockStateRegistrySize,airStates:this.airStates}),{x,z,groundUp}=packet;const bitMap=(1n<<BigInt(this.sectionCount))-1n;
     this.updateLight758({...packet,chunkX:x,chunkZ:z});
     let c=this.getChunk(x,z);
     if(!c){c=new Chunk(x,z,this.hasSky,this);this.chunks.set(World.key(x,z),c);this._gen++;}

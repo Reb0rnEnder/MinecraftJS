@@ -6,7 +6,7 @@
   "fullParity": false,
   "nativeGraphicalGameplayAccepted": false,
   "planningSourceCommit": "ecd95f4786b951869af59c46a1ad140a54931b72",
-  "nextTask": "P06",
+  "nextTask": "P07",
   "authorization": "Proceed with 1.20.6 now; keep inherited work open rather than requiring its completion before starting.",
   "executionRule": "Follow dependency order; native evidence and gate completion are required before marking done. Push validated batches and review shared backports as they land, not only at P16.",
   "tasks": [
@@ -127,7 +127,7 @@
     {
       "id": "P06",
       "title": "Implement essential native Play packet bodies and Game consumers",
-      "status": "todo",
+      "status": "done",
       "dependsOn": [
         "P02",
         "P03",
@@ -140,7 +140,13 @@
         "1.20.6"
       ],
       "acceptance": "Terrain/light, dimensions, entities, attributes, movement, HUD and inventory reach actual handlers with native fixtures.",
-      "evidence": []
+      "evidence": [
+        "A generated target-only Play schema covers 53 essential protocol-766 clientbound packets and 64 reachable helper types, with Mojang-bytecode corrections for the section-block-update and world-border VarLong fields that the pinned third-party schema labels as VarInt.",
+        "Join/respawn resolve dimension and biome ownership from Configuration registries; chunk palettes use all 26,684 target block states and the target air-state IDs, while target biome entries propagate to both main-thread and mesh-worker consumers.",
+        "Actual Game handlers are exercised for terrain/light/block changes, component-stack inventory updates, entity identity/movement/attributes, HUD/abilities and world-border lerp state. The permanent target gate passes 87/87 tests.",
+        "An isolated SHA-pinned vanilla 1.20.6 server reached Play through the full transport, resolved the native overworld dimension, auto-acknowledged teleport/keepalive/chunk batches and decoded 45 real chunk packets across five acknowledged batches.",
+        "A focused shared-baseline regression pass kept 35 relevant world/biome/entity/light/border/respawn tests green; the two selected failing legacy tests were independently reproduced unchanged on pre-P06 commit c35d94a."
+      ]
     },
     {
       "id": "P07",

@@ -14,12 +14,16 @@ export function initBiomes(biomesJson, grassPixels, foliagePixels) {
   foliageMap = foliagePixels;
 }
 
-export function setServerBiomes(codec){
+export function setServerBiomeEntries(entries){
  serverBiomeTable=[];
- for(const entry of registryEntries(codec,'minecraft:worldgen/biome')){
-  const b=entry.element,effects=b.effects||{};
+ for(const entry of entries||[]){
+  const b=entry.element,effects=b?.effects||{};
+  if(!b)continue;
   serverBiomeTable[entry.id]={...(biomeTable[entry.id]||{}),...b,name:entry.name.replace(/^minecraft:/,''),rainfall:b.downfall,effects,waterColor:effects.water_color,waterFogColor:effects.water_fog_color};
  }
+}
+export function setServerBiomes(codec){
+ setServerBiomeEntries(registryEntries(codec,'minecraft:worldgen/biome'));
 }
 export function biomeInfo(id) { return serverBiomeTable[id] || biomeTable[id] || biomeTable[1] || { temperature: 0.8, rainfall: 0.4, name: 'plains' }; }
 
