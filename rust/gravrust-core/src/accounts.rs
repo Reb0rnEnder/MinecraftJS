@@ -109,7 +109,7 @@ impl Accounts {
             .trim_end()
             .to_string();
         let name = if sanitized.is_empty() { "Player".to_string() } else { sanitized };
-        let name = name.slice(0..16.min(name.len()));
+        let name = &name[..16.min(name.len())];
         let id = format!("offline:{}", name);
         if self.list.iter().any(|a| a.id == id) {
             let a = self.list.iter().find(|a| a.id == id).unwrap();
