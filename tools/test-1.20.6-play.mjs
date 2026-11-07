@@ -288,6 +288,9 @@ test("entity identity, movement and attributes reach existing entity consumers",
     "rel_entity_move",
     new Writer766().varint(42).i16(4096).i16(-2048).i16(1024).bool(true).build()
   );
+  assert.equal(move.dX, 1);
+  assert.equal(move.dY, -0.5);
+  assert.equal(move.dZ, 0.25);
   target.handlePacket({ name: "rel_entity_move", ...move });
   assert.deepEqual(calls.find((call) => call[0] === "relMove").slice(2), [true, false]);
 

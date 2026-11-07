@@ -13,6 +13,7 @@ export class VanillaSocket766 extends VanillaSocket {
     this.configuration = null;
     this.profile = null;
     this.configurationGeneration = 0;
+    this.autoPlayAcks = options.autoPlayAcks !== false;
   }
 
   _connect(msg) {
@@ -101,11 +102,11 @@ export class VanillaSocket766 extends VanillaSocket {
         return;
       }
 
-      if (packet.name === "keep_alive") {
+      if (this.autoPlayAcks && packet.name === "keep_alive") {
         this._send(C766.playKeepAlive(packet.keepAliveId));
-      } else if (packet.name === "position") {
+      } else if (this.autoPlayAcks && packet.name === "position") {
         this._send(C766.teleportConfirm(packet.teleportId));
-      } else if (packet.name === "chunk_batch_finished") {
+      } else if (this.autoPlayAcks && packet.name === "chunk_batch_finished") {
         this._send(C766.chunkBatchReceived(packet.batchSize));
       } else if (packet.name === "kick_disconnect") {
         this.emit("play_disconnect", packet.reason);

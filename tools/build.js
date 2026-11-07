@@ -39,8 +39,11 @@ const mcassets = require('../lib/mcassets');
 const {indexedClientAssets}=require('../lib/asset-layers');
 const { extractModels, assertCompleteModels } = require('../lib/modelextract');
 
-const ROOT = path.join(__dirname, '..');
-const CLIENT = path.join(ROOT, 'client');
+const ROOT = path.join(__dirname, "..");
+const CLIENT = path.join(ROOT, "client");
+const DATA_DIR = process.env.MC_RUNTIME_DATA
+  ? path.resolve(process.env.MC_RUNTIME_DATA)
+  : path.join(CLIENT, "data");
 
 const REPEATABLE = new Set(['proxy', 'server']);
 
@@ -183,14 +186,14 @@ async function collectAssets(opts) {
   // Extraction failures must stop the build rather than publish stale geometry.
   const models = assertCompleteModels(extractModels(jar));
   const {validateVisualRuntime}=await import('./port-1.14.4/validate-visual-runtime.mjs');
-  console.log('Native visual validation:',JSON.stringify(validateVisualRuntime(jar,models)));
+  console.log("Native visual validation:",JSON.stringify(validateVisualRuntime(jar,models,null,{dataDir:DATA_DIR})));
   files.set('bundles/entity-models.json', Buffer.from(JSON.stringify(models)));
   console.log(`Entity models: ${Object.keys(models).length} from the jar`);
 
   const index = await mcassets.loadAssetIndex();
   const meta = await index.read('pack.mcmeta');
   const mcmeta = meta ? JSON.parse(meta.toString('utf8')) : {};
-  mcmeta.pack = { pack_format: mcassets.MC_VERSION === '1.19.4' ? 13 : mcassets.MC_VERSION === '1.18.2' ? 8 : mcassets.MC_VERSION === '1.17.1' ? 7 : mcassets.MC_VERSION === '1.16.5' ? 6 : 5, description: 'The default look and feel of Minecraft' };
+  mcmeta.pack = { pack_format: mcassets.PACK_FORMAT, description: "The default look and feel of Minecraft" };
   files.set('pack.mcmeta', Buffer.from(JSON.stringify(mcmeta)));
 
   const names = indexedClientAssets(index)
@@ -332,8 +335,10 @@ async function buildHtml(opts) {
   if (!opts['no-assets']) {
     const files = await collectAssets(opts);
     files.set('bundles/recipes.json', recipeBundle(files));
-    for (const f of fs.readdirSync(path.join(CLIENT, 'data'))) {
-      if (f.endsWith('.json')) files.set('data/' + f, fs.readFileSync(path.join(CLIENT, 'data', f)));
+    for (const f of fs.readdirSync(DATA_DIR)) {
+      if (f.endsWith(".json") && !f.startsWith("runtime-source-")) {
+        files.set("data/" + f, fs.readFileSync(path.join(DATA_DIR, f)));
+      }
     }
     const zip = writeZip(new Map([...files].sort((a, b) => (a[0] < b[0] ? -1 : 1))));
     console.log(`Embedded assets: ${(zip.length / 1048576).toFixed(1)} MB (${files.size} files)`);
@@ -344,7 +349,10 @@ async function buildHtml(opts) {
     // The page reads assets/ (npm run assets) and data/ next to it
     const dataOut = path.join(path.dirname(out), 'data');
     fs.rmSync(dataOut, { recursive: true, force: true });
-    fs.cpSync(path.join(CLIENT, 'data'), dataOut, { recursive: true });
+    fs.cpSync(DATA_DIR, dataOut, {
+      recursive: true,
+      filter: (source) => !path.basename(source).startsWith("runtime-source-")
+    });
     console.log(`Copied data/ next to the page; put the assets/ folder there too`);
   }
 
@@ -376,7 +384,10 @@ async function buildStatic(opts) {
   writeFolder(path.join(out,'assets'),files);
   fs.mkdirSync(path.join(out,'js'),{recursive:true});
   fs.writeFileSync(path.join(out,'js','main.js'),await bundleJs());
-  fs.cpSync(path.join(CLIENT,'data'),path.join(out,'data'),{recursive:true});
+  fs.cpSync(DATA_DIR,path.join(out,"data"),{
+    recursive:true,
+    filter:(source)=>!path.basename(source).startsWith("runtime-source-")
+  });
   for(const name of ['index.html','style.css','favicon.ico','favicon.svg','apple-touch-icon.png'])fs.copyFileSync(path.join(CLIENT,name),path.join(out,name));
   fs.writeFileSync(path.join(out,'config.json'),JSON.stringify(config,null,2)+'\n');
   console.log('Wrote static website '+out+' (upload the entire directory)');

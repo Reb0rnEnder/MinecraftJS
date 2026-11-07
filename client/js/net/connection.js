@@ -9,15 +9,23 @@ import { parseAddress } from './address.js';
 import { openEaglerSocket, pingEagler } from './eagler.js';
 import { currentProxy, proxyType } from './proxies.js';
 import { VanillaSocket } from './tcp.js';
+import { VanillaSocket766 } from './tcp-1.20.6.js';
 
 const NO_PROXY = 'No proxy selected: add one in Proxy Servers on the title screen (or join an Eaglercraft wss:// server)';
 
 // A socket to the selected proxy (MinecraftJS proxy, or a relay / Wisp link handled in the client)
-async function openProxySocket() {
+async function openProxySocket(protocol = PROTOCOL_VERSION) {
   const p = currentProxy();
   if (!p) throw new Error(NO_PROXY);
-  if (proxyType(p) !== 'minecraftjs') return new VanillaSocket({ ...p, type: proxyType(p) });
-  try { return await platform().openSocket(p.url); } catch (e) { throw new Error('Could not reach the MinecraftJS proxy'); }
+  const type = proxyType(p);
+  if (protocol === 766) {
+    return new VanillaSocket766(
+      { ...p, type: type === "minecraftjs" ? "minecraftjs-raw" : type },
+      { autoPlayAcks: false }
+    );
+  }
+  if (type !== "minecraftjs") return new VanillaSocket({ ...p, type });
+  try { return await platform().openSocket(p.url); } catch (e) { throw new Error("Could not reach the MinecraftJS proxy"); }
 }
 
 export class Connection {
@@ -39,7 +47,7 @@ export class Connection {
     if (this.ws) return;
     let sock;
     if (eagler) sock = await openEaglerSocket(eagler);
-    else sock = await openProxySocket();
+    else sock = await openProxySocket(PROTOCOL_VERSION);
     this.ws = sock;
     sock.on('close', () => {
       const was = this.state;
@@ -52,19 +60,27 @@ export class Connection {
       try { msg = JSON.parse(text); } catch (err) { return; }
       this.emit('control', msg);
     });
-    sock.on('binary', (bytes) => {
-      this.bytesIn += bytes.length;
-      this.packetsIn++;
-      let p;
-      try {
-        p = decodePacket(bytes);
-      } catch (err) {
-        this.emit('decode_error',{leadingByte:bytes[0],bytes:bytes.length,message:String(err?.message||err)});
-        console.warn('Failed to decode packet', bytes[0], err);
-        return;
-      }
-      try{this.bundles.accept(p,packet=>this.emit('packet',packet));}catch(error){this.emit('decode_error',{message:error.message});sock.close();}
-    });
+    if (PROTOCOL_VERSION === 766 && !eagler) {
+      sock.on("play", (packet) => {
+        this.packetsIn++;
+        this.emit("packet", packet);
+      });
+      sock.on("binary", (bytes) => { this.bytesIn += bytes.length; });
+    } else {
+      sock.on('binary', (bytes) => {
+        this.bytesIn += bytes.length;
+        this.packetsIn++;
+        let p;
+        try {
+          p = decodePacket(bytes);
+        } catch (err) {
+          this.emit('decode_error',{leadingByte:bytes[0],bytes:bytes.length,message:String(err?.message||err)});
+          console.warn('Failed to decode packet', bytes[0], err);
+          return;
+        }
+        try{this.bundles.accept(p,packet=>this.emit('packet',packet));}catch(error){this.emit('decode_error',{message:error.message});sock.close();}
+      });
+    }
   }
 
   // auth: { accessToken, uuid } for online-mode servers (Microsoft accounts), else null.
@@ -82,7 +98,7 @@ export class Connection {
     if (a && a.kind === 'eagler') return pingEagler(a);
     // Use a separate socket so pings don't interfere with a live session
     let sock;
-    try { sock = await openProxySocket(); } catch (e) { return { error: currentProxy() ? 'Proxy unreachable' : 'No proxy' }; }
+    try { sock = await openProxySocket(PROTOCOL_VERSION); } catch (e) { return { error: currentProxy() ? 'Proxy unreachable' : 'No proxy' }; }
     return new Promise((resolve) => {
       let done = false;
       const finish = (r) => { if (done) return; done = true; clearTimeout(timer); sock.close(); resolve(r); };

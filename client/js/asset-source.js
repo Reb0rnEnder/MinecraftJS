@@ -8,7 +8,7 @@ import { decodeUtf8 } from './util/utf8.js';
 
 export class FolderSource {
   constructor(base = 'assets/') { this.base = base; this.kind = 'folder'; }
-  url(rel) { return this.base + rel + '?v=1.19.4-native-v1'; }
+  url(rel) { return this.base + rel + "?v=1.20.6-native-v1"; }
   bytes(rel) { return platform().fetchBytes(this.url(rel)).catch(() => null); }
   data(name) { return platform().fetchJson(`data/${name}.json`); }
   textureIndex(){return platform().fetchJson(this.url('bundles/texture-index.json')).catch(()=>[]);}

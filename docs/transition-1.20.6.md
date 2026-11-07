@@ -136,7 +136,7 @@ Review shared fixes for every applicable existing branch, newest to oldest; pres
 
 ## Immediate next work
 
-P02 through P06 are complete: native target data/resources, strict protocol-766 NBT text, all 56 item-component payloads, the full Configuration lifecycle and the essential Play/Game consumer bridge now have reproducible/native evidence. Exact minecraft:core@1.20.6 known-pack negotiation was verified against vanilla with all 196 omitted registry values restored from the pinned cache; the Play probe also decoded 45 native chunks across five acknowledged batches. Start **P07** for the first graphical native-server join and atomic public-version switch. Keep all 87 target regressions and every native regeneration/live-probe gate green.
+P02 through P07 are complete. The tracked/default runtime now targets 1.20.6, and a real Chrome client has joined the isolated vanilla server, rendered target terrain/entities/HUD, moved through the normal input/network path and completed a real death/respawn cycle. Start **P08** for inventory/action reconciliation and target physics attributes; creative/item-mechanics data intentionally remains a target-marked deferred surface rather than copied 1.19.4 data. Keep all 87 target regressions plus native regeneration, asset-build and live-browser gates green.
 
 ## Native implementation anchors
 

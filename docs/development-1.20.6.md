@@ -1,9 +1,9 @@
 # Native 1.20.6 development evidence
 
-The graphical runtime is still the 1.19.4 baseline. This branch now has the
-native 1.20.6 transport, Configuration, component-stack and essential Play/Game
-consumer layers, but it is not yet a graphically accepted 1.20.6 client or a
-full-parity release.
+The graphical P07 milestone is accepted on native 1.20.6: the tracked/default
+runtime data, asset target, protocol and public identity now agree on 1.20.6.
+Full parity is still unfinished; P08-P16 retain inventory/action, authenticated
+session, resource-pack, presentation, chat/command and inherited-gap work.
 
 The SHA-1-pinned native 1.20.6 server (protocol 766) accepts the offline transport
 in a disposable loopback-only world. The current probe observes compression
@@ -11,8 +11,9 @@ threshold 256, full Configuration negotiation, eight synchronized registries
 (64 biomes, 7 chat types, 16 trim patterns, 10 trim materials, 9 wolf variants,
 4 dimension types, 45 damage types, 41 banner patterns), vanilla feature flags,
 native Play join in the overworld, teleport confirmation, a real keepalive reply,
-five chunk-batch replies and 45 decoded/normalized chunk payloads. Rendering those
-chunks in the browser remains the P07 acceptance gate.
+five chunk-batch replies and 45 decoded/normalized chunk payloads. P07 then drove
+the same target through a disposable real Chrome client and accepted graphical
+terrain/entity/HUD, movement and death/respawn behavior.
 
 Run `npm run prepare:1.20.6`, `npm run test:1.20.6`, then the fixture and probe
 commands in README.md. Native ConfigurationProtocols registrations, registry
@@ -25,8 +26,9 @@ regressions have nine passes and one intentional browser-only skip.
 Cookie limits, registry ownership, phase acknowledgements, reconfiguration,
 component-stack defaults/patches, essential Play decoding and malformed input are
 covered by regressions. Real server transfer, encrypted authentication,
-resource-pack UI and graphical integration remain open. Later feature families
-retain their own ledger gates; target-specific network formats are not backported.
+resource-pack UI and later feature families remain open. Graphical native-server
+join is accepted, but target-specific network formats are not backported and
+full-parity/release claims remain gated by P08-P16.
 
 The local server jar is verified against target.json; only server properties and
 EULA were copied from the existing 1.19.4 fixture. User worlds/configs/captures
@@ -178,3 +180,50 @@ P07 is next: route protocol 766 through the actual graphical browser connection,
 build target assets/runtime data, join the isolated server and accept rendered
 terrain/entities/HUD plus movement/respawn before changing the public version
 identity.
+
+## P07 graphical native 1.20.6 acceptance, 2026-11-07
+
+P07 is accepted. The target runtime generator now derives and validates 1,060
+blocks / 26,684 states, 1,330 items, 130 entities, 64 biomes and 1,607 sound
+events from pinned 1.20.6 sources. A mapped native visual extractor covered all
+26,684 block states with zero extraction errors, producing 5,538 render-property
+combinations, 320 collision shapes and 388 selection shapes. Native model-layer
+extraction found 212 baked 1.20.6 layers; every one of the renderer's 123 existing
+model specifications resolved without a missing layer.
+
+The complete target asset build produced 13,186 files (~214.5 MB) with 129 checked
+entity textures, 79 living renderer types and no pending/missing model entries.
+The browser build used only staged 1.20.6 runtime tables during acceptance; no
+1.19.4 JSON was copied forward to make the scene boot.
+
+A disposable real Chrome profile then joined the isolated SHA-pinned vanilla
+1.20.6 server through the new raw MinecraftJS proxy bridge. The browser loaded 45
+chunks, rendered nonblank terrain/HUD, spawned a target-native pig with protocol
+wire type 77 and exact 0.9 x 0.9 target dimensions, and stayed connected while a
+real Chrome KeyW input moved the player 6.04 blocks through the normal
+input/physics/network path.
+
+The live browser run caught two issues that packet-only tests did not: entity wire
+IDs were being reinterpreted through the old numeric renderer registry, and entity
+relative-movement shorts were being treated as blocks instead of 1/4096-block
+units. Entity renderer identity now resolves by canonical target name while
+retaining the wire ID, and protocol-766 relative deltas are normalized at the
+codec boundary. A final live pig moved naturally over six seconds instead of
+running away to huge coordinates; the 1/4096 conversion also has a regression.
+
+Vanilla `/kill` opened the actual browser DeathScreen at health 0. Invoking its
+real Respawn button sent protocol-766 client_command(0); the client received
+respawn/position/health plus 45 fresh chunk packets, returned to health 20, closed
+the death screen and remained connected.
+
+Only after those checks passed were the tracked `client/data` tables, resource-pack
+format/default asset target, public `MinecraftJS 1.20.6` identity, asset cache key
+and saved-hotbar namespace switched atomically. With no target environment
+overrides, tracked runtime JSON byte-matches the validated staged target set,
+`lib/mcassets` selects 1.20.6 / pack format 32, a normal no-assets HTML build
+succeeds, and `npm run test:1.20.6` remains 87/87 green.
+
+P08 is next. Creative/item-mechanics data is intentionally target-marked and
+incomplete rather than inherited from 1.19.4; inventory actions, authoritative
+component-stack reconciliation, native ranges/poses and rejection side effects
+must be ported before that gate can be accepted.

@@ -1,14 +1,16 @@
 # MinecraftJS 1.20.6 port
 
 The named **1.20.6** branch is under development. Native protocol **766** offline
-login, Configuration and the essential Play/Game consumer bridge are implemented
-and tested against a disposable vanilla 1.20.6 server. **Graphical gameplay still
-uses the 1.19.4 baseline below**: its assets and version advertising have deliberately not
-been relabelled. Do not use this graphical build to join a 1.20.6 server yet.
+login, Configuration, essential Play/Game consumers and the first graphical
+native-server milestone are implemented and tested against a disposable vanilla
+1.20.6 server. The default runtime data/assets and public version identity now
+target **1.20.6**. Full feature parity is still unfinished; later ledger gates
+cover inventory actions, authenticated sessions, resource packs, presentation
+families, chat/commands and inherited baseline gaps.
 
 See the [transition plan](docs/transition-1.20.6.md) and
 [native transport evidence](docs/development-1.20.6.md) for remaining gates.
-The [ordered task ledger](docs/transition-1.20.6.tasks.json) tracks dependencies and acceptance criteria. Native data/resources, strict protocol-766 NBT text, the complete 1.20.5+ item-component stack codec, Configuration/known-pack lifecycle and the essential Play/Game bridge are now reproducible; the next task is the first graphical native-server join.
+The [ordered task ledger](docs/transition-1.20.6.tasks.json) tracks dependencies and acceptance criteria. Native data/resources, strict protocol-766 NBT text, the complete 1.20.5+ item-component stack codec, Configuration/known-pack lifecycle, essential Play/Game bridge and graphical join are now reproducible; the next task is inventory/action reconciliation and target physics attributes.
 
 ```sh
 npm ci
@@ -22,18 +24,16 @@ npm run probe:1.20.6
 
 The fixture binds only `127.0.0.1:25568` in a fresh cache-local temporary world and refuses an occupied port. It verifies the pinned server SHA-1 and writes its own fixture EULA/properties, so it never loads or upgrades user worlds or configuration. Stop the fixture with Ctrl+C when finished.
 
-Encrypted login and graphical integration remain pending. Essential Play terrain/light, dimension, entity, HUD and inventory consumers are native-verified, but later feature families still have their own parity gates. No prebuilt 1.20.6 distribution is claimed.
+Encrypted/account login and later feature families remain pending. Essential Play terrain/light, dimension, entity, HUD and inventory state plus the graphical join are native-verified, but this is not a full-parity release. No prebuilt 1.20.6 distribution is claimed.
 
-## Inherited graphical baseline
+## Inherited implementation baseline
 
-This branch targets Java **1.19.4, protocol 762**, with native 1.19.4 assets and
-resource-pack format 13. The graphical client can join a native offline-mode
-server. **Full parity is unfinished**; see the [development ledger](docs/development-1.19.4.md)
-and [transition plan](docs/transition-1.19.4.md) for implemented and remaining work.
-
-Cherry and other Update 1.20 experiments retain their native registry IDs but
-are excluded from normal creative tabs. Older supported clients remain on their
-existing named branches.
+The 1.20.6 port still intentionally reuses some renderer/gameplay helpers whose
+last dedicated parity review was on 1.19.4. Those helpers are being replaced or
+revalidated gate-by-gate rather than blindly relabelled; see the transition task
+ledger for the remaining work. The default network protocol, runtime registries,
+block/entity data, visual-state tables, assets and public identity are now native
+1.20.6. Older supported clients remain on their existing named branches.
 
 Start the proxy from **this worktree**:
 
@@ -41,34 +41,35 @@ Start the proxy from **this worktree**:
 PORT=3003 ALLOW_LOOPBACK=1 npm start
 ```
 
-Open `http://localhost:3003/` and join your 1.19.4 server. Local server files are
-in `server1194/`. Loopback is explicitly allowed here for local testing;
-deployments block it by default. Existing local worlds/configurations are preserved.
+Open `http://localhost:3003/` and join a compatible 1.20.6 server. Loopback is
+explicitly allowed here for local testing; deployments block it by default.
+Use the isolated `npm run fixture:1.20.6` workflow above for parity testing so
+existing local worlds/configurations are never loaded or upgraded.
 
-Reproduce native runtime data and assets (Java 17 or newer and CFR required):
+Reproduce the native 1.20.6 runtime data and assets (Java 21+):
 
 ```sh
-node tools/port-1.19.4/prepare.mjs
-node tools/port-1.19.4/reports.mjs --check
-node tools/port-1.19.4/runtime-data.mjs
+npm run prepare:1.20.6
+node tools/port-1.20.6/reports.mjs --check
+node tools/port-1.20.6/runtime-data.mjs
+node tools/port-1.20.6/visual-runtime.mjs
 npm run assets
-node tools/port-1.19.4/verify-protocol.mjs
+npm run test:1.20.6
 ```
 
 `npm run build` creates a standalone HTML client; use
 `npm run build -- --static --out=dist/site` for static hosting. These are browser
 clients and require a compatible proxy to connect to ordinary Java TCP servers.
 
-MinecraftJS is not affiliated with Mojang or Microsoft. The repository contains no Mojang files: the game assets
-are taken from your own copy of Minecraft 1.18.2, or downloaded from Mojang's servers on first use. That includes the
-entity and block entity models (mobs, boats, chests, signs, skulls, beds, ...): the build runs the pinned
-native Java constructors through the official mappings and stores the resulting geometry in
-`bundles/entity-models.json`.
+MinecraftJS is not affiliated with Mojang or Microsoft. The repository contains no Mojang asset files: target
+game assets are resolved from the SHA-pinned 1.20.6 Mojang inputs/cache when you build them. Entity and block-entity
+models (mobs, boats, chests, signs, skulls, beds, ...) are extracted from pinned native Java constructors through the
+official mappings and stored in `bundles/entity-models.json`.
 
 ## Requirements
 
 - Node.js 22 or newer
-- Java 17 or newer for native asset/data extraction
+- Java 21 or newer for native 1.20.6 asset/data extraction
 - `npm install` (installs the proxy's dependencies, plus esbuild and ffmpeg for the build)
 
 ## Running with the proxy
@@ -81,17 +82,13 @@ npm start
 Then open http://localhost:3000. The proxy serves the client, bridges the browser to Minecraft servers (TCP),
 relays Microsoft account sign in and serves player skins.
 
-Game assets are found automatically, in this order:
-
-1. `client/assets/` if you have built it (see below)
-2. the 1.17.1 jar from `./1.17.1/`, `MC_JAR`, `MC_DIR`, or your launcher's `.minecraft` folder
-3. otherwise a download from Mojang into `cache/`
+Game assets are found automatically from the selected target cache; the 1.20.6 branch defaults to the SHA-pinned
+`cache/port-1.20.6` inputs. A built `client/assets/` directory can be served directly for static hosting.
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `PORT` | `3000` | HTTP and WebSocket port |
-| `MC_JAR` | | path to a `1.17.1.jar` |
-| `MC_DIR` | | a `.minecraft` folder to look in |
+| `MC_VERSION` | `1.20.6` | asset/runtime target selected by the build |
 
 ## Building
 

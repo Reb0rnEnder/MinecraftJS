@@ -891,7 +891,7 @@ function creativeCatalog(game) {
 
 // HotbarSnapshot storage (CreativeSettings, hotbar.nbt): nine saved toolbars, kept in the browser
 // Never read/write the unversioned 1.12 key: its numeric IDs cannot be safely reinterpreted.
-const HOTBARS_KEY = 'minecraftjs.hotbars.1.19.4.v1';
+const HOTBARS_KEY = "minecraftjs.hotbars.1.20.6.v1";
 const toJson = (v) => JSON.stringify(v, (k, x) => (ArrayBuffer.isView(x) ? { $ta: x.constructor.name, a: Array.from(x, (n) => (typeof n === 'bigint' ? String(n) : n)) } : typeof x === 'bigint' ? { $big: String(x) } : x));
 const savedArrays = { Int8Array, Uint8Array, Int32Array, BigInt64Array };
 const fromJson = (s) => JSON.parse(s, (k, x) => {

@@ -4,9 +4,9 @@
   "target": "1.20.6",
   "branch": "1.20.6",
   "fullParity": false,
-  "nativeGraphicalGameplayAccepted": false,
+  "nativeGraphicalGameplayAccepted": true,
   "planningSourceCommit": "ecd95f4786b951869af59c46a1ad140a54931b72",
-  "nextTask": "P07",
+  "nextTask": "P08",
   "authorization": "Proceed with 1.20.6 now; keep inherited work open rather than requiring its completion before starting.",
   "executionRule": "Follow dependency order; native evidence and gate completion are required before marking done. Push validated batches and review shared backports as they land, not only at P16.",
   "tasks": [
@@ -151,7 +151,7 @@
     {
       "id": "P07",
       "title": "Integrate native graphical join and switch public identity atomically",
-      "status": "todo",
+      "status": "done",
       "dependsOn": [
         "P02",
         "P04",
@@ -161,7 +161,15 @@
         "1.20.6"
       ],
       "acceptance": "Browser joins isolated vanilla server, renders native terrain/entities/HUD, moves and respawns without old data or essential decode errors.",
-      "evidence": []
+      "evidence": [
+        "The default runtime data set is now target-native: 1,060 blocks / 26,684 states, 1,330 items, 130 entities, 64 biomes and 1,607 sound events are regenerated from pinned 1.20.6 sources and validated against Mojang registries/state reports.",
+        "Native visual extraction completed all 26,684 block states with zero errors (5,538 render-property combinations, 320 collision shapes, 388 selection shapes). The semantic model extractor found 212 native baked layers and all 123 renderer model specifications resolved without missing layers.",
+        "A complete 1.20.6 asset build succeeded with 13,186 files (~214.5 MB), 129 checked entity textures, 79 living renderer types and no pending/missing model entries.",
+        "A disposable real Chrome client joined the isolated SHA-pinned vanilla 1.20.6 server through the raw MinecraftJS proxy bridge, loaded/rendered 45 chunks, displayed target-native HUD state and stayed connected while real Chrome keyboard input moved the player 6.04 blocks.",
+        "Live entity testing caught and fixed target numeric-ID drift (pig wire type 77 now resolves by canonical target name/dimensions) and protocol relative-move scaling (signed shorts are normalized from 1/4096-block units). A final live pig moved naturally rather than diverging.",
+        "Vanilla /kill opened the actual browser DeathScreen; invoking its real Respawn button sent protocol-766 client_command(0), received respawn/position/health plus 45 fresh chunk packets, returned to health 20 and remained connected.",
+        "Only after graphical acceptance, the public version/cache identity, saved-hotbar namespace and tracked client/data tables were atomically switched to 1.20.6. Default no-env builds now select resource-pack format 32 and the tracked runtime tables byte-match the staged target set; the permanent target gate remains 87/87."
+      ]
     },
     {
       "id": "P08",

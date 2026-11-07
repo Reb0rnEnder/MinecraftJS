@@ -806,6 +806,7 @@ export class Game {
   }
 
   on_keep_alive(p) { this.send(C.keepAlive(p.keepAliveId)); }
+  on_chunk_batch_finished(p) { this.send(C.chunkBatchReceived(p.batchSize)); }
 
   on_simulation_distance(p) { this.serverSimulationDistance=p.distance; }
 

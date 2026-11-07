@@ -124,8 +124,50 @@ async function resolveSrv(host, port) {
   return { host, port };
 }
 
+async function openMinecraftJSRaw(entry, host, port) {
+  const sock = await platform().openSocket(entry.url);
+  const stream = new Emitter(true);
+  let ready = false, settled = false;
+  const timer = setTimeout(() => {
+    if (settled) return;
+    sock.close();
+  }, 6000);
+
+  stream.write = (bytes) => sock.sendBinary(bytes);
+  stream.close = () => sock.close();
+  sock.on("binary", (bytes) => stream.emit("data", bytes));
+  sock.on("close", (event) => stream.emit("close", event?.reason || null));
+
+  const opened = new Promise((resolve, reject) => {
+    sock.on("text", (text) => {
+      let message;
+      try { message = JSON.parse(text); } catch { return; }
+      if (message.type === "raw_ready" && !settled) {
+        settled = true;
+        ready = true;
+        clearTimeout(timer);
+        resolve(stream);
+      } else if (message.type === "error" && !settled) {
+        settled = true;
+        clearTimeout(timer);
+        reject(new Error(message.message || "MinecraftJS raw bridge failed"));
+      }
+    });
+    sock.on("close", () => {
+      if (!ready && !settled) {
+        settled = true;
+        clearTimeout(timer);
+        reject(new Error("MinecraftJS raw bridge closed before connecting"));
+      }
+    });
+  });
+  sock.sendText(JSON.stringify({ type: "raw_connect", host, port }));
+  return opened;
+}
+
 export function openStream(entry, host, port) {
-  return entry.type === 'wisp' ? openWisp(entry, host, port) : openRelay(entry, host, port);
+  if (entry.type === "minecraftjs-raw") return openMinecraftJSRaw(entry, host, port);
+  return entry.type === "wisp" ? openWisp(entry, host, port) : openRelay(entry, host, port);
 }
 
 // ---------------------------------------------------------------- Minecraft framing

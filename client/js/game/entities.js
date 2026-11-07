@@ -62,6 +62,21 @@ export function nativeEntityDefinition(game, id) {
   return definition;
 }
 
+export function nativeEntityDefinitionByName(game,name){
+  const canonical=String(name||"").replace(/^minecraft:/,"");
+  const renderer=ENTITIES_BY_NAME[canonical];
+  const supplied=game?.assets?.data?.entities?.find(e=>e.name===canonical);
+  if(!renderer&&!supplied)return null;
+  const height=supplied?.height??renderer?.height??0;
+  return{
+    ...renderer,
+    ...supplied,
+    name:canonical,
+    eyeHeight:renderer?.eyeHeight??height*0.85,
+    mob:renderer?.mob??false
+  };
+}
+
 const wrap = (a) => { a %= 360; if (a >= 180) a -= 360; if (a < -180) a += 360; return a; };
 
 // EntityHanging.updateBoundingBox: hanging block centre pushed 0.46875 towards the wall, shifted half a
@@ -151,7 +166,9 @@ export class EntityManager {
 
   spawnMob(p) {
     const e = this._base(p.entityId, p.x, p.y, p.z, p.yaw, p.pitch);
-    const def = nativeEntityDefinition(this.game, p.type) || (p.entityTypeName ? {name:p.entityTypeName,width:0.6,height:1.8,eyeHeight:1.53,mob:true} : null);
+    const def = p.entityTypeName
+      ? nativeEntityDefinitionByName(this.game,p.entityTypeName)
+      : nativeEntityDefinition(this.game,p.type);
     e.entityType = p.wireType ?? p.type; //// retain the target wire ID, never an internal family
     e.entityNamespace = 'entity';
     e.entityName = def ? def.name : null;
@@ -176,7 +193,8 @@ export class EntityManager {
 
   spawnObject(p) {
     const e = this._base(p.entityId, p.x, p.y, p.z, p.yaw, p.pitch);
-    const def = OBJECT_TYPES[p.type];
+    const nativeDef=p.entityTypeName?nativeEntityDefinitionByName(this.game,p.entityTypeName):null;
+    const def = nativeDef ? {...nativeDef,kind:OBJECT_TYPES[p.type]?.kind||nativeDef.name} : OBJECT_TYPES[p.type];
     e.kind = def ? def.kind : 'unknown_object';
     e.entityType = p.wireType ?? p.type;
     e.entityNamespace = 'object';

@@ -446,7 +446,25 @@ function normalize(name, packet, context = null) {
     };
   }
 
-  if (name === "entity_look" || name === "entity_move_look" || name === "entity_teleport") {
+  if (name === "rel_entity_move") {
+    return {
+      ...packet,
+      dX: packet.dX / 4096,
+      dY: packet.dY / 4096,
+      dZ: packet.dZ / 4096
+    };
+  }
+  if (name === "entity_move_look") {
+    return {
+      ...packet,
+      dX: packet.dX / 4096,
+      dY: packet.dY / 4096,
+      dZ: packet.dZ / 4096,
+      yaw: angle(packet.yaw),
+      pitch: angle(packet.pitch)
+    };
+  }
+  if (name === "entity_look" || name === "entity_teleport") {
     return { ...packet, yaw: angle(packet.yaw), pitch: angle(packet.pitch) };
   }
   if (name === "entity_head_rotation") return { ...packet, headYaw: angle(packet.headYaw) };
