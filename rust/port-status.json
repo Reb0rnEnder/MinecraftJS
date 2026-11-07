@@ -96,6 +96,7 @@
     "client/js/debug/capture-network.js": 100,
     "client/js/debug/text-capture.js": 100,
     "client/js/gfx/scene.js": 100,
+    "client/js/render/riptide-layer.js": 100,
     "client/js/net/protocol-1.15.2.js": 100,
     "client/js/wasm/core.js": 100,
     "client/js/render/entity-renderer.js": 100,
