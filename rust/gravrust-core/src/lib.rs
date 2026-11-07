@@ -325,6 +325,8 @@ pub use crate::unsupported_port::gfx_math;
 #[cfg(feature = "unsupported")]
 pub use crate::unsupported_port::input;
 
+pub mod accounts;
+
 // ---------------------------------------------------------------------------
 // Unfinished ports - not compiled by default.
 //
@@ -357,8 +359,6 @@ pub use crate::unsupported_port::input;
 // ---------------------------------------------------------------------------
 #[cfg(feature = "unsupported")]
 mod unsupported_port {
-    #[path = "../accounts.rs"]
-    pub mod accounts;
     #[path = "../atlas.rs"]
     pub mod atlas;
     #[path = "../bee_sound_params.rs"]
