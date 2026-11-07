@@ -53,26 +53,21 @@ pub enum ConnectionEventKind {
 }
 
 /// A decoded packet with its ID and body
-#[wasm_bindgen]
 pub struct DecodedPacket {
     id: i32,
     name: Option<String>,
     body: JsValue,
 }
 
-#[wasm_bindgen]
 impl DecodedPacket {
-    #[wasm_bindgen(getter)]
     pub fn id(&self) -> i32 {
         self.id
     }
 
-    #[wasm_bindgen(getter)]
     pub fn name(&self) -> Option<String> {
         self.name.clone()
     }
 
-    #[wasm_bindgen(getter)]
     pub fn body(&self) -> JsValue {
         self.body.clone()
     }

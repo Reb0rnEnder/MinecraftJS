@@ -91,7 +91,7 @@ pub fn is_squid(e: &dyn SquidEntity) -> bool {
 /// JS: `export function initSquid(e)`.
 pub fn init_squid(e: &mut dyn SquidEntity) {
     // JS: const random=new JavaRandom(e.id);
-    let mut random = JavaRandom::new(Some(e.id()));
+    let mut random = JavaRandom::new(e.id() as u32);
     // JS: e.squid={phase:0,speed:f(f(1/f(random.nextFloat()+1))*f(.2)),tentacle:0,oldTentacle:0,xRot:0,oldXRot:0,zRot:0,oldZRot:0,rotateSpeed:0};
     let speed = f32_round(f32_round(1.0 / f32_round(random.next_float() + 1.0)) * f32_round(0.2));
     e.set_squid(SquidState {
@@ -128,7 +128,7 @@ pub fn tick_squid(e: &mut dyn SquidEntity, in_water: bool) {
         //      s.rotateSpeed=t>.75?1:f(s.rotateSpeed*f(.8));}
         if (s.phase as f64) < PI {
             let t = f32_round(s.phase as f64 / PI);
-            s.tentacle = f32_round(f32_round(mc_sin(f32_round(f32_round(t * t) * PI)) * PI) * f32_round(0.25)) as f32;
+            s.tentacle = f32_round(f32_round(mc_sin(f32_round(f32_round(t * t) * PI) as f32) as f64 * PI) * f32_round(0.25)) as f32;
             s.rotate_speed = if t > 0.75 { 1.0 } else { f32_round(s.rotate_speed as f64 * f32_round(0.8)) as f32 };
         } else {
             // JS: else{s.tentacle=0;s.rotateSpeed=f(s.rotateSpeed*f(.99));}
@@ -148,7 +148,7 @@ pub fn tick_squid(e: &mut dyn SquidEntity, in_water: bool) {
         s.x_rot = f32_round(s.x_rot as f64 + f32_round(f32_round(f32_round(-f32_round((mx.hypot(mz)).atan2(my))) * f32_round(57.295776) - s.x_rot as f64) * f32_round(0.1))) as f32;
     } else {
         // JS: else{s.tentacle=f(f(Math.abs(mcSin(s.phase))*PI)*f(.25));s.xRot=f(s.xRot+f(-90-s.xRot)*.02);}
-        s.tentacle = f32_round(f32_round(mc_sin(s.phase as f64).abs() * PI) * f32_round(0.25)) as f32;
+        s.tentacle = f32_round(f32_round(mc_sin(s.phase).abs() as f64 * PI) * f32_round(0.25)) as f32;
         s.x_rot = f32_round(s.x_rot as f64 + f32_round(-90.0 - s.x_rot as f64) * 0.02) as f32;
     }
     e.set_squid(s);

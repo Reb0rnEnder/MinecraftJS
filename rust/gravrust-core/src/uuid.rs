@@ -4,7 +4,7 @@
 use wasm_bindgen::prelude::*;
 
 /// Magic constants for MD5 (exactly 64 values: floor(|sin(i+1)| * 2^32)).
-const MAGIC: [u32; 64] = [
+const MAGIC: [u32; 68] = [
     0x67452301, 0xefcdab89, 0x98badcfe, 0x10325476,
     0xd76aa478, 0xe8c7b756, 0x242070db, 0xc1bdceee,
     0xf57c0faf, 0x4787c62a, 0xa8304613, 0xfd469501,
@@ -113,14 +113,14 @@ pub fn name_uuid(bytes: &[u8]) -> String {
         0x7fff & h2,  // lower 13 bits of h2 give the "4" variant
         0x3fff & h3,  // lower 14 bits of h3
         u64::from_be_bytes([
-            u64::from(h0 & 0xff),
-            u64::from((h0 >> 8) & 0xff),
-            u64::from((h0 >> 16) & 0xff),
-            u64::from((h0 >> 24) & 0xff),
-            u64::from(h1 & 0xff),
-            u64::from((h1 >> 8) & 0xff),
-            u64::from((h1 >> 16) & 0xff),
-            u64::from((h1 >> 24) & 0xff),
+            u8::try_from(h0 & 0xff).unwrap_or(0) as u8,
+            u8::try_from((h0 >> 8) & 0xff).unwrap_or(0) as u8,
+            u8::try_from((h0 >> 16) & 0xff).unwrap_or(0) as u8,
+            u8::try_from((h0 >> 24) & 0xff).unwrap_or(0) as u8,
+            u8::try_from(h1 & 0xff).unwrap_or(0) as u8,
+            u8::try_from((h1 >> 8) & 0xff).unwrap_or(0) as u8,
+            u8::try_from((h1 >> 16) & 0xff).unwrap_or(0) as u8,
+            u8::try_from((h1 >> 24) & 0xff).unwrap_or(0) as u8,
         ])
     )
 }

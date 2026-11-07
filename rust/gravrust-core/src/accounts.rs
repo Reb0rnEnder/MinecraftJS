@@ -59,7 +59,7 @@ impl Accounts {
             active_id,
         };
         if !me.list.is_empty() && me.active_id.is_none() {
-            me.active_id = me.list[0].id.clone();
+            me.active_id = Some(me.list[0].id.clone());
         }
         me
     }
@@ -81,7 +81,7 @@ impl Accounts {
     pub fn active(&self) -> Option<&Account> {
         self.list
             .iter()
-            .find(|a| a.id == self.active_id)
+            .find(|a| a.id == self.active_id.as_deref().unwrap_or(""))
             .or_else(|| self.list.first())
     }
 
@@ -118,7 +118,7 @@ impl Accounts {
         let a = Account {
             id,
             r#type: AccountType::Offline,
-            name: name.clone(),
+            name: name.to_string(),
             uuid: None,
             access_token: None,
             refresh_token: None,

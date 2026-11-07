@@ -545,7 +545,7 @@ impl Interaction {
     /// `updateTarget`: like Minecraft.getMouseOver - update the target block/entity the player is looking at.
     /// Returns the target if something was hit, None otherwise.
     pub fn update_target(&mut self, eye: [f64; 3], look: [f64; 3], reach: f64, game_mode: i32, world_get_state: impl Fn(i32, i32, i32) -> u32, entities: &[EntityTarget]) -> Option<EntityTarget> {
-        let (_, target) = raycast_entities(eye, look, reach, entities, game_mode, 0, 0);
+        let Some((_, target)) = raycast_entities(eye, look, reach, entities, game_mode, 0, 0) else { return None; };
         Some(target)
     }
 

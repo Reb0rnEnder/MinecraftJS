@@ -27,14 +27,14 @@ pub fn stop_bee_sound(e: &mut Value) {
 pub fn bee_sound_parameters(motion_x: f64, motion_z: f64, child: bool) -> (f64, f64) {
     use std::f64::consts::FRAC_1_PI;
     let f = |x: f64| -> f64 { x };
-    let speed = f(Math.hypot(motion_x, motion_z));
+    let speed = f((motion_x * motion_x + motion_z * motion_z).sqrt());
     let min = if child { 1.1_f64 } else { 0.7_f64 };
     let max = if child { 1.5_f64 } else { 1.1_f64 };
     if speed < 0.01 {
         return (0.0, 0.0);
     }
-    let volume = f(f(Math.min(0.5, speed)) * f(1.2));
-    let pitch = f(min + f(Math.max(min, Math.min(max, speed)) * f(max - min)));
+    let volume = f(0.5_f64.min(speed)) * f(1.2);
+    let pitch = f(min + f(min.max(max.min(speed))) * f(max - min));
     (volume, pitch)
 }
 
@@ -49,7 +49,7 @@ pub fn tick_bee_sound(
         stop_bee_sound(e);
         return;
     }
-    if !has_sound_play_loop {
+    if !game_sound_play_loop {
         stop_bee_sound(e);
         return;
     }

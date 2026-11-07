@@ -34,6 +34,11 @@ pub fn decode_utf8_range(b: &[u8], start: u32, end: u32) -> String {
     String::from_utf8_lossy(slice).into_owned()
 }
 
+/// Alias for decode_utf8, kept for compatibility with callers.
+pub fn decode(b: &[u8]) -> String {
+    decode_utf8(b)
+}
+
 // ----------------------------------------------------------------
 // Private helper for custom decode (not exported)
 // --------------------------------------------------------------
@@ -62,32 +67,6 @@ fn decode_utf8_custom_bytes(b: &[u8]) -> String {
 // ----------------------------------------------------------------
 // Public API
 // ----------------------------------------------------------------
-
-/// Encode a Rust &str to UTF-8 bytes.
-/// Matches JavaScript `TextEncoder` behavior: lone surrogates encode as U+FFFD.
-#[wasm_bindgen]
-pub fn encode_utf8(s: &str) -> Vec<u8> {
-    // Use Rust's native UTF-8 encoding, which is compatible with JS TextEncoder
-    // for valid strings. For lone surrogates (which can't occur in valid Rust str),
-    // we handle them by replacing with U+FFFD.
-    s.as_bytes().to_vec()
-}
-
-/// Decode UTF-8 bytes to a Rust String.
-/// Matches JavaScript `TextDecoder` behavior: invalid input → U+FFFD replacement.
-#[wasm_bindgen]
-pub fn decode_utf8(b: &[u8]) -> String {
-    // Use Rust's standard UTF-8 decoder with replacement character
-    // This matches the JS TextDecoder behavior: invalid sequences → U+FFFD
-    String::from_utf8_lossy(b).into_owned()
-}
-
-/// Decode UTF-8 bytes in a range.
-#[wasm_bindgen]
-pub fn decode_utf8_range(b: &[u8], start: u32, end: u32) -> String {
-    let slice = &b[start as usize..end.min(b.len() as u32) as usize];
-    String::from_utf8_lossy(slice).into_owned()
-}
 
 #[cfg(test)]
 mod tests {

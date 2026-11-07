@@ -46,7 +46,7 @@ impl JavaRandom {
             return 0;
         }
         if (bound & (bound - 1)) == 0 { // bound is a power of 2
-            return self.next(31) % bound;
+            return (self.next(31) as u32) % bound;
         }
         let mut bits: u32;
         let mut val: u32;
@@ -64,7 +64,7 @@ impl JavaRandom {
     /// Generate a random float in [0, 1)
     #[wasm_bindgen]
     pub fn next_float(&mut self) -> f64 {
-        self.next(24) / (1 << 24)
+        self.next(24) / (1 << 24) as f64
     }
 
     /// Generate a random double in [0, 1)

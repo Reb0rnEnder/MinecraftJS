@@ -272,7 +272,7 @@ pub fn dragon_death_rays(
         0.0
     };
 
-    let mut random = JavaRandom::new(Some(432));
+    let mut random = JavaRandom::new(432);
     let mut out = Vec::new();
 
     // Build the base corpse matrix

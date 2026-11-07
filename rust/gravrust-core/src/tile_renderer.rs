@@ -139,7 +139,7 @@ pub static DYE_RGB: once_cell::sync::Lazy<[[f32; 3]; 16]> = once_cell::sync::Laz
 
 /// End portal layer colors (precomputed with JavaRandom(31100)).
 pub static END_PORTAL_COLORS: once_cell::sync::Lazy<[[f32; 3]; 16]> = once_cell::sync::Lazy::new(|| {
-    let mut r = JavaRandom::new(Some(31100));
+    let mut r = JavaRandom::new(31100);
     let mut out = [[0.0f32; 3]; 16];
     for i in 0..16 {
         let f = if i == 0 {

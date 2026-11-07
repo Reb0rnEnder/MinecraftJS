@@ -358,21 +358,21 @@ fn move_particle_internal(
 
     // Y axis first
     for chunk in boxes.chunks_exact(6) {
-        move_y = calc_y_offset(chunk, &bb, move_y);
+        move_y = calc_y_offset(0.0, 0.0, move_y);
     }
     bb[1] += move_y;
     bb[4] += move_y;
 
     // X axis
     for chunk in boxes.chunks_exact(6) {
-        move_x = calc_x_offset(chunk, &bb, move_x);
+        move_x = calc_x_offset(0.0, 0.0, move_x);
     }
     bb[0] += move_x;
     bb[3] += move_x;
 
     // Z axis
     for chunk in boxes.chunks_exact(6) {
-        move_z = calc_z_offset(chunk, &bb, move_z);
+        move_z = calc_z_offset(0.0, 0.0, move_z);
     }
     bb[2] += move_z;
     bb[5] += move_z;

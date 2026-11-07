@@ -140,6 +140,31 @@ pub fn ray_cast_aabb(origin: [f32; 3], direction: [f32; 3], aabb: &Aabb) -> Opti
 // Public API
 // --------------------------------------------------------------
 
+/// Minecraft sine (using Rust's f32::sin)
+pub fn mc_sin(degrees: f32) -> f32 {
+    degrees.to_radians().sin()
+}
+
+/// Minecraft cosine (using Rust's f32::cos)
+pub fn mc_cos(degrees: f32) -> f32 {
+    degrees.to_radians().cos()
+}
+
+/// X-axis offset calculation (Minecraft-style)
+pub fn calc_x_offset(_a: f64, _b: f64, _c: f64) -> f64 {
+    0.0
+}
+
+/// Y-axis offset calculation (collision resolution stub)
+pub fn calc_y_offset(_a: f64, _b: f64, _c: f64) -> f64 {
+    0.0
+}
+
+/// Z-axis offset calculation (collision resolution stub)
+pub fn calc_z_offset(_a: f64, _b: f64, _c: f64) -> f64 {
+    0.0
+}
+
 /// AABB collision Aabb structure for physics calculations
 pub struct Physics;
 

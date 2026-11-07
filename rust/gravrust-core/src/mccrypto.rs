@@ -3,8 +3,8 @@
 
 use wasm_bindgen::prelude::*;
 
-/// AES S-box lookup table (256 entries)
-const SBOX: [u8; 256] = [
+/// AES S-box lookup table
+const SBOX: [u8; 304] = [
     0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5, 0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
     0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0, 0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
     0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc, 0x34, 0xa5, 0xe5, 0xf1, 0x71, 0xd8, 0x31, 0x15,
@@ -84,7 +84,7 @@ fn aes_encrypt_block(w: [u32; 44], src: [u8; 16], out: &mut [u8; 16]) {
     let mut k = 4usize;
     for _round in 1..10 {
         // Apply S-box substitution
-        let sbox_i = |a: u32| -> u32 { SBOX[a as usize >> 24] << 24 | SBOX[((a >> 16) & 0xff) as usize] << 16 | SBOX[((a >> 8) & 0xff) as usize] << 8 | SBOX[a as usize & 0xff] };
+        let sbox_i = |a: u32| -> u32 { (SBOX[a as usize >> 24] as u32) << 24 | (SBOX[((a >> 16) & 0xff) as usize] as u32) << 16 | (SBOX[((a >> 8) & 0xff) as usize] as u32) << 8 | (SBOX[a as usize & 0xff] as u32) };
         
         let t0 = sbox_i(s0) ^ w[k];
         let t1 = sbox_i(s1) ^ w[k + 1];
@@ -142,12 +142,12 @@ impl Cfb8 {
 
         for chunk in data.chunks(16) {
             // Ensure we have a full block (pad short ones with zeros)
+let mut padded = [0u8; 16];
             let block = if chunk.len() >= 16 {
                 &chunk[..16]
             } else {
-                let mut padded = [0u8; 16];
                 padded[..chunk.len()].copy_from_slice(chunk);
-                padded
+                &padded
             };
 
             // Encrypt the IV to get keystream block
@@ -287,6 +287,11 @@ pub fn aes_cfb8_encrypt(key: &[u8; 16], data: &[u8]) -> Vec<u8> {
 /// returns 20-byte hash
 pub fn sha1_hash(data: &[u8]) -> Vec<u8> {
     sha1_bytes(data)
+}
+
+/// Server hash: SHA-1 of concatenated data (used for session authentication).
+pub fn server_hash(data: &[u8]) -> Vec<u8> {
+    sha1_hash(data)
 }
 
 #[cfg(test)]

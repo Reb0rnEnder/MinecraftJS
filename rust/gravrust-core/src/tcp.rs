@@ -609,7 +609,7 @@ pub fn read_string(b: &[u8], o: usize) -> Option<Result<(String, usize), String>
     if end > b.len() {
         return None;
     }
-    Some(Ok((crate::utf8::decode_utf8(b, start, end), end)))
+    Some(Ok((crate::utf8::decode_utf8_range(b, start as u32, end as u32), end)))
 }
 
 /// JS: `function frame(payload, threshold)` — NettyCompressionEncoder +
@@ -1003,7 +1003,15 @@ impl VanillaSocket {
         let secret = random_bytes(16);
         // JS: try { await joinSession(this.auth, serverHash(sid.value, secret, key)); }
         //     catch (e) { this._kick(...); return; }
-        if let Err(e) = join_session(&auth, &server_hash(&sid, &secret, &key)) {
+        let mut hash_input = Vec::new();
+        hash_input.extend_from_slice(sid.as_bytes());
+        hash_input.extend_from_slice(&secret);
+        hash_input.extend_from_slice(&key);
+        let hash_str = server_hash(&hash_input)
+        .iter()
+        .map(|b| format!("{:02x}", b))
+        .collect::<String>();
+        if let Err(e) = join_session(&auth, &hash_str) {
             self.kick(
                 &serde_json::json!({ "translate": "disconnect.loginFailedInfo", "with": [e] })
                     .to_string(),
@@ -1031,8 +1039,10 @@ impl VanillaSocket {
             &et,
         ]));
         // JS: this.cipher = new Cfb8(secret, false); this.decipher = new Cfb8(secret, true);
-        self.cipher = Cfb8::new(&secret, false).ok();
-        self.decipher = Cfb8::new(&secret, true).ok();
+        let mut secret_arr = [0u8; 16];
+        secret_arr.copy_from_slice(&secret);
+        self.cipher = Some(Cfb8::new(&secret_arr));
+        self.decipher = Some(Cfb8::new(&secret_arr));
         // JS: this.state = 'login';
         self.state = VanillaState::Login;
     }

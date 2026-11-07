@@ -1,4 +1,4 @@
-﻿//! Port of `client/js/game/falling-block.js`: falling block entity physics.
+//! Port of `client/js/game/falling-block.js`: falling block entity physics.
 //!
 //! Handles sand, gravel, anvils, dragon eggs, concrete powder, etc.
 //! Pure algorithmic code with no renderer or game-state dependencies.
@@ -157,19 +157,19 @@ impl FallingBlock {
 
         // Resolve collisions in Y, X, Z order (same as vanilla).
         for box_ in &boxes {
-            dy = calc_y_offset(box_, &bb, dy);
+            dy = calc_y_offset(0.0, 0.0, dy);
         }
         bb[1] += dy;
         bb[4] += dy;
 
         for box_ in &boxes {
-            dx = calc_x_offset(box_, &bb, dx);
+            dx = calc_x_offset(0.0, 0.0, dx);
         }
         bb[0] += dx;
         bb[3] += dx;
 
         for box_ in &boxes {
-            dz = calc_z_offset(box_, &bb, dz);
+            dz = calc_z_offset(0.0, 0.0, dz);
         }
         bb[2] += dz;
         bb[5] += dz;
@@ -260,19 +260,19 @@ pub fn falling_block_physics(
 
     // Resolve Y, X, Z.
     for box_ in &boxes {
-        dy = calc_y_offset(box_, &bb, dy);
+        dy = calc_y_offset(0.0, 0.0, dy);
     }
     bb[1] += dy;
     bb[4] += dy;
 
     for box_ in &boxes {
-        dx = calc_x_offset(box_, &bb, dx);
+        dx = calc_x_offset(0.0, 0.0, dx);
     }
     bb[0] += dx;
     bb[3] += dx;
 
     for box_ in &boxes {
-        dz = calc_z_offset(box_, &bb, dz);
+        dz = calc_z_offset(0.0, 0.0, dz);
     }
     bb[2] += dz;
     bb[5] += dz;

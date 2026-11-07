@@ -62,7 +62,7 @@ impl CreditsScreen {
         if let Ok(end) = A.read_text("texts/end.txt").await {
             let mark = "§f§k§a§b";
             // JS: `const rnd = new JavaRandom(8124371);`
-            let mut rnd = crate::jrandom::JavaRandom::new(Some(8124371));
+            let mut rnd = crate::jrandom::JavaRandom::new(8124371);
             // JS: `(end || "").split(/\r?\n/)` - split on CRLF or LF.
             for s in split_lines(&end) {
                 let s = s.replace("PLAYERNAME", &name);
