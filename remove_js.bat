@@ -1,0 +1,15 @@
+git rm client/js/webgl2.js
+git rm client/js/webgpu.js
+git rm client/js/browser.js
+git rm client/js/main.js
+git rm client/js/widgets.js
+git rm client/js/sound.js
+git rm client/js/protocol-1.15.2.js
+git rm client/js/wasm/core.js
+git rm client/js/entity-renderer.js
+git rm client/js/options.js
+git rm client/js/packed-bootstrap.js
+git rm client/js/assets.js
+git rm tools/build.js
+git rm tools/make-offline.mjs
+git rm offline-entry.js
