@@ -1,28 +1,13 @@
-node_modules/
-# Mojang game files (the proxy downloads them at runtime)
-1.8.9/
-cache/
-# local test server (Mojang server.jar + world)
-server/
-*.log
-.DS_Store
-Thumbs.db
-dist/
-client/assets/
-# 1.12.2 work in progress (kept out of the 1.8.9 branch)
-1.12.2-wip/
-*.claudechats.json
-1.12.2/
-server1222/
-server189/
-
-# Native 1.14.4 local assets/server and data-generator logs
-1.14.4/
-server1144/
-logs/
-
-# Rust build artifacts (cargo output must never be committed)
-target/
-**/target/
-*.rs.bk
-
+# Never commit game jars or build artifacts
+mc-*.jar
+*.jar
+!lib/via/*.jar
+builder/work/
+builder/output/
+# local session artifacts
+.agent-teams/
+push_changes.sh
+*.png
+test-*.js
+offlineclient-verify*
+cf-tunnel-*.txt

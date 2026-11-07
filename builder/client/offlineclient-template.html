@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="data:,">
+  <title>Gravrust - Offline Client</title>
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+      background: #0a0a0f; font-family: 'Segoe UI', system-ui, sans-serif; color: #e0e0e0; }
+    #boot { display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100%; gap: 12px; text-align: center; }
+    #title { font-size: 32px; letter-spacing: 2px; color: #e94560; font-weight: bold; }
+    #ver { color: #7fd17f; font-family: 'Consolas', monospace; font-size: 18px; }
+    #steps { color: #a0a0a0; font-size: 13px; max-width: 90%; }
+    .step { margin: 6px 0; padding: 8px; background: rgba(255,255,255,0.03);
+      border-radius: 6px; border-left: 3px solid #7fd17f; text-align: left;
+      word-break: break-all; max-height: 200px; overflow: auto; }
+    .step.error { border-left-color: #e94560; color: #ff9999; }
+  </style>
+</head>
+<body>
+  <div id="boot">
+    <div id="title">Gravrust</div>
+    <div id="ver">initializing...</div>
+    <div id="steps"></div>
+  </div>
+  <script>
+    let wasm = null;
+    const wasmBase64 = '__WASM_B64__';
+    var GAME_ASSETS = __ASSET_MANIFEST__;
+    (async () => {
+  const steps = document.getElementById('steps');
+  const ver = document.getElementById('ver');
+  const log = (t, err) => { steps.innerHTML += '<div class="step' + (err ? ' error' : '') + '">' + t + '</div>'; };
+  try {
+    const binary = atob(wasmBase64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    log('WASM decoded: ' + bytes.length + ' bytes');
+    const imports = {
+      __proto__: null,
+      './gravrust_core_bg.js': {
+        __proto__: null,
+        __wbindgen_init_externref_table: function() {
+          if (!wasm) return;
+          const table = wasm.__wbindgen_externrefs;
+          if (!table) return;
+          table.set(0, undefined); table.set(1024, undefined);
+          table.set(1025, null); table.set(1026, true); table.set(1027, false);
+        },
+      },
+    };
+    const { instance } = await WebAssembly.instantiate(bytes, imports);
+    wasm = instance.exports;
+    log('WASM instantiated: ' + Object.keys(wasm).length + ' exports');
+    if (wasm.__wbindgen_start) wasm.__wbindgen_start();
+    if (wasm.init_wasm) { wasm.init_wasm(); log('init_wasm() OK - Rust core initialized'); }
+    if (wasm.reset_core) { wasm.reset_core(); log('reset_core() OK'); }
+    ver.textContent = 'Gravrust Rust/WASM core - RUNNING';
+    log('ALL CHECKS PASSED');
+    window.__GRAVRUST_OK = true;
+  } catch (e) {
+    ver.textContent = 'WASM failed to load';
+    log('ERROR: ' + String(e), true);
+    window.__GRAVRUST_OK = { error: String(e) };
+  }
+})();
+  </script>
+</body>
+</html>
