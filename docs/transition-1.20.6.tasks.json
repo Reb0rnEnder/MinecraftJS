@@ -1,12 +1,12 @@
 {
   "schemaVersion": 1,
-  "updatedOn": "2026-11-06",
+  "updatedOn": "2026-11-07",
   "target": "1.20.6",
   "branch": "1.20.6",
   "fullParity": false,
   "nativeGraphicalGameplayAccepted": false,
   "planningSourceCommit": "ecd95f4786b951869af59c46a1ad140a54931b72",
-  "nextTask": "P02",
+  "nextTask": "P03",
   "authorization": "Proceed with 1.20.6 now; keep inherited work open rather than requiring its completion before starting.",
   "executionRule": "Follow dependency order; native evidence and gate completion are required before marking done. Push validated batches and review shared backports as they land, not only at P16.",
   "tasks": [
@@ -49,7 +49,7 @@
     {
       "id": "P02",
       "title": "Extract native reports, component defaults and resource inventory",
-      "status": "todo",
+      "status": "done",
       "dependsOn": [
         "P00"
       ],
@@ -57,7 +57,12 @@
         "1.20.6"
       ],
       "acceptance": "Reproducible native tables, source index, asset hashes and feature gates reject mixed-version data.",
-      "evidence": []
+      "evidence": [
+        "Pinned Mojang data-generator reports reproducibly verify 1,060 blocks, 26,684 contiguous block states, 1,330 items, 56 contiguous data-component types and 74 registries.",
+        "The native item report contains 8,283 default component entries; every default component resolves against the target data-component registry and duplicate defaults are rejected.",
+        "FeatureFlags bytecode records vanilla as the default set and bundle, trade_rebalance and update_1_21 as non-default experiment flags.",
+        "Client-jar atlas/font definitions and asset-index language/sound/Unihex objects are hash-inventoried; npm run test:1.20.6 regenerates and checks a canonical semantic baseline."
+      ]
     },
     {
       "id": "P03",

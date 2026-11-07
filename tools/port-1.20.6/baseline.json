@@ -1,0 +1,486 @@
+{
+  "minecraftVersion": "1.20.6",
+  "protocol": 766,
+  "dataVersion": 3839,
+  "resourcePackFormat": 32,
+  "dataPackFormat": 41,
+  "javaVersion": 21,
+  "sources": {
+    "metadata": "4dd84bf5b646a75cba5c0c5f7723eb478a2b78af",
+    "client": "05b6f1c6b46a29d6ea82b4e0d42190e42402030f",
+    "client_mappings": "de46c8f33d7826eb83e8ef0e9f80dc1f08cb9498",
+    "server": "145ff0858209bcfc164859ba735d4199aafa1eea",
+    "server_mappings": "9e96100f573a46ef44caab3e716d5eb974594bb7",
+    "report_blocks": "e7179a320fc83d82d607fbf5a122d6dfca18dceb",
+    "report_commands": "06461e1a13abf5331c558ee1affb8f394db3ae70",
+    "report_items": "f898651cd80134b65e87072ed5eb731e306d9a28",
+    "report_registries": "4e68cc92c7df429ae22c6d2610b8fe36877f6df3",
+    "assetIndex": "7aa24dc746c469e44510359e525bfe4b45bfaa23",
+    "minecraftDataRevision": "5e063fa99cfe8ded065ec6788b66696b7e4ef143"
+  },
+  "blocks": 1060,
+  "blockStates": 26684,
+  "lastBlockState": 26683,
+  "items": 1330,
+  "defaultComponentEntries": 8283,
+  "componentTypes": {
+    "minecraft:custom_data": 0,
+    "minecraft:max_stack_size": 1,
+    "minecraft:max_damage": 2,
+    "minecraft:damage": 3,
+    "minecraft:unbreakable": 4,
+    "minecraft:custom_name": 5,
+    "minecraft:item_name": 6,
+    "minecraft:lore": 7,
+    "minecraft:rarity": 8,
+    "minecraft:enchantments": 9,
+    "minecraft:can_place_on": 10,
+    "minecraft:can_break": 11,
+    "minecraft:attribute_modifiers": 12,
+    "minecraft:custom_model_data": 13,
+    "minecraft:hide_additional_tooltip": 14,
+    "minecraft:hide_tooltip": 15,
+    "minecraft:repair_cost": 16,
+    "minecraft:creative_slot_lock": 17,
+    "minecraft:enchantment_glint_override": 18,
+    "minecraft:intangible_projectile": 19,
+    "minecraft:food": 20,
+    "minecraft:fire_resistant": 21,
+    "minecraft:tool": 22,
+    "minecraft:stored_enchantments": 23,
+    "minecraft:dyed_color": 24,
+    "minecraft:map_color": 25,
+    "minecraft:map_id": 26,
+    "minecraft:map_decorations": 27,
+    "minecraft:map_post_processing": 28,
+    "minecraft:charged_projectiles": 29,
+    "minecraft:bundle_contents": 30,
+    "minecraft:potion_contents": 31,
+    "minecraft:suspicious_stew_effects": 32,
+    "minecraft:writable_book_content": 33,
+    "minecraft:written_book_content": 34,
+    "minecraft:trim": 35,
+    "minecraft:debug_stick_state": 36,
+    "minecraft:entity_data": 37,
+    "minecraft:bucket_entity_data": 38,
+    "minecraft:block_entity_data": 39,
+    "minecraft:instrument": 40,
+    "minecraft:ominous_bottle_amplifier": 41,
+    "minecraft:recipes": 42,
+    "minecraft:lodestone_tracker": 43,
+    "minecraft:firework_explosion": 44,
+    "minecraft:fireworks": 45,
+    "minecraft:profile": 46,
+    "minecraft:note_block_sound": 47,
+    "minecraft:banner_patterns": 48,
+    "minecraft:base_color": 49,
+    "minecraft:pot_decorations": 50,
+    "minecraft:container": 51,
+    "minecraft:block_state": 52,
+    "minecraft:bees": 53,
+    "minecraft:lock": 54,
+    "minecraft:container_loot": 55
+  },
+  "componentUsage": {
+    "minecraft:attribute_modifiers": 1330,
+    "minecraft:banner_patterns": 17,
+    "minecraft:base_color": 0,
+    "minecraft:bees": 2,
+    "minecraft:block_entity_data": 0,
+    "minecraft:block_state": 0,
+    "minecraft:bucket_entity_data": 6,
+    "minecraft:bundle_contents": 1,
+    "minecraft:can_break": 0,
+    "minecraft:can_place_on": 0,
+    "minecraft:charged_projectiles": 1,
+    "minecraft:container": 32,
+    "minecraft:container_loot": 0,
+    "minecraft:creative_slot_lock": 0,
+    "minecraft:custom_data": 0,
+    "minecraft:custom_model_data": 0,
+    "minecraft:custom_name": 0,
+    "minecraft:damage": 68,
+    "minecraft:debug_stick_state": 1,
+    "minecraft:dyed_color": 0,
+    "minecraft:enchantment_glint_override": 7,
+    "minecraft:enchantments": 1330,
+    "minecraft:entity_data": 0,
+    "minecraft:fire_resistant": 13,
+    "minecraft:firework_explosion": 0,
+    "minecraft:fireworks": 1,
+    "minecraft:food": 41,
+    "minecraft:hide_additional_tooltip": 0,
+    "minecraft:hide_tooltip": 0,
+    "minecraft:instrument": 0,
+    "minecraft:intangible_projectile": 0,
+    "minecraft:item_name": 0,
+    "minecraft:lock": 0,
+    "minecraft:lodestone_tracker": 0,
+    "minecraft:lore": 1330,
+    "minecraft:map_color": 1,
+    "minecraft:map_decorations": 1,
+    "minecraft:map_id": 0,
+    "minecraft:map_post_processing": 0,
+    "minecraft:max_damage": 68,
+    "minecraft:max_stack_size": 1330,
+    "minecraft:note_block_sound": 0,
+    "minecraft:ominous_bottle_amplifier": 1,
+    "minecraft:pot_decorations": 1,
+    "minecraft:potion_contents": 4,
+    "minecraft:profile": 0,
+    "minecraft:rarity": 1330,
+    "minecraft:recipes": 1,
+    "minecraft:repair_cost": 1330,
+    "minecraft:stored_enchantments": 1,
+    "minecraft:suspicious_stew_effects": 1,
+    "minecraft:tool": 33,
+    "minecraft:trim": 0,
+    "minecraft:unbreakable": 0,
+    "minecraft:writable_book_content": 1,
+    "minecraft:written_book_content": 0
+  },
+  "registries": {
+    "minecraft:activity": 26,
+    "minecraft:armor_material": 8,
+    "minecraft:attribute": 22,
+    "minecraft:block": 1060,
+    "minecraft:block_entity_type": 44,
+    "minecraft:block_predicate_type": 12,
+    "minecraft:block_type": 241,
+    "minecraft:cat_variant": 11,
+    "minecraft:chunk_status": 12,
+    "minecraft:command_argument_type": 54,
+    "minecraft:creative_mode_tab": 14,
+    "minecraft:custom_stat": 75,
+    "minecraft:data_component_type": 56,
+    "minecraft:decorated_pot_patterns": 25,
+    "minecraft:enchantment": 42,
+    "minecraft:entity_sub_predicate_type": 19,
+    "minecraft:entity_type": 130,
+    "minecraft:float_provider_type": 4,
+    "minecraft:fluid": 5,
+    "minecraft:frog_variant": 3,
+    "minecraft:game_event": 60,
+    "minecraft:height_provider_type": 6,
+    "minecraft:instrument": 8,
+    "minecraft:int_provider_type": 6,
+    "minecraft:item": 1330,
+    "minecraft:item_sub_predicate_type": 13,
+    "minecraft:loot_condition_type": 18,
+    "minecraft:loot_function_type": 40,
+    "minecraft:loot_nbt_provider_type": 2,
+    "minecraft:loot_number_provider_type": 5,
+    "minecraft:loot_pool_entry_type": 8,
+    "minecraft:loot_score_provider_type": 2,
+    "minecraft:map_decoration_type": 35,
+    "minecraft:memory_module_type": 106,
+    "minecraft:menu": 25,
+    "minecraft:mob_effect": 39,
+    "minecraft:number_format_type": 3,
+    "minecraft:painting_variant": 30,
+    "minecraft:particle_type": 109,
+    "minecraft:point_of_interest_type": 20,
+    "minecraft:pos_rule_test": 3,
+    "minecraft:position_source_type": 2,
+    "minecraft:potion": 46,
+    "minecraft:recipe_serializer": 23,
+    "minecraft:recipe_type": 7,
+    "minecraft:rule_block_entity_modifier": 4,
+    "minecraft:rule_test": 6,
+    "minecraft:schedule": 4,
+    "minecraft:sensor_type": 26,
+    "minecraft:sound_event": 1607,
+    "minecraft:stat_type": 9,
+    "minecraft:trigger_type": 56,
+    "minecraft:villager_profession": 15,
+    "minecraft:villager_type": 7,
+    "minecraft:worldgen/biome_source": 4,
+    "minecraft:worldgen/block_state_provider_type": 7,
+    "minecraft:worldgen/carver": 3,
+    "minecraft:worldgen/chunk_generator": 3,
+    "minecraft:worldgen/density_function_type": 32,
+    "minecraft:worldgen/feature": 61,
+    "minecraft:worldgen/feature_size_type": 2,
+    "minecraft:worldgen/foliage_placer_type": 11,
+    "minecraft:worldgen/material_condition": 11,
+    "minecraft:worldgen/material_rule": 4,
+    "minecraft:worldgen/placement_modifier_type": 15,
+    "minecraft:worldgen/pool_alias_binding": 3,
+    "minecraft:worldgen/root_placer_type": 1,
+    "minecraft:worldgen/structure_piece": 56,
+    "minecraft:worldgen/structure_placement": 2,
+    "minecraft:worldgen/structure_pool_element": 5,
+    "minecraft:worldgen/structure_processor": 11,
+    "minecraft:worldgen/structure_type": 16,
+    "minecraft:worldgen/tree_decorator_type": 6,
+    "minecraft:worldgen/trunk_placer_type": 9
+  },
+  "commands": [
+    "advancement",
+    "attribute",
+    "ban",
+    "ban-ip",
+    "banlist",
+    "bossbar",
+    "clear",
+    "clone",
+    "damage",
+    "data",
+    "datapack",
+    "debug",
+    "defaultgamemode",
+    "deop",
+    "difficulty",
+    "effect",
+    "enchant",
+    "execute",
+    "experience",
+    "fill",
+    "fillbiome",
+    "forceload",
+    "function",
+    "gamemode",
+    "gamerule",
+    "give",
+    "help",
+    "item",
+    "jfr",
+    "kick",
+    "kill",
+    "list",
+    "locate",
+    "loot",
+    "me",
+    "msg",
+    "op",
+    "pardon",
+    "pardon-ip",
+    "particle",
+    "perf",
+    "place",
+    "playsound",
+    "publish",
+    "random",
+    "recipe",
+    "reload",
+    "return",
+    "ride",
+    "save-all",
+    "save-off",
+    "save-on",
+    "say",
+    "schedule",
+    "scoreboard",
+    "seed",
+    "setblock",
+    "setidletimeout",
+    "setworldspawn",
+    "spawnpoint",
+    "spectate",
+    "spreadplayers",
+    "stop",
+    "stopsound",
+    "summon",
+    "tag",
+    "team",
+    "teammsg",
+    "teleport",
+    "tell",
+    "tellraw",
+    "tick",
+    "time",
+    "title",
+    "tm",
+    "tp",
+    "transfer",
+    "trigger",
+    "w",
+    "weather",
+    "whitelist",
+    "worldborder",
+    "xp"
+  ],
+  "featureFlags": {
+    "registered": [
+      "minecraft:vanilla",
+      "minecraft:bundle",
+      "minecraft:trade_rebalance",
+      "minecraft:update_1_21"
+    ],
+    "defaults": [
+      "minecraft:vanilla"
+    ],
+    "experimental": [
+      "minecraft:bundle",
+      "minecraft:trade_rebalance",
+      "minecraft:update_1_21"
+    ]
+  },
+  "protocolCounts": {
+    "1.20.4": {
+      "handshaking": {
+        "toClient": 0,
+        "toServer": 2
+      },
+      "status": {
+        "toClient": 2,
+        "toServer": 2
+      },
+      "login": {
+        "toClient": 5,
+        "toServer": 4
+      },
+      "configuration": {
+        "toClient": 10,
+        "toServer": 6
+      },
+      "play": {
+        "toClient": 117,
+        "toServer": 55
+      }
+    },
+    "1.20.6": {
+      "handshaking": {
+        "toClient": 0,
+        "toServer": 2
+      },
+      "status": {
+        "toClient": 2,
+        "toServer": 2
+      },
+      "login": {
+        "toClient": 6,
+        "toServer": 5
+      },
+      "configuration": {
+        "toClient": 15,
+        "toServer": 8
+      },
+      "play": {
+        "toClient": 122,
+        "toServer": 58
+      }
+    }
+  },
+  "resources": {
+    "packMetadata": null,
+    "jar": {
+      "textures": 3048,
+      "guiSprites": 400,
+      "models": 3888,
+      "blockstates": 1062,
+      "languages": 1,
+      "atlasDefinitions": [
+        {
+          "name": "assets/minecraft/atlases/armor_trims.json",
+          "sha1": "0cce0830e21ef968f4074626777b5eb515a89c7c"
+        },
+        {
+          "name": "assets/minecraft/atlases/banner_patterns.json",
+          "sha1": "d3cf81c9c351bc71485105c95a86d3ff266704a0"
+        },
+        {
+          "name": "assets/minecraft/atlases/beds.json",
+          "sha1": "8c55ed4880095ddbde206285e7b70c10922cfdfc"
+        },
+        {
+          "name": "assets/minecraft/atlases/blocks.json",
+          "sha1": "fa119d738dffbb68426e62caadb42879e0a3ff28"
+        },
+        {
+          "name": "assets/minecraft/atlases/chests.json",
+          "sha1": "61bc75023d6a595375418d64bfc53d26645433ca"
+        },
+        {
+          "name": "assets/minecraft/atlases/decorated_pot.json",
+          "sha1": "1f13896cded582d028e8309d48f4fd536ead293a"
+        },
+        {
+          "name": "assets/minecraft/atlases/gui.json",
+          "sha1": "884b6ac7184dd1189460db97292d8449062cfa26"
+        },
+        {
+          "name": "assets/minecraft/atlases/map_decorations.json",
+          "sha1": "3a09c7f5692c374f0852381e5a5ac462a9020031"
+        },
+        {
+          "name": "assets/minecraft/atlases/mob_effects.json",
+          "sha1": "ecab8129ec3eb1dcba5c6ce932738b75420fd020"
+        },
+        {
+          "name": "assets/minecraft/atlases/paintings.json",
+          "sha1": "4cf0ca69a9b906748daded0c0a991d9cf0579ab8"
+        },
+        {
+          "name": "assets/minecraft/atlases/particles.json",
+          "sha1": "e4037e7bff42604347022fbe2a03e17d1f3837e4"
+        },
+        {
+          "name": "assets/minecraft/atlases/shield_patterns.json",
+          "sha1": "e75caf3fd730417aea93389b65c091116f19da22"
+        },
+        {
+          "name": "assets/minecraft/atlases/shulker_boxes.json",
+          "sha1": "908c07fc70011f93285e2692cd2411aa93260cda"
+        },
+        {
+          "name": "assets/minecraft/atlases/signs.json",
+          "sha1": "1131ae1d920843e62d1f9761b408ada6133a15e5"
+        }
+      ],
+      "fontDefinitions": [
+        {
+          "name": "assets/minecraft/font/alt.json",
+          "sha1": "49048c9f5ec293a906ad246a7e39748f159b6d48"
+        },
+        {
+          "name": "assets/minecraft/font/default.json",
+          "sha1": "f4912793eb515fc90c6e3364b66c3a2dff5daf60"
+        },
+        {
+          "name": "assets/minecraft/font/illageralt.json",
+          "sha1": "76c214ca1e7c65c939d5f44aa2ed8d9d002442bc"
+        },
+        {
+          "name": "assets/minecraft/font/include/default.json",
+          "sha1": "83145d6437f85e799ef9b8548e9eb6e5db394c1f"
+        },
+        {
+          "name": "assets/minecraft/font/include/space.json",
+          "sha1": "ae441f44efaacd6c15fb2b1217971edd0414617b"
+        },
+        {
+          "name": "assets/minecraft/font/include/unifont.json",
+          "sha1": "d4b4ee37658bc8d30f32f148ad9d81cd88abe1e5"
+        },
+        {
+          "name": "assets/minecraft/font/uniform.json",
+          "sha1": "a2f7c25adecee4cdf6d033ff427a8d592671d945"
+        }
+      ]
+    },
+    "assetIndex": {
+      "id": "16",
+      "sha1": "7aa24dc746c469e44510359e525bfe4b45bfaa23",
+      "objects": 3885,
+      "languages": 142,
+      "sounds": 3701,
+      "fonts": 3,
+      "unifont": {
+        "name": "minecraft/font/unifont.zip",
+        "hash": "109663114d0099c48a703626c8462e07d802e08b",
+        "size": 1615995
+      },
+      "unifontJapanese": {
+        "name": "minecraft/font/unifont_jp.zip",
+        "hash": "a21d3cd11702b015a91d2e25849f5179dc52e72b",
+        "size": 236913
+      },
+      "unifontInclude": {
+        "name": "minecraft/font/include/unifont.json",
+        "hash": "bfbacce2135434989934e84e23a3e27ff3fd460d",
+        "size": 3238
+      }
+    }
+  }
+}

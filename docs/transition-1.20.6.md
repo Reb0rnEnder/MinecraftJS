@@ -136,7 +136,7 @@ Review shared fixes for every applicable existing branch, newest to oldest; pres
 
 ## Immediate next work
 
-Start **P02**: native report/default-component extraction and asset coverage, then **P03/P04** for component/text codecs. Keep the existing nine Configuration regressions green. The next useful user-test milestone is **P07 graphical native-server join**, followed by complete inventory/component interaction; a relabelled title screen is not that milestone.
+P02 is complete: pinned native reports now reproducibly cover block/state IDs, item default components, registry/component IDs, target feature flags and client-jar/asset-index resource identity. Start **P03**, then **P04**, for native binary/NBT text and component-stack codecs. Keep the existing nine Configuration regressions and the P02 regeneration gate green. The next useful user-test milestone is **P07 graphical native-server join**, followed by complete inventory/component interaction; a relabelled title screen is not that milestone.
 
 ## Native implementation anchors
 

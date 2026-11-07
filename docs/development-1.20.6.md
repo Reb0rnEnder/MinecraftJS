@@ -50,4 +50,26 @@ is not inferred. No pre-1.19.4 target receives this newer entity feature.
 
 The user authorized advancing the existing 1.20.6 port while carrying inherited gaps explicitly. The [updated plan](transition-1.20.6.md) and [task ledger](transition-1.20.6.tasks.json) replace the earlier finish-all-baseline-fixes-before-starting gate. Four native input hashes and embedded version fields were rechecked; the existing Configuration suite passed nine tests. No live server probe was rerun and no gameplay milestone is newly accepted by this documentation change.
 
-Next: P02 native reports/default components/resource coverage, then P03/P04 codec work. The first graphical acceptance target is P07. The browser restricted historical release URLs, but direct curl retrieved all seven original Wiki pages; Fandom direct requests returned challenge pages. Their source hashes/topic/fix index, selected-section review and official/native cross-checks are recorded in transition-1.20.6.inputs.json and transition-1.20.6.release-index.json.
+P02 native reports/default components/resource coverage is now accepted below; P03/P04 codec work follows. The first graphical acceptance target is P07. The browser restricted historical release URLs, but direct curl retrieved all seven original Wiki pages; Fandom direct requests returned challenge pages. Their source hashes/topic/fix index, selected-section review and official/native cross-checks are recorded in transition-1.20.6.inputs.json and transition-1.20.6.release-index.json.
+
+## P02 native data/resource baseline, 2026-11-07
+
+P02 is accepted. `tools/port-1.20.6/reports.mjs` now regenerates the exact
+1.20.6 Mojang data-generator reports from the SHA-1-pinned server input and
+checks a committed semantic baseline. The target resolves to 1,060 blocks,
+26,684 contiguous block states, 1,330 items, 56 contiguous data-component
+types, 74 registries and 8,283 default item-component entries. Every reported
+default item component is validated against the target component registry.
+
+The same gate inventories the target client-jar atlas/font definitions and the
+asset-index language, sound and external Unihex objects. FeatureFlags bytecode
+is checked against the pinned server class: `minecraft:vanilla` is the native
+default set, while bundle, trade rebalance and update-1.21 remain non-default
+experiments. Protocol phase packet counts are recorded for 1.20.4 versus the
+1.20.5/1.20.6 schema boundary.
+
+Mojang's generated item report can vary in JSON object key order between runs,
+so report source hashes use canonical parsed JSON rather than raw serializer
+bytes. The semantic baseline passed two consecutive full
+`npm run test:1.20.6` runs, while the existing nine Configuration tests
+remained green. P03 (native binary/NBT text primitives) is the next gate.

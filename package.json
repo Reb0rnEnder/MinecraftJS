@@ -8,7 +8,8 @@
     "assets": "node tools/build.js assets",
     "build": "node tools/build.js html",
     "prepare:1.20.6": "node tools/port-1.20.6/prepare.mjs",
-    "test:1.20.6": "node tools/port-1.20.6/generate-ids.mjs --check && node --test tools/test-1.20.6-configuration.mjs",
+    "reports:1.20.6": "node tools/port-1.20.6/reports.mjs",
+    "test:1.20.6": "node tools/port-1.20.6/generate-ids.mjs --check && node tools/port-1.20.6/reports.mjs --check && node --test tools/test-1.20.6-configuration.mjs",
     "fixture:1.20.6": "node tools/port-1.20.6/run-protocol-fixture.mjs",
     "probe:1.20.6": "node tools/port-1.20.6/probe-configuration.mjs"
   },
