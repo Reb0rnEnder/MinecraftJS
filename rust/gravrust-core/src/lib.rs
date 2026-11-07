@@ -106,6 +106,11 @@ pub mod dropped_item;
 pub mod local_player;
 pub mod player_native;
 pub mod respawn_player;
+pub mod pickup_animation;
+pub mod entity_pick_radius;
+pub mod adventure;
+pub mod slab_placement;
+pub mod potionhelper;
 
 pub mod advancements;
 pub mod address;
