@@ -150,19 +150,46 @@ pub fn mc_cos(degrees: f32) -> f32 {
     degrees.to_radians().cos()
 }
 
-/// X-axis offset calculation (Minecraft-style)
-pub fn calc_x_offset(_a: f64, _b: f64, _c: f64) -> f64 {
-    0.0
+/// JS: `calcXOffset(box, bb, off)` — upstream physics.js 1:1.
+/// Swept-AABB X resolution: only adjusts when Y and Z ranges overlap.
+pub fn calc_x_offset(box_: &[f64], bb: &[f64], off: f64) -> f64 {
+    let mut off = off;
+    if bb[4] > box_[1] && bb[1] < box_[4] && bb[5] > box_[2] && bb[2] < box_[5] {
+        if off > 0.0 {
+            if bb[3] <= box_[0] { let d = box_[0] - bb[3]; if d < off { off = d; } }
+        } else if off < 0.0 {
+            if bb[0] >= box_[3] { let d = box_[3] - bb[0]; if d > off { off = d; } }
+        }
+    }
+    off
 }
 
-/// Y-axis offset calculation (collision resolution stub)
-pub fn calc_y_offset(_a: f64, _b: f64, _c: f64) -> f64 {
-    0.0
+/// JS: `calcYOffset(box, bb, off)` — upstream physics.js 1:1.
+/// Swept-AABB Y resolution: only adjusts when X and Z ranges overlap.
+pub fn calc_y_offset(box_: &[f64], bb: &[f64], off: f64) -> f64 {
+    let mut off = off;
+    if bb[3] > box_[0] && bb[0] < box_[3] && bb[5] > box_[2] && bb[2] < box_[5] {
+        if off > 0.0 {
+            if bb[4] <= box_[1] { let d = box_[1] - bb[4]; if d < off { off = d; } }
+        } else if off < 0.0 {
+            if bb[1] >= box_[4] { let d = box_[4] - bb[1]; if d > off { off = d; } }
+        }
+    }
+    off
 }
 
-/// Z-axis offset calculation (collision resolution stub)
-pub fn calc_z_offset(_a: f64, _b: f64, _c: f64) -> f64 {
-    0.0
+/// JS: `calcZOffset(box, bb, off)` — upstream physics.js 1:1.
+/// Swept-AABB Z resolution: only adjusts when X and Y ranges overlap.
+pub fn calc_z_offset(box_: &[f64], bb: &[f64], off: f64) -> f64 {
+    let mut off = off;
+    if bb[3] > box_[0] && bb[0] < box_[3] && bb[4] > box_[1] && bb[1] < box_[4] {
+        if off > 0.0 {
+            if bb[5] <= box_[2] { let d = box_[2] - bb[5]; if d < off { off = d; } }
+        } else if off < 0.0 {
+            if bb[2] >= box_[5] { let d = box_[5] - bb[2]; if d > off { off = d; } }
+        }
+    }
+    off
 }
 
 /// AABB collision Aabb structure for physics calculations

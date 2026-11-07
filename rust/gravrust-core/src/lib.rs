@@ -99,6 +99,10 @@ pub mod game {
     #[derive(Debug, Default)]
     pub struct Game;
 }
+pub mod mouse_look;
+pub mod function_keys;
+pub mod item_pickup;
+pub mod dropped_item;
 
 pub mod advancements;
 pub mod address;
