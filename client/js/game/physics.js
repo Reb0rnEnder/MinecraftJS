@@ -95,7 +95,11 @@ export class LocalPlayer {
     this.motionX = 0; this.motionY = 0; this.motionZ = 0;
     this.yaw = 0; this.pitch = 0; this.prevYaw = 0; this.prevPitch = 0;
     // Entity sizes are floats in vanilla: 0.6F / 1.8F (bb half width 0.30000001192092896, height 1.7999999523162842)
+    this.scale = 1;
     this.width = Math.fround(0.6); this.height = Math.fround(1.8); this.stepHeight = Math.fround(0.6);
+    this.gravity = 0.08; this.jumpStrength = 0.42;
+    this.safeFallDistance = 3; this.fallDamageMultiplier = 1;
+    this.blockInteractionRange = 4.5; this.entityInteractionRange = 3; this.blockBreakSpeed = 1;
     // EntityLivingBase.landMovementFactor / jumpMovementFactor: set *after* each move (EntityPlayer.onLivingUpdate),
     // so sprint changes only affect speed from the next tick
     this.landMovementFactor = Math.fround(0.1); this.jumpMovementFactor = Math.fround(0.02);
@@ -157,25 +161,27 @@ export class LocalPlayer {
 
   // EntityPlayer.getEyeHeight (1.12)
   eyeHeight() {
-    if (this.sleeping) return f32(0.2);
-    if (['fall_flying','swimming','spin_attack'].includes(this.pose)) return f32(0.4);
-    if (this.pose === 'sneaking') return f32(1.27);
-    return f32(1.62);
+    const scale=f32(this.scale||1);
+    if (this.sleeping) return f32(0.2*scale);
+    if (['fall_flying','swimming','spin_attack'].includes(this.pose)) return f32(0.4*scale);
+    if (this.pose === 'sneaking') return f32(1.27*scale);
+    return f32(1.62*scale);
   }
 
   canEnterPose(world, pose) {
-    const [width,height] = playerPoseDimensions(pose).map(f32), r = width / 2, eps = 1e-7;
+    const scale=f32(this.scale||1);
+    const [width,height] = playerPoseDimensions(pose).map(value=>f32(value*scale)), r = width / 2, eps = 1e-7;
     return !world.getCollisions([this.x-r+eps,this.y+eps,this.z-r+eps,this.x+r-eps,this.y+height-eps,this.z+r-eps],this).length;
   }
 
   // Player.updatePlayerPose: a blocked standing/crouching pose falls back to a fitting pose.
   updateSize(world) {
-    if(this.sleeping){this.pose='sleeping';this.width=this.height=f32(.2);this.crouching=false;this._bb=null;return;}
+    if(this.sleeping){this.pose='sleeping';this.width=this.height=f32(.2*(this.scale||1));this.crouching=false;this._bb=null;return;}
     if (!this.canEnterPose(world,'swimming')) return;
     let pose = this.elytraFlying ? 'fall_flying' : this.swimming ? 'swimming' : this.riptide ? 'spin_attack' : this.sneaking && !this.flying ? 'sneaking' : 'standing';
     if (!this.spectator && !this.ridingEntity && !this.canEnterPose(world,pose)) pose = this.canEnterPose(world,'sneaking') ? 'sneaking' : 'swimming';
     this.pose = pose; this.crouching = pose === 'sneaking';
-    const [w,h] = playerPoseDimensions(pose).map(f32);
+    const scale=f32(this.scale||1),[w,h] = playerPoseDimensions(pose).map(value=>f32(value*scale));
     if (w === this.width && h === this.height) return;
     this.width = w; this.height = h;
     this._bb = null; // Native dimensions stay centered on the entity's feet.
@@ -474,7 +480,7 @@ export class LocalPlayer {
         // EntityLivingBase.fall(distance, multiplier): ceil((distance - 3 - jump boost) * multiplier); beds halve the distance
         const mult = lb && lb.name === 'slime_block' && !this.sneaking ? 0 : lb && lb.name === 'hay_block' ? 0.2 : honeyFallMultiplier(lb?.name);
         const dist = lb && lb.name ?.endsWith('_bed') ? this.fallDistance * 0.5 : this.fallDistance;
-        const dmg = Math.ceil((dist - 3 - (this.jumpBoost >= 0 ? this.jumpBoost + 1 : 0)) * mult);
+        const dmg = Math.ceil((dist - this.safeFallDistance - (this.jumpBoost >= 0 ? this.jumpBoost + 1 : 0)) * mult * this.fallDamageMultiplier);
         if (dmg > 0) this.onFall(dmg, lst);
       }
       this.fallDistance = 0;
@@ -620,7 +626,7 @@ export class LocalPlayer {
 
   jump(world) {
     const at=world&&getBlock(world.getState(Math.floor(this.x),Math.floor(this.y),Math.floor(this.z))),under=world&&getBlock(world.getState(Math.floor(this.x),Math.floor(this.y-.5000001),Math.floor(this.z)));
-    this.motionY = Math.fround(0.41999998688697815*honeyJumpFactor(at?.name==='honey_block'?at.name:under?.name)); // getJumpUpwardsMotion() = 0.42F
+    this.motionY = Math.fround(this.jumpStrength*honeyJumpFactor(at?.name==='honey_block'?at.name:under?.name)); // getJumpUpwardsMotion() = 0.42F
     if (this.jumpBoost >= 0) this.motionY += Math.fround((this.jumpBoost + 1) * F.p01);
     if (this.sprinting) {
       const f = Math.fround(Math.fround(this.yaw) * F.deg);
@@ -668,7 +674,7 @@ export class LocalPlayer {
       const d1 = Math.sqrt(look[0] * look[0] + look[1] * look[1] + look[2] * look[2]);
       let f4 = mcCos(f);
       f4 = f32(f4 * f4 * Math.min(1, d1 / 0.4));
-      this.motionY += -0.08 + f4 * 0.06;
+      this.motionY += -this.gravity + f4 * 0.06;
       if (this.motionY < 0 && d6 > 0) {
         const d2 = this.motionY * -0.1 * f4;
         this.motionY += d2;
@@ -707,7 +713,7 @@ export class LocalPlayer {
       this.motionX *= f1; this.motionY *= 0.800000011920929; this.motionZ *= f1;
       // 1.13 water gravity is 0.08 / 16 and is skipped during sprint swimming.
       if(!this.noGravity&&!this.sprinting) {
-        const gravity=this.slowFalling&&this.motionY<=0?0.01:0.08;
+        const gravity=this.slowFalling&&this.motionY<=0?0.01:this.gravity;
         this.motionY=this.motionY<=0&&Math.abs(this.motionY-0.005)>=0.003&&Math.abs(this.motionY-gravity/16)<0.003?-0.003:this.motionY-gravity/16;
       }
       if (this.collidedH && this.isOffsetPositionInLiquid(world, this.motionX, this.motionY + 0.6000000238418579 - this.y + d0, this.motionZ)) this.motionY = 0.30000001192092896;
@@ -746,7 +752,7 @@ export class LocalPlayer {
       } else if (!world.isLoaded(Math.floor(this.x), Math.floor(this.z))) {
         this.motionY = this.y > (world.minY??0) ? -0.1 : 0;
       } else {
-        this.motionY -= 0.08;
+        this.motionY -= this.gravity;
       }
       this.motionY *= 0.9800000190734863;
       this.motionX *= f4;

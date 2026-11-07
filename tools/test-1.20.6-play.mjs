@@ -55,7 +55,7 @@ function dimensionContext() {
 test("P06 schema is target-pinned and applies Mojang VarLong corrections", () => {
   assert.equal(PLAY_SCHEMA_766.minecraftVersion, "1.20.6");
   assert.equal(PLAY_SCHEMA_766.protocol, 766);
-  assert.equal(PLAY_SCHEMA_766.packets.length, 53);
+  assert.equal(PLAY_SCHEMA_766.packets.length, 122);
   assert.equal(PLAY_SCHEMA_766.blockStateCount, 26684);
   assert.deepEqual(PLAY_SCHEMA_766.airStates, [0, 12959, 12958]);
   assert.equal(PLAY_SCHEMA_766.entityTypes.length, 130);

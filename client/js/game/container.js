@@ -10,8 +10,7 @@ import { craftResult, containerItem } from './crafting.js';
 
 // ItemStack.copy owns its NBT: editing a picked/displayed stack must not mutate
 // the source entity or another inventory slot (including typed array/long tags).
-export const copy = (it) => (it ? { id: it.id, count: it.count, damage: it.damage,
-  nbt: it.nbt ? structuredClone(it.nbt) : it.nbt, nbtRaw: it.nbtRaw ? it.nbtRaw.slice() : it.nbtRaw } : null);
+export const copy = (it) => it ? structuredClone(it) : null;
 
 function sameItem(a, b) {
   // Protocol404 variants have separate item IDs; durability lives in Damage NBT.
@@ -38,7 +37,27 @@ function nbtPayloadEqual(type, a, b) {
 function nbtEqual(a, b) { return a === b || !!a && !!b && a.t === b.t && nbtPayloadEqual(a.t, a.v, b.v); }
 function stackTag(item) { return item.nbt || (item.nbtRaw ? new Reader(item.nbtRaw).optionalNbt() : null); }
 function tagsEqual(a, b) { return nbtEqual(stackTag(a), stackTag(b)); }
-export function stackable(a, b) { return sameItem(a, b) && tagsEqual(a, b); }
+function valueEqual(a,b){
+  if(a===b)return true;
+  if(!a||!b||typeof a!=="object"||typeof b!=="object")return false;
+  if(ArrayBuffer.isView(a)||ArrayBuffer.isView(b)){
+    return ArrayBuffer.isView(a)&&ArrayBuffer.isView(b)&&a.constructor===b.constructor&&a.length===b.length&&
+      Array.from(a).every((value,index)=>value===b[index]);
+  }
+  if(Array.isArray(a)||Array.isArray(b)){
+    return Array.isArray(a)&&Array.isArray(b)&&a.length===b.length&&a.every((value,index)=>valueEqual(value,b[index]));
+  }
+  const ak=Object.keys(a).sort(),bk=Object.keys(b).sort();
+  return ak.length===bk.length&&ak.every((key,index)=>key===bk[index]&&valueEqual(a[key],b[key]));
+}
+function componentsEqual(a,b){
+  const ac=a?.effectiveComponents,bc=b?.effectiveComponents;
+  if(ac||bc)return !!ac&&!!bc&&valueEqual(ac,bc);
+  const ap=a?.componentPatch,bp=b?.componentPatch;
+  if(ap||bp)return !!ap&&!!bp&&valueEqual(ap,bp);
+  return tagsEqual(a,b);
+}
+export function stackable(a, b) { return sameItem(a, b) && componentsEqual(a, b); }
 
 const ARMOR_POINTS = {
   leather: [1, 3, 2, 1], chainmail: [2, 5, 4, 1], iron: [2, 6, 5, 2], diamond: [3, 8, 6, 3], netherite: [3, 8, 6, 3], golden: [2, 5, 3, 1],
@@ -366,7 +385,7 @@ class ContainerBase {
   _canAdd(i, stack, sizeMatters) {
     const st = this.get(i);
     let flag = !st;
-    if (st && stack && sameItem(st, stack) && tagsEqual(st, stack)) {
+    if (st && stack && stackable(st, stack)) {
       flag = flag || st.count + (sizeMatters ? 0 : stack.count) <= this.maxStack(stack);
     }
     return flag;
@@ -535,7 +554,7 @@ export class ContainerWindow extends ContainerBase {
     this.type = type;
     this.title = title;
     this.entityId = entityId;
-    const fixed = { 'minecraft:crafting_table': 10, 'minecraft:enchanting_table': 2, 'minecraft:smithing': 3, 'minecraft:anvil': 3, 'minecraft:villager': 3, 'minecraft:beacon': 1 };
+    const fixed = { "minecraft:crafting_table": 10, "minecraft:enchanting_table": 2, "minecraft:smithing": 4, "minecraft:anvil": 3, "minecraft:villager": 3, "minecraft:beacon": 1 };
     this.size = fixed[type] !== undefined ? fixed[type] : slotCount;
     if (type === 'EntityHorse') this.size = slotCount;
     this.container = new Array(this.size).fill(null);
@@ -559,7 +578,9 @@ export class ContainerWindow extends ContainerBase {
 
   _configureSlot(i, slot) {
     switch (this.type) {
-      case 'minecraft:smithing': if(i===2){slot.output=true;slot.valid=()=>false;slot.canTake=()=>!!smithingRecipe(this.game,this.get(0),this.get(1));}break;
+      case "minecraft:smithing":
+        if(i===3){slot.output=true;slot.valid=()=>false;}
+        break;
       case 'minecraft:crafting_table': if (i === 0) { slot.output = true; slot.valid = () => false; } break;
       case 'minecraft:blast_furnace': case 'minecraft:smoker': case 'minecraft:furnace':
         if (i === 2) { slot.output = true; slot.valid = () => false; }
@@ -603,7 +624,8 @@ export class ContainerWindow extends ContainerBase {
   }
 
   onSlotChanged(i) {
-    if(this.type==='minecraft:smithing'&&i<2)this.container[2]=smithingResult(this.game,this.get(0),this.get(1));
+    //// 1.20+ smithing has template/base/addition/result. The server owns recipe output;
+    //// local setters must not synthesize the old two-input result into the modern result slot.
     if (this.type === 'minecraft:crafting_table' && i >= 1 && i <= 9) {
       this.container[0] = craftResult(this.container.slice(1, 10), 3, this.items);
     }
@@ -621,7 +643,8 @@ export class ContainerWindow extends ContainerBase {
     const consume=(slot,count=1)=>{const it=this.get(slot);if(it)this.put(slot,it.count>count?{...it,count:it.count-count}:null);};
     // Accepted clicks do not echo these predicted input changes. Network setters
     // still replace every slot when the server changes/rejects the result.
-    if(this.type==='minecraft:smithing'){consume(0);consume(1);this.put(2,smithingResult(this.game,this.get(0),this.get(1)));
+    if(this.type==="minecraft:smithing"){
+      consume(0);consume(1);consume(2);this.put(3,null);
     }else if(this.type==='minecraft:stonecutter'){
       const recipe=stonecutterRecipes(this.game,this.get(0))[this.properties[0]];
       consume(0);this.put(1,this.get(0)&&recipe?copy(recipe.data.result):null);
@@ -705,10 +728,10 @@ export class ContainerWindow extends ContainerBase {
         }
         return true;
       }
-      if(t==='minecraft:smithing'){
-        if(i===2){if(!m(3,39,true))return false;}
-        else if(i<2){if(!m(3,39,false))return false;}
-        else {const start=smithingRecipes(this.game).some(r=>r.data.addition.some(s=>s?.id===it.id))?1:0;if(!m(start,2,false))return false;}
+      if(t==="minecraft:smithing"){
+        if(i===3){if(!m(4,40,true))return false;}
+        else if(i<3){if(!m(4,40,false))return false;}
+        else if(!m(0,3,false))return false;
         return true;
       }
       if (t === 'minecraft:anvil' || t === 'minecraft:villager') {

@@ -6,19 +6,12 @@ import { cache, target } from "./prepare.mjs";
 
 const outUrl = new URL("../../client/js/net/play-schema-1.20.6.js", import.meta.url);
 
-const packets = [
+const corePackets = [
   "login","respawn","position",
   "map_chunk","update_light","unload_chunk","block_change","multi_block_change","tile_entity_data",
   "window_items","set_slot",
   "abilities","experience","update_health","held_item_slot","difficulty","update_time","spawn_position",
-  "update_view_position","update_view_distance","simulation_distance",
-  "initialize_world_border","world_border_center","world_border_lerp_size","world_border_size",
-  "world_border_warning_delay","world_border_warning_reach",
-  "server_data","set_ticking_state","step_tick","game_state_change",
-  "entity_metadata","entity_status","entity_update_attributes","entity_effect","remove_entity_effect","damage_event",
-  "spawn_entity","rel_entity_move","entity_move_look","entity_look","entity_teleport","entity_velocity",
-  "entity_head_rotation","entity_destroy","entity_equipment","set_passengers","attach_entity",
-  "keep_alive","kick_disconnect","chunk_batch_start","chunk_batch_finished","start_configuration"
+  "entity_metadata","entity_update_attributes","spawn_entity","keep_alive","kick_disconnect","start_configuration"
 ];
 
 const leaves = new Set([
@@ -49,7 +42,7 @@ function collect(all, roots) {
     }
     if (!Array.isArray(spec)) return;
     const [kind, args] = spec;
-    if (!constructors.has(kind)) throw new Error("Unsupported P06 constructor " + kind);
+    if (!constructors.has(kind)) throw new Error("Unsupported protocol-766 Play constructor " + kind);
     if (kind === "container") for (const field of args) walk(field.type);
     else if (kind === "array") { walk(args.type); if (args.countType) walk(args.countType); }
     else if (kind === "switch") {
@@ -87,12 +80,19 @@ export async function generatePlaySchema(check = false) {
   field("world_border_lerp_size", "speed").type = "varlong";
   const packetMappings = play.packet[1][0].type[1].mappings;
   const idByName = Object.fromEntries(Object.entries(packetMappings).map(([id, name]) => [name, Number(id)]));
-  const roots = packets.map((name) => "packet_" + name);
-  for (const root of roots) assert.ok(play[root], "Missing protocol-766 type " + root);
+  const packets = Object.keys(idByName).sort((a, b) => idByName[a] - idByName[b]);
+  for (const name of corePackets) assert.ok(idByName[name] !== undefined, "Missing required protocol-766 packet " + name);
   const all = { ...protocol.types, ...play };
+  for (const name of packets) {
+    const root = "packet_" + name;
+    if (all[root] === undefined && all["packet_common_" + name] !== undefined) all[root] = all["packet_common_" + name];
+    if (name === "bundle_delimiter" && all[root] === undefined) all[root] = ["container", []];
+  }
+  const roots = packets.map((name) => "packet_" + name);
+  for (const root of roots) assert.ok(all[root], "Missing protocol-766 type " + root);
   const types = collect(all, roots);
   const ids = Object.fromEntries(packets.map((name) => [name, idByName[name]]));
-  assert.ok(Object.values(ids).every(Number.isInteger), "Every P06 packet needs a protocol ID");
+  assert.ok(Object.values(ids).every(Number.isInteger), "Every protocol-766 Play packet needs a protocol ID");
   const orderedRegistry = (name) => Object.entries(registries[name].entries)
     .sort((a, b) => a[1].protocol_id - b[1].protocol_id)
     .map(([key]) => key);
@@ -118,11 +118,11 @@ export async function generatePlaySchema(check = false) {
   const text = "//// Generated from the pinned Minecraft 1.20.6 / protocol 766 schema. Do not edit by hand.\n" +
     "export const PLAY_SCHEMA_766 = " + JSON.stringify(value) + ";\n";
   if (check) {
-    assert.equal(await readFile(outUrl, "utf8"), text, "Generated P06 Play schema differs");
-    console.log("Verified " + packets.length + " P06 Play packet bodies / " + Object.keys(types).length + " named helper types");
+    assert.equal(await readFile(outUrl, "utf8"), text, "Generated protocol-766 Play schema differs");
+    console.log("Verified " + packets.length + " protocol-766 Play packet bodies / " + Object.keys(types).length + " named helper types");
   } else {
     await writeFile(outUrl, text);
-    console.log("Generated " + packets.length + " P06 Play packet bodies / " + Object.keys(types).length + " named helper types");
+    console.log("Generated " + packets.length + " protocol-766 Play packet bodies / " + Object.keys(types).length + " named helper types");
   }
   return value;
 }

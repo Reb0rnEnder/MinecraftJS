@@ -48,7 +48,7 @@ import {captureText} from '../debug/text-capture.js';
 import {pushLocalPlayer} from './entity-pushing.js';
 import {ShaderPackFinal} from '../render/shader-pack.js';
 import {CameraEye} from '../render/camera-eye.js';
-import {MENUS_762} from './menus-1.19.4.js';
+import {menuInfo766} from "./menus-1.20.6.js";
 import { RegistryTags } from './tags.js';
 import { CommandTree } from './commands.js';
 import { startSleeping, stopSleeping, updateSleeping, sleepingCamera } from './bed-sleep.js';
@@ -1183,9 +1183,19 @@ export class Game {
     if (p.entityId === this.entityId) {
       for (const prop of p.properties) {
         (this.player.attributes??=new Map()).set(prop.key,structuredClone(prop));
+        const value=attributeValue(prop);
         if (prop.key === 'generic.movementSpeed') this.player.speedAttr = { base: prop.value, modifiers: prop.modifiers };
-        if (prop.key === 'generic.maxHealth') this.maxHealth = clampMaxHealth(attributeValue(prop));
-        if (prop.key === 'generic.attackSpeed') this.player.attackSpeed = attributeValue(prop);
+        if (prop.key === 'generic.maxHealth') this.maxHealth = clampMaxHealth(value);
+        if (prop.key === 'generic.attackSpeed') this.player.attackSpeed = value;
+        if (prop.key === 'generic.gravity') this.player.gravity = value;
+        if (prop.key === 'generic.jumpStrength') this.player.jumpStrength = value;
+        if (prop.key === 'generic.safeFallDistance') this.player.safeFallDistance = value;
+        if (prop.key === 'generic.fallDamageMultiplier') this.player.fallDamageMultiplier = value;
+        if (prop.key === 'generic.stepHeight') this.player.stepHeight = value;
+        if (prop.key === 'generic.scale') {this.player.scale=value;this.player.updateSize?.(this.world);}
+        if (prop.key === 'player.blockBreakSpeed') this.player.blockBreakSpeed = value;
+        if (prop.key === 'player.blockInteractionRange') this.player.blockInteractionRange = value;
+        if (prop.key === 'player.entityInteractionRange') this.player.entityInteractionRange = value;
       }
     }
     this.entities.setAttributes(p);
@@ -1317,14 +1327,9 @@ export class Game {
   }
 
   on_open_window(p) {
-    if(typeof p.inventoryType==='number'){
-      const name=MENUS_762[p.inventoryType];
-      const rows=/generic_9x([1-6])/.exec(name||'');
-      const aliases={'minecraft:generic_3x3':['minecraft:dispenser',9],'minecraft:crafting':['minecraft:crafting_table',10],'minecraft:enchantment':['minecraft:enchanting_table',2],'minecraft:merchant':['minecraft:villager',3],'minecraft:blast_furnace':['minecraft:blast_furnace',3],'minecraft:smoker':['minecraft:smoker',3]};
-      const fixed={'minecraft:smithing':3,'minecraft:anvil':3,'minecraft:beacon':1,'minecraft:brewing_stand':5,'minecraft:furnace':3,'minecraft:hopper':5,'minecraft:shulker_box':27,'minecraft:grindstone':3,'minecraft:lectern':1,'minecraft:loom':4,'minecraft:cartography':3,'minecraft:stonecutter':2};
-      const [type,count]=rows?['minecraft:chest',Number(rows[1])*9]:aliases[name]||[name,fixed[name]];
-      if(!type||count===undefined)throw new Error('Unknown 1.19.4 menu '+p.inventoryType);
-      p={...p,inventoryType:type,slotCount:count};
+    if(typeof p.inventoryType==="number"){
+      const menu=menuInfo766(p.inventoryType);
+      p={...p,inventoryType:menu.type,slotCount:menu.slotCount,registryMenu:menu.registryName};
     }
     const win = new ContainerWindow(this, p.windowId, p.inventoryType, chatToLegacy(p.windowTitle), p.slotCount, p.entityId);
     this.window = win;

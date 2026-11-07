@@ -227,3 +227,27 @@ P08 is next. Creative/item-mechanics data is intentionally target-marked and
 incomplete rather than inherited from 1.19.4; inventory actions, authoritative
 component-stack reconciliation, native ranges/poses and rejection side effects
 must be ported before that gate can be accepted.
+
+## P08 inventory/actions/target attributes, 2026-11-08
+
+P08 is accepted. Protocol-766 container clicks now carry the modern state ID,
+changed-slot component stacks and carried stack, while local prediction preserves
+the complete component patch/effective component state instead of the old
+NBT-only subset. Incoming `set_slot`/`window_items` remain authoritative and
+replace rejected or corrected predictions.
+
+The target menu registry accounts for the Crafter insertion and every native
+1.20.6 menu ID; modern Smithing uses template/base/addition/result indices and
+merchant ItemCost component predicates normalize into the existing merchant
+consumer shape. The generic Play decoder is no longer restricted to the P06
+join subset: all 122 clientbound protocol-766 packet bodies are generated.
+
+The 1.20.5 attribute migration is connected to gameplay rather than stored as
+metadata. Gravity, jump strength, step height, scale/pose dimensions,
+safe-fall distance, fall-damage multiplier, block-break speed and block/entity
+interaction ranges affect the existing physics/interaction code. Native Player
+bytecode confirms 4.5 block and 3.0 entity interaction-range defaults.
+
+The target regression gate is now 95/95 green. P09 is next: reuse the older
+encrypted-login/session-join path with the protocol-766 login layouts and prove
+both offline and account-backed state transitions.

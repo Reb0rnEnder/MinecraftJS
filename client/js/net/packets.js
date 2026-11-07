@@ -1,9 +1,9 @@
-import { ChatState762 } from "./chat-state-1.19.4.js";
+import { ChatState766 } from "./chat-state-1.20.6.js";
 import { Writer766 } from "./configuration-1.20.6.js";
 import { decodePlayPacket766 } from "./play-codec-1.20.6.js";
 import { PLAY_SERVERBOUND_766 as OUT } from "./protocol-1.20.6-ids.js";
 
-export const chatState762 = new ChatState762();
+export const chatState762 = new ChatState766();
 export const PROTOCOL_VERSION = 766;
 export const decodePacket = (data) => decodePlayPacket766(data);
 
@@ -18,12 +18,6 @@ function payloadChannel(channel) {
     throw new Error("Invalid custom payload channel: " + channel);
   }
   return channel;
-}
-
-function unsupported(name) {
-  return () => {
-    throw new Error("Protocol 766 outgoing packet not implemented yet: " + name);
-  };
 }
 
 export const C = {
@@ -109,18 +103,58 @@ export const C = {
 
   creativeSlot: (slot, item) => packet("set_creative_slot").i16(slot).slot(item).build(),
 
-  //// Later parity gates own formats that changed materially in 1.20.x.
-  chat: unsupported("chat_message"),
-  windowClick: unsupported("window_click"),
-  resourcePackStatus: unsupported("resource_pack_receive"),
-  enchantItem: unsupported("enchant_item"),
-  menuButton: unsupported("enchant_item"),
-  seenAdvancements: unsupported("advancement_tab"),
-  selectTrade: unsupported("select_trade"),
-  nameItem: unsupported("name_item"),
-  setBeaconEffects: unsupported("set_beacon_effect"),
-  updateJigsaw: unsupported("update_jigsaw_block"),
-  updateSign: unsupported("update_sign")
+  windowClick: (windowId, slot, mouseButton, stateId, mode, changedSlots, cursorItem) => {
+    const writer = packet("window_click")
+      .u8(windowId)
+      .varint(stateId)
+      .i16(slot)
+      .i8(mouseButton)
+      .varint(mode)
+      .varint(changedSlots.length);
+    for (const changed of changedSlots) {
+      writer.i16(changed.slot).slot(changed.item);
+    }
+    return writer.slot(cursorItem).build();
+  },
+
+  chat: (message, options = undefined) => chatState762.encode(String(message), options),
+  resourcePackStatus: (uuid, result) => packet("resource_pack_receive").uuid(uuid).varint(result).build(),
+  enchantItem: (windowId, enchantment) => packet("enchant_item").i8(windowId).i8(enchantment).build(),
+  menuButton: (windowId, button) => packet("enchant_item").i8(windowId).i8(button).build(),
+  seenAdvancements: (tabId) => {
+    const writer = packet("advancement_tab").varint(tabId == null ? 1 : 0);
+    if (tabId != null) writer.string(String(tabId));
+    return writer.build();
+  },
+  selectTrade: (slot) => packet("select_trade").varint(slot).build(),
+  nameItem: (name) => packet("name_item").string(String(name).slice(0, 50)).build(),
+  setBeaconEffects: (primary, secondary) => {
+    const writer = packet("set_beacon_effect").bool(primary != null);
+    if (primary != null) writer.varint(primary);
+    writer.bool(secondary != null);
+    if (secondary != null) writer.varint(secondary);
+    return writer.build();
+  },
+  updateJigsaw: (pos, name, target, pool, finalState, jointType = "rollable", selectionPriority = 0, placementPriority = 0) =>
+    packet("update_jigsaw_block")
+      .position(pos.x, pos.y, pos.z)
+      .string(name)
+      .string(target)
+      .string(pool)
+      .string(finalState)
+      .string(jointType)
+      .varint(selectionPriority)
+      .varint(placementPriority)
+      .build(),
+  updateSign: (x, y, z, lines, isFrontText = true) =>
+    packet("update_sign")
+      .position(x, y, z)
+      .bool(isFrontText)
+      .string(String(lines?.[0] ?? ""))
+      .string(String(lines?.[1] ?? ""))
+      .string(String(lines?.[2] ?? ""))
+      .string(String(lines?.[3] ?? ""))
+      .build()
 };
 
 export const mcStringBytes = (value) => new Writer766().string(value).build();

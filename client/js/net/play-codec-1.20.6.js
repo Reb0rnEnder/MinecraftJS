@@ -1,7 +1,7 @@
 import { Reader766 } from "./configuration-1.20.6.js";
 import { readAnonymousNbt } from "./nbt-anonymous.js";
 import { componentFromNbt } from "./component-nbt-1.20.6.js";
-import { readSlot766 } from "./item-components-1.20.6.js";
+import { readSlot766, decorateItemCost766 } from "./item-components-1.20.6.js";
 import { PLAY_SCHEMA_766 } from "./play-schema-1.20.6.js";
 import { bitsetValue, compactMask, maskHas, maskHighest, maskValue } from "./bitset.js";
 import { simplify } from "./nbt.js";
@@ -354,6 +354,28 @@ function normalize(name, packet, context = null) {
     return { ...packet, flags: packet.flags.raw };
   }
 
+  if (name === "open_window") {
+    return { ...packet, windowTitle: componentFromNbt(packet.windowTitle) };
+  }
+
+  if (name === "trade_list") {
+    return {
+      ...packet,
+      trades: packet.trades.map((trade) => ({
+        a: decorateItemCost766(trade.inputItem1),
+        out: trade.outputItem,
+        b: decorateItemCost766(trade.inputItem2),
+        disabled: trade.tradeDisabled,
+        uses: trade.nbTradeUses,
+        max: trade.maximumNbTradeUses,
+        xp: trade.xp,
+        specialPrice: trade.specialPrice,
+        priceMultiplier: trade.priceMultiplier,
+        demand: trade.demand
+      }))
+    };
+  }
+
   if (name === "map_chunk") {
     const light = normalizeLight(packet);
     return {
@@ -412,7 +434,15 @@ function normalize(name, packet, context = null) {
     const rename = {
       "generic.movement_speed": "generic.movementSpeed",
       "generic.max_health": "generic.maxHealth",
-      "generic.attack_speed": "generic.attackSpeed"
+      "generic.attack_speed": "generic.attackSpeed",
+      "generic.fall_damage_multiplier": "generic.fallDamageMultiplier",
+      "generic.jump_strength": "generic.jumpStrength",
+      "generic.max_absorption": "generic.maxAbsorption",
+      "generic.safe_fall_distance": "generic.safeFallDistance",
+      "generic.step_height": "generic.stepHeight",
+      "player.block_break_speed": "player.blockBreakSpeed",
+      "player.block_interaction_range": "player.blockInteractionRange",
+      "player.entity_interaction_range": "player.entityInteractionRange"
     };
     return {
       ...packet,

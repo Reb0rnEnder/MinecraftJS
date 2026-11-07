@@ -393,4 +393,27 @@ export function applyComponentPatch766(itemId, added, removed) {
   return effectiveComponents(itemId, added, removed);
 }
 
+export function decorateItemCost766(cost) {
+  if (!cost) return null;
+  const added = cost.components || [];
+  const info = ITEM_DEFAULTS_766.items[cost.itemId];
+  if (!info) throw new Error("Unknown 1.20.6 item cost ID " + cost.itemId);
+  const effective = effectiveComponents(cost.itemId, added, []);
+  const values = Object.fromEntries(
+    Object.entries(effective).map(([type, entry]) => [type, componentView(type, entry)])
+  );
+  return {
+    id: cost.itemId,
+    itemId: cost.itemId,
+    itemKey: info.name,
+    count: cost.itemCount,
+    damage: Number(values.damage || 0),
+    maxDamage: values.max_damage === undefined ? null : Number(values.max_damage),
+    maxStackSize: values.max_stack_size === undefined ? null : Number(values.max_stack_size),
+    componentPatch: { added, removed: [] },
+    effectiveComponents: effective,
+    componentValues: values
+  };
+}
+
 export { COMPONENT_NAMES, COMPONENT_IDS };

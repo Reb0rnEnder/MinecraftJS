@@ -93,7 +93,7 @@ export class Interaction {
 
   get player() { return this.game.player; }
 
-  reach() { return this.game.gameMode === 1 ? 5 : 4.5; }
+  reach() { return this.player.blockInteractionRange ?? (this.game.gameMode === 1 ? 5 : 4.5); }
 
   // Minecraft.getMouseOver
   updateTarget(partial = 1) {
@@ -103,7 +103,7 @@ export class Interaction {
     const reach = this.reach();
     let hit = g.world.raycast(eye[0], eye[1], eye[2], look[0], look[1], look[2], reach);
     let blockDist = hit ? hit.dist : reach;
-    let entityReach = g.gameMode === 1 ? 6 : reach;
+    let entityReach = this.player.entityInteractionRange ?? (g.gameMode === 1 ? 6 : 3);
     if (g.gameMode !== 1 && blockDist > 3) blockDist = blockDist;
     // Entities
     let best = null;
@@ -122,7 +122,7 @@ export class Interaction {
       }
       if (r && r.t < bestDist) { bestDist = r.t; best = { e, r }; }
     }
-    if (best && (g.gameMode === 1 || best.r.t <= 3)) {
+    if (best && best.r.t <= entityReach) {
       this.target = { type: 'entity', entity: best.e, hit: [eye[0] + look[0] * best.r.t, eye[1] + look[1] * best.r.t, eye[2] + look[2] * best.r.t] };
     } else if (hit) {
       this.target = { type: 'block', ...hit };
@@ -346,6 +346,7 @@ export class Interaction {
     if (hardness === 0) return Infinity;
     const held = g.inventory.held();
     let f = f32(g.items.strVsBlock(held, b));
+    f=f32(f*f32(this.player.blockBreakSpeed??1));
     if (f > 1) {
       const eff = g.items.enchantLevel(held, 'efficiency');
       if (eff > 0 && held) f = f32(f + (eff * eff + 1));

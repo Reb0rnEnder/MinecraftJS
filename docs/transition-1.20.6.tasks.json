@@ -6,7 +6,7 @@
   "fullParity": false,
   "nativeGraphicalGameplayAccepted": true,
   "planningSourceCommit": "ecd95f4786b951869af59c46a1ad140a54931b72",
-  "nextTask": "P08",
+  "nextTask": "P09",
   "authorization": "Proceed with 1.20.6 now; keep inherited work open rather than requiring its completion before starting.",
   "executionRule": "Follow dependency order; native evidence and gate completion are required before marking done. Push validated batches and review shared backports as they land, not only at P16.",
   "tasks": [
@@ -174,7 +174,7 @@
     {
       "id": "P08",
       "title": "Finish inventory, interaction results and target physics attributes",
-      "status": "todo",
+      "status": "done",
       "dependsOn": [
         "P04",
         "P07"
@@ -186,7 +186,13 @@
         "1.20.6"
       ],
       "acceptance": "Each supported menu/action reconciles authoritative component stacks and native ranges/poses; rejection side effects match Java.",
-      "evidence": []
+      "evidence": [
+        "Protocol-766 container clicks encode stateId, changed-slot component stacks and carried component stack; component-safe local prediction preserves full patches while server set_slot/window_items remain authoritative.",
+        "Target menu registry covers all 25 native menu IDs including Crafter at 7, Smithing at 21 with four slots, and cartography-table/native aliases; merchant ItemCost component predicates normalize into existing merchant consumers.",
+        "Native 1.20.6 player attributes now drive gravity, jump strength, step height, scale/pose dimensions, safe-fall/fall multiplier, block break speed and block/entity interaction ranges. Mojang Player bytecode confirms target reach defaults 4.5/3.0.",
+        "The generated clientbound Play schema now covers all 122 protocol-766 packets rather than the former 53-packet graphical subset, allowing older feature handlers to be reused with target normalization.",
+        "The permanent target gate passes 95/95 tests, including component merge/copy, rejected/corrected inventory prediction, outgoing legacy-action layouts and attribute consumers."
+      ]
     },
     {
       "id": "P09",
