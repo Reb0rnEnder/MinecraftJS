@@ -110,6 +110,7 @@ pub mod banner;
 pub mod bee_sound;
 pub mod biome_zoom;
 pub mod blocks;
+pub mod block_entity_data_1152;
 pub mod blockstates;
 pub mod biomes;
 pub mod buffer;
@@ -364,8 +365,6 @@ mod unsupported_port {
     pub mod bee_sound_params;
     #[path = "../block_entity_data_1144.rs"]
     pub mod block_entity_data_1144;
-    #[path = "../block_entity_data_1152.rs"]
-    pub mod block_entity_data_1152;
     #[path = "../book.rs"]
     pub mod book;
     #[path = "../breaking.rs"]
