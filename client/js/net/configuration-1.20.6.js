@@ -1,13 +1,16 @@
 import {Reader,Writer} from './buffer.js';
 import {readAnonymousNbt} from './nbt-anonymous.js';
+import {readComponentNbt,writeComponentNbt} from './component-nbt-1.20.6.js';
 import {LOGIN_CLIENTBOUND_766 as LI,LOGIN_SERVERBOUND_766 as LO,CONFIGURATION_CLIENTBOUND_766 as IN,CONFIGURATION_SERVERBOUND_766 as OUT,PLAY_CLIENTBOUND_766 as PI,PLAY_SERVERBOUND_766 as PO} from './protocol-1.20.6-ids.js';
 export class Reader766 extends Reader{
  _check(n){if(!Number.isSafeInteger(n)||n<0)throw Error('Invalid packet length');super._check(n);}
  position(){const v=this.i64();return{x:Number(BigInt.asIntN(26,v>>38n)),y:Number(BigInt.asIntN(12,v)),z:Number(BigInt.asIntN(26,v>>12n))};}
+ component(){return readComponentNbt(this);}
  slot(){throw Error('Protocol 766 item-component decoding is not implemented yet');}
 }
 export class Writer766 extends Writer{
  position(x,y,z){return this.i64(BigInt.asIntN(64,(BigInt(x)&0x3ffffffn)<<38n|(BigInt(z)&0x3ffffffn)<<12n|(BigInt(y)&0xfffn)));}
+ component(value){writeComponentNbt(this,value);return this;}
  slot(){throw Error('Protocol 766 item-component encoding is not implemented yet');}
 }
 const names=ids=>Object.fromEntries(Object.entries(ids).map(([name,id])=>[id,name]));
@@ -31,13 +34,13 @@ export function decodeConfiguration766(data){const r=new Reader766(data),id=r.va
  switch(name){
   case 'cookie_request':p.key=r.string();break;
   case 'custom_payload':p.channel=r.string();p.data=r.rest();break;
-  case 'disconnect':p.reason=readAnonymousNbt(r);break;
+  case 'disconnect':p.reason=r.component();break;
   case 'finish_configuration':case 'reset_chat':break;
   case 'keep_alive':p.keepAliveId=r.i64();break;
   case 'ping':p.id=r.i32();break;
   case 'registry_data':p.registry=qualified(r.string());p.entries=array(r,r=>({key:qualified(r.string()),value:option(r,readAnonymousNbt)}));break;
   case 'remove_resource_pack':p.uuid=option(r,r=>r.uuid());break;
-  case 'add_resource_pack':p.uuid=r.uuid();p.url=r.string();p.hash=r.string();p.forced=r.bool();p.prompt=option(r,readAnonymousNbt);break;
+  case 'add_resource_pack':p.uuid=r.uuid();p.url=r.string();p.hash=r.string();p.forced=r.bool();p.prompt=option(r,r=>r.component());break;
   case 'store_cookie':p.key=r.string();p.value=bytes(r);if(p.value.length>5120)throw Error('Cookie exceeds native limit');break;
   case 'transfer':p.host=r.string();p.port=r.varint();if(p.port<1||p.port>65535)throw Error('Invalid transfer port');break;
   case 'feature_flags':p.features=array(r,r=>r.string(),1024);break;
@@ -93,7 +96,7 @@ export function decodeBootstrapPlay766(data){const r=new Reader766(data),id=r.va
  }else if(name==='keep_alive')p.keepAliveId=r.i64();
  else if(name==='position'){p.x=r.f64();p.y=r.f64();p.z=r.f64();p.yaw=r.f32();p.pitch=r.f32();p.flags=r.u8();p.teleportId=r.varint();}
  else if(name==='chunk_batch_finished')p.batchSize=r.varint();
- else if(name==='kick_disconnect')p.reason=readAnonymousNbt(r);
+ else if(name==='kick_disconnect')p.reason=r.component();
  else if(name!=='start_configuration'&&name!=='chunk_batch_start'){p.data=r.rest();return p;}
  return complete(r,p);
 }

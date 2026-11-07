@@ -6,7 +6,7 @@
   "fullParity": false,
   "nativeGraphicalGameplayAccepted": false,
   "planningSourceCommit": "ecd95f4786b951869af59c46a1ad140a54931b72",
-  "nextTask": "P03",
+  "nextTask": "P04",
   "authorization": "Proceed with 1.20.6 now; keep inherited work open rather than requiring its completion before starting.",
   "executionRule": "Follow dependency order; native evidence and gate completion are required before marking done. Push validated batches and review shared backports as they land, not only at P16.",
   "tasks": [
@@ -67,7 +67,7 @@
     {
       "id": "P03",
       "title": "Implement native binary primitives and NBT text components",
-      "status": "todo",
+      "status": "done",
       "dependsOn": [
         "P00"
       ],
@@ -76,7 +76,12 @@
         "1.20.5"
       ],
       "acceptance": "Native byte fixtures preserve typed values/styles/events and reject malformed/trailing payloads.",
-      "evidence": []
+      "evidence": [
+        "Anonymous network NBT now round-trips all tag families 1-12 with Java modified UTF-8, depth and bounded-length validation.",
+        "Pinned Mojang ComponentSerialization/NbtOps fixtures regenerate from the verified 1.20.6 server for plain, styled/click, sibling-list and translated/hover components; native numeric, boolean, null and empty-list roots are rejection fixtures.",
+        "Protocol-766 component decoding reproduces native sibling-to-extra normalization and NbtOps heterogeneous-list empty-key wrappers without weakening older-version chat parsing.",
+        "Configuration disconnect/resource-pack prompt and Play disconnect use strict component NBT; malformed/trailing payloads are rejected. npm run test:1.20.6 passes all 17 target regressions."
+      ]
     },
     {
       "id": "P04",

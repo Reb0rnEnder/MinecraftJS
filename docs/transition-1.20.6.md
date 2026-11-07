@@ -136,7 +136,7 @@ Review shared fixes for every applicable existing branch, newest to oldest; pres
 
 ## Immediate next work
 
-P02 is complete: pinned native reports now reproducibly cover block/state IDs, item default components, registry/component IDs, target feature flags and client-jar/asset-index resource identity. Start **P03**, then **P04**, for native binary/NBT text and component-stack codecs. Keep the existing nine Configuration regressions and the P02 regeneration gate green. The next useful user-test milestone is **P07 graphical native-server join**, followed by complete inventory/component interaction; a relabelled title screen is not that milestone.
+P02 and P03 are complete: pinned native reports cover target IDs/defaults/resources, while protocol-766 anonymous NBT and text components now round-trip against reproducible Mojang codec fixtures with strict 1.20.3+ validation. Start **P04** for item component-stack defaults, additions, removals and nested stack consumers. Keep all 17 target regressions plus the native report/component-fixture regeneration gates green. The next useful user-test milestone is **P07 graphical native-server join**, followed by complete inventory/component interaction; a relabelled title screen is not that milestone.
 
 ## Native implementation anchors
 

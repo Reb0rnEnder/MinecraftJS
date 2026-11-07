@@ -8,7 +8,7 @@ been relabelled. Do not use this graphical build to join a 1.20.6 server yet.
 
 See the [transition plan](docs/transition-1.20.6.md) and
 [native transport evidence](docs/development-1.20.6.md) for remaining gates.
-The [ordered task ledger](docs/transition-1.20.6.tasks.json) tracks dependencies and acceptance criteria. Native report/default-component extraction is now reproducible; the next task is native binary/NBT text primitives before component-stack integration.
+The [ordered task ledger](docs/transition-1.20.6.tasks.json) tracks dependencies and acceptance criteria. Native data/resource extraction and protocol-766 NBT text components are now reproducible; the next task is the 1.20.5+ item component-stack codec and its consumer views.
 
 ```sh
 npm ci

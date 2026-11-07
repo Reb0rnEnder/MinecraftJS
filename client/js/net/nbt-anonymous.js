@@ -25,4 +25,32 @@ function payload(r,t,depth){
   default:throw Error('Unknown NBT type '+t);
  }
 }
+function writeCount(w,n){if(!Number.isSafeInteger(n)||n<0||n>1048576)throw Error("Invalid NBT array/list length");w.i32(n);}
+function writePayload(w,t,v,depth){
+ if(depth>512)throw Error("NBT too deep");
+ switch(t){
+  case 1:w.i8(v);break;
+  case 2:w.i16(v);break;
+  case 3:w.i32(v);break;
+  case 4:w.i64(v);break;
+  case 5:w.f32(v);break;
+  case 6:w.f64(v);break;
+  case 7:{const a=v instanceof Int8Array||v instanceof Uint8Array?v:Int8Array.from(v||[]);writeCount(w,a.length);for(const x of a)w.i8(x);break;}
+  case 8:writeModifiedUtf(w,String(v));break;
+  case 9:{const et=v?.et|0,items=v?.items;if(et<0||et>12||!Array.isArray(items))throw Error("Invalid NBT list");if(et===0&&items.length)throw Error("Nonempty end-tag list");w.u8(et);writeCount(w,items.length);for(const item of items)writePayload(w,et,item,depth+1);break;}
+  case 10:{
+   if(!v||typeof v!=="object"||Array.isArray(v))throw Error("Invalid NBT compound");
+   for(const [name,child] of Object.entries(v)){if(!child||!Number.isInteger(child.t)||child.t<1||child.t>12)throw Error("Invalid NBT child");w.u8(child.t);writeModifiedUtf(w,name);writePayload(w,child.t,child.v,depth+1);}
+   w.u8(0);break;
+  }
+  case 11:{const a=v instanceof Int32Array?v:Int32Array.from(v||[]);writeCount(w,a.length);for(const x of a)w.i32(x);break;}
+  case 12:{const a=v instanceof BigInt64Array?v:BigInt64Array.from(v||[],BigInt);writeCount(w,a.length);for(const x of a)w.i64(x);break;}
+  default:throw Error("Unknown NBT type "+t);
+ }
+}
 export function readAnonymousNbt(r){const t=r.u8();return t===0?null:{t,name:'',v:payload(r,t,0)};}
+export function writeAnonymousNbt(w,node){
+ if(node===null||node===undefined){w.u8(0);return w;}
+ if(!Number.isInteger(node.t)||node.t<1||node.t>12)throw Error("Invalid anonymous NBT root");
+ w.u8(node.t);writePayload(w,node.t,node.v,0);return w;
+}

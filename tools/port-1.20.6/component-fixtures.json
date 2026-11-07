@@ -1,0 +1,63 @@
+{
+  "minecraftVersion": "1.20.6",
+  "protocol": 766,
+  "clientSha1": "05b6f1c6b46a29d6ea82b4e0d42190e42402030f",
+  "fixtures": [
+    {
+      "name": "plain string",
+      "value": "hello",
+      "wire": "08000568656c6c6f"
+    },
+    {
+      "name": "styled click event",
+      "value": {
+        "text": "Hello",
+        "color": "red",
+        "bold": true,
+        "clickEvent": {
+          "action": "open_url",
+          "value": "https://example.com"
+        }
+      },
+      "wire": "0a0a000a636c69636b4576656e74080006616374696f6e00086f70656e5f75726c08000576616c7565001368747470733a2f2f6578616d706c652e636f6d00080005636f6c6f72000372656408000474657874000548656c6c6f010004626f6c640100"
+    },
+    {
+      "name": "root sibling list",
+      "value": [
+        "A",
+        {
+          "text": "B",
+          "italic": true
+        }
+      ],
+      "wire": "0a09000565787472610a00000001080004746578740001420100066974616c696301000800047465787400014100"
+    },
+    {
+      "name": "translation mixed list and hover",
+      "value": {
+        "translate": "chat.type.text",
+        "with": [
+          "Alice",
+          {
+            "text": "Hi",
+            "color": "gold"
+          }
+        ],
+        "hoverEvent": {
+          "action": "show_text",
+          "contents": {
+            "text": "tip",
+            "bold": true
+          }
+        }
+      },
+      "wire": "0a0a000a686f7665724576656e740a0008636f6e74656e7473080004746578740003746970010004626f6c640100080006616374696f6e000973686f775f7465787400090004776974680a000000020800000005416c69636500080005636f6c6f720004676f6c640800047465787400024869000800097472616e736c617465000e636861742e747970652e7465787400"
+    }
+  ],
+  "rejected": [
+    "numeric root",
+    "boolean root",
+    "null root",
+    "empty root list"
+  ]
+}

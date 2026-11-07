@@ -73,3 +73,25 @@ so report source hashes use canonical parsed JSON rather than raw serializer
 bytes. The semantic baseline passed two consecutive full
 `npm run test:1.20.6` runs, while the existing nine Configuration tests
 remained green. P03 (native binary/NBT text primitives) is the next gate.
+
+## P03 native NBT text primitives, 2026-11-07
+
+P03 is accepted. Protocol 766 now has a bounded anonymous-NBT writer matching
+the existing typed reader across tags 1-12, including Java modified UTF-8,
+byte/int/long arrays, list/compound nesting and malformed-length/depth checks.
+
+`component-nbt-1.20.6.js` adds the target-specific 1.20.3+ text-component
+boundary without changing older chat parsing. It enforces native string/object/
+non-empty-list roots, preserves styles/events, normalizes root sibling arrays to
+`extra`, and reproduces NbtOps heterogeneous-list empty-key wrappers.
+
+`component-fixtures.mjs` regenerates byte fixtures from the SHA-pinned 1.20.6
+server by bootstrapping Mojang `ComponentSerialization` + `NbtOps` and writing
+network anonymous NBT. The committed set covers plain text, style/click events,
+root siblings, translated mixed lists and hover text, plus native rejection of
+numeric, boolean, null and empty-list roots. Configuration disconnect/resource-
+pack prompts and Play disconnects now consume the strict component codec.
+
+`npm run test:1.20.6` now checks target IDs, native data/resource reports, native
+component fixtures and both regression suites: 17/17 tests pass. P04 item
+component-stack defaults/patches/nested stacks is the next dependency gate.
