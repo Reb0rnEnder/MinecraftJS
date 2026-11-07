@@ -1,6 +1,0 @@
-# Plugin configuration for my-tool-plugin
-toolPolicies:
-  my-tool-plugin:
-    # Allow this plugin to use tool calling
-    tools: ["web_search", "advanced_search", "research"]
-    members: ["*"]

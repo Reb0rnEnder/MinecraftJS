@@ -1,2 +1,0 @@
-cd Gravrust
-git status

@@ -1,5 +1,4 @@
 # Never commit game jars or build artifacts
-mc-*.jar
 *.jar
 !lib/via/*.jar
 builder/work/
@@ -8,6 +7,15 @@ builder/output/
 .agent-teams/
 push_changes.sh
 *.png
+!client/data/**
 test-*.js
-offlineclient-verify*
 cf-tunnel-*.txt
+cf-out.txt
+cf-err.txt
+mc-*.jar
+node_modules/
+
+cache/
+rust/target/
+
+logs/

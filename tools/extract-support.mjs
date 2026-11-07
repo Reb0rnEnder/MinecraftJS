@@ -1,8 +1,0 @@
-// Extract exact native support predicates for placement; no graphics or user world.
-import{readFileSync,writeFileSync,readdirSync,existsSync}from'node:fs';import{createHash}from'node:crypto';import{execFileSync}from'node:child_process';import{createRequire}from'node:module';import{resolve,join,delimiter}from'node:path';import{fileURLToPath}from'node:url';
-const require=createRequire(import.meta.url),{MC_VERSION:version}=require('../lib/mcassets.js'),root=fileURLToPath(new URL('../',import.meta.url)),cache=join(root,'cache/port-'+version),jar=join(cache,'client.jar');
-const jars=path=>existsSync(path)?readdirSync(path,{withFileTypes:true}).flatMap(e=>e.isDirectory()?jars(join(path,e.name)):e.name.endsWith('.jar')?[join(path,e.name)]:[]):[];
-const classpath=[jar,join(cache,'server.jar'),...jars(join(cache,'bundler/META-INF/libraries')),...jars(join(cache,'bundler/META-INF/versions')),...jars(join(cache,'client-libraries'))].join(delimiter);
-const blocks=JSON.parse(readFileSync(join(root,'client/data/blocks.json'))),count=Math.max(...blocks.map(b=>b.maxStateId))+1,output=join(cache,'support.json');
-execFileSync(process.env.JAVA||'java',['-cp',classpath,join(root,'tools/ExtractSupport.java'),output,join(cache,'client.txt'),String(count),version],{cwd:cache,stdio:'inherit'});
-const states=JSON.parse(readFileSync(output));if(states.length!==count)throw Error('Incomplete native support data');const path=join(root,'client/data/blockCollisionShapes.json'),data=JSON.parse(readFileSync(path));data.support={source:{version,clientJarSha1:createHash('sha1').update(readFileSync(jar)).digest('hex')},states};writeFileSync(path,JSON.stringify(data)+'\n');

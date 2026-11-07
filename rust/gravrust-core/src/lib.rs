@@ -103,6 +103,9 @@ pub mod mouse_look;
 pub mod function_keys;
 pub mod item_pickup;
 pub mod dropped_item;
+pub mod local_player;
+pub mod player_native;
+pub mod respawn_player;
 
 pub mod advancements;
 pub mod address;
