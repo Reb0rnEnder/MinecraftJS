@@ -316,6 +316,11 @@ pub mod truetype_wasm;
 pub mod villager_data;
 pub mod villager_layers;
 pub mod weather;
+pub mod dirty_sections;
+pub mod gui_player_equipment;
+pub mod shader_stages;
+pub mod slice;
+pub mod world_border;
 
 // ---------------------------------------------------------------------------
 // Compatibility trees matching the `client/js/` directory layout.

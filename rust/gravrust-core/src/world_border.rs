@@ -1,0 +1,347 @@
+//! Port of `client/js/world/world-border.js` and `client/js/render/world-border.js`.
+//!
+//! Level world border logic: diameter sizes, monotonic time transitions,
+//! bounding box collisions, warning distances, and forcefield mesh geometry.
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum BorderStatus {
+    Stationary,
+    Growing,
+    Shrinking,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CollisionMode {
+    Close,
+    Legacy,
+    Inside,
+}
+
+#[derive(Debug, Clone)]
+pub struct WorldBorder {
+    pub x: f64,
+    pub z: f64,
+    pub old_size: f64,
+    pub target_size: f64,
+    pub started: f64,
+    pub duration: f64,
+    pub absolute_max_size: f64,
+    pub warning_time: f64,
+    pub warning_blocks: f64,
+    pub legacy_time: bool,
+    pub legacy_bounds: bool,
+    pub collision_mode: CollisionMode,
+}
+
+impl Default for WorldBorder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+impl WorldBorder {
+    pub fn new() -> Self {
+        Self {
+            x: 0.0,
+            z: 0.0,
+            old_size: 59999968.0,
+            target_size: 59999968.0,
+            started: 0.0,
+            duration: 0.0,
+            absolute_max_size: 29999984.0,
+            warning_time: 15.0,
+            warning_blocks: 5.0,
+            legacy_time: false,
+            legacy_bounds: false,
+            collision_mode: CollisionMode::Close,
+        }
+    }
+
+    pub fn reset(&mut self, now: f64) {
+        self.x = 0.0;
+        self.z = 0.0;
+        self.old_size = 59999968.0;
+        self.target_size = 59999968.0;
+        self.started = now;
+        self.duration = 0.0;
+        self.absolute_max_size = 29999984.0;
+        self.warning_time = 15.0;
+        self.warning_blocks = 5.0;
+    }
+
+    pub fn size(&self, now: f64) -> f64 {
+        let elapsed = now - self.started;
+        let mut t = if self.duration > 0.0 { elapsed / self.duration } else { 1.0 };
+        if self.legacy_time && self.duration > 0.0 {
+            t = (elapsed as f32 / self.duration as f32) as f64;
+        }
+        if t < 1.0 {
+            self.old_size + t * (self.target_size - self.old_size)
+        } else {
+            self.target_size
+        }
+    }
+
+    pub fn radius(&self, now: f64) -> f64 {
+        self.size(now) / 2.0
+    }
+
+    pub fn remaining(&self, now: f64) -> f64 {
+        if self.duration > 0.0 {
+            (self.started + self.duration - now).max(0.0)
+        } else {
+            0.0
+        }
+    }
+
+    pub fn speed(&self) -> f64 {
+        if self.duration > 0.0 {
+            (self.target_size - self.old_size).abs() / self.duration
+        } else {
+            0.0
+        }
+    }
+
+    pub fn status(&self) -> BorderStatus {
+        if self.duration > 0.0 {
+            if self.target_size < self.old_size {
+                BorderStatus::Shrinking
+            } else {
+                BorderStatus::Growing
+            }
+        } else {
+            BorderStatus::Stationary
+        }
+    }
+
+    pub fn color(&self) -> u32 {
+        match self.status() {
+            BorderStatus::Shrinking => 0xff3030,
+            BorderStatus::Growing => 0x40ff80,
+            BorderStatus::Stationary => 0x20a0ff,
+        }
+    }
+
+    pub fn tick(&mut self, now: f64) {
+        if self.duration > 0.0 && self.remaining(now) == 0.0 {
+            self.set_size(self.target_size);
+        }
+    }
+
+    pub fn set_size(&mut self, size: f64) {
+        self.old_size = size;
+        self.target_size = size;
+        self.duration = 0.0;
+    }
+
+    pub fn lerp(&mut self, old_size: f64, new_size: f64, duration: f64, now: f64) {
+        self.old_size = old_size;
+        self.target_size = new_size;
+        self.started = now;
+        self.duration = if (old_size - new_size).abs() < f64::EPSILON { 0.0 } else { duration };
+    }
+
+    pub fn bounds(&self, now: f64) -> [f64; 4] {
+        let r = self.radius(now);
+        let m = self.absolute_max_size;
+        if self.legacy_bounds {
+            [
+                (self.x - r).max(-m),
+                (self.z - r).max(-m),
+                (self.x + r).min(m),
+                (self.z + r).min(m),
+            ]
+        } else {
+            [
+                (self.x - r).clamp(-m, m),
+                (self.z - r).clamp(-m, m),
+                (self.x + r).clamp(-m, m),
+                (self.z + r).clamp(-m, m),
+            ]
+        }
+    }
+
+    pub fn distance(&self, x: f64, z: f64, now: f64) -> f64 {
+        let [x0, z0, x1, z1] = self.bounds(now);
+        (x - x0).min(x1 - x).min(z - z0).min(z1 - z)
+    }
+
+    pub fn warning(&self, x: f64, z: f64, now: f64) -> f32 {
+        let d = self.distance(x, z, now) as f32;
+        let reach = self.warning_blocks.max(
+            (self.speed() * self.warning_time * 1000.0).min((self.target_size - self.size(now)).abs()),
+        ) as f32;
+        if d < reach {
+            1.0 - (d / reach)
+        } else {
+            0.0
+        }
+    }
+}
+
+/// Vertex data generated by `border_geometry`.
+#[derive(Debug, Clone, PartialEq)]
+pub struct BorderGeometry {
+    pub data: Vec<f32>,
+    pub rgba: [f32; 4],
+}
+
+/// Generates world border wall geometry around the camera.
+pub fn border_geometry(
+    border: &WorldBorder,
+    camera: [f64; 3],
+    distance: f64,
+    now: f64,
+    mode: &str,
+) -> Option<BorderGeometry> {
+    let legacy_height = mode == "classic";
+    let [x, y, z] = camera;
+    let [x0, z0, x1, z1] = border.bounds(now);
+
+    if x < x1 - distance && x > x0 + distance && z < z1 - distance && z > z0 + distance {
+        return None;
+    }
+
+    let mut alpha = (1.0 - border.distance(x, z, now) / distance).powi(4) as f32;
+    if !legacy_height {
+        alpha = alpha.clamp(0.0, 1.0);
+    }
+
+    let color = border.color();
+    let rgba = [
+        ((color >> 16) & 255) as f32 / 255.0,
+        ((color >> 8) & 255) as f32 / 255.0,
+        (color & 255) as f32 / 255.0,
+        alpha,
+    ];
+
+    let phase = ((now % 3000.0) / 3000.0) as f32;
+    let vertical = (distance * 4.0) as f32;
+    let bottom = if legacy_height { -y as f32 } else { -vertical };
+    let top = if legacy_height { (256.0 - y) as f32 } else { vertical };
+    let start_v = if mode == "modern" { (-(y * 0.5).floor()) as f32 } else { 0.0 };
+    let end_v = if legacy_height {
+        128.0
+    } else if mode == "raised" {
+        vertical - (y.ceil() as f32)
+    } else {
+        start_v + vertical
+    };
+    let v_top = phase + start_v;
+    let v_bottom = phase + end_v;
+
+    let mut data = Vec::new();
+    let mut vertex = |a: f32, b: f32, c: f32, u: f32, v: f32| {
+        data.extend_from_slice(&[a, b, c, u, v, 1.0, 1.0, 1.0, 1.0]);
+    };
+
+    let mut wall = |axis: char, position: f64, min_coord: f64, max_coord: f64, mut sign: f32| {
+        let cam_along = if axis == 'x' { z } else { x };
+        let mut along = ((cam_along - distance).floor()).max(min_coord);
+        let end = ((cam_along + distance).ceil()).min(max_coord);
+        if legacy_height {
+            sign = 1.0;
+        }
+        let mut u = if mode == "modern" {
+            ((along.floor() as i64 & 1) as f32) * 0.5
+        } else {
+            0.0
+        };
+
+        while along < end {
+            let length = (end - along).min(1.0);
+            let u0 = phase + sign * u;
+            let u1 = phase + sign * (u + (length * 0.5) as f32);
+
+            let mut point = |a: f64, b: f32, uv: f32, vv: f32| {
+                if axis == 'x' {
+                    vertex((position - x) as f32, b, (a - z) as f32, uv, vv);
+                } else {
+                    vertex((a - x) as f32, b, (position - z) as f32, uv, vv);
+                }
+            };
+
+            point(along, bottom, u0, v_bottom);
+            point(along + length, bottom, u1, v_bottom);
+            point(along + length, top, u1, v_top);
+            point(along, top, u0, v_top);
+
+            along += 1.0;
+            u += 0.5;
+        }
+    };
+
+    if x > x1 - distance {
+        wall('x', x1, z0, z1, -1.0);
+    }
+    if x < x0 + distance {
+        wall('x', x0, z0, z1, 1.0);
+    }
+    if z > z1 - distance {
+        wall('z', z1, x0, x1, 1.0);
+    }
+    if z < z0 + distance {
+        wall('z', z0, x0, x1, -1.0);
+    }
+
+    if data.is_empty() {
+        None
+    } else {
+        Some(BorderGeometry { data, rgba })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_world_border_initial_state() {
+        let border = WorldBorder::new();
+        assert_eq!(border.old_size, 59999968.0);
+        assert_eq!(border.target_size, 59999968.0);
+        assert_eq!(border.status(), BorderStatus::Stationary);
+        assert_eq!(border.color(), 0x20a0ff);
+    }
+
+    #[test]
+    fn test_world_border_lerp() {
+        let mut border = WorldBorder::new();
+        border.lerp(100.0, 200.0, 1000.0, 0.0);
+        assert_eq!(border.status(), BorderStatus::Growing);
+        assert_eq!(border.color(), 0x40ff80);
+        assert_eq!(border.size(500.0), 150.0);
+        assert_eq!(border.size(1000.0), 200.0);
+    }
+
+    #[test]
+    fn test_world_border_shrinking() {
+        let mut border = WorldBorder::new();
+        border.lerp(200.0, 100.0, 1000.0, 0.0);
+        assert_eq!(border.status(), BorderStatus::Shrinking);
+        assert_eq!(border.color(), 0xff3030);
+        assert_eq!(border.size(500.0), 150.0);
+    }
+
+    #[test]
+    fn test_world_border_bounds_and_distance() {
+        let mut border = WorldBorder::new();
+        border.set_size(100.0);
+        let bounds = border.bounds(0.0);
+        assert_eq!(bounds, [-50.0, -50.0, 50.0, 50.0]);
+        assert_eq!(border.distance(0.0, 0.0, 0.0), 50.0);
+        assert_eq!(border.distance(40.0, 0.0, 0.0), 10.0);
+    }
+
+    #[test]
+    fn test_border_geometry_generation() {
+        let mut border = WorldBorder::new();
+        border.set_size(100.0);
+        // Camera close to east edge (x=45, distance=16)
+        let geom = border_geometry(&border, [45.0, 64.0, 0.0], 16.0, 0.0, "modern");
+        assert!(geom.is_some());
+        let g = geom.unwrap();
+        assert!(!g.data.is_empty());
+        assert_eq!(g.rgba[0], 0x20 as f32 / 255.0);
+    }
+}
