@@ -321,6 +321,13 @@ pub mod gui_player_equipment;
 pub mod shader_stages;
 pub mod slice;
 pub mod world_border;
+pub mod client_sound_triggers;
+pub mod iron_golem_cracks;
+pub mod keybind_components;
+pub mod light_update;
+pub mod look_at;
+pub mod native_angles;
+pub mod placement_families;
 
 // ---------------------------------------------------------------------------
 // Compatibility trees matching the `client/js/` directory layout.

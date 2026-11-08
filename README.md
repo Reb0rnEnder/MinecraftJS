@@ -100,7 +100,7 @@ Gravrust/
 ├── tools/                     # Build tooling
 ├── via-proxy-config.yml       # ViaProxy config for cross-version relay
 ├── docs/                      # 50+ parity/backport audit docs
-├── upstream-js/               # Reference JS files for 1:1 parity checking
+
 ├── upstream-js-inventory.txt  # 213 upstream JS files tracked
 ├── CHANGES.md                 # v0.2.0 full changelog
 ├── GRAVRUST_VIA_SETUP.md      # Via relay setup guide
