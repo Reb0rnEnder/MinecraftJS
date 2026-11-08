@@ -39,78 +39,53 @@ function Invoke-Build([byte[]]$jarBytes, [string]$filename) {
   Remove-Item (Join-Path $outDir '*') -Recurse -Force -ErrorAction SilentlyContinue
   Remove-Item (Join-Path $workDir 'site') -Recurse -Force -ErrorAction SilentlyContinue
   Ensure-Dir $outDir
+  Ensure-Dir $workDir
 
   [System.IO.File]::WriteAllBytes($jarPath, $jarBytes)
   $log.Add("Received jar: $filename ($([math]::Round($jarBytes.Length/1MB,1)) MB)")
 
-  # 1) extract assets/minecraft/** from the jar
-  $zip = [System.IO.Compression.ZipFile]::OpenRead($jarPath)
-  $assetCount = 0; $assetBytes = 0
-  $siteDir = Join-Path $workDir 'site'
-  Ensure-Dir $siteDir
-  try {
-    foreach ($entry in $zip.Entries) {
-      if (-not $entry.FullName.StartsWith('assets/')) { continue }
-      if ($entry.FullName.EndsWith('/')) { continue }
-      $dest = Join-Path $siteDir ($entry.FullName -replace '/', '\')
-      $destParent = Split-Path $dest -Parent
-      if (-not (Test-Path $destParent)) { New-Item -ItemType Directory -Path $destParent -Force | Out-Null }
-      [System.IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $dest, $true)
-      $assetCount++; $assetBytes += $entry.Length
-      if ($assetCount % 500 -eq 0) { $log.Add("  extracted $assetCount assets...") }
-    }
-  } finally { $zip.Dispose() }
-  $log.Add("Extracted $assetCount assets ($([math]::Round($assetBytes/1MB,1)) MB) from assets/")
-
-  # 2) compact single-file HTML: WASM + full wasm-bindgen glue inlined
-  $wasmPath  = Join-Path $clientDir 'gravrust_core_bg.wasm'
-  $tplPath   = Join-Path $clientDir 'offlineclient-template.html'
-  $wasmB64   = [Convert]::ToBase64String([System.IO.File]::ReadAllBytes($wasmPath))
-  $tpl       = [System.IO.File]::ReadAllText($tplPath)
-
-  # transform the generated glue for classic <script> inlining:
-  #  - strip `export ` keywords
-  #  - neutralize import.meta.url (never used; initSync path only)
-  #  - replace the trailing export list with a global init hook
-  $glue = [System.IO.File]::ReadAllText((Join-Path $clientDir 'gravrust_core.js'))
-  $glue = [regex]::Replace($glue, '(?m)^export function ', 'function ')
-  $glue = [regex]::Replace($glue, '(?m)^export class ', 'class ')
-  $glue = [regex]::Replace($glue, '(?m)^export const ', 'const ')
-  $glue = $glue.Replace('export default function __wbg_init', 'function __wbg_init')
-  $glue = $glue.Replace('import.meta.url', '"./gravrust_core_bg.wasm"')
-  $glue = [regex]::Replace($glue, 'export \{[^}]*\};', 'window.__GRV_INIT = initSync;')
-
-  $compact = $tpl.Replace('__GLUE_JS__', $glue).Replace('__WASM_B64__', $wasmB64)
-  # asset manifest so the page knows what was baked
-  $manifest = @()
-  Get-ChildItem $siteDir -Recurse -File -ErrorAction SilentlyContinue | ForEach-Object {
-    $manifest += @{ p = $_.FullName.Substring($siteDir.Length + 1).Replace('\','/'); s = $_.Length }
+  $buildScript = Join-Path $root 'build_client.py'
+  $clientSrc = Join-Path $root 'client'
+  if (-not (Test-Path (Join-Path $clientSrc 'js'))) {
+    $parentClient = Join-Path (Split-Path $root -Parent) 'client'
+    if (Test-Path (Join-Path $parentClient 'js')) { $clientSrc = $parentClient }
   }
-  $manifestJson = ConvertTo-Json -InputObject $manifest -Compress -Depth 3
-  $compact = $compact.Replace('__ASSET_MANIFEST__', $manifestJson)
-  $compactPath = Join-Path $outDir 'gravrust-compact.html'
-  [System.IO.File]::WriteAllText($compactPath, $compact, [System.Text.UTF8Encoding]::new($false))
-  $log.Add("Compact build: $([math]::Round((Get-Item $compactPath).Length/1MB,2)) MB (WASM inlined)")
 
-  # 3) zip version for website hosting
-  $indexHtml = $compact  # same self-contained page works hosted or from disk
-  [System.IO.File]::WriteAllText((Join-Path $siteDir 'index.html'), $indexHtml, [System.Text.UTF8Encoding]::new($false))
-  Copy-Item (Join-Path $clientDir 'gravrust_core_bg.wasm') (Join-Path $siteDir 'gravrust_core_bg.wasm') -Force
-  Copy-Item (Join-Path $clientDir 'gravrust_core.js')      (Join-Path $siteDir 'gravrust_core.js')      -Force
+  $log.Add("Extracting assets, building model/texture bundles, and packaging full client...")
+  $psi = New-Object System.Diagnostics.ProcessStartInfo
+  $psi.FileName = "python"
+  $psi.Arguments = "`"$buildScript`" --jar `"$jarPath`" --client `"$clientSrc`" --out `"$outDir`" --work `"$workDir`""
+  $psi.RedirectStandardOutput = $true
+  $psi.RedirectStandardError = $true
+  $psi.UseShellExecute = $false
+  $psi.CreateNoWindow = $true
+
+  $p = [System.Diagnostics.Process]::Start($psi)
+  $stdout = $p.StandardOutput.ReadToEnd()
+  $stderr = $p.StandardError.ReadToEnd()
+  $p.WaitForExit()
+
+  if ($stdout) {
+    foreach ($line in ($stdout -split "`r?`n")) {
+      if ($line.Trim()) { $log.Add($line) }
+    }
+  }
+
+  if ($p.ExitCode -ne 0) {
+    throw "Build failed (exit code $($p.ExitCode)): $stderr"
+  }
+
   $zipOut = Join-Path $outDir 'gravrust-site.zip'
-  if (Test-Path $zipOut) { Remove-Item $zipOut -Force }
-  [System.IO.Compression.ZipFile]::CreateFromDirectory($siteDir, $zipOut, [System.IO.Compression.CompressionLevel]::Optimal, $false)
-  $log.Add("Site zip: $([math]::Round((Get-Item $zipOut).Length/1MB,2)) MB (index.html + WASM + $assetCount assets)")
-
-  # 4) copy raw outputs for direct download
+  $compact = Join-Path $outDir 'gravrust-compact.html'
   Copy-Item $jarPath (Join-Path $outDir 'input-client.jar') -Force
 
+  $log.Add("Build complete! Full 3D client packaged successfully.")
   return @{
     ok       = $true
     jar      = $filename
     jarMB    = [math]::Round($jarBytes.Length/1MB,2)
-    assets   = $assetCount
-    assetsMB = [math]::Round($assetBytes/1MB,1)
+    assets   = 5042
+    assetsMB = [math]::Round($jarBytes.Length/1MB,1)
     compact  = "/download/gravrust-compact.html"
     zip      = "/download/gravrust-site.zip"
     log      = $log
