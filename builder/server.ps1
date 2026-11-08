@@ -52,8 +52,12 @@ function Invoke-Build([byte[]]$jarBytes, [string]$filename) {
   }
 
   $log.Add("Extracting assets, building model/texture bundles, and packaging full client...")
+  $pythonCmd = "python"
+  if (-not (Get-Command "python" -ErrorAction SilentlyContinue)) {
+    if (Get-Command "py" -ErrorAction SilentlyContinue) { $pythonCmd = "py" }
+  }
   $psi = New-Object System.Diagnostics.ProcessStartInfo
-  $psi.FileName = "python"
+  $psi.FileName = $pythonCmd
   $psi.Arguments = "`"$buildScript`" --jar `"$jarPath`" --client `"$clientSrc`" --out `"$outDir`" --work `"$workDir`""
   $psi.RedirectStandardOutput = $true
   $psi.RedirectStandardError = $true
