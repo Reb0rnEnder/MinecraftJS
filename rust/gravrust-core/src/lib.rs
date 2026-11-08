@@ -111,6 +111,17 @@ pub mod entity_pick_radius;
 pub mod adventure;
 pub mod slab_placement;
 pub mod potionhelper;
+pub mod audio_sound_gain;
+pub mod audio_sample_attenuation;
+pub mod audio_consume_sounds;
+pub mod render_dye_colors;
+pub mod render_visibility_cache;
+pub mod render_mesh_build_queue;
+pub mod render_mesh_residency;
+pub mod render_texture_preload;
+pub mod render_dirty_mips;
+pub mod render_water_reflections;
+pub mod render_painting;
 
 pub mod advancements;
 pub mod address;
