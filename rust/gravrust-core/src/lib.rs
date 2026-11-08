@@ -313,6 +313,7 @@ pub mod tcp;
 pub mod text_capture;
 pub mod text_mesh;
 pub mod truetype_wasm;
+pub mod villager_data;
 pub mod villager_layers;
 pub mod weather;
 
@@ -504,8 +505,7 @@ mod unsupported_port {
     pub mod text_editor;
     #[path = "../tutorial.rs"]
     pub mod tutorial;
-    #[path = "../villager_data.rs"]
-    pub mod villager_data;
+    // villager_data graduated to the default build.
     #[path = "../wisp.rs"]
     pub mod wisp;
 
