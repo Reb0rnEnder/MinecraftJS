@@ -7,6 +7,7 @@ builder/output/
 .agent-teams/
 push_changes.sh
 *.png
+!logo.png
 !client/data/**
 test-*.js
 cf-tunnel-*.txt
