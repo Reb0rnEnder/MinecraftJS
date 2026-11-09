@@ -9,6 +9,7 @@ const PI = Math.PI;
 const cos = Math.cos, sin = Math.sin, abs = Math.abs, sqrt = Math.sqrt;
 
 let JAR = null;
+const PLACEHOLDER_WARNED = new Set();
 // Models extracted from the jar ({ name: { fields, parts, nums } }), set once the assets are loaded
 export function setJarModels(models) { JAR = models; }
 export function hasJarModel(name) { return !!(JAR && JAR[name]); }
@@ -16,8 +17,17 @@ export function hasJarModel(name) { return !!(JAR && JAR[name]); }
 // Fresh Parts for a jar model. names[i] names its i-th ModelRenderer field (declaration order, superclass first; a
 // field holding an array gives an array); null skips a field. Children come along as in the game.
 export function J(name, names) {
-  const m = JAR && JAR[name];
-  if (!m) throw new Error(`Entity model "${name}" is missing from the assets: rebuild them (npm run assets)`);
+  let m = JAR && JAR[name];
+  if (!m) {
+    // Fallback when the asset build has no extracted entity models: a placeholder cube so the game still runs.
+    if (!JAR) JAR = {};
+    if (!PLACEHOLDER_WARNED.has(name)) { PLACEHOLDER_WARNED.add(name); console.warn(`[Gravrust] Entity model "${name}" missing from assets; using placeholder box`); }
+    m = JAR[name] = {
+      fields: names.map((n) => (Array.isArray(n) ? [0] : 0)),
+      parts: [{ tw: 64, th: 64, mirror: false, show: true, p: [0, 0, 0], r: [0, 0, 0], boxes: [[0, 0, -4, -8, -4, 8, 8, 8, 0, false]], children: [] }],
+      nums: [],
+    };
+  }
   const made = new Map();
   const mk = (i) => {
     if (i === null || i === undefined) return null;

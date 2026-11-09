@@ -99,6 +99,10 @@ def transform_module_to_cjs(code, rel_path, root_dir):
 
     lines = code.split('\n')
     out_lines = []
+    getters = []  # live-binding export getters, emitted at top of module
+    def add_getter(name, local=None):
+        local = local or name
+        getters.append(f"Object.defineProperty(exports, '{name}', {{ enumerable: true, configurable: true, get: function() {{ return {local}; }} }});")
     i = 0
     while i < len(lines):
         line = lines[i]
@@ -111,14 +115,14 @@ def transform_module_to_cjs(code, rel_path, root_dir):
                 m_fn = re.match(r"""^(async\s+)?function(?:\s+([a-zA-Z0-9_$]+))?\s*\(""", expr)
                 if m_fn and m_fn.group(2):
                     fn_name = m_fn.group(2)
-                    out_lines.append(expr + f"; exports.default = {fn_name};")
+                    out_lines.append(expr); add_getter("default", fn_name)
                 else:
                     out_lines.append(f"exports.default = {expr};")
             elif expr.startswith('class ') or expr.startswith('class{'):
                 m_cl = re.match(r"""^class(?:\s+([a-zA-Z0-9_$]+))?""", expr)
                 if m_cl and m_cl.group(1):
                     cl_name = m_cl.group(1)
-                    out_lines.append(expr + f"; exports.default = {cl_name};")
+                    out_lines.append(expr); add_getter("default", cl_name)
                 else:
                     out_lines.append(f"exports.default = {expr};")
             else:
@@ -131,7 +135,7 @@ def transform_module_to_cjs(code, rel_path, root_dir):
         if m_fn_exp:
             fn_name = m_fn_exp.group(2)
             clean_line = stripped[len('export '):]
-            out_lines.append(f"exports.{fn_name} = {fn_name};\n{clean_line}")
+            add_getter(fn_name); out_lines.append(clean_line)
             i += 1
             continue
 
@@ -140,7 +144,7 @@ def transform_module_to_cjs(code, rel_path, root_dir):
         if m_cl_exp:
             cl_name = m_cl_exp.group(1)
             clean_line = stripped[len('export '):]
-            out_lines.append(clean_line + f"\nexports.{cl_name} = {cl_name};")
+            out_lines.append(clean_line); add_getter(cl_name)
             i += 1
             continue
 
@@ -153,10 +157,8 @@ def transform_module_to_cjs(code, rel_path, root_dir):
             for v in var_names.split(','):
                 vn = v.strip().split('=')[0].strip()
                 if re.match(r'^[a-zA-Z0-9_$]+$', vn):
-                    exports_stmts.append(f"exports.{vn} = {vn};")
+                    add_getter(vn)
             out_lines.append(clean_line)
-            if exports_stmts:
-                out_lines.append('\n'.join(exports_stmts))
             i += 1
             continue
 
@@ -183,16 +185,16 @@ def transform_module_to_cjs(code, rel_path, root_dir):
                         continue
                     if ' as ' in item:
                         src, dst = item.split(' as ')
-                        out_lines.append(f"exports.{dst.strip()} = {src.strip()};")
+                        add_getter(dst.strip(), src.strip())
                     else:
-                        out_lines.append(f"exports.{item} = {item};")
+                        add_getter(item)
             i += 1
             continue
 
         out_lines.append(line)
         i += 1
 
-    return '\n'.join(out_lines)
+    return '\n'.join(getters + out_lines)
 
 def bundle_all_modules_cjs(entry_file, client_dir, all_files=False):
     visited = set()
@@ -264,6 +266,44 @@ function __require(id) {
         parts.append(f'\n__require("{rel_entry}");\n')
 
     return ''.join(parts)
+
+def fetch_mojang_panorama(assets_dir):
+    """The official jar ships 1x1 placeholder panorama_*.png files; the real ones live in Mojang's asset index.
+    Download them (best effort) so the title screen background works. Never fails the build."""
+    import urllib.request, hashlib
+    tex_dir = os.path.join(assets_dir, 'minecraft', 'textures', 'gui', 'title', 'background')
+    names = ['panorama_%d.png' % i for i in range(6)]
+    def is_stub(n):
+        p = os.path.join(tex_dir, n)
+        return (not os.path.exists(p)) or os.path.getsize(p) < 1024
+    if not any(is_stub(n) for n in names):
+        return
+    def get(url):
+        req = urllib.request.Request(url, headers={'User-Agent': 'Gravrust-Builder'})
+        with urllib.request.urlopen(req, timeout=20) as r:
+            return r.read()
+    try:
+        print("[*] Panorama images are placeholders in the jar; fetching from Mojang asset index...")
+        manifest = json.loads(get('https://launchermeta.mojang.com/mc/game/version_manifest_v2.json'))
+        ver = next(v for v in manifest['versions'] if v['id'] == '1.15.2')
+        vjson = json.loads(get(ver['url']))
+        index = json.loads(get(vjson['assetIndex']['url']))['objects']
+        os.makedirs(tex_dir, exist_ok=True)
+        got = 0
+        for n in names:
+            obj = index.get('minecraft/textures/gui/title/background/' + n)
+            if not obj:
+                continue
+            data = get('https://resources.download.minecraft.net/%s/%s' % (obj['hash'][:2], obj['hash']))
+            if hashlib.sha1(data).hexdigest() != obj['hash']:
+                print("[!] Hash mismatch for " + n + ", skipping")
+                continue
+            with open(os.path.join(tex_dir, n), 'wb') as f:
+                f.write(data)
+            got += 1
+        print("[+] Fetched %d/6 panorama images" % got)
+    except Exception as e:
+        print("[!] Could not fetch panorama images (%s). Title screen will use the plain gradient background." % e)
 
 def build():
     args = parse_args()
@@ -388,6 +428,8 @@ def build():
             f.write(recipes_bytes)
         print(f"[*] Built bundles/recipes.json ({len(recipes)} recipes)")
 
+    fetch_mojang_panorama(assets_dir)
+
     # 6. Copy client files: data/, js/, index.html, style.css, favicons, config.json
     print("[*] Copying client web runtime...")
     shutil.copytree(os.path.join(client_dir, 'data'), os.path.join(site_dir, 'data'))
@@ -450,8 +492,20 @@ def build():
     # B) Bundle all JS modules synchronously into CommonJS (no dynamic import, no blob:null)
     entry_file = os.path.join(client_dir, 'js', 'main.js')
     worker_file = os.path.join(client_dir, 'js', 'render', 'mesh-worker.js')
-    worker_bundle = bundle_all_modules_cjs(worker_file, client_dir, all_files=False)
-    bundle_js = bundle_all_modules_cjs(entry_file, client_dir, all_files=True)
+    # Prefer the esbuild-prebuilt bundles (correct ES-module live bindings / circular imports).
+    # Fall back to the legacy regex transform only if they are missing.
+    pre_main = os.path.join(client_dir, 'bundle', 'main.bundle.js')
+    pre_worker = os.path.join(client_dir, 'bundle', 'worker.bundle.js')
+    if os.path.exists(pre_main) and os.path.exists(pre_worker):
+        with open(pre_worker, 'r', encoding='utf-8') as f:
+            worker_bundle = f.read()
+        with open(pre_main, 'r', encoding='utf-8') as f:
+            bundle_js = f.read()
+        boot_call = ''
+    else:
+        worker_bundle = bundle_all_modules_cjs(worker_file, client_dir, all_files=False)
+        bundle_js = bundle_all_modules_cjs(entry_file, client_dir, all_files=True)
+        boot_call = '__require("js/main.js");'
 
     # C) Inline CSS & favicons
     with open(os.path.join(client_dir, 'style.css'), 'r', encoding='utf-8') as f:
@@ -497,7 +551,7 @@ def build():
 
     // Synchronous execution: zero blob URLs, zero fetch, works directly from file:///
     try {{
-      __require("js/main.js");
+      {boot_call}
     }} catch (e) {{
       console.error("Failed to boot Gravrust:", e);
       var t = document.getElementById("loading-text");

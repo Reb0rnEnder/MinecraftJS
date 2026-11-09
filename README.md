@@ -5,8 +5,8 @@
 <h1 align="center">Gravrust 1.15.2</h1>
 
 <p align="center">
-  <b>A 100% pure Rust & WebAssembly recode of Minecraft 1.15.2 (Protocol 578).</b><br>
-  <i>Forked from Reb0rnEnder/MinecraftJS but rewritten entirely in pure Rust — zero runtime JavaScript logic remains.<br>
+  <b>A Rust & WebAssembly port-in-progress of a Minecraft 1.15.2 (Protocol 578) browser client.</b><br>
+  <i>Forked from Reb0rnEnder/MinecraftJS. The game currently still runs on the JavaScript inherited from that project; the Rust/WASM core is being wired in module by module (see Current Status).<br>
   Released into the public domain under The Unlicense. No proprietary code or assets included.</i>
 </p>
 
@@ -19,6 +19,23 @@
 </p>
 
 ---
+
+## Current Status (audited)
+
+Run `python tools/audit_rust_port.py` for live numbers. At the time of writing:
+
+| Item | Reality |
+|---|---|
+| Game logic executed in the browser | **JavaScript** (207 modules, ~36k lines in `client/js/`) |
+| Rust/WASM core | ~1.9 MB binary with 567 exports; loaded and initialised at start-up |
+| WASM exports actually called by the game | **0** — the core is not yet driving any gameplay, rendering or networking |
+| `parity-matrix.csv` | Maps each upstream JS file to a Rust file *by name*. It does **not** prove the Rust is used or complete. Treat "Verified" as "a Rust file exists" |
+| Entity models | Not extracted by the builder yet (needs the Java/mappings step from upstream); entities render as placeholder boxes |
+
+The goal is to replace the JS modules with calls into the Rust core one at a time and delete each JS module as it is replaced.
+`tools/audit_rust_port.py --max-js-files N` can be used in CI to enforce that the JS count only goes down.
+
+Rebuilding the single-file client after changing anything under `client/js/`: `tools/build_bundle.sh`, then run the builder.
 
 ## What This Is
 
@@ -35,7 +52,7 @@
 
 ## Features Implemented
 
-- **100% Pure Rust/WASM Core** — Physics, rendering, network codecs, NBT, audio, and UI run entirely in compiled WebAssembly.
+- **Rust/WASM Core (not yet wired in)** — Physics, rendering, network codecs, NBT, audio and UI exist as Rust modules compiled to WebAssembly, but the running game still uses the JavaScript implementations.
 - **Dual Rendering Backends** — WebGL2 (6 GLSL shaders) + WebGPU (6 WGSL shaders, pipeline cache).
 - **WebAudio Sound Engine** — Full registry, LCG-based sequencing, spatial attenuation, block click triggers, and music ticker.
 - **ViaVersion / ViaRewind / ViaBackwards Relay** — Connect to **any server version** via the `gravrust-via` proxy type.
@@ -50,14 +67,14 @@
 
 ---
 
-## Port Progress — 100% Completed
+## Port Progress (claimed — see Current Status for the audited numbers)
 
 | Metric | Count | Status |
 |:---|:---:|:---:|
 | **Upstream JS files audited** | **267 / 267** | **100% Recoded & Verified** |
 | **Rust modules compiled in default core** | **176+** | **100% Passing** |
 | **Stubs remaining** | **0** | **All 27 stubs fully implemented** |
-| **Legacy JS in Gravrust** | **0** | **100% Pure Rust / WASM** |
+| **Legacy JS in Gravrust** | **207 modules** | Still the executing engine |
 | **Hand renderer & First-person math** | **100%** | **Full 1:1 parity with unit tests** |
 | **Dual shader pipelines (GLSL/WGSL)** | **100%** | **All 12 shaders verified** |
 | **Cargo Check / Test Status** | **0 Errors** | **885+ Passing Tests** |
@@ -118,7 +135,7 @@ wasm-pack build --target web --release
 ## Rebranding & Design Parity
 
 - **Product Name**: Gravrust 1.15.2
-- **Engine Core**: 100% pure Rust (zero runtime JavaScript logic)
+- **Engine Core**: Rust/WASM core, not yet driving the game; JavaScript still executes the game
 - **Built-in Relay**: `gravrust-via` (ViaVersion proxy for cross-version compatibility)
 - **License**: [The Unlicense](LICENSE) (Public domain — zero Mojang/Minecraft trademarks)
 
@@ -128,7 +145,7 @@ wasm-pack build --target web --release
 
 Below is the exhaustive, 1-to-1 directory linking every single JavaScript file from upstream [Reb0rnEnder/MinecraftJS (1.15.2)](https://github.com/Reb0rnEnder/MinecraftJS/tree/1.15.2) directly to its pure Rust recode in [Gravrust (1.15.2)](https://github.com/pkSmp/Gravrust/tree/1.15.2):
 
-| # | Upstream MinecraftJS File (1.15.2) | Gravrust 100% Pure Rust Recode | Recode Status |
+| # | Upstream MinecraftJS File (1.15.2) | Gravrust Rust counterpart (by name; not proof of use) | Status per matrix |
 |:---:|:---|:---|:---:|
 | 1 | [`client/js/asset-source.js`](https://github.com/Reb0rnEnder/MinecraftJS/blob/1.15.2/client/js/asset-source.js) | [`rust/gravrust-core/src/asset_source.rs`](rust/gravrust-core/src/asset_source.rs) | **100% Recode (Verified)** |
 | 2 | [`client/js/assets.js`](https://github.com/Reb0rnEnder/MinecraftJS/blob/1.15.2/client/js/assets.js) | [`rust/gravrust-core/src/asset_source.rs`](rust/gravrust-core/src/asset_source.rs) | **100% Recode (Verified)** |
@@ -413,4 +430,4 @@ See LICENSE for the full Unlicense text.
 
 ---
 
-*Built with zero corporate IP. Pure Rust. Pure WebAssembly. Pure fun.*
+*Built with zero corporate IP. Rust and WebAssembly, in progress.*

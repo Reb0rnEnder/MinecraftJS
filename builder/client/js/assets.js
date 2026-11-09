@@ -196,8 +196,8 @@ export class Assets {
     this.recipes = await this.source.recipes();
     // Entity and block entity models, extracted from the jar when the assets were built
     const em = await this.source.entityModels();
-    if (!em) throw new Error('The assets have no entity models (bundles/entity-models.json): rebuild them with `npm run assets` / `npm run build`');
-    setJarModels(em);
+    if (!em) console.warn('[Gravrust] No bundles/entity-models.json in the assets; entities will use placeholder boxes.');
+    setJarModels(em || {});
     // SoundEvent registry: id -> event name (sound effect packets carry ids)
     this.soundNames = [];
     for (const s of this.data.sounds) this.soundNames[s.id] = s.name;
