@@ -3,12 +3,13 @@
 Gravrust Client Builder
 Extracts assets from a Minecraft 1.15.2 client JAR, builds texture/model bundles,
 and packages:
-  1) output/gravrust-site.zip    <- complete static website for hosting
-  2) output/gravrust-compact.html <- self-contained single-file offline client
+  1) output/gravrust-site.zip     <- complete static website for hosting
+  2) output/gravrust-compact.html <- self-contained single-file offline client (zero-blob, zero-fetch)
 """
 
 import os
 import sys
+import re
 import json
 import base64
 import struct
@@ -24,58 +25,245 @@ def parse_args():
     parser.add_argument("--work", required=True, help="Working directory for building site")
     return parser.parse_args()
 
-def collect_modules(entry_file, client_dir):
+def transform_module_to_cjs(code, rel_path, root_dir):
+    dir_path = os.path.dirname(os.path.join(root_dir, rel_path))
+
+    def resolve_specifier(spec):
+        target = os.path.normpath(os.path.join(dir_path, spec))
+        if not target.endswith('.js') and not target.endswith('.mjs'):
+            if os.path.exists(target + '.js'):
+                target += '.js'
+        rel = os.path.normpath(os.path.relpath(target, root_dir)).replace('\\', '/')
+        return rel
+
+    # Replace import.meta
+    code = code.replace("import.meta.url", "(typeof document !== 'undefined' ? document.baseURI : '')")
+    code = code.replace("import.meta", "({ url: (typeof document !== 'undefined' ? document.baseURI : '') })")
+
+    # Dynamic import(...) expressions -> Promise.resolve(__require(...))
+    def replace_dyn_import(m):
+        spec = m.group(1)
+        mod_id = resolve_specifier(spec)
+        return f"Promise.resolve(__require('{mod_id}'))"
+
+    code = re.sub(r"""import\s*\(\s*['"]([^'"]+)['"]\s*\)""", replace_dyn_import, code)
+
+    # Static import statements
+    def replace_static_import(m):
+        star = m.group(1)
+        named1 = m.group(2)
+        default_name = m.group(3)
+        named2 = m.group(4)
+        spec = m.group(5)
+        mod_id = resolve_specifier(spec)
+
+        stmts = []
+        if star:
+            name = star.split()[-1]
+            stmts.append(f"const {name} = __require('{mod_id}');")
+        if default_name:
+            stmts.append(f"const {default_name} = __require('{mod_id}').default || __require('{mod_id}');")
+        named = named1 or named2
+        if named:
+            parts = []
+            for p in named.split(','):
+                p = p.strip()
+                if not p:
+                    continue
+                if ' as ' in p:
+                    src, dst = p.split(' as ')
+                    parts.append(f"{src.strip()}: {dst.strip()}")
+                else:
+                    parts.append(p)
+            if parts:
+                stmts.append(f"const {{ {', '.join(parts)} }} = __require('{mod_id}');")
+        return '\n'.join(stmts)
+
+    code = re.sub(
+        r"""import\s*(?:(\*\s*as\s+\w+)|(?:\{([^}]+)\})|(\w+)(?:\s*,\s*\{([^}]+)\})?)\s*from\s*['"]([^'"]+)['"];?""",
+        replace_static_import,
+        code,
+        flags=re.DOTALL
+    )
+
+    # Bare imports
+    def replace_bare_import(m):
+        mod_id = resolve_specifier(m.group(1))
+        return f"__require('{mod_id}');"
+
+    code = re.sub(
+        r"""import\s+['"]([^'"]+)['"];?""",
+        replace_bare_import,
+        code
+    )
+
+    lines = code.split('\n')
+    out_lines = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        stripped = line.strip()
+
+        # export default ...
+        if stripped.startswith('export default '):
+            expr = stripped[len('export default '):].rstrip(';')
+            if expr.startswith('function ') or expr.startswith('async function '):
+                m_fn = re.match(r"""^(async\s+)?function(?:\s+([a-zA-Z0-9_$]+))?\s*\(""", expr)
+                if m_fn and m_fn.group(2):
+                    fn_name = m_fn.group(2)
+                    out_lines.append(expr + f"; exports.default = {fn_name};")
+                else:
+                    out_lines.append(f"exports.default = {expr};")
+            elif expr.startswith('class ') or expr.startswith('class{'):
+                m_cl = re.match(r"""^class(?:\s+([a-zA-Z0-9_$]+))?""", expr)
+                if m_cl and m_cl.group(1):
+                    cl_name = m_cl.group(1)
+                    out_lines.append(expr + f"; exports.default = {cl_name};")
+                else:
+                    out_lines.append(f"exports.default = {expr};")
+            else:
+                out_lines.append(f"exports.default = {expr};")
+            i += 1
+            continue
+
+        # export function / async function
+        m_fn_exp = re.match(r"""^export\s+(async\s+)?function\s+([a-zA-Z0-9_$]+)""", stripped)
+        if m_fn_exp:
+            fn_name = m_fn_exp.group(2)
+            clean_line = stripped[len('export '):]
+            out_lines.append(f"exports.{fn_name} = {fn_name};\n{clean_line}")
+            i += 1
+            continue
+
+        # export class
+        m_cl_exp = re.match(r"""^export\s+class\s+([a-zA-Z0-9_$]+)""", stripped)
+        if m_cl_exp:
+            cl_name = m_cl_exp.group(1)
+            clean_line = stripped[len('export '):]
+            out_lines.append(clean_line + f"\nexports.{cl_name} = {cl_name};")
+            i += 1
+            continue
+
+        # export const / let / var
+        m_var_exp = re.match(r"""^export\s+(const|let|var)\s+([^=;]+)""", stripped)
+        if m_var_exp:
+            clean_line = stripped[len('export '):]
+            var_names = m_var_exp.group(2).strip()
+            exports_stmts = []
+            for v in var_names.split(','):
+                vn = v.strip().split('=')[0].strip()
+                if re.match(r'^[a-zA-Z0-9_$]+$', vn):
+                    exports_stmts.append(f"exports.{vn} = {vn};")
+            out_lines.append(clean_line)
+            if exports_stmts:
+                out_lines.append('\n'.join(exports_stmts))
+            i += 1
+            continue
+
+        # export { a, b as c } [from '...']
+        m_exp_named = re.match(r"""^export\s+\{([^}]+)\}(?:\s+from\s+['"]([^'"]+)['"])?;?""", stripped)
+        if m_exp_named:
+            items = m_exp_named.group(1)
+            from_mod = m_exp_named.group(2)
+            if from_mod:
+                mod_id = resolve_specifier(from_mod)
+                for item in items.split(','):
+                    item = item.strip()
+                    if not item:
+                        continue
+                    if ' as ' in item:
+                        src, dst = item.split(' as ')
+                        out_lines.append(f"exports.{dst.strip()} = __require('{mod_id}').{src.strip()};")
+                    else:
+                        out_lines.append(f"exports.{item} = __require('{mod_id}').{item};")
+            else:
+                for item in items.split(','):
+                    item = item.strip()
+                    if not item:
+                        continue
+                    if ' as ' in item:
+                        src, dst = item.split(' as ')
+                        out_lines.append(f"exports.{dst.strip()} = {src.strip()};")
+                    else:
+                        out_lines.append(f"exports.{item} = {item};")
+            i += 1
+            continue
+
+        out_lines.append(line)
+        i += 1
+
+    return '\n'.join(out_lines)
+
+def bundle_all_modules_cjs(entry_file, client_dir, all_files=False):
     visited = set()
     modules = {}
 
     def normalize(p):
         return os.path.normpath(p).replace('\\', '/')
 
-    def collect(file_path):
-        norm = normalize(file_path)
+    def collect(rel_path):
+        norm = normalize(rel_path)
         if norm in visited:
             return
         visited.add(norm)
-        
-        with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+
+        full_path = os.path.join(client_dir, norm)
+        with open(full_path, 'r', encoding='utf-8', errors='ignore') as f:
             code = f.read()
 
-        import_re = re.compile(r"""(?:import|from)\s+['"](\.[^'"]+)['"]""")
-        for match in import_re.findall(code):
-            target = os.path.normpath(os.path.join(os.path.dirname(file_path), match))
-            if not target.endswith('.js') and not target.endswith('.mjs'):
-                if os.path.exists(target + '.js'):
-                    target += '.js'
-            if os.path.exists(target):
-                collect(target)
+        import_re = re.compile(r"""(?:import|from)\s*['"](\.[^'"]+)['"]""")
+        dir_path = os.path.dirname(full_path)
+        for m in import_re.findall(code):
+            tgt = os.path.normpath(os.path.join(dir_path, m))
+            if not tgt.endswith('.js') and not tgt.endswith('.mjs'):
+                if os.path.exists(tgt + '.js'):
+                    tgt += '.js'
+            if os.path.exists(tgt):
+                rel = os.path.relpath(tgt, client_dir)
+                collect(rel)
 
-        rel_key = normalize(os.path.relpath(file_path, client_dir))
-        modules[rel_key] = (file_path, code)
+        cjs_code = transform_module_to_cjs(code, norm, client_dir)
+        modules[norm] = cjs_code
 
-    collect(entry_file)
+    if all_files:
+        for root, dirs, files in os.walk(client_dir):
+            for file in sorted(files):
+                if file.endswith('.js'):
+                    full = os.path.join(root, file)
+                    rel = normalize(os.path.relpath(full, client_dir))
+                    if rel == 'js/packed-bootstrap.js':
+                        continue
+                    collect(rel)
+    else:
+        rel_entry = normalize(os.path.relpath(entry_file, client_dir))
+        collect(rel_entry)
 
-    rewritten_modules = {}
-    import_replace_re = re.compile(r"""((?:import|from)\s+['"])(\.[^'"]+)(['"])""")
+    parts = ["var __modules = {};\n"]
+    for k in sorted(modules.keys()):
+        code = modules[k]
+        parts.append(f'__modules["{k}"] = function(__require, exports, module) {{\n{code}\n}};\n')
 
-    for rel_key, (fpath, code) in modules.items():
-        dir_path = os.path.dirname(fpath)
-        def replace_fn(match):
-            prefix = match.group(1)
-            target = match.group(2)
-            suffix = match.group(3)
-            resolved = os.path.normpath(os.path.join(dir_path, target))
-            if not resolved.endswith('.js') and not resolved.endswith('.mjs'):
-                if os.path.exists(resolved + '.js'):
-                    resolved += '.js'
-            resolved_rel = normalize(os.path.relpath(resolved, client_dir))
-            return f"{prefix}__MOD__{resolved_rel}{suffix}"
+    parts.append("""
+var __cache = {};
+function __require(id) {
+  id = id.replace(/\\\\/g, '/');
+  if (__cache[id]) return __cache[id].exports;
+  var mod = { exports: {} };
+  __cache[id] = mod;
+  if (!__modules[id]) {
+    console.error("Module not found: " + id);
+    throw new Error("Module not found: " + id);
+  }
+  __modules[id](__require, mod.exports, mod);
+  return mod.exports;
+}
+""")
 
-        rewritten = import_replace_re.sub(replace_fn, code)
-        rewritten_modules[rel_key] = rewritten
+    if entry_file and not all_files:
+        rel_entry = normalize(os.path.relpath(entry_file, client_dir))
+        parts.append(f'\n__require("{rel_entry}");\n')
 
-    return rewritten_modules
-
-import re
+    return ''.join(parts)
 
 def build():
     args = parse_args()
@@ -190,7 +378,6 @@ def build():
                 except Exception:
                     pass
         if not recipes:
-            # fallback to client/data/recipes.json if available
             fallback_recipes = os.path.join(client_dir, 'data', 'recipes.json')
             if os.path.exists(fallback_recipes):
                 with open(fallback_recipes, 'r', encoding='utf-8') as f:
@@ -238,22 +425,19 @@ def build():
     zip_size = os.path.getsize(zip_out)
     print(f"[+] Created gravrust-site.zip ({round(zip_size / (1024*1024), 2)} MB)")
 
-    # 8. Create output/gravrust-compact.html (single-file offline client)
+    # 8. Create output/gravrust-compact.html (single-file offline client with ZERO blob URLs)
     compact_out = os.path.join(out_dir, 'gravrust-compact.html')
     print(f"[*] Packaging single-file offline client {compact_out}...")
 
     # A) Build in-memory asset zip
-    # Contains: pack.mcmeta, pack.png, minecraft/**, bundles/**, data/**
     import io
     asset_zip_buf = io.BytesIO()
     with zipfile.ZipFile(asset_zip_buf, 'w', zipfile.ZIP_DEFLATED) as az:
-        # add assets/ files
         for root, dirs, files in os.walk(assets_dir):
             for file in files:
                 full_path = os.path.join(root, file)
                 rel_path = os.path.relpath(full_path, assets_dir).replace('\\', '/')
                 az.write(full_path, rel_path)
-        # add data/ files
         data_dir = os.path.join(site_dir, 'data')
         for root, dirs, files in os.walk(data_dir):
             for file in files:
@@ -263,9 +447,11 @@ def build():
     asset_zip_bytes = asset_zip_buf.getvalue()
     asset_b64 = base64.b64encode(asset_zip_bytes).decode('ascii')
 
-    # B) Collect all JS modules
+    # B) Bundle all JS modules synchronously into CommonJS (no dynamic import, no blob:null)
     entry_file = os.path.join(client_dir, 'js', 'main.js')
-    modules = collect_modules(entry_file, client_dir)
+    worker_file = os.path.join(client_dir, 'js', 'render', 'mesh-worker.js')
+    worker_bundle = bundle_all_modules_cjs(worker_file, client_dir, all_files=False)
+    bundle_js = bundle_all_modules_cjs(entry_file, client_dir, all_files=True)
 
     # C) Inline CSS & favicons
     with open(os.path.join(client_dir, 'style.css'), 'r', encoding='utf-8') as f:
@@ -305,28 +491,18 @@ def build():
 {asset_b64}
   </script>
 
-  <script type="module">
-    const MODULES = {json.dumps(modules)};
-    const blobUrls = {{}};
+  <script>
+    var __MESH_WORKER_SOURCE__ = {json.dumps(worker_bundle)};
+{bundle_js}
 
-    // Create placeholder Blob URLs
-    for (const key of Object.keys(MODULES)) {{
-      blobUrls[key] = URL.createObjectURL(new Blob([], {{ type: 'application/javascript' }}));
+    // Synchronous execution: zero blob URLs, zero fetch, works directly from file:///
+    try {{
+      __require("js/main.js");
+    }} catch (e) {{
+      console.error("Failed to boot Gravrust:", e);
+      var t = document.getElementById("loading-text");
+      if (t) {{ t.textContent = "Boot error: " + e.message; t.style.color = "#ff5555"; }}
     }}
-
-    // Link modules to resolved Blob URLs
-    for (const [key, code] of Object.entries(MODULES)) {{
-      const finalCode = code.replace(/__MOD__([a-zA-Z0-9_\\-\\.\\/]+)/g, (_, mod) => blobUrls[mod] || mod);
-      URL.revokeObjectURL(blobUrls[key]);
-      blobUrls[key] = URL.createObjectURL(new Blob([finalCode], {{ type: 'application/javascript' }}));
-    }}
-
-    // Boot Gravrust
-    import(blobUrls['js/main.js']).catch(e => {{
-      console.error('Failed to boot Gravrust:', e);
-      const t = document.getElementById('loading-text');
-      if (t) {{ t.textContent = 'Boot error: ' + e.message; t.style.color = '#ff5555'; }}
-    }});
   </script>
 </body>
 </html>
@@ -336,7 +512,6 @@ def build():
         f.write(compact_html)
     compact_size = os.path.getsize(compact_out)
     print(f"[+] Created gravrust-compact.html ({round(compact_size / (1024*1024), 2)} MB)")
-
     print("[SUCCESS] All outputs generated successfully.")
 
 if __name__ == '__main__':
