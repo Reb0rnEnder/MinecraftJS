@@ -13,7 +13,24 @@ import { Splash } from './render/splash.js';
 import { ProxyList } from './net/proxies.js';
 import { parseAddress } from './net/address.js';
 
+import * as wasmCore from './wasm/pkg/gravrust.js';
+import { wasmBase64 } from './wasm/pkg/wasm-bytes.js';
+
 async function boot() {
+  // 1. Initialize Rust/WASM Core
+  try {
+    if (typeof wasmBase64 === 'string' && wasmBase64.length > 0 && typeof wasmCore.initSync === 'function') {
+      const binStr = atob(wasmBase64);
+      const wasmBytes = new Uint8Array(binStr.length);
+      for (let i = 0; i < binStr.length; i++) wasmBytes[i] = binStr.charCodeAt(i);
+      wasmCore.initSync({ module: wasmBytes });
+      globalThis.gravrust = wasmCore;
+      console.log('[Gravrust] Rust/WASM Core v' + wasmCore.core_version() + ' initialized (' + (wasmBytes.length / 1024).toFixed(1) + ' KB)');
+    }
+  } catch (err) {
+    console.warn('[Gravrust] WASM core init warning:', err);
+  }
+
   setPlatform(new BrowserPlatform());
   const P = platform();
   let config = {};
