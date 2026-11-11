@@ -8,3 +8,8 @@ test('V3 plaintext authentication uses upstream method 255 and UTF-8 password by
 test('unknown auth methods and overlong UTF-8 passwords never send a malformed login',()=>{
  for(const[method,password]of[[3,'secret'],[255,'ą'.repeat(128)]]){const{s,sent}=fixture(password);s._handshake(version(method));assert.equal(sent.length,0);assert.equal(s.state,'closed');}
 });
+test('protocol mismatch describes the actual negotiated protocol instead of an unrelated release',()=>{
+ const{s,sent}=fixture(null),messages=[];s.on('text',text=>messages.push(JSON.parse(text)));
+ s._handshake(new Writer().u8(2).u16(3).u16(protocol+1).u8(0).u8(0).u8(0).u16(0).build());
+ assert.equal(s.state,'closed');assert.equal(sent.length,0);assert.match(messages[0].reason,new RegExp('protocol '+(protocol+1)));assert.match(messages[0].reason,new RegExp('expected '+protocol));
+});
