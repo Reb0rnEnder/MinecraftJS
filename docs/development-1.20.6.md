@@ -306,3 +306,33 @@ passed on each older branch, with no new protocol features added there. Pushed
 backports: 1.19.4 `7524199`, 1.18.2 `901fe82`, 1.17.1 `f1fe7a0`, 1.16.5 `7fc9c79`,
 1.15.2 `b54fe09`, 1.14.4 `c6b5ed8`, 1.13.2 `1ec6af8`, 1.12.2 `a07d54d`,
 1.8.9 `2f355d6`. Distributions have not been rebuilt by this source-only batch.
+
+## Native presentation consumer repairs, 2026-11-11
+
+Generic protocol decoding did not normalize all the fields used by Game. NBT
+components now cross the legacy consumer boundary as serialized components,
+preserving literal JSON-looking strings and styling. Actual handler regressions
+cover chat, tab-list profiles/chat-key fields, teams/objectives/scores/removals,
+boss bars, titles, death messages, registered/inline sounds and recipe-book IDs.
+Configuration chat/damage registries remain available through a typed registry
+view instead of falling back to missing or old registry definitions.
+
+Command nodes now carry native flags, redirects, executable state, argument
+properties and root indices into CommandTree. Particle and argument IDs come from
+Mojang's native registry reports. Native `ArgumentTypeInfos` (`il`, lines 118-155)
+confirms the omitted property-free style/item-slots/NBT/loot templates. Simple
+particles need a void payload switch, not an error. Parameterized particles now
+reach renderer consumers with block states, item stacks, vibration targets,
+colors and delays; 1.20.5 entity-effect ARGB is no longer read from velocity.
+
+Native `Explosion.finalizeExplosion` (`dbs`, lines 269-307) confirms sound volume,
+pitch, server-provided particle selection and the KEEP test. The target respects
+those values and applies knockback without clearing KEEP blocks. This fixes the
+missing sound/particles and mismatched motion/record field names in the handoff.
+
+The generator/oracle gate and all 117 target tests pass; the browser code bundles.
+The isolated vanilla 1.20.6 probe again decodes 45 chunks and confirms control
+replies. This batch has no applicable older-target backport: these are adapters
+between the new protocol/registry formats and established consumers. P13 remains
+partial: new content/renderers, native GUI resources, number-format rendering,
+full command argument behavior, signing/reporting and visual acceptance remain.

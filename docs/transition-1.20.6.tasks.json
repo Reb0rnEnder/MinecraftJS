@@ -269,7 +269,7 @@
     {
       "id": "P13",
       "title": "Complete target menus, commands, chat trust/reporting and audio/effects",
-      "status": "todo",
+      "status": "partial",
       "dependsOn": [
         "P08",
         "P09",
@@ -283,7 +283,12 @@
         "1.20.6"
       ],
       "acceptance": "Target GUI/input/narration/text/command and local sound/effect scenarios pass; authenticated signing/reporting has actual acceptance. Cover native jigsaw priorities, menu blur/background exceptions, focus and debug content.",
-      "evidence": []
+      "evidence": [
+        "NBT-text and field adapters now exercise actual chat, profile/key, team/objective/score, boss/title/death, sound, command and particle consumers rather than only generic packet decoding.",
+        "Command argument and particle IDs are generated from exact Mojang reports; native ArgumentTypeInfos confirms property-free templates omitted by the upstream schema. Native Explosion.finalizeExplosion selects server-supplied sound/particles and preserves KEEP blocks.",
+        "Native Configuration registries remain available to chat-type decoration and damage effects through a typed consumer view.",
+        "Focused target tests pass 117/117 before the remaining GUI/signing/new-particle/native-format acceptance; P13 is not complete."
+      ]
     },
     {
       "id": "P14",

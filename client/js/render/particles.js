@@ -775,7 +775,12 @@ export class Particles {
       case 'large_smoke': emit((x, y, z, mx, my, mz) => this.smoke(x, y, z, mx, my, mz, 2.5)); break;
       case 'effect': emit((x, y, z, mx, my, mz) => this.spell(x, y, z, mx, my, mz)); break;
       case 'instant_effect': emit((x, y, z, mx, my, mz) => this.spell(x, y, z, mx, my, mz, 1, 1, 1, true)); break;
-      case 'entity_effect': case 'ambient_entity_effect': emit((x, y, z, mx, my, mz, single) => this.spell(x, y, z, 0, 0, 0, single ? mx : p.offsetX, single ? my : p.offsetY, single ? mz : p.offsetZ)); break;
+      case 'entity_effect': case 'ambient_entity_effect': emit((x, y, z, mx, my, mz, single) => {
+        if(p.data?.colorArgb!==undefined){
+          const color=p.data.colorArgb>>>0,q=this.spell(x,y,z,0,0,0,((color>>>16)&255)/255,((color>>>8)&255)/255,(color&255)/255);
+          if(q)q.a=(color>>>24)/255;
+        }else this.spell(x, y, z, 0, 0, 0, single ? mx : p.offsetX, single ? my : p.offsetY, single ? mz : p.offsetZ);
+      }); break;
       case 'witch': emit((x, y, z, mx, my, mz) => this.spell(x, y, z, mx, my, mz, 1, 1, 1, false, true)); break;
       case 'dripping_water': emit((x, y, z) => this.drip(x, y, z, false)); break;
       case 'dripping_lava': emit((x, y, z) => this.drip(x, y, z, true)); break;

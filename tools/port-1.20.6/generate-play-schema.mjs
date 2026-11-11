@@ -94,6 +94,21 @@ export async function generatePlaySchema(check = false) {
   const packets = Object.keys(idByName).sort((a, b) => idByName[a] - idByName[b]);
   for (const name of corePackets) assert.ok(idByName[name] !== undefined, "Missing required protocol-766 packet " + name);
   const all = { ...protocol.types, ...play };
+  const nativeIds = registry => Object.fromEntries(Object.entries(registries[registry].entries)
+    .sort((a,b) => a[1].protocol_id - b[1].protocol_id).map(([key,entry]) => [entry.protocol_id,key]));
+  // SimpleParticleType has no payload; the upstream switch omits its default.
+  all.Particle[1].find(entry => entry.name === 'type').type[1].mappings = Object.fromEntries(
+    Object.entries(nativeIds('minecraft:particle_type')).map(([id,key]) => [id,key.replace(/^minecraft:/,'')]));
+  all.Particle[1].find(entry => entry.name === 'data').type[1].default = 'void';
+  const commandArguments = all.command_node[1].find(entry => entry.name === 'extraNodeData').type[1].fields['2'][1];
+  commandArguments.find(entry => entry.name === 'parser').type[1].mappings = nativeIds('minecraft:command_argument_type');
+  const argumentProperties = commandArguments.find(entry => entry.name === 'properties').type[1].fields;
+  // ArgumentTypeInfos registers these as SingletonArgumentInfo.contextAware:
+  // their templates have no network fields (native il, lines 153-155).
+  for (const name of ['minecraft:loot_table','minecraft:loot_predicate','minecraft:loot_modifier','minecraft:style','minecraft:item_slots','minecraft:nbt_compound_tag','minecraft:nbt_tag']) argumentProperties[name] = 'void';
+  for (const name of Object.values(nativeIds('minecraft:command_argument_type'))) {
+    assert.ok(Object.hasOwn(argumentProperties,name),'Missing native command argument properties for ' + name);
+  }
   for (const name of packets) {
     const root = "packet_" + name;
     if (all[root] === undefined && all["packet_common_" + name] !== undefined) all[root] = all["packet_common_" + name];

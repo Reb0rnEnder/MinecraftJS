@@ -882,6 +882,7 @@ export class Game {
     this.hardcore = p.isHardcore;
     this.dimension = p.dimension;
     this.worldName=p.worldName;this.dimensionData=p.dimensionData;this.lastDeathLocation=p.death;
+    if(p.dimensionCodec)this.dimensionCodec=p.dimensionCodec;
     if(p.biomeEntries){setServerBiomeEntries(p.biomeEntries);this.worker?.postMessage({type:'serverBiomes',entries:p.biomeEntries});}
     else if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));this.worker?.postMessage({type:'serverBiomes',codec:simplify(p.dimensionCodec)});}
     if(p.difficulty!==undefined)this.difficulty = p.difficulty;
@@ -1280,12 +1281,18 @@ export class Game {
   on_block_break_animation(p) { this.interaction.setRemoteBreak(p.entityId, p.location, p.destroyStage); }
 
   on_explosion(p) {
-    this.sound.playExplosion(p.x, p.y, p.z);
-    for (const r of p.records) this.world.setState(Math.floor(p.x) + r.x, Math.floor(p.y) + r.y, Math.floor(p.z) + r.z, 0);
+    const native=p.nativeExplosion;
+    if(native){
+      const name=native.soundName?.replace(/^minecraft:/,'') || this.assets.soundNames[native.soundId];
+      if(name)this.sound.play(name,p.x,p.y,p.z,4,(1+(Math.random()-Math.random())*.2)*.7,{category:'block'});
+    }else this.sound.playExplosion(p.x, p.y, p.z);
+    if(!native || native.interaction===1 || native.interaction===2)for (const r of p.records) this.world.setState(Math.floor(p.x) + r.x, Math.floor(p.y) + r.y, Math.floor(p.z) + r.z, 0);
     this.player.motionX += p.motionX;
     this.player.motionY += p.motionY;
     this.player.motionZ += p.motionZ;
-    this.particles.explosion(p.x, p.y, p.z, p.radius);
+    if(native)this.particles.onPacket({...(p.radius>=2 && native.interaction!==0?native.large:native.small),
+      x:p.x,y:p.y,z:p.z,particles:0,offsetX:1,offsetY:0,offsetZ:0,particleData:1});
+    else this.particles.explosion(p.x, p.y, p.z, p.radius);
   }
 
   on_sculk_vibration_signal(p) { this.particles.vibration(p); }

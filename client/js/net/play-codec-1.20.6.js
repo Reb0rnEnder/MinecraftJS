@@ -343,11 +343,56 @@ function normalizeWorld(packet, context) {
     portalCooldown: world.portalCooldown,
     biomeRegistrySize: registrySize(context, "minecraft:worldgen/biome"),
     biomeEntries: registryEntries(context, "minecraft:worldgen/biome"),
+    dimensionCodec: registryCodec(context),
     enabledFeatures: context?.features,
     ...normalizeTags([...(context?.tags || new Map())].map(([tagType, tags]) => ({tagType, tags:tags.map(tag => ({tagName:tag.name, entries:tag.entries}))}))),
     blockStateRegistrySize: PLAY_SCHEMA_766.blockStateCount,
     airStates: PLAY_SCHEMA_766.airStates
   };
+}
+
+function registryCodec(context) {
+  const registries = configurationRegistries(context);
+  if (!registries) return null;
+  // Existing chat/damage consumers take the typed registry view used by older
+  // Join Game packets. Its values remain owned by this Configuration generation.
+  return {t:10,name:'',v:Object.fromEntries([...registries].map(([name,entries]) => [name,{t:10,v:{
+    type:{t:8,v:name},value:{t:9,v:{et:10,items:entries.map((entry,id) => ({
+      id:{t:3,v:id},name:{t:8,v:entry.key},element:entry.value
+    }))}}
+  }}]))};
+}
+
+const componentJson = value => value == null ? null : JSON.stringify(componentFromNbt(value));
+const SOUND_SOURCES = ['master','music','record','weather','block','hostile','neutral','player','ambient','voice'];
+const PARTICLE_IDS = Object.fromEntries(Object.entries(TYPES.Particle[1][0].type[1].mappings).map(([id,name]) => [name,Number(id)]));
+
+function particleView(particle) {
+  let data=particle.data;
+  if (['block','block_marker','falling_dust','dust_pillar'].includes(particle.type)) data={blockState:data};
+  else if (particle.type === 'item') data={item:data};
+  else if (particle.type === 'sculk_charge') data={rotation:data};
+  else if (particle.type === 'shriek') data={delayInTicksBeforeShown:data};
+  else if (particle.type === 'entity_effect') data={colorArgb:data};
+  else if (particle.type === 'dust_color_transition') data={...data,red:data.fromRed,green:data.fromGreen,blue:data.fromBlue};
+  else if (particle.type === 'vibration') data={positionType:'minecraft:'+data.positionType,
+    destination:data.positionType === 'block' ? data.position : data.position.entityId,
+    entityEyeHeight:data.positionType === 'entity' ? data.position.entityEyeHeight : undefined,ticks:data.ticks,particle:true};
+  return {particleId:PARTICLE_IDS[particle.type],data:data ?? {}};
+}
+
+function commandView(packet) {
+  const nodes=packet.nodes.map(node => {
+    const extra=node.extraNodeData || {},flags=node.flags;
+    let properties=extra.properties;
+    if(extra.parser === 'brigadier:string') properties={mode:['SINGLE_WORD','QUOTABLE_PHRASE','GREEDY_PHRASE'].indexOf(properties)};
+    else if(extra.parser === 'minecraft:entity') properties={flags:(properties.onlyAllowEntities?1:0)|(properties.onlyAllowPlayers?2:0)};
+    else if(extra.parser === 'minecraft:score_holder') properties={flags:properties.allowMultiple?1:0};
+    return {...extra,type:flags.command_node_type,children:node.children,executable:!!flags.has_command,
+      ...(flags.has_redirect_node?{redirect:node.redirectNode}:{}),properties:properties||{},suggestions:extra.suggestionType};
+  });
+  if(!nodes[packet.rootIndex] || nodes.some(node => node.type>2 || node.children.some(id=>!nodes[id]) || node.redirect!==undefined&&!nodes[node.redirect])) throw Error('Invalid protocol-766 command reference');
+  return {...packet,nodes,root:packet.rootIndex};
 }
 
 function normalizeTags(registries) {
@@ -363,6 +408,48 @@ function normalizeTags(registries) {
 }
 
 function normalize(name, packet, context = null) {
+  if (name === 'declare_commands') return commandView(packet);
+  if (name === 'face_player') return {...packet,fromAnchor:packet.feet_eyes,toAnchor:packet.entity_feet_eyes};
+  if (name === 'world_particles') return {...packet,...particleView(packet.particle),particles:packet.amount,particleData:packet.velocityOffset};
+  if (name === 'explosion') return {...packet,records:packet.affectedBlockOffsets,motionX:packet.playerMotionX,motionY:packet.playerMotionY,motionZ:packet.playerMotionZ,
+    nativeExplosion:{interaction:packet.block_interaction_type,small:particleView(packet.small_explosion_particle),large:particleView(packet.large_explosion_particle),
+      soundId:packet.sound.soundId ?? -1,soundName:packet.sound.data?.soundName}};
+  if (name === 'map') return {...packet,icons:packet.icons?.map(icon=>({...icon,displayName:componentJson(icon.displayName)})) ?? null};
+  if (name === 'advancements') return {...packet,removed:packet.identifiers,added:packet.advancementMapping.map(entry => {
+    const a=entry.value,d=a.displayData;
+    return {id:entry.key,parent:a.parentId,criteria:[...new Set(a.requirements.flat())],requirements:a.requirements,display:d?{
+      title:componentJson(d.title),description:componentJson(d.description),icon:d.icon,frame:d.frameType,
+      showToast:!!d.flags.show_toast,hidden:!!d.flags.hidden,background:d.backgroundTexture,x:d.xCord,y:d.yCord
+    }:null};
+  }),progress:packet.progressMapping.map(entry=>({id:entry.key,criteria:Object.fromEntries(entry.value.map(c=>[c.criterionIdentifier,c.criterionProgress === null?null:Number(c.criterionProgress)]))}))};
+  if (name === 'system_chat') return {...packet,content:componentJson(packet.content)};
+  if (name === 'profileless_chat') return {...packet,name,message:componentJson(packet.message),
+    networkName:componentJson(packet.name),networkTargetName:componentJson(packet.target)};
+  if (name === 'player_chat') return {...packet,sender:packet.senderUuid,unsignedChatContent:componentJson(packet.unsignedChatContent),
+    networkName:componentJson(packet.networkName),networkTargetName:componentJson(packet.networkTargetName)};
+  if (name === 'hide_message') return {...packet,signatureId:packet.id};
+  if (name === 'player_info') return {...packet,actions:packet.action.raw,data:packet.data.map(entry => ({
+    ...entry,...entry.player,ping:entry.latency,listed:entry.listed === undefined ? undefined : !!entry.listed,
+    displayName:componentJson(entry.displayName),chatSession:entry.chatSession ? {uuid:entry.chatSession.uuid,...entry.chatSession.publicKey} : null
+  }))};
+  if (name === 'playerlist_header') return {...packet,header:componentJson(packet.header),footer:componentJson(packet.footer)};
+  if (name === 'teams') return {...packet,name:'scoreboard_team',displayName:componentJson(packet.name),color:packet.formatting,
+    prefix:componentJson(packet.prefix),suffix:componentJson(packet.suffix)};
+  if (name === 'scoreboard_objective') return {...packet,name,objective:packet.name,displayText:componentJson(packet.displayText)};
+  if (name === 'scoreboard_display_objective') return {...packet,name,objective:packet.name};
+  if (name === 'scoreboard_score') return {...packet,action:0,displayName:componentJson(packet.display_name)};
+  if (name === 'reset_score') return {...packet,name:'scoreboard_score',action:1,itemName:packet.entity_name,scoreName:packet.objective_name};
+  if (name === 'boss_bar') return {...packet,uuid:packet.entityUUID,title:componentJson(packet.title)};
+  if (name === 'unlock_recipes') return {...packet,recipes:packet.recipes1,recipesToHighlight:packet.recipes2};
+  if (name === 'death_combat_event') return {...packet,name:'combat_event',event:2,message:componentJson(packet.message)};
+  if (name === 'action_bar' || name === 'set_title_text' || name === 'set_title_subtitle') return {...packet,name:'title',
+    action:name === 'action_bar' ? 2 : name === 'set_title_text' ? 0 : 1,text:componentJson(packet.text)};
+  if (name === 'set_title_time') return {...packet,name:'title',action:3};
+  if (name === 'clear_titles') return {...packet,name:'title',action:packet.reset ? 5 : 4};
+  if (name === 'sound_effect' || name === 'entity_sound_effect') return {...packet,
+    ...(name === 'sound_effect' ? {x:packet.x/8,y:packet.y/8,z:packet.z/8} : {}),
+    soundId:packet.sound.soundId ?? -1,soundName:packet.sound.data?.soundName,
+    range:packet.sound.data?.fixedRange,soundCategory:SOUND_SOURCES.indexOf(packet.soundCategory)};
   if (name === 'cookie_request') return {...packet, key:packet.cookie};
   if (name === 'ping') return {...packet, pingId:packet.id};
   if (name === 'tags') {
