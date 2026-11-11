@@ -123,11 +123,12 @@ function readType(reader, spec, current = null, depth = 0) {
 
   if (kind === "array") {
     const length = args.count !== undefined
-      ? count(Number(lookup(current, args.count)), "Play array")
+      ? count(Number(typeof args.count === 'number' ? args.count : lookup(current, args.count)), "Play array")
       : count(Number(readType(reader, args.countType, current, depth + 1)), "Play array");
     const out = new Array(length);
-    const arrayScope = scope(out, current);
-    for (let i = 0; i < length; i++) out[i] = readType(reader, args.type, arrayScope, depth + 1);
+    // Arrays do not introduce a named container scope in ProtoDef. Adding one
+    // breaks shaped-recipe dimensions and ../action in player-info entries.
+    for (let i = 0; i < length; i++) out[i] = readType(reader, args.type, current, depth + 1);
     return out;
   }
 
@@ -342,12 +343,37 @@ function normalizeWorld(packet, context) {
     portalCooldown: world.portalCooldown,
     biomeRegistrySize: registrySize(context, "minecraft:worldgen/biome"),
     biomeEntries: registryEntries(context, "minecraft:worldgen/biome"),
+    enabledFeatures: context?.features,
+    ...normalizeTags([...(context?.tags || new Map())].map(([tagType, tags]) => ({tagType, tags:tags.map(tag => ({tagName:tag.name, entries:tag.entries}))}))),
     blockStateRegistrySize: PLAY_SCHEMA_766.blockStateCount,
     airStates: PLAY_SCHEMA_766.airStates
   };
 }
 
+function normalizeTags(registries) {
+  const commandTags = {}, registryTags = {};
+  const kinds = {'minecraft:block':'blocks', 'minecraft:item':'items', 'minecraft:fluid':'fluids', 'minecraft:entity_type':'entities'};
+  for (const registry of registries) {
+    const name = registry.tagType.includes(':') ? registry.tagType : 'minecraft:' + registry.tagType;
+    const tags = Object.fromEntries(registry.tags.map(tag => [tag.tagName, tag.entries]));
+    commandTags[name] = tags;
+    if (kinds[name]) registryTags[kinds[name]] = tags;
+  }
+  return {commandTags, registryTags};
+}
+
 function normalize(name, packet, context = null) {
+  if (name === 'cookie_request') return {...packet, key:packet.cookie};
+  if (name === 'ping') return {...packet, pingId:packet.id};
+  if (name === 'tags') {
+    const {commandTags, registryTags} = normalizeTags(packet.tags);
+    return {...packet, registries:commandTags, tags:registryTags};
+  }
+  if (name === 'declare_recipes') return {...packet, recipes:packet.recipes.map(recipe => ({
+    ...recipe, recipeId:recipe.name,
+    data:recipe.type === 'minecraft:crafting_shaped' ? {...recipe.data, width:recipe.data.gridWidth,
+      height:recipe.data.gridHeight, ingredients:recipe.data.ingredients.flat()} : {...recipe.data,cookingTime:recipe.data.cookTime}
+  }))};
   if (name === "login" || name === "respawn") return normalizeWorld(packet, context);
 
   if (name === "position" && packet.flags?.raw !== undefined) {
@@ -565,7 +591,9 @@ export function decodePlayPacket766(data, context = null) {
   if (!name) return { name: "raw_" + id.toString(16), id, data: reader.rest() };
   const spec = TYPES["packet_" + name];
   if (!spec) throw new Error("Missing generated protocol-766 Play packet type " + name);
-  const packet = normalize(name, readType(reader, spec), context);
+  let packet;
+  try { packet = normalize(name, readType(reader, spec), context); }
+  catch (cause) { throw new Error('Cannot decode protocol-766 ' + name + ' at byte ' + reader.offset + ': ' + cause.message, {cause}); }
   if (reader.remaining() !== 0) throw new Error("Trailing protocol-766 Play bytes for " + name + ": " + reader.remaining());
   return { name, id, ...packet };
 }

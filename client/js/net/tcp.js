@@ -273,6 +273,7 @@ export class VanillaSocket extends Emitter {
   // onClose(reason) runs before the socket reports its own close
   async _open(host, port, onPacket, onClose) {
     this.stream = await openStream(this.entry, host, port);
+    if (this.closed) { this.stream.close(); return; }
     this.stream.on('close', (reason) => {
       if (onClose) onClose(reason);
       else if (reason && reason !== 'target closed' && this.state !== 'play') this._control({ type: 'error', message: reason });
@@ -301,8 +302,9 @@ export class VanillaSocket extends Emitter {
       this.close();
       return;
     }
+    if (this.closed) return;
     this._control({ type: 'status', key: 'connect.authorizing', message: 'Logging in...' });
-    this._send(handshake(protocol, host, port, 2));
+    this._send(handshake(protocol, host, port, this._loginIntent?.() ?? 2));
     // ServerboundHelloPacket in 1.19.4 appends an optional profile UUID.
     // Absence is valid for both offline login and authenticated session join.
     this._send(this._loginStart(msg,protocol));
@@ -333,26 +335,32 @@ export class VanillaSocket extends Emitter {
   // Online mode: session join (through a MinecraftJS proxy when one is listed: the session server has no CORS),
   // then the RSA-encrypted secret, then AES/CFB8 both ways
   async _encryption(body) {
-    if (!this.auth) { this._kick(JSON.stringify({ translate: 'minecraftjs.disconnect.online' })); return; }
-    this.state = 'encrypting';
     let o = 0;
     const sid = readString(body, o); o = sid.end;
     const kl = readVarint(body, o); o += kl.length;
     const key = body.slice(o, o + kl.value); o += kl.value;
     const tl = readVarint(body, o); o += tl.length;
     const token = body.slice(o, o + tl.value);
-    const secret = randomBytes(16);
+    return this._encryptionRequest({ serverId: sid.value, publicKey: key, verifyToken: token });
+  }
+
+  async _encryptionRequest({ serverId, publicKey, verifyToken }, authenticate = true) {
+    if (authenticate && !this.auth) { this._kick(JSON.stringify({ translate: 'minecraftjs.disconnect.online' })); return; }
+    this.state = 'encrypting';
     try {
-      await joinSession(this.auth, serverHash(sid.value, secret, key));
+      const secret = randomBytes(16);
+      if (authenticate) await joinSession(this.auth, serverHash(serverId, secret, publicKey));
+      // A cancelled login must not send a response or resurrect a closed socket
+      // when the asynchronous session-server request eventually completes.
+      if (this.closed || this.state !== 'encrypting') return;
+      const es = rsaEncrypt(publicKey, secret, randomBytes), et = rsaEncrypt(publicKey, verifyToken, randomBytes);
+      this._send(concat([new Uint8Array([0x01]), new Uint8Array(varint(es.length)), es, new Uint8Array(varint(et.length)), et]));
+      this.cipher = new Cfb8(secret, false);
+      this.decipher = new Cfb8(secret, true);
+      this.state = 'login';
     } catch (e) {
-      this._kick(JSON.stringify({ translate: 'disconnect.loginFailedInfo', with: [e.message] }));
-      return;
+      if (!this.closed) this._kick(JSON.stringify({ translate: 'disconnect.loginFailedInfo', with: [e.message] }));
     }
-    const es = rsaEncrypt(key, secret, randomBytes), et = rsaEncrypt(key, token, randomBytes);
-    this._send(concat([new Uint8Array([0x01]), new Uint8Array(varint(es.length)), es, new Uint8Array(varint(et.length)), et]));
-    this.cipher = new Cfb8(secret, false);
-    this.decipher = new Cfb8(secret, true);
-    this.state = 'login';
   }
 
   // Server list ping (status state): the same reply the MinecraftJS proxy sends

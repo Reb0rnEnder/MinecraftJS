@@ -14,14 +14,14 @@ import { VanillaSocket766 } from './tcp-1.20.6.js';
 const NO_PROXY = 'No proxy selected: add one in Proxy Servers on the title screen (or join an Eaglercraft wss:// server)';
 
 // A socket to the selected proxy (MinecraftJS proxy, or a relay / Wisp link handled in the client)
-async function openProxySocket(protocol = PROTOCOL_VERSION) {
+async function openProxySocket(protocol = PROTOCOL_VERSION, options = {}) {
   const p = currentProxy();
   if (!p) throw new Error(NO_PROXY);
   const type = proxyType(p);
   if (protocol === 766) {
     return new VanillaSocket766(
       { ...p, type: type === "minecraftjs" ? "minecraftjs-raw" : type },
-      { autoPlayAcks: false }
+      { ...options, autoPlayAcks: false }
     );
   }
   if (type !== "minecraftjs") return new VanillaSocket({ ...p, type });
@@ -29,7 +29,8 @@ async function openProxySocket(protocol = PROTOCOL_VERSION) {
 }
 
 export class Connection {
-  constructor() {
+  constructor(options = {}) {
+    this.options = options;
     this.ws = null;
     this.handlers = {};
     this.state = 'idle';
@@ -47,7 +48,7 @@ export class Connection {
     if (this.ws) return;
     let sock;
     if (eagler) sock = await openEaglerSocket(eagler);
-    else sock = await openProxySocket(PROTOCOL_VERSION);
+    else sock = await openProxySocket(PROTOCOL_VERSION, this.options);
     this.ws = sock;
     sock.on('close', () => {
       const was = this.state;
@@ -61,9 +62,20 @@ export class Connection {
       this.emit('control', msg);
     });
     if (PROTOCOL_VERSION === 766 && !eagler) {
+      sock.on('reconfiguration_start', () => {
+        this.bundles.reset();
+        this.emit('reconfiguration_start');
+        this.state = 'configuration';
+      });
+      sock.on('configuration', packet => this.emit('configuration', packet));
+      sock.on('configuration_complete', configuration => {
+        this.state = 'play';
+        this.emit('configuration_complete', configuration);
+      });
+      sock.on('transfer', packet => this.emit('transfer', packet));
       sock.on("play", (packet) => {
         this.packetsIn++;
-        this.emit("packet", packet);
+        this._receivePacket(packet);
       });
       sock.on("binary", (bytes) => { this.bytesIn += bytes.length; });
     } else {
@@ -78,19 +90,27 @@ export class Connection {
           console.warn('Failed to decode packet', bytes[0], err);
           return;
         }
-        try{this.bundles.accept(p,packet=>this.emit('packet',packet));}catch(error){this.emit('decode_error',{message:error.message});sock.close();}
+        this._receivePacket(p);
       });
     }
   }
 
+  _receivePacket(packet) {
+    try { this.bundles.accept(packet, value => this.emit('packet', value)); }
+    catch (error) { this.emit('decode_error', {message:error.message}); this.close(); }
+  }
+
   // auth: { accessToken, uuid } for online-mode servers (Microsoft accounts), else null.
   // host may be an Eaglercraft address (then port is ignored).
-  async connect(host, port, username, auth = null) {
+  async connect(host, port, username, auth = null, transfer = null) {
     const a = parseAddress(host);
     const eagler = a && a.kind === 'eagler' ? a : null;
     await this.open(eagler);
     this.state = 'login';
-    this.ws.sendText(JSON.stringify({ type: 'connect', host, port, username, auth: eagler ? null : auth, protocol: PROTOCOL_VERSION }));
+    if (transfer && this.ws instanceof VanillaSocket766) {
+      this.ws.cookies = new Map([...transfer.cookies].map(([key, value]) => [key, value.slice()]));
+    }
+    this.ws.sendText(JSON.stringify({ type: 'connect', host, port, username, auth: eagler ? null : auth, protocol: PROTOCOL_VERSION, transferred: !!transfer }));
   }
 
   async ping(host, port) {

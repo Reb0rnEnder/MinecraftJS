@@ -266,3 +266,43 @@ inside component values (lore, modifiers, nested stacks, etc.) remain ordered;
 regressions assert that reordering them or changing a value still changes the
 canonical representation. The baseline digest was regenerated from pinned native
 inputs; no item defaults or component IDs changed.
+
+## Connection and live-join handoff repairs, 2026-11-11
+
+The GitHub milestone still explicitly disconnected every encrypted login. Native
+`ClientHandshakePacketListenerImpl` (`fxw`) confirms the 1.20.5 authentication
+boolean: both cases encrypt the secret/token and enable AES-CFB8, but only the
+true case joins the session service. The target now implements that distinction.
+Independent Node RSA/AES checks cover the reused crypto path. They use a mocked
+session response, not a real Microsoft account; P09 remains partial.
+
+The actual graphical Connection now honors bundles and server transfers. Login,
+Configuration and Play cookies retain owned bounded bytes; only server-triggered
+transfers copy them and use handshake intent 3. Ordinary joins start empty.
+Reconfiguration flushes pending chat acknowledgements before its acknowledgement,
+suspends/clears the old world, preserves visible/input chat and resource packs,
+and resets chat when the server requests it. Initial brand/settings ordering and
+saved client options match `fxw`; these are not resent on reconfiguration. Native
+Configuration features/tags reach Join Game consumers rather than disappearing
+when the Play handler resets its state. Typed disconnect reasons survive.
+
+The expanded 122-packet decoder also failed live joining on `declare_recipes`:
+arrays incorrectly introduced container scope, breaking shaped dimensions and
+player-info action switches, and the upstream recipe serializer map retained a
+removed banner-add-pattern entry. The generator now sources all 23 serializer
+IDs from Mojang's native registry. Shaped recipes reach the existing crafting
+consumer with flat, ordered cells and the proper dimensions/identifier.
+
+After these fixes the isolated SHA-pinned vanilla server probe received 45 native
+chunks, confirmed a teleport, answered a keepalive and acknowledged five chunk
+batches. This was transport/Play acceptance, not a new graphical or account test.
+The focused target tests pass 108/108. The native generator/oracle gate is rerun
+separately. P08 has been reopened: generic packet decoding did not establish
+complete item/menu consumer parity.
+
+Shared cancellation guards prevent late session responses or transport opening
+from reviving a cancelled connection. Four independent transport regressions
+passed on each older branch, with no new protocol features added there. Pushed
+backports: 1.19.4 `7524199`, 1.18.2 `901fe82`, 1.17.1 `f1fe7a0`, 1.16.5 `7fc9c79`,
+1.15.2 `b54fe09`, 1.14.4 `c6b5ed8`, 1.13.2 `1ec6af8`, 1.12.2 `a07d54d`,
+1.8.9 `2f355d6`. Distributions have not been rebuilt by this source-only batch.

@@ -78,6 +78,17 @@ export async function generatePlaySchema(check = false) {
   field("multi_block_change", "records").type[1].type = "varlong";
   field("initialize_world_border", "speed").type = "varlong";
   field("world_border_lerp_size", "speed").type = "varlong";
+  // The upstream schema still lists the removed banner-add-pattern serializer,
+  // shifting every subsequent recipe ID. Registry IDs come from Mojang reports.
+  const recipeFields = field('declare_recipes', 'recipes').type[1].type[1];
+  const recipeType = recipeFields.find(entry => entry.name === 'type');
+  const recipeBodies = recipeFields.find(entry => entry.name === 'data').type[1].fields;
+  recipeType.type[1].mappings = Object.fromEntries(Object.entries(registries['minecraft:recipe_serializer'].entries)
+    .sort((a,b) => a[1].protocol_id - b[1].protocol_id)
+    .map(([name, entry]) => {
+      assert.ok(recipeBodies[name], 'Missing native recipe serializer body ' + name);
+      return [entry.protocol_id, name];
+    }));
   const packetMappings = play.packet[1][0].type[1].mappings;
   const idByName = Object.fromEntries(Object.entries(packetMappings).map(([id, name]) => [name, Number(id)]));
   const packets = Object.keys(idByName).sort((a, b) => idByName[a] - idByName[b]);

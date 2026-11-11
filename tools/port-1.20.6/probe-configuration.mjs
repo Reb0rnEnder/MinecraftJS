@@ -166,7 +166,7 @@ try {
     keepalivesAnswered: keepalives,
     chunkBatchesAcknowledged: batches,
     decodedChunksReceived: chunks,
-    limitations: "Offline transport/Play decode gate only. Chunks are decoded and normalized but not rendered here. Encrypted login and graphical runtime integration remain pending."
+    limitations: "Offline transport/Play decode gate only. This probe does not render chunks or test a real authenticated account."
   }, null, 2));
 } finally {
   socket.close();

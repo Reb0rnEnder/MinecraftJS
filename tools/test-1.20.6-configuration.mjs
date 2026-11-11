@@ -21,7 +21,7 @@ test('login success, mandatory UUID and the new encryption flag preserve native 
  const e=decodeLogin766(packet(LI.encryption_begin).string('').varint(1).u8(1).varint(1).u8(2).bool(false).build());assert.equal(e.shouldAuthenticate,false);
 });
 test('configuration selects only the exact native known pack and atomically finishes',()=>{
- const sent=[],events=[],c=new Configuration766(p=>sent.push(p),p=>events.push(p));c.start();assert.equal(new Reader766(sent[0]).varint(),OUT.settings);
+ const sent=[],events=[],c=new Configuration766(p=>sent.push(p),p=>events.push(p));c.start();assert.equal(new Reader766(sent[0]).varint(),OUT.custom_payload);assert.equal(new Reader766(sent[1]).varint(),OUT.settings);
  c.handle(packet(IN.select_known_packs).varint(1).string('minecraft').string('core').string('1.20.6').build());const packs=new Reader766(sent.at(-1));assert.equal(packs.varint(),OUT.select_known_packs);assert.equal(packs.varint(),1);assert.equal(packs.string(),'minecraft');assert.equal(packs.string(),'core');assert.equal(packs.string(),'1.20.6');assert.equal(packs.remaining(),0);
  const omitted=packet(IN.registry_data).string('minecraft:dimension_type').varint(1).string('minecraft:overworld').bool(false).build();c.handle(omitted);assert.equal(c.cachedRegistryValues,1);assert.ok(c.registries.get('minecraft:dimension_type')[0].value);
  c.handle(packet(IN.keep_alive).i64(123n).build());assert.deepEqual(sent.at(-1),C766.keepAlive(123n));c.handle(packet(IN.ping).i32(42).build());assert.deepEqual(sent.at(-1),C766.pong(42));

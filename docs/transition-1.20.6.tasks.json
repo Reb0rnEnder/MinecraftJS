@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedOn": "2026-11-07",
+  "updatedOn": "2026-11-11",
   "target": "1.20.6",
   "branch": "1.20.6",
   "fullParity": false,
@@ -174,7 +174,7 @@
     {
       "id": "P08",
       "title": "Finish inventory, interaction results and target physics attributes",
-      "status": "done",
+      "status": "partial",
       "dependsOn": [
         "P04",
         "P07"
@@ -191,13 +191,14 @@
         "Target menu registry covers all 25 native menu IDs including Crafter at 7, Smithing at 21 with four slots, and cartography-table/native aliases; merchant ItemCost component predicates normalize into existing merchant consumers.",
         "Native 1.20.6 player attributes now drive gravity, jump strength, step height, scale/pose dimensions, safe-fall/fall multiplier, block break speed and block/entity interaction ranges. Mojang Player bytecode confirms target reach defaults 4.5/3.0.",
         "The generated clientbound Play schema now covers all 122 protocol-766 packets rather than the former 53-packet graphical subset, allowing older feature handlers to be reused with target normalization.",
-        "The permanent target gate passes 95/95 tests, including component merge/copy, rejected/corrected inventory prediction, outgoing legacy-action layouts and attribute consumers."
+        "The permanent target gate passes 95/95 tests, including component merge/copy, rejected/corrected inventory prediction, outgoing legacy-action layouts and attribute consumers.",
+        "GitHub handoff audit: generic decoding alone did not prove every Game consumer. Live vanilla joining exposed and fixed recipe serializer ID drift plus array scope; menu/item-specific component consumers still require acceptance."
       ]
     },
     {
       "id": "P09",
       "title": "Validate authenticated login, transfer, cookies and session continuity",
-      "status": "todo",
+      "status": "partial",
       "dependsOn": [
         "P05",
         "P07"
@@ -207,7 +208,13 @@
         "1.20.5"
       ],
       "acceptance": "Controlled transfer/reconfiguration and real encrypted/account sessions have separate recorded acceptance; no fabricated account test. Reconfiguration preserves visible chat/input history while correctly renewing signature-session state.",
-      "evidence": []
+      "evidence": [
+        "Native ClientHandshakePacketListenerImpl/ClientCommonPacketListenerImpl/ClientConfigurationPacketListenerImpl inspected from SHA-pinned 1.20.6 client on 2026-11-11.",
+        "Encrypted protocol-766 login supports shouldAuthenticate true/false, reuses session joining, RSA key response and AES-CFB8; independent Node crypto vectors pass. A real account-backed session remains untested.",
+        "Controlled graphical Connection tests exercise atomic bundle delivery, Play/Login cookies, transfer intent 3, ordinary-join isolation, Configuration chat reset and reconfiguration acknowledgement ordering.",
+        "Real isolated SHA-pinned vanilla 1.20.6 probe reaches Play with all 122 packet body decoders, 45 chunks, teleport, keepalive and five chunk-batch acknowledgements; no new browser or authenticated account acceptance is claimed.",
+        "Shared login cancellation guards tested and pushed across all nine older supported branches (four regressions each)."
+      ]
     },
     {
       "id": "P10",

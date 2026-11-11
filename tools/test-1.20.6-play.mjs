@@ -6,8 +6,31 @@ import { Writer766 } from "../client/js/net/configuration-1.20.6.js";
 import { decodePlayBody766 } from "../client/js/net/play-codec-1.20.6.js";
 import { PLAY_SCHEMA_766 } from "../client/js/net/play-schema-1.20.6.js";
 import { ITEM_DEFAULTS_766 } from "../client/js/net/item-components-1.20.6-defaults.js";
+import {serverRecipe,serverCraftResult} from '../client/js/game/server-recipes.js';
 
 const noop = () => {};
+
+test('native recipe serializer IDs and nested recipe counts survive real join payloads',()=>{
+  const mappings=PLAY_SCHEMA_766.types.packet_declare_recipes[1][0].type[1].type[1][1].type[1].mappings;
+  assert.equal(Object.keys(mappings).length,23);assert.equal(mappings[15],'minecraft:smelting');assert.equal(mappings[22],'minecraft:crafting_decorated_pot');
+  const stoneId=ITEM_DEFAULTS_766.items.findIndex(item=>item.name==='minecraft:stone');
+  const stack={itemId:stoneId,id:stoneId,count:1,componentPatch:{added:[],removed:[]}};
+  const w=new Writer766().varint(2).string('minecraft:test_shaped').varint(0).string('').varint(0).varint(2).varint(1);
+  for(let i=0;i<2;i++)w.varint(1).slot(stack);
+  w.slot({...stack,count:2}).bool(true).string('minecraft:test_smelting').varint(15).string('').varint(0).varint(1).slot(stack).slot(stack).f32(0.5).varint(200);
+  const decoded=decodePlayBody766('declare_recipes',w.build());
+  assert.equal(decoded.recipes[0].data.width,2);assert.equal(decoded.recipes[0].data.height,1);
+  assert.equal(decoded.recipes[0].data.ingredients.length,2);assert.equal(decoded.recipes[1].data.cookingTime,200);
+  const recipe=serverRecipe(decoded.recipes[0]);assert.equal(recipe.id,'minecraft:test_shaped');
+  assert.equal(serverCraftResult([stack,stack,null,null],2,[recipe]).count,2);
+});
+
+test('player-info entry action switches resolve the enclosing container across arrays',()=>{
+  const uuid='12345678-1234-4234-8234-123456789abc';
+  const w=new Writer766().u8(1|4|8|16|32).varint(1).uuid(uuid).string('Fixture').varint(0).varint(1).bool(true).varint(37).bool(true).component({text:'Display'});
+  const p=decodePlayBody766('player_info',w.build());
+  assert.equal(p.data[0].player.name,'Fixture');assert.equal(p.data[0].gamemode,1);assert.equal(p.data[0].latency,37);
+});
 
 function game(fields = {}) {
   return Object.assign(Object.create(Game.prototype), fields);
@@ -45,6 +68,8 @@ function dimensionContext() {
     }
   };
   return {
+    features:['minecraft:vanilla','minecraft:bundle'],
+    tags:new Map([['minecraft:item',[{name:'minecraft:test',entries:[1,2]}]]]),
     registries: new Map([
       ["minecraft:dimension_type", [{ id: 0, key: "minecraft:overworld", value: dimension }]],
       ["minecraft:worldgen/biome", [{ id: 0, key: "minecraft:plains", value: biome }]]
@@ -97,6 +122,8 @@ test("native 766 Join Game resolves Configuration registries and reaches Game.on
   assert.equal(packet.previousGameMode, -1);
   assert.equal(packet.biomeRegistrySize, 1);
   assert.equal(packet.blockStateRegistrySize, 26684);
+  assert.deepEqual(packet.enabledFeatures,['minecraft:vanilla','minecraft:bundle']);
+  assert.deepEqual(packet.registryTags.items,{'minecraft:test':[1,2]});
 
   let dimension;
   const target = game({

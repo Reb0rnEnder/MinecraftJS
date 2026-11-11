@@ -14,7 +14,7 @@
     "stack-fixtures:1.20.6": "node tools/port-1.20.6/stack-fixtures.mjs",
     "capture-known-pack:1.20.6": "node tools/port-1.20.6/capture-known-pack.mjs",
     "play-schema:1.20.6": "node tools/port-1.20.6/generate-play-schema.mjs",
-    "test:1.20.6": "node tools/port-1.20.6/generate-ids.mjs --check && node tools/port-1.20.6/reports.mjs --check && node tools/port-1.20.6/component-fixtures.mjs --check && node tools/port-1.20.6/generate-component-schema.mjs --check && node tools/port-1.20.6/stack-fixtures.mjs --check && node tools/port-1.20.6/generate-play-schema.mjs --check && node --test tools/test-1.20.6-configuration.mjs tools/test-1.20.6-primitives.mjs tools/test-1.20.6-components.mjs tools/test-1.20.6-play.mjs tools/test-1.20.6-actions.mjs tools/test-1.20.6-generation.mjs",
+    "test:1.20.6": "node tools/port-1.20.6/generate-ids.mjs --check && node tools/port-1.20.6/reports.mjs --check && node tools/port-1.20.6/component-fixtures.mjs --check && node tools/port-1.20.6/generate-component-schema.mjs --check && node tools/port-1.20.6/stack-fixtures.mjs --check && node tools/port-1.20.6/generate-play-schema.mjs --check && node --test tools/test-1.20.6-configuration.mjs tools/test-1.20.6-primitives.mjs tools/test-1.20.6-components.mjs tools/test-1.20.6-play.mjs tools/test-1.20.6-actions.mjs tools/test-1.20.6-generation.mjs tools/test-login-transport.mjs tools/test-1.20.6-session.mjs",
     "fixture:1.20.6": "node tools/port-1.20.6/run-protocol-fixture.mjs",
     "probe:1.20.6": "node tools/port-1.20.6/probe-configuration.mjs"
   },

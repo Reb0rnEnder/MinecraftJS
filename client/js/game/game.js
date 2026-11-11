@@ -668,14 +668,14 @@ export class Game {
   // ---------------------------------------------------------------- Connection
 
   // Connect as the active account (or as an explicit offline username)
-  async connect(host, port, username = null) {
+  async connect(host, port, username = null, transfer = null) {
     this.disconnect(true);
     const attempt=this.connectAttempt=(this.connectAttempt||0)+1;
     this.reset();
     this.serverAddress = { host, port };
     this.screens.open(new ConnectingScreen(this, host, port));
-    let auth = null;
-    if (!username) {
+    let auth = transfer?.auth || null;
+    if (!username && !transfer) {
       let acc = this.accounts.active();
       // Eaglercraft servers log in by name only (no Mojang session check)
       if (acc.type === 'microsoft' && !isEaglerAddress(host)) {
@@ -693,12 +693,33 @@ export class Game {
     if(attempt!==this.connectAttempt)return;
     if(this.accountPrivileges?.multiplayerServer===false){this.screens.open(new DisconnectedScreen(this,tr('connect.failed'),tr('title.multiplayer.disabled')));return;}
     this.username = username;
-    const conn = this.conn = new Connection();
+    const s = this.settings;
+    const conn = this.conn = new Connection({locale:this.assets?.language || 'en_us',distance:s?.renderDistance ?? 8,
+      chatVisibility:s?.chatVisibility,chatColors:s?.chatColors,skinParts:s?.skinParts,mainHand:s?.mainHand === 'left' ? 0 : 1});
     conn.on('control', (m) => this.onControl(m, conn));
     conn.on('packet', (p) => { if (this.conn === conn) this.handlePacket(p); });
     conn.on('close', () => { if (this.conn === conn) this.onConnectionClosed(); });
+    conn.on('transfer', packet => {
+      if (this.conn === conn) void this.connect(packet.host, packet.port, username, {...packet, auth});
+    });
+    conn.on('reconfiguration_start', () => {
+      if (this.conn !== conn) return;
+      if (chatState762.offset > 0) this.send(chatState762.flush());
+      this.leaveWorld(true);
+      this.connected = true;
+      this.doneLoadingTerrain = false;
+      this.screens.open(new ConnectingScreen(this, host, port));
+      this.screens.current.status = tr('connect.reconfiguring');
+    });
+    conn.on('configuration', packet => {
+      if (this.conn !== conn) return;
+      if (packet.name === 'reset_chat') {
+        this.hud.clearChat();
+        this.hud.sentHistory = [];
+      }
+    });
     try {
-      await conn.connect(host, port, username, auth);
+      await conn.connect(host, port, username, auth, transfer);
     } catch (e) {
       if(this.conn!==conn)return;
       this.screens.open(new DisconnectedScreen(this, tr('connect.failed'), e.message));
@@ -734,7 +755,7 @@ export class Game {
     platform().setTitle?.(base+(this.inWorld?' - '+this.assets.translate('title.multiplayer.other'):''));
   }
 
-  leaveWorld() {
+  leaveWorld(preserveServerPacks = false) {
     setServerBiomes(null);
     this.worker?.postMessage({type:'serverBiomes',codec:null});
     resetServerRecipes(this);this.nbtQueries?.clear();
@@ -759,7 +780,7 @@ export class Game {
     if (this.advancements) this.advancements.clear();
     this.hud.resetServerState();
     this.statValues = null; this.stats = null;
-    if (this.serverPacks) this.serverPacks.clear();
+    if (this.serverPacks && !preserveServerPacks) this.serverPacks.clear();
   }
 
   onControl(m, conn) {
@@ -826,8 +847,9 @@ export class Game {
     this.customChatCompletions=new Set();
     this.spawnPos=null;this.spawnAngle=0;
     this.worldBorder?.reset();
-    this.serverData=null;this.enforcesSecureChat=false;this.chatSignatures=new MessageSignatureCache762();this.chatVerifier?.reset();
-    this.enabledFeatures=new Set(['minecraft:vanilla']);this.commandTags={};
+    this.serverData=null;this.enforcesSecureChat=!!p.enforcesSecureChat;this.chatSignatures=new MessageSignatureCache762();this.chatVerifier?.reset();
+    this.enabledFeatures=new Set(p.enabledFeatures||['minecraft:vanilla']);this.commandTags=p.commandTags||{};
+    if(p.registryTags)this.tags?.replace(p.registryTags);
     this.blockPrediction?.reset();chatState762.reset();
     resetPlayerView(this);
     this.interaction?.predictedDoors?.clear();
