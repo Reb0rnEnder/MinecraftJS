@@ -398,3 +398,9 @@ Backport checks: eight tests each on 1.13.2-1.19.4, seven each on 1.8.9/1.12.2.
 Latest pushed heads: 1.19.4 `601b181`, 1.18.2 `32a358a`, 1.17.1 `6096692`,
 1.16.5 `10b4fe9`, 1.15.2 `e96e276`, 1.14.4 `1824ef1`, 1.13.2 `135ee4e`,
 1.12.2 `ac3e106`, 1.8.9 `e55635e`.
+
+A final identity audit also found that the shared GUI metadata still identified
+1.19.4 / resource format 13, affecting F3 and resource-pack compatibility warnings.
+Those identity fields now match the pinned 1.20.6 / format 32 jar and have a native
+regression. The retained option arrays remain explicitly marked as awaiting the
+P13 target layout audit; changing identity does not establish layout parity.

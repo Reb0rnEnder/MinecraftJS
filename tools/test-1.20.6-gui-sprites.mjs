@@ -4,11 +4,14 @@ import {ZipFile} from '../lib/zip.js';
 import {CORE_GUI_SPRITES,legacyGuiSprite} from '../client/js/gui/sprites-1.20.6.js';
 import {Gui} from '../client/js/gui/gui.js';
 import {Assets} from '../client/js/assets.js';
+import {VANILLA_UI} from '../client/js/gui/vanilla-layout.js';
 
 test('every migrated GUI sprite exists in the exact target client jar',()=>{
   const jar=new ZipFile(new URL('../cache/port-1.20.6/client.jar',import.meta.url));
   for(const path of CORE_GUI_SPRITES)assert.ok(jar.read('assets/minecraft/textures/'+path),path);
   const logo=jar.read('assets/minecraft/textures/gui/title/minecraft.png');assert.equal(logo.readUInt32BE(16),1024);assert.equal(logo.readUInt32BE(20),256);
+  const version=JSON.parse(jar.read('version.json'));
+  assert.equal(VANILLA_UI.version,version.id);assert.equal(VANILLA_UI.packFormat,version.pack_version.resource);
   assert.equal(jar.read('assets/minecraft/textures/gui/widgets.png'),null);
 });
 

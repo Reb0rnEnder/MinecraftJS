@@ -1,8 +1,9 @@
-// Native 1.19.4 option arrays, derived from the pinned jar and mapped getters.
+// Target identity/pack metadata. Option arrays still retain the 1.19.4 baseline
+// pending the P13 native 1.20.6 layout audit; do not treat them as accepted parity.
 export const VANILLA_UI = {
-  "version": "1.19.4",
-  "clientJarSha1": "958928a560c9167687bea0cefeb7375da1e552a8",
-  "packFormat": 13,
+  "version": "1.20.6",
+  "clientJarSha1": "05b6f1c6b46a29d6ea82b4e0d42190e42402030f",
+  "packFormat": 32,
   "videoOptions": [
     "options.fullscreen.resolution",
     "options.biomeBlendRadius",
