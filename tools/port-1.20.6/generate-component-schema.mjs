@@ -4,6 +4,7 @@ import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { reports } from "./reports.mjs";
 import { cache, target } from "./prepare.mjs";
+import { canonicalJson } from "./canonical-report.mjs";
 
 const schemaUrl = new URL("../../client/js/net/item-components-1.20.6-schema.js", import.meta.url);
 const defaultsUrl = new URL("../../client/js/net/item-components-1.20.6-defaults.js", import.meta.url);
@@ -57,7 +58,7 @@ function collectTypes(allTypes, roots) {
 
 function source(name, value) {
   return "// Generated from the pinned Minecraft 1.20.6 / protocol 766 inputs. Do not edit by hand.\n" +
-    "export const " + name + " = " + JSON.stringify(value) + ";\n";
+    "export const " + name + " = " + (name === 'ITEM_DEFAULTS_766' ? canonicalJson(value) : JSON.stringify(value)) + ";\n";
 }
 
 export async function generateComponentSchema(check = false) {

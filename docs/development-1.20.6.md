@@ -251,3 +251,18 @@ bytecode confirms 4.5 block and 3.0 entity interaction-range defaults.
 The target regression gate is now 95/95 green. P09 is next: reuse the older
 encrypted-login/session-join path with the protocol-766 login layouts and prove
 both offline and account-backed state transitions.
+
+## GitHub handoff review: reproducible native reports, 2026-11-11
+
+Resumed the existing branch from GitHub commit `42dbb78`. A fresh native report
+regeneration exposed a nondeterministic baseline: Mojang emits the item component
+map as a list whose iteration order varies across JVM runs. All 1,330 regenerated
+item defaults were semantically identical to the committed defaults, but the
+report hash and generated JS differed by map order.
+
+The report digest now sorts only the top-level per-item component map by type.
+Generated default objects also have stable recursive key order. Semantic lists
+inside component values (lore, modifiers, nested stacks, etc.) remain ordered;
+regressions assert that reordering them or changing a value still changes the
+canonical representation. The baseline digest was regenerated from pinned native
+inputs; no item defaults or component IDs changed.

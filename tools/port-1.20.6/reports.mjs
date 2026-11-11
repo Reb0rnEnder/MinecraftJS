@@ -7,18 +7,11 @@ import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { ZipFile } from "../../lib/zip.js";
 import { prepare, cache, target } from "./prepare.mjs";
+import { canonicalReport } from "./canonical-report.mjs";
 
 const run = promisify(execFile);
 const baselineUrl = new URL("./baseline.json", import.meta.url);
 const sha1 = (bytes) => createHash("sha1").update(bytes).digest("hex");
-
-function canonical(value) {
-  if (Array.isArray(value)) return "[" + value.map(canonical).join(",") + "]";
-  if (value && typeof value === "object") {
-    return "{" + Object.keys(value).sort().map((key) => JSON.stringify(key) + ":" + canonical(value[key])).join(",") + "}";
-  }
-  return JSON.stringify(value);
-}
 
 function assertContiguousIds(label, entries) {
   const ids = Object.values(entries)
@@ -134,7 +127,7 @@ export async function reports(check = false) {
   for (const name of reportNames) {
     const bytes = await readFile(join(generated, "reports", name + ".json"));
     report[name] = JSON.parse(bytes);
-    hashes["report_" + name] = sha1(Buffer.from(canonical(report[name])));
+    hashes["report_" + name] = sha1(Buffer.from(canonicalReport(name, report[name])));
   }
 
   const blockStateIds = [];
