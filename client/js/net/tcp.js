@@ -231,6 +231,7 @@ export class VanillaSocket extends Emitter {
   // onClose(reason) runs before the socket reports its own close
   async _open(host, port, onPacket, onClose) {
     this.stream = await openStream(this.entry, host, port);
+    if (this.closed) { this.stream.close(); return; }
     this.stream.on('close', (reason) => {
       if (onClose) onClose(reason);
       else if (reason && reason !== 'target closed' && this.state !== 'play') this._control({ type: 'error', message: reason });
@@ -258,6 +259,7 @@ export class VanillaSocket extends Emitter {
       this.close();
       return;
     }
+    if (this.closed) return;
     this._control({ type: 'status', key: 'connect.authorizing', message: 'Logging in...' });
     this._send(handshake(protocol, host, port, 2));
     this._send(concat([new Uint8Array([0x00]), mcString((msg.username || 'Player').slice(0, 16))]));
@@ -295,9 +297,10 @@ export class VanillaSocket extends Emitter {
     try {
       await joinSession(this.auth, serverHash(sid.value, secret, key));
     } catch (e) {
-      this._kick(JSON.stringify({ translate: 'disconnect.loginFailedInfo', with: [e.message] }));
+      if (!this.closed) this._kick(JSON.stringify({ translate: 'disconnect.loginFailedInfo', with: [e.message] }));
       return;
     }
+    if (this.closed || this.state !== 'encrypting') return;
     const es = rsaEncrypt(key, secret, randomBytes), et = rsaEncrypt(key, token, randomBytes);
     this._send(concat([new Uint8Array([0x01]), new Uint8Array(varint(es.length)), es, new Uint8Array(varint(et.length)), et]));
     this.cipher = new Cfb8(secret, false);
