@@ -147,7 +147,7 @@ export class EaglerSocket extends Emitter {
         } else {
           this.protocol = r.short();
           const game = r.short();
-          if (game !== GAME_PROTOCOL) { this._fail('This server is not a 1.8 server'); return; }
+          if (game !== GAME_PROTOCOL) { this._fail('This server selected unsupported Minecraft protocol ' + game + ' (expected ' + GAME_PROTOCOL + ')'); return; }
           this.serverBrand = r.str8(); this.serverVersion = r.str8();
           auth = r.byte();
           r.bytes(r.short()); // auth salt (only used by the SHA-256 methods)
