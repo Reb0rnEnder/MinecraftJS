@@ -39,11 +39,9 @@ export class Slider extends Button {
     if (!this.visible) return;
     gui.narrator?.widget(this,this.hovered(mx,my),this.labelFn(this.value),'slider');
     if (this.dragging) this._set(mx);
-    gui.blit('gui/widgets.png', this.x, this.y, 0, 46, this.w / 2, this.h);
-    gui.blit('gui/widgets.png', this.x + this.w / 2, this.y, 200 - this.w / 2, 46, this.w / 2, this.h);
+    gui.sprite('widget/slider'+(this.focused?'_highlighted':''),this.x,this.y,this.w,this.h);
     const kx = this.x + Math.floor(this.value * (this.w - 8));
-    gui.blit('gui/widgets.png', kx, this.y, 0, 66, 4, 20);
-    gui.blit('gui/widgets.png', kx + 4, this.y, 196, 66, 4, 20);
+    gui.sprite('widget/slider_handle'+(this.focused||this.hovered(mx,my)||this.dragging?'_highlighted':''),kx,this.y,8,20);
     gui.textCentered(this.labelFn(this.value), this.x + this.w / 2, this.y + (this.h - 8) / 2, !this.enabled?0xa0a0a0:(this.focused||this.hovered(mx,my))?VANILLA_UI.buttonText.hover:VANILLA_UI.buttonText.normal);
   }
   key(e,game) {

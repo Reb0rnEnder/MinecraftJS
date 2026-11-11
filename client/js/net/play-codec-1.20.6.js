@@ -50,6 +50,7 @@ function primitive(reader, name) {
     case "varint": case "optvarint": return reader.varint();
     case "varlong": return reader.varlong();
     case "string": return reader.string();
+    case "restBuffer": return reader.rest();
     case "UUID": return reader.uuid();
     case "position": return reader.position();
     case "anonymousNbt": {
@@ -408,6 +409,7 @@ function normalizeTags(registries) {
 }
 
 function normalize(name, packet, context = null) {
+  if (name === 'add_resource_pack') return {...packet,promptMessage:componentJson(packet.promptMessage)};
   if (name === 'declare_commands') return commandView(packet);
   if (name === 'face_player') return {...packet,fromAnchor:packet.feet_eyes,toAnchor:packet.entity_feet_eyes};
   if (name === 'world_particles') return {...packet,...particleView(packet.particle),particles:packet.amount,particleData:packet.velocityOffset};

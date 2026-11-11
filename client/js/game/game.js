@@ -98,7 +98,7 @@ import { EntityRenderer } from '../render/entity-renderer.js';
 import { ItemRenderer } from '../render/item-renderer.js';
 import { HandRenderer } from '../render/hand-renderer.js';
 import { Pistons } from './pistons.js';
-import { ServerPacks } from './serverpacks.js';
+import { ServerPacks766 as ServerPacks } from './serverpacks-1.20.6.js';
 import { PostEffects, entityShaderName } from '../render/post.js';
 import { TileEntityRenderer } from '../render/tile-renderer.js';
 import { Particles } from '../render/particles.js';
@@ -1531,10 +1531,12 @@ export class Game {
 
   on_playerlist_header(p) { this.scoreboard.header = chatToLegacy(p.header); this.scoreboard.footer = chatToLegacy(p.footer); }
 
-  on_resource_pack_send(p) {
+  on_add_resource_pack(p) {
     const conn = this.conn;
-    this.serverPacks.handle(p.url, p.hash, (status) => { if (this.conn === conn) this.send(C.resourcePackStatus(status)); }, p.forced, p.promptMessage);
+    this.serverPacks.push(p, status => { if (this.conn === conn) conn.resourcePackStatus(p.uuid,status); });
   }
+
+  on_remove_resource_pack(p) { this.serverPacks.pop(p.uuid); }
 
   on_update_entity_nbt() { /* unused by vanilla client */ }
 

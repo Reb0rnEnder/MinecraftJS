@@ -1,6 +1,7 @@
 import{bundleTooltipLayout,drawBundleTooltip}from'./bundle-tooltip.js';
 import{EMPTY_DYNAMIC_LIGHTS}from'../gfx/dynamic-lighting.js';
 import {VANILLA_UI} from './vanilla-layout.js';
+import {legacyGuiSprite} from './sprites-1.20.6.js';
 // 2D GUI layer rendered through the graphics device (vanilla-like drawing helpers).
 // Quads are accumulated for the whole frame and drawn in order at end() (one vertex upload per frame).
 import { FontRenderer } from './font.js';
@@ -181,9 +182,34 @@ export class Gui {
 
   // drawTexturedModalRect equivalent; texture coordinates are in a texW x texH space
   blit(path, x, y, u, v, w, h, texW = 256, texH = 256, dw = w, dh = h) {
+    const sprite=typeof path==='string'?legacyGuiSprite(path,u,v,w,h):null;
+    if(sprite){const t=this.tex(sprite.path);if(t&&w>0&&h>0)this.quad(t,x,y,x+dw,y+dh,sprite.u,sprite.v,sprite.u1,sprite.v1,WHITE);return;}
     const t = this.tex(path);
     if (!t || w <= 0 || h <= 0) return;
     this.quad(t, x, y, x + dw, y + dh, u / texW, v / texH, (u + w) / texW, (v + h) / texH, WHITE);
+  }
+
+  sprite(name,x,y,w,h) {
+    const path='gui/sprites/'+name+'.png',t=this.tex(path);
+    this.assets.loadGuiSprite?.(path).catch(()=>{});
+    if(!t||w<=0||h<=0)return;
+    const s=this.assets.guiSpriteScaling?.get(path)||{type:'stretch'};
+    const quad=(dx,dy,dw,dh,sx,sy,sw,sh,tw,th)=>{
+      if(dw>0&&dh>0)this.quad(t,x+dx,y+dy,x+dx+dw,y+dy+dh,sx/tw,sy/th,(sx+sw)/tw,(sy+sh)/th,WHITE);
+    };
+    const tiled=(dx,dy,dw,dh,sx,sy,sw,sh,tw,th)=>{
+      if(sw<=0||sh<=0)return;
+      for(let oy=0;oy<dh;oy+=sh)for(let ox=0;ox<dw;ox+=sw){const cw=Math.min(sw,dw-ox),ch=Math.min(sh,dh-oy);quad(dx+ox,dy+oy,cw,ch,sx,sy,cw,ch,tw,th);}
+    };
+    if(s.type==='tile'){tiled(0,0,w,h,0,0,s.width,s.height,s.width,s.height);return;}
+    if(s.type!=='nine_slice'){quad(0,0,w,h,0,0,1,1,1,1);return;}
+    const b=typeof s.border==='number'?{left:s.border,right:s.border,top:s.border,bottom:s.border}:s.border;
+    const tw=s.width,th=s.height,left=Math.min(b.left,w/2),right=Math.min(b.right,w/2),top=Math.min(b.top,h/2),bottom=Math.min(b.bottom,h/2);
+    const xs=[0,left,w-right,w],ys=[0,top,h-bottom,h],us=[0,b.left,tw-b.right,tw],vs=[0,b.top,th-b.bottom,th];
+    for(let row=0;row<3;row++)for(let col=0;col<3;col++){
+      const draw=s.stretch_inner||row!==1&&col!==1?quad:tiled;
+      draw(xs[col],ys[row],xs[col+1]-xs[col],ys[row+1]-ys[row],us[col],vs[row],us[col+1]-us[col],vs[row+1]-vs[row],tw,th);
+    }
   }
 
   // Draw a texture region given in texture pixels
@@ -236,7 +262,7 @@ export class Gui {
   // ---------------------------------------------------------------- vanilla helpers
 
   dirtBackground(tint = 0x404040) {
-    const t = this.assets.texture('gui/options_background.png', { wrap: 'repeat' });
+    const t = this.assets.texture('gui/menu_background.png', { wrap: 'repeat' });
     if (!t) { this.rect(0, 0, this.width, this.height, 0xff202020); return; }
     const k = (tint & 255) / 255;
     this.quad(t, 0, 0, this.width, this.height, 0, 0, this.width / 32, this.height / 32, [k, k, k, 1]);
@@ -275,12 +301,9 @@ export class Gui {
 
   // GuiButton
   button(x, y, w, h, label, hovered, enabled = true) {
-    const v = !enabled ? 46 : hovered ? 86 : 66;
     x = Math.floor(x); y = Math.floor(y);
-    const half = Math.floor(w / 2);
-    this.blit('gui/widgets.png', x, y, 0, v, half, h);
-    this.blit('gui/widgets.png', x + half, y, 200 - half, v, half, h);
-    const color = !enabled ? 0xa0a0a0 : hovered ? VANILLA_UI.buttonText.hover : VANILLA_UI.buttonText.normal;
+    this.sprite('widget/button'+(!enabled?'_disabled':hovered?'_highlighted':''),x,y,w,h);
+    const color = !enabled ? 0xa0a0a0 : 0xffffff;
     this.textCentered(label, x + Math.floor(w / 2), y + Math.floor((h - 8) / 2), color, true);
   }
 }

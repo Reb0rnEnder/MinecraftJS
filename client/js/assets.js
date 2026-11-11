@@ -18,6 +18,7 @@ import { decodeUtf8 } from './util/utf8.js';
 import { chatToLegacy } from './gui/chat.js';
 import { loadFontSets } from './gui/font-providers.js';
 import { loadParticleSprites } from './render/particle-sprites.js';
+import {CORE_GUI_SPRITES} from './gui/sprites-1.20.6.js';
 
 const MC = 'assets/minecraft/';
 const PACK_PREFIX = 'packs/';
@@ -49,10 +50,12 @@ export class Assets {
   constructor() {
     this.imageLoads=new Map();
     this.images = new Map();   // rel -> decoded image | null (loading) | false (missing)
+    this.guiSpriteScaling = new Map();this.guiSpriteLoads = new Map();
     this.textures = new Map(); // rel -> device texture
     this.data = {};
     this.packs = [];           // active packs, highest priority first
     this.serverPack = null;    // the current server's resource pack (serverpacks.js), first in packs while set
+    this.serverPacks = [];     // 1.20.3+: pushed packs, highest priority first
     this.device = null;
     this.version = 0;          // bumps on every (re)load so caches elsewhere can invalidate
     this.language = 'en_us';   // selected language code (lowercase since 1.11, as the .lang files)
@@ -95,7 +98,7 @@ export class Assets {
   async activatePacks(ids) {
     const all = await this.listPacks();
     this.packs = ids.map((id) => all.find((p) => p.id === id)).filter(Boolean);
-    if (this.serverPack) this.packs.unshift(this.serverPack); // a server's pack stays on top while connected
+    this.packs.unshift(...(this.serverPacks.length ? this.serverPacks : this.serverPack ? [this.serverPack] : []));
   }
 
   // ---------------------------------------------------------------- file access (pack-aware)
@@ -158,6 +161,30 @@ export class Assets {
     this.imageLoads.set(rel,task);try{return await task;}finally{if(this.imageLoads.get(rel)===task)this.imageLoads.delete(rel);}
   }
 
+  async loadGuiSprite(path) {
+    if(this.guiSpriteScaling.has(path))return this.guiSpriteScaling.get(path);
+    if(this.guiSpriteLoads.has(path))return this.guiSpriteLoads.get(path);
+    const version=this.version,task=(async()=>{
+      await this.imageAsync(path);
+      let s=this.defaultGuiSprites?.[path]||{type:'stretch'};
+      for(const pack of this.packs)if(pack.has('textures/'+path)){
+        const meta=pack.read('textures/'+path+'.mcmeta');
+        s=meta?JSON.parse(decodeUtf8(meta)).gui?.scaling||{type:'stretch'}:{type:'stretch'};break;
+      }
+      if(!['stretch','tile','nine_slice'].includes(s.type))throw Error('Unknown GUI sprite scaling '+s.type);
+      if(s.type!=='stretch'){
+        if(!Number.isInteger(s.width)||s.width<=0||!Number.isInteger(s.height)||s.height<=0)throw Error('Invalid GUI sprite dimensions');
+        if(s.type==='nine_slice'){
+          const b=typeof s.border==='number'?{left:s.border,right:s.border,top:s.border,bottom:s.border}:s.border;
+          if(!b||['left','right','top','bottom'].some(k=>!Number.isInteger(b[k])||b[k]<0)||b.left+b.right>=s.width||b.top+b.bottom>=s.height)throw Error('Invalid GUI sprite borders');
+        }
+      }
+      if(this.version===version)this.guiSpriteScaling.set(path,s);return s;
+    })();
+    this.guiSpriteLoads.set(path,task);
+    try{return await task;}finally{if(this.guiSpriteLoads.get(path)===task)this.guiSpriteLoads.delete(path);}
+  }
+
   // Device texture for a texture path (null until decoded)
   texture(rel, opts = {}) {
     const key = rel + (opts.wrap === 'repeat' ? '#r' : '')+(opts.filter==='linear'?'#linear':'');
@@ -208,11 +235,13 @@ export class Assets {
 
   // Everything that resource packs can change (called on start and on pack changes)
   async loadResources(progress) {
+    this.guiSpriteScaling.clear();this.guiSpriteLoads.clear();
     const step = (msg, pct) => progress && progress(msg, pct);
     this.version++;
     for (const t of this.textures.values()) this.device.destroyTexture(t);
     this.textures.clear();
     this.images.clear();this.imageLoads.clear();
+    this.defaultGuiSprites=await this.source.guiSprites();
     const packsLowFirst = [...this.packs].reverse();
     this.villagerHats={...VILLAGER_HATS};
     for(const pack of packsLowFirst)for(const path of pack.list('textures/entity/')){
@@ -255,15 +284,17 @@ export class Assets {
 
     step('Loading interface...', 75);
     await Promise.all([
-      'gui/widgets.png', 'gui/icons.png', 'font/ascii.png', 'font/ascii_sga.png', 'gui/options_background.png', 'gui/title/minecraft.png', 'gui/title/edition.png',
+      'font/ascii.png', 'font/ascii_sga.png', 'gui/menu_background.png', 'gui/title/minecraft.png', 'gui/title/edition.png',
       'gui/container/inventory.png', 'environment/sun.png', 'environment/moon_phases.png', 'environment/clouds.png',
       'misc/vignette.png', 'misc/shadow.png',
     ].map((p) => this.imageAsync(p).catch(() => null)));
-    try { this.glyphSizes = await this.readBytes('font/glyph_sizes.bin'); } catch (e) { this.glyphSizes = null; }
+    this.glyphSizes = null; // The native target removed legacy glyph_sizes.bin.
     this.fontSets = await loadFontSets(this);
 
     step('Preparing title textures...',78);
-    const required=Array.from({length:6},(_,i)=>'gui/title/background/panorama_'+i+'.png').concat(['gui/title/background/panorama_overlay.png','gui/title/minecraft.png','gui/title/edition.png','gui/widgets.png','gui/icons.png','gui/options_background.png','font/ascii.png','gui/title/mojangstudios.png']);
+    const nativeSprites=[...CORE_GUI_SPRITES,...['widget/button','widget/button_highlighted','widget/button_disabled','widget/slider','widget/slider_highlighted','widget/slider_handle','widget/slider_handle_highlighted','icon/accessibility','icon/language'].map(name=>'gui/sprites/'+name+'.png')];
+    await Promise.all(nativeSprites.map(path=>this.loadGuiSprite(path)));
+    const required=Array.from({length:6},(_,i)=>'gui/title/background/panorama_'+i+'.png').concat(['gui/title/minecraft.png','gui/title/minceraft.png','gui/title/edition.png','gui/menu_background.png','font/ascii.png','gui/title/mojangstudios.png'],nativeSprites);
     this.preloadReport={required:await preloadTextures(this,required,{budget:Infinity})};
     const missingPanorama=this.preloadReport.required.failed.filter(p=>/panorama_[0-5]\.png$/.test(p));if(missingPanorama.length)throw Error('Missing panorama textures: '+missingPanorama.join(', '));
     if(this.preloadWorldTextures!==false){

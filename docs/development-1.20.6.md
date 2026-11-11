@@ -336,3 +336,65 @@ replies. This batch has no applicable older-target backport: these are adapters
 between the new protocol/registry formats and established consumers. P13 remains
 partial: new content/renderers, native GUI resources, number-format rendering,
 full command argument behavior, signing/reporting and visual acceptance remain.
+
+## GUI sprites, resource packs and Eagler handoff repairs, 2026-11-11
+
+The missing title/menu/hotbar was a real target migration defect. 1.20.6 does not
+ship the old `gui/widgets.png` or `gui/icons.png` sheets. HUD consumers now sample
+the actual target GUI sprites, including native resource-pack replacements;
+buttons/sliders use stretch/tile/nine-slice metadata. The logo follows the exact
+`LogoRenderer` (`fhx`) virtual dimensions: 256x44 from a 256x64 logical image,
+with the 128x14 edition banner. It no longer crops pieces from the old logo sheet.
+Native checkbox, toast, spectator and boss-bar sprites are mapped too. Required
+sprites/scaling metadata preload before the title screen, using one metadata
+bundle rather than requesting nonexistent `.mcmeta` files individually. Resource
+metadata belongs to the pack supplying the PNG; malformed tile sizes are rejected.
+
+UUID server pack pushes/pops now reach Game in Configuration and Play. The loader
+supports an ordered stack, replacement/removal during concurrent downloads, native
+status replies in the currently active protocol phase, required prompts, reload
+failure recovery and stale-download cancellation. It uses the native 250 MiB
+limit (`DownloadedPackSource$4`, `0xFA00000`) and target version headers. Native
+`ServerPackManager` (`grv`) and `ServerboundResourcePackPacket.Action` (`aas$a`)
+were inspected for ordering, status codes and removal semantics. P10 is partial:
+atlas sources/palette permutations, overlays, font references/filter/Unihex and
+all-screen pixel acceptance still need work.
+
+Both reported public WebSocket endpoints negotiate protocol 766. Arch sends
+Configuration after the Eagler handshake, while the old Connection path assumed
+Play. EaglerSocket766 now reuses the native Configuration/Play state machine
+without TCP length/compression framing or a duplicate Login Acknowledged (the
+server supplies it). A real WebSocket regression verifies that boundary. The
+live join also exposed an unimplemented `restBuffer` leaf used by custom payloads;
+it is now decoded normally and late packets are ignored after close.
+
+Upstream evidence is `lax1dude/eaglerxserver` commit
+`3822c777a960a15e519372399ccfda9190ad73ae`: `core/src/main/java/net/lax1dude/eaglercraft/backend/server/base/pipeline/WebSocketEaglerInitialHandler.java`
+(`enterPlayState`, Login Acknowledged at lines 646-653) and
+`core/src/main/java/net/lax1dude/eaglercraft/backend/server/base/handshake/VanillaInitializer.java`
+(encryption-request rejection at lines 110-130). Source:
+https://github.com/lax1dude/eaglerxserver/tree/3822c777a960a15e519372399ccfda9190ad73ae
+
+A disposable real Chrome client rendered the corrected main menu and survival
+HUD, joined the isolated vanilla fixture with 45 chunks, and joined
+`wss://mc.arch.lol` with 49 chunks and no recorded client errors. Arch's normal
+registration prompt was shown; the test did not register an account or send chat
+commands. WebMC returned `Your client does not support online mode` before
+Configuration, matching the upstream backend's rejection of encryption requests.
+That rejection remains open; no account-backed success or server change is claimed.
+Cache-local screenshots/logs are in `cache/port-1.20.6/review-session/`.
+
+The complete native generator/oracle gate plus 133 regressions pass. An asset
+build with `--audio=copy` produced 13,253 files (~626.6 MiB) before adding the GUI
+metadata bundle; original audio was retained because this host lacks ffmpeg.
+The browser code also bundles successfully. This is validation output, not a
+published all-version distribution. Full 1.20.6 parity remains explicitly open.
+
+Applicable shared fixes were pushed separately. Eagler brand/version diagnostics
+are corrected on all older targets; flattened-ID clients (1.13.2+) now resolve
+the recipe-toast crafting table by native name instead of the obsolete ID 58.
+The 1.8.9 client has no recipe toast, and 1.12.2's native ID 58 remains correct.
+Backport checks: eight tests each on 1.13.2-1.19.4, seven each on 1.8.9/1.12.2.
+Latest pushed heads: 1.19.4 `601b181`, 1.18.2 `32a358a`, 1.17.1 `6096692`,
+1.16.5 `10b4fe9`, 1.15.2 `e96e276`, 1.14.4 `1824ef1`, 1.13.2 `135ee4e`,
+1.12.2 `ac3e106`, 1.8.9 `e55635e`.

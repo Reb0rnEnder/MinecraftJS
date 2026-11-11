@@ -1,5 +1,6 @@
 import { VanillaSocket } from "./tcp.js";
-import { C766, Configuration766, decodeLogin766 } from "./configuration-1.20.6.js";
+import { C766, Configuration766, Writer766, decodeLogin766 } from "./configuration-1.20.6.js";
+import { PLAY_SERVERBOUND_766 } from './protocol-1.20.6-ids.js';
 import { decodePlayPacket766 } from "./play-codec-1.20.6.js";
 import { nameUuid } from "../util/uuid-md5.js";
 import { encodeUtf8 } from "../util/utf8.js";
@@ -41,6 +42,7 @@ export class VanillaSocket766 extends VanillaSocket {
   }
 
   _packet(data) {
+    if(this.closed)return;
     if (this.state === "login") {
       const packet = decodeLogin766(data);
       switch (packet.name) {
@@ -103,6 +105,10 @@ export class VanillaSocket766 extends VanillaSocket {
         this._send(C766.acknowledgeReconfiguration());
         this._beginConfiguration(false);
         return;
+      } else if (packet.name === 'add_resource_pack') {
+        this.resourcePacks.set(packet.uuid,packet);
+      } else if (packet.name === 'remove_resource_pack') {
+        if(packet.uuid)this.resourcePacks.delete(packet.uuid);else this.resourcePacks.clear();
       }
 
       if (packet.name === "cookie_request") {
@@ -143,5 +149,11 @@ export class VanillaSocket766 extends VanillaSocket {
 
   playPacket(data) {
     return decodePlayPacket766(data, this.configuration);
+  }
+
+  sendResourcePackStatus(uuid,status) {
+    if(this.closed)return;
+    if(this.state==='configuration')this._send(C766.resourcePackStatus(uuid,status));
+    else if(this.state==='play')this._send(new Writer766().varint(PLAY_SERVERBOUND_766.resource_pack_receive).uuid(uuid).varint(status).build());
   }
 }

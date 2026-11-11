@@ -250,7 +250,8 @@ export class Hud {
     gui.text(tr('recipe.toast.title'), 30, 7, 0x500050, false);
     gui.text(tr('recipe.toast.description'), 30, 18, 0x000000, false);
     const r = toast.recipes[Math.floor(delta / (5000 / toast.recipes.length)) % toast.recipes.length];
-    gui.pushMatrix(); gui.scaleBy(0.6, 0.6); this.game.itemRenderer.drawItem(gui, { id: 58, damage: 0, count: 1 }, 3, 3, false); gui.popMatrix();
+    const craftingTable=this.game.items.byName.get('crafting_table');
+    gui.pushMatrix(); gui.scaleBy(0.6, 0.6); if(craftingTable)this.game.itemRenderer.drawItem(gui, { id: craftingTable.id, damage: 0, count: 1 }, 3, 3, false); gui.popMatrix();
     this.game.itemRenderer.drawItem(gui, { id: r.result.id, damage: r.result.data === 32767 ? 0 : r.result.data, count: 1 }, 8, 8, false);
     return delta - (toast.firstDraw || 0) >= 5000 ? 'hide' : 'show';
   }
@@ -525,7 +526,7 @@ export class Hud {
     if (!show) return;
     const gui = this.gui;
     gui.setBlend('invert');
-    gui.blit(ICONS, Math.floor(gui.width / 2 - 7), Math.floor(gui.height / 2 - 7), 0, 0, 16, 16);
+    gui.sprite('hud/crosshair',Math.floor((gui.width-15)/2),Math.floor((gui.height-15)/2),15,15);
     // attack indicator (attackIndicator 1 = crosshair): ready-to-hit mark on a living target, else the charging bar
     const g = this.game, it = g.interaction;
     if (g.settings.attackIndicator === 1 && it) {
@@ -544,7 +545,7 @@ export class Hud {
     const g = this.game;
     const W = gui.width, H = gui.height;
     gui.blit(WIDGETS, W / 2 - 91, H - 22, 0, 0, 182, 22);
-    gui.blit(WIDGETS, W / 2 - 91 - 1 + g.heldSlot * 20, H - 22 - 1, 0, 22, 24, 22);
+    gui.blit(WIDGETS, W / 2 - 91 - 1 + g.heldSlot * 20, H - 22 - 1, 0, 22, 24, 23);
     // off hand slot on the side away from the main hand
     const off = g.inventory.offhand;
     const offLeft = g.settings.mainHand !== 'left';

@@ -10,6 +10,7 @@ import { openEaglerSocket, pingEagler } from './eagler.js';
 import { currentProxy, proxyType } from './proxies.js';
 import { VanillaSocket } from './tcp.js';
 import { VanillaSocket766 } from './tcp-1.20.6.js';
+import { EaglerSocket766 } from './eagler-1.20.6.js';
 
 const NO_PROXY = 'No proxy selected: add one in Proxy Servers on the title screen (or join an Eaglercraft wss:// server)';
 
@@ -47,7 +48,7 @@ export class Connection {
   async open(eagler) {
     if (this.ws) return;
     let sock;
-    if (eagler) sock = await openEaglerSocket(eagler);
+    if (eagler) sock = PROTOCOL_VERSION === 766 ? await new EaglerSocket766(eagler,{...this.options,autoPlayAcks:false}).open() : await openEaglerSocket(eagler);
     else sock = await openProxySocket(PROTOCOL_VERSION, this.options);
     this.ws = sock;
     sock.on('close', () => {
@@ -61,13 +62,17 @@ export class Connection {
       try { msg = JSON.parse(text); } catch (err) { return; }
       this.emit('control', msg);
     });
-    if (PROTOCOL_VERSION === 766 && !eagler) {
+    if (PROTOCOL_VERSION === 766) {
       sock.on('reconfiguration_start', () => {
         this.bundles.reset();
         this.emit('reconfiguration_start');
         this.state = 'configuration';
       });
-      sock.on('configuration', packet => this.emit('configuration', packet));
+      sock.on('configuration', packet => {
+        this.emit('configuration', packet);
+        if(packet.name==='add_resource_pack')this.emit('packet',{...packet,promptMessage:packet.prompt == null ? null : JSON.stringify(packet.prompt)});
+        else if(packet.name==='remove_resource_pack')this.emit('packet',packet);
+      });
       sock.on('configuration_complete', configuration => {
         this.state = 'play';
         this.emit('configuration_complete', configuration);
@@ -136,6 +141,8 @@ export class Connection {
       this.bytesOut += bytes.length;
     }
   }
+
+  resourcePackStatus(uuid,status) { this.ws?.sendResourcePackStatus?.(uuid,status); }
 
   close() {
     if (this.ws) this.ws.close();

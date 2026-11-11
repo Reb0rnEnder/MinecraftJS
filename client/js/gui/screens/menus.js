@@ -53,11 +53,11 @@ export class TitleScreen extends Screen {
       import('./options.js').then((m) => g.screens.open(new m.LanguageScreen(g, this)));
     });
     lang.narration=()=>tr('narrator.button.language');
-    lang.render = (gui, mx, my) => gui.blit('gui/widgets.png', lang.x, lang.y, 0, lang.hovered(mx, my) ? 126 : 106, 20, 20);
+    lang.render = (gui, mx, my) => {gui.button(lang.x,lang.y,20,20,'',lang.focused||lang.hovered(mx,my));gui.sprite('icon/language',lang.x+2,lang.y+2,15,15);};
     this.buttons.push(lang);
     const accessibility=new Button(6,cx+104,y+84,20,20,'',()=>import('./options.js').then(m=>g.screens.open(new m.AccessibilityScreen(g,this))));
     accessibility.narration=()=>tr('narrator.button.accessibility');
-    accessibility.render=(gui,mx,my)=>gui.blit('gui/accessibility.png',accessibility.x,accessibility.y,0,accessibility.focused||accessibility.hovered(mx,my)?20:0,20,20,32,64);
+    accessibility.render=(gui,mx,my)=>{gui.button(accessibility.x,accessibility.y,20,20,'',accessibility.focused||accessibility.hovered(mx,my));gui.sprite('icon/accessibility',accessibility.x+2,accessibility.y+2,15,15);};
     this.buttons.push(accessibility);
     // Account manager (top right): current account's face and name
     const acct = new Button(20, this.width - 104, 4, 100, 20, '', () => g.screens.open(new AccountsScreen(g, this)));
@@ -101,21 +101,10 @@ export class TitleScreen extends Screen {
     // Native TitleScreen overlay, shared with resource-pack replacements.
     const overlay=gui.tex('gui/title/background/panorama_overlay.png');
     if(overlay)gui.drawImage(overlay,0,0,overlay.width,overlay.height,0,0,this.width,this.height);
-    const logo = 'gui/title/minecraft.png';
-    const lx = this.width / 2 - 137, ly = 30;
-    if (this.minceraftRoll < 1e-4) {
-      // 1 in 10000: "Minceraft" (the "ec" pieces swapped)
-      gui.blit(logo, lx, ly, 0, 0, 99, 44);
-      gui.blit(logo, lx + 99, ly, 129, 0, 27, 44);
-      gui.blit(logo, lx + 99 + 26, ly, 126, 0, 3, 44);
-      gui.blit(logo, lx + 99 + 26 + 3, ly, 99, 0, 26, 44);
-      gui.blit(logo, lx + 155, ly, 0, 45, 155, 44);
-    } else {
-      gui.blit(logo, lx, ly, 0, 0, 155, 44);
-      gui.blit(logo, lx + 155, ly, 0, 45, 155, 44);
-    }
-    // 1.12 GuiMainMenu: the "Java Edition" banner under the logo (98x14 of a 128x16 texture)
-    gui.blit('gui/title/edition.png', lx + 88, 67, 0, 0, 98, 14, 128, 16);
+    const logo=this.minceraftRoll<1e-4?'gui/title/minceraft.png':'gui/title/minecraft.png';
+    // Exact LogoRenderer virtual texture dimensions; the native PNGs are 4x.
+    gui.blit(logo,this.width/2-128,30,0,0,256,44,256,64);
+    gui.blit('gui/title/edition.png',this.width/2-64,67,0,0,128,14,128,16);
     if (this.splash) {
       gui.pushMatrix();
       gui.translate(this.width / 2 + 90, 70);

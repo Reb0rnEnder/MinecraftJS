@@ -53,6 +53,10 @@ function buildBundle(kind) {
     // Never cache/serve a partial bundle that will crash later in the render loop.
     const models = assertCompleteModels(extractModels(jar));
     raw = Buffer.from(JSON.stringify(models));
+  } else if (kind === 'gui-sprites.json') {
+    const out={};
+    for(const file of jar.list(P+'textures/gui/sprites/'))if(file.endsWith('.png'))out[file.slice((P+'textures/').length)]=jarJson(file+'.mcmeta')?.gui?.scaling||{type:'stretch'};
+    raw=Buffer.from(JSON.stringify(out));
   } else if (kind === 'recipes.json') {
     // recipe ids: the reverse of the jar's entry order (see tools/build.js)
     const list = [];

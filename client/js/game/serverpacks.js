@@ -134,17 +134,18 @@ export class ServerPacks {
   // HttpUtil.downloadResourcePack: "Downloading Resource Pack", "Making Request..." then "Downloading (x.xx MB)..."
   // with the percentage; refuses anything over 50 MiB
   async _fetch(url, screen, live) {
+    const maxSize = this.maxSize ?? MAX_SIZE;
     screen.resetProgressAndMessage(tr('resourcepack.downloading'));
     screen.displayLoadingString(tr('resourcepack.requesting'));
     const g = this.game;
-    const headers = { 'X-Minecraft-Username': g.username || '', 'X-Minecraft-UUID': (g.playerUuid || '').replace(/-/g, ''), 'X-Minecraft-Version': VANILLA_UI.version };
+    const headers = { 'X-Minecraft-Username': g.username || '', 'X-Minecraft-UUID': (g.playerUuid || '').replace(/-/g, ''), 'X-Minecraft-Version': this.minecraftVersion || VANILLA_UI.version };
     const route = proxyRoute('/pack?url=' + encodeURIComponent(url));
     let res = null;
     if (route) { try { res = await fetch(route, { headers }); } catch (e) { res = null; } }
     if (!res || !res.ok) res = await fetch(url); // the host may allow CORS itself
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const total = Number(res.headers.get('content-length')) || 0;
-    if (total > MAX_SIZE) throw new Error('Filesize is bigger than maximum allowed (file is ' + total + ', limit is ' + MAX_SIZE + ')');
+    if (total > maxSize) throw new Error('Filesize is bigger than maximum allowed (file is ' + total + ', limit is ' + maxSize + ')');
     if (total) screen.displayLoadingString(tr('resourcepack.progress', (total / 1048576).toFixed(2)));
     const reader = res.body.getReader();
     const chunks = [];
@@ -154,7 +155,7 @@ export class ServerPacks {
       if (done) break;
       if (!live()) { reader.cancel().catch(() => {}); throw new Error('Cancelled'); }
       got += value.length;
-      if (got > MAX_SIZE) { reader.cancel().catch(() => {}); throw new Error('Filesize was bigger than maximum allowed (got >= ' + got + ', limit was ' + MAX_SIZE + ')'); }
+      if (got > maxSize) { reader.cancel().catch(() => {}); throw new Error('Filesize was bigger than maximum allowed (got >= ' + got + ', limit was ' + maxSize + ')'); }
       chunks.push(value);
       if (total) screen.setLoadingProgress(Math.trunc(got / total * 100));
     }

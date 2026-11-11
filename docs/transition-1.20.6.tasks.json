@@ -6,7 +6,7 @@
   "fullParity": false,
   "nativeGraphicalGameplayAccepted": true,
   "planningSourceCommit": "ecd95f4786b951869af59c46a1ad140a54931b72",
-  "nextTask": "P09",
+  "nextTask": "P10",
   "authorization": "Proceed with 1.20.6 now; keep inherited work open rather than requiring its completion before starting.",
   "executionRule": "Follow dependency order; native evidence and gate completion are required before marking done. Push validated batches and review shared backports as they land, not only at P16.",
   "tasks": [
@@ -213,13 +213,14 @@
         "Encrypted protocol-766 login supports shouldAuthenticate true/false, reuses session joining, RSA key response and AES-CFB8; independent Node crypto vectors pass. A real account-backed session remains untested.",
         "Controlled graphical Connection tests exercise atomic bundle delivery, Play/Login cookies, transfer intent 3, ordinary-join isolation, Configuration chat reset and reconfiguration acknowledgement ordering.",
         "Real isolated SHA-pinned vanilla 1.20.6 probe reaches Play with all 122 packet body decoders, 45 chunks, teleport, keepalive and five chunk-batch acknowledgements; no new browser or authenticated account acceptance is claimed.",
-        "Shared login cancellation guards tested and pushed across all nine older supported branches (four regressions each)."
+        "Shared login cancellation guards tested and pushed across all nine older supported branches (four regressions each).",
+        "EaglerXServer Configuration transition now works through a real WebSocket and real Chrome on Arch. WebMC explicitly rejected the probe before Configuration; upstream VanillaInitializer rejects backend encryption. Real authenticated account acceptance remains pending."
       ]
     },
     {
       "id": "P10",
       "title": "Finish resource-pack lifecycle, native atlases, GUI sprites and fonts",
-      "status": "todo",
+      "status": "partial",
       "dependsOn": [
         "P02",
         "P05",
@@ -232,7 +233,12 @@
         "1.20.5"
       ],
       "acceptance": "Native/default and custom pack stacking, reload, overlays, fonts and sprite scaling pass lifecycle/pixel fixtures.",
-      "evidence": []
+      "evidence": [
+        "Native GUI sprites now supply the title logo, buttons/sliders, HUD, checkbox, toast, spectator and boss-bar consumers. Sprite scaling supports native stretch/tile/nine-slice metadata and resource-pack ownership; required sprites preload before the menu.",
+        "UUID pack push/pop/replace, concurrent downloads, native result statuses, forced prompts, reload rollback and stale download cancellation are implemented in both Configuration and Play. Native max download size is 0xFA00000 (DownloadedPackSource$4).",
+        "Target tests pass; real Chrome rendered the native title screen/HUD on the local vanilla fixture and joined Arch with 49 chunks and no recorded client errors.",
+        "Native atlas sources/palette permutations, font references/filter/Unihex providers, overlays and broader GUI pixel acceptance remain open; P10 is not complete."
+      ]
     },
     {
       "id": "P11",

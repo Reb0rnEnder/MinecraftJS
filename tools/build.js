@@ -237,9 +237,12 @@ function recipeBundle(files) {
 function buildBundles(files) {
   const dec = (b) => JSON.parse(b.toString('utf8'));
   const models = { blockstates: {}, models: {} };
-  const tex = [], blobs = [], mcmeta = {};
+  const tex = [], blobs = [], mcmeta = {}, guiSprites = {};
   let offset = 0;
   for (const [name, buf] of files) {
+    if(name.startsWith('minecraft/textures/gui/sprites/')&&name.endsWith('.png')){
+      const meta=files.get(name+'.mcmeta');guiSprites[name.slice(19)]=meta?dec(meta).gui?.scaling||{type:'stretch'}:{type:'stretch'};
+    }
     if (name.startsWith('minecraft/blockstates/') && name.endsWith('.json')) models.blockstates[name.slice(22, -5)] = dec(buf);
     else if (name.startsWith('minecraft/models/') && name.endsWith('.json')) models.models[name.slice(17, -5)] = dec(buf);
     else if (/^minecraft\/textures\/(block|item)\//.test(name)) {
@@ -252,6 +255,7 @@ function buildBundles(files) {
   const len = Buffer.alloc(4);
   len.writeUInt32LE(header.length);
   return {
+    'bundles/gui-sprites.json':Buffer.from(JSON.stringify(guiSprites)),
     'bundles/texture-index.json':Buffer.from(JSON.stringify([...files].filter(([n])=>n.startsWith('minecraft/textures/')&&n.endsWith('.png')).map(([n,b])=>[n.slice(19),b.readUInt32BE(16),b.readUInt32BE(20)]))),
     'bundles/recipes.json': recipeBundle(files),
     'bundles/models.json': Buffer.from(JSON.stringify(models)),

@@ -8,13 +8,14 @@ import { decodeUtf8 } from './util/utf8.js';
 
 export class FolderSource {
   constructor(base = 'assets/') { this.base = base; this.kind = 'folder'; }
-  url(rel) { return this.base + rel + "?v=1.20.6-native-v1"; }
+  url(rel) { return this.base + rel + "?v=1.20.6-native-v2"; }
   bytes(rel) { return platform().fetchBytes(this.url(rel)).catch(() => null); }
   data(name) { return platform().fetchJson(`data/${name}.json`); }
   textureIndex(){return platform().fetchJson(this.url('bundles/texture-index.json')).catch(()=>[]);}
   models() { return platform().fetchJson(this.url('bundles/models.json')); }
   recipes() { return platform().fetchJson(this.url('bundles/recipes.json')).catch(() => []); }
   entityModels() { return platform().fetchJson(this.url('bundles/entity-models.json')).catch(() => null); }
+  guiSprites() { return platform().fetchJson(this.url('bundles/gui-sprites.json')); }
 
   // { files: Map<name, () => png bytes>, mcmeta } for textures/block and textures/item
   async blockTextures() {
@@ -42,6 +43,13 @@ export class ZipSource {
   async textureIndex(){const text=this.zip.readText('bundles/texture-index.json');return text?JSON.parse(text):this.zip.list('minecraft/textures/').filter(n=>n.endsWith('.png')).map(n=>[n.slice(19)]);}
   async recipes() { const t = this.zip.readText('bundles/recipes.json'); return t ? JSON.parse(t) : []; }
   async entityModels() { const t = this.zip.readText('bundles/entity-models.json'); return t ? JSON.parse(t) : null; }
+  async guiSprites() {
+    const out={};
+    for(const name of this.zip.list('minecraft/textures/gui/sprites/'))if(name.endsWith('.png')){
+      const meta=this.zip.readText(name+'.mcmeta');out[name.slice(19)]=meta?JSON.parse(meta).gui?.scaling||{type:'stretch'}:{type:'stretch'};
+    }
+    return out;
+  }
 
   async models() {
     const out = { blockstates: {}, models: {} };

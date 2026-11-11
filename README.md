@@ -10,7 +10,7 @@ families, chat/commands and inherited baseline gaps.
 
 See the [transition plan](docs/transition-1.20.6.md) and
 [native transport evidence](docs/development-1.20.6.md) for remaining gates.
-The [ordered task ledger](docs/transition-1.20.6.tasks.json) tracks dependencies and acceptance criteria. Native data/resources, strict protocol-766 NBT text, the complete 1.20.5+ item-component stack codec, Configuration/known-pack lifecycle, essential Play/Game bridge and graphical join are now reproducible; the next task is inventory/action reconciliation and target physics attributes.
+The [ordered task ledger](docs/transition-1.20.6.tasks.json) tracks dependencies and acceptance criteria. The GitHub handoff audit repaired live recipe joining, encrypted transport, reconfiguration/transfer, chat/sound consumers and native GUI sprites. The next resource gate covers remaining atlases, fonts and pack overlays; item-specific and authenticated-account acceptance remains open.
 
 ```sh
 npm ci
@@ -24,7 +24,7 @@ npm run probe:1.20.6
 
 The fixture binds only `127.0.0.1:25568` in a fresh cache-local temporary world and refuses an occupied port. It verifies the pinned server SHA-1 and writes its own fixture EULA/properties, so it never loads or upgrades user worlds or configuration. Stop the fixture with Ctrl+C when finished.
 
-Encrypted/account login and later feature families remain pending. Essential Play terrain/light, dimension, entity, HUD and inventory state plus the graphical join are native-verified, but this is not a full-parity release. No prebuilt 1.20.6 distribution is claimed.
+Encrypted login is implemented and has independent RSA/AES tests; a real account-backed login remains unverified. A real Chrome client joined the local native fixture and `wss://mc.arch.lol`, rendering the target menu and hotbar. WebMC's Eagler backend returned `Your client does not support online mode` before Configuration; this server rejection is preserved. This is not a full-parity release, and no prebuilt 1.20.6 distribution is claimed.
 
 ## Inherited implementation baseline
 
