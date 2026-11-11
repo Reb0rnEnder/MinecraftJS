@@ -220,7 +220,8 @@ export class Hud {
     gui.text(tr('recipe.toast.title'), 30, 7, 0x500050, false);
     gui.text(tr('recipe.toast.description'), 30, 18, 0x000000, false);
     const r = toast.recipes[Math.floor(delta / (5000 / toast.recipes.length)) % toast.recipes.length];
-    gui.pushMatrix(); gui.scaleBy(0.6, 0.6); this.game.itemRenderer.drawItem(gui, { id: 58, damage: 0, count: 1 }, 3, 3, false); gui.popMatrix();
+    const craftingTable=this.game.items.byName.get('crafting_table');
+    gui.pushMatrix(); gui.scaleBy(0.6, 0.6); if(craftingTable)this.game.itemRenderer.drawItem(gui, { id: craftingTable.id, damage: 0, count: 1 }, 3, 3, false); gui.popMatrix();
     this.game.itemRenderer.drawItem(gui, { id: r.result.id, damage: r.result.data === 32767 ? 0 : r.result.data, count: 1 }, 8, 8, false);
     return delta - (toast.firstDraw || 0) >= 5000 ? 'hide' : 'show';
   }
