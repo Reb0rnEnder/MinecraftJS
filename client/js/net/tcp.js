@@ -1,3 +1,4 @@
+import {networkExceptionReason} from './network-errors.js';
 // Raw TCP to Minecraft servers through WebSocket relays that only carry bytes, with the Minecraft protocol
 // (handshake, login, compression, encryption) done here in the client:
 //
@@ -228,6 +229,12 @@ export class VanillaSocket extends Emitter {
     this.emit('close');
   }
 
+  _badPacket(error) {
+    console.error('Error decoding packet',error);
+    this._control({type:'error',message:networkExceptionReason(error)});
+    this.close();
+  }
+
   // onClose(reason) runs before the socket reports its own close
   async _open(host, port, onPacket, onClose) {
     this.stream = await openStream(this.entry, host, port);
@@ -241,8 +248,7 @@ export class VanillaSocket extends Emitter {
       try {
         this.split.feed(this.decipher ? this.decipher.update(raw) : raw, onPacket);
       } catch (e) {
-        this._control({ type: 'error', message: 'Bad data from server: ' + e.message });
-        this.close();
+        this._badPacket(e);
       }
     });
   }

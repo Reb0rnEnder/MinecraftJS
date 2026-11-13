@@ -905,12 +905,12 @@ const emptyHotbars = () => Array.from({ length: 9 }, () => new Array(9).fill(nul
 export function hotbarSnapshots() {
   try {
     const saved = fromJson(localStorage.getItem(HOTBARS_KEY) || 'null');
-    if (saved?.version !== 1 || saved.minecraftVersion !== '1.15.2' || saved.protocol !== 578 || saved.dataVersion !== 2230) return emptyHotbars();
+    if (saved?.version !== 1 || saved.minecraftVersion !== '1.19.4' || saved.protocol !== 762 || saved.dataVersion !== 3337) return emptyHotbars();
     if (!Array.isArray(saved.bars) || saved.bars.length !== 9) return emptyHotbars();
     return saved.bars.map(bar => {
       if (!Array.isArray(bar) || bar.length !== 9) return new Array(9).fill(null);
       return bar.map(it => {
-        if (!it || !Number.isInteger(it.id) || it.id < 1 || it.id > 883 || !Number.isInteger(it.count) || it.count < 1 || it.count > 127 || creativeLocked(it)) return null;
+        if (!it || !Number.isInteger(it.id) || it.id < 1 || it.id > 1227 || !Number.isInteger(it.count) || it.count < 1 || it.count > 127 || creativeLocked(it)) return null;
         const copied = creativeCopy(it);
         // Check that persisted typed NBT is serializable before it reaches a live click.
         new Writer().slot(copied).build();
@@ -921,7 +921,7 @@ export function hotbarSnapshots() {
 }
 function saveHotbarSnapshots(list) {
   try {
-    localStorage.setItem(HOTBARS_KEY, toJson({ version: 1, minecraftVersion: '1.15.2', protocol: 578, dataVersion: 2230, bars: list }));
+    localStorage.setItem(HOTBARS_KEY, toJson({ version: 1, minecraftVersion: '1.19.4', protocol: 762, dataVersion: 3337, bars: list }));
     return true;
   } catch (e) { return false; /* storage unavailable */ }
 }
