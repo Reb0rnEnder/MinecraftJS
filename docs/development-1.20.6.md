@@ -426,3 +426,29 @@ full native graphical acceptance or gameplay performance measurements.
 exceptional backgrounds and remaining screen work. P10/P13 remain partial.
 The redesigned layouts and new metadata fields are release-specific and are not
 backported to older releases. Published distributions have not been rebuilt.
+
+## 2026-11-14 — Remaining arrows, icon centering and `/locate`
+
+Both removed selection sheets now map all server/proxy/transferable arrow regions
+and highlighted states to native sprites. Native SpriteIconButton.CenteredIcon
+uses integer `20 / 2 - 15 / 2`, so title icons now start at +3 rather than +2.
+
+TranslatableContents accepts primitive Number/Boolean/String arguments; the
+component decoder incorrectly sent nested numeric `/locate` arguments through
+the stricter ComponentSerialization codec. Six native-generated NBT fixtures now
+include nested coordinates and primitive arguments, with expected decoded JSON
+also emitted by Java. Root numeric/boolean/empty components remain invalid.
+Chrome joined the isolated native fixture and completed `/locate biome
+minecraft:plains`, receiving clickable coordinates without errors/disconnection.
+
+Native GameProtocols registration order and actual PacketType.toString values
+are extracted by `native-packet-names.mjs`; aliases such as `map_chunk` no longer
+appear as invented native packet identifiers in errors. DecoderError retains
+its actual JavaScript cause, byte offset and packet identity while the disconnect
+uses `Internal Exception: DecoderError: Failed to decode packet '…'`. No Java
+stack frames or runtime identities are fabricated. Unknown IDs fail like the
+native codec. The complete target gate passes 148 tests, zero skipped.
+
+The reported Creative crash is independently confirmed: its tab dataset is an
+empty deferred milestone placeholder. Native Creative population/component
+extraction is in progress and is not claimed fixed by this commit.

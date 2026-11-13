@@ -6,7 +6,8 @@
     {
       "name": "plain string",
       "value": "hello",
-      "wire": "08000568656c6c6f"
+      "wire": "08000568656c6c6f",
+      "decoded": "hello"
     },
     {
       "name": "styled click event",
@@ -19,7 +20,16 @@
           "value": "https://example.com"
         }
       },
-      "wire": "0a0a000a636c69636b4576656e74080006616374696f6e00086f70656e5f75726c08000576616c7565001368747470733a2f2f6578616d706c652e636f6d00080005636f6c6f72000372656408000474657874000548656c6c6f010004626f6c640100"
+      "wire": "0a0a000a636c69636b4576656e74080006616374696f6e00086f70656e5f75726c08000576616c7565001368747470733a2f2f6578616d706c652e636f6d00080005636f6c6f72000372656408000474657874000548656c6c6f010004626f6c640100",
+      "decoded": {
+        "text": "Hello",
+        "clickEvent": {
+          "action": "open_url",
+          "value": "https://example.com"
+        },
+        "color": "red",
+        "bold": true
+      }
     },
     {
       "name": "root sibling list",
@@ -30,7 +40,16 @@
           "italic": true
         }
       ],
-      "wire": "0a09000565787472610a00000001080004746578740001420100066974616c696301000800047465787400014100"
+      "wire": "0a09000565787472610a00000001080004746578740001420100066974616c696301000800047465787400014100",
+      "decoded": {
+        "text": "A",
+        "extra": [
+          {
+            "text": "B",
+            "italic": true
+          }
+        ]
+      }
     },
     {
       "name": "translation mixed list and hover",
@@ -51,7 +70,120 @@
           }
         }
       },
-      "wire": "0a0a000a686f7665724576656e740a0008636f6e74656e7473080004746578740003746970010004626f6c640100080006616374696f6e000973686f775f7465787400090004776974680a000000020800000005416c69636500080005636f6c6f720004676f6c640800047465787400024869000800097472616e736c617465000e636861742e747970652e7465787400"
+      "wire": "0a0a000a686f7665724576656e740a0008636f6e74656e7473080004746578740003746970010004626f6c640100080006616374696f6e000973686f775f7465787400090004776974680a000000020800000005416c69636500080005636f6c6f720004676f6c640800047465787400024869000800097472616e736c617465000e636861742e747970652e7465787400",
+      "decoded": {
+        "translate": "chat.type.text",
+        "with": [
+          "Alice",
+          {
+            "text": "Hi",
+            "color": "gold"
+          }
+        ],
+        "hoverEvent": {
+          "contents": {
+            "text": "tip",
+            "bold": true
+          },
+          "action": "show_text"
+        }
+      }
+    },
+    {
+      "name": "locate result with nested coordinate arguments",
+      "value": {
+        "translate": "commands.locate.structure.success",
+        "with": [
+          "minecraft:village_plains",
+          {
+            "translate": "chat.coordinates",
+            "with": [
+              {
+                "translate": "argument.pos3d.incomplete",
+                "with": [
+                  120,
+                  -64,
+                  315
+                ]
+              },
+              "~",
+              315
+            ],
+            "color": "green",
+            "clickEvent": {
+              "action": "suggest_command",
+              "value": "/tp @s 120 ~ 315"
+            },
+            "hoverEvent": {
+              "action": "show_text",
+              "contents": {
+                "translate": "chat.coordinates.tooltip"
+              }
+            }
+          },
+          248
+        ]
+      },
+      "wire": "0a090004776974680a0000000308000000186d696e6563726166743a76696c6c6167655f706c61696e73000a000a686f7665724576656e740a0008636f6e74656e74730800097472616e736c6174650018636861742e636f6f7264696e617465732e746f6f6c74697000080006616374696f6e000973686f775f7465787400090004776974680a00000003090004776974680a000000030100007800010000c000020000013b000800097472616e736c6174650019617267756d656e742e706f7333642e696e636f6d706c6574650008000000017e00020000013b000a000a636c69636b4576656e74080006616374696f6e000f737567676573745f636f6d6d616e6408000576616c756500102f747020407320313230207e2033313500080005636f6c6f720005677265656e0800097472616e736c6174650010636861742e636f6f7264696e617465730002000000f8000800097472616e736c6174650021636f6d6d616e64732e6c6f636174652e7374727563747572652e7375636365737300",
+      "decoded": {
+        "translate": "commands.locate.structure.success",
+        "with": [
+          "minecraft:village_plains",
+          {
+            "translate": "chat.coordinates",
+            "with": [
+              {
+                "translate": "argument.pos3d.incomplete",
+                "with": [
+                  120,
+                  -64,
+                  315
+                ]
+              },
+              "~",
+              315
+            ],
+            "hoverEvent": {
+              "contents": {
+                "translate": "chat.coordinates.tooltip"
+              },
+              "action": "show_text"
+            },
+            "clickEvent": {
+              "action": "suggest_command",
+              "value": "/tp @s 120 ~ 315"
+            },
+            "color": "green"
+          },
+          248
+        ]
+      }
+    },
+    {
+      "name": "primitive translation arguments",
+      "value": {
+        "translate": "fixture.arguments",
+        "with": [
+          7,
+          1.25,
+          -20,
+          true,
+          false,
+          "text"
+        ]
+      },
+      "wire": "0a090004776974680a0000000601000007000500003fa0000000010000ec0001000001000100000000080000000474657874000800097472616e736c6174650011666978747572652e617267756d656e747300",
+      "decoded": {
+        "translate": "fixture.arguments",
+        "with": [
+          7,
+          1.25,
+          -20,
+          1,
+          0,
+          "text"
+        ]
+      }
     }
   ],
   "rejected": [

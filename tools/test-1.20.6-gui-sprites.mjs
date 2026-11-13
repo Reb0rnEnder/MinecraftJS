@@ -42,3 +42,10 @@ test('sprite metadata belongs to the pack supplying its PNG and malformed tile s
   a=fake();a.packs=[{has:()=>true,read:()=>new TextEncoder().encode(JSON.stringify({gui:{scaling:{type:'tile',width:0,height:16}}}))}];
   await assert.rejects(Assets.prototype.loadGuiSprite.call(a,path),/dimensions/);
 });
+
+test('server, proxy and pack arrow rectangles all resolve to native sprites',()=>{
+ for(const [sheet,prefix,regions] of [
+  ['gui/server_selection.png','server_list',[[0,'join'],[64,'move_down'],[96,'move_up']]],
+  ['gui/resource_packs.png','transferable_list',[[0,'select'],[32,'unselect'],[64,'move_down'],[96,'move_up']]],
+ ])for(const [u,name] of regions)for(const [v,suffix] of [[0,''],[32,'_highlighted']])assert.equal(legacyGuiSprite(sheet,u,v,32,32).path,'gui/sprites/'+prefix+'/'+name+suffix+'.png');
+});

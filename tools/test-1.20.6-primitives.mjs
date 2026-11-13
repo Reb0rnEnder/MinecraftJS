@@ -18,32 +18,7 @@ const native = JSON.parse(
   readFileSync(new URL("./port-1.20.6/component-fixtures.json", import.meta.url), "utf8")
 );
 
-const decoded = {
-  "plain string": "hello",
-  "styled click event": {
-    clickEvent: { action: "open_url", value: "https://example.com" },
-    color: "red",
-    text: "Hello",
-    bold: true
-  },
-  "root sibling list": {
-    extra: [{ text: "B", italic: true }],
-    text: "A"
-  },
-  "translation mixed list and hover": {
-    hoverEvent: {
-      contents: { text: "tip", bold: true },
-      action: "show_text"
-    },
-    with: ["Alice", { color: "gold", text: "Hi" }],
-    translate: "chat.type.text"
-  }
-};
-
-const fixtures = native.fixtures.map((fixture) => ({
-  ...fixture,
-  decoded: decoded[fixture.name]
-}));
+const fixtures = native.fixtures;
 const hex = (value) => Uint8Array.from(Buffer.from(value, "hex"));
 const packet = (id) => new Writer766().varint(id);
 

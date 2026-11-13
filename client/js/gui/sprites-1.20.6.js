@@ -42,6 +42,13 @@ for(const [i,count] of [6,10,12,20].entries()){
 for(const [u,name] of [[0,'teleport_to_player'],[16,'teleport_to_team'],[128,'close'],[144,'scroll_left'],[160,'scroll_right']])region('gui/spectator_widgets.png',u,0,16,16,'spectator/'+name);
 for(const [x,focused] of [[0,false],[20,true]])for(const [y,selected] of [[0,false],[20,true]])region('gui/checkbox.png',x,y,20,20,'widget/checkbox'+(selected?'_selected':'')+(focused?'_highlighted':''));
 
+// Both server lists (including MinecraftJS's proxy list) and pack-style lists
+// still call the old logical rectangles. Native 1.20.6 removed both sheets.
+for(const [sheet,prefix,arrows] of [
+  ['gui/server_selection.png','server_list',[[0,'join'],[96,'move_up'],[64,'move_down']]],
+  ['gui/resource_packs.png','transferable_list',[[0,'select'],[32,'unselect'],[96,'move_up'],[64,'move_down']]],
+])for(const [u,name] of arrows)for(const [v,suffix] of [[0,''],[32,'_highlighted']])region(sheet,u,v,32,32,prefix+'/'+name+suffix);
+
 export function legacyGuiSprite(path,u,v,w,h){
   const r=sheets.get(path)?.find(r=>u>=r.x&&v>=r.y&&u+w<=r.x+r.w&&v+h<=r.y+r.h);
   return r?{path:'gui/sprites/'+r.sprite+'.png',u:(u-r.x)/r.w,v:(v-r.y)/r.h,u1:(u-r.x+w)/r.w,v1:(v-r.y+h)/r.h}:null;

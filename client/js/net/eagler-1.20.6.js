@@ -19,7 +19,7 @@ export class EaglerSocket766 extends VanillaSocket766 {
       }else this._control(message);
     });
     this.link.on('binary',bytes=>{
-      try{this._packet(bytes)}catch(error){this._control({type:'error',message:'Bad data from server: '+error.message});this.close();}
+      try{this._packet(bytes)}catch(error){this._badPacket(error);}
     });
     return this;
   }

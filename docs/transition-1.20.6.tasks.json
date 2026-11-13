@@ -192,7 +192,8 @@
         "Native 1.20.6 player attributes now drive gravity, jump strength, step height, scale/pose dimensions, safe-fall/fall multiplier, block break speed and block/entity interaction ranges. Mojang Player bytecode confirms target reach defaults 4.5/3.0.",
         "The generated clientbound Play schema now covers all 122 protocol-766 packets rather than the former 53-packet graphical subset, allowing older feature handlers to be reused with target normalization.",
         "The permanent target gate passes 95/95 tests, including component merge/copy, rejected/corrected inventory prediction, outgoing legacy-action layouts and attribute consumers.",
-        "GitHub handoff audit: generic decoding alone did not prove every Game consumer. Live vanilla joining exposed and fixed recipe serializer ID drift plus array scope; menu/item-specific component consumers still require acceptance."
+        "GitHub handoff audit: generic decoding alone did not prove every Game consumer. Live vanilla joining exposed and fixed recipe serializer ID drift plus array scope; menu/item-specific component consumers still require acceptance.",
+        "2026-11-14 user Creative crash reproduced in source: creative.json still has empty tabs, causing undefined background access. Native component-preserving creative population extraction is required before acceptance."
       ]
     },
     {
@@ -295,7 +296,8 @@
         "Command argument and particle IDs are generated from exact Mojang reports; native ArgumentTypeInfos confirms property-free templates omitted by the upstream schema. Native Explosion.finalizeExplosion selects server-supplied sound/particles and preserves KEEP blocks.",
         "Native Configuration registries remain available to chat-type decoration and damage effects through a typed consumer view.",
         "Focused target tests pass 117/117 before the remaining GUI/signing/new-particle/native-format acceptance; P13 is not complete.",
-        "Exact target option arrays and four native Java layout fixtures checked; Online/Attribution pages and new Accessibility settings implemented. Target gate 141/141 plus a separate real-browser blur test across all three backends. Remaining screens and secure signing are not complete."
+        "Exact target option arrays and four native Java layout fixtures checked; Online/Attribution pages and new Accessibility settings implemented. Target gate 141/141 plus a separate real-browser blur test across all three backends. Remaining screens and secure signing are not complete.",
+        "2026-11-14 follow-up: all shared selection-arrow sprite regions and integer title-icon centering corrected; native primitive translation-argument fixtures and a real local /locate biome command verify the disconnect regression fix. Native packet identities and JS exception wording verified; target gate 148/148."
       ]
     },
     {

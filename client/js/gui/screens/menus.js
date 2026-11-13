@@ -53,11 +53,11 @@ export class TitleScreen extends Screen {
       import('./options.js').then((m) => g.screens.open(new m.LanguageScreen(g, this)));
     });
     lang.narration=()=>tr('narrator.button.language');
-    lang.render = (gui, mx, my) => {gui.button(lang.x,lang.y,20,20,'',lang.focused||lang.hovered(mx,my));gui.sprite('icon/language',lang.x+2,lang.y+2,15,15);};
+    lang.render = (gui, mx, my) => {gui.button(lang.x,lang.y,20,20,'',lang.focused||lang.hovered(mx,my));gui.sprite('icon/language',lang.x+3,lang.y+3,15,15);};
     this.buttons.push(lang);
     const accessibility=new Button(6,cx+104,y+84,20,20,'',()=>import('./options.js').then(m=>g.screens.open(new m.AccessibilityScreen(g,this))));
     accessibility.narration=()=>tr('narrator.button.accessibility');
-    accessibility.render=(gui,mx,my)=>{gui.button(accessibility.x,accessibility.y,20,20,'',accessibility.focused||accessibility.hovered(mx,my));gui.sprite('icon/accessibility',accessibility.x+2,accessibility.y+2,15,15);};
+    accessibility.render=(gui,mx,my)=>{gui.button(accessibility.x,accessibility.y,20,20,'',accessibility.focused||accessibility.hovered(mx,my));gui.sprite('icon/accessibility',accessibility.x+3,accessibility.y+3,15,15);};
     this.buttons.push(accessibility);
     // Account manager (top right): current account's face and name
     const acct = new Button(20, this.width - 104, 4, 100, 20, '', () => g.screens.open(new AccountsScreen(g, this)));

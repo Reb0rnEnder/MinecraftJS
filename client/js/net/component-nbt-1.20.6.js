@@ -1,4 +1,4 @@
-﻿import {readAnonymousNbt,writeAnonymousNbt} from "./nbt-anonymous.js";
+import {readAnonymousNbt,writeAnonymousNbt} from "./nbt-anonymous.js";
 
 const STYLE_BOOLS=new Set(["bold","italic","underlined","strikethrough","obfuscated"]);
 const COMPONENT_TYPES=new Set(["text","translatable","score","selector","nbt","keybind"]);
@@ -28,6 +28,17 @@ function encodeValue(value,path="value"){
  if(typeof value==="bigint")return node(4,value);
  if(typeof value==="number"){
   if(!Number.isFinite(value))throw Error("Invalid numeric value at "+path);
+  // Native generic translation arguments retain JsonOps' narrowest numeric
+  // representation. Typed fields elsewhere (e.g. item counts) remain INTs.
+  if(/\.with\[\d+\]$/.test(path)){
+   if(Number.isInteger(value)){
+    if(value>=-128&&value<=127)return node(1,value);
+    if(value>=-32768&&value<=32767)return node(2,value);
+    if(value>=-2147483648&&value<=2147483647)return node(3,value);
+    if(value>=-9223372036854775808&&value<9223372036854775808)return node(4,BigInt(value));
+   }
+   return Math.fround(value)===value?node(5,value):node(6,value);
+  }
   return Number.isInteger(value)?node(3,value):node(6,value);
  }
  if(value instanceof Int8Array||value instanceof Uint8Array)return node(7,Int8Array.from(value));
@@ -82,7 +93,9 @@ function normalizeComponent(value,path="component"){
  if(out.nbt!==undefined&&typeof out.nbt!=="string")throw Error("Invalid NBT component path at "+path);
  if(out.with!==undefined){
   if(!Array.isArray(out.with))throw Error("Invalid translation arguments at "+path);
-  out.with=out.with.map((child,index)=>normalizeComponent(child,path+".with["+index+"]"));
+  // TranslatableContents accepts Number/Boolean/String arguments directly;
+  // only structured arguments use ComponentSerialization's stricter codec.
+  out.with=out.with.map((child,index)=>typeof child==='boolean'||typeof child==='number'&&Number.isFinite(child)?child:normalizeComponent(child,path+".with["+index+"]"));
  }
  if(out.extra!==undefined){
   if(!Array.isArray(out.extra)||!out.extra.length)throw Error("Invalid extra component list at "+path);

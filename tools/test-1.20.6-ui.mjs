@@ -69,3 +69,8 @@ test('pack arrows use real sprites on entry hover, warn only for incompatible pa
  s.key({code:'Tab'});s.key({code:'Enter'});assert.deepEqual(s.selected,[pack]);assert.deepEqual(s.available,[]);
  assert.ok(jar.read('assets/minecraft/textures/gui/sprites/transferable_list/select.png'));assert.equal(jar.read('assets/minecraft/textures/gui/resource_packs.png'),null);
 });
+
+test('15px title icons use native integer centering inside their 20px buttons',()=>{
+ const g=game(),s=new TitleScreen(g);s.init();const calls=[];
+ for(const id of [5,6]){const b=s.buttons.find(b=>b.id===id);b.render({button(){},sprite:(...args)=>calls.push(args)},-1,-1);assert.equal(calls.at(-1)[1],b.x+3);assert.equal(calls.at(-1)[2],b.y+3);}
+});

@@ -35,7 +35,22 @@ const valid = [
       with: ["Alice", { text: "Hi", color: "gold" }],
       hoverEvent: { action: "show_text", contents: { text: "tip", bold: true } }
     }
-  }
+  },
+  {
+    name: "locate result with nested coordinate arguments",
+    value: {
+      translate: "commands.locate.structure.success",
+      with: ["minecraft:village_plains", {
+        translate: "chat.coordinates",
+        with: [{translate:"argument.pos3d.incomplete",with:[120,-64,315]},"~",315],
+        color:"green",
+        clickEvent:{action:"suggest_command",value:"/tp @s 120 ~ 315"},
+        hoverEvent:{action:"show_text",contents:{translate:"chat.coordinates.tooltip"}}
+      }, 248]
+    }
+  },
+  {name:"primitive translation arguments",value:{translate:"fixture.arguments",with:[7,1.25,-20,true,false,"text"]}}
+
 ];
 
 const invalid = [
@@ -64,7 +79,9 @@ public class ComponentOracle {
                 DataOutputStream out = new DataOutputStream(bytes);
                 vf.a(tag, out);
                 out.flush();
-                System.out.println("OK " + HexFormat.of().formatHex(bytes.toByteArray()));
+                xp decoded = xr.a.parse(vg.a, tag).getOrThrow();
+                String json = xr.a.encodeStart(JsonOps.INSTANCE, decoded).getOrThrow().toString();
+                System.out.println("OK " + HexFormat.of().formatHex(bytes.toByteArray()) + " " + json);
             } catch (Throwable error) {
                 String message = error.getMessage();
                 System.out.println("ERROR " + (message == null ? error.getClass().getSimpleName() : message.replace("\\n", " ")));
@@ -131,15 +148,16 @@ export async function componentFixtures(check = false) {
     input: inputs.map((entry) => JSON.stringify(entry.value)).join("\n") + "\n"
   });
   const lines = result.stdout.trim().split(/\r?\n/).map((line) => {
-    const wrapped = line.match(/\[STDOUT\]: (OK [0-9a-f]+|ERROR .*)$/);
+    const wrapped = line.match(/\[STDOUT\]: (OK [0-9a-f]+ .+|ERROR .*)$/);
     return wrapped ? wrapped[1] : line;
-  }).filter((line) => /^(?:OK [0-9a-f]+|ERROR )/.test(line));
+  }).filter((line) => /^(?:OK [0-9a-f]+ |ERROR )/.test(line));
   assert.equal(lines.length, inputs.length, "Native component oracle returned an unexpected number of results");
 
   const fixtures = valid.map((entry, index) => {
     const line = lines[index];
-    assert.match(line, /^OK [0-9a-f]+$/, "Native component fixture rejected: " + entry.name + " -> " + line);
-    return { ...entry, wire: line.slice(3) };
+    assert.match(line, /^OK [0-9a-f]+ .+$/, "Native component fixture rejected: " + entry.name + " -> " + line);
+    const [,wire,decoded]=/^OK ([0-9a-f]+) (.+)$/.exec(line);
+    return {...entry,wire,decoded:JSON.parse(decoded)};
   });
   const rejected = invalid.map((entry, index) => {
     const line = lines[valid.length + index];

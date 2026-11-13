@@ -1,3 +1,5 @@
+import {NATIVE_PLAY_CLIENTBOUND_NAMES_766} from './native-packet-names-1.20.6.js';
+import {DecoderError} from './network-errors.js';
 import { Reader766 } from "./configuration-1.20.6.js";
 import { readAnonymousNbt } from "./nbt-anonymous.js";
 import { componentFromNbt } from "./component-nbt-1.20.6.js";
@@ -677,13 +679,16 @@ export function decodePlayPacket766(data, context = null) {
   const reader = data instanceof Reader766 ? data : new Reader766(data);
   const id = reader.varint();
   const name = NAME_BY_ID[id];
-  if (!name) return { name: "raw_" + id.toString(16), id, data: reader.rest() };
+  if (!name) throw new DecoderError("Received unknown packet id " + id,{byteOffset:reader.offset});
   const spec = TYPES["packet_" + name];
   if (!spec) throw new Error("Missing generated protocol-766 Play packet type " + name);
   let packet;
   try { packet = normalize(name, readType(reader, spec), context); }
-  catch (cause) { throw new Error('Cannot decode protocol-766 ' + name + ' at byte ' + reader.offset + ': ' + cause.message, {cause}); }
-  if (reader.remaining() !== 0) throw new Error("Trailing protocol-766 Play bytes for " + name + ": " + reader.remaining());
+  catch (cause) { throw new DecoderError("Failed to decode packet '" + NATIVE_PLAY_CLIENTBOUND_NAMES_766[id] + "'", {cause,packet:NATIVE_PLAY_CLIENTBOUND_NAMES_766[id],byteOffset:reader.offset}); }
+  if (reader.remaining() !== 0) {
+    const packet=NATIVE_PLAY_CLIENTBOUND_NAMES_766[id];
+    throw new DecoderError("Packet play/"+packet+" (decodePlayPacket766) was larger than I expected, found "+reader.remaining()+" bytes extra whilst reading packet "+packet,{packet,byteOffset:reader.offset});
+  }
   return { name, id, ...packet };
 }
 
