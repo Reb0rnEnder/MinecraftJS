@@ -890,7 +890,7 @@ function creativeCatalog(game) {
 
 // HotbarSnapshot storage (CreativeSettings, hotbar.nbt): nine saved toolbars, kept in the browser
 // Never read/write the unversioned 1.12 key: its numeric IDs cannot be safely reinterpreted.
-const HOTBARS_KEY = 'minecraftjs.hotbars.1.15.2.v1';
+const HOTBARS_KEY = 'minecraftjs.hotbars.1.18.2.v1';
 const toJson = (v) => JSON.stringify(v, (k, x) => (ArrayBuffer.isView(x) ? { $ta: x.constructor.name, a: Array.from(x, (n) => (typeof n === 'bigint' ? String(n) : n)) } : typeof x === 'bigint' ? { $big: String(x) } : x));
 const savedArrays = { Int8Array, Uint8Array, Int32Array, BigInt64Array };
 const fromJson = (s) => JSON.parse(s, (k, x) => {
@@ -904,12 +904,12 @@ const emptyHotbars = () => Array.from({ length: 9 }, () => new Array(9).fill(nul
 export function hotbarSnapshots() {
   try {
     const saved = fromJson(localStorage.getItem(HOTBARS_KEY) || 'null');
-    if (saved?.version !== 1 || saved.minecraftVersion !== '1.15.2' || saved.protocol !== 578 || saved.dataVersion !== 2230) return emptyHotbars();
+    if (saved?.version !== 1 || saved.minecraftVersion !== '1.18.2' || saved.protocol !== 758 || saved.dataVersion !== 2975) return emptyHotbars();
     if (!Array.isArray(saved.bars) || saved.bars.length !== 9) return emptyHotbars();
     return saved.bars.map(bar => {
       if (!Array.isArray(bar) || bar.length !== 9) return new Array(9).fill(null);
       return bar.map(it => {
-        if (!it || !Number.isInteger(it.id) || it.id < 1 || it.id > 883 || !Number.isInteger(it.count) || it.count < 1 || it.count > 127 || creativeLocked(it)) return null;
+        if (!it || !Number.isInteger(it.id) || it.id < 1 || it.id > 1100 || !Number.isInteger(it.count) || it.count < 1 || it.count > 127 || creativeLocked(it)) return null;
         const copied = creativeCopy(it);
         // Check that persisted typed NBT is serializable before it reaches a live click.
         new Writer().slot(copied).build();
@@ -920,7 +920,7 @@ export function hotbarSnapshots() {
 }
 function saveHotbarSnapshots(list) {
   try {
-    localStorage.setItem(HOTBARS_KEY, toJson({ version: 1, minecraftVersion: '1.15.2', protocol: 578, dataVersion: 2230, bars: list }));
+    localStorage.setItem(HOTBARS_KEY, toJson({ version: 1, minecraftVersion: '1.18.2', protocol: 758, dataVersion: 2975, bars: list }));
     return true;
   } catch (e) { return false; /* storage unavailable */ }
 }
