@@ -10,6 +10,7 @@ const PROGRAMS = {
   invert: { mode: 1, uniforms: { InverseAmount: [0] } },
   color_convolve: { mode: 2, uniforms: { Saturation: [1.8], RedMatrix: [1, 0, 0], GreenMatrix: [0, 1, 0], BlueMatrix: [0, 0, 1] } },
   bits: { mode: 3, uniforms: { Resolution: [4], Saturation: [1.5], MosaicSize: [8] } },
+  box_blur: { mode: 17, uniforms: { BlurDir: [1, 1], Radius: [5], RadiusMultiplier: [1] } },
   blur: { mode: 4, uniforms: { BlurDir: [1, 1], Radius: [5] } },
   spider: { mode: 5, uniforms: { InRotation: [0], InScale: [1, 1], InOffset: [0, 0], Scissor: [0, 0, 1, 1], Vignette: [0, 0, 1, 1] } },
   sobel: { mode: 6, uniforms: {} },
@@ -28,7 +29,7 @@ const PROGRAMS = {
 // Where each uniform goes in the pipeline's params (see device.js)
 const SLOTS = {
   ColorModulate: 4, InverseAmount: 1, Saturation: 1, RedMatrix: 4, GreenMatrix: 8, BlueMatrix: 12,
-  Resolution: 1, MosaicSize: 3, BlurDir: 4, Radius: 6, InRotation: 1, InScale: 4, InOffset: 6, Scissor: 8, Vignette: 12,
+  Resolution: 1, MosaicSize: 3, BlurDir: 4, Radius: 6, RadiusMultiplier: 7, InRotation: 1, InScale: 4, InOffset: 6, Scissor: 8, Vignette: 12,
   ConvergeX: 4, ConvergeY: 8, RadialConvergeX: 12, RadialConvergeY: 1, Phosphor: 4, Time: 1, Frequency: 4, WobbleAmount: 6,
   LumaRamp: 1, LumaLevel: 2,
 };
@@ -118,9 +119,10 @@ function passParams(pass) {
 const BLIT = passParams({ name: 'blit' });
 
 export class PostChain {
-  constructor(device, def) {
+  constructor(device, def, {captureScreen = false} = {}) {
     this.device = device;
     this.def = def;
+    this.captureScreen = captureScreen;
     this.passes = def.passes.map((ps) => ({ ...ps, params: passParams(ps) }));
     this.ok = this.passes.every((ps) => ps.params);
     this.targets = new Map();
@@ -138,7 +140,7 @@ export class PostChain {
     for (const t of this.targets.values()) d.destroyTexture(t);
     this.targets.clear();
     if (this.main) d.destroyTexture(this.main);
-    this.main = d.createRenderTarget(W, H);
+    this.main = d.createRenderTarget(W, H, this.captureScreen ? {colorFormat:d.format || 'rgba8unorm'} : {});
     for (const t of this.def.targets || []) {
       const name = typeof t === 'string' ? t : t.name;
       const w = typeof t === 'object' && t.width ? t.width : W, h = typeof t === 'object' && t.height ? t.height : H;

@@ -154,6 +154,12 @@ void main() {
     vec3 f = b.rgb - fract(b.rgb * uP[0].y) / uP[0].y;
     float l = dot(f, vec3(0.3, 0.59, 0.11));
     o = vec4(l + (f - l) * uP[0].z, 1.0);
+  } else if (m == 17) {
+    vec2 stepDir = uP[1].xy / inSize;
+    float R = floor(uP[1].z * uP[1].w + 0.5);
+    vec4 acc = vec4(0.0);
+    for (float a = -R + 0.5; a <= R; a += 2.0) acc += texture(uTex0, tc + stepDir * a);
+    o = (acc + texture(uTex0, tc + stepDir * R) * 0.5) / (R + 0.5);
   } else if (m == 4) {
     vec2 one = 1.0 / inSize;
     float R = uP[1].z;
@@ -508,6 +514,14 @@ vec3 mcjsWave(vec3 p){
   }
 
   destroyTexture(t) { if(!t)return;const gl=this.gl;if(t.tex)gl.deleteTexture(t.tex);if(t.fbo)gl.deleteFramebuffer(t.fbo);if(t.depth)gl.deleteRenderbuffer(t.depth);if(t.depthTexture)gl.deleteTexture(t.depthTexture); }
+  captureColor(to) {
+    const gl=this.gl;
+    gl.disable(gl.SCISSOR_TEST);
+    gl.bindFramebuffer(gl.READ_FRAMEBUFFER,null);gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER,to.fbo);
+    gl.blitFramebuffer(0,0,this.width,this.height,0,0,to.width,to.height,gl.COLOR_BUFFER_BIT,gl.NEAREST);
+    gl.bindFramebuffer(gl.FRAMEBUFFER,this.target?.fbo||null);
+    this.curState='';this.curStateObj=null;this.curProgram=null;this.curVao=null;this.boundTex.fill(null);
+  }
   copyColor(from,to=null){const gl=this.gl;gl.disable(gl.SCISSOR_TEST);gl.bindFramebuffer(gl.READ_FRAMEBUFFER,from.fbo);gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER,to?.fbo||null);gl.blitFramebuffer(0,0,from.width,from.height,0,0,to?.width||this.width,to?.height||this.height,gl.COLOR_BUFFER_BIT,gl.NEAREST);gl.bindFramebuffer(gl.FRAMEBUFFER,this.target?.fbo||null);this.curState='';this.curStateObj=null;this.curProgram=null;this.curVao=null;this.boundTex.fill(null);}
   copyDepth(from,to){const gl=this.gl;gl.bindFramebuffer(gl.READ_FRAMEBUFFER,from.fbo);gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER,to.fbo);gl.blitFramebuffer(0,0,from.width,from.height,0,0,to.width,to.height,gl.DEPTH_BUFFER_BIT,gl.NEAREST);gl.bindFramebuffer(gl.FRAMEBUFFER,this.target?.fbo||null);}
   compositeTransparency(layers,output){compositeWebGL(this,layers,output);}

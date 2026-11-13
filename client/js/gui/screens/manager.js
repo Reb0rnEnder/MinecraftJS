@@ -9,6 +9,8 @@ export class Screen {
     this.pausesGame = false;
     this.background = 'world';
   }
+  // Screen.renderBackground; containers/books/chat override their background.
+  get usesMenuBackground() { return !this.isContainer && (this.background === 'world' || this.background === 'dirt'); }
   get gui() { return this.game.gui; }
   get width() { return this.game.gui.width; }
   get height() { return this.game.gui.height; }
@@ -16,7 +18,7 @@ export class Screen {
   onResize() { this.buttons = []; this.fields = []; this.init(); }
   tick() { for (const f of this.fields) f.tick(); }
   render(gui, mx, my, partial) {
-    if (this.background === 'world') gui.worldBackground();
+    if (this.background === 'world') gui.menuBackground(this.game.inWorld);
     else if (this.background === 'dirt') gui.dirtBackground();
     this.renderContent(gui, mx, my, partial);
     for (const b of this.buttons) b.render(gui, mx, my);

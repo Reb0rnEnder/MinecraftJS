@@ -56,7 +56,7 @@ export const C766={
  loginAcknowledged:()=>packet(LO.login_acknowledged).build(),
  loginPluginResponse:id=>packet(LO.login_plugin_response).varint(id).bool(false).build(),
  loginCookieResponse:(key,value)=>cookie(LO.cookie_response,key,value),
- settings:(locale='en_us',distance=8,chatVisibility=0,chatColors=true,skinParts=127,mainHand=1)=>packet(OUT.settings).string(locale).i8(distance).varint(chatVisibility).bool(chatColors).u8(skinParts).varint(mainHand).bool(false).bool(true).build(),
+ settings:(locale='en_us',distance=8,chatVisibility=0,chatColors=true,skinParts=127,mainHand=1,allowServerListing=true)=>packet(OUT.settings).string(locale).i8(distance).varint(chatVisibility).bool(chatColors).u8(skinParts).varint(mainHand).bool(false).bool(allowServerListing).build(),
  brand:brand=>packet(OUT.custom_payload).string('minecraft:brand').raw(new Writer().string(brand).build()).build(),
  knownPacks:(packs=[])=>{const w=packet(OUT.select_known_packs).varint(packs.length);for(const p of packs)w.string(p.namespace).string(p.id).string(p.version);return w.build();},
  finishConfiguration:()=>packet(OUT.finish_configuration).build(),
@@ -73,7 +73,7 @@ export const C766={
 function cookie(id,key,value){const w=packet(id).string(key).bool(!!value);if(value){if(value.length>5120)throw Error('Cookie exceeds native limit');w.varint(value.length).raw(value);}return w.build();}
 export class Configuration766{
  constructor(send,emit=()=>{},cookies=new Map(),knownPack=KNOWN_PACK_766){this.send=send;this.emit=emit;this.cookies=cookies;this.knownPack=knownPack;this.selectedKnownPacks=[];this.cachedRegistryValues=0;this.registries=new Map();this.features=[];this.tags=new Map();this.complete=false;}
- start({locale='en_us',distance=8,chatVisibility=0,chatColors=true,skinParts=127,mainHand=1}={}){this.send(C766.brand('MinecraftJS'));this.send(C766.settings(locale,distance,chatVisibility,chatColors,skinParts,mainHand));}
+ start({locale='en_us',distance=8,chatVisibility=0,chatColors=true,skinParts=127,mainHand=1,allowServerListing=true}={}){this.send(C766.brand('MinecraftJS'));this.send(C766.settings(locale,distance,chatVisibility,chatColors,skinParts,mainHand,allowServerListing));}
  handle(data){if(this.complete)throw Error('Configuration already finished');const p=decodeConfiguration766(data);
   switch(p.name){
    case 'keep_alive':this.send(C766.keepAlive(p.keepAliveId));break;

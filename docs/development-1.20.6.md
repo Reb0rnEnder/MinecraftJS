@@ -404,3 +404,25 @@ A final identity audit also found that the shared GUI metadata still identified
 Those identity fields now match the pinned 1.20.6 / format 32 jar and have a native
 regression. The retained option arrays remain explicitly marked as awaiting the
 P13 target layout audit; changing identity does not establish layout parity.
+
+
+## 2026-11-14 — Native menu foundation and resource-pack screen
+
+Implemented the 1.20.5 menu redesign carried by the exact 1.20.6 jar: panorama
+behind menus, fixed panorama pitch, native background/list separator textures,
+real six-pass box blur, menu-blur and narrator-shortcut options, native options
+geometry, Online and Credits & Attribution pages, JSON menu credits and target
+resource-pack spacing/sprites/compatibility. The browser server-listing setting
+now reaches both Configuration and Play ClientInformation packets.
+
+The Java layout oracle executes native compiled layout classes with size-only
+widgets at four logical resolutions. The target gate passes 141/141 tests with
+no skips. A separate Chrome test renders blur on WebGL 2, WebGPU and software;
+all three match the filter reference within one channel value. Six menu smoke
+captures record no client errors or missing required textures. These are not
+full native graphical acceptance or gameplay performance measurements.
+
+[UI acceptance ledger](ui-parity-1.20.6.md) records fonts, Default-pack priority,
+exceptional backgrounds and remaining screen work. P10/P13 remain partial.
+The redesigned layouts and new metadata fields are release-specific and are not
+backported to older releases. Published distributions have not been rebuilt.

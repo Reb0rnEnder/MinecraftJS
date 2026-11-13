@@ -58,18 +58,14 @@ export class SlotList {
     return x < this.scrollBarX() && x >= i0 && x <= i1 && l >= 0 && k >= 0 && l < this.size() ? l : -1;
   }
 
-  // GuiSlot.overlayBackground: options_background.png tinted, scrolling with the content where asked
-  _dirt(gui, y0, y1, tint, scroll = 0) {
-    const tex = this.screen.game.assets.texture('gui/options_background.png', { wrap: 'repeat' });
-    if (!tex) { gui.rect(this.left, y0, this.right, y1, 0xff000000 | (tint * 0x10101)); return; }
-    const k = tint / 255;
-    gui.quad(tex, this.left, y0, this.right, y1, this.left / 32, (y0 + scroll) / 32, this.right / 32, (y1 + scroll) / 32, [k, k, k, 1]);
+  _dirt(gui, y0, y1, tint, scroll = 0, list = false) {
+    gui.menuBackground(this.screen.game.inWorld,this.left,y0,this.width,y1-y0,scroll,list);
   }
 
   render(gui, mx, my) {
     this.clamp();
     const sb = this.scrollBarX(), sbr = sb + 6;
-    this._dirt(gui, this.top, this.bottom, 32, Math.floor(this.amountScrolled));
+    this._dirt(gui, this.top, this.bottom, 32, Math.floor(this.amountScrolled),true);
     const x = this.slotLeft(), y = this.top + 4 - Math.floor(this.amountScrolled);
     gui.scissor(this.left, this.top, this.width, this.bottom - this.top);
     if (this.headerPadding) this.drawHeader(gui, x, y, mx, my);
@@ -87,16 +83,18 @@ export class SlotList {
     gui.clearScissor();
     this._dirt(gui, 0, this.top, 64);
     this._dirt(gui, this.bottom, this.screen.height, 64);
-    gui.gradient(this.left, this.top, this.right, this.top + 4, 0xff000000, 0x00000000);
-    gui.gradient(this.left, this.bottom - 4, this.right, this.bottom, 0x00000000, 0xff000000);
+    const prefix='gui/'+(this.screen.game.inWorld?'inworld_':'');
+    for(const [name,y] of [['header_separator.png',this.top-2],['footer_separator.png',this.bottom]]){
+      const tex=this.screen.game.assets.texture(prefix+name,{wrap:'repeat'});
+      if(tex)gui.quad(tex,this.left,y,this.right,y+2,0,0,this.width/32,1,[1,1,1,1]);
+    }
     const max = this.maxScroll();
     if (max > 0) {
       const h = this.bottom - this.top;
       const k1 = Math.max(32, Math.min(h - 8, Math.floor(h * h / this.contentHeight())));
       const l1 = Math.max(this.top, Math.floor(Math.floor(this.amountScrolled) * (h - k1) / max) + this.top);
-      gui.rect(sb, this.top, sbr, this.bottom, 0xff000000);
-      gui.rect(sb, l1, sbr, l1 + k1, 0xff808080);
-      gui.rect(sb, l1, sbr - 1, l1 + k1 - 1, 0xffc0c0c0);
+      gui.sprite('widget/scroller_background',sb,this.top,6,h);
+      gui.sprite('widget/scroller',sb,l1,6,k1);
     }
     this.decorations(gui, mx, my);
   }

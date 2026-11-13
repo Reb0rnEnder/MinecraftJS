@@ -1,5 +1,4 @@
-// Target identity/pack metadata. Option arrays still retain the 1.19.4 baseline
-// pending the P13 native 1.20.6 layout audit; do not treat them as accepted parity.
+// Native 1.20.6 option arrays, derived from the pinned jar and mapped getters.
 export const VANILLA_UI = {
   "version": "1.20.6",
   "clientJarSha1": "05b6f1c6b46a29d6ea82b4e0d42190e42402030f",
@@ -28,7 +27,8 @@ export const VANILLA_UI = {
     "options.fovEffectScale",
     "options.autosaveIndicator",
     "options.glintSpeed",
-    "options.glintStrength"
+    "options.glintStrength",
+    "options.accessibility.menu_background_blurriness"
   ],
   "controlOptions": [
     "options.autoJump"
@@ -90,6 +90,7 @@ export const VANILLA_UI = {
     "options.showSubtitles",
     "options.accessibility.high_contrast",
     "options.autoJump",
+    "options.accessibility.menu_background_blurriness",
     "options.accessibility.text_background_opacity",
     "options.accessibility.text_background",
     "options.chat.opacity",
@@ -106,7 +107,9 @@ export const VANILLA_UI = {
     "options.glintStrength",
     "options.hideLightningFlashes",
     "options.darkMojangStudiosBackgroundColor",
-    "options.accessibility.panorama_speed"
+    "options.accessibility.panorama_speed",
+    "options.hideSplashTexts",
+    "options.accessibility.narrator_hotkey"
   ],
   "controlsLayout": {
     "extraWidth": 45,
@@ -136,5 +139,9 @@ export const VANILLA_UI = {
   "buttonText": {
     "normal": 16777215,
     "hover": 16777215
-  }
+  },
+  "fontOptions": [
+    "options.forceUnicodeFont",
+    "options.japaneseGlyphVariants"
+  ]
 };

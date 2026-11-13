@@ -26,7 +26,7 @@ export const C = {
   keepAlive: (id) => packet("keep_alive").i64(id).build(),
   pong: (id) => packet("pong").i32(id).build(),
 
-  settings: (locale, viewDistance, chatFlags, chatColors, skinParts, mainHand = 1) =>
+  settings: (locale, viewDistance, chatFlags, chatColors, skinParts, mainHand = 1, allowServerListing = true) =>
     packet("settings")
       .string(locale)
       .i8(viewDistance)
@@ -35,7 +35,7 @@ export const C = {
       .u8(skinParts)
       .varint(mainHand)
       .bool(false)
-      .bool(true)
+      .bool(allowServerListing)
       .build(),
   customPayload: (channel, data) =>
     packet("custom_payload").string(payloadChannel(channel)).raw(data).build(),

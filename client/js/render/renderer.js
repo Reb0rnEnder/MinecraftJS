@@ -543,7 +543,9 @@ export class Renderer {
       this.panoMeshes=corners.map(c=>colorMesh(d,[c.map((p,i)=>[...p,...uv[i],1,1,1,1])]));
     }
     this.panoStart ??= timeMs;
-    const t=(timeMs-this.panoStart)/50*speed,pitch=Math.sin(t*.001)*5+25,yaw=-t*.1;
+    const delta=Math.max(0,(timeMs-(this.panoLast??timeMs))/50);this.panoLast=timeMs;
+    this.panoYaw=((this.panoYaw??0)+(delta>7?.5:delta)*speed*.1)%360;
+    const pitch=10,yaw=-this.panoYaw;
     this.aspect=platform().width/platform().height;
     const proj=mat4.perspective(mat4.create(),85*D2R,this.aspect,.05,10);
     const textures=Array.from({length:6},(_,i)=>this.assets.texture('gui/title/background/panorama_'+i+'.png',{filter:'linear'}));

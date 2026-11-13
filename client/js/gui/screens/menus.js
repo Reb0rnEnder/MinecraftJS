@@ -95,17 +95,17 @@ export class TitleScreen extends Screen {
       if (hov) this.hoverText = p ? p.name + ': ' + hover : hover;
     };
     this.buttons.push(prox);
+    const label=tr('title.credits'),credits=new Button(22,this.width-this.gui.textWidth(label)-2,this.height-10,this.gui.textWidth(label),10,label,()=>import('./options.js').then(m=>g.screens.open(new m.CreditsAndAttributionScreen(g,this))));
+    credits.render=(gui,mx,my)=>{gui.text(label,credits.x,credits.y,0xffffff,true);if(credits.hovered(mx,my)||credits.focused)gui.rect(credits.x,credits.y+9,credits.x+credits.w,credits.y+10,0xffffffff);};
+    this.buttons.push(credits);
   }
 
   render(gui, mx, my, partial) {
-    // Native TitleScreen overlay, shared with resource-pack replacements.
-    const overlay=gui.tex('gui/title/background/panorama_overlay.png');
-    if(overlay)gui.drawImage(overlay,0,0,overlay.width,overlay.height,0,0,this.width,this.height);
     const logo=this.minceraftRoll<1e-4?'gui/title/minceraft.png':'gui/title/minecraft.png';
     // Exact LogoRenderer virtual texture dimensions; the native PNGs are 4x.
     gui.blit(logo,this.width/2-128,30,0,0,256,44,256,64);
     gui.blit('gui/title/edition.png',this.width/2-64,67,0,0,128,14,128,16);
-    if (this.splash) {
+    if (this.splash && !this.game.settings.hideSplashTexts) {
       gui.pushMatrix();
       gui.translate(this.width / 2 + 90, 70);
       gui.rotate(-20 * Math.PI / 180);
@@ -116,9 +116,6 @@ export class TitleScreen extends Screen {
       gui.popMatrix();
     }
     gui.text(tr('minecraftjs.version'), 2, this.height - 10, 0xffffff, true);
-    // Where vanilla puts "Copyright Mojang AB. Do not distribute!"
-    const legal = tr('minecraftjs.notAffiliated');
-    gui.text(legal, this.width - gui.textWidth(legal) - 2, this.height - 10, 0xffffff, true);
     if (this.reason) gui.textCentered(this.reason, this.width / 2, this.height / 4 + 30, 0xff5555, true);
     this.hoverText = null;
     const multiplayer=this.buttons.find(b=>b.id===2);if(multiplayer){multiplayer.enabled=this.game.accountPrivileges?.multiplayerServer!==false;if(!multiplayer.enabled&&multiplayer.hovered(mx,my))this.hoverText=tr('title.multiplayer.disabled');}
@@ -126,7 +123,7 @@ export class TitleScreen extends Screen {
     if (this.hoverText) gui.tooltip([this.hoverText], mx, my);
   }
 
-  key(e) { return false; }
+  key(e) { return e.code === 'Escape' ? false : super.key(e); }
 }
 
 // Java 1.15.2 SafetyScreen, using the target translations and checkbox sheet.

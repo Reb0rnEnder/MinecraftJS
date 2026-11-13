@@ -36,6 +36,7 @@ export class ResourcePack {
       const d = meta.pack && meta.pack.description;
       this.description = chatToLegacy(d, { parsed: true });
       this.format = meta.pack && meta.pack.pack_format;
+      this.supportedFormats = meta.pack?.supported_formats;
       if (meta.language && typeof meta.language === 'object') this.languages = meta.language;
     } catch (e) { /* pack.mcmeta missing or malformed */ }
     try { const icon = this.zip.read(this.prefix + 'pack.png'); this.icon = icon ? decodePng(icon) : null; } catch (e) { this.icon = null; }
@@ -74,7 +75,7 @@ export class Assets {
     const ids = await platform().files.list(PACK_PREFIX).catch(() => []);
     const out = [];
     for(const [id,name]of [['programmer_art','Programmer Art'],['high_contrast','High Contrast']])try{
-      const bytes=await this.source.bytes('minecraft/resourcepacks/'+id+'.zip');if(bytes){const pack=new ResourcePack(id,bytes);pack.name=name;pack.builtin=true;out.push(pack);}
+      const bytes=await this.source.bytes('minecraft/resourcepacks/'+id+'.zip');if(bytes){const pack=new ResourcePack(id,bytes);pack.name=this.translate('resourcePack.'+id+'.name');pack.builtin=true;out.push(pack);}
     }catch{}
     for (const key of ids) {
       const id = key.slice(PACK_PREFIX.length);
@@ -292,9 +293,9 @@ export class Assets {
     this.fontSets = await loadFontSets(this);
 
     step('Preparing title textures...',78);
-    const nativeSprites=[...CORE_GUI_SPRITES,...['widget/button','widget/button_highlighted','widget/button_disabled','widget/slider','widget/slider_highlighted','widget/slider_handle','widget/slider_handle_highlighted','icon/accessibility','icon/language'].map(name=>'gui/sprites/'+name+'.png')];
+    const nativeSprites=[...CORE_GUI_SPRITES,...['widget/button','widget/button_highlighted','widget/button_disabled','widget/slider','widget/slider_highlighted','widget/slider_handle','widget/slider_handle_highlighted','icon/accessibility','icon/language','widget/scroller','widget/scroller_background',...['select','unselect','move_up','move_down'].flatMap(n=>['transferable_list/'+n,'transferable_list/'+n+'_highlighted'])].map(name=>'gui/sprites/'+name+'.png')];
     await Promise.all(nativeSprites.map(path=>this.loadGuiSprite(path)));
-    const required=Array.from({length:6},(_,i)=>'gui/title/background/panorama_'+i+'.png').concat(['gui/title/minecraft.png','gui/title/minceraft.png','gui/title/edition.png','gui/menu_background.png','font/ascii.png','gui/title/mojangstudios.png'],nativeSprites);
+    const required=Array.from({length:6},(_,i)=>'gui/title/background/panorama_'+i+'.png').concat(['gui/title/minecraft.png','gui/title/minceraft.png','gui/title/edition.png','gui/menu_background.png','gui/inworld_menu_background.png','gui/menu_list_background.png','gui/inworld_menu_list_background.png','gui/header_separator.png','gui/footer_separator.png','gui/inworld_header_separator.png','gui/inworld_footer_separator.png','misc/credits_vignette.png','font/ascii.png','gui/title/mojangstudios.png'],nativeSprites);
     this.preloadReport={required:await preloadTextures(this,required,{budget:Infinity})};
     const missingPanorama=this.preloadReport.required.failed.filter(p=>/panorama_[0-5]\.png$/.test(p));if(missingPanorama.length)throw Error('Missing panorama textures: '+missingPanorama.join(', '));
     if(this.preloadWorldTextures!==false){

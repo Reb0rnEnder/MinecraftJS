@@ -261,11 +261,11 @@ export class Gui {
 
   // ---------------------------------------------------------------- vanilla helpers
 
-  dirtBackground(tint = 0x404040) {
-    const t = this.assets.texture('gui/menu_background.png', { wrap: 'repeat' });
-    if (!t) { this.rect(0, 0, this.width, this.height, 0xff202020); return; }
-    const k = (tint & 255) / 255;
-    this.quad(t, 0, 0, this.width, this.height, 0, 0, this.width / 32, this.height / 32, [k, k, k, 1]);
+  dirtBackground() { this.menuBackground(false); }
+
+  menuBackground(inWorld = false, x = 0, y = 0, w = this.width, h = this.height, scroll = 0, list = false) {
+    const t = this.assets.texture('gui/' + (inWorld ? 'inworld_' : '') + (list ? 'menu_list_background.png' : 'menu_background.png'), { wrap: 'repeat' });
+    if (t) this.quad(t, x, y, x+w, y+h, x/32, (y+scroll)/32, (x+w)/32, (y+h+scroll)/32, [1, 1, 1, 1]);
   }
 
   worldBackground() { this.gradient(0, 0, this.width, this.height, 0xc0101010, 0xd0101010); }

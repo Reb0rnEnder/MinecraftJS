@@ -137,6 +137,17 @@ fn fetchAux(c: vec2f) -> vec4f {
     let l = dot(f, vec3f(0.3, 0.59, 0.11));
     return vec4f(l + (f - l) * D.p[0].z, 1.0);
   }
+  if (m == 17) {
+    let stepDir = D.p[1].xy / inSize;
+    let R = floor(D.p[1].z * D.p[1].w + 0.5);
+    var acc = vec4f(0.0);
+    for (var a = -R + 0.5; a <= R; a += 2.0) {
+      let c = tc + stepDir * a;
+      acc += textureSampleLevel(tex0, samp0, vec2f(c.x, 1.0-c.y), 0.0);
+    }
+    let c = tc + stepDir * R;
+    return (acc + textureSampleLevel(tex0, samp0, vec2f(c.x, 1.0-c.y), 0.0) * 0.5) / (R + 0.5);
+  }
   if (m == 4) {
     let one = 1.0 / inSize;
     let R = D.p[1].z;
@@ -387,9 +398,9 @@ export class WebGPUDevice {
   destroyTexture(t) { if(t?.gpu)this.deferredDestroy.push(t.gpu);if(t?.depthTex)this.deferredDestroy.push(t.depthTex); }
 
   // Offscreen colour + depth target; the returned object is also a normal (linear, clamped) texture
-  createRenderTarget(w, h, {sampleDepth=false}={}) {
-    const tex = this.device.createTexture({ size: [w, h], format: 'rgba8unorm', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_DST });
-    const t = { gpu: tex, width: w, height: h, mipmaps: false, levels: 1, filter: 'linear', wrap: 'clamp', view: tex.createView() };
+  createRenderTarget(w, h, {sampleDepth=false,colorFormat='rgba8unorm'}={}) {
+    const tex = this.device.createTexture({ size: [w, h], format: colorFormat, usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_DST });
+    const t = { gpu: tex, colorFormat, width: w, height: h, mipmaps: false, levels: 1, filter: 'linear', wrap: 'clamp', view: tex.createView() };
     t.bg = this.device.createBindGroup({ layout: this.bgl2, entries: [{ binding: 0, resource: t.view }, { binding: 1, resource: this._sampler('linear', 'clamp', false) }] });
     t.depthFormat=sampleDepth?'depth32float':'depth24plus';
     t.depthTex = this.device.createTexture({ size: [w, h], format: t.depthFormat, usage: GPUTextureUsage.RENDER_ATTACHMENT | (sampleDepth?GPUTextureUsage.TEXTURE_BINDING|GPUTextureUsage.COPY_SRC|GPUTextureUsage.COPY_DST:0) });
@@ -397,6 +408,11 @@ export class WebGPUDevice {
     return t;
   }
 
+  captureColor(to){
+    if(this.pass)this.pass.end();this.pass=null;
+    this.encoder.copyTextureToTexture({texture:this.colorTex},{texture:to.gpu},[this.width,this.height]);
+    this._beginPass(null,false);
+  }
   copyDepth(from,to){if(this.pass)this.pass.end();this.pass=null;this.encoder.copyTextureToTexture({texture:from.depthTex},{texture:to.depthTex},[from.width,from.height]);this._beginPass(null,false);}
   compositeTransparency(layers,output){compositeWebGPU(this,layers,output);}
 
@@ -453,7 +469,7 @@ export class WebGPUDevice {
   // ---------------------------------------------------------------- pipelines
 
   _pipeline(name, s, primitive) {
-    const fmtOut = this.target ? 'rgba8unorm' : this.format;
+    const fmtOut = this.target ? (this.target.colorFormat || 'rgba8unorm') : this.format;
     const depthFormat=this.target?.depthFormat||'depth24plus';
     const key = depthFormat + fmtOut + name + '|' + (s.blend || 'none') + (s.depthTest === false ? 0 : 1) + (s.depthWrite === false ? 0 : 1) + (s.cull ? 1 : 0) + (s.polygonOffset ? 1 : 0) + (s.depthFunc === 'equal' ? 'e' : '') + (s.colorWrite === false ? 'n' : '') + primitive;
     let p = this.pipelines.get(key);

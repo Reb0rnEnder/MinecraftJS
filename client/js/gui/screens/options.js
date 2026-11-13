@@ -50,46 +50,40 @@ function makeOption(id, x, y, it) {
 export class OptionsScreen extends OptionsBase {
   constructor(game, parent) { super(game, parent, 'options.title'); }
   init() {
-    const g = this.game, s = this.s;
-    const cx = this.width / 2, h6 = this.height / 6;
-    const fovLabel = (v) => {
-      const f = Math.round(30 + v * 80);
-      return trOption('options.fov', f === 70 ? tr('options.fov.min') : f === 110 ? tr('options.fov.max') : f);
-    };
-    this.buttons.push(new Slider(0, cx - 155, h6 - 12, 150, 20, fovLabel, (s.fov - 30) / 80, (v) => { s.fov = Math.round(30 + v * 80); }));
-    if (g.inWorld) {
-      // Difficulty can only be changed in singleplayer
-      const diff = ['peaceful', 'easy', 'normal', 'hard'][g.difficulty] || 'normal';
-      const b = new Button(108, cx + 5, h6 - 12, 150, 20, trOption('options.difficulty', tr(g.hardcore ? 'options.difficulty.hardcore' : 'options.difficulty.' + diff)), null);
-      b.enabled = false;
-      this.buttons.push(b);
-    } else {
-      // 1.12 GuiOptions: GameSettings.Options.REALMS_NOTIFICATIONS on the title screen
-      if (s.realmsNotifications === undefined) s.realmsNotifications = true;
-      this.buttons.push(new Button(GameOptionsIds.REALMS_NOTIFICATIONS, cx + 5, h6 - 12, 150, 20,
-        () => trOption('options.realmsNotifications', onOff(s.realmsNotifications)), () => { s.realmsNotifications = !s.realmsNotifications; }));
-    }
-    const btn = (id, col, row, key, fn) => this.buttons.push(new Button(id, cx + (col ? 5 : -155), h6 + 48 - 6 + 24 * row, 150, 20, typeof key === 'function' ? key : tr(key), fn));
-    const open = (Cls) => () => g.screens.open(new Cls(g, this));
-    btn(110, 0, 0, 'options.skinCustomisation', open(SkinScreen));
-    btn(106, 1, 0, 'options.sounds', open(SoundScreen));
-    btn(101, 0, 1, 'options.video', open(VideoScreen));
-    btn(100, 1, 1, 'options.controls', open(ControlsScreen));
-    btn(102, 0, 2, 'options.language', open(LanguageScreen));
-    btn(103, 1, 2, 'options.chat.title', open(ChatOptionsScreen));
-    btn(105, 0, 3, 'options.resourcepack', open(ResourcePacksScreen));
-    btn(104, 1, 3, 'options.accessibility.title', open(AccessibilityScreen));
-    this.doneButton();
+    const g=this.game,s=this.s,cx=Math.floor(this.width/2);
+    const fovLabel=v=>{const f=Math.round(30+v*80);return trOption('options.fov',f===70?tr('options.fov.min'):f===110?tr('options.fov.max'):f);};
+    this.buttons.push(new Slider(0,cx-154,29,150,20,fovLabel,(s.fov-30)/80,v=>{s.fov=Math.round(30+v*80);}));
+    this.buttons.push(new Button(1,cx+4,29,150,20,tr('options.online'),()=>g.screens.open(new OnlineOptionsScreen(g,this))));
+    const open=Cls=>()=>g.screens.open(new Cls(g,this));
+    const pages=[['options.skinCustomisation',SkinScreen],['options.sounds',SoundScreen],['options.video',VideoScreen],['options.controls',ControlsScreen],['options.language',LanguageScreen],['options.chat',ChatOptionsScreen],['options.resourcepack',ResourcePacksScreen],['options.accessibility',AccessibilityScreen],['options.telemetry',null],['options.credits_and_attribution',CreditsAndAttributionScreen]];
+    const y=Math.min(91,this.height-153);
+    pages.forEach(([key,Cls],i)=>{const b=new Button(100+i,cx-154+(i%2)*158,y+Math.floor(i/2)*24,150,20,tr(key),Cls?open(Cls):null);if(!Cls){b.enabled=false;b.tip=()=>tr('options.telemetry.disabled');}this.buttons.push(b);});
+    this.doneButton(this.height-26);
   }
+  renderContent(gui){gui.textCentered(tr(this.titleKey),Math.floor(this.width/2),12,0xffffff);}
 }
 
-const GameOptionsIds = { REALMS_NOTIFICATIONS: 30 };
+export class CreditsAndAttributionScreen extends OptionsBase {
+  constructor(game,parent){super(game,parent,'credits_and_attribution.screen.title');}
+  init(){
+    const y=Math.min(63,this.height-109),g=this.game;
+    const items=[['credits',()=>import('./credits.js').then(m=>g.screens.open(new m.CreditsScreen(g,{poem:false,onFinished:()=>g.screens.open(this)})))],['attribution',()=>g.screens.open(new ConfirmLinkScreen(g,this,'https://aka.ms/MinecraftJavaAttribution'))],['licenses',()=>g.screens.open(new ConfirmLinkScreen(g,this,'https://aka.ms/MinecraftJavaLicenses'))]];
+    items.forEach(([key,click],i)=>this.buttons.push(new Button(i,this.width/2-105,y+28*i,210,20,tr('credits_and_attribution.button.'+key),click)));
+    this.doneButton(this.height-26);
+  }
+  renderContent(gui){gui.textCentered(tr(this.titleKey),Math.floor(this.width/2),12,0xffffff);}
+}
 
 function nativeOption(screen,key) {
   const s=screen.s,g=screen.game;
   const toggle=(name,field)=>({label:()=>trOption(name,onOff(s[field])),click:()=>{s[field]=!s[field];}});
   const slider=(name,field)=>({slider:true,label:v=>trOption(name,Math.round(v*100)+'%'),value:()=>s[field],set:v=>{s[field]=v;}});
   switch(key){
+    case 'options.accessibility.menu_background_blurriness':return slider(key,'menuBackgroundBlur');
+    case 'options.hideSplashTexts':return toggle(key,'hideSplashTexts');
+    case 'options.accessibility.narrator_hotkey':return {...toggle(key,'narratorHotkey'),tip:()=>tr(key+'.tooltip')};
+    case 'options.realmsNotifications':return toggle(key,'realmsNotifications');
+    case 'options.allowServerListing':return {...toggle(key,'allowServerListing'),tip:()=>tr(key+'.tooltip')};
     case 'options.darknessEffectScale':return {...slider(key,'darknessEffectScale'),value:()=>Math.sqrt(s.darknessEffectScale),set:v=>{s.darknessEffectScale=v*v;},tip:()=>tr(key+'.tooltip')};
     case 'options.damageTiltStrength':case 'options.glintSpeed':case 'options.glintStrength':case 'options.accessibility.panorama_speed':return {...slider(key,{'options.damageTiltStrength':'damageTiltStrength','options.glintSpeed':'glintSpeed','options.glintStrength':'glintStrength','options.accessibility.panorama_speed':'panoramaSpeed'}[key]),tip:()=>tr(key+'.tooltip')};
     case 'options.notifications.display_time':return {slider:true,label:v=>trOption(key,tr('options.multiplier',(Math.round(v*95+5)/10).toFixed(1))),value:()=>(s.notificationDisplayTime-.5)/9.5,set:v=>{s.notificationDisplayTime=Math.round(v*95+5)/10;}};
@@ -123,15 +117,15 @@ function nativeOption(screen,key) {
 class NativeOptionsListScreen extends OptionsBase {
   optionKeys(){return [];}
   makeOption(key){return nativeOption(this,key);}
-  footer(){this.doneButton(this.height-27);}
+  footer(){this.doneButton(this.height-26);}
   init(){
     this.rows=[];
     this.optionKeys().forEach((key,i)=>{const b=makeOption(i,Math.floor(this.width/2)-155+i%2*160,0,this.makeOption(key));b.optionKey=key;b.optionRow=i>>1;if(i%2===0)this.rows.push([]);this.rows.at(-1).push(b);});
     this.footer();const old=this.list;
-    this.list=new ListOf(this,32,this.height-32,25,{size:()=>this.rows.length,draw:(gui,i,x,y,h,mx,my,rawX)=>{for(const b of this.rows[i]){b.y=y;b.render(gui,b.dragging?rawX:mx,my);}},click:(i,dbl,mx,my)=>this.rows[i].some(b=>b.mouseDown(mx,my,this.game))},{listWidth:400,scrollBarOffset:32,selectionBox:false,scrollbarDragOnly:true});
+    this.list=new ListOf(this,33,this.height-33,25,{size:()=>this.rows.length,draw:(gui,i,x,y,h,mx,my,rawX)=>{for(const b of this.rows[i]){b.y=y;b.render(gui,b.dragging?rawX:mx,my);}},click:(i,dbl,mx,my)=>this.rows[i].some(b=>b.mouseDown(mx,my,this.game))},{listWidth:400,scrollBarOffset:32,selectionBox:false,scrollbarDragOnly:true});
     if(old){this.list.amountScrolled=old.amountScrolled;this.list.clamp();}
   }
-  render(gui,mx,my){this.list.render(gui,mx,my);gui.textCentered(tr(this.titleKey),Math.floor(this.width/2),20,0xffffff);for(const b of this.buttons)b.render(gui,mx,my);if(my>=32&&my<this.height-32){const b=this.rows.flat().find(b=>b.tip&&b.hovered(mx,my));if(b)gui.tooltip(gui.font.wrap(b.tip(),Math.min(300,this.width-20)),mx,my);}}
+  render(gui,mx,my){this.list.render(gui,mx,my);gui.textCentered(tr(this.titleKey),Math.floor(this.width/2),12,0xffffff);for(const b of this.buttons)b.render(gui,mx,my);if(my>=33&&my<this.height-33){const b=this.rows.flat().find(b=>b.tip&&b.hovered(mx,my));if(b)gui.tooltip(gui.font.wrap(b.tip(),Math.min(300,this.width-20)),mx,my);}}
   key(e){return focusOptionWidgets(this,e,[...this.rows.flat(),...this.buttons])||super.key(e);}
   mouseDown(mx,my,button,e){return super.mouseDown(mx,my,button,e)||this.list.mouseDown(mx,my,button,e);}
   mouseMove(mx,my){this.list.mouseMove(mx,my);}
@@ -141,32 +135,17 @@ class NativeOptionsListScreen extends OptionsBase {
 export class AccessibilityScreen extends NativeOptionsListScreen {
   constructor(game,parent){super(game,parent,'options.accessibility.title');}
   optionKeys(){return VANILLA_UI.accessibilityOptions;}
-  footer(){this.buttons.push(new Button(201,this.width/2-155,this.height-27,150,20,tr('options.accessibility.link'),()=>this.game.screens.open(new ConfirmLinkScreen(this.game,this,'https://aka.ms/MinecraftJavaAccessibility'))));this.buttons.push(new Button(200,this.width/2+5,this.height-27,150,20,tr('gui.done'),()=>this.done()));}
+  footer(){this.buttons.push(new Button(201,this.width/2-154,this.height-26,150,20,tr('options.accessibility.link'),()=>this.game.screens.open(new ConfirmLinkScreen(this.game,this,'https://aka.ms/MinecraftJavaAccessibility'))));this.buttons.push(new Button(200,this.width/2+4,this.height-26,150,20,tr('gui.done'),()=>this.done()));}
 }
-export class MouseSettingsScreen extends OptionsBase {
+export class OnlineOptionsScreen extends NativeOptionsListScreen {
+  constructor(game,parent){super(game,parent,'options.online.title');}
+  optionKeys(){return ['options.realmsNotifications','options.allowServerListing',...(this.game.inWorld?['options.difficulty.online']:[])];}
+  makeOption(key){if(key==='options.difficulty.online')return{label:()=>trOption(key,tr('options.difficulty.'+(['peaceful','easy','normal','hard'][this.game.difficulty]||'normal'))),enabled:false};return super.makeOption(key);}
+  done(){if(this.game.inWorld)this.game.sendSettings();super.done();}
+}
+export class MouseSettingsScreen extends NativeOptionsListScreen {
   constructor(game,parent){super(game,parent,'options.mouse_settings.title');}
-  init(){
-    this.rows=[];
-    VANILLA_UI.mouseOptions.forEach((key,i)=>{
-      const b=makeOption(i,Math.floor(this.width/2)-155+(i%2)*160,0,nativeOption(this,key));
-      b.optionKey=key;b.optionRow=Math.floor(i/2);
-      if(i%2===0)this.rows.push([]);this.rows.at(-1).push(b);
-    });
-    this.doneButton(this.height-27);
-    const old=this.list;
-    this.list=new ListOf(this,32,this.height-32,25,{
-      size:()=>this.rows.length,
-      draw:(gui,i,x,y,h,mx,my,rawX,rawY)=>{for(const b of this.rows[i]){b.y=y;b.render(gui,b.dragging?rawX:mx,b.dragging?rawY:my);}},
-      click:(i,dbl,mx,my)=>this.rows[i].some(b=>b.mouseDown(mx,my,this.game)),
-    },{listWidth:400,scrollBarOffset:32,selectionBox:false,scrollbarDragOnly:true});
-    if(old){this.list.amountScrolled=old.amountScrolled;this.list.clamp();}
-  }
-  render(gui,mx,my){this.list.render(gui,mx,my);gui.textCentered(tr(this.titleKey),Math.floor(this.width/2),5,0xffffff);for(const b of this.buttons)b.render(gui,mx,my);}
-  key(e){return focusOptionWidgets(this,e,[...this.rows.flat(),...this.buttons])||super.key(e);}
-  mouseDown(mx,my,button,e){return super.mouseDown(mx,my,button,e)||this.list.mouseDown(mx,my,button,e);}
-  mouseMove(mx,my){this.list.mouseMove(mx,my);}
-  mouseUp(mx,my,button){super.mouseUp(mx,my,button);for(const b of this.rows.flat())b.mouseUp?.();this.list.mouseUp();}
-  wheel(d){this.list.wheel(d);}
+  optionKeys(){return VANILLA_UI.mouseOptions;}
 }
 
 // GuiLanguage + GuiLanguage.List (GuiSlot, 18 high, centred names, the current language selected)
@@ -236,12 +215,12 @@ class VideoScreen extends OptionsBase {
       {key:'options.prioritizeChunkUpdates',label:()=>trOption('options.prioritizeChunkUpdates',tr('options.prioritizeChunkUpdates.'+s.prioritizeChunkUpdates)),tip:()=>tr('options.prioritizeChunkUpdates.'+s.prioritizeChunkUpdates+'.tooltip'),click:()=>{const modes=['none','byPlayer','nearby'];s.prioritizeChunkUpdates=modes[(modes.indexOf(s.prioritizeChunkUpdates)+1)%3];}},
       {key:'options.simulationDistance',slider:true,label:v=>trOption('options.simulationDistance',tr('options.chunks',[Math.round(5+v*27)])),value:()=>(s.simulationDistance-5)/27,set:v=>{s.simulationDistance=Math.round(5+v*27);}},
       {key:'options.autosaveIndicator',label:()=>trOption('options.autosaveIndicator',onOff(s.autosaveIndicator)),click:()=>{s.autosaveIndicator=!s.autosaveIndicator;}},
-      ...['options.screenEffectScale','options.fovEffectScale'].map(key=>({key,...nativeOption(this,key)})),
+      ...['options.screenEffectScale','options.fovEffectScale','options.accessibility.menu_background_blurriness'].map(key=>({key,...nativeOption(this,key)})),
       {key:'options.entityDistanceScaling',slider:true,label:v=>trOption('options.entityDistanceScaling',Math.round((.5+v*4.5)*100)+'%'),value:()=>((s.entityDistanceScaling??1)-.5)/4.5,set:v=>{s.entityDistanceScaling=Math.round((.5+v*4.5)*4)/4;}},
       { key: 'options.graphics', label: () => trOption('options.graphics', tr(s.fabulousGraphics?'options.graphics.fabulous':s.fancyGraphics?'options.graphics.fancy':'options.graphics.fast')), click: () => { if(s.fabulousGraphics){s.fabulousGraphics=false;s.fancyGraphics=false;}else if(s.fancyGraphics)s.fabulousGraphics=true;else s.fancyGraphics=true; } },
       { key: 'options.renderDistance', slider: true, label: (v) => trOption('options.renderDistance', Math.round(2 + v * 30) + ' chunks'), value: () => (s.renderDistance - 2) / 30, set: (v) => { s.renderDistance = Math.round(2 + v * 30); } },
-      { key: 'options.ao', label: () => trOption('options.ao', tr('options.ao.' + ['off', 'min', 'max'][s.smoothLighting | 0])), click: () => { s.smoothLighting = ((s.smoothLighting | 0) + 1) % 3; } },
-      { key: 'options.framerateLimit', slider: true, label: (v) => { const f = Math.round(10 + v * 250); return trOption('options.framerateLimit', f >= 260 ? tr('options.framerateLimit.max') : f + ' fps'); }, value: () => (s.maxFps ? (s.maxFps - 10) / 250 : 1), set: (v) => { const f = Math.round(10 + v * 250); s.maxFps = f >= 260 ? 0 : f; } },
+      { key: 'options.ao', label: () => trOption('options.ao', onOff(s.smoothLighting > 0)), click: () => { s.smoothLighting = s.smoothLighting > 0 ? 0 : 2; } },
+      { key: 'options.framerateLimit', slider: true, label: (v) => { const f = Math.round(1 + v * 25)*10; return trOption('options.framerateLimit', f >= 260 ? tr('options.framerateLimit.max') : f + ' fps'); }, value: () => (s.maxFps ? (s.maxFps - 10) / 250 : 1), set: (v) => { const f = Math.round(1 + v * 25)*10; s.maxFps = f >= 260 ? 0 : f; } },
       { key: 'options.anaglyph', label: () => trOption('options.anaglyph', onOff(false)), click: () => {} },
       { key: 'options.viewBobbing', label: () => trOption('options.viewBobbing', onOff(s.viewBobbing)), click: () => { s.viewBobbing = !s.viewBobbing; } },
       { key: 'options.guiScale', label: () => trOption('options.guiScale', s.guiScale===0?tr('options.guiScale.auto'):String(s.guiScale)), click: () => { s.guiScale = (s.guiScale + 1) % 4; g.gui.guiScaleSetting = s.guiScale; g.gui.resize(); } },
@@ -300,9 +279,9 @@ class VideoScreen extends OptionsBase {
       col = it.wide ? 0 : 1 - col;
     });
     this.rows.forEach((row,i)=>row.forEach(b=>b.optionRow=i));
-    this.buttons.push(new Button(200, this.width / 2 - 100, this.height - 27, 200, 20, tr('gui.done'), () => this.done()));
+    this.buttons.push(new Button(200, this.width / 2 - 100, this.height - 26, 200, 20, tr('gui.done'), () => this.done()));
     const old = this.list;
-    this.list = new ListOf(this, 32, this.height - 32, 25, {
+    this.list = new ListOf(this, 33, this.height - 33, 25, {
       size: () => this.rows.length,
       draw: (gui, i, x, y, h, mx, my, rmx, rmy) => { for (const b of this.rows[i]) { b.y = y; b.render(gui, b.dragging ? rmx : mx, b.dragging ? rmy : my); } },
       click: (i, dbl, mx, my) => this.rows[i].some((b) => b.mouseDown(mx, my, this.game)),
@@ -311,9 +290,9 @@ class VideoScreen extends OptionsBase {
   }
   render(gui, mx, my) {
     this.list.render(gui, mx, my);
-    gui.textCentered(tr(this.titleKey), this.width / 2, 5, 0xffffff);
+    gui.textCentered(tr(this.titleKey), this.width / 2, 12, 0xffffff);
     for (const b of this.buttons) b.render(gui, mx, my);
-    if(my>=32&&my<this.height-32){const b=this.rows.flat().find(b=>b.tip&&b.hovered(mx,my)),tip=b?.tip();if(tip)gui.tooltip(gui.font.wrap(tip,Math.min(300,this.width-20)),mx,my);}
+    if(my>=33&&my<this.height-33){const b=this.rows.flat().find(b=>b.tip&&b.hovered(mx,my)),tip=b?.tip();if(tip)gui.tooltip(gui.font.wrap(tip,Math.min(300,this.width-20)),mx,my);}
   }
   key(e){return focusOptionWidgets(this,e,[...this.rows.flat(),...this.buttons])||super.key(e);}
   mouseDown(mx, my, button, e) { return super.mouseDown(mx, my, button) || this.list.mouseDown(mx, my, button, e); }

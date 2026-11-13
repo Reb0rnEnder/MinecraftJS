@@ -99,6 +99,7 @@ import { ItemRenderer } from '../render/item-renderer.js';
 import { HandRenderer } from '../render/hand-renderer.js';
 import { Pistons } from './pistons.js';
 import { ServerPacks766 as ServerPacks } from './serverpacks-1.20.6.js';
+import { MenuBlur } from '../render/menu-blur.js';
 import { PostEffects, entityShaderName } from '../render/post.js';
 import { TileEntityRenderer } from '../render/tile-renderer.js';
 import { Particles } from '../render/particles.js';
@@ -171,6 +172,7 @@ export class Game {
     this.pistons = new Pistons(this);
     this.serverPacks = new ServerPacks(this);
     this.postEffects = new PostEffects(this);
+    this.menuBlur = new MenuBlur(this.device);
     this.shaderPack = new ShaderPackFinal(this);
     this.particles = new Particles(this);
     this.debugLines = new DebugLines(this);
@@ -436,6 +438,7 @@ export class Game {
     this.tileRenderer.clear();
     this.pistons.clear();
     this.postEffects.clear();
+    this.menuBlur.destroy();
     await this.sound.reload();await this.sound.preload();
     this.worker = this.assets.worker;
     this._setupWorker();
@@ -695,7 +698,7 @@ export class Game {
     this.username = username;
     const s = this.settings;
     const conn = this.conn = new Connection({locale:this.assets?.language || 'en_us',distance:s?.renderDistance ?? 8,
-      chatVisibility:s?.chatVisibility,chatColors:s?.chatColors,skinParts:s?.skinParts,mainHand:s?.mainHand === 'left' ? 0 : 1});
+      chatVisibility:s?.chatVisibility,chatColors:s?.chatColors,skinParts:s?.skinParts,mainHand:s?.mainHand === 'left' ? 0 : 1,allowServerListing:s?.allowServerListing??true});
     conn.on('control', (m) => this.onControl(m, conn));
     conn.on('packet', (p) => { if (this.conn === conn) this.handlePacket(p); });
     conn.on('close', () => { if (this.conn === conn) this.onConnectionClosed(); });
@@ -901,7 +904,7 @@ export class Game {
 
   sendSettings() {
     const s = this.settings;
-    this.send(C.settings(this.assets.language || 'en_us', s.renderDistance, s.chatVisibility, s.chatColors, s.skinParts, s.mainHand === 'left' ? 0 : 1));
+    this.send(C.settings(this.assets.language || 'en_us', s.renderDistance, s.chatVisibility, s.chatColors, s.skinParts, s.mainHand === 'left' ? 0 : 1,s.allowServerListing));
   }
 
   applyGameMode() {
@@ -1635,7 +1638,7 @@ export class Game {
 
   onKey(e) {
     // Minecraft.dispatchKeypresses: Ctrl+B cycles the narrator (in 1.12 even while typing: no screen is ever "focused")
-    if (e.down && !e.repeat && e.ctrl && e.code === 'KeyB') {
+    if (e.down && !e.repeat && e.ctrl && e.code === 'KeyB' && this.settings.narratorHotkey) {
       this.narrator.cycle();
       return;
     }
@@ -2119,8 +2122,13 @@ export class Game {
     const partial = this.partial;
     const gui = this.gui;
     if (!this.inWorld || !this.doneLoadingTerrain) {
-      if (this.screens.current && this.screens.current.panorama) r.renderPanorama(platform().now(),this.settings.panoramaSpeed);
+      if (this.screens.current && !this.inWorld) r.renderPanorama(platform().now(),this.settings.panoramaSpeed);
       else r.renderBlank();
+      gui.begin();
+      const overlay=gui.tex('gui/title/background/panorama_overlay.png');
+      if(overlay)gui.drawImage(overlay,0,0,overlay.width,overlay.height,0,0,gui.width,gui.height);
+      gui.end();
+      if (this.screens.current?.usesMenuBackground) this.menuBlur.render(this.settings.menuBackgroundBlur);
       gui.begin();
       this.screens.render(gui, partial);
       if (!this.hideGui) this.hud.renderToast(gui); // GuiToast.drawToast: on top of every screen
@@ -2225,6 +2233,7 @@ export class Game {
     gui.begin();
     this._drawSuperSecret(gui);
     this.hud.render(gui,partial,{underwater,inLava,portal});
+    if (this.screens.current?.usesMenuBackground) { gui.end(); this.menuBlur.render(this.settings.menuBackgroundBlur); gui.begin(); }
     this.screens.render(gui, partial);
     if (!this.hideGui) this.hud.renderToast(gui); // GuiToast.drawToast: on top of every screen
     gui.end();

@@ -8,8 +8,9 @@ import { Button } from '../widgets.js';
 import { platform } from '../../platform/platform.js';
 import { decodePng } from '../../util/png.js';
 import { ListOf } from '../slot-list.js';
+import {packCompatibility} from '../../resource-pack-compatibility.js';
 
-const ENTRY_W = 200, ENTRY_H = 36, ARROWS = 'gui/resource_packs.png';
+const ENTRY_W = 200, ENTRY_H = 36;
 
 export class ResourcePacksScreen extends Screen {
   constructor(game, parent) {
@@ -35,23 +36,23 @@ export class ResourcePacksScreen extends Screen {
   }
 
   init() {
-    const cx = this.width / 2;
-    this.buttons.push(new Button(2, cx - 154, this.height - 48, 150, 20, tr('pack.openFolder'), () => this._add()));
-    this.buttons.push(new Button(1, cx + 4, this.height - 48, 150, 20, tr('gui.done'), () => this.done()));
-    // GuiResourcePackList: GuiListExtended(200 wide, 32, height - 55 + 4, 36) with a bold underlined header
+    const cx = Math.floor(this.width / 2);
+    this.buttons.push(new Button(2, cx - 154, this.height - 26, 150, 20, tr('pack.openFolder'), () => this._add()));
+    this.buttons.push(new Button(1, cx + 4, this.height - 26, 150, 20, tr('gui.done'), () => this.done()));
+    // Native TransferableSelectionList: 200 wide, 33-pixel header/footer, 36-pixel rows.
     const old = this.lists;
     this.lists = [0, 1].map((side) => {
       const items = () => (side ? [...this.selected, null] : this.available);
       const L = { side, title: tr(side ? 'pack.selected.title' : 'pack.available.title') };
-      L.list = new ListOf(this, 32, this.height - 55 + 4, ENTRY_H, {
+      L.list = new ListOf(this, 33, this.height - 33, ENTRY_H, {
         size: () => (this.loaded ? items().length : 0),
         draw: (gui, i, x, y, h, mx, my) => this._entry(gui, L, items()[i], i, x, y, mx, my),
         click: (i, dbl, mx, my, rx, ry, e) => this._click(L, items()[i], i, rx, ry, e),
         header: (gui, x, y) => {
           const t = '§n§l' + L.title;
-          gui.text(t, L.list.left + ENTRY_W / 2 - gui.textWidth(t) / 2, Math.min(L.list.top + 3, y), 0xffffff, false);
+          gui.text(t, x + ENTRY_W / 2 - Math.floor(gui.textWidth(t) / 2), Math.min(L.list.top + 3, y), 0xffffff, false);
         },
-      }, { left: side ? cx + 4 : cx - 4 - ENTRY_W, width: ENTRY_W, listWidth: ENTRY_W, scrollBarRight: true, header: 13, selectionBox: false });
+      }, { left: side ? cx + 15 : cx - 15 - ENTRY_W, width: ENTRY_W, listWidth: ENTRY_W, scrollBarRight: true, header: 13, selectionBox: true, scrollbarDragOnly:true });
       if (old) { L.list.amountScrolled = old[side].list.amountScrolled; L.list.clamp(); }
       return L;
     });
@@ -119,68 +120,97 @@ export class ResourcePacksScreen extends Screen {
   }
 
   render(gui, mx, my) {
-    gui.dirtBackground();
+    gui.menuBackground(this.game.inWorld);
     for (const L of this.lists) L.list.render(gui, mx, my);
-    gui.textCentered(tr('resourcePack.title'), this.width / 2, 8, 0xffffff);
+    gui.textCentered(tr('resourcePack.title'), Math.floor(this.width / 2), 5, 0xffffff);
     if (!this.loaded) gui.textCentered(tr('minecraftjs.loading'), this.width / 2, this.height / 2, 0xa0a0a0);
     if (this.message) gui.textCentered(this.message, this.width / 2, this.height - 60, 0xffffff);
-    gui.textCentered('§7'+tr('pack.dropInfo'), this.width/2, 20, 0xffffff);
+    gui.textCentered('§7'+tr('pack.dropInfo'), Math.floor(this.width/2), 19, 0xffffff);
     for (const b of this.buttons) b.render(gui, mx, my);
     const open=this.buttons.find(b=>b.id===2);if(open?.hovered(mx,my))gui.tooltip(gui.font.wrap(tr('pack.folderInfo'),Math.min(300,this.width-20)),mx,my);
   }
 
   _entry(gui, L, pack, idx, x, y, mx, my) {
-    const name = pack ? pack.name : tr('minecraftjs.packs.defaultName');
-    const desc = pack ? pack.description || '' : tr('minecraftjs.packs.defaultDescription');
-    const incompatible = pack && pack.format !== VANILLA_UI.packFormat;
-    if (incompatible) gui.rect(x - 1, y - 1, x + ENTRY_W - 9, y + ENTRY_H - 3, 0xff770000);
+    const name = pack ? pack.name : tr('resourcePack.vanilla.name');
+    const desc = pack ? pack.builtin ? tr('pack.nameAndSource',pack.description || '',tr('pack.source.builtin')) : pack.description || '' : tr('pack.nameAndSource',tr('resourcePack.vanilla.description'),tr('pack.source.builtin'));
+    const compatibility=packCompatibility(pack,VANILLA_UI.packFormat),incompatible=compatibility!=='compatible';
+    if (incompatible) gui.rect(x - 1, y - 1, x + ENTRY_W - 3 - (L.list.maxScroll()>0?7:0), y + ENTRY_H - 3, 0xff770000);
     const icon = gui.tex(this._icon(pack));
     if (icon) gui.drawImage(icon, 0, 0, icon.width, icon.height, x, y, 32, 32);
     const overEntry = (!L.list || L.list.inside(my,mx)) && mx >= x && mx < x + ENTRY_W && my >= y && my < y + ENTRY_H;
-    const overIcon = overEntry && mx < x + 32 && my < y + 32;
-    if (pack && (overEntry || this.game.settings.touchscreen)) {
+        if (pack && (overEntry || L.list.focused && L.list.focusedIndex===idx || this.game.settings.touchscreen)) {
       gui.rect(x, y, x + 32, y + 32, 0xa0909090);
       const rx = mx - x, ry = my - y;
-      if (L.side === 0) gui.blit(ARROWS, x, y, 0, overIcon ? 32 : 0, 32, 32);
+      if (L.side === 0) gui.sprite('transferable_list/select'+(rx<32?'_highlighted':''),x,y,32,32);
       else {
-        gui.blit(ARROWS, x, y, 32, overIcon && rx < 16 ? 32 : 0, 32, 32);
-        if (idx > 0) gui.blit(ARROWS, x, y, 96, overIcon && rx > 16 && ry < 16 ? 32 : 0, 32, 32);
-        if (idx < this.selected.length - 1) gui.blit(ARROWS, x, y, 64, overIcon && rx > 16 && ry > 16 ? 32 : 0, 32, 32);
+        gui.sprite('transferable_list/unselect'+(rx<16?'_highlighted':''),x,y,32,32);
+        if (idx > 0) gui.sprite('transferable_list/move_up'+(rx<32&&rx>16&&ry<16?'_highlighted':''),x,y,32,32);
+        if (idx < this.selected.length - 1) gui.sprite('transferable_list/move_down'+(rx<32&&rx>16&&ry>16?'_highlighted':''),x,y,32,32);
       }
     }
-    const warning = incompatible && (overEntry || this.game.settings.touchscreen);
+    const warning = incompatible && (overEntry || L.list.focused && L.list.focusedIndex===idx || this.game.settings.touchscreen);
     let title = warning ? tr('pack.incompatible') : name;
     if (gui.textWidth(title) > 157) title = gui.font.trimToWidth(title, 157 - gui.textWidth('...')) + '...';
     gui.text(title, x + 32 + 2, y + 1, 0xffffff, true);
-    const lines = gui.font.wrap(warning ? tr(pack.format > VANILLA_UI.packFormat ? 'pack.incompatible.new' : 'pack.incompatible.old') : desc, 157);
+    const lines = gui.font.wrap(warning ? tr('pack.incompatible.'+compatibility) : desc, 157);
     for (let i = 0; i < Math.min(2, lines.length); i++) gui.text(lines[i], x + 32 + 2, y + 12 + 10 * i, 0x808080, true);
   }
 
   // ResourcePackListEntry.mousePressed: the icon's arrows move packs between / within the lists
   _click(L, pack, idx, rx, ry, e) {
+    this._focus(L.list,idx);
     if (!pack) return false;
     if (L.side === 0) {
       if (e && e.shift) { this._delete(pack); return true; }
-      if (rx >= 32) return false;
+      if (rx > 32) return false;
       const add = () => {
         const index=this.available.findIndex(p=>p.id===pack.id);
         if(index>=0){this.available.splice(index,1);this.selected.unshift(pack);}
       };
-      if(pack.format !== VANILLA_UI.packFormat) {
+      if(packCompatibility(pack,VANILLA_UI.packFormat)!=='compatible') {
         this.game.screens.open(new ConfirmScreen(this.game, yes => {
           if(yes)add();
           this.game.screens.open(this);
-        },tr('pack.incompatible.confirm.title'),tr('pack.incompatible.confirm.'+(pack.format>VANILLA_UI.packFormat?'new':'old'))));
+        },tr('pack.incompatible.confirm.title'),tr('pack.incompatible.confirm.'+packCompatibility(pack,VANILLA_UI.packFormat))));
       } else add();
     } else {
-      if (rx >= 32) return false;
+      if (rx > 32) return false;
       if (rx < 16) { this.selected.splice(idx, 1); this.available.unshift(pack); }
-      else if (ry < 16 && idx > 0) { this.selected.splice(idx, 1); this.selected.splice(idx - 1, 0, pack); }
-      else if (ry >= 16 && idx < this.selected.length - 1) { this.selected.splice(idx, 1); this.selected.splice(idx + 1, 0, pack); }
+      else if (rx>16 && ry < 16 && idx > 0) { this.selected.splice(idx, 1); this.selected.splice(idx - 1, 0, pack); }
+      else if (rx>16 && ry > 16 && idx < this.selected.length - 1) { this.selected.splice(idx, 1); this.selected.splice(idx + 1, 0, pack); }
       else return false;
     }
-    this.game.sound.playUi('ui.button.click', 1);
     return true;
+  }
+
+  _focus(widget,index){
+    for(const L of this.lists)L.list.focused=false;
+    for(const b of this.buttons)b.focused=false;
+    this.focusedWidget=widget;widget.focused=true;
+    if(index!==undefined)widget.focusedIndex=index;
+  }
+  key(e){
+    const widgets=[...this.lists.map(L=>L.list),...this.buttons];
+    if(e.code==='Tab'){
+      const i=widgets.findIndex(w=>w.focused),next=(i+(e.shift?-1:1)+widgets.length)%widgets.length;
+      this._focus(widgets[next]);if(widgets[next].size?.()&&widgets[next].focusedIndex===undefined)widgets[next].focusedIndex=0;
+      return true;
+    }
+    const L=this.lists.find(L=>L.list.focused);
+    if(L){
+      const i=L.list.focusedIndex??0,items=L.side?[...this.selected,null]:this.available,pack=items[i];
+      if(e.shift&&L.side&&pack&&['ArrowUp','ArrowDown'].includes(e.code)){
+        const to=i+(e.code==='ArrowUp'?-1:1);
+        if(to>=0&&to<this.selected.length){this.selected.splice(i,1);this.selected.splice(to,0,pack);L.list.focusedIndex=to;}
+        return true;
+      }
+      if(['Enter','NumpadEnter','Space'].includes(e.code)){
+        if(pack)this._click(L,pack,i,0,0,e);
+        return true;
+      }
+      if(L.list.key(e))return true;
+    }
+    return super.key(e);
   }
 
   mouseDown(mx, my, button, e) {

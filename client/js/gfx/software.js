@@ -95,6 +95,7 @@ export class SoftwareDevice {
   }
 
   destroyTexture() {}
+  captureColor(to){to.rt.color.set(this.screen.color);}
   copyDepth(from,to){to.rt.depth.set(from.rt.depth);}
   compositeTransparency(layers,output){compositeSoftware(this,layers,output);}
 
@@ -313,7 +314,7 @@ export class SoftwareDevice {
     const mode = Math.round(P[0]);
     const blendAlpha = !!(d.state && d.state.blend === 'alpha');
     const cs = Math.cos(P[1] * 0.0174532925), sn = Math.sin(P[1] * 0.0174532925);
-    const R = P[6];
+    const R = mode === 17 ? Math.floor(P[6] * P[7] + .5) : P[6];
     for (let y = 0; y < H; y++) {
       const ty = 1 - (y + 0.5) / H;
       for (let x = 0; x < W; x++) {
@@ -339,14 +340,14 @@ export class SoftwareDevice {
           const fr = px[0] - fract(px[0] * q) / q, fg = px[1] - fract(px[1] * q) / q, fb = px[2] - fract(px[2] * q) / q;
           const l = fr * 0.3 + fg * 0.59 + fb * 0.11;
           r = l + (fr - l) * P[2]; g = l + (fg - l) * P[2]; b = l + (fb - l) * P[2];
-        } else if (mode === 4) {
+        } else if (mode === 4 || mode === 17) {
           let ar = 0, ag = 0, ab = 0, ta = 0;
           for (let k = -R; k <= R; k += 1) {
             fetch(px, sp, sw, sh, tx + k * P[4] / sw, ty + k * P[5] / sh);
             ar += px[0]; ag += px[1]; ab += px[2]; ta += px[3];
           }
           const n = R * 2 + 1;
-          r = ar / n; g = ag / n; b = ab / n; a = ta;
+          r = ar / n; g = ag / n; b = ab / n; a = mode === 17 ? ta / n : ta;
         } else if (mode >= 6 && mode <= 16) {
           const c = progs(mode, tx, ty);
           if (!c) continue; // discarded: the target keeps its clear colour

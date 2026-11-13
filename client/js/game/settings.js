@@ -15,6 +15,7 @@ export const DEFAULT_KEYS = {
 const DEFAULTS = {
   preloadTextures:true,functionKeyChords:true,zoomEnabled:true,dynamicLights:false,dynamicLightsOthers:true,fullBright:false,
   operatorItemsTab:false,onlyShowSecureChat:false,panoramaSpeed:1,notificationDisplayTime:1,darknessEffectScale:1,damageTiltStrength:1,glintSpeed:.5,glintStrength:.75,rawMouseInput:true,
+  menuBackgroundBlur: .5, hideSplashTexts: false, narratorHotkey: true, allowServerListing: true,
   skipMultiplayerWarning: false,
   darkMojangStudiosBackground: false,
   hideLightningFlashes:false,

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "updatedOn": "2026-11-11",
+  "updatedOn": "2026-11-14",
   "target": "1.20.6",
   "branch": "1.20.6",
   "fullParity": false,
@@ -237,7 +237,8 @@
         "Native GUI sprites now supply the title logo, buttons/sliders, HUD, checkbox, toast, spectator and boss-bar consumers. Sprite scaling supports native stretch/tile/nine-slice metadata and resource-pack ownership; required sprites preload before the menu.",
         "UUID pack push/pop/replace, concurrent downloads, native result statuses, forced prompts, reload rollback and stale download cancellation are implemented in both Configuration and Play. Native max download size is 0xFA00000 (DownloadedPackSource$4).",
         "Target tests pass; real Chrome rendered the native title screen/HUD on the local vanilla fixture and joined Arch with 49 chunks and no recorded client errors.",
-        "Native atlas sources/palette permutations, font references/filter/Unihex providers, overlays and broader GUI pixel acceptance remain open; P10 is not complete."
+        "Native atlas sources/palette permutations, font references/filter/Unihex providers, overlays and broader GUI pixel acceptance remain open; P10 is not complete.",
+        "2026-11-14 native-menu batch: panorama/background/list sprites, six-pass blur on WebGL 2/WebGPU/software, target resource-pack geometry/format-range handling and JSON menu credits; detailed acceptance and remaining gaps in ui-parity-1.20.6.md. P10 remains partial."
       ]
     },
     {
@@ -293,7 +294,8 @@
         "NBT-text and field adapters now exercise actual chat, profile/key, team/objective/score, boss/title/death, sound, command and particle consumers rather than only generic packet decoding.",
         "Command argument and particle IDs are generated from exact Mojang reports; native ArgumentTypeInfos confirms property-free templates omitted by the upstream schema. Native Explosion.finalizeExplosion selects server-supplied sound/particles and preserves KEEP blocks.",
         "Native Configuration registries remain available to chat-type decoration and damage effects through a typed consumer view.",
-        "Focused target tests pass 117/117 before the remaining GUI/signing/new-particle/native-format acceptance; P13 is not complete."
+        "Focused target tests pass 117/117 before the remaining GUI/signing/new-particle/native-format acceptance; P13 is not complete.",
+        "Exact target option arrays and four native Java layout fixtures checked; Online/Attribution pages and new Accessibility settings implemented. Target gate 141/141 plus a separate real-browser blur test across all three backends. Remaining screens and secure signing are not complete."
       ]
     },
     {
