@@ -1,3 +1,4 @@
+import{unihexProvider}from'./font-unihex.js';
 // 1.13+ font provider stack. Definitions are layered; provider textures use the
 // highest-priority resource, while missing glyphs fall through to lower providers.
 import {decodePng} from '../util/png.js';
@@ -24,27 +25,13 @@ export function bitmapProvider(assets,def,image,key) {
  const cw=Math.floor(image.width/rows[0].length),ch=Math.floor(image.height/rows.length),scale=height/ch,glyphs=new Map();
  if(!cw||!ch)throw new Error('Empty bitmap glyph cells');
  for(let row=0;row<rows.length;row++)for(let col=0;col<rows[row].length;col++) {
-  const char=rows[row][col];if(char==='\0'||char===' ')continue;
+  const char=rows[row][col];if(char==='\0')continue;
   let ink=0;for(let x=cw-1;x>=0&&!ink;x--)for(let y=0;y<ch;y++)if(image.data[((row*ch+y)*image.width+col*cw+x)*4+3]){ink=x+1;break;}
   glyphs.set(char,{advance:Math.floor(ink*scale+.5)+1,x:0,y:7-ascent,width:cw*scale,height,
    u0:col*cw/image.width,v0:row*ch/image.height,u1:(col+1)*cw/image.width,v1:(row+1)*ch/image.height,
    boldOffset:1,shadowOffset:1,texture:()=>texture(assets,key,image)});
  }
  return {type:'bitmap',get:ch=>glyphs.get(ch)||null};
-}
-function legacyProvider(assets,def,sizes) {
- const cache=new Map(),images=new Map();
- return {type:'legacy_unicode',get:ch=>{
-  if(cache.has(ch))return cache.get(ch);
-  const code=ch.codePointAt(0);if(code>0xffff)return null;
-  const n=sizes[code],left=n>>4,right=(n&15)+1;
-  if(!n||left>=right){cache.set(ch,null);return null;}
-  const page=(code>>8).toString(16).padStart(2,'0'),id=location(def.template.replace('%s',page),'textures/');
-  const glyph={advance:Math.floor((right-left)/2)+1,x:0,y:0,width:(right-left)/2,height:8,
-   u0:((code&15)*16+left)/256,v0:((code>>4)&15)/16,u1:((code&15)*16+right)/256,v1:(((code>>4)&15)+1)/16,boldOffset:.5,shadowOffset:.5,
-   texture:()=>{let img=images.get(id);if(img===undefined){images.set(id,null);fontBytes(assets,id).then(b=>{if(b)images.set(id,decodePng(b));}).catch(()=>{});}return img?texture(assets,'font:'+id,img):null;}};
-  cache.set(ch,glyph);return glyph;
- }};
 }
 let wasmModule;
 export function trueTypeProvider(assets,def,bytes,key) {
@@ -59,7 +46,7 @@ export function trueTypeProvider(assets,def,bytes,key) {
  const instance=new WebAssembly.Instance(wasmModule,{math:{pow:Math.pow,cos:Math.cos,acos:Math.acos,fmod:(a,b)=>a%b}}).exports;
  const pointer=instance.alloc(bytes.length);new Uint8Array(instance.memory.buffer,pointer,bytes.length).set(bytes);
  if(!instance.init(pointer))throw new Error('Invalid TTF');
- const skipped=new Set((Array.isArray(def.skip)?def.skip.join(''):def.skip||'').split('')),cache=new Map();
+ const skipped=new Set(Array.from(Array.isArray(def.skip)?def.skip.join(''):def.skip||'')),cache=new Map();
  let atlas=null,page=0,x=1,y=1,row=0;
  const bake=(glyph,pixels)=>{
   const w=pixels.width,h=pixels.height;
@@ -83,33 +70,47 @@ export function trueTypeProvider(assets,def,bytes,key) {
  }};
 }
 export class FontSet {
- constructor(assets,providers){this.assets=assets;this.providers=providers;this.normal=new Map();this.unicode=new Map();}
- glyph(ch,unicode=false){
-  const cache=unicode?this.unicode:this.normal;if(cache.has(ch))return cache.get(ch);
-  let glyph;for(const provider of this.providers){if(unicode&&!['legacy_unicode','space'].includes(provider.type))continue;glyph=provider.get(ch);if(glyph)break;}
-  if(!glyph&&ch===' ')glyph={advance:4,width:0,height:0,boldOffset:1,shadowOffset:1,texture:()=>null};
+ constructor(assets,providers){this.assets=assets;this.providers=providers;this.caches=new Map();}
+ glyph(ch,uniform=false){
+  const options={uniform:!!uniform,jp:!!this.assets.fontOptions?.jp},key=Number(options.uniform)+'/'+Number(options.jp);
+  let cache=this.caches.get(key);if(!cache)this.caches.set(key,cache=new Map());if(cache.has(ch))return cache.get(ch);
+  let glyph;for(const provider of this.providers){if(Object.entries(provider.filter||{}).some(([k,v])=>options[k]!==v))continue;glyph=provider.get(ch);if(glyph)break;}
   if(!glyph){const data=new Uint8Array(5*8*4);for(let y=0;y<8;y++)for(let x=0;x<5;x++)if(x===0||x===4||y===0||y===7)data.fill(255,(y*5+x)*4,(y*5+x+1)*4);
-   glyph={advance:6,x:0,y:0,width:5,height:8,u0:0,v0:0,u1:1,v1:1,boldOffset:1,shadowOffset:1,texture:()=>texture(this.assets,'font:missing',{width:5,height:8,data})};}
+   glyph={advance:6,x:0,y:0,width:5,height:8,u0:0,v0:0,u1:1,v1:1,boldOffset:1,shadowOffset:1,texture:()=>texture(this.assets,'font:missing',{width:5,height:8,data}),missing:true};}
   cache.set(ch,glyph);return glyph;
  }
 }
 export async function loadFontSets(assets) {
- const result={},fonts=new Set(['minecraft:default','minecraft:alt','minecraft:uniform']);
+ const result={},fonts=new Set(['minecraft:default','minecraft:alt','minecraft:uniform','minecraft:illageralt']);
  for(const pack of assets.packs||[])for(const path of pack.zip?.list(pack.prefix+'assets/')||[]){const match=/^([^/]+)\/font\/(.+)\.json$/.exec(path.slice((pack.prefix+'assets/').length));if(match)fonts.add(match[1]+':'+match[2]);}
- for(const id of fonts){
-  const [namespace,...parts]=id.split(':'),name=parts.join(':'),path='font/'+name+'.json',definitions=[];
-  for(const pack of assets.packs||[])if(pack.zip?.has(pack.prefix+'assets/'+namespace+'/'+path)||namespace==='minecraft'&&pack.has(path))try{const bytes=pack.zip?.read(pack.prefix+'assets/'+namespace+'/'+path)||pack.read(path);definitions.push(JSON.parse(decodeUtf8(bytes)));}catch(e){console.warn('Bad font definition',pack.id,path);}
-  const base=['minecraft:default','minecraft:alt','minecraft:uniform'].includes(id)?await assets.source.bytes(namespace+'/'+path):null;if(base)definitions.push(JSON.parse(decodeUtf8(base)));
-  const providers=[];
-  for(const definition of definitions)for(const def of definition.providers||[])try{
-   const key='font:'+id+':'+providers.length;
-   if(def.type==='space')providers.push(spaceProvider(def));
-   else if(def.type==='bitmap'){const b=await fontBytes(assets,location(def.file,'textures/'));if(b)providers.push(bitmapProvider(assets,def,decodePng(b),key));}
-   else if(def.type==='legacy_unicode'){const b=await fontBytes(assets,location(def.sizes));if(b)providers.push(legacyProvider(assets,def,b));}
-   else if(def.type==='ttf'){const b=await fontBytes(assets,location(def.file,'font/'));if(b)providers.push(trueTypeProvider(assets,def,b,key));}
-   else console.warn('Unsupported font provider',def.type);
-  }catch(e){console.warn('Bad font provider',name,e.message);}
-  if(providers.length){result[id]=new FontSet(assets,providers);if(namespace==='minecraft')result[name]=result[id];}
+ const resolved=new Map(),resources=new Map();
+ const resource=id=>{if(!resources.has(id))resources.set(id,fontBytes(assets,id));return resources.get(id);};
+ const filters=(a,b)=>{const out={...a};for(const[k,v]of Object.entries(b||{})){if(!['uniform','jp'].includes(k)||typeof v!=='boolean')throw Error('Invalid font filter');if(k in out&&out[k]!==v)return null;out[k]=v;}return out;};
+ async function resolve(id,parents=[]){
+  if(parents.includes(id)){console.warn('Cyclic font reference',id);return [];}
+  if(resolved.has(id))return resolved.get(id);
+  const promise=(async()=>{
+   const [namespace,...parts]=id.split(':'),name=parts.join(':'),path='font/'+name+'.json',definitions=[];
+   for(const pack of assets.packs||[])if(pack.zip?.has(pack.prefix+'assets/'+namespace+'/'+path)||namespace==='minecraft'&&pack.has?.(path))try{const bytes=pack.zip?.read(pack.prefix+'assets/'+namespace+'/'+path)||pack.read(path);definitions.push(JSON.parse(decodeUtf8(bytes)));}catch(e){console.warn('Bad font definition',pack.id,path);}
+   const base=await assets.source.bytes(namespace+'/'+path);if(base)definitions.push(JSON.parse(decodeUtf8(base)));
+   const providers=[];
+   for(const definition of definitions)for(const def of definition.providers||[])try{
+    const filter=filters({},def.filter),key='font:'+id+':'+providers.length;
+    if(def.type==='reference'){
+     for(const provider of await resolve(location(def.id),[...parents,id])){const merged=filters(filter,provider.filter);if(merged)providers.push({...provider,filter:merged});}
+     continue;
+    }
+    let provider;
+    if(def.type==='space')provider=spaceProvider(def);
+    else if(def.type==='bitmap'){const b=await resource(location(def.file,'textures/'));if(b)provider=bitmapProvider(assets,def,decodePng(b),key);}
+    else if(def.type==='unihex'){const b=await resource(location(def.hex_file));if(b)provider=unihexProvider(assets,def,b,key);}
+    else if(def.type==='ttf'){const b=await resource(location(def.file,'font/'));if(b)provider=trueTypeProvider(assets,def,b,key);}
+    else console.warn('Unsupported native font provider',def.type);
+    if(provider)providers.push({...provider,filter});
+   }catch(e){console.warn('Bad font provider',name,e.message);}
+   return providers;
+  })();resolved.set(id,promise);return promise;
  }
- return result;
+ for(const id of fonts){const providers=await resolve(id);result[id]=new FontSet(assets,providers);if(id.startsWith('minecraft:'))result[id.slice(10)]=result[id];}
+ result.__missing=new FontSet(assets,[]);return result;
 }

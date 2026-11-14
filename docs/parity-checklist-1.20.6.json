@@ -73,13 +73,13 @@
         "evidence": "Main native menu redesign accepted; exceptional backgrounds remain open."
       },
       "1.20.5|Changes / General / Font|1": {
-        "disposition": "needs_client_work",
+        "disposition": "client_acceptance_pending",
         "checkpoints": [
           "FONT-01",
           "FONT-02",
           "FONT-03"
         ],
-        "evidence": "Native references/filter/Unihex providers absent."
+        "evidence": "Native providers, filters, asset-index Unifont and Font Settings implemented and regression checked; live/backend acceptance remains."
       },
       "1.20.5|Changes / General / Item stack components|1": {
         "disposition": "needs_client_work",
@@ -292,44 +292,53 @@
     {
       "id": "FONT-01",
       "area": "Fonts and resources",
-      "status": "missing",
+      "status": "partial",
       "priority": 0,
       "phase": "P10",
       "scope": "multiplayer",
       "title": "Recursive font reference providers",
-      "reason": "loadFontSets supports only space/bitmap/legacy_unicode/ttf and warns on references.",
+      "reason": "Native reference/filter/Unihex stack and font-options navigation implemented; 78 Java glyph/pixel fixtures and GUI/provider regressions pass. Live WebMC pack/backend acceptance and remaining malformed-provider/complex-script cases are not certified.",
       "evidence": [
-        "client/js/gui/font-providers.js"
+        "client/js/gui/font-providers.js",
+        "docs/font-audit-1.20.6.md",
+        "tools/test-1.20.6-fonts.mjs",
+        "tools/fixtures/fonts-1.20.6.json"
       ],
       "acceptance": "Resolve default/custom font reference graphs with pack precedence, cycle handling and fallback."
     },
     {
       "id": "FONT-02",
       "area": "Fonts and resources",
-      "status": "missing",
+      "status": "partial",
       "priority": 0,
       "phase": "P10",
       "scope": "multiplayer",
       "title": "Unihex providers and asset-index font resources",
-      "reason": "No unihex provider exists; native unifont resources are not equivalent to a TTF fallback.",
+      "reason": "Native reference/filter/Unihex stack and font-options navigation implemented; 78 Java glyph/pixel fixtures and GUI/provider regressions pass. Live WebMC pack/backend acceptance and remaining malformed-provider/complex-script cases are not certified.",
       "evidence": [
         "client/js/gui/font-providers.js",
-        "docs/transition-1.20.6.md"
+        "docs/transition-1.20.6.md",
+        "docs/font-audit-1.20.6.md",
+        "tools/test-1.20.6-fonts.mjs",
+        "tools/fixtures/fonts-1.20.6.json"
       ],
       "acceptance": "Load native ZIP/hex glyphs, metrics and size overrides, including CJK and supplementary characters."
     },
     {
       "id": "FONT-03",
       "area": "Fonts and resources",
-      "status": "missing",
+      "status": "partial",
       "priority": 0,
       "phase": "P10",
       "scope": "multiplayer",
       "title": "Uniform/Japanese filters and native Font Settings navigation",
-      "reason": "Current force-Unicode skips provider families rather than evaluating native filters.",
+      "reason": "Native reference/filter/Unihex stack and font-options navigation implemented; 78 Java glyph/pixel fixtures and GUI/provider regressions pass. Live WebMC pack/backend acceptance and remaining malformed-provider/complex-script cases are not certified.",
       "evidence": [
         "client/js/gui/font-providers.js",
-        "client/js/gui/screens/options.js"
+        "client/js/gui/screens/options.js",
+        "docs/font-audit-1.20.6.md",
+        "tools/test-1.20.6-fonts.mjs",
+        "tools/fixtures/fonts-1.20.6.json"
       ],
       "acceptance": "Both native font options select correct filtered providers, survive reload and appear on the native Language/Font pages."
     },

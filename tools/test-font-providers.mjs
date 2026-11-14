@@ -7,9 +7,9 @@ import {FontRenderer} from '../client/js/gui/font.js';
 import {Game} from '../client/js/game/game.js';
 import {buildTextMeshes} from '../client/js/render/text-mesh.js';
 import {loadFontSets,trueTypeProvider,bitmapProvider,FontSet} from '../client/js/gui/font-providers.js';
-import mcassets from '../lib/mcassets.js';
-const jar=new ZipFile(await mcassets.locateJar());
-function assets(){const a={version:1,packs:[],textures:new Map(),source:{bytes:async name=>jar.read('assets/'+name)},image:()=>null,texture:()=>null,
+import {fontBytes} from './port-1.20.6/font-inputs.mjs';
+const jar=new ZipFile(new URL('../cache/port-1.20.6/client.jar',import.meta.url));
+function assets(){const a={version:1,packs:[],textures:new Map(),source:{bytes:async name=>fontBytes(name)},image:()=>null,texture:()=>null,
  device:{updateTexture:(tex,data,x,y,w,h)=>{tex.upload={data,x,y,w,h};}},makeTexture:(key,width,height,data)=>{const tex={width,height,data};a.textures.set(key,tex);return tex;}};return a;}
 
 test('real default font JSON resolves accented and non-Latin sheets before old ASCII/Unicode fallback',async()=>{
@@ -25,7 +25,7 @@ test('real default font JSON resolves accented and non-Latin sheets before old A
 });
 
 test('resource-pack font definitions add providers ahead of base definitions and survive reloads',async()=>{
- const a=assets(),def=JSON.parse(jar.read('assets/minecraft/font/default.json'));
+ const a=assets(),def=JSON.parse(fontBytes('minecraft/font/include/default.json'));
  const bitmap=def.providers.find(p=>p.file?.endsWith('ascii.png'));const p={type:'bitmap',file:'minecraft:font/ascii.png',height:8,ascent:5,chars:bitmap.chars};
  const bytes=new TextEncoder().encode(JSON.stringify({providers:[p]}));
  a.packs=[{id:'font-test',has:path=>path==='font/default.json',read:()=>bytes}];a.fontSets=await loadFontSets(a);

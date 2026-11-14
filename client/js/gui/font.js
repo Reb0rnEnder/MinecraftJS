@@ -60,9 +60,9 @@ export class FontRenderer {
     this.cell = cell;
   }
 
-  _unicodeFor(fontId){return this.unicode&&this.texPath!=='font/ascii_sga.png'&&(!fontId||fontId==='minecraft:default');}
+  _unicodeFor(fontId){return !!this.unicode;}
 
-  _providerSet(fontId) { if(fontId&&this.assets.fontSets?.[fontId])return this.assets.fontSets[fontId];return this.assets.fontSets?.[this.texPath === 'font/ascii_sga.png' ? 'alt' : 'default']; }
+  _providerSet(fontId) { if(fontId)return this.assets.fontSets?.[fontId]??this.assets.fontSets?.__missing;return this.assets.fontSets?.[this.texPath === 'font/ascii_sga.png' ? 'alt' : 'default']; }
 
   _ready() {
     if (this.measuredVersion !== this.assets.version) this._widthBuckets = null;
@@ -104,7 +104,7 @@ export class FontRenderer {
       const cw = this.charW(ch,fontId);
       const set = this._providerSet(fontId);
       const offset = set ? set.glyph(ch, this._unicodeFor(fontId)).boldOffset : 1;
-      if (cw > 0) w += cw + (bold ? offset : 0);
+      if (set || cw > 0) w += cw + (bold ? offset : 0);
     }
     return this._providerSet() ? Math.ceil(w) : w;
   }
@@ -151,8 +151,8 @@ export class FontRenderer {
       const set = this._providerSet(fontId), glyph = set?.glyph(ch, this._unicodeFor(fontId));
       const shadowOffset = isShadow && set ? glyph.shadowOffset : 0, boldOffset = glyph?.boldOffset ?? 1;
       const adv = this._glyph(out, ascii, ch, x + shadowOffset, y + shadowOffset, c, italic,fontId);
-      if (bold && adv > 0) this._glyph(out, ascii, ch, x + shadowOffset + boldOffset, y + shadowOffset, c, italic,fontId);
-      const total = adv + (bold && adv > 0 ? boldOffset : 0);
+      if (bold && (set || adv > 0)) this._glyph(out, ascii, ch, x + shadowOffset + boldOffset, y + shadowOffset, c, italic,fontId);
+      const total = adv + (bold && (set || adv > 0) ? boldOffset : 0);
       if (strike) out.push({ tex: null, x0: x, y0: y + 4, x1: x + total, y1: y + 5, color: c });
       if (underline) out.push({ tex: null, x0: x - 1, y0: y + 8, x1: x + total, y1: y + 9, color: c });
       x += total;

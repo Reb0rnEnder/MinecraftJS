@@ -88,6 +88,7 @@ function nativeOption(screen,key) {
     case 'options.damageTiltStrength':case 'options.glintSpeed':case 'options.glintStrength':case 'options.accessibility.panorama_speed':return {...slider(key,{'options.damageTiltStrength':'damageTiltStrength','options.glintSpeed':'glintSpeed','options.glintStrength':'glintStrength','options.accessibility.panorama_speed':'panoramaSpeed'}[key]),tip:()=>tr(key+'.tooltip')};
     case 'options.notifications.display_time':return {slider:true,label:v=>trOption(key,tr('options.multiplier',(Math.round(v*95+5)/10).toFixed(1))),value:()=>(s.notificationDisplayTime-.5)/9.5,set:v=>{s.notificationDisplayTime=Math.round(v*95+5)/10;}};
     case 'options.onlyShowSecureChat':return {...toggle(key,'onlyShowSecureChat'),tip:()=>tr(key+'.tooltip')};
+    case 'options.forceUnicodeFont':case 'options.japaneseGlyphVariants':{const field=key==='options.forceUnicodeFont'?'forceUnicodeFont':'japaneseGlyphVariants';return{...toggle(key,field),click:()=>{s[field]=!s[field];g.applyLanguage();},tip:key==='options.japaneseGlyphVariants'?()=>tr(key+'.tooltip'):undefined};}
     case 'options.operatorItemsTab':return toggle(key,'operatorItemsTab');
     case 'options.accessibility.high_contrast':return {label:()=>trOption(key,onOff(s.resourcePacks.includes('high_contrast'))),click:async()=>{const ids=s.resourcePacks.filter(id=>id!=='high_contrast');if(!s.resourcePacks.includes('high_contrast'))ids.unshift('high_contrast');s.resourcePacks=ids;s.save();await g.assets.activatePacks(ids);await g.reloadResources();}};
     case 'options.chat.line_spacing':case 'options.chat.delay_instant':return chatOption(g,key);
@@ -132,6 +133,10 @@ class NativeOptionsListScreen extends OptionsBase {
   mouseUp(mx,my,button){super.mouseUp(mx,my,button);for(const b of this.rows.flat())b.mouseUp?.();this.list.mouseUp();}
   wheel(d){this.list.wheel(d);}
 }
+export class FontOptionsScreen extends NativeOptionsListScreen {
+  constructor(game,parent){super(game,parent,'options.font.title');}
+  optionKeys(){return VANILLA_UI.fontOptions;}
+}
 export class AccessibilityScreen extends NativeOptionsListScreen {
   constructor(game,parent){super(game,parent,'options.accessibility.title');}
   optionKeys(){return VANILLA_UI.accessibilityOptions;}
@@ -160,11 +165,7 @@ class LanguageScreen extends OptionsBase {
   }
   init() {
     const s = this.s, cx = this.width / 2;
-    this.buttons.push(new Button(100, cx - 155, this.height - 38, 150, 20, () => trOption('options.forceUnicodeFont', onOff(s.forceUnicodeFont)), () => {
-      s.forceUnicodeFont = !s.forceUnicodeFont;
-      s.save();
-      this.game.applyLanguage();
-    }));
+    this.buttons.push(new Button(100,cx-155,this.height-38,150,20,tr('options.font'),()=>this.game.screens.open(new FontOptionsScreen(this.game,this))));
     this.buttons.push(new Button(6, cx - 155 + 160, this.height - 38, 150, 20, tr('gui.done'), () => this.done()));
     const codes = this.codes;
     const old = this.list;

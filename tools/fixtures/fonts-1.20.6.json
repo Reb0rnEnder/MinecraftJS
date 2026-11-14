@@ -1,0 +1,569 @@
+{
+  "clientJarSha1": "05b6f1c6b46a29d6ea82b4e0d42190e42402030f",
+  "extractorSha256": "0e515d42692054430d50908916e262a749f7c004be02357df5189bcc547f534d",
+  "minecraftVersion": "1.20.6",
+  "samples": [
+    {
+      "glyphs": [
+        {
+          "character": "A",
+          "missing": true
+        },
+        {
+          "character": "ą",
+          "missing": true
+        },
+        {
+          "character": "Ą",
+          "missing": true
+        },
+        {
+          "character": "ć",
+          "missing": true
+        },
+        {
+          "character": "Ć",
+          "missing": true
+        },
+        {
+          "character": "ę",
+          "missing": true
+        },
+        {
+          "character": "Ę",
+          "missing": true
+        },
+        {
+          "character": "ł",
+          "missing": true
+        },
+        {
+          "character": "Ł",
+          "missing": true
+        },
+        {
+          "character": "ń",
+          "missing": true
+        },
+        {
+          "character": "Ń",
+          "missing": true
+        },
+        {
+          "character": "ó",
+          "missing": true
+        },
+        {
+          "character": "Ó",
+          "missing": true
+        },
+        {
+          "character": "ś",
+          "missing": true
+        },
+        {
+          "character": "Ś",
+          "missing": true
+        },
+        {
+          "character": "ź",
+          "missing": true
+        },
+        {
+          "character": "Ź",
+          "missing": true
+        },
+        {
+          "character": "ż",
+          "missing": true
+        },
+        {
+          "character": "Ż",
+          "missing": true
+        },
+        {
+          "character": "Ж",
+          "missing": true
+        },
+        {
+          "character": "→",
+          "missing": true
+        },
+        {
+          "advance": 9,
+          "alphaSha256": "264bb3a42781f9cf60530775667b03771881acaed8cb876a9c0ace647a76120e",
+          "boldAdvance": 9.5,
+          "character": "中",
+          "pixelWidth": 16,
+          "shadowOffset": 0.5,
+          "width": 8
+        },
+        {
+          "advance": 9,
+          "alphaSha256": "bd69b4c4274fde491f29958950e6d1f1b9af6108bf84ca2d8f4028c6f881bc77",
+          "boldAdvance": 9.5,
+          "character": "文",
+          "pixelWidth": 16,
+          "shadowOffset": 0.5,
+          "width": 8
+        },
+        {
+          "advance": 9,
+          "alphaSha256": "4be8a5d3332b5d7465872c5a6f749978db13d70367998bf6e1dad97209d6f529",
+          "boldAdvance": 9.5,
+          "character": "骨",
+          "pixelWidth": 16,
+          "shadowOffset": 0.5,
+          "width": 8
+        },
+        {
+          "advance": 9,
+          "alphaSha256": "ad704ccc6aab3f56e64221a3df20780f696b38682426f7a185d603a5a4b7ac2b",
+          "boldAdvance": 9.5,
+          "character": "直",
+          "pixelWidth": 16,
+          "shadowOffset": 0.5,
+          "width": 8
+        },
+        {
+          "advance": 9,
+          "alphaSha256": "8eb34251d84828824921803580e6518ce2ee8695bc0088eabd3c7bb7db5cc315",
+          "boldAdvance": 9.5,
+          "character": "令",
+          "pixelWidth": 16,
+          "shadowOffset": 0.5,
+          "width": 8
+        },
+        {
+          "advance": 9,
+          "alphaSha256": "50627a58ef9483791d8d2434d4bd8b4f929cabf182ddf702f1e323c7d9206d43",
+          "boldAdvance": 9.5,
+          "character": "あ",
+          "pixelWidth": 16,
+          "shadowOffset": 0.5,
+          "width": 8
+        },
+        {
+          "character": "ｱ",
+          "missing": true
+        },
+        {
+          "character": "한",
+          "missing": true
+        },
+        {
+          "character": "😀",
+          "missing": true
+        },
+        {
+          "character": "🦨",
+          "missing": true
+        },
+        {
+          "character": " ",
+          "missing": true
+        },
+        {
+          "character": " ",
+          "missing": true
+        },
+        {
+          "character": " ",
+          "missing": true
+        },
+        {
+          "character": "　",
+          "missing": true
+        },
+        {
+          "character": "\u0000",
+          "missing": true
+        }
+      ],
+      "label": "japanese"
+    },
+    {
+      "glyphs": [
+        {
+          "advance": 4,
+          "alphaSha256": "4d55f12ef3743c7dcb71609fddaab7fed5482675457e321fd3c26f02fbc02274",
+          "boldAdvance": 4.5,
+          "character": "A",
+          "pixelWidth": 6,
+          "shadowOffset": 0.5,
+          "width": 3
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "1a417d2fffc359d838d4a676a947693f1f760629cc669c74c4aff68740c5fa2b",
+          "boldAdvance": 4.5,
+          "character": "ą",
+          "pixelWidth": 7,
+          "shadowOffset": 0.5,
+          "width": 3.5
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "9db0020f6b9ddb576213ac6ee356d191f577df8f67f2aa2de5680f3eaa0c5a39",
+          "boldAdvance": 4.5,
+          "character": "Ą",
+          "pixelWidth": 7,
+          "shadowOffset": 0.5,
+          "width": 3.5
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "6844187dbc6656736618e0e9cd8006b0fef4926ecf7163e9b3b10f3a9bc39c1f",
+          "boldAdvance": 4.5,
+          "character": "ć",
+          "pixelWidth": 6,
+          "shadowOffset": 0.5,
+          "width": 3
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "ab46e7915313c74bd40af1d04c3f61404d940a57da1cebff3260ee6171642146",
+          "boldAdvance": 4.5,
+          "character": "Ć",
+          "pixelWidth": 6,
+          "shadowOffset": 0.5,
+          "width": 3
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "40d3a5a372b94dd329e0c2095164d1a9dbbdb700c4be725c33f3bc72147c8693",
+          "boldAdvance": 4.5,
+          "character": "ę",
+          "pixelWidth": 6,
+          "shadowOffset": 0.5,
+          "width": 3
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "e06a1f469a15f5cbccf7469d64244a3f609e2f0512683ce13bd897a792058772",
+          "boldAdvance": 4.5,
+          "character": "Ę",
+          "pixelWidth": 6,
+          "shadowOffset": 0.5,
+          "width": 3
+        },
+        {
+          "advance": 3,
+          "alphaSha256": "a6cc6cdb683a3d5462b1104d0c13faa0677d7254f331abe6a41e052133ccf41a",
+          "boldAdvance": 3.5,
+          "character": "ł",
+          "pixelWidth": 5,
+          "shadowOffset": 0.5,
+          "width": 2.5
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "13f43b616ba13e0b2d9dca07e167f78bda9d2eb8f7fa20de7946885271084fe0",
+          "boldAdvance": 4.5,
+          "character": "Ł",
+          "pixelWidth": 7,
+          "shadowOffset": 0.5,
+          "width": 3.5
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "e0395f9e15e5e299ab75d1c6aed7d9f0f62f7f165e14872f0c109b80ba314b93",
+          "boldAdvance": 4.5,
+          "character": "ń",
+          "pixelWidth": 6,
+          "shadowOffset": 0.5,
+          "width": 3
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "b699fa2d2df8bfcec2f064defe8a67ee9f919a2a12a65b023f25ff756e0c167e",
+          "boldAdvance": 4.5,
+          "character": "Ń",
+          "pixelWidth": 6,
+          "shadowOffset": 0.5,
+          "width": 3
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "96cb804a7de0464f1200c534c98321cea7eb2987c6f40c6d955560aff0890c2b",
+          "boldAdvance": 4.5,
+          "character": "ó",
+          "pixelWidth": 6,
+          "shadowOffset": 0.5,
+          "width": 3
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "6e16772ef120f3aa0031abdd7b1a72de79339e51b92073e17f80179c55b927ff",
+          "boldAdvance": 4.5,
+          "character": "Ó",
+          "pixelWidth": 6,
+          "shadowOffset": 0.5,
+          "width": 3
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "ec672194ead648cf5f7d7cae82e9d868fed2e04698bfd3481c3c958b2be1be2d",
+          "boldAdvance": 4.5,
+          "character": "ś",
+          "pixelWidth": 6,
+          "shadowOffset": 0.5,
+          "width": 3
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "925599d8fdd254892ad4cc0bf5ccc7a20777ceee6b4f73aaad1e599d9798615d",
+          "boldAdvance": 4.5,
+          "character": "Ś",
+          "pixelWidth": 6,
+          "shadowOffset": 0.5,
+          "width": 3
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "56f92d38398b980b3160216eaaf5f5bfd789779e4135cb4eb80cd5b48e15e350",
+          "boldAdvance": 4.5,
+          "character": "ź",
+          "pixelWidth": 6,
+          "shadowOffset": 0.5,
+          "width": 3
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "ac7d8ab6fb7312e0a9f00543a4d53467a21db855f63363387d18f41226a91cfc",
+          "boldAdvance": 4.5,
+          "character": "Ź",
+          "pixelWidth": 6,
+          "shadowOffset": 0.5,
+          "width": 3
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "00f3ec868b97d40d9a6b2fa879a1e22a96e5775cdfa0953fee1c3daf1dcac48b",
+          "boldAdvance": 4.5,
+          "character": "ż",
+          "pixelWidth": 6,
+          "shadowOffset": 0.5,
+          "width": 3
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "99cd9129e69bdf521b228c2f7f3a112e5e771ce8502ea92cc116b7d4faed91f3",
+          "boldAdvance": 4.5,
+          "character": "Ż",
+          "pixelWidth": 6,
+          "shadowOffset": 0.5,
+          "width": 3
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "4dfa691100895dbea27e5dc6c0a8d067a53298a9fe8f2283265ced612fa24fce",
+          "boldAdvance": 4.5,
+          "character": "Ж",
+          "pixelWidth": 7,
+          "shadowOffset": 0.5,
+          "width": 3.5
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "4a4e5149c764235a701c767f43531c7b2b118eab648f6f12c62dd7f94cae729c",
+          "boldAdvance": 4.5,
+          "character": "→",
+          "pixelWidth": 7,
+          "shadowOffset": 0.5,
+          "width": 3.5
+        },
+        {
+          "advance": 9,
+          "alphaSha256": "44d1b3de9516032700caca3309bacb477eb7b43f7fd031cada34c15836e4df94",
+          "boldAdvance": 9.5,
+          "character": "中",
+          "pixelWidth": 16,
+          "shadowOffset": 0.5,
+          "width": 8
+        },
+        {
+          "advance": 9,
+          "alphaSha256": "b97f1eca016e26e6abee0d7827969089d75c565cd1b0bf7cbb7ac3ee7c2410b4",
+          "boldAdvance": 9.5,
+          "character": "文",
+          "pixelWidth": 16,
+          "shadowOffset": 0.5,
+          "width": 8
+        },
+        {
+          "advance": 9,
+          "alphaSha256": "c2a895594dbe835f0226895734a0fdc43d6f1d66df03be6d7127495d389897cd",
+          "boldAdvance": 9.5,
+          "character": "骨",
+          "pixelWidth": 16,
+          "shadowOffset": 0.5,
+          "width": 8
+        },
+        {
+          "advance": 9,
+          "alphaSha256": "0274ab308d7b7fa32719ae1542758af5483150092dc6d86e8b17d08765fbcfe1",
+          "boldAdvance": 9.5,
+          "character": "直",
+          "pixelWidth": 16,
+          "shadowOffset": 0.5,
+          "width": 8
+        },
+        {
+          "advance": 9,
+          "alphaSha256": "4800e0f4c19fdb9e19b28302019b91696a71fd62116488bc9658cdf180040e7e",
+          "boldAdvance": 9.5,
+          "character": "令",
+          "pixelWidth": 16,
+          "shadowOffset": 0.5,
+          "width": 8
+        },
+        {
+          "advance": 9,
+          "alphaSha256": "91001de0fa383829b1be1f9129459ae1f31eaa58b38da9af5cc9b9922546846a",
+          "boldAdvance": 9.5,
+          "character": "あ",
+          "pixelWidth": 16,
+          "shadowOffset": 0.5,
+          "width": 8
+        },
+        {
+          "advance": 4,
+          "alphaSha256": "84da0eeb08bdab725fa98152858d74b125774275ba6c7b50bd88969ef50e0c5c",
+          "boldAdvance": 4.5,
+          "character": "ｱ",
+          "pixelWidth": 7,
+          "shadowOffset": 0.5,
+          "width": 3.5
+        },
+        {
+          "advance": 8,
+          "alphaSha256": "05e2760faa7d2cc54b63de4f405b9b1bf04dcad1d024d409b27728f3bbf41506",
+          "boldAdvance": 8.5,
+          "character": "한",
+          "pixelWidth": 15,
+          "shadowOffset": 0.5,
+          "width": 7.5
+        },
+        {
+          "advance": 8,
+          "alphaSha256": "653718d7a52906013b414b0c575b8052efee361733e9f0bfdafff173b849fcbe",
+          "boldAdvance": 8.5,
+          "character": "😀",
+          "pixelWidth": 15,
+          "shadowOffset": 0.5,
+          "width": 7.5
+        },
+        {
+          "advance": 8,
+          "alphaSha256": "e7f7c4bd710eeaebc3358dcddaa2cedd9c325a87cfb2fd38490720abef9a4753",
+          "boldAdvance": 8.5,
+          "character": "🦨",
+          "pixelWidth": 15,
+          "shadowOffset": 0.5,
+          "width": 7.5
+        },
+        {
+          "advance": 5,
+          "alphaSha256": "81c611f35bff79491538b2f7cf201c7597a661a5c549633541c62bdc8af1613f",
+          "boldAdvance": 5.5,
+          "character": " ",
+          "pixelWidth": 9,
+          "shadowOffset": 0.5,
+          "width": 4.5
+        },
+        {
+          "advance": 5,
+          "alphaSha256": "81c611f35bff79491538b2f7cf201c7597a661a5c549633541c62bdc8af1613f",
+          "boldAdvance": 5.5,
+          "character": " ",
+          "pixelWidth": 9,
+          "shadowOffset": 0.5,
+          "width": 4.5
+        },
+        {
+          "advance": 5,
+          "alphaSha256": "81c611f35bff79491538b2f7cf201c7597a661a5c549633541c62bdc8af1613f",
+          "boldAdvance": 5.5,
+          "character": " ",
+          "pixelWidth": 9,
+          "shadowOffset": 0.5,
+          "width": 4.5
+        },
+        {
+          "advance": 9,
+          "alphaSha256": "e4d879a3407de578f579dfab4366fcea75a6649c683d9efe4f056f6505437574",
+          "boldAdvance": 9.5,
+          "character": "　",
+          "pixelWidth": 17,
+          "shadowOffset": 0.5,
+          "width": 8.5
+        },
+        {
+          "advance": 9,
+          "alphaSha256": "eeabfdfc02ede670a27f37fd1a27d738da4b6f2dfc693422a691d4e9484839e7",
+          "boldAdvance": 9.5,
+          "character": "\u0000",
+          "pixelWidth": 16,
+          "shadowOffset": 0.5,
+          "width": 8
+        }
+      ],
+      "label": "unifont"
+    },
+    {
+      "glyphs": [
+        {
+          "advance": 5,
+          "alphaSha256": "f83ff0783a4209185409b418bc2aa4938296713afafa7b2b9cf4e520ce63f37c",
+          "boldAdvance": 5.5,
+          "character": "",
+          "pixelWidth": 8,
+          "shadowOffset": 0.5,
+          "width": 4
+        },
+        {
+          "advance": 10,
+          "alphaSha256": "e93651eae26dae1b645a35902d5c840427673ce88239486e60ff46b382b5e8d0",
+          "boldAdvance": 10.5,
+          "character": "",
+          "pixelWidth": 18,
+          "shadowOffset": 0.5,
+          "width": 9
+        },
+        {
+          "advance": 10,
+          "alphaSha256": "049b41c7a66c12a0f8a3646ca7156f4cda492000557f72f0625f28ff0933dc44",
+          "boldAdvance": 10.5,
+          "character": "",
+          "pixelWidth": 18,
+          "shadowOffset": 0.5,
+          "width": 9
+        },
+        {
+          "advance": 10,
+          "alphaSha256": "049b41c7a66c12a0f8a3646ca7156f4cda492000557f72f0625f28ff0933dc44",
+          "boldAdvance": 10.5,
+          "character": "",
+          "pixelWidth": 18,
+          "shadowOffset": 0.5,
+          "width": 9
+        },
+        {
+          "advance": 5,
+          "alphaSha256": "38723a2e5e8a17aa7950dc008209944e898f69a7bd10a23c839d341e935fd5ca",
+          "boldAdvance": 5.5,
+          "character": "",
+          "pixelWidth": 8,
+          "shadowOffset": 0.5,
+          "width": 4
+        },
+        {
+          "character": "",
+          "missing": true
+        }
+      ],
+      "label": "widths-and-overrides"
+    }
+  ]
+}

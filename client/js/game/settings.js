@@ -82,6 +82,7 @@ const DEFAULTS = {
   lodDistance: 128, // World blocks from the camera; 0 disables terrain and entity LOD.
   language: 'en_us',
   forceUnicodeFont: false,
+  japaneseGlyphVariants: typeof navigator!=='undefined'&&/^ja(?:[-_]|$)/i.test(navigator.language||''),
   keys: { ...DEFAULT_KEYS },
   lastServer: { host: 'localhost', port: 25565 },
   username: 'WebPlayer',

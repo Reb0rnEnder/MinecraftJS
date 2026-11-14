@@ -407,8 +407,15 @@ export class Game {
   // Font flags for the current language (LanguageManager.isCurrentLocaleUnicode / isCurrentLanguageBidirectional)
   applyLanguage() {
     const f = this.gui.font;
-    f.unicode = !!this.settings.forceUnicodeFont;
-    f.bidi = !!this.assets.langBidi;
+    const uniform=!!this.settings.forceUnicodeFont,jp=!!this.settings.japaneseGlyphVariants,bidi=!!this.assets.langBidi;
+    const changed=f.unicode!==uniform||f.bidi!==bidi||!!this.assets.fontOptions?.jp!==jp;
+    this.assets.fontOptions={uniform,jp};f.unicode=uniform;f.bidi=bidi;
+    if(changed){
+      f._widthBuckets=null;
+      if(this.hud?.chat){this.hud.chatLines=[];for(let i=this.hud.chat.length-1;i>=0;i--)this.hud._wrapChatEntry(this.hud.chat[i]);this.hud.scrollChat(0);}
+      for(const v of this.entityRenderer?.visuals?.values()||[])v.tagText=null;
+      for(const t of this.tileRenderer?.tiles?.values()||[])if(t.type==='sign')this.tileRenderer._rebuild(t);
+    }
   }
 
   // Switch language (GuiLanguage): reload the strings, update the font and tell the server

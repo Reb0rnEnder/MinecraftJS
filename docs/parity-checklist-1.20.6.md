@@ -10,9 +10,9 @@ The native multiplayer foundation works. Substantial feature and acceptance work
 
 | Scope | Accepted checkpoints | Partial | Missing implementation | Needs verification | Total |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Native multiplayer + enabled native experiments | 11 | 33 | 18 | 15 | 77 |
+| Native multiplayer + enabled native experiments | 11 | 36 | 15 | 15 | 77 |
 | Separate products / optional compatibility | 0 | 2 | 2 | 0 | 4 |
-| All tracked checkpoints | 11 | 35 | 20 | 15 | 81 |
+| All tracked checkpoints | 11 | 38 | 17 | 15 | 81 |
 
 These **checkpoints differ in size and do not enumerate every defect**. 66 required checkpoints are still open. An honest percentage or ETA is unavailable until release coverage is triaged. Accepted rows cover exactly their named scope, not an entire subsystem.
 
@@ -21,7 +21,7 @@ Last recorded source gate: **162 target tests + 81 foliage backport tests**, zer
 ## What the source audit actually found
 
 - A Java-generated sword fixture decodes damage 37, but `Items.damage` reads 0; the custom-name fixture has no legacy NBT view. Effective component data exists but is not connected to major old item consumers. Run `node tools/port-1.20.6/audit-parity-consumers.mjs` for the read-only item diagnostic.
-- Font loading has no reference/filter/Unihex paths. The modern default font cannot be considered accepted from existing TTF support.
+- Font references, filters, Unihex and Font Settings now have native-backed regressions. Live pack/backend acceptance remains; TTF support alone does not certify every font format.
 - Armadillo model selection currently falls through to null; wolf rendering ignores the new variant registry and lacks armor layers.
 - Signs still use old text fields/front-side editing; decorated pots and display entities lack dedicated rendering consumers.
 - Score packets decode new fields while the scoreboard retains only numeric values. Jigsaw still has an older three-field editor.
@@ -55,9 +55,9 @@ A box is checked only for `accepted`. For each open row, implement/verify the co
 
 ### Fonts and resources
 
-- [ ] **FONT-01 — Recursive font reference providers** (P0; Missing implementation; P10). Resolve default/custom font reference graphs with pack precedence, cycle handling and fallback. Evidence/start: [client/js/gui/font-providers.js](../client/js/gui/font-providers.js).
-- [ ] **FONT-02 — Unihex providers and asset-index font resources** (P0; Missing implementation; P10). Load native ZIP/hex glyphs, metrics and size overrides, including CJK and supplementary characters. Evidence/start: [client/js/gui/font-providers.js](../client/js/gui/font-providers.js), [docs/transition-1.20.6.md](transition-1.20.6.md).
-- [ ] **FONT-03 — Uniform/Japanese filters and native Font Settings navigation** (P0; Missing implementation; P10). Both native font options select correct filtered providers, survive reload and appear on the native Language/Font pages. Evidence/start: [client/js/gui/font-providers.js](../client/js/gui/font-providers.js), [client/js/gui/screens/options.js](../client/js/gui/screens/options.js).
+- [ ] **FONT-01 — Recursive font reference providers** (P0; Partial; P10). Resolve default/custom font reference graphs with pack precedence, cycle handling and fallback. Evidence/start: [client/js/gui/font-providers.js](../client/js/gui/font-providers.js), [docs/font-audit-1.20.6.md](font-audit-1.20.6.md).
+- [ ] **FONT-02 — Unihex providers and asset-index font resources** (P0; Partial; P10). Load native ZIP/hex glyphs, metrics and size overrides, including CJK and supplementary characters. Evidence/start: [client/js/gui/font-providers.js](../client/js/gui/font-providers.js), [docs/transition-1.20.6.md](transition-1.20.6.md).
+- [ ] **FONT-03 — Uniform/Japanese filters and native Font Settings navigation** (P0; Partial; P10). Both native font options select correct filtered providers, survive reload and appear on the native Language/Font pages. Evidence/start: [client/js/gui/font-providers.js](../client/js/gui/font-providers.js), [client/js/gui/screens/options.js](../client/js/gui/screens/options.js).
 - [ ] **PACK-01 — Resource-pack overlays and resource filters** (P1; Missing implementation; P10). Default/custom packs honor format-gated overlays and filtered resources, including reload and removal. Evidence/start: [client/js/asset-source.js](../client/js/asset-source.js), [client/js/resource-models.js](../client/js/resource-models.js).
 - [ ] **PACK-02 — Native atlas source JSON and paletted permutations** (P1; Missing implementation; P10). Native source families and generated trim/palette sprites resolve under custom pack overrides. Evidence/start: [client/js/render/atlas.js](../client/js/render/atlas.js), [client/js/assets.js](../client/js/assets.js).
 - [ ] **PACK-03 — Default-pack priority, pack import and focus behavior** (P1; Partial; P10). Reordering Default changes effective resource priority; import/confirmation/focus match native. Evidence/start: [client/js/gui/screens/packs.js](../client/js/gui/screens/packs.js), [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md).
