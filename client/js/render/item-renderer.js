@@ -326,7 +326,8 @@ export class ItemRenderer {
     }
     if (name === 'lily_pad') return 0x71c35c; // BlockColors with no world/position
     if (name === 'vine') return 0x48b518;
-    if (name.endsWith('_leaves')) {
+    if (name === 'mangrove_leaves') return 0x92c648;
+    if (name === 'oak_leaves' || name === 'jungle_leaves' || name === 'acacia_leaves' || name === 'dark_oak_leaves' || name === 'mangrove_leaves' || name === 'spruce_leaves' || name === 'birch_leaves') {
       if (name.startsWith('spruce')) return 0x619961;
       if (name.startsWith('birch')) return 0x80a755;
       return 0x48b518;
