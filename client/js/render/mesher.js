@@ -97,7 +97,7 @@ export function faceFlags() {
     if (!b) continue;
     const n = b.name;
     let f = 0;
-    if (n.endsWith('_leaves')) f |= 1;
+    if (n === 'oak_leaves' || n === 'jungle_leaves' || n === 'acacia_leaves' || n === 'dark_oak_leaves') f |= 1;
     if (n === 'glass' || (b.translucent&&!b.isPane&&!b.isLiquid) || n.endsWith('_stained_glass') || n === 'ice' || n === 'frosted_ice' || n === 'slime_block' || n === 'nether_portal') f |= 2;
     if (b.isPane) f |= 4;
     FACE_FLAGS[i] = f;
@@ -195,13 +195,13 @@ export class Mesher {
     const n = b.name;
     const props = getStateProperties(state);
     switch (n) {
-      case 'grass_block': case 'grass': case 'tall_grass': case 'fern': case 'large_fern': case 'sugar_cane':
-        return this.biomeBlend(x, y, z, grassColor);
+      case 'grass_block': case 'grass': case 'tall_grass': case 'fern': case 'large_fern': case 'sugar_cane': case 'potted_fern':
+        return this.biomeBlend(x, (n==='tall_grass'||n==='large_fern')&&props.half==='upper'?y-1:y, z, grassColor);
       case 'vine': return this.biomeBlend(x, y, z, foliageColor);
       case 'spruce_leaves': return 0x619961;
       case 'birch_leaves': return 0x80a755;
       default:
-        if (n.endsWith('_leaves')) return this.biomeBlend(x, y, z, foliageColor);
+        if (n === 'oak_leaves' || n === 'jungle_leaves' || n === 'acacia_leaves' || n === 'dark_oak_leaves') return this.biomeBlend(x, y, z, foliageColor);
         if (n === 'lily_pad') return 0x208030;
         if (n === 'attached_pumpkin_stem' || n === 'attached_melon_stem') return 0xe0c71c;
         if (n === 'pumpkin_stem' || n === 'melon_stem') {
@@ -225,7 +225,7 @@ export class Mesher {
     const radius = Math.max(0, Math.min(7, this.options.biomeBlendRadius ?? 2)), samples = (radius * 2 + 1) ** 2;
     for (let dz = -radius; dz <= radius; dz++) {
       for (let dx = -radius; dx <= radius; dx++) {
-        const c = fn(this.world.getBiome(x + dx, z + dz,y), y);
+        const c = fn(this.world.getBiome(x + dx, z + dz,y), y, x + dx, z + dz);
         r += (c >> 16) & 255; g += (c >> 8) & 255; b += c & 255;
       }
     }
