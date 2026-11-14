@@ -76,6 +76,11 @@ export async function generateComponentSchema(check = false) {
   assert.equal(componentNames.length, 56);
 
   const types = collectTypes(protocol.types, ["Slot", "SlotComponent"]);
+  // Native PotionContents has exactly potion/customColor/customEffects in
+  // protocol 766. The pinned upstream schema includes a later customName field.
+  const potion=types.SlotComponent[1][1].type[1].fields.potion_contents;
+  assert.equal(potion[0],'container');
+  potion[1]=potion[1].filter(field=>field.name!=='customName');
   const schema = {
     minecraftVersion: target.minecraftVersion,
     protocol: target.protocol,

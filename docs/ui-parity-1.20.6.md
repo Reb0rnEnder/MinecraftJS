@@ -23,8 +23,16 @@ The [1.20.5 release notes](https://www.minecraft.net/en-us/article/minecraft-jav
 - `tools/test-1.20.6-ui.mjs` checks geometry, option construction, native blur definition, resource-pack sprites/compatibility/keyboard actions and menu-credits lifecycle.
 - `PLAYWRIGHT_MODULE=... node --test tools/test-menu-blur-browser.mjs` executes WebGL 2, WebGPU and software rendering. The six-pass 31×19 test agrees with an independent box-filter reference within one RGBA channel value on WebGL and exactly on the other two backends. This is not a gameplay performance measurement.
 - Chrome smoke captures of Title, Options, Accessibility, Online, Credits & Attribution, and Resource Packs are in ignored `cache/port-1.20.6/ui-audit/`; no console/page errors or missing required textures were recorded.
-- Target gate: 141 tests pass, zero skipped. This source batch does not rebuild published distributions.
+- Target gate: 152 tests pass, zero skipped. This source batch does not rebuild published distributions.
 
 ## Version applicability
 
 The panorama-menu redesign, menu blur, new title footer/navigation and narrator-hotkey row belong to the 1.20.5+ target. `supported_formats` belongs to 1.20.2+. Existing older targets must retain their own layouts/assets and format rules. Native pack-entry sound/localization differences and inherited resource ordering are still part of the cross-version audit; they are not claimed as fully accepted backports here.
+
+## Creative inventory follow-up
+
+The empty placeholder catalog caused the reported `background` crash. Native `CreativeModeTabs` now supplies all eight feature combinations and operator permission variants, retaining stable 1.20 content and gating 1.21 experiments. All 1,694 distinct native stacks preserve data-component patches and match native codec bytes after decoding and re-encoding. Tab and scrollbar sprites are native 1.20.6 sprites. A browser check rendered every visible tab and placed a component-bearing enchanted book into the hotbar; the isolated native server accepted its stored enchantment.
+
+The native potion codec has no later-version `customName` field; the generated schema now explicitly corrects that upstream mismatch. Item mechanics, potion/effect metadata consumers, dynamic registry remapping and complete inventory interaction acceptance remain open.
+
+Shared native exception presentation was backported to all nine older targets; native saved-toolbar metadata/item limits were also corrected on 1.16.5–1.19.4. All 76 relevant old-target regressions passed. The 1.20.6 component catalog and sprites are target-specific and were not copied into older versions.

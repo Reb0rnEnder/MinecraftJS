@@ -367,6 +367,10 @@ function rawSlot(item) {
   };
 }
 
+export function createItemStack766(itemId,count=1,patch={added:[],removed:[]}) {
+  return decorateSlot({itemId,itemCount:count,components:patch.added||[],removeComponents:(patch.removed||[]).map(type=>({type}))});
+}
+
 export function readSlot766(reader) {
   return decorateSlot(readType(reader, TYPES.Slot));
 }

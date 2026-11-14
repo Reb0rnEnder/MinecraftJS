@@ -1,3 +1,6 @@
+import {nativeCreativeRows766,creativeStack766} from '../creative-data-1.20.6.js';
+import {Writer766} from '../../net/configuration-1.20.6.js';
+import {ITEM_DEFAULTS_766} from '../../net/item-components-1.20.6-defaults.js';
 const creativeTabIconStacks = new WeakMap();
 // Container GUIs (port of GuiContainer and subclasses, incl. GuiContainerCreative).
 import { FontRenderer, stripCodes } from '../font.js';
@@ -853,14 +856,13 @@ export function openContainerScreen(game, win) {
 
 // Native Java 1.14.4 creative tabs, extracted from the pinned client jar by tools/creative-dump.
 // The middle tuple field is retained for the data format only; flattened variants have distinct IDs.
-const stackOf = ([id, , tag]) => ({ id, count: 1, damage: 0, nbt: tag ? { t: 10, name: '', v: structuredClone(tag) } : null });
+const stackOf = tuple => tuple?.[3] ? creativeStack766(tuple) : (([id,,tag])=>({id,count:1,damage:0,nbt:tag?{t:10,name:'',v:structuredClone(tag)}:null}))(tuple);
 // Creative templates/snapshots must never share mutable NBT with player stacks. Prefer
 // the structured tag over an older raw buffer when a caller has changed NBT in place.
-const creativeCopy = (it) => it ? { id: it.id, count: it.count, damage: 0,
-  nbt: it.nbt ? structuredClone(it.nbt) : null, nbtRaw: !it.nbt && it.nbtRaw ? it.nbtRaw.slice() : null } : null;
+const creativeCopy = copy;
 const creativeLocked = (it) => !!(it && (it.locked || it.nbt?.v?.CustomCreativeLock));
 const sendCreativeSlot = (game, slot, it) => game.send(C.creativeSlot(slot, creativeCopy(it)));
-export function creativeRows(game){const data=game.assets.data.creative,enabled=game.enabledFeatures,mask=(enabled?.has('minecraft:update_1_20')?1:0)|(enabled?.has('minecraft:bundle')?2:0),catalog=data.featureCatalogs?.find(c=>c.mask===mask)||data;return game.settings.operatorItemsTab&&game.canUseCommandBlock()?catalog.operatorTabs:catalog.tabs;}
+export function creativeRows(game){const native=nativeCreativeRows766(game);if(native)return native;const data=game.assets.data.creative,enabled=game.enabledFeatures,mask=(enabled?.has('minecraft:update_1_20')?1:0)|(enabled?.has('minecraft:bundle')?2:0),catalog=data.featureCatalogs?.find(c=>c.mask===mask)||data;return game.settings.operatorItemsTab&&game.canUseCommandBlock()?catalog.operatorTabs:catalog.tabs;}
 const tabData = game=>creativeRows(game).filter(t=>t.type!=='category'||t.items.length>0);
 const tabInfo = (game, i) => tabData(game).find((t) => t.index === i);
 const label = (game, i) => (tabInfo(game, i) || {}).label;
@@ -905,15 +907,15 @@ const emptyHotbars = () => Array.from({ length: 9 }, () => new Array(9).fill(nul
 export function hotbarSnapshots() {
   try {
     const saved = fromJson(localStorage.getItem(HOTBARS_KEY) || 'null');
-    if (saved?.version !== 1 || saved.minecraftVersion !== '1.15.2' || saved.protocol !== 578 || saved.dataVersion !== 2230) return emptyHotbars();
+    if (saved?.version !== 1 || saved.minecraftVersion !== '1.20.6' || saved.protocol !== 766 || saved.dataVersion !== 3839) return emptyHotbars();
     if (!Array.isArray(saved.bars) || saved.bars.length !== 9) return emptyHotbars();
     return saved.bars.map(bar => {
       if (!Array.isArray(bar) || bar.length !== 9) return new Array(9).fill(null);
       return bar.map(it => {
-        if (!it || !Number.isInteger(it.id) || it.id < 1 || it.id > 883 || !Number.isInteger(it.count) || it.count < 1 || it.count > 127 || creativeLocked(it)) return null;
+        if (!it || !Number.isInteger(it.id) || it.id < 1 || it.id >= ITEM_DEFAULTS_766.items.length || !Number.isInteger(it.count) || it.count < 1 || it.count > 127 || creativeLocked(it)) return null;
         const copied = creativeCopy(it);
         // Check that persisted typed NBT is serializable before it reaches a live click.
-        new Writer().slot(copied).build();
+        new Writer766().slot(copied).build();
         return copied;
       });
     });
@@ -921,7 +923,7 @@ export function hotbarSnapshots() {
 }
 function saveHotbarSnapshots(list) {
   try {
-    localStorage.setItem(HOTBARS_KEY, toJson({ version: 1, minecraftVersion: '1.15.2', protocol: 578, dataVersion: 2230, bars: list }));
+    localStorage.setItem(HOTBARS_KEY, toJson({ version: 1, minecraftVersion: '1.20.6', protocol: 766, dataVersion: 3839, bars: list }));
     return true;
   } catch (e) { return false; /* storage unavailable */ }
 }
@@ -1077,7 +1079,7 @@ export class CreativeScreen extends ContainerScreen {
     if (info.scrollbar) {
       const sx = L + 175, sy = T + 18;
       const enabled = this.maxScrollRows() > 0;
-      gui.blit('gui/container/creative_inventory/tabs.png', sx, sy + Math.floor((112 - 17) * this.scroll), 232 + (enabled ? 0 : 12), 0, 12, 15);
+      gui.sprite('container/creative_inventory/scroller'+(enabled?'':'_disabled'),sx,sy+Math.floor((112-17)*this.scroll),12,15);
     }
     this._drawTab(gui, info, true);
     if (info.title) gui.text(tr('itemGroup.' + info.label), L + 8, T + 6, 0x404040, false);
@@ -1162,9 +1164,7 @@ export class CreativeScreen extends ContainerScreen {
 
   _drawTab(gui, t, selected) {
     const r = this._tabRect(t);
-    let v = r.top ? 0 : 64;
-    if (selected) v += 32;
-    gui.blit('gui/container/creative_inventory/tabs.png', r.x, r.y, r.col * 26, v, 26, 32);
+    gui.sprite('container/creative_inventory/tab_'+(r.top?'top':'bottom')+'_'+(selected?'selected':'unselected')+'_'+(r.col+1),r.x,r.y,26,32);
     const ix = r.x + 5, iy = r.y + 8 + (r.top ? 1 : -1);
     let stack = creativeTabIconStacks.get(t.icon);
     if (!stack) { stack = stackOf(t.icon); creativeTabIconStacks.set(t.icon, stack); }

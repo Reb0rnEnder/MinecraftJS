@@ -193,7 +193,8 @@
         "The generated clientbound Play schema now covers all 122 protocol-766 packets rather than the former 53-packet graphical subset, allowing older feature handlers to be reused with target normalization.",
         "The permanent target gate passes 95/95 tests, including component merge/copy, rejected/corrected inventory prediction, outgoing legacy-action layouts and attribute consumers.",
         "GitHub handoff audit: generic decoding alone did not prove every Game consumer. Live vanilla joining exposed and fixed recipe serializer ID drift plus array scope; menu/item-specific component consumers still require acceptance.",
-        "2026-11-14 user Creative crash reproduced in source: creative.json still has empty tabs, causing undefined background access. Native component-preserving creative population extraction is required before acceptance."
+        "2026-11-14 user Creative crash reproduced in source: creative.json still has empty tabs, causing undefined background access. Native component-preserving creative population extraction is required before acceptance.",
+        "2026-11-14 Creative crash fixed with exact native tab populations for all eight feature combinations and operator permission variants. All 1,694 distinct stacks preserve component patches and round-trip byte-for-byte against the native codec. Browser acceptance covers every visible tab and a server-accepted enchanted-book placement. Gate 152/152; remaining item-component consumers and interaction acceptance keep P08 partial."
       ]
     },
     {
@@ -350,7 +351,9 @@
         "1.20.6"
       ],
       "acceptance": "Applicable old-target regressions pass; source SHAs, asset identity, manifest, checksums and static/offline builds agree.",
-      "evidence": []
+      "evidence": [
+        "2026-11-14 shared native connection exception presentation pushed to all nine older targets, with native-version Creative toolbar metadata/caps corrected on 1.16.5\u20131.19.4. Relevant old-target regressions: 76 passed, zero skipped. No distributions rebuilt."
+      ]
     }
   ]
 }

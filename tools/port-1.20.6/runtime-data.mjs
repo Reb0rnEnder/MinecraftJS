@@ -119,29 +119,10 @@ for (const [name, data] of Object.entries(tables)) {
 //// Particle definitions are loaded directly from the target client asset pack at runtime.
 await writeFile(join(output, "particleSprites.json"), "{}\n");
 
-//// P07 only needs survival-world startup. Creative/item mechanics are deliberately
-//// target-marked and deferred to P08/P09 rather than copied from 1.19.4.
-const creative = {
-  version: target.minecraftVersion,
-  protocol: target.protocol,
-  dataVersion: target.dataVersion,
-  source: {
-    clientJarSha1: target.downloads.client.sha1,
-    parity: "deferred-p08-p09"
-  },
-  tabs: [],
-  operatorTabs: [],
-  featureCatalogs: [],
-  potions: {
-    "minecraft:empty": { name: "empty", effects: [] }
-  },
-  effects: {},
-  eggs: {},
-  itemMechanics: {},
-  toolSpeeds: {},
-  instruments: {}
-};
-await writeFile(join(output, "creative.json"), JSON.stringify(creative) + "\n");
+// The native Creative population is required by the GUI and includes target
+// component patches. Regenerating startup tables must never restore empty tabs.
+const {creativeData}=await import('./creative-data.mjs');
+await creativeData();
 
 //// Dynamic command registries arrive during Configuration in 1.20.6. Keep only
 //// registries that are static in the target report here; runtime completion can
