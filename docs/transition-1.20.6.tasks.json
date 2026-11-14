@@ -240,7 +240,8 @@
         "UUID pack push/pop/replace, concurrent downloads, native result statuses, forced prompts, reload rollback and stale download cancellation are implemented in both Configuration and Play. Native max download size is 0xFA00000 (DownloadedPackSource$4).",
         "Target tests pass; real Chrome rendered the native title screen/HUD on the local vanilla fixture and joined Arch with 49 chunks and no recorded client errors.",
         "Native atlas sources/palette permutations, font references/filter/Unihex providers, overlays and broader GUI pixel acceptance remain open; P10 is not complete.",
-        "2026-11-14 native-menu batch: panorama/background/list sprites, six-pass blur on WebGL 2/WebGPU/software, target resource-pack geometry/format-range handling and JSON menu credits; detailed acceptance and remaining gaps in ui-parity-1.20.6.md. P10 remains partial."
+        "2026-11-14 native-menu batch: panorama/background/list sprites, six-pass blur on WebGL 2/WebGPU/software, target resource-pack geometry/format-range handling and JSON menu credits; detailed acceptance and remaining gaps in ui-parity-1.20.6.md. P10 remains partial.",
+        "2026-11-14 foliage audit: short_grass dispatch, exact leaf/item registrations, pink-petal stems, upper-half/potted-fern sampling and native biome climate/effects corrected. Native Java oracle covers 22 blocks, all 64 biomes, and 192 noise positions; target gate 162/162 and real browser smoke pass. Nine applicable old-target backports retain native height/feature differences; 81 regressions pass. See docs/foliage-parity-1.20.6.md."
       ]
     },
     {

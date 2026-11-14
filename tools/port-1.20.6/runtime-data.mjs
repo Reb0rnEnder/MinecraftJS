@@ -4,6 +4,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { initBlocks, getStateProperties } from "../../client/js/world/blocks.js";
+import {nativeBiomeData} from './biome-data.mjs';
 import { prepare, cache, target } from "./prepare.mjs";
 
 const run = promisify(execFile);
@@ -63,6 +64,8 @@ for (const name of names) {
   tables[name] = input.data;
   sources[name] = { path, sha1: input.sha1 };
 }
+
+tables.biomes=nativeBiomeData(tables.biomes);
 
 const reports = JSON.parse(await readFile(join(cache, "generated", "reports", "registries.json")));
 const blocks = JSON.parse(await readFile(join(cache, "generated", "reports", "blocks.json")));

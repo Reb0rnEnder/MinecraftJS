@@ -1,4 +1,5 @@
 import {registryEntries} from '../net/registry-codec.js';
+import {biomeInfoNoise} from './biome-info-noise.js';
 import { WATER_BIOMES } from './water-biomes.js';
 // Biome colour helpers (ColorizerGrass / ColorizerFoliage + per-biome overrides). Worker-safe.
 
@@ -29,8 +30,9 @@ export function biomeInfo(id) { return serverBiomeTable[id] || biomeTable[id] ||
 
 function sample(map, temp, rain) {
   if (!map) return 0x7fb238;
-  temp = Math.min(1, Math.max(0, temp));
-  rain = Math.min(1, Math.max(0, rain)) * temp;
+  // Biome climate fields are Java floats before colormap index arithmetic.
+  temp = Math.min(1, Math.max(0, Math.fround(temp)));
+  rain = Math.min(1, Math.max(0, Math.fround(rain))) * temp;
   const i = ((1 - temp) * 255) | 0;
   const j = ((1 - rain) * 255) | 0;
   const k = (j << 8 | i) * 4;
@@ -44,27 +46,20 @@ function tempAt(b, y) {
 }
 
 const isSwamp = (n) => n === 'swamp' || n === 'swamp_hills';
-const isRoofed = (n) => n === 'dark_forest' || n === 'dark_forest_hills';
-const isMesa = (n) => !!n && (n.includes('badlands'));
 
-export function grassColor(id, y) {
+export function grassColor(id, y, x=0, z=0) {
   const b = biomeInfo(id);
-  const n = b.name;
-  if (typeof b.effects?.grass_color === 'number') return b.effects.grass_color;
-  if (isSwamp(n)) return 0x6a7039;
-  if (isMesa(n)) return 0x90814d;
-  const c = sample(grassMap, tempAt(b, y), b.rainfall);
-  if (isRoofed(n)) return ((c & 0xfefefe) + 0x28340a) >> 1;
-  return c;
+  const c = typeof b.effects?.grass_color === 'number' ? b.effects.grass_color : sample(grassMap, b.temperature, b.rainfall);
+  switch(b.effects?.grass_color_modifier){
+    case 'dark_forest': return ((c & 0xfefefe) + 0x28340a) >> 1;
+    case 'swamp': return biomeInfoNoise(x*.0225,z*.0225)<-.1?0x4c763c:0x6a7039;
+    default: return c;
+  }
 }
 
 export function foliageColor(id, y) {
   const b = biomeInfo(id);
-  const n = b.name;
-  if (typeof b.effects?.foliage_color === 'number') return b.effects.foliage_color;
-  if (isSwamp(n)) return 0x6a7039;
-  if (isMesa(n)) return 0x9e814d;
-  return sample(foliageMap, tempAt(b, y), b.rainfall);
+  return typeof b.effects?.foliage_color === 'number' ? b.effects.foliage_color : sample(foliageMap, b.temperature, b.rainfall);
 }
 
 export function waterColor(id) {

@@ -23,7 +23,8 @@ const SHADE_GUI = [0.5, 1.0, 0.8, 0.8, 0.6, 0.6];
 const rgbOf = (c) => [((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255];
 const COLORS = ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'light_gray',
   'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black'];
-const GRASS_ITEMS = new Set(['grass_block', 'grass', 'fern', 'tall_grass', 'large_fern']);
+const FOLIAGE_ITEMS = new Set(['oak_leaves','jungle_leaves','acacia_leaves','dark_oak_leaves','spruce_leaves','birch_leaves']);
+const GRASS_ITEMS = new Set(['grass_block', 'short_grass', 'fern', 'tall_grass', 'large_fern']);
 const SKULLS = { skeleton_skull: 0, wither_skeleton_skull: 1, zombie_head: 2, player_head: 3, creeper_head: 4, dragon_head: 5, piglin_head: 6 };
 const POTIONS = new Set(['potion', 'splash_potion', 'lingering_potion', 'tipped_arrow']);
 const modelPath = (name) => name.replace(/^minecraft:/, '');
@@ -326,7 +327,8 @@ export class ItemRenderer {
     }
     if (name === 'lily_pad') return 0x71c35c; // BlockColors with no world/position
     if (name === 'vine') return 0x48b518;
-    if (name.endsWith('_leaves')) {
+    if (name === 'mangrove_leaves') return 0x92c648;
+    if (FOLIAGE_ITEMS.has(name)) {
       if (name.startsWith('spruce')) return 0x619961;
       if (name.startsWith('birch')) return 0x80a755;
       return 0x48b518;
