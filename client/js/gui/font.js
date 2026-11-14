@@ -99,7 +99,7 @@ export class FontRenderer {
       const cw = this.charW(ch);
       const set = this._providerSet();
       const offset = set ? set.glyph(ch, this.unicode && this.texPath !== 'font/ascii_sga.png').boldOffset : 1;
-      if (cw > 0) w += cw + (bold ? offset : 0);
+      if (set || cw > 0) w += cw + (bold ? offset : 0);
     }
     return this._providerSet() ? Math.ceil(w) : w;
   }
@@ -145,8 +145,8 @@ export class FontRenderer {
       const set = this._providerSet(), glyph = set?.glyph(ch, this.unicode && this.texPath !== 'font/ascii_sga.png');
       const shadowOffset = isShadow && set ? glyph.shadowOffset : 0, boldOffset = glyph?.boldOffset ?? 1;
       const adv = this._glyph(out, ascii, ch, x + shadowOffset, y + shadowOffset, c, italic);
-      if (bold && adv > 0) this._glyph(out, ascii, ch, x + shadowOffset + boldOffset, y + shadowOffset, c, italic);
-      const total = adv + (bold && adv > 0 ? boldOffset : 0);
+      if (bold && (set || adv > 0)) this._glyph(out, ascii, ch, x + shadowOffset + boldOffset, y + shadowOffset, c, italic);
+      const total = adv + (bold && (set || adv > 0) ? boldOffset : 0);
       if (strike) out.push({ tex: null, x0: x, y0: y + 4, x1: x + total, y1: y + 5, color: c });
       if (underline) out.push({ tex: null, x0: x - 1, y0: y + 8, x1: x + total, y1: y + 9, color: c });
       x += total;
