@@ -155,11 +155,12 @@ export class Items {
       if (!def) continue;
       let s = t(translationKey('effect', def.key));
       for (const [attr, amount, op] of def.modifiers) mods.push([attr, amount * (e.amplifier + 1), op]); // getAttributeModifierAmount
-      if (e.amplifier > 0) s += ' ' + t('potion.potency.' + e.amplifier);
-      if (e.duration > 20) {
+      if (e.amplifier > 0) s = t('potion.withAmplifier',s,t('potion.potency.' + e.amplifier));
+      if (e.duration > 20 || e.duration === -1) {
         // Potion.getPotionDurationString -> StringUtils.ticksToElapsedTime
         const ticks = Math.floor(Math.fround(e.duration * factor)), sec = Math.floor(ticks / 20), m = Math.floor(sec / 60), r = sec % 60;
-        s += ' (' + (e.duration >= 32767 && e.maxDuration ? '**:**' : m + ':' + (r < 10 ? '0' : '') + r) + ')';
+        const hours=Math.floor(m/60),time=e.duration===-1?t('effect.duration.infinite'):(hours?String(hours).padStart(2,'0')+':'+String(m%60).padStart(2,'0'):String(m).padStart(2,'0'))+':'+String(r).padStart(2,'0');
+        s=t('potion.withDuration',s,time);
       }
       lines.push((def.bad ? '§c' : '§9') + s);
     }

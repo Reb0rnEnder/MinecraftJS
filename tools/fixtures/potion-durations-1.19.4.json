@@ -1,0 +1,31 @@
+{
+  "minecraftVersion": "1.19.4",
+  "clientJarSha1": "958928a560c9167687bea0cefeb7375da1e552a8",
+  "formatter": "StringUtil.formatTickDuration(int)",
+  "values": [
+    {
+      "ticks": 21,
+      "text": "00:01"
+    },
+    {
+      "ticks": 600,
+      "text": "00:30"
+    },
+    {
+      "ticks": 1200,
+      "text": "01:00"
+    },
+    {
+      "ticks": 75000,
+      "text": "01:02:30"
+    },
+    {
+      "ticks": 120000,
+      "text": "01:40:00"
+    },
+    {
+      "ticks": 2147483000,
+      "text": "29826:09:10"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+// Independently execute the exact native finite-duration formatter.
+import{readFile,writeFile,mkdir}from'node:fs/promises';import{execFileSync}from'node:child_process';import{createHash}from'node:crypto';import{fileURLToPath}from'node:url';import{join}from'node:path';
+const root=fileURLToPath(new URL('../../',import.meta.url)),cache=join(root,'cache/port-1.19.4'),target=JSON.parse(await readFile(join(root,'tools/port-1.19.4/target.json'))),jar=await readFile(join(cache,'client.jar')),mappings=await readFile(join(cache,'client.txt'),'utf8');
+for(const[data,pin]of[[jar,target.downloads.client],[Buffer.from(mappings),target.downloads.client_mappings]])if(createHash('sha1').update(data).digest('hex')!==pin.sha1)throw Error('Unpinned native formatter input');
+const owner=/^net\.minecraft\.util\.StringUtil -> (\w+):/m.exec(mappings)[1],section=mappings.slice(mappings.indexOf('net.minecraft.util.StringUtil ->')).split('\nnet.')[0],method=/java.lang.String formatTickDuration\(int\) -> (\w+)/.exec(section)[1];
+const folder=join(cache,'potion-duration-audit');await mkdir(folder,{recursive:true});const source=join(folder,'NativeDuration.java');
+await writeFile(source,`import java.net.*;import java.nio.file.*;public class NativeDuration {public static void main(String[] a)throws Exception{try(var loader=new URLClassLoader(new URL[]{Path.of(a[0]).toUri().toURL()},null)){var method=Class.forName(a[1],true,loader).getMethod(a[2],int.class);for(int i=3;i<a.length;i++)System.out.println(a[i]+"="+method.invoke(null,Integer.parseInt(a[i])));}}}`);
+const ticks=[21,600,1200,75000,120000,2147483000],stdout=execFileSync(process.env.JAVA||'java',[source,join(cache,'client.jar'),owner,method,...ticks.map(String)],{encoding:'utf8'}),values=stdout.trim().split('\n').map(line=>{const[ticks,text]=line.split('=');return{ticks:Number(ticks),text};});
+const text=JSON.stringify({minecraftVersion:'1.19.4',clientJarSha1:target.downloads.client.sha1,formatter:'StringUtil.formatTickDuration(int)',values},null,2)+'\n',out=join(root,'tools/fixtures/potion-durations-1.19.4.json');
+if(process.argv.includes('--check')){if(await readFile(out,'utf8')!==text)throw Error('Stale native potion duration fixture');}else await writeFile(out,text);
+console.log('Verified '+values.length+' native 1.19.4 duration values');
