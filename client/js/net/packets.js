@@ -1,3 +1,4 @@
+import {technicalPackets} from './technical-packets.js';
 import { ChatState766 } from "./chat-state-1.20.6.js";
 import { Writer766 } from "./configuration-1.20.6.js";
 import { decodePlayPacket766 } from "./play-codec-1.20.6.js";
@@ -21,6 +22,31 @@ function payloadChannel(channel) {
 }
 
 export const C = {
+  ...technicalPackets(packet),
+  setDifficulty: value => packet('set_difficulty').u8(value).build(),
+  lockDifficulty: value => packet('lock_difficulty').bool(value).build(),
+  pickItem: slot => packet('pick_item').varint(slot).build(),
+  pingRequest: id => packet('ping_request').i64(id).build(),
+  debugSampleSubscription: type => packet('debug_sample_subscription').varint(type).build(),
+  setSlotState: (slot, windowId, enabled) => packet('set_slot_state').varint(slot).varint(windowId).bool(enabled).build(),
+  generateStructure: (pos, levels, keepJigsaws) => packet('generate_structure').position(pos.x,pos.y,pos.z).varint(levels).bool(keepJigsaws).build(),
+  editBook: (slot, pages, title = null) => {
+    const w = packet('edit_book').varint(slot).varint(pages.length);
+    for (const page of pages) w.string(page);
+    w.bool(title !== null); if (title !== null) w.string(title);
+    return w.build();
+  },
+  chatSession: ({sessionUUID, expireTime, publicKey, signature}) => packet('chat_session_update')
+    .uuid(sessionUUID).i64(expireTime).varint(publicKey.length).raw(publicKey).varint(signature.length).raw(signature).build(),
+  signedCommand: (command, {timestamp, salt, argumentSignatures = [], messageCount = 0, acknowledged}) => {
+    if (!(acknowledged instanceof Uint8Array) || acknowledged.length !== 3) throw Error('Chat acknowledgement must be 3 bytes');
+    const w = packet('chat_command_signed').string(command).i64(timestamp).i64(salt).varint(argumentSignatures.length);
+    for (const {argumentName, signature} of argumentSignatures) {
+      if (!(signature instanceof Uint8Array) || signature.length !== 256) throw Error('Chat argument signature must be 256 bytes');
+      w.string(argumentName).raw(signature);
+    }
+    return w.varint(messageCount).raw(acknowledged).build();
+  },
   teleportConfirm: (id) => packet("teleport_confirm").varint(id).build(),
   chunkBatchReceived: (chunksPerTick) => packet("chunk_batch_received").f32(chunksPerTick).build(),
   keepAlive: (id) => packet("keep_alive").i64(id).build(),

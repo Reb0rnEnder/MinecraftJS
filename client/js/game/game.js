@@ -26,7 +26,8 @@ import {readPalette762} from '../world/chunk-1.19.4.js';
 import {Reader762} from '../net/protocol-1.19.4.js';
 import {BlockPrediction762} from './block-prediction-1.19.4.js';
 import {resolveDimension762} from '../net/protocol-1.19.4.js';
-import {ENTITY_TYPES,ENTITIES_BY_NAME} from './entity-types.js';
+import {ChunkBatchCalculator} from '../net/chunk-batch.js';
+import {ENTITY_TYPES,ENTITIES_BY_NAME,FIREBALLS} from './entity-types.js';
 import {registryEntries} from '../net/registry-codec.js';
 import {captureNetwork} from '../debug/capture-network.js';
 import {resetPlayerView} from './respawn-view.js';
@@ -830,7 +831,31 @@ export class Game {
   }
 
   on_keep_alive(p) { this.send(C.keepAlive(p.keepAliveId)); }
-  on_chunk_batch_finished(p) { this.send(C.chunkBatchReceived(p.batchSize)); }
+  on_chunk_batch_start() { (this.chunkBatch ??= new ChunkBatchCalculator(() => platform().now())).start(); }
+  on_chunk_batch_finished(p) {
+    this.send(C.chunkBatchReceived((this.chunkBatch ??= new ChunkBatchCalculator(() => platform().now())).finish(p.batchSize)));
+  }
+  on_set_projectile_power(p) {
+    const entity = this.entities.get(p.id);
+    if (entity && (FIREBALLS.has(entity.entityName) || ['wind_charge','breeze_wind_charge'].includes(entity.entityName))) {
+      entity.accelX = p.power.x; entity.accelY = p.power.y; entity.accelZ = p.power.z;
+    }
+  }
+  // Native combat-enter/end handlers intentionally have no side effects.
+  on_enter_combat_event() {}
+  on_end_combat_event() {}
+  on_ping_response(p) {
+    const samples = this.pingSamples ??= [];
+    samples.push(Math.floor(platform().now()) - Number(p.id));
+    if (samples.length > 240) samples.shift();
+  }
+  on_debug_sample(p) {
+    // RemoteDebugSampleType.TICK_TIME is the only native sample category.
+    if (p.type !== 0) return;
+    const samples = this.serverTickSamples ??= [];
+    samples.push(p.sample.slice());
+    if (samples.length > 240) samples.shift();
+  }
 
   on_simulation_distance(p) { this.serverSimulationDistance=p.distance; }
 
@@ -848,6 +873,8 @@ export class Game {
 
   on_login(p) {
     this.customChatCompletions=new Set();
+    this.chunkBatch = null;
+    this.pingSamples = []; this.serverTickSamples = [];
     this.spawnPos=null;this.spawnAngle=0;
     this.worldBorder?.reset();
     this.serverData=null;this.enforcesSecureChat=!!p.enforcesSecureChat;this.chatSignatures=new MessageSignatureCache762();this.chatVerifier?.reset();

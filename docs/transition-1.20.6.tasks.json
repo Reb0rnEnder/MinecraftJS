@@ -86,7 +86,7 @@
     {
       "id": "P04",
       "title": "Implement all required component-stack codecs and consumer views",
-      "status": "done",
+      "status": "partial",
       "dependsOn": [
         "P02",
         "P03"
@@ -101,7 +101,8 @@
         "Every component payload branch byte-round-trips through the schema interpreter, including holders, holder sets, anonymous NBT, packed positions and recursively nested ItemStacks.",
         "Decoded stacks preserve the exact added/removed patch while exposing effective components after Mojang defaults and removals; damage, max damage, max stack size, names/lore/books and nested stacks have consumer views with no legacy slot-NBT fallback.",
         "Six independent Mojang ItemStack stream-codec fixtures regenerate from the pinned server and round-trip byte-identically through the JS codec: empty, default stone, damaged diamond sword, named/removed sword, removed default max-stack-size and nested bundle contents.",
-        "npm run test:1.20.6 verifies all generators/oracles and passes 79/79 target regressions."
+        "npm run test:1.20.6 verifies all generators/oracles and passes 79/79 target regressions.",
+        "2026-11-14 packet audit corrected native food/instrument wire discrepancies; all 56 customized component branches still need independent native acceptance. See docs/packet-parity-1.20.6.md."
       ]
     },
     {
@@ -145,7 +146,8 @@
         "Join/respawn resolve dimension and biome ownership from Configuration registries; chunk palettes use all 26,684 target block states and the target air-state IDs, while target biome entries propagate to both main-thread and mesh-worker consumers.",
         "Actual Game handlers are exercised for terrain/light/block changes, component-stack inventory updates, entity identity/movement/attributes, HUD/abilities and world-border lerp state. The permanent target gate passes 87/87 tests.",
         "An isolated SHA-pinned vanilla 1.20.6 server reached Play through the full transport, resolved the native overworld dimension, auto-acknowledged teleport/keepalive/chunk batches and decoded 45 real chunk packets across five acknowledged batches.",
-        "A focused shared-baseline regression pass kept 35 relevant world/biome/entity/light/border/respawn tests green; the two selected failing legacy tests were independently reproduced unchanged on pre-P06 commit c35d94a."
+        "A focused shared-baseline regression pass kept 35 relevant world/biome/entity/light/border/respawn tests green; the two selected failing legacy tests were independently reproduced unchanged on pre-P06 commit c35d94a.",
+        "2026-11-14 native dispatch corpus: 122 incoming IDs, all 58 actual outgoing senders, 1,513 cases; advancements/signatures/metadata/batch feedback and missing editor senders corrected. Full semantic feature acceptance remains NET-01."
       ]
     },
     {

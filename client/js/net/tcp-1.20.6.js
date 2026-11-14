@@ -1,3 +1,4 @@
+import {ChunkBatchCalculator} from './chunk-batch.js';
 import { VanillaSocket } from "./tcp.js";
 import { C766, Configuration766, Writer766, decodeLogin766 } from "./configuration-1.20.6.js";
 import { PLAY_SERVERBOUND_766 } from './protocol-1.20.6-ids.js';
@@ -14,6 +15,7 @@ export class VanillaSocket766 extends VanillaSocket {
     this.configuration = null;
     this.profile = null;
     this.configurationGeneration = 0;
+    this.chunkBatch = new ChunkBatchCalculator();
     this.autoPlayAcks = options.autoPlayAcks !== false;
   }
 
@@ -33,6 +35,7 @@ export class VanillaSocket766 extends VanillaSocket {
   _beginConfiguration(initial = true) {
     this.state = "configuration";
     this.configurationGeneration++;
+    this.chunkBatch = new ChunkBatchCalculator();
     this.configuration = new Configuration766(
       (bytes) => this._send(bytes),
       (packet) => this.emit("configuration", packet),
@@ -121,12 +124,13 @@ export class VanillaSocket766 extends VanillaSocket {
         return;
       }
 
+      if (this.autoPlayAcks && packet.name === "chunk_batch_start") this.chunkBatch.start();
       if (this.autoPlayAcks && packet.name === "keep_alive") {
         this._send(C766.playKeepAlive(packet.keepAliveId));
       } else if (this.autoPlayAcks && packet.name === "position") {
         this._send(C766.teleportConfirm(packet.teleportId));
       } else if (this.autoPlayAcks && packet.name === "chunk_batch_finished") {
-        this._send(C766.chunkBatchReceived(packet.batchSize));
+        this._send(C766.chunkBatchReceived(this.chunkBatch.finish(packet.batchSize)));
       } else if (packet.name === "kick_disconnect") {
         this.emit("play_disconnect", packet.reason);
         this._kick(packet.reason);

@@ -81,6 +81,15 @@ export async function generateComponentSchema(check = false) {
   const potion=types.SlotComponent[1][1].type[1].fields.potion_contents;
   assert.equal(potion[0],'container');
   potion[1]=potion[1].filter(field=>field.name!=='customName');
+  // Native 766 FoodProperties has no later usingConvertsTo stack; each
+  // possible effect carries a full MobEffectInstance rather than only an ID.
+  const food=types.SlotComponent[1][1].type[1].fields.food;
+  food[1]=food[1].filter(field=>field.name!=='usingConvertsTo');
+  food[1].find(field=>field.name==='effects').type[1].type[1].find(field=>field.name==='effect').type='ItemPotionEffect';
+  // Native Instrument is (SoundEvent holder, VarInt ticks, float range).
+  types.InstrumentData[1]=types.InstrumentData[1].filter(field=>field.name!=='description');
+  types.InstrumentData[1].find(field=>field.name==='useDuration').type='varint';
+
   const schema = {
     minecraftVersion: target.minecraftVersion,
     protocol: target.protocol,

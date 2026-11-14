@@ -75,6 +75,8 @@ function readBitfield(reader, fields) {
   const total = fields.reduce((sum, field) => sum + field.size, 0);
   let raw;
   if (total === 8) raw = BigInt(reader.u8());
+  else if (total === 16) raw = BigInt(reader.u16());
+  else if (total === 32) raw = BigInt(reader.i32() >>> 0);
   else if (total === 64) raw = BigInt.asUintN(64, reader.i64());
   else throw new Error("Unsupported protocol-766 bitfield width " + total);
   let shift = BigInt(total);
@@ -157,8 +159,8 @@ function readType(reader, spec, current = null, depth = 0) {
   }
 
   if (kind === "buffer") {
-    if (args.countType === undefined) return reader.rest();
-    const length = count(Number(readType(reader, args.countType, current, depth + 1)), "Play buffer");
+    if (args.countType === undefined && args.count === undefined) return reader.rest();
+    const length = count(Number(args.count!==undefined ? (typeof args.count==='number'?args.count:lookup(current,args.count)) : readType(reader,args.countType,current,depth+1)), "Play buffer");
     return reader.bytesN(length);
   }
 

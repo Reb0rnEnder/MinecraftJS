@@ -151,15 +151,17 @@
     {
       "id": "BASE-04",
       "area": "Foundation",
-      "status": "accepted",
+      "status": "partial",
       "priority": 0,
       "phase": "P04",
       "scope": "multiplayer",
       "title": "All 56 item-component wire types and native defaults",
-      "reason": "Codec support preserves patches; downstream item behavior is tracked separately.",
+      "reason": "All 56 component IDs have schema codecs; native food/instrument regressions are corrected, but independent native coverage of every customized component branch remains incomplete.",
       "evidence": [
         "tools/test-1.20.6-components.mjs",
-        "tools/port-1.20.6/stack-fixtures.json"
+        "tools/port-1.20.6/stack-fixtures.json",
+        "tools/test-1.20.6-packet-corpus.mjs",
+        "docs/packet-parity-1.20.6.md"
       ],
       "acceptance": "Native stack bytes, defaults, removals and nested stacks round-trip."
     },
@@ -186,12 +188,15 @@
       "phase": "P06",
       "scope": "multiplayer",
       "title": "All 122 clientbound Play packet body decoders",
-      "reason": "Decoder coverage exists; semantic handler acceptance remains NET-01.",
+      "reason": "The native Java dispatch codec now validates 1,513 cases covering all 122 incoming IDs and actual senders for 58 outgoing IDs. Full consumer acceptance remains NET-01.",
       "evidence": [
         "client/js/net/play-schema-1.20.6.js",
-        "tools/test-1.20.6-play.mjs"
+        "tools/test-1.20.6-play.mjs",
+        "tools/test-1.20.6-packet-corpus.mjs",
+        "docs/packet-coverage-1.20.6.json",
+        "docs/packet-parity-1.20.6.md"
       ],
-      "acceptance": "Native packet IDs/bodies and complete payload consumption remain checked."
+      "acceptance": "Pinned native identities, zero unread bytes, branch cases, advancement flags and player-info masks remain checked; packet bodies are not full feature acceptance."
     },
     {
       "id": "BASE-07",
@@ -764,11 +769,13 @@
       "phase": "P06",
       "scope": "multiplayer",
       "title": "Packet-to-consumer coverage for all 122 Play IDs",
-      "reason": "All bodies decode, but generic decoding is not proof of every renderer/game handler.",
+      "reason": "Every Play ID has a classified consumer, transport path or native no-op. New batch-rate/projectile/diagnostic consumers and outgoing editor senders are covered; complete per-feature native behavior, debug charts and live acceptance remain open.",
       "evidence": [
         "client/js/net/play-codec-1.20.6.js",
         "client/js/game/game.js",
-        "docs/transition-1.20.6.tasks.json"
+        "docs/transition-1.20.6.tasks.json",
+        "docs/packet-coverage-1.20.6.json",
+        "docs/packet-parity-1.20.6.md"
       ],
       "acceptance": "Each native packet has a tested semantic consumer or a documented native no-op; include bundles/reconfiguration edge cases."
     },

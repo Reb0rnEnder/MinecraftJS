@@ -6,15 +6,15 @@ Edit [docs/parity-checklist-1.20.6.json](parity-checklist-1.20.6.json), then run
 
 ## How far along?
 
-The native multiplayer foundation works. Substantial feature and acceptance work remains, including confirmed missing consumers. Existing transition milestones: **7 done, 5 partial, 5 todo** (17 total). They differ greatly in size, so this is not a completion percentage.
+The native multiplayer foundation works. Substantial feature and acceptance work remains, including confirmed missing consumers. Existing transition milestones: **6 done, 6 partial, 5 todo** (17 total). They differ greatly in size, so this is not a completion percentage.
 
 | Scope | Accepted checkpoints | Partial | Missing implementation | Needs verification | Total |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Native multiplayer + enabled native experiments | 12 | 29 | 21 | 15 | 77 |
+| Native multiplayer + enabled native experiments | 11 | 30 | 21 | 15 | 77 |
 | Separate products / optional compatibility | 0 | 2 | 2 | 0 | 4 |
-| All tracked checkpoints | 12 | 31 | 23 | 15 | 81 |
+| All tracked checkpoints | 11 | 32 | 23 | 15 | 81 |
 
-These **checkpoints differ in size and do not enumerate every defect**. 65 required checkpoints are still open. An honest percentage or ETA is unavailable until release coverage is triaged. Accepted rows cover exactly their named scope, not an entire subsystem.
+These **checkpoints differ in size and do not enumerate every defect**. 66 required checkpoints are still open. An honest percentage or ETA is unavailable until release coverage is triaged. Accepted rows cover exactly their named scope, not an entire subsystem.
 
 Last recorded source gate: **162 target tests + 81 foliage backport tests**, zero failures/skips. See [docs/foliage-parity-1.20.6.md](foliage-parity-1.20.6.md). This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
 
@@ -43,9 +43,9 @@ A box is checked only for `accepted`. For each open row, implement/verify the co
 - [x] **BASE-01 — Pinned target identity and native inputs** (P0; Accepted scope; P00). Hashes, protocol 766, data 3839 and resource/data formats 32/41 agree. Evidence/start: [tools/port-1.20.6/target.json](../tools/port-1.20.6/target.json), [tools/port-1.20.6/prepare.mjs](../tools/port-1.20.6/prepare.mjs).
 - [x] **BASE-02 — Native registries, visual shapes and model extraction** (P0; Accepted scope; P02). Reproduce the native registry/state/model baseline; this does not certify each animation. Evidence/start: [docs/transition-1.20.6.tasks.json](transition-1.20.6.tasks.json), [tools/port-1.20.6/reports.mjs](../tools/port-1.20.6/reports.mjs).
 - [x] **BASE-03 — Anonymous NBT and native text component codecs** (P0; Accepted scope; P03). Native valid/rejected component vectors and live /locate remain correct. Evidence/start: [tools/port-1.20.6/component-fixtures.json](../tools/port-1.20.6/component-fixtures.json), [tools/test-1.20.6-primitives.mjs](../tools/test-1.20.6-primitives.mjs).
-- [x] **BASE-04 — All 56 item-component wire types and native defaults** (P0; Accepted scope; P04). Native stack bytes, defaults, removals and nested stacks round-trip. Evidence/start: [tools/test-1.20.6-components.mjs](../tools/test-1.20.6-components.mjs), [tools/port-1.20.6/stack-fixtures.json](../tools/port-1.20.6/stack-fixtures.json).
+- [ ] **BASE-04 — All 56 item-component wire types and native defaults** (P0; Partial; P04). Native stack bytes, defaults, removals and nested stacks round-trip. Evidence/start: [tools/test-1.20.6-components.mjs](../tools/test-1.20.6-components.mjs), [tools/port-1.20.6/stack-fixtures.json](../tools/port-1.20.6/stack-fixtures.json).
 - [x] **BASE-05 — Configuration, exact known packs and registry replacement** (P0; Accepted scope; P05). Keep Configuration generations isolated and matching known-pack resolution correct. Evidence/start: [tools/test-1.20.6-configuration.mjs](../tools/test-1.20.6-configuration.mjs), [client/js/net/configuration-1.20.6.js](../client/js/net/configuration-1.20.6.js).
-- [x] **BASE-06 — All 122 clientbound Play packet body decoders** (P0; Accepted scope; P06). Native packet IDs/bodies and complete payload consumption remain checked. Evidence/start: [client/js/net/play-schema-1.20.6.js](../client/js/net/play-schema-1.20.6.js), [tools/test-1.20.6-play.mjs](../tools/test-1.20.6-play.mjs).
+- [x] **BASE-06 — All 122 clientbound Play packet body decoders** (P0; Accepted scope; P06). Pinned native identities, zero unread bytes, branch cases, advancement flags and player-info masks remain checked; packet bodies are not full feature acceptance. Evidence/start: [client/js/net/play-schema-1.20.6.js](../client/js/net/play-schema-1.20.6.js), [tools/test-1.20.6-play.mjs](../tools/test-1.20.6-play.mjs).
 - [x] **BASE-07 — Graphical native join, movement and death/respawn milestone** (P0; Accepted scope; P07). Local fixture renders terrain/HUD/entities, moves and completes death/respawn without decoder errors. Evidence/start: [docs/development-1.20.6.md](development-1.20.6.md), [docs/transition-1.20.6.tasks.json](transition-1.20.6.tasks.json).
 - [x] **BASE-08 — Creative tab populations and component-preserving stack transfer** (P0; Accepted scope; P08). Every enabled tab renders; native server accepts the component-bearing book placement. Evidence/start: [tools/test-1.20.6-creative.mjs](../tools/test-1.20.6-creative.mjs), [client/js/gui/creative-data-1.20.6.js](../client/js/gui/creative-data-1.20.6.js).
 - [x] **BASE-09 — Grass/cherry/azalea and native biome color correction** (P0; Accepted scope; P10). Native colors, colormaps and registry IDs agree; no claim about all weather/fog. Evidence/start: [docs/foliage-parity-1.20.6.md](foliage-parity-1.20.6.md), [tools/test-1.20.6-foliage.mjs](../tools/test-1.20.6-foliage.mjs).

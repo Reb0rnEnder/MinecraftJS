@@ -1,0 +1,1639 @@
+{
+  "minecraftVersion": "1.20.6",
+  "clientJarSha1": "05b6f1c6b46a29d6ea82b4e0d42190e42402030f",
+  "samples": 1513,
+  "clientbound": [
+    {
+      "name": "bundle_delimiter",
+      "id": 0,
+      "nativeType": "clientbound/minecraft:bundle_delimiter",
+      "normalizedName": "bundle_delimiter",
+      "samples": 2,
+      "consumer": "Connection._receivePacket / PacketBundles762",
+      "kind": "transport"
+    },
+    {
+      "name": "spawn_entity",
+      "id": 1,
+      "nativeType": "clientbound/minecraft:add_entity",
+      "normalizedName": "spawn_entity",
+      "samples": 2,
+      "consumer": "Game.on_spawn_entity",
+      "kind": "game"
+    },
+    {
+      "name": "spawn_entity_experience_orb",
+      "id": 2,
+      "nativeType": "clientbound/minecraft:add_experience_orb",
+      "normalizedName": "spawn_entity_experience_orb",
+      "samples": 2,
+      "consumer": "Game.on_spawn_entity_experience_orb",
+      "kind": "game"
+    },
+    {
+      "name": "animation",
+      "id": 3,
+      "nativeType": "clientbound/minecraft:animate",
+      "normalizedName": "animation",
+      "samples": 2,
+      "consumer": "Game.on_animation",
+      "kind": "game"
+    },
+    {
+      "name": "statistics",
+      "id": 4,
+      "nativeType": "clientbound/minecraft:award_stats",
+      "normalizedName": "statistics",
+      "samples": 2,
+      "consumer": "Game.on_statistics",
+      "kind": "game"
+    },
+    {
+      "name": "acknowledge_player_digging",
+      "id": 5,
+      "nativeType": "clientbound/minecraft:block_changed_ack",
+      "normalizedName": "acknowledge_player_digging",
+      "samples": 2,
+      "consumer": "Game.on_acknowledge_player_digging",
+      "kind": "game"
+    },
+    {
+      "name": "block_break_animation",
+      "id": 6,
+      "nativeType": "clientbound/minecraft:block_destruction",
+      "normalizedName": "block_break_animation",
+      "samples": 2,
+      "consumer": "Game.on_block_break_animation",
+      "kind": "game"
+    },
+    {
+      "name": "tile_entity_data",
+      "id": 7,
+      "nativeType": "clientbound/minecraft:block_entity_data",
+      "normalizedName": "tile_entity_data",
+      "samples": 2,
+      "consumer": "Game.on_tile_entity_data",
+      "kind": "game"
+    },
+    {
+      "name": "block_action",
+      "id": 8,
+      "nativeType": "clientbound/minecraft:block_event",
+      "normalizedName": "block_action",
+      "samples": 2,
+      "consumer": "Game.on_block_action",
+      "kind": "game"
+    },
+    {
+      "name": "block_change",
+      "id": 9,
+      "nativeType": "clientbound/minecraft:block_update",
+      "normalizedName": "block_change",
+      "samples": 2,
+      "consumer": "Game.on_block_change",
+      "kind": "game"
+    },
+    {
+      "name": "boss_bar",
+      "id": 10,
+      "nativeType": "clientbound/minecraft:boss_event",
+      "normalizedName": "boss_bar",
+      "samples": 6,
+      "consumer": "Game.on_boss_bar",
+      "kind": "game"
+    },
+    {
+      "name": "difficulty",
+      "id": 11,
+      "nativeType": "clientbound/minecraft:change_difficulty",
+      "normalizedName": "difficulty",
+      "samples": 5,
+      "consumer": "Game.on_difficulty",
+      "kind": "game"
+    },
+    {
+      "name": "chunk_batch_finished",
+      "id": 12,
+      "nativeType": "clientbound/minecraft:chunk_batch_finished",
+      "normalizedName": "chunk_batch_finished",
+      "samples": 2,
+      "consumer": "Game.on_chunk_batch_finished",
+      "kind": "game"
+    },
+    {
+      "name": "chunk_batch_start",
+      "id": 13,
+      "nativeType": "clientbound/minecraft:chunk_batch_start",
+      "normalizedName": "chunk_batch_start",
+      "samples": 2,
+      "consumer": "Game.on_chunk_batch_start",
+      "kind": "game"
+    },
+    {
+      "name": "chunk_biomes",
+      "id": 14,
+      "nativeType": "clientbound/minecraft:chunks_biomes",
+      "normalizedName": "chunk_biomes",
+      "samples": 2,
+      "consumer": "Game.on_chunk_biomes",
+      "kind": "game"
+    },
+    {
+      "name": "clear_titles",
+      "id": 15,
+      "nativeType": "clientbound/minecraft:clear_titles",
+      "normalizedName": "title",
+      "samples": 2,
+      "consumer": "Game.on_title",
+      "kind": "game"
+    },
+    {
+      "name": "tab_complete",
+      "id": 16,
+      "nativeType": "clientbound/minecraft:command_suggestions",
+      "normalizedName": "tab_complete",
+      "samples": 3,
+      "consumer": "Game.on_tab_complete",
+      "kind": "game"
+    },
+    {
+      "name": "declare_commands",
+      "id": 17,
+      "nativeType": "clientbound/minecraft:commands",
+      "normalizedName": "declare_commands",
+      "samples": 141,
+      "consumer": "Game.on_declare_commands",
+      "kind": "game"
+    },
+    {
+      "name": "close_window",
+      "id": 18,
+      "nativeType": "clientbound/minecraft:container_close",
+      "normalizedName": "close_window",
+      "samples": 2,
+      "consumer": "Game.on_close_window",
+      "kind": "game"
+    },
+    {
+      "name": "window_items",
+      "id": 19,
+      "nativeType": "clientbound/minecraft:container_set_content",
+      "normalizedName": "window_items",
+      "samples": 2,
+      "consumer": "Game.on_window_items",
+      "kind": "game"
+    },
+    {
+      "name": "craft_progress_bar",
+      "id": 20,
+      "nativeType": "clientbound/minecraft:container_set_data",
+      "normalizedName": "craft_progress_bar",
+      "samples": 2,
+      "consumer": "Game.on_craft_progress_bar",
+      "kind": "game"
+    },
+    {
+      "name": "set_slot",
+      "id": 21,
+      "nativeType": "clientbound/minecraft:container_set_slot",
+      "normalizedName": "set_slot",
+      "samples": 2,
+      "consumer": "Game.on_set_slot",
+      "kind": "game"
+    },
+    {
+      "name": "cookie_request",
+      "id": 22,
+      "nativeType": "clientbound/minecraft:cookie_request",
+      "normalizedName": "cookie_request",
+      "samples": 2,
+      "consumer": "VanillaSocket766._packet",
+      "kind": "transport"
+    },
+    {
+      "name": "set_cooldown",
+      "id": 23,
+      "nativeType": "clientbound/minecraft:cooldown",
+      "normalizedName": "set_cooldown",
+      "samples": 2,
+      "consumer": "Game.on_set_cooldown",
+      "kind": "game"
+    },
+    {
+      "name": "chat_suggestions",
+      "id": 24,
+      "nativeType": "clientbound/minecraft:custom_chat_completions",
+      "normalizedName": "chat_suggestions",
+      "samples": 2,
+      "consumer": "Game.on_chat_suggestions",
+      "kind": "game"
+    },
+    {
+      "name": "custom_payload",
+      "id": 25,
+      "nativeType": "clientbound/minecraft:custom_payload",
+      "normalizedName": "custom_payload",
+      "samples": 2,
+      "consumer": "Game.on_custom_payload",
+      "kind": "game"
+    },
+    {
+      "name": "damage_event",
+      "id": 26,
+      "nativeType": "clientbound/minecraft:damage_event",
+      "normalizedName": "damage_event",
+      "samples": 2,
+      "consumer": "Game.on_damage_event",
+      "kind": "game"
+    },
+    {
+      "name": "debug_sample",
+      "id": 27,
+      "nativeType": "clientbound/minecraft:debug_sample",
+      "normalizedName": "debug_sample",
+      "samples": 2,
+      "consumer": "Game.on_debug_sample",
+      "kind": "game"
+    },
+    {
+      "name": "hide_message",
+      "id": 28,
+      "nativeType": "clientbound/minecraft:delete_chat",
+      "normalizedName": "hide_message",
+      "samples": 2,
+      "consumer": "Game.on_hide_message",
+      "kind": "game"
+    },
+    {
+      "name": "kick_disconnect",
+      "id": 29,
+      "nativeType": "clientbound/minecraft:disconnect",
+      "normalizedName": "kick_disconnect",
+      "samples": 2,
+      "consumer": "Game.on_kick_disconnect",
+      "kind": "game"
+    },
+    {
+      "name": "profileless_chat",
+      "id": 30,
+      "nativeType": "clientbound/minecraft:disguised_chat",
+      "normalizedName": "profileless_chat",
+      "samples": 2,
+      "consumer": "Game.on_profileless_chat",
+      "kind": "game"
+    },
+    {
+      "name": "entity_status",
+      "id": 31,
+      "nativeType": "clientbound/minecraft:entity_event",
+      "normalizedName": "entity_status",
+      "samples": 2,
+      "consumer": "Game.on_entity_status",
+      "kind": "game"
+    },
+    {
+      "name": "explosion",
+      "id": 32,
+      "nativeType": "clientbound/minecraft:explode",
+      "normalizedName": "explosion",
+      "samples": 251,
+      "consumer": "Game.on_explosion",
+      "kind": "game"
+    },
+    {
+      "name": "unload_chunk",
+      "id": 33,
+      "nativeType": "clientbound/minecraft:forget_level_chunk",
+      "normalizedName": "unload_chunk",
+      "samples": 2,
+      "consumer": "Game.on_unload_chunk",
+      "kind": "game"
+    },
+    {
+      "name": "game_state_change",
+      "id": 34,
+      "nativeType": "clientbound/minecraft:game_event",
+      "normalizedName": "game_state_change",
+      "samples": 15,
+      "consumer": "Game.on_game_state_change",
+      "kind": "game"
+    },
+    {
+      "name": "open_horse_window",
+      "id": 35,
+      "nativeType": "clientbound/minecraft:horse_screen_open",
+      "normalizedName": "open_horse_window",
+      "samples": 2,
+      "consumer": "Game.on_open_horse_window",
+      "kind": "game"
+    },
+    {
+      "name": "hurt_animation",
+      "id": 36,
+      "nativeType": "clientbound/minecraft:hurt_animation",
+      "normalizedName": "hurt_animation",
+      "samples": 2,
+      "consumer": "Game.on_hurt_animation",
+      "kind": "game"
+    },
+    {
+      "name": "initialize_world_border",
+      "id": 37,
+      "nativeType": "clientbound/minecraft:initialize_border",
+      "normalizedName": "world_border",
+      "samples": 2,
+      "consumer": "Game.on_world_border",
+      "kind": "game"
+    },
+    {
+      "name": "keep_alive",
+      "id": 38,
+      "nativeType": "clientbound/minecraft:keep_alive",
+      "normalizedName": "keep_alive",
+      "samples": 2,
+      "consumer": "Game.on_keep_alive",
+      "kind": "game"
+    },
+    {
+      "name": "map_chunk",
+      "id": 39,
+      "nativeType": "clientbound/minecraft:level_chunk_with_light",
+      "normalizedName": "map_chunk",
+      "samples": 2,
+      "consumer": "Game.on_map_chunk",
+      "kind": "game"
+    },
+    {
+      "name": "world_event",
+      "id": 40,
+      "nativeType": "clientbound/minecraft:level_event",
+      "normalizedName": "world_event",
+      "samples": 2,
+      "consumer": "Game.on_world_event",
+      "kind": "game"
+    },
+    {
+      "name": "world_particles",
+      "id": 41,
+      "nativeType": "clientbound/minecraft:level_particles",
+      "normalizedName": "world_particles",
+      "samples": 125,
+      "consumer": "Game.on_world_particles",
+      "kind": "game"
+    },
+    {
+      "name": "update_light",
+      "id": 42,
+      "nativeType": "clientbound/minecraft:light_update",
+      "normalizedName": "update_light",
+      "samples": 2,
+      "consumer": "Game.on_update_light",
+      "kind": "game"
+    },
+    {
+      "name": "login",
+      "id": 43,
+      "nativeType": "clientbound/minecraft:login",
+      "normalizedName": "login",
+      "samples": 5,
+      "consumer": "Game.on_login",
+      "kind": "game"
+    },
+    {
+      "name": "map",
+      "id": 44,
+      "nativeType": "clientbound/minecraft:map_item_data",
+      "normalizedName": "map",
+      "samples": 3,
+      "consumer": "Game.on_map",
+      "kind": "game"
+    },
+    {
+      "name": "trade_list",
+      "id": 45,
+      "nativeType": "clientbound/minecraft:merchant_offers",
+      "normalizedName": "trade_list",
+      "samples": 3,
+      "consumer": "Game.on_trade_list",
+      "kind": "game"
+    },
+    {
+      "name": "rel_entity_move",
+      "id": 46,
+      "nativeType": "clientbound/minecraft:move_entity_pos",
+      "normalizedName": "rel_entity_move",
+      "samples": 2,
+      "consumer": "Game.on_rel_entity_move",
+      "kind": "game"
+    },
+    {
+      "name": "entity_move_look",
+      "id": 47,
+      "nativeType": "clientbound/minecraft:move_entity_pos_rot",
+      "normalizedName": "entity_move_look",
+      "samples": 2,
+      "consumer": "Game.on_entity_move_look",
+      "kind": "game"
+    },
+    {
+      "name": "entity_look",
+      "id": 48,
+      "nativeType": "clientbound/minecraft:move_entity_rot",
+      "normalizedName": "entity_look",
+      "samples": 2,
+      "consumer": "Game.on_entity_look",
+      "kind": "game"
+    },
+    {
+      "name": "vehicle_move",
+      "id": 49,
+      "nativeType": "clientbound/minecraft:move_vehicle",
+      "normalizedName": "vehicle_move",
+      "samples": 2,
+      "consumer": "Game.on_vehicle_move",
+      "kind": "game"
+    },
+    {
+      "name": "open_book",
+      "id": 50,
+      "nativeType": "clientbound/minecraft:open_book",
+      "normalizedName": "open_book",
+      "samples": 2,
+      "consumer": "Game.on_open_book",
+      "kind": "game"
+    },
+    {
+      "name": "open_window",
+      "id": 51,
+      "nativeType": "clientbound/minecraft:open_screen",
+      "normalizedName": "open_window",
+      "samples": 2,
+      "consumer": "Game.on_open_window",
+      "kind": "game"
+    },
+    {
+      "name": "open_sign_entity",
+      "id": 52,
+      "nativeType": "clientbound/minecraft:open_sign_editor",
+      "normalizedName": "open_sign_entity",
+      "samples": 2,
+      "consumer": "Game.on_open_sign_entity",
+      "kind": "game"
+    },
+    {
+      "name": "ping",
+      "id": 53,
+      "nativeType": "clientbound/minecraft:ping",
+      "normalizedName": "ping",
+      "samples": 2,
+      "consumer": "Game.on_ping",
+      "kind": "game"
+    },
+    {
+      "name": "ping_response",
+      "id": 54,
+      "nativeType": "clientbound/minecraft:pong_response",
+      "normalizedName": "ping_response",
+      "samples": 2,
+      "consumer": "Game.on_ping_response",
+      "kind": "game"
+    },
+    {
+      "name": "craft_recipe_response",
+      "id": 55,
+      "nativeType": "clientbound/minecraft:place_ghost_recipe",
+      "normalizedName": "craft_recipe_response",
+      "samples": 2,
+      "consumer": "Game.on_craft_recipe_response",
+      "kind": "game"
+    },
+    {
+      "name": "abilities",
+      "id": 56,
+      "nativeType": "clientbound/minecraft:player_abilities",
+      "normalizedName": "abilities",
+      "samples": 2,
+      "consumer": "Game.on_abilities",
+      "kind": "game"
+    },
+    {
+      "name": "player_chat",
+      "id": 57,
+      "nativeType": "clientbound/minecraft:player_chat",
+      "normalizedName": "player_chat",
+      "samples": 3,
+      "consumer": "Game.on_player_chat",
+      "kind": "game"
+    },
+    {
+      "name": "end_combat_event",
+      "id": 58,
+      "nativeType": "clientbound/minecraft:player_combat_end",
+      "normalizedName": "end_combat_event",
+      "samples": 2,
+      "consumer": "Game.on_end_combat_event",
+      "kind": "native_no_op"
+    },
+    {
+      "name": "enter_combat_event",
+      "id": 59,
+      "nativeType": "clientbound/minecraft:player_combat_enter",
+      "normalizedName": "enter_combat_event",
+      "samples": 2,
+      "consumer": "Game.on_enter_combat_event",
+      "kind": "native_no_op"
+    },
+    {
+      "name": "death_combat_event",
+      "id": 60,
+      "nativeType": "clientbound/minecraft:player_combat_kill",
+      "normalizedName": "combat_event",
+      "samples": 2,
+      "consumer": "Game.on_combat_event",
+      "kind": "game"
+    },
+    {
+      "name": "player_remove",
+      "id": 61,
+      "nativeType": "clientbound/minecraft:player_info_remove",
+      "normalizedName": "player_remove",
+      "samples": 2,
+      "consumer": "Game.on_player_remove",
+      "kind": "game"
+    },
+    {
+      "name": "player_info",
+      "id": 62,
+      "nativeType": "clientbound/minecraft:player_info_update",
+      "normalizedName": "player_info",
+      "samples": 85,
+      "consumer": "Game.on_player_info",
+      "kind": "game"
+    },
+    {
+      "name": "face_player",
+      "id": 63,
+      "nativeType": "clientbound/minecraft:player_look_at",
+      "normalizedName": "face_player",
+      "samples": 2,
+      "consumer": "Game.on_face_player",
+      "kind": "game"
+    },
+    {
+      "name": "position",
+      "id": 64,
+      "nativeType": "clientbound/minecraft:player_position",
+      "normalizedName": "position",
+      "samples": 8,
+      "consumer": "Game.on_position",
+      "kind": "game"
+    },
+    {
+      "name": "unlock_recipes",
+      "id": 65,
+      "nativeType": "clientbound/minecraft:recipe",
+      "normalizedName": "unlock_recipes",
+      "samples": 2,
+      "consumer": "Game.on_unlock_recipes",
+      "kind": "game"
+    },
+    {
+      "name": "entity_destroy",
+      "id": 66,
+      "nativeType": "clientbound/minecraft:remove_entities",
+      "normalizedName": "entity_destroy",
+      "samples": 2,
+      "consumer": "Game.on_entity_destroy",
+      "kind": "game"
+    },
+    {
+      "name": "remove_entity_effect",
+      "id": 67,
+      "nativeType": "clientbound/minecraft:remove_mob_effect",
+      "normalizedName": "remove_entity_effect",
+      "samples": 2,
+      "consumer": "Game.on_remove_entity_effect",
+      "kind": "game"
+    },
+    {
+      "name": "reset_score",
+      "id": 68,
+      "nativeType": "clientbound/minecraft:reset_score",
+      "normalizedName": "scoreboard_score",
+      "samples": 2,
+      "consumer": "Game.on_scoreboard_score",
+      "kind": "game"
+    },
+    {
+      "name": "remove_resource_pack",
+      "id": 69,
+      "nativeType": "clientbound/minecraft:resource_pack_pop",
+      "normalizedName": "remove_resource_pack",
+      "samples": 2,
+      "consumer": "Game.on_remove_resource_pack",
+      "kind": "game"
+    },
+    {
+      "name": "add_resource_pack",
+      "id": 70,
+      "nativeType": "clientbound/minecraft:resource_pack_push",
+      "normalizedName": "add_resource_pack",
+      "samples": 2,
+      "consumer": "Game.on_add_resource_pack",
+      "kind": "game"
+    },
+    {
+      "name": "respawn",
+      "id": 71,
+      "nativeType": "clientbound/minecraft:respawn",
+      "normalizedName": "respawn",
+      "samples": 5,
+      "consumer": "Game.on_respawn",
+      "kind": "game"
+    },
+    {
+      "name": "entity_head_rotation",
+      "id": 72,
+      "nativeType": "clientbound/minecraft:rotate_head",
+      "normalizedName": "entity_head_rotation",
+      "samples": 2,
+      "consumer": "Game.on_entity_head_rotation",
+      "kind": "game"
+    },
+    {
+      "name": "multi_block_change",
+      "id": 73,
+      "nativeType": "clientbound/minecraft:section_blocks_update",
+      "normalizedName": "multi_block_change",
+      "samples": 2,
+      "consumer": "Game.on_multi_block_change",
+      "kind": "game"
+    },
+    {
+      "name": "select_advancement_tab",
+      "id": 74,
+      "nativeType": "clientbound/minecraft:select_advancements_tab",
+      "normalizedName": "select_advancement_tab",
+      "samples": 2,
+      "consumer": "Game.on_select_advancement_tab",
+      "kind": "game"
+    },
+    {
+      "name": "server_data",
+      "id": 75,
+      "nativeType": "clientbound/minecraft:server_data",
+      "normalizedName": "server_data",
+      "samples": 2,
+      "consumer": "Game.on_server_data",
+      "kind": "game"
+    },
+    {
+      "name": "action_bar",
+      "id": 76,
+      "nativeType": "clientbound/minecraft:set_action_bar_text",
+      "normalizedName": "title",
+      "samples": 2,
+      "consumer": "Game.on_title",
+      "kind": "game"
+    },
+    {
+      "name": "world_border_center",
+      "id": 77,
+      "nativeType": "clientbound/minecraft:set_border_center",
+      "normalizedName": "world_border",
+      "samples": 2,
+      "consumer": "Game.on_world_border",
+      "kind": "game"
+    },
+    {
+      "name": "world_border_lerp_size",
+      "id": 78,
+      "nativeType": "clientbound/minecraft:set_border_lerp_size",
+      "normalizedName": "world_border",
+      "samples": 2,
+      "consumer": "Game.on_world_border",
+      "kind": "game"
+    },
+    {
+      "name": "world_border_size",
+      "id": 79,
+      "nativeType": "clientbound/minecraft:set_border_size",
+      "normalizedName": "world_border",
+      "samples": 2,
+      "consumer": "Game.on_world_border",
+      "kind": "game"
+    },
+    {
+      "name": "world_border_warning_delay",
+      "id": 80,
+      "nativeType": "clientbound/minecraft:set_border_warning_delay",
+      "normalizedName": "world_border",
+      "samples": 2,
+      "consumer": "Game.on_world_border",
+      "kind": "game"
+    },
+    {
+      "name": "world_border_warning_reach",
+      "id": 81,
+      "nativeType": "clientbound/minecraft:set_border_warning_distance",
+      "normalizedName": "world_border",
+      "samples": 2,
+      "consumer": "Game.on_world_border",
+      "kind": "game"
+    },
+    {
+      "name": "camera",
+      "id": 82,
+      "nativeType": "clientbound/minecraft:set_camera",
+      "normalizedName": "camera",
+      "samples": 2,
+      "consumer": "Game.on_camera",
+      "kind": "game"
+    },
+    {
+      "name": "held_item_slot",
+      "id": 83,
+      "nativeType": "clientbound/minecraft:set_carried_item",
+      "normalizedName": "held_item_slot",
+      "samples": 2,
+      "consumer": "Game.on_held_item_slot",
+      "kind": "game"
+    },
+    {
+      "name": "update_view_position",
+      "id": 84,
+      "nativeType": "clientbound/minecraft:set_chunk_cache_center",
+      "normalizedName": "update_view_position",
+      "samples": 2,
+      "consumer": "Game.on_update_view_position",
+      "kind": "game"
+    },
+    {
+      "name": "update_view_distance",
+      "id": 85,
+      "nativeType": "clientbound/minecraft:set_chunk_cache_radius",
+      "normalizedName": "update_view_distance",
+      "samples": 2,
+      "consumer": "Game.on_update_view_distance",
+      "kind": "game"
+    },
+    {
+      "name": "spawn_position",
+      "id": 86,
+      "nativeType": "clientbound/minecraft:set_default_spawn_position",
+      "normalizedName": "spawn_position",
+      "samples": 2,
+      "consumer": "Game.on_spawn_position",
+      "kind": "game"
+    },
+    {
+      "name": "scoreboard_display_objective",
+      "id": 87,
+      "nativeType": "clientbound/minecraft:set_display_objective",
+      "normalizedName": "scoreboard_display_objective",
+      "samples": 2,
+      "consumer": "Game.on_scoreboard_display_objective",
+      "kind": "game"
+    },
+    {
+      "name": "entity_metadata",
+      "id": 88,
+      "nativeType": "clientbound/minecraft:set_entity_data",
+      "normalizedName": "entity_metadata",
+      "samples": 324,
+      "consumer": "Game.on_entity_metadata",
+      "kind": "game"
+    },
+    {
+      "name": "attach_entity",
+      "id": 89,
+      "nativeType": "clientbound/minecraft:set_entity_link",
+      "normalizedName": "attach_entity",
+      "samples": 2,
+      "consumer": "Game.on_attach_entity",
+      "kind": "game"
+    },
+    {
+      "name": "entity_velocity",
+      "id": 90,
+      "nativeType": "clientbound/minecraft:set_entity_motion",
+      "normalizedName": "entity_velocity",
+      "samples": 2,
+      "consumer": "Game.on_entity_velocity",
+      "kind": "game"
+    },
+    {
+      "name": "entity_equipment",
+      "id": 91,
+      "nativeType": "clientbound/minecraft:set_equipment",
+      "normalizedName": "entity_equipment",
+      "samples": 2,
+      "consumer": "Game.on_entity_equipment",
+      "kind": "game"
+    },
+    {
+      "name": "experience",
+      "id": 92,
+      "nativeType": "clientbound/minecraft:set_experience",
+      "normalizedName": "experience",
+      "samples": 2,
+      "consumer": "Game.on_experience",
+      "kind": "game"
+    },
+    {
+      "name": "update_health",
+      "id": 93,
+      "nativeType": "clientbound/minecraft:set_health",
+      "normalizedName": "update_health",
+      "samples": 2,
+      "consumer": "Game.on_update_health",
+      "kind": "game"
+    },
+    {
+      "name": "scoreboard_objective",
+      "id": 94,
+      "nativeType": "clientbound/minecraft:set_objective",
+      "normalizedName": "scoreboard_objective",
+      "samples": 9,
+      "consumer": "Game.on_scoreboard_objective",
+      "kind": "game"
+    },
+    {
+      "name": "set_passengers",
+      "id": 95,
+      "nativeType": "clientbound/minecraft:set_passengers",
+      "normalizedName": "set_passengers",
+      "samples": 2,
+      "consumer": "Game.on_set_passengers",
+      "kind": "game"
+    },
+    {
+      "name": "teams",
+      "id": 96,
+      "nativeType": "clientbound/minecraft:set_player_team",
+      "normalizedName": "scoreboard_team",
+      "samples": 5,
+      "consumer": "Game.on_scoreboard_team",
+      "kind": "game"
+    },
+    {
+      "name": "scoreboard_score",
+      "id": 97,
+      "nativeType": "clientbound/minecraft:set_score",
+      "normalizedName": "scoreboard_score",
+      "samples": 4,
+      "consumer": "Game.on_scoreboard_score",
+      "kind": "game"
+    },
+    {
+      "name": "simulation_distance",
+      "id": 98,
+      "nativeType": "clientbound/minecraft:set_simulation_distance",
+      "normalizedName": "simulation_distance",
+      "samples": 2,
+      "consumer": "Game.on_simulation_distance",
+      "kind": "game"
+    },
+    {
+      "name": "set_title_subtitle",
+      "id": 99,
+      "nativeType": "clientbound/minecraft:set_subtitle_text",
+      "normalizedName": "title",
+      "samples": 2,
+      "consumer": "Game.on_title",
+      "kind": "game"
+    },
+    {
+      "name": "update_time",
+      "id": 100,
+      "nativeType": "clientbound/minecraft:set_time",
+      "normalizedName": "update_time",
+      "samples": 2,
+      "consumer": "Game.on_update_time",
+      "kind": "game"
+    },
+    {
+      "name": "set_title_text",
+      "id": 101,
+      "nativeType": "clientbound/minecraft:set_title_text",
+      "normalizedName": "title",
+      "samples": 2,
+      "consumer": "Game.on_title",
+      "kind": "game"
+    },
+    {
+      "name": "set_title_time",
+      "id": 102,
+      "nativeType": "clientbound/minecraft:set_titles_animation",
+      "normalizedName": "title",
+      "samples": 2,
+      "consumer": "Game.on_title",
+      "kind": "game"
+    },
+    {
+      "name": "entity_sound_effect",
+      "id": 103,
+      "nativeType": "clientbound/minecraft:sound_entity",
+      "normalizedName": "entity_sound_effect",
+      "samples": 14,
+      "consumer": "Game.on_entity_sound_effect",
+      "kind": "game"
+    },
+    {
+      "name": "sound_effect",
+      "id": 104,
+      "nativeType": "clientbound/minecraft:sound",
+      "normalizedName": "sound_effect",
+      "samples": 14,
+      "consumer": "Game.on_sound_effect",
+      "kind": "game"
+    },
+    {
+      "name": "start_configuration",
+      "id": 105,
+      "nativeType": "clientbound/minecraft:start_configuration",
+      "normalizedName": "start_configuration",
+      "samples": 2,
+      "consumer": "VanillaSocket766._packet / Configuration766",
+      "kind": "transport"
+    },
+    {
+      "name": "stop_sound",
+      "id": 106,
+      "nativeType": "clientbound/minecraft:stop_sound",
+      "normalizedName": "stop_sound",
+      "samples": 5,
+      "consumer": "Game.on_stop_sound",
+      "kind": "game"
+    },
+    {
+      "name": "store_cookie",
+      "id": 107,
+      "nativeType": "clientbound/minecraft:store_cookie",
+      "normalizedName": "store_cookie",
+      "samples": 2,
+      "consumer": "VanillaSocket766._packet",
+      "kind": "transport"
+    },
+    {
+      "name": "system_chat",
+      "id": 108,
+      "nativeType": "clientbound/minecraft:system_chat",
+      "normalizedName": "system_chat",
+      "samples": 2,
+      "consumer": "Game.on_system_chat",
+      "kind": "game"
+    },
+    {
+      "name": "playerlist_header",
+      "id": 109,
+      "nativeType": "clientbound/minecraft:tab_list",
+      "normalizedName": "playerlist_header",
+      "samples": 2,
+      "consumer": "Game.on_playerlist_header",
+      "kind": "game"
+    },
+    {
+      "name": "nbt_query_response",
+      "id": 110,
+      "nativeType": "clientbound/minecraft:tag_query",
+      "normalizedName": "nbt_query_response",
+      "samples": 2,
+      "consumer": "Game.on_nbt_query_response",
+      "kind": "game"
+    },
+    {
+      "name": "collect",
+      "id": 111,
+      "nativeType": "clientbound/minecraft:take_item_entity",
+      "normalizedName": "collect",
+      "samples": 2,
+      "consumer": "Game.on_collect",
+      "kind": "game"
+    },
+    {
+      "name": "entity_teleport",
+      "id": 112,
+      "nativeType": "clientbound/minecraft:teleport_entity",
+      "normalizedName": "entity_teleport",
+      "samples": 2,
+      "consumer": "Game.on_entity_teleport",
+      "kind": "game"
+    },
+    {
+      "name": "set_ticking_state",
+      "id": 113,
+      "nativeType": "clientbound/minecraft:ticking_state",
+      "normalizedName": "set_ticking_state",
+      "samples": 2,
+      "consumer": "Game.on_set_ticking_state",
+      "kind": "game"
+    },
+    {
+      "name": "step_tick",
+      "id": 114,
+      "nativeType": "clientbound/minecraft:ticking_step",
+      "normalizedName": "step_tick",
+      "samples": 2,
+      "consumer": "Game.on_step_tick",
+      "kind": "game"
+    },
+    {
+      "name": "transfer",
+      "id": 115,
+      "nativeType": "clientbound/minecraft:transfer",
+      "normalizedName": "transfer",
+      "samples": 2,
+      "consumer": "VanillaSocket766._transfer / Connection",
+      "kind": "transport"
+    },
+    {
+      "name": "advancements",
+      "id": 116,
+      "nativeType": "clientbound/minecraft:update_advancements",
+      "normalizedName": "advancements",
+      "samples": 16,
+      "consumer": "Game.on_advancements",
+      "kind": "game"
+    },
+    {
+      "name": "entity_update_attributes",
+      "id": 117,
+      "nativeType": "clientbound/minecraft:update_attributes",
+      "normalizedName": "update_attributes",
+      "samples": 23,
+      "consumer": "Game.on_update_attributes",
+      "kind": "game"
+    },
+    {
+      "name": "entity_effect",
+      "id": 118,
+      "nativeType": "clientbound/minecraft:update_mob_effect",
+      "normalizedName": "entity_effect",
+      "samples": 2,
+      "consumer": "Game.on_entity_effect",
+      "kind": "game"
+    },
+    {
+      "name": "declare_recipes",
+      "id": 119,
+      "nativeType": "clientbound/minecraft:update_recipes",
+      "normalizedName": "declare_recipes",
+      "samples": 46,
+      "consumer": "Game.on_declare_recipes",
+      "kind": "game"
+    },
+    {
+      "name": "tags",
+      "id": 120,
+      "nativeType": "clientbound/minecraft:update_tags",
+      "normalizedName": "tags",
+      "samples": 2,
+      "consumer": "Game.on_tags",
+      "kind": "game"
+    },
+    {
+      "name": "set_projectile_power",
+      "id": 121,
+      "nativeType": "clientbound/minecraft:projectile_power",
+      "normalizedName": "set_projectile_power",
+      "samples": 2,
+      "consumer": "Game.on_set_projectile_power",
+      "kind": "game"
+    }
+  ],
+  "serverbound": [
+    {
+      "name": "teleport_confirm",
+      "id": 0,
+      "nativeType": "serverbound/minecraft:accept_teleportation",
+      "samples": 3,
+      "builders": [
+        "C.teleportConfirm"
+      ]
+    },
+    {
+      "name": "query_block_nbt",
+      "id": 1,
+      "nativeType": "serverbound/minecraft:block_entity_tag_query",
+      "samples": 3,
+      "builders": [
+        "C.queryBlockNbt"
+      ]
+    },
+    {
+      "name": "set_difficulty",
+      "id": 2,
+      "nativeType": "serverbound/minecraft:change_difficulty",
+      "samples": 6,
+      "builders": [
+        "C.setDifficulty"
+      ]
+    },
+    {
+      "name": "message_acknowledgement",
+      "id": 3,
+      "nativeType": "serverbound/minecraft:chat_ack",
+      "samples": 3,
+      "builders": [
+        "ChatState766.flush"
+      ]
+    },
+    {
+      "name": "chat_command",
+      "id": 4,
+      "nativeType": "serverbound/minecraft:chat_command",
+      "samples": 3,
+      "builders": [
+        "ChatState766.encode"
+      ]
+    },
+    {
+      "name": "chat_command_signed",
+      "id": 5,
+      "nativeType": "serverbound/minecraft:chat_command_signed",
+      "samples": 3,
+      "builders": [
+        "C.signedCommand"
+      ]
+    },
+    {
+      "name": "chat_message",
+      "id": 6,
+      "nativeType": "serverbound/minecraft:chat",
+      "samples": 3,
+      "builders": [
+        "ChatState766.encode"
+      ]
+    },
+    {
+      "name": "chat_session_update",
+      "id": 7,
+      "nativeType": "serverbound/minecraft:chat_session_update",
+      "samples": 3,
+      "builders": [
+        "C.chatSession"
+      ]
+    },
+    {
+      "name": "chunk_batch_received",
+      "id": 8,
+      "nativeType": "serverbound/minecraft:chunk_batch_received",
+      "samples": 3,
+      "builders": [
+        "C.chunkBatchReceived"
+      ]
+    },
+    {
+      "name": "client_command",
+      "id": 9,
+      "nativeType": "serverbound/minecraft:client_command",
+      "samples": 4,
+      "builders": [
+        "C.clientCommand"
+      ]
+    },
+    {
+      "name": "settings",
+      "id": 10,
+      "nativeType": "serverbound/minecraft:client_information",
+      "samples": 3,
+      "builders": [
+        "C.settings"
+      ]
+    },
+    {
+      "name": "tab_complete",
+      "id": 11,
+      "nativeType": "serverbound/minecraft:command_suggestion",
+      "samples": 3,
+      "builders": [
+        "C.tabComplete"
+      ]
+    },
+    {
+      "name": "configuration_acknowledged",
+      "id": 12,
+      "nativeType": "serverbound/minecraft:configuration_acknowledged",
+      "samples": 3,
+      "builders": [
+        "C766.acknowledgeReconfiguration"
+      ]
+    },
+    {
+      "name": "enchant_item",
+      "id": 13,
+      "nativeType": "serverbound/minecraft:container_button_click",
+      "samples": 3,
+      "builders": [
+        "C.enchantItem"
+      ]
+    },
+    {
+      "name": "window_click",
+      "id": 14,
+      "nativeType": "serverbound/minecraft:container_click",
+      "samples": 3,
+      "builders": [
+        "C.windowClick"
+      ]
+    },
+    {
+      "name": "close_window",
+      "id": 15,
+      "nativeType": "serverbound/minecraft:container_close",
+      "samples": 3,
+      "builders": [
+        "C.closeWindow"
+      ]
+    },
+    {
+      "name": "set_slot_state",
+      "id": 16,
+      "nativeType": "serverbound/minecraft:container_slot_state_changed",
+      "samples": 3,
+      "builders": [
+        "C.setSlotState"
+      ]
+    },
+    {
+      "name": "cookie_response",
+      "id": 17,
+      "nativeType": "serverbound/minecraft:cookie_response",
+      "samples": 4,
+      "builders": [
+        "C766.playCookieResponse"
+      ]
+    },
+    {
+      "name": "custom_payload",
+      "id": 18,
+      "nativeType": "serverbound/minecraft:custom_payload",
+      "samples": 3,
+      "builders": [
+        "C.customPayload"
+      ]
+    },
+    {
+      "name": "debug_sample_subscription",
+      "id": 19,
+      "nativeType": "serverbound/minecraft:debug_sample_subscription",
+      "samples": 3,
+      "builders": [
+        "C.debugSampleSubscription"
+      ]
+    },
+    {
+      "name": "edit_book",
+      "id": 20,
+      "nativeType": "serverbound/minecraft:edit_book",
+      "samples": 4,
+      "builders": [
+        "C.editBook"
+      ]
+    },
+    {
+      "name": "query_entity_nbt",
+      "id": 21,
+      "nativeType": "serverbound/minecraft:entity_tag_query",
+      "samples": 3,
+      "builders": [
+        "C.queryEntityNbt"
+      ]
+    },
+    {
+      "name": "use_entity",
+      "id": 22,
+      "nativeType": "serverbound/minecraft:interact",
+      "samples": 6,
+      "builders": [
+        "C.useEntity"
+      ]
+    },
+    {
+      "name": "generate_structure",
+      "id": 23,
+      "nativeType": "serverbound/minecraft:jigsaw_generate",
+      "samples": 3,
+      "builders": [
+        "C.generateStructure"
+      ]
+    },
+    {
+      "name": "keep_alive",
+      "id": 24,
+      "nativeType": "serverbound/minecraft:keep_alive",
+      "samples": 3,
+      "builders": [
+        "C.keepAlive"
+      ]
+    },
+    {
+      "name": "lock_difficulty",
+      "id": 25,
+      "nativeType": "serverbound/minecraft:lock_difficulty",
+      "samples": 3,
+      "builders": [
+        "C.lockDifficulty"
+      ]
+    },
+    {
+      "name": "position",
+      "id": 26,
+      "nativeType": "serverbound/minecraft:move_player_pos",
+      "samples": 3,
+      "builders": [
+        "C.position"
+      ]
+    },
+    {
+      "name": "position_look",
+      "id": 27,
+      "nativeType": "serverbound/minecraft:move_player_pos_rot",
+      "samples": 3,
+      "builders": [
+        "C.positionLook"
+      ]
+    },
+    {
+      "name": "look",
+      "id": 28,
+      "nativeType": "serverbound/minecraft:move_player_rot",
+      "samples": 3,
+      "builders": [
+        "C.look"
+      ]
+    },
+    {
+      "name": "flying",
+      "id": 29,
+      "nativeType": "serverbound/minecraft:move_player_status_only",
+      "samples": 3,
+      "builders": [
+        "C.flying"
+      ]
+    },
+    {
+      "name": "vehicle_move",
+      "id": 30,
+      "nativeType": "serverbound/minecraft:move_vehicle",
+      "samples": 3,
+      "builders": [
+        "C.vehicleMove"
+      ]
+    },
+    {
+      "name": "steer_boat",
+      "id": 31,
+      "nativeType": "serverbound/minecraft:paddle_boat",
+      "samples": 3,
+      "builders": [
+        "C.steerBoat"
+      ]
+    },
+    {
+      "name": "pick_item",
+      "id": 32,
+      "nativeType": "serverbound/minecraft:pick_item",
+      "samples": 3,
+      "builders": [
+        "C.pickItem"
+      ]
+    },
+    {
+      "name": "ping_request",
+      "id": 33,
+      "nativeType": "serverbound/minecraft:ping_request",
+      "samples": 3,
+      "builders": [
+        "C.pingRequest"
+      ]
+    },
+    {
+      "name": "craft_recipe_request",
+      "id": 34,
+      "nativeType": "serverbound/minecraft:place_recipe",
+      "samples": 3,
+      "builders": [
+        "C.placeRecipe"
+      ]
+    },
+    {
+      "name": "abilities",
+      "id": 35,
+      "nativeType": "serverbound/minecraft:player_abilities",
+      "samples": 3,
+      "builders": [
+        "C.abilities"
+      ]
+    },
+    {
+      "name": "block_dig",
+      "id": 36,
+      "nativeType": "serverbound/minecraft:player_action",
+      "samples": 3,
+      "builders": [
+        "C.blockDig"
+      ]
+    },
+    {
+      "name": "entity_action",
+      "id": 37,
+      "nativeType": "serverbound/minecraft:player_command",
+      "samples": 11,
+      "builders": [
+        "C.entityAction"
+      ]
+    },
+    {
+      "name": "steer_vehicle",
+      "id": 38,
+      "nativeType": "serverbound/minecraft:player_input",
+      "samples": 3,
+      "builders": [
+        "C.steerVehicle"
+      ]
+    },
+    {
+      "name": "pong",
+      "id": 39,
+      "nativeType": "serverbound/minecraft:pong",
+      "samples": 3,
+      "builders": [
+        "C.pong"
+      ]
+    },
+    {
+      "name": "recipe_book",
+      "id": 40,
+      "nativeType": "serverbound/minecraft:recipe_book_change_settings",
+      "samples": 3,
+      "builders": [
+        "C.recipeBookSettings"
+      ]
+    },
+    {
+      "name": "displayed_recipe",
+      "id": 41,
+      "nativeType": "serverbound/minecraft:recipe_book_seen_recipe",
+      "samples": 3,
+      "builders": [
+        "C.recipeInfoShown"
+      ]
+    },
+    {
+      "name": "name_item",
+      "id": 42,
+      "nativeType": "serverbound/minecraft:rename_item",
+      "samples": 3,
+      "builders": [
+        "C.nameItem"
+      ]
+    },
+    {
+      "name": "resource_pack_receive",
+      "id": 43,
+      "nativeType": "serverbound/minecraft:resource_pack",
+      "samples": 3,
+      "builders": [
+        "C.resourcePackStatus"
+      ]
+    },
+    {
+      "name": "advancement_tab",
+      "id": 44,
+      "nativeType": "serverbound/minecraft:seen_advancements",
+      "samples": 5,
+      "builders": [
+        "C.seenAdvancements"
+      ]
+    },
+    {
+      "name": "select_trade",
+      "id": 45,
+      "nativeType": "serverbound/minecraft:select_trade",
+      "samples": 3,
+      "builders": [
+        "C.selectTrade"
+      ]
+    },
+    {
+      "name": "set_beacon_effect",
+      "id": 46,
+      "nativeType": "serverbound/minecraft:set_beacon",
+      "samples": 4,
+      "builders": [
+        "C.setBeaconEffects"
+      ]
+    },
+    {
+      "name": "held_item_slot",
+      "id": 47,
+      "nativeType": "serverbound/minecraft:set_carried_item",
+      "samples": 3,
+      "builders": [
+        "C.heldItemSlot"
+      ]
+    },
+    {
+      "name": "update_command_block",
+      "id": 48,
+      "nativeType": "serverbound/minecraft:set_command_block",
+      "samples": 3,
+      "builders": [
+        "C.updateCommandBlock"
+      ]
+    },
+    {
+      "name": "update_command_block_minecart",
+      "id": 49,
+      "nativeType": "serverbound/minecraft:set_command_minecart",
+      "samples": 3,
+      "builders": [
+        "C.updateCommandMinecart"
+      ]
+    },
+    {
+      "name": "set_creative_slot",
+      "id": 50,
+      "nativeType": "serverbound/minecraft:set_creative_mode_slot",
+      "samples": 8,
+      "builders": [
+        "C.creativeSlot",
+        "C.creativeSlot.custom_food",
+        "C.creativeSlot.inline_horn",
+        "C.creativeSlot.removed_food",
+        "C.creativeSlot.named_horn"
+      ]
+    },
+    {
+      "name": "update_jigsaw_block",
+      "id": 51,
+      "nativeType": "serverbound/minecraft:set_jigsaw_block",
+      "samples": 3,
+      "builders": [
+        "C.updateJigsaw"
+      ]
+    },
+    {
+      "name": "update_structure_block",
+      "id": 52,
+      "nativeType": "serverbound/minecraft:set_structure_block",
+      "samples": 3,
+      "builders": [
+        "C.updateStructure"
+      ]
+    },
+    {
+      "name": "update_sign",
+      "id": 53,
+      "nativeType": "serverbound/minecraft:sign_update",
+      "samples": 3,
+      "builders": [
+        "C.updateSign"
+      ]
+    },
+    {
+      "name": "arm_animation",
+      "id": 54,
+      "nativeType": "serverbound/minecraft:swing",
+      "samples": 3,
+      "builders": [
+        "C.armAnimation"
+      ]
+    },
+    {
+      "name": "spectate",
+      "id": 55,
+      "nativeType": "serverbound/minecraft:teleport_to_entity",
+      "samples": 3,
+      "builders": [
+        "C.spectate"
+      ]
+    },
+    {
+      "name": "block_place",
+      "id": 56,
+      "nativeType": "serverbound/minecraft:use_item_on",
+      "samples": 3,
+      "builders": [
+        "C.blockPlace"
+      ]
+    },
+    {
+      "name": "use_item",
+      "id": 57,
+      "nativeType": "serverbound/minecraft:use_item",
+      "samples": 3,
+      "builders": [
+        "C.useItem"
+      ]
+    }
+  ],
+  "limits": [
+    "Switch branches and flag matrices are exercised; this is not exhaustive over values or all combinations.",
+    "Game handler presence does not establish feature completeness. Debug sample and ping presentation remains partial.",
+    "Login, Configuration, transfer and bundling have separate transport regressions.",
+    "Authenticated Mojang account signing and public-server compatibility still need live acceptance."
+  ]
+}

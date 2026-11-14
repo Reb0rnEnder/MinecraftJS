@@ -76,6 +76,8 @@ export async function generatePlaySchema(check = false) {
     return value;
   };
   field("multi_block_change", "records").type[1].type = "varlong";
+  // ClientboundBlockEntityDataPacket uses the required compound-NBT codec.
+  field("tile_entity_data", "nbtData").type = "anonymousNbt";
   field("initialize_world_border", "speed").type = "varlong";
   field("world_border_lerp_size", "speed").type = "varlong";
   // The upstream schema still lists the removed banner-add-pattern serializer,
@@ -89,6 +91,7 @@ export async function generatePlaySchema(check = false) {
       assert.ok(recipeBodies[name], 'Missing native recipe serializer body ' + name);
       return [entry.protocol_id, name];
     }));
+  for (const name of Object.keys(recipeBodies)) if (!Object.values(recipeType.type[1].mappings).includes(name)) delete recipeBodies[name];
   const packetMappings = play.packet[1][0].type[1].mappings;
   const idByName = Object.fromEntries(Object.entries(packetMappings).map(([id, name]) => [name, Number(id)]));
   const packets = Object.keys(idByName).sort((a, b) => idByName[a] - idByName[b]);
@@ -109,6 +112,15 @@ export async function generatePlaySchema(check = false) {
   for (const name of Object.values(nativeIds('minecraft:command_argument_type'))) {
     assert.ok(Object.hasOwn(argumentProperties,name),'Missing native command argument properties for ' + name);
   }
+  for (const name of Object.keys(argumentProperties)) if (!Object.values(nativeIds('minecraft:command_argument_type')).includes(name)) delete argumentProperties[name];
+  // EntityDataSerializers uses holderRegistry (direct registry ID), not the
+  // inline-holder codec used by item components. GlobalPos includes BlockPos.
+  const metadata = all.entityMetadataEntry[1].find(f => f.name === 'value').type[1].fields;
+  metadata.wolf_variant = metadata.painting_variant = 'varint';
+  metadata.optional_global_pos = ['option',['container',[
+    {name:'dimension',type:'string'},{name:'position',type:'position'}
+  ]]];
+  field('player_info','data').type[1].type[1].find(f=>f.name==='listed').type[1].fields.true = 'bool';
   for (const name of packets) {
     const root = "packet_" + name;
     if (all[root] === undefined && all["packet_common_" + name] !== undefined) all[root] = all["packet_common_" + name];
