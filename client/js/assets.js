@@ -155,7 +155,7 @@ export class Assets {
     const cur = this.images.get(rel);
     if (cur) return cur;
     if(this.imageLoads.has(rel))return this.imageLoads.get(rel);
-    const version=this.version,task=(async()=>{const bytes=await this.readBytes('textures/'+rel);if(!bytes)throw Error('Missing texture '+rel);const img=decodePng(bytes);if(version!==this.version)throw Error('Resource reload superseded texture '+rel);this.images.set(rel,img);return img;})();
+    const version=this.version,task=(async()=>{const bytes=await (rel.includes(':')?this.readResourceBytes(rel.replace(':',':textures/')):this.readBytes('textures/'+rel));if(!bytes)throw Error('Missing texture '+rel);const img=decodePng(bytes);if(version!==this.version)throw Error('Resource reload superseded texture '+rel);this.images.set(rel,img);return img;})();
     this.imageLoads.set(rel,task);try{return await task;}finally{if(this.imageLoads.get(rel)===task)this.imageLoads.delete(rel);}
   }
 
