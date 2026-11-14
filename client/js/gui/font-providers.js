@@ -54,7 +54,7 @@ export function trueTypeProvider(assets,def,bytes,key) {
  const instance=new WebAssembly.Instance(wasmModule,{math:{pow:Math.pow,cos:Math.cos,acos:Math.acos,fmod:(a,b)=>a%b}}).exports;
  const pointer=instance.alloc(bytes.length);new Uint8Array(instance.memory.buffer,pointer,bytes.length).set(bytes);
  if(!instance.init(pointer))throw new Error('Invalid TTF');
- const skipped=new Set((Array.isArray(def.skip)?def.skip.join(''):def.skip||'').split('')),cache=new Map();
+ const skipped=new Set(Array.from(Array.isArray(def.skip)?def.skip.join(''):def.skip||'')),cache=new Map();
  let atlas=null,page=0,x=1,y=1,row=0;
  const bake=(glyph,pixels)=>{
   const w=pixels.width,h=pixels.height;
