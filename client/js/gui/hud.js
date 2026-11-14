@@ -1,3 +1,4 @@
+import{compareEffects1194}from'../game/effect-display-1.19.4.js';
 import { SYSTEM_CHAT_TAG } from './chat-tags.js';
 import { fillToastSlots, drawMultilineToast } from './system-toast.js';
 import{renderBlockOverlay}from'../render/block-overlay.js';
@@ -790,13 +791,13 @@ export class Hud {
     const g=this.game;
     if(g.screens.current?.effectsShift)return;
     let good=0,bad=0;
-    for(const [id,e] of [...g.effects].sort((a,b)=>b[0]-a[0])) {
+    for(const [id,e] of [...g.effects].sort((a,b)=>-compareEffects1194(a,b,g.items.effects))) {
       const def=g.items.effects[id];if(!def||e.showIcon===false)continue;
       const beneficial=def.beneficial??!def.bad;
       const x=gui.width-25*(beneficial?++good:++bad),y=beneficial?1:27;
       gui.blit('gui/container/inventory.png',x,y,e.ambient?165:141,166,24,24);
       let alpha=1;
-      if(!e.ambient&&e.duration<=200){const n=10-Math.floor(e.duration/20);alpha=Math.max(0,Math.min(.5,e.duration/50))+Math.cos(e.duration*Math.PI/5)*Math.max(0,Math.min(.25,n/10*.25));}
+      if(!e.ambient&&e.duration!==-1&&e.duration<=200){const n=10-Math.floor(e.duration/20);alpha=Math.max(0,Math.min(.5,e.duration/50))+Math.cos(e.duration*Math.PI/5)*Math.max(0,Math.min(.25,n/10*.25));}
       drawEffectIcon(g,gui,id,x+3,y+3,18,alpha);
     }
   }

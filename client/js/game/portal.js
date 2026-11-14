@@ -13,7 +13,7 @@ export function tickPortal(game){
  if(touchesPortal(game)){
   if(!game.portalTime)game.sound.playAtPlayer('block.portal.trigger',1,Math.random()*.4+.8);
   game.portalTime=Math.min(1,game.prevPortalTime+.0125);
- }else if((game.effects?.get(9)?.duration||0)>60)game.portalTime=Math.min(1,game.prevPortalTime+.006666667);
+ }else if(game.effects?.get(9)&&(game.effects.get(9).duration===-1||game.effects.get(9).duration>60))game.portalTime=Math.min(1,game.prevPortalTime+.006666667);
  else game.portalTime=Math.max(0,game.prevPortalTime-.05);
 }
 // Native rotating anisotropic screen distortion. Teleport timing stays server-owned.
