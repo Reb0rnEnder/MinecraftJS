@@ -24,7 +24,7 @@ export function bitmapProvider(assets,def,image,key) {
  const cw=Math.floor(image.width/rows[0].length),ch=Math.floor(image.height/rows.length),scale=height/ch,glyphs=new Map();
  if(!cw||!ch)throw new Error('Empty bitmap glyph cells');
  for(let row=0;row<rows.length;row++)for(let col=0;col<rows[row].length;col++) {
-  const char=rows[row][col];if(char==='\0'||char===' ')continue;
+  const char=rows[row][col];if(char==='\0')continue;
   let ink=0;for(let x=cw-1;x>=0&&!ink;x--)for(let y=0;y<ch;y++)if(image.data[((row*ch+y)*image.width+col*cw+x)*4+3]){ink=x+1;break;}
   glyphs.set(char,{advance:Math.floor(ink*scale+.5)+1,x:0,y:7-ascent,width:cw*scale,height,
    u0:col*cw/image.width,v0:row*ch/image.height,u1:(col+1)*cw/image.width,v1:(row+1)*ch/image.height,
