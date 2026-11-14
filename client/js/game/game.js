@@ -1186,7 +1186,7 @@ export class Game {
     if (!data || data.x === undefined) return;
     const pos = { x: data.x, y: data.y, z: data.z };
     const id = String(data.id || '').replace(/^minecraft:/, '');
-    if (id === 'sign') {
+    if (id === 'sign' || id === 'hanging_sign') {
       this.tileRenderer.setTileEntity(pos,9,data,nbt);
       return;
     }

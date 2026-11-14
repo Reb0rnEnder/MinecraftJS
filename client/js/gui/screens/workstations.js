@@ -26,6 +26,7 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
     patterns(){
       const banner=win.get(0),dye=win.get(1),pattern=win.get(2);
       if(!banner||!dye||(game.items.nbt(banner)?.BlockEntityTag?.Patterns?.length||0)>=6)return [];
+      const tags=game.commandTags?.['minecraft:banner_pattern'];if(tags){const name=pattern?game.items.name(pattern.id):null;if(name&&!name.endsWith('_banner_pattern'))return [];return tags[name?'minecraft:pattern_item/'+name.slice(0,-15):'minecraft:no_item_required']||[];}
       if(pattern){
         const id={globe_banner_pattern:35,creeper_banner_pattern:36,skull_banner_pattern:37,flower_banner_pattern:38,mojang_banner_pattern:39,piglin_banner_pattern:40}[game.items.name(pattern.id)];
         return id?[id]:[];
@@ -83,7 +84,7 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
         for(let j=0;j<rows*4;j++){
           const index=this.row*4+j;if(index>=entries.length)break;
           const gx=x+grid.x+j%4*w,gy=y+grid.y+Math.floor(j/4)*h;
-          const selected=win.properties[0]===(stone?index:entries[index]);
+          const selected=win.properties[0]===index;
           const hovered=inside(mx,my,gx,gy,w,h);
           gui.blit(this.tex,gx,gy,0,166+(selected?h:hovered?h*2:0),w,h);
           if(stone)game.itemRenderer.drawItem(gui,entries[index].data.result,gx,gy+2,false);
@@ -96,7 +97,7 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
       const grid=this.grid(),{entries,w,h,rows}=grid,x=mx-this.guiLeft,y=my-this.guiTop;
       if(inside(x,y,grid.x,grid.y,w*4,h*rows)){
         const index=this.row*4+Math.floor((x-grid.x)/w)+Math.floor((y-grid.y)/h)*4;
-        if(index<entries.length){game.send(C.menuButton(win.id,grid.stone?index:entries[index]));game.sound.playUi(grid.stone?'ui.stonecutter.select_recipe':'ui.loom.select_pattern',1);}
+        if(index<entries.length){game.send(C.menuButton(win.id,index));game.sound.playUi(grid.stone?'ui.stonecutter.select_recipe':'ui.loom.select_pattern',1);}
         return true;
       }
       if(inside(x,y,119,9,12,56)){this.scrolling=true;this.mouseMove(mx,my);return true;}

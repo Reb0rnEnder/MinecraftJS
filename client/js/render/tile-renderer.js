@@ -1,3 +1,4 @@
+import{buildSignFrame}from'./sign-model.js';
 import{isShulkerBox,shulkerTexture}from'./shulker-box.js';
 import {DEFAULT_SKIN} from './default-skins.js';
 import { isScoping } from '../game/spyglass.js';
@@ -14,7 +15,7 @@ import { Node, material } from '../gfx/scene.js';
 import { resolveState } from '../world/blockstates.js';
 import { Pistons } from '../game/pistons.js';
 import { JavaRandom } from '../util/jrandom.js';
-import {isSign,signWood,glowingSignStyle} from '../game/signs-1.14.4.js';
+import {isSign,isHangingSign,signWood,glowingSignStyle} from '../game/signs-1.14.4.js';
 import {chatToLegacy} from '../gui/chat.js';
 import {applyTransform} from './item-renderer.js';
 const FLOWER_POT = {
@@ -439,22 +440,9 @@ export class TileEntityRenderer {
         break;
       }
       case 'sign': {
-        mat = entityMaterial('entity/signs/'+signWood(getBlock(st).name)+'.png', { alphaTest: 0.1 });
-        const { board, stick } = blockModel('sign', ['board', 'stick']); // ModelSign
-         const standing = !getBlock(st).name.includes('_wall_sign');
-        const f = 0.6666667;
-        const outer = new Node();
-        outer.position.set(0.5, 0.75 * f, 0.5);
-         if (standing) outer.rotation.y = -(Number(props.rotation || 0) * 360 / 16) * D2R;
-         else outer.rotation.y = -({ north: 180, south: 0, west: 90, east: -90 }[props.facing] || 0) * D2R;
-        const inner = new Node();
-        if (!standing) inner.position.set(0, -0.3125, -0.4375);
-        const sc = new Node(); sc.scale.set(f, -f, -f);
-        const model = new Node(); model.scale.set(1 / 16, 1 / 16, 1 / 16);
-        model.add(board.build()); board.setMaterial(mat);
-        if (standing) { model.add(stick.build()); stick.setMaterial(mat); }
-        sc.add(model);
-        // TileEntitySignRenderer: text in the rotated frame: translate(0, 0.5f, 0.07f), scale(f3, -f3, f3), f3 = 0.015625 * f
+        const name=getBlock(st).name;
+        mat=entityMaterial('entity/signs/'+(isHangingSign(name)?'hanging/':'')+signWood(name)+'.png',{alphaTest:.1});
+        const {root:outer,inner,scale:f,hanging}=buildSignFrame(name,props,mat);
         const lines = t.lines || this.signs.get(key(t.x, t.y, t.z)) || ['', '', '', ''];
         if (lines.some((l) => l)) {
           const font = g.gui.font;
@@ -465,13 +453,13 @@ export class TileEntityRenderer {
           t.signTextParams = [];
           const items = [];
           for (let j = 0; j < 4; j++) {
-            const line = lines[j] || '';
-            if (line) items.push({ text: line, x: -font.width(line) / 2, y: j * 10 - 20, ...style });
+            const line=font.wrap(lines[j]||'',hanging?60:90)[0]||'';
+            if (line) items.push({ text: line, x: -font.width(line) / 2, y: (j-2)*(hanging?9:10), ...style });
           }
           t.textMeshes = buildTextMeshes(this.device, font, items);
           const tn = new Node();
           const f3 = 0.015625 * f;
-          tn.position.set(0, 0.5 * f, 0.07 * f + 0.001);
+          tn.position.set(0,hanging?Math.fround(-.32):.5*f,hanging?Math.fround(.063):.07*f);
           tn.scale.set(f3, -f3, f3);
           for (const m of t.textMeshes) {
             const params = colorParams(1, 1, 1, 1, 0.05, 1);
@@ -480,7 +468,7 @@ export class TileEntityRenderer {
           }
           inner.add(tn);
         }
-        inner.add(sc); outer.add(inner); obj.add(outer);
+        obj.add(outer);
         break;
       }
       case 'skull': {
