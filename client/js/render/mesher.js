@@ -195,8 +195,8 @@ export class Mesher {
     const n = b.name;
     const props = getStateProperties(state);
     switch (n) {
-      case 'grass_block': case 'grass': case 'tall_grass': case 'fern': case 'large_fern': case 'sugar_cane':
-        return this.biomeBlend(x, y, z, grassColor);
+      case 'grass_block': case 'grass': case 'tall_grass': case 'fern': case 'large_fern': case 'sugar_cane': case 'potted_fern':
+        return this.biomeBlend(x, (n==='tall_grass'||n==='large_fern')&&props.half==='upper'?y-1:y, z, grassColor);
       case 'vine': return this.biomeBlend(x, y, z, foliageColor);
       case 'spruce_leaves': return 0x619961;
       case 'birch_leaves': return 0x80a755;
@@ -225,7 +225,7 @@ export class Mesher {
     const radius = Math.max(0, Math.min(7, this.options.biomeBlendRadius ?? 2)), samples = (radius * 2 + 1) ** 2;
     for (let dz = -radius; dz <= radius; dz++) {
       for (let dx = -radius; dx <= radius; dx++) {
-        const c = fn(this.world.getBiome(x + dx, z + dz), y);
+        const c = fn(this.world.getBiome(x + dx, z + dz), y, x + dx, z + dz);
         r += (c >> 16) & 255; g += (c >> 8) & 255; b += c & 255;
       }
     }
