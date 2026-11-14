@@ -1,3 +1,4 @@
+import {EFFECT_766,createEffectBlend766,tickEffectBlend766} from './effects-1.20.6.js';
 import {bindingResolver} from './keybind-components.js';
 import {setKeybindResolver} from '../gui/chat.js';
 import {replaceRespawnPlayer} from './respawn-player.js';
@@ -19,7 +20,7 @@ import { multilineToast } from '../gui/system-toast.js';
 import{markHotbarPickup,tickPickupAnimations}from'./pickup-animation.js';
 import{collectDynamicLights}from'../render/dynamic-lights.js';
 import {handleDamage762} from './damage-1.19.4.js';
-import {factorData762,tickFactor762,darkness762} from './darkness-1.19.4.js';
+import {darkness762} from './darkness-1.19.4.js';
 import {chatState762} from '../net/packets.js';
 import {decorateChat762} from '../net/chat-state-1.19.4.js';
 import {readPalette762} from '../world/chunk-1.19.4.js';
@@ -148,7 +149,7 @@ export class Game {
     this.gui.guiScaleSetting = settings.guiScale;
     this.applyLanguage();
     this.gui.resize();
-    this.items = new Items(assets);
+    this.items = new Items(assets,()=>this.player);
     this.accounts = new Accounts(settings);
     this.socialBlocking=new SocialBlocking(this);
     this.accounts.onActiveChanged=()=>this.socialBlocking.sync();
@@ -1132,6 +1133,7 @@ export class Game {
     const canonical=p.entityTypeName?.replace(/^minecraft:/,'');
     const def=canonical?ENTITIES_BY_NAME[canonical]:ENTITY_TYPES[p.type];
     const normalized={...p,type:def?.id??-1,wireType:p.wireType??p.type,entityTypeName:canonical||def?.name};
+    if(canonical==='player'){this.entities.spawnPlayer({...normalized,playerUUID:p.objectUUID,metadata:{}});return;}
     if(def?.mob||def?.name==='armor_stand'||['armadillo','bogged','breeze'].includes(canonical))this.entities.spawnMob({...normalized,entityUUID:p.objectUUID,metadata:{}});
     else this.entities.spawnObject(normalized);
   }
@@ -1212,7 +1214,7 @@ export class Game {
 
   on_entity_effect(p) {
     if (p.entityId === this.entityId) {
-      this.effects.set(p.effectId, { amplifier: p.amplifier, duration: p.duration, hideParticles: p.hideParticles, ambient:p.ambient, showIcon:p.showIcon,factor:p.factorCodec?factorData762(simplify(p.factorCodec)):null, start: this.ticks });
+      this.effects.set(p.effectId, { amplifier: p.amplifier, duration: p.duration, hideParticles: p.hideParticles, ambient:p.ambient, showIcon:p.showIcon,factor:createEffectBlend766(p.effectId,p.duration,p.shouldBlend,this.effects.get(p.effectId)?.factor), start: this.ticks });
       this._applyEffects();
     }
     this.entities.addEffect(p);
@@ -1223,10 +1225,10 @@ export class Game {
   }
 
   _applyEffects() {
-    const jb = this.effects.get(8);
+    const jb = this.effects.get(EFFECT_766.jump_boost);
     this.player.jumpBoost = jb ? jb.amplifier : -1;
-    this.player.blind = this.effects.has(15);
-    const lev = this.effects.get(25);
+    this.player.blind = this.effects.has(EFFECT_766.blindness);
+    const lev = this.effects.get(EFFECT_766.levitation);
     this.player.levitation = lev ? lev.amplifier : -1;
   }
 
@@ -1842,7 +1844,7 @@ export class Game {
       const tin = blocked ? {} : inp;
       const chest = this.inventory.armor[2];
       tin.autoJump = this.settings.autoJump;
-      tin.elytraUsable = !!(chest && this.items.name(chest.id) === 'elytra' && this.items.damage(chest) < this.items.maxDurability(chest.id) - 1);
+      tin.elytraUsable = !!(chest && this.items.name(chest.id) === 'elytra' && this.items.damage(chest) < this.items.maxDurability(chest) - 1);
       pl.canWalkPowderSnow = !!this.inventory.armor[0] && this.items.name(this.inventory.armor[0].id) === 'leather_boots';
       pl.depthStrider=this.items.enchantLevel(this.inventory.armor[0],'depth_strider');
       pl.soulSpeed=this.items.enchantLevel(this.inventory.armor[0],'soul_speed');
@@ -1850,7 +1852,7 @@ export class Game {
         const below=getBlock(world.getState(Math.floor(pl.x),Math.floor(pl.y-.2),Math.floor(pl.z)));
         if(below&&['soul_sand','soul_soil'].includes(below.name))this.particles.nativeParticle('soul',pl.x+(Math.random()-.5)*pl.width,pl.y+.1,pl.z+(Math.random()-.5)*pl.width,-pl.motionX*.2,.1,-pl.motionZ*.2);
       }
-      pl.dolphinsGrace=this.effects.has(30);pl.slowFalling=this.effects.has(28);
+      pl.dolphinsGrace=this.effects.has(EFFECT_766.dolphins_grace);pl.slowFalling=this.effects.has(EFFECT_766.slow_falling);
       pl.sleeping = !!this.sleeping;
       this.particles.sprint(pl);
       const res = pl.tick(world, tin);
@@ -1900,8 +1902,8 @@ export class Game {
     if (this.fovModifier < 0.1) this.fovModifier = 0.1;
 
     for (const [id, e] of this.effects) {
-      tickFactor762(e);
       if (e.duration > 0) e.duration--;
+      tickEffectBlend766(e);
     }
   }
 
@@ -1970,7 +1972,7 @@ export class Game {
       } else {
         const a = v.attributes || {};
         const val = (k, d) => (a[k] ? attributeValue(a[k]) : d);
-        const jb = this.effects.get(8);
+        const jb = this.effects.get(EFFECT_766.jump_boost);
         ctl.tick(pl, strafe, forward, { speed: val('generic.movementSpeed',v.entityName==='strider'?.175:v.entityName==='pig'?.25:.225), jumpStrength: val('horse.jumpStrength', 0.7), jumpBoost: jb ? jb.amplifier : -1 });
       }
       // the vehicle entity follows the simulation
@@ -2220,18 +2222,18 @@ export class Game {
     fov = zoomFov(this,fov);
     r.renderDistance = this.settings.renderDistance;
     r.fabulousEnabled=!!this.settings.fabulousGraphics;
-    r.setCamera(ex, ey, ez, camYaw, camPitch, roll, fov, pre,portalWarp(portal*(this.settings.screenEffectScale??1)**2,this.ticks+partial,this.effects.has(9)));
+    r.setCamera(ex, ey, ez, camYaw, camPitch, roll, fov, pre,portalWarp(portal*(this.settings.screenEffectScale??1)**2,this.ticks+partial,this.effects.has(EFFECT_766.nausea)));
     const temp = biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).temperature;
     const rain = this.world.prevRain !== undefined ? this.world.prevRain + (this.world.rainStrength - this.world.prevRain) * partial : this.world.rainStrength;
     r.updateEnvironment({
       fullBright:!!this.settings.fullBright,dynamicLights:collectDynamicLights(this,[ex,ey,ez],partial),
       hideLightningFlashes:!!this.settings.hideLightningFlashes,
       minY:this.world.minY,minSection:this.world.minSection,sectionCount:this.world.sectionCount,
-      worldTime: this.world.timeOfDay, partial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,biomeFog:sampleBiomeFog(this.world,ex,ey,ez),biomeSky:biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).effects?.sky_color,fireResistance:this.effects.has(12),
+      worldTime: this.world.timeOfDay, partial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,biomeFog:sampleBiomeFog(this.world,ex,ey,ez),biomeSky:biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).effects?.sky_color,fireResistance:this.effects.has(EFFECT_766.fire_resistance),
       inPowderSnow: getBlock(this.world.getState(Math.floor(ex), Math.floor(ey), Math.floor(ez))).name === 'powder_snow', spectator: pl.spectator,
-      camPos: [ex, ey, ez], lookDir: look, dimension: this.dimension, underwater, inLava, biomeId:this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey)), waterVision:pl.waterVision(), conduitPower:this.effects.has(29),
-      darkness:darkness762(this.effects.get(33),partial,this.ticks,this.settings.darknessEffectScale),
-      blindness: this.effects.has(15), nightVision: this.effects.has(16) ? 1 : 0, clouds: this.settings.clouds,
+      camPos: [ex, ey, ez], lookDir: look, dimension: this.dimension, underwater, inLava, biomeId:this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey)), waterVision:pl.waterVision(), conduitPower:this.effects.has(EFFECT_766.conduit_power),
+      darkness:darkness762(this.effects.get(EFFECT_766.darkness),partial,this.ticks,this.settings.darknessEffectScale),
+      blindness: this.effects.has(EFFECT_766.blindness), nightVision: this.effects.has(EFFECT_766.night_vision) ? 1 : 0, clouds: this.settings.clouds,
       horizon: String(this.levelType).toLowerCase() === 'flat' ? 0 : 63,
     });
     // Sky light for the world (night vision etc.) is folded into the lightmap

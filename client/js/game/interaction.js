@@ -1,3 +1,4 @@
+import {EFFECT_766} from './effects-1.20.6.js';
 import {adventureAllows} from './adventure.js';
 import {entityPickRadius} from './entity-pick-radius.js';
 import {isSlab,canMergeSlab,slabPlacementState} from './slab-placement.js';
@@ -85,7 +86,7 @@ export class Interaction {
     const same = (!prev && !held) || (prev && held && prev.id === held.id && prev.damage === held.damage && prev.count === held.count);
     if (!same) {
       // ItemStack.areItemsEqualIgnoreDurability: damage only counts for items without durability
-      const sameItem = (!prev && !held) || (prev && held && prev.id === held.id && (this.game.items.maxDurability(held.id) > 0 || prev.damage === held.damage));
+      const sameItem = (!prev && !held) || (prev && held && prev.id === held.id && (this.game.items.maxDurability(held) > 0 || prev.damage === held.damage));
       if (!sameItem) this.resetCooldown();
       this._cooldownItem = held ? { id: held.id, damage: held.damage, count: held.count } : null;
     }
@@ -202,7 +203,7 @@ export class Interaction {
 
   updateSwing() {
     this.prevSwingProgress = this.swingProgress;
-    let haste = this.game.effects.get(3), fatigue = this.game.effects.get(4);
+    let haste = this.game.effects.get(EFFECT_766.haste), fatigue = this.game.effects.get(EFFECT_766.mining_fatigue);
     const len = haste ? 6 - (1 + haste.amplifier) : fatigue ? 6 + (1 + fatigue.amplifier) * 2 : 6;
     if (this.swinging) {
       this.swingTicks++;
@@ -270,7 +271,7 @@ export class Interaction {
     const strong = f2 > 0.9;
     let i = g.items.enchantLevel(held, 'knockback');
     if (pl.sprinting && strong) i++;
-    const crit = strong && pl.fallDistance > 0 && !pl.onGround && !pl.isOnLadder(g.world) && !pl.inWater && !g.effects.has(15) &&
+    const crit = strong && pl.fallDistance > 0 && !pl.onGround && !pl.isOnLadder(g.world) && !pl.inWater && !g.effects.has(EFFECT_766.blindness) &&
       !pl.ridingEntity && (e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand') && !pl.sprinting;
     if (e.kind !== 'player') return; // attackEntityFrom is false on the client for everything else
     if (i > 0) {
@@ -351,9 +352,9 @@ export class Interaction {
       const eff = g.items.enchantLevel(held, 'efficiency');
       if (eff > 0 && held) f = f32(f + (eff * eff + 1));
     }
-    const haste = g.effects.get(3);
+    const haste = g.effects.get(EFFECT_766.haste);
     if (haste) f = f32(f * f32(1 + f32((haste.amplifier + 1) * f32(0.2))));
-    const fatigue = g.effects.get(4);
+    const fatigue = g.effects.get(EFFECT_766.mining_fatigue);
     if (fatigue) f = f32(f * f32([0.3, 0.09, 0.0027][fatigue.amplifier] ?? 8.1e-4));
     if (this._eyesInWater() && !this._aquaAffinity()) f = f32(f / 5);
     if (!this.player.onGround) f = f32(f / 5);
@@ -794,7 +795,7 @@ export class Interaction {
     g.send(C.useItem(hand,g.blockPrediction?.current||0)); // CPacketPlayerTryUseItem
     if (g.cooldownFraction(held.id, 0) > 0) return false; // CooldownTracker: still cooling down
     if (name === 'trident') {
-      if (g.items.damage(held) >= g.items.maxDurability(held.id)-1) return false;
+      if (g.items.damage(held) >= g.items.maxDurability(held)-1) return false;
       if (g.items.enchantLevel(held, 'riptide') > 0 && !this._wetForRiptide()) return false;
     }
     if(name==='bundle')return emptyBundle(g,held);

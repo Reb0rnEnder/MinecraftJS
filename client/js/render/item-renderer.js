@@ -110,8 +110,8 @@ export class ItemRenderer {
     const g = this.game, it = g.interaction;
     const local = !holder || holder.id === g.entityId;
     const pv = { lefthanded: holder ? (holder.mainHand === 0 ? 1 : 0) : (g.settings?.mainHand === 'left' ? 1 : 0) };
-    pv.custom_model_data = Number(g.items.nbt(item)?.CustomModelData || 0);
-    const max = g.items.maxDurability(item.id);
+    pv.custom_model_data = Number(g.items.component(item,'custom_model_data') || 0);
+    const max = g.items.maxDurability(item);
     const damage = g.items.damage(item);
     if (max > 0) { pv.damaged = g.items.isDamageable(item) && damage > 0 ? 1 : 0; pv.damage = Math.min(1, damage / max); }
     const using = local ? g.player.usingItem && (g.inventory.held() === item || g.inventory.offhand === item) : holder && holder.usingItem;
@@ -126,10 +126,10 @@ export class ItemRenderer {
         pv.charged = charged ? 1 : 0;
         pv.pulling = using && !charged ? 1 : 0;
         pv.pull = using && !charged ? (local ? it?.useTicks || 0 : holder.useTicks || 0) / g.items.crossbowChargeDuration(item) : 0;
-        pv.firework = charged && g.items.nbt(item)?.ChargedProjectiles?.some(p => p.id === 'minecraft:firework_rocket') ? 1 : 0;
+        pv.firework = charged && g.items.chargedProjectiles(item).some(p => g.items.name(p.id)==='firework_rocket') ? 1 : 0;
         break;
       }
-      case 'light': { const level=Number(g.items.nbt(item)?.BlockStateTag?.level ?? 15); pv.level=Math.max(0,Math.min(15,Number.isFinite(level)?level:15))/16; break; }
+      case 'light': { const level=Number(g.items.component(item,'block_state')?.level ?? 15); pv.level=Math.max(0,Math.min(15,Number.isFinite(level)?level:15))/16; break; }
       case 'shield': pv.blocking = using ? 1 : 0; break;
       case 'fishing_rod': pv.cast = local && g.entities?.fishingCast && g.inventory.held() === item ? 1 : 0; break;
       case 'elytra': pv.broken = damage >= max - 1 ? 1 : 0; break;
@@ -146,25 +146,11 @@ export class ItemRenderer {
   layerTint(item, layer) {
     const g = this.game;
     const name = g.items.name(item.id);
-    if (name.startsWith('leather_') && layer === 0) {
-      const tag = g.items.nbt(item);
-      return tag && tag.display && tag.display.color !== undefined ? tag.display.color : 10511680;
-    }
-    // ItemColors: potions (all three kinds) and tipped arrow heads take PotionUtils.getColor on tint index 0; spawn eggs
-    // their registered egg colours (EntityTag does not change ItemColors)
+    if (name.startsWith('leather_') && layer === 0) {const dye=g.items.component(item,'dyed_color');return dye?.color??dye?.rgb??10511680;}
     if (POTIONS.has(name) && layer === 0) return g.items.potionColor(item);
-    if (name.endsWith('_spawn_egg')) { const c = g.items.eggInfo(item); return c ? c[layer ? 1 : 0] : 0xffffff; }
-    if (name === 'firework_star' && layer === 1) {
-      const tag = g.items.nbt(item);
-      const cols = tag && tag.Explosion && tag.Explosion.Colors;
-      if (cols && cols.length) {
-        let r = 0, gg = 0, b = 0;
-        for (const c of cols) { r += (c >> 16) & 255; gg += (c >> 8) & 255; b += c & 255; }
-        return ((r / cols.length) << 16) | ((gg / cols.length) << 8) | (b / cols.length);
-      }
-      return 0x8a8a8a;
-    }
-    if (name === 'filled_map' && layer === 1) return g.items.nbt(item)?.display?.MapColor ?? 0x46402e;
+    if (name.endsWith('_spawn_egg')) {const c=g.items.eggInfo(item);return c?c[layer?1:0]:0xffffff;}
+    if(name==='firework_star'&&layer===1){const colors=g.items.component(item,'firework_explosion')?.colors;if(!colors?.length)return 0x8a8a8a;let r=0,gg=0,b=0;for(const c of colors){r+=(c>>16)&255;gg+=(c>>8)&255;b+=c&255;}return ((Math.trunc(r/colors.length)<<16)|(Math.trunc(gg/colors.length)<<8)|Math.trunc(b/colors.length));}
+    if(name==='filled_map'&&layer===1)return g.items.component(item,'map_color')??0x46402e;
     return this._defaultTint(name);
   }
 
@@ -260,7 +246,7 @@ export class ItemRenderer {
     }
     const damage = g.items.damage(item);
     if (g.items.isDamageable(item) && damage > 0) {
-      const max = g.items.maxDurability(item.id);
+      const max = g.items.maxDurability(item);
       const f2 = Math.max(0, (max - damage) / max);
       const i = Math.max(0, Math.round(13 - damage * 13 / max));
       gui.rect(x + 2, y + 13, x + 15, y + 15, 0xff000000);

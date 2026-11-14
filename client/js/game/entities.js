@@ -1,3 +1,4 @@
+import {EFFECT_766} from './effects-1.20.6.js';
 import {encodeEntityPosition,relativeEntityPosition} from './entity-position.js';
 import {playPickupSound} from '../audio/client-sound-triggers.js';
 import { tickDroppedItem } from './dropped-item.js';
@@ -160,6 +161,7 @@ export class EntityManager {
     // the held item arrives as entity equipment (1.9+)
     e.width = 0.6; e.height = 1.8; e.eyeHeight = 1.62;
     e.metadata = p.metadata;
+    if(p.headPitch!==undefined)e.headYaw=e.prevHeadYaw=p.headPitch;
     this._applyMeta(e);
     this.add(e);
   }
@@ -790,7 +792,7 @@ export class EntityManager {
     s.hurtTime = g.hurtTime; s.deathTime = g.dead ? Math.min(20, (s.deathTime || 0) + 1) : 0;
     s.metadata = g.selfMetadata || s.metadata;
     if (s.metadata && s.metadata[WIRE_METADATA.player.DATA_PLAYER_MODE_CUSTOMISATION] !== undefined) s.skinFlags = s.metadata[WIRE_METADATA.player.DATA_PLAYER_MODE_CUSTOMISATION]; else s.skinFlags = g.settings.skinParts;
-    s.invisible = !!(g.selfMetadata && (g.selfMetadata[0] & 32)) || g.effects.has(14);
+    s.invisible = !!(g.selfMetadata && (g.selfMetadata[0] & 32)) || g.effects.has(EFFECT_766.invisibility);
     s.onFire = g.selfMetadata ? !!(g.selfMetadata[0] & 1) : false;
     // LayerCape's sway from the view bobbing of the local player
     s.prevCameraYaw = pl.prevCameraYaw; s.cameraYaw = pl.cameraYaw;

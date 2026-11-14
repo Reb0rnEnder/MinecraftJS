@@ -578,7 +578,8 @@ function normalize(name, packet, context = null) {
       ...packet,
       ambient: !!(packet.flags & 1),
       hideParticles: !(packet.flags & 2),
-      showIcon: !!(packet.flags & 4)
+      showIcon: !!(packet.flags & 4),
+      shouldBlend: !!(packet.flags & 8)
     };
   }
 

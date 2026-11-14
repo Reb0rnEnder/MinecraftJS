@@ -126,7 +126,7 @@ class ContainerBase {
   get items() { return this.game.items; }
   get inv() { return this.game.inventory; }
 
-  maxStack(item) { return item ? this.items.maxStack(item.id) : 64; }
+  maxStack(item) { return item ? this.items.maxStack(item) : 64; }
 
   slotLimit(i, item) {
     const s = this.slots[i];

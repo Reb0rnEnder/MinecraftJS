@@ -10,9 +10,9 @@ The native multiplayer foundation works. Substantial feature and acceptance work
 
 | Scope | Accepted checkpoints | Partial | Missing implementation | Needs verification | Total |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Native multiplayer + enabled native experiments | 11 | 30 | 21 | 15 | 77 |
+| Native multiplayer + enabled native experiments | 11 | 33 | 18 | 15 | 77 |
 | Separate products / optional compatibility | 0 | 2 | 2 | 0 | 4 |
-| All tracked checkpoints | 11 | 32 | 23 | 15 | 81 |
+| All tracked checkpoints | 11 | 35 | 20 | 15 | 81 |
 
 These **checkpoints differ in size and do not enumerate every defect**. 66 required checkpoints are still open. An honest percentage or ETA is unavailable until release coverage is triaged. Accepted rows cover exactly their named scope, not an entire subsystem.
 
@@ -65,12 +65,12 @@ A box is checked only for `accepted`. For each open row, implement/verify the co
 
 ### Items and inventory
 
-- [ ] **ITEM-01 — Connect damage, names and stack metadata to actual item consumers** (P0; Missing implementation; P08). Actual HUD/tooltips/use/render consumers observe added, default and explicitly removed components, not absent legacy NBT. Evidence/start: [client/js/game/items.js](../client/js/game/items.js), [client/js/net/item-components-1.20.6.js](../client/js/net/item-components-1.20.6.js).
-- [ ] **ITEM-02 — Native potion/effect, spawn-egg and instrument metadata** (P0; Missing implementation; P08). Native potion names/colors/effects, spawn-egg colors and horn durations/selection match effective stack components. Evidence/start: [client/js/game/items.js](../client/js/game/items.js), [tools/port-1.20.6/creative-data.mjs](../tools/port-1.20.6/creative-data.mjs).
+- [ ] **ITEM-01 — Connect damage, names and stack metadata to actual item consumers** (P0; Partial; P08). Actual HUD/tooltips/use/render consumers observe added, default and explicitly removed components, not absent legacy NBT. Evidence/start: [client/js/game/items.js](../client/js/game/items.js), [client/js/net/item-components-1.20.6.js](../client/js/net/item-components-1.20.6.js).
+- [ ] **ITEM-02 — Native potion/effect, spawn-egg and instrument metadata** (P0; Partial; P08). Native potion names/colors/effects, spawn-egg colors and horn durations/selection match effective stack components. Evidence/start: [client/js/game/items.js](../client/js/game/items.js), [tools/port-1.20.6/creative-data.mjs](../tools/port-1.20.6/creative-data.mjs).
 - [ ] **ITEM-03 — Enchantments, attributes, food, use duration and cooldown consumers** (P0; Partial; P08). Test enchanted/removed/custom components in tooltips, damage/use calculations, animation, food and cooldown behavior. Evidence/start: [client/js/game/items.js](../client/js/game/items.js), [client/js/game/interaction.js](../client/js/game/interaction.js).
-- [ ] **ITEM-04 — Dye, potion, firework, map and glint item colors from components** (P1; Missing implementation; P08). GUI, held and dropped variants use native component colors and explicit glint overrides. Evidence/start: [client/js/render/item-renderer.js](../client/js/render/item-renderer.js), [client/js/game/items.js](../client/js/game/items.js).
+- [ ] **ITEM-04 — Dye, potion, firework, map and glint item colors from components** (P1; Partial; P08). GUI, held and dropped variants use native component colors and explicit glint overrides. Evidence/start: [client/js/render/item-renderer.js](../client/js/render/item-renderer.js), [client/js/game/items.js](../client/js/game/items.js).
 - [ ] **ITEM-05 — Books, skull profiles, banners, bundles and container item contents** (P1; Partial; P08). Names/lore/books/profile skins/patterns/nested contents preserve native component semantics through use and reload. Evidence/start: [client/js/render/item-renderer.js](../client/js/render/item-renderer.js), [client/js/game/items.js](../client/js/game/items.js).
-- [ ] **ITEM-06 — Dynamic registry holders in Creative stacks** (P1; Partial; P08). Reordered/custom registries resolve enchantments, instruments, paintings and holder-based contents by server ownership. Evidence/start: [client/js/gui/creative-data-1.20.6.js](../client/js/gui/creative-data-1.20.6.js), [tools/port-1.20.6/creative-data.mjs](../tools/port-1.20.6/creative-data.mjs).
+- [ ] **ITEM-06 — Dynamic registry holders in Creative stacks** (P1; Partial; P08). Configuration-owned banner/trim/wolf references preserve server registry ownership; do not import later dynamic enchantment/instrument/painting registries into 1.20.6. Evidence/start: [client/js/gui/creative-data-1.20.6.js](../client/js/gui/creative-data-1.20.6.js), [tools/port-1.20.6/creative-data.mjs](../tools/port-1.20.6/creative-data.mjs).
 - [ ] **MENU-01 — All workstation slot layouts, actions and component-bearing clicks** (P0; Partial; P08). All 25 menu types have native slot geometry and live pickup/split/shift/drag/number/drop/rejection checks. Evidence/start: [client/js/gui/screens/workstations.js](../client/js/gui/screens/workstations.js), [client/js/gui/screens/containers.js](../client/js/gui/screens/containers.js).
 - [ ] **MENU-02 — Recipes, recipe book, ghost recipes and result previews** (P1; Partial; P08). Target serializers, special recipes, unlocks, filters, ghost/output previews and server corrections work with native components. Evidence/start: [client/js/gui/screens/workstations.js](../client/js/gui/screens/workstations.js), [client/js/game/game.js](../client/js/game/game.js).
 

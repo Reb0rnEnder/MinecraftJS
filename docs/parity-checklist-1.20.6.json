@@ -396,31 +396,37 @@
     {
       "id": "ITEM-01",
       "area": "Items and inventory",
-      "status": "missing",
+      "status": "partial",
       "priority": 0,
       "phase": "P08",
       "scope": "multiplayer",
       "title": "Connect damage, names and stack metadata to actual item consumers",
-      "reason": "Read-only native damaged-sword fixture: decoded damage 37, Items.damage returns 0; named fixture has no legacy NBT view.",
+      "reason": "Effective component names, rarity, damage/max damage, stack limits and hidden tooltip fields reach real item/render/inventory consumers. Native 49-stack/API and click/predicate tests pass; complete graphical/native consumer acceptance remains open.",
       "evidence": [
         "client/js/game/items.js",
         "client/js/net/item-components-1.20.6.js",
-        "tools/port-1.20.6/stack-fixtures.json"
+        "tools/port-1.20.6/stack-fixtures.json",
+        "docs/item-component-ui-1.20.6.md",
+        "tools/test-1.20.6-item-ux.mjs",
+        "tools/fixtures/item-ux-1.20.6.json"
       ],
       "acceptance": "Actual HUD/tooltips/use/render consumers observe added, default and explicitly removed components, not absent legacy NBT."
     },
     {
       "id": "ITEM-02",
       "area": "Items and inventory",
-      "status": "missing",
+      "status": "partial",
       "priority": 0,
       "phase": "P08",
       "scope": "multiplayer",
       "title": "Native potion/effect, spawn-egg and instrument metadata",
-      "reason": "Creative catalog metadata remains empty/deferred; legacy potion/egg/instrument consumers still read it.",
+      "reason": "Native tables now cover all 46 potions, effects, spawn-egg colors and instruments; item APIs consume defaults/patches/removals and inline horns. Broader in-world/graphical sound/use acceptance remains open.",
       "evidence": [
         "client/js/game/items.js",
-        "tools/port-1.20.6/creative-data.mjs"
+        "tools/port-1.20.6/creative-data.mjs",
+        "docs/item-component-ui-1.20.6.md",
+        "tools/test-1.20.6-item-ux.mjs",
+        "tools/fixtures/item-ux-1.20.6.json"
       ],
       "acceptance": "Native potion names/colors/effects, spawn-egg colors and horn durations/selection match effective stack components."
     },
@@ -432,25 +438,31 @@
       "phase": "P08",
       "scope": "multiplayer",
       "title": "Enchantments, attributes, food, use duration and cooldown consumers",
-      "reason": "Wire components exist; substantial gameplay/tooltip logic still consumes old NBT/name lists.",
+      "reason": "Enchantments, attributes, food/use actions and durations read components, with all 1330 default actions/durations/glints and 49 stack cases checked. Actual food/use conditions, cooldowns and complete gameplay remain open.",
       "evidence": [
         "client/js/game/items.js",
-        "client/js/game/interaction.js"
+        "client/js/game/interaction.js",
+        "docs/item-component-ui-1.20.6.md",
+        "tools/test-1.20.6-item-ux.mjs",
+        "tools/fixtures/item-ux-1.20.6.json"
       ],
       "acceptance": "Test enchanted/removed/custom components in tooltips, damage/use calculations, animation, food and cooldown behavior."
     },
     {
       "id": "ITEM-04",
       "area": "Items and inventory",
-      "status": "missing",
+      "status": "partial",
       "priority": 1,
       "phase": "P08",
       "scope": "multiplayer",
       "title": "Dye, potion, firework, map and glint item colors from components",
-      "reason": "ItemRenderer.layerTint still reads legacy display/Explosion/Potion fields.",
+      "reason": "ItemRenderer tint/model/glint inputs now read effective components and match native color fixtures. Complete GUI/held/dropped graphical acceptance remains open.",
       "evidence": [
         "client/js/render/item-renderer.js",
-        "client/js/game/items.js"
+        "client/js/game/items.js",
+        "docs/item-component-ui-1.20.6.md",
+        "tools/test-1.20.6-item-ux.mjs",
+        "tools/fixtures/item-ux-1.20.6.json"
       ],
       "acceptance": "GUI, held and dropped variants use native component colors and explicit glint overrides."
     },
@@ -478,12 +490,12 @@
       "phase": "P08",
       "scope": "multiplayer",
       "title": "Dynamic registry holders in Creative stacks",
-      "reason": "Catalog currently records native vanilla registry order, not arbitrary server remapping.",
+      "reason": "Native Creative stacks use vanilla registry order. Arbitrary Configuration-owned banner/trim/wolf references still need acceptance; enchantments, instruments and painting variants are static registries in 1.20.6.",
       "evidence": [
         "client/js/gui/creative-data-1.20.6.js",
         "tools/port-1.20.6/creative-data.mjs"
       ],
-      "acceptance": "Reordered/custom registries resolve enchantments, instruments, paintings and holder-based contents by server ownership."
+      "acceptance": "Configuration-owned banner/trim/wolf references preserve server registry ownership; do not import later dynamic enchantment/instrument/painting registries into 1.20.6."
     },
     {
       "id": "MENU-01",
@@ -509,11 +521,13 @@
       "phase": "P08",
       "scope": "multiplayer",
       "title": "Recipes, recipe book, ghost recipes and result previews",
-      "reason": "Recipe join drift was fixed; detailed target consumers remain open.",
+      "reason": "Recipe join drift was fixed; detailed target consumers remain open. Recipe-book controls now resolve target sprites, including opening buttons/slots/tabs/filters/arrows/alternative recipes; broader recipe behavior remains partial.",
       "evidence": [
         "client/js/gui/screens/workstations.js",
         "client/js/game/game.js",
-        "tools/test-1.20.6-actions.mjs"
+        "tools/test-1.20.6-actions.mjs",
+        "docs/effects-gui-players-1.20.6.md",
+        "tools/test-1.20.6-effects-recipebook-players.mjs"
       ],
       "acceptance": "Target serializers, special recipes, unlocks, filters, ghost/output previews and server corrections work with native components."
     },
@@ -662,11 +676,13 @@
       "phase": "P13",
       "scope": "multiplayer",
       "title": "F3, HUD, bossbars, toast and advancement presentation acceptance",
-      "reason": "Target identity/sprites are fixed; all content/states still need comparison.",
+      "reason": "Target identity/sprites are fixed; all content/states still need comparison. Native effect IDs/labels/order/blending and status-background sprites are corrected and regression-tested; remaining HUD/F3/advancement acceptance stays open.",
       "evidence": [
         "client/js/game/game.js",
         "tools/test-1.20.6-presentation.mjs",
-        "docs/debug-overlay-version-audit.md"
+        "docs/debug-overlay-version-audit.md",
+        "docs/effects-gui-players-1.20.6.md",
+        "tools/test-1.20.6-effects-recipebook-players.mjs"
       ],
       "acceptance": "Native target information and layouts remain correct across dimensions, effects, game modes and resource reloads."
     },
@@ -969,11 +985,13 @@
       "phase": "P11",
       "scope": "multiplayer",
       "title": "Updated bat, shield pose, entity names and pearl feedback",
-      "reason": "Target extracted models exist, but inherited state/presentation adapters require comparison.",
+      "reason": "Target extracted models exist, but inherited state/presentation adapters require comparison. Unified player spawns now preserve player pickability and the NPC targeting/attack path is covered.",
       "evidence": [
         "client/js/render/entity-models.js",
         "client/js/render/entity-renderer.js",
-        "docs/transition-1.20.6.md"
+        "docs/transition-1.20.6.md",
+        "docs/effects-gui-players-1.20.6.md",
+        "tools/test-1.20.6-effects-recipebook-players.mjs"
       ],
       "acceptance": "Each changed presentation family has exact-target state/animation/visual evidence."
     },

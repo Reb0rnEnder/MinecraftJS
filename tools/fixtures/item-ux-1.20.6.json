@@ -1,0 +1,4993 @@
+{
+  "blendSamples": [
+    {
+      "duration": 100,
+      "frames": [
+        {
+          "current": 1,
+          "duration": 100,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 99,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 98,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 97,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 96,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 95,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 94,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 93,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 92,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 91,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 90,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 89,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 88,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 87,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 86,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 85,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 84,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 83,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 82,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 81,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 80,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 79,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 78,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 77,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 76,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 75,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 74,
+          "previous": 1
+        }
+      ],
+      "smooth": false
+    },
+    {
+      "duration": 100,
+      "frames": [
+        {
+          "current": 0,
+          "duration": 100,
+          "previous": 0
+        },
+        {
+          "current": 0.045454547,
+          "duration": 99,
+          "previous": 0
+        },
+        {
+          "current": 0.09090909,
+          "duration": 98,
+          "previous": 0.045454547
+        },
+        {
+          "current": 0.13636364,
+          "duration": 97,
+          "previous": 0.09090909
+        },
+        {
+          "current": 0.18181819,
+          "duration": 96,
+          "previous": 0.13636364
+        },
+        {
+          "current": 0.22727273,
+          "duration": 95,
+          "previous": 0.18181819
+        },
+        {
+          "current": 0.27272728,
+          "duration": 94,
+          "previous": 0.22727273
+        },
+        {
+          "current": 0.3181818,
+          "duration": 93,
+          "previous": 0.27272728
+        },
+        {
+          "current": 0.36363637,
+          "duration": 92,
+          "previous": 0.3181818
+        },
+        {
+          "current": 0.40909094,
+          "duration": 91,
+          "previous": 0.36363637
+        },
+        {
+          "current": 0.4545455,
+          "duration": 90,
+          "previous": 0.40909094
+        },
+        {
+          "current": 0.50000006,
+          "duration": 89,
+          "previous": 0.4545455
+        },
+        {
+          "current": 0.5454546,
+          "duration": 88,
+          "previous": 0.50000006
+        },
+        {
+          "current": 0.5909092,
+          "duration": 87,
+          "previous": 0.5454546
+        },
+        {
+          "current": 0.63636374,
+          "duration": 86,
+          "previous": 0.5909092
+        },
+        {
+          "current": 0.6818183,
+          "duration": 85,
+          "previous": 0.63636374
+        },
+        {
+          "current": 0.72727287,
+          "duration": 84,
+          "previous": 0.6818183
+        },
+        {
+          "current": 0.77272743,
+          "duration": 83,
+          "previous": 0.72727287
+        },
+        {
+          "current": 0.818182,
+          "duration": 82,
+          "previous": 0.77272743
+        },
+        {
+          "current": 0.86363655,
+          "duration": 81,
+          "previous": 0.818182
+        },
+        {
+          "current": 0.9090911,
+          "duration": 80,
+          "previous": 0.86363655
+        },
+        {
+          "current": 0.9545457,
+          "duration": 79,
+          "previous": 0.9090911
+        },
+        {
+          "current": 1,
+          "duration": 78,
+          "previous": 0.9545457
+        },
+        {
+          "current": 1,
+          "duration": 77,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 76,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 75,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 74,
+          "previous": 1
+        }
+      ],
+      "smooth": true
+    },
+    {
+      "duration": 26,
+      "frames": [
+        {
+          "current": 1,
+          "duration": 26,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 25,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 24,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": 23,
+          "previous": 1
+        },
+        {
+          "current": 0.95454544,
+          "duration": 22,
+          "previous": 1
+        },
+        {
+          "current": 0.9090909,
+          "duration": 21,
+          "previous": 0.95454544
+        },
+        {
+          "current": 0.8636363,
+          "duration": 20,
+          "previous": 0.9090909
+        },
+        {
+          "current": 0.81818175,
+          "duration": 19,
+          "previous": 0.8636363
+        },
+        {
+          "current": 0.7727272,
+          "duration": 18,
+          "previous": 0.81818175
+        },
+        {
+          "current": 0.7272726,
+          "duration": 17,
+          "previous": 0.7727272
+        },
+        {
+          "current": 0.68181807,
+          "duration": 16,
+          "previous": 0.7272726
+        },
+        {
+          "current": 0.6363635,
+          "duration": 15,
+          "previous": 0.68181807
+        },
+        {
+          "current": 0.59090894,
+          "duration": 14,
+          "previous": 0.6363635
+        },
+        {
+          "current": 0.5454544,
+          "duration": 13,
+          "previous": 0.59090894
+        },
+        {
+          "current": 0.49999982,
+          "duration": 12,
+          "previous": 0.5454544
+        },
+        {
+          "current": 0.45454526,
+          "duration": 11,
+          "previous": 0.49999982
+        },
+        {
+          "current": 0.4090907,
+          "duration": 10,
+          "previous": 0.45454526
+        },
+        {
+          "current": 0.36363614,
+          "duration": 9,
+          "previous": 0.4090907
+        },
+        {
+          "current": 0.31818157,
+          "duration": 8,
+          "previous": 0.36363614
+        },
+        {
+          "current": 0.272727,
+          "duration": 7,
+          "previous": 0.31818157
+        },
+        {
+          "current": 0.22727247,
+          "duration": 6,
+          "previous": 0.272727
+        },
+        {
+          "current": 0.18181792,
+          "duration": 5,
+          "previous": 0.22727247
+        },
+        {
+          "current": 0.13636337,
+          "duration": 4,
+          "previous": 0.18181792
+        },
+        {
+          "current": 0.090908825,
+          "duration": 3,
+          "previous": 0.13636337
+        },
+        {
+          "current": 0.04545428,
+          "duration": 2,
+          "previous": 0.090908825
+        },
+        {
+          "current": 0,
+          "duration": 1,
+          "previous": 0.04545428
+        },
+        {
+          "current": 0,
+          "duration": 0,
+          "previous": 0
+        }
+      ],
+      "smooth": false
+    },
+    {
+      "duration": 26,
+      "frames": [
+        {
+          "current": 0,
+          "duration": 26,
+          "previous": 0
+        },
+        {
+          "current": 0.045454547,
+          "duration": 25,
+          "previous": 0
+        },
+        {
+          "current": 0.09090909,
+          "duration": 24,
+          "previous": 0.045454547
+        },
+        {
+          "current": 0.13636364,
+          "duration": 23,
+          "previous": 0.09090909
+        },
+        {
+          "current": 0.09090909,
+          "duration": 22,
+          "previous": 0.13636364
+        },
+        {
+          "current": 0.045454547,
+          "duration": 21,
+          "previous": 0.09090909
+        },
+        {
+          "current": 0,
+          "duration": 20,
+          "previous": 0.045454547
+        },
+        {
+          "current": 0,
+          "duration": 19,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 18,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 17,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 16,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 15,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 14,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 13,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 12,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 11,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 10,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 9,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 8,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 7,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 6,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 5,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 4,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 3,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 2,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 1,
+          "previous": 0
+        },
+        {
+          "current": 0,
+          "duration": 0,
+          "previous": 0
+        }
+      ],
+      "smooth": true
+    },
+    {
+      "duration": -1,
+      "frames": [
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        }
+      ],
+      "smooth": false
+    },
+    {
+      "duration": -1,
+      "frames": [
+        {
+          "current": 0,
+          "duration": -1,
+          "previous": 0
+        },
+        {
+          "current": 0.045454547,
+          "duration": -1,
+          "previous": 0
+        },
+        {
+          "current": 0.09090909,
+          "duration": -1,
+          "previous": 0.045454547
+        },
+        {
+          "current": 0.13636364,
+          "duration": -1,
+          "previous": 0.09090909
+        },
+        {
+          "current": 0.18181819,
+          "duration": -1,
+          "previous": 0.13636364
+        },
+        {
+          "current": 0.22727273,
+          "duration": -1,
+          "previous": 0.18181819
+        },
+        {
+          "current": 0.27272728,
+          "duration": -1,
+          "previous": 0.22727273
+        },
+        {
+          "current": 0.3181818,
+          "duration": -1,
+          "previous": 0.27272728
+        },
+        {
+          "current": 0.36363637,
+          "duration": -1,
+          "previous": 0.3181818
+        },
+        {
+          "current": 0.40909094,
+          "duration": -1,
+          "previous": 0.36363637
+        },
+        {
+          "current": 0.4545455,
+          "duration": -1,
+          "previous": 0.40909094
+        },
+        {
+          "current": 0.50000006,
+          "duration": -1,
+          "previous": 0.4545455
+        },
+        {
+          "current": 0.5454546,
+          "duration": -1,
+          "previous": 0.50000006
+        },
+        {
+          "current": 0.5909092,
+          "duration": -1,
+          "previous": 0.5454546
+        },
+        {
+          "current": 0.63636374,
+          "duration": -1,
+          "previous": 0.5909092
+        },
+        {
+          "current": 0.6818183,
+          "duration": -1,
+          "previous": 0.63636374
+        },
+        {
+          "current": 0.72727287,
+          "duration": -1,
+          "previous": 0.6818183
+        },
+        {
+          "current": 0.77272743,
+          "duration": -1,
+          "previous": 0.72727287
+        },
+        {
+          "current": 0.818182,
+          "duration": -1,
+          "previous": 0.77272743
+        },
+        {
+          "current": 0.86363655,
+          "duration": -1,
+          "previous": 0.818182
+        },
+        {
+          "current": 0.9090911,
+          "duration": -1,
+          "previous": 0.86363655
+        },
+        {
+          "current": 0.9545457,
+          "duration": -1,
+          "previous": 0.9090911
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 0.9545457
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        },
+        {
+          "current": 1,
+          "duration": -1,
+          "previous": 1
+        }
+      ],
+      "smooth": true
+    }
+  ],
+  "clientJarSha1": "05b6f1c6b46a29d6ea82b4e0d42190e42402030f",
+  "extractorSha256": "3667a1276f139279c0e30f6c5110d8c8c922953573605f1cf7adbf511415b1ea",
+  "inputsSha256": "6c10b1b7113a6c3709004a2ad01576e1758e437ec78670764c578e63010bcce8",
+  "minecraftVersion": "1.20.6",
+  "samples": [
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:diamond_sword"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            9
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": true,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "count": 1,
+        "id": "minecraft:diamond_sword"
+      },
+      "label": "default_diamond_sword",
+      "maxDamage": 1561,
+      "maxStack": 1,
+      "name": "Diamond Sword",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        }
+      ],
+      "wire": "AcUGAAA="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            6
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "count": 1,
+        "id": "minecraft:stone"
+      },
+      "label": "default_stone",
+      "maxDamage": 0,
+      "maxStack": 64,
+      "name": "Stone",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AQEAAA=="
+    },
+    {
+      "action": "drink",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.potion.effect.empty"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "effect.none"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:potion"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        3694022,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 32,
+      "foil": false,
+      "input": {
+        "count": 1,
+        "id": "minecraft:potion"
+      },
+      "label": "default_potion",
+      "maxDamage": 0,
+      "maxStack": 1,
+      "name": "Uncraftable Potion",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.potion.effect.empty"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "effect.none"
+        }
+      ],
+      "wire": "AeYHAAA="
+    },
+    {
+      "action": "drink",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.splash_potion.effect.empty"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "effect.none"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:splash_potion"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        3694022,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 32,
+      "foil": false,
+      "input": {
+        "count": 1,
+        "id": "minecraft:splash_potion"
+      },
+      "label": "default_splash_potion",
+      "maxDamage": 0,
+      "maxStack": 1,
+      "name": "Splash Uncraftable Potion",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.splash_potion.effect.empty"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "effect.none"
+        }
+      ],
+      "wire": "AYYJAAA="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.tipped_arrow.effect.empty"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "effect.none"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:tipped_arrow"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        3694022,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "count": 1,
+        "id": "minecraft:tipped_arrow"
+      },
+      "label": "default_tipped_arrow",
+      "maxDamage": 0,
+      "maxStack": 64,
+      "name": "Uncraftable Tipped Arrow",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.tipped_arrow.effect.empty"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "effect.none"
+        }
+      ],
+      "wire": "AYgJAAA="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "yellow",
+          "extra": [
+            {
+              "translate": "item.minecraft.enchanted_book"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:enchanted_book"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            8
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 0,
+      "foil": true,
+      "input": {
+        "count": 1,
+        "id": "minecraft:enchanted_book"
+      },
+      "label": "default_enchanted_book",
+      "maxDamage": 0,
+      "maxStack": 1,
+      "name": "Enchanted Book",
+      "rarity": "uncommon",
+      "tooltip": [
+        {
+          "color": "yellow",
+          "extra": [
+            {
+              "translate": "item.minecraft.enchanted_book"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AdoIAAA="
+    },
+    {
+      "action": "eat",
+      "advancedTooltip": [
+        {
+          "color": "light_purple",
+          "extra": [
+            {
+              "translate": "item.minecraft.enchanted_golden_apple"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:enchanted_golden_apple"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            8
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 32,
+      "foil": true,
+      "input": {
+        "count": 1,
+        "id": "minecraft:enchanted_golden_apple"
+      },
+      "label": "default_enchanted_golden_apple",
+      "maxDamage": 0,
+      "maxStack": 64,
+      "name": "Enchanted Golden Apple",
+      "rarity": "epic",
+      "tooltip": [
+        {
+          "color": "light_purple",
+          "extra": [
+            {
+              "translate": "item.minecraft.enchanted_golden_apple"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AfUGAAA="
+    },
+    {
+      "action": "toot_horn",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.goat_horn"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:goat_horn"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            6
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "count": 1,
+        "id": "minecraft:goat_horn"
+      },
+      "label": "default_goat_horn",
+      "maxDamage": 0,
+      "maxStack": 1,
+      "name": "Goat Horn",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.goat_horn"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AbAJAAA="
+    },
+    {
+      "action": "crossbow",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.crossbow"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:crossbow"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            9
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": true,
+      "duration": 28,
+      "foil": false,
+      "input": {
+        "count": 1,
+        "id": "minecraft:crossbow"
+      },
+      "label": "default_crossbow",
+      "maxDamage": 465,
+      "maxStack": 1,
+      "name": "Crossbow",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.crossbow"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AaUJAAA="
+    },
+    {
+      "action": "drink",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.honey_bottle"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:honey_bottle"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 40,
+      "foil": false,
+      "input": {
+        "count": 1,
+        "id": "minecraft:honey_bottle"
+      },
+      "label": "default_honey_bottle",
+      "maxDamage": 0,
+      "maxStack": 16,
+      "name": "Honey Bottle",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.honey_bottle"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AcUJAAA="
+    },
+    {
+      "action": "eat",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.dried_kelp"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:dried_kelp"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 16,
+      "foil": false,
+      "input": {
+        "count": 1,
+        "id": "minecraft:dried_kelp"
+      },
+      "label": "default_dried_kelp",
+      "maxDamage": 0,
+      "maxStack": 64,
+      "name": "Dried Kelp",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.dried_kelp"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AdkHAAA="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "yellow",
+          "extra": [
+            {
+              "translate": "item.minecraft.nether_star"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:nether_star"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 0,
+      "foil": true,
+      "input": {
+        "count": 1,
+        "id": "minecraft:nether_star"
+      },
+      "label": "default_nether_star",
+      "maxDamage": 0,
+      "maxStack": 64,
+      "name": "Nether Star",
+      "rarity": "uncommon",
+      "tooltip": [
+        {
+          "color": "yellow",
+          "extra": [
+            {
+              "translate": "item.minecraft.nether_star"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AdYIAAA="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        },
+        {
+          "translate": "item.durability",
+          "with": [
+            1524,
+            1561
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:diamond_sword"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            9
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 37,
+      "damageable": true,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:damage": 37
+        },
+        "count": 1,
+        "id": "minecraft:diamond_sword"
+      },
+      "label": "damaged",
+      "maxDamage": 1561,
+      "maxStack": 1,
+      "name": "Diamond Sword",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        }
+      ],
+      "wire": "AcUGAQADJQ=="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        },
+        {
+          "color": "blue",
+          "translate": "item.unbreakable"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:diamond_sword"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            10
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 37,
+      "damageable": false,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:damage": 37,
+          "minecraft:unbreakable": {}
+        },
+        "count": 1,
+        "id": "minecraft:diamond_sword"
+      },
+      "label": "unbreakable",
+      "maxDamage": 1561,
+      "maxStack": 1,
+      "name": "Diamond Sword",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        },
+        {
+          "color": "blue",
+          "translate": "item.unbreakable"
+        }
+      ],
+      "wire": "AcUGAgADJQQB"
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:diamond_sword"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            8
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "!minecraft:damage": {}
+        },
+        "count": 1,
+        "id": "minecraft:diamond_sword"
+      },
+      "label": "removed_damage",
+      "maxDamage": 1561,
+      "maxStack": 1,
+      "name": "Diamond Sword",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        }
+      ],
+      "wire": "AcUGAAED"
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:diamond_sword"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            8
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "!minecraft:max_damage": {}
+        },
+        "count": 1,
+        "id": "minecraft:diamond_sword"
+      },
+      "label": "removed_max_damage",
+      "maxDamage": 0,
+      "maxStack": 1,
+      "name": "Diamond Sword",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        }
+      ],
+      "wire": "AcUGAAEC"
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        },
+        {
+          "translate": "item.durability",
+          "with": [
+            50,
+            200
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:diamond_sword"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            9
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 150,
+      "damageable": true,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:damage": 150,
+          "minecraft:max_damage": 200
+        },
+        "count": 1,
+        "id": "minecraft:diamond_sword"
+      },
+      "label": "custom_max_damage",
+      "maxDamage": 200,
+      "maxStack": 1,
+      "name": "Diamond Sword",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        }
+      ],
+      "wire": "AcUGAgACyAEDlgE="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            6
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:max_stack_size": 7
+        },
+        "count": 1,
+        "id": "minecraft:stone"
+      },
+      "label": "custom_stack",
+      "maxDamage": 0,
+      "maxStack": 7,
+      "name": "Stone",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AQEBAAEH"
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            5
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "!minecraft:max_stack_size": {}
+        },
+        "count": 1,
+        "id": "minecraft:stone"
+      },
+      "label": "removed_stack",
+      "maxDamage": 0,
+      "maxStack": 1,
+      "name": "Stone",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AQEAAQE="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "color": "gold",
+              "text": "Parity Blade"
+            }
+          ],
+          "italic": true,
+          "text": ""
+        },
+        {
+          "color": "dark_purple",
+          "italic": true,
+          "text": "Line one"
+        },
+        {
+          "color": "dark_purple",
+          "italic": false,
+          "text": "Line two"
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:diamond_sword"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            10
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": true,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:custom_name": "{\"text\": \"Parity Blade\", \"color\": \"gold\"}",
+          "minecraft:lore": [
+            "{\"text\": \"Line one\"}",
+            "{\"text\": \"Line two\", \"italic\": false}"
+          ]
+        },
+        "count": 1,
+        "id": "minecraft:diamond_sword"
+      },
+      "label": "named",
+      "maxDamage": 1561,
+      "maxStack": 1,
+      "name": "Parity Blade",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "color": "gold",
+              "text": "Parity Blade"
+            }
+          ],
+          "italic": true,
+          "text": ""
+        },
+        {
+          "color": "dark_purple",
+          "italic": true,
+          "text": "Line one"
+        },
+        {
+          "color": "dark_purple",
+          "italic": false,
+          "text": "Line two"
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        }
+      ],
+      "wire": "AcUGAgAFCggABWNvbG9yAARnb2xkCAAEdGV4dAAMUGFyaXR5IEJsYWRlAAcCCAAITGluZSBvbmUKCAAEdGV4dAAITGluZSB0d28BAAZpdGFsaWMAAA=="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "italic": false,
+              "text": "Native display"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:diamond_sword"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            10
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": true,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:item_name": "{\"text\": \"Native display\", \"italic\": false}"
+        },
+        "count": 1,
+        "id": "minecraft:diamond_sword"
+      },
+      "label": "item_name",
+      "maxDamage": 1561,
+      "maxStack": 1,
+      "name": "Native display",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "italic": false,
+              "text": "Native display"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        }
+      ],
+      "wire": "AcUGAQAGCggABHRleHQADk5hdGl2ZSBkaXNwbGF5AQAGaXRhbGljAAA="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "aqua",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "extra": [
+            " ",
+            {
+              "translate": "enchantment.level.3"
+            }
+          ],
+          "translate": "enchantment.minecraft.sharpness"
+        },
+        {
+          "color": "gray",
+          "extra": [
+            " ",
+            {
+              "translate": "enchantment.level.2"
+            }
+          ],
+          "translate": "enchantment.minecraft.unbreaking"
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:diamond_sword"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            9
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": true,
+      "duration": 0,
+      "foil": true,
+      "input": {
+        "components": {
+          "minecraft:enchantments": {
+            "levels": {
+              "minecraft:sharpness": 3,
+              "minecraft:unbreaking": 2
+            }
+          }
+        },
+        "count": 1,
+        "id": "minecraft:diamond_sword"
+      },
+      "label": "enchanted",
+      "maxDamage": 1561,
+      "maxStack": 1,
+      "name": "Diamond Sword",
+      "rarity": "rare",
+      "tooltip": [
+        {
+          "color": "aqua",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "extra": [
+            " ",
+            {
+              "translate": "enchantment.level.3"
+            }
+          ],
+          "translate": "enchantment.minecraft.sharpness"
+        },
+        {
+          "color": "gray",
+          "extra": [
+            " ",
+            {
+              "translate": "enchantment.level.2"
+            }
+          ],
+          "translate": "enchantment.minecraft.unbreaking"
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        }
+      ],
+      "wire": "AcUGAQAJAhYCDQMB"
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "aqua",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:diamond_sword"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            9
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": true,
+      "duration": 0,
+      "foil": true,
+      "input": {
+        "components": {
+          "minecraft:enchantments": {
+            "levels": {
+              "minecraft:sharpness": 3
+            },
+            "show_in_tooltip": false
+          }
+        },
+        "count": 1,
+        "id": "minecraft:diamond_sword"
+      },
+      "label": "enchanted_hidden",
+      "maxDamage": 1561,
+      "maxStack": 1,
+      "name": "Diamond Sword",
+      "rarity": "rare",
+      "tooltip": [
+        {
+          "color": "aqua",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        }
+      ],
+      "wire": "AcUGAQAJAQ0DAA=="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "yellow",
+          "extra": [
+            {
+              "translate": "item.minecraft.enchanted_book"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "red",
+          "translate": "enchantment.minecraft.binding_curse"
+        },
+        {
+          "color": "gray",
+          "extra": [
+            " ",
+            {
+              "translate": "enchantment.level.4"
+            }
+          ],
+          "translate": "enchantment.minecraft.protection"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:enchanted_book"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            8
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 0,
+      "foil": true,
+      "input": {
+        "components": {
+          "minecraft:stored_enchantments": {
+            "levels": {
+              "minecraft:binding_curse": 1,
+              "minecraft:protection": 4
+            }
+          }
+        },
+        "count": 1,
+        "id": "minecraft:enchanted_book"
+      },
+      "label": "stored_book",
+      "maxDamage": 0,
+      "maxStack": 1,
+      "name": "Enchanted Book",
+      "rarity": "uncommon",
+      "tooltip": [
+        {
+          "color": "yellow",
+          "extra": [
+            {
+              "translate": "item.minecraft.enchanted_book"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "red",
+          "translate": "enchantment.minecraft.binding_curse"
+        },
+        {
+          "color": "gray",
+          "extra": [
+            " ",
+            {
+              "translate": "enchantment.level.4"
+            }
+          ],
+          "translate": "enchantment.minecraft.protection"
+        }
+      ],
+      "wire": "AdoIAQAXAgAECgEB"
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": true,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:hide_tooltip": {}
+        },
+        "count": 1,
+        "id": "minecraft:diamond_sword"
+      },
+      "label": "hidden_tooltip",
+      "maxDamage": 1561,
+      "maxStack": 1,
+      "name": "Diamond Sword",
+      "rarity": "common",
+      "tooltip": [],
+      "wire": "AcUGAQAP"
+    },
+    {
+      "action": "drink",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.potion.effect.swiftness"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:potion"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            8
+          ]
+        }
+      ],
+      "colors": [
+        3402751,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 32,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:hide_additional_tooltip": {},
+          "minecraft:potion_contents": {
+            "potion": "minecraft:swiftness"
+          }
+        },
+        "count": 1,
+        "id": "minecraft:potion"
+      },
+      "label": "hidden_additional",
+      "maxDamage": 0,
+      "maxStack": 1,
+      "name": "Potion of Swiftness",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.potion.effect.swiftness"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AeYHAgAfAQ0AAA4="
+    },
+    {
+      "action": "drink",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.potion.effect.swiftness"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "blue",
+          "translate": "potion.withDuration",
+          "with": [
+            {
+              "translate": "effect.minecraft.speed"
+            },
+            "03:00"
+          ]
+        },
+        "",
+        {
+          "color": "dark_purple",
+          "translate": "potion.whenDrank"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.2",
+          "with": [
+            "20",
+            {
+              "translate": "attribute.name.generic.movement_speed"
+            }
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:potion"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        3402751,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 32,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:potion_contents": {
+            "potion": "minecraft:swiftness"
+          }
+        },
+        "count": 1,
+        "id": "minecraft:potion"
+      },
+      "label": "potion_swiftness",
+      "maxDamage": 0,
+      "maxStack": 1,
+      "name": "Potion of Swiftness",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.potion.effect.swiftness"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "blue",
+          "translate": "potion.withDuration",
+          "with": [
+            {
+              "translate": "effect.minecraft.speed"
+            },
+            "03:00"
+          ]
+        },
+        "",
+        {
+          "color": "dark_purple",
+          "translate": "potion.whenDrank"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.2",
+          "with": [
+            "20",
+            {
+              "translate": "attribute.name.generic.movement_speed"
+            }
+          ]
+        }
+      ],
+      "wire": "AeYHAQAfAQ0AAA=="
+    },
+    {
+      "action": "drink",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.potion.effect.empty"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "blue",
+          "translate": "potion.withDuration",
+          "with": [
+            {
+              "translate": "potion.withAmplifier",
+              "with": [
+                {
+                  "translate": "effect.minecraft.regeneration"
+                },
+                {
+                  "translate": "potion.potency.2"
+                }
+              ]
+            },
+            "01:01"
+          ]
+        },
+        {
+          "color": "blue",
+          "translate": "potion.withDuration",
+          "with": [
+            {
+              "translate": "effect.minecraft.speed"
+            },
+            "00:04"
+          ]
+        },
+        "",
+        {
+          "color": "dark_purple",
+          "translate": "potion.whenDrank"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.2",
+          "with": [
+            "20",
+            {
+              "translate": "attribute.name.generic.movement_speed"
+            }
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:potion"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        13458603,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 32,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:potion_contents": {
+            "custom_effects": [
+              {
+                "amplifier": 2,
+                "duration": 1234,
+                "id": "minecraft:regeneration"
+              },
+              {
+                "duration": 80,
+                "id": "minecraft:speed",
+                "show_particles": false
+              }
+            ]
+          }
+        },
+        "count": 1,
+        "id": "minecraft:potion"
+      },
+      "label": "potion_custom",
+      "maxDamage": 0,
+      "maxStack": 1,
+      "name": "Uncraftable Potion",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.potion.effect.empty"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "blue",
+          "translate": "potion.withDuration",
+          "with": [
+            {
+              "translate": "potion.withAmplifier",
+              "with": [
+                {
+                  "translate": "effect.minecraft.regeneration"
+                },
+                {
+                  "translate": "potion.potency.2"
+                }
+              ]
+            },
+            "01:01"
+          ]
+        },
+        {
+          "color": "blue",
+          "translate": "potion.withDuration",
+          "with": [
+            {
+              "translate": "effect.minecraft.speed"
+            },
+            "00:04"
+          ]
+        },
+        "",
+        {
+          "color": "dark_purple",
+          "translate": "potion.whenDrank"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.2",
+          "with": [
+            "20",
+            {
+              "translate": "attribute.name.generic.movement_speed"
+            }
+          ]
+        }
+      ],
+      "wire": "AeYHAQAfAAACCQLSCQABAQAAAFAAAAAA"
+    },
+    {
+      "action": "drink",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.splash_potion.effect.poison"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "red",
+          "translate": "potion.withDuration",
+          "with": [
+            {
+              "translate": "effect.minecraft.poison"
+            },
+            "01:30"
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:splash_potion"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        1193046,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 32,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:potion_contents": {
+            "custom_color": 1193046,
+            "potion": "minecraft:long_poison"
+          }
+        },
+        "count": 1,
+        "id": "minecraft:splash_potion"
+      },
+      "label": "potion_colored",
+      "maxDamage": 0,
+      "maxStack": 1,
+      "name": "Splash Potion of Poison",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.splash_potion.effect.poison"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "red",
+          "translate": "potion.withDuration",
+          "with": [
+            {
+              "translate": "effect.minecraft.poison"
+            },
+            "01:30"
+          ]
+        }
+      ],
+      "wire": "AYYJAQAfAR0BABI0VgA="
+    },
+    {
+      "action": "eat",
+      "advancedTooltip": [
+        {
+          "color": "light_purple",
+          "extra": [
+            {
+              "translate": "item.minecraft.enchanted_golden_apple"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:enchanted_golden_apple"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            8
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 32,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:enchantment_glint_override": false
+        },
+        "count": 1,
+        "id": "minecraft:enchanted_golden_apple"
+      },
+      "label": "foil_false",
+      "maxDamage": 0,
+      "maxStack": 64,
+      "name": "Enchanted Golden Apple",
+      "rarity": "epic",
+      "tooltip": [
+        {
+          "color": "light_purple",
+          "extra": [
+            {
+              "translate": "item.minecraft.enchanted_golden_apple"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AfUGAQASAA=="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 0,
+      "foil": true,
+      "input": {
+        "components": {
+          "minecraft:enchantment_glint_override": true
+        },
+        "count": 1,
+        "id": "minecraft:stone"
+      },
+      "label": "foil_true",
+      "maxDamage": 0,
+      "maxStack": 64,
+      "name": "Stone",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AQEBABIB"
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.leather_chestplate"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.color",
+          "with": [
+            "#123456"
+          ]
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.chest"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "3",
+            {
+              "translate": "attribute.name.generic.armor"
+            }
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:leather_chestplate"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            9
+          ]
+        }
+      ],
+      "colors": [
+        1193046,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": true,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:dyed_color": {
+            "rgb": 1193046
+          }
+        },
+        "count": 1,
+        "id": "minecraft:leather_chestplate"
+      },
+      "label": "dyed",
+      "maxDamage": 80,
+      "maxStack": 1,
+      "name": "Leather Tunic",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.leather_chestplate"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "italic": true,
+          "translate": "item.dyed"
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.chest"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "3",
+            {
+              "translate": "attribute.name.generic.armor"
+            }
+          ]
+        }
+      ],
+      "wire": "AdkGAQAYABI0VgE="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.leather_chestplate"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.chest"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "3",
+            {
+              "translate": "attribute.name.generic.armor"
+            }
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:leather_chestplate"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            9
+          ]
+        }
+      ],
+      "colors": [
+        6636321,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": true,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:dyed_color": {
+            "rgb": 6636321,
+            "show_in_tooltip": false
+          }
+        },
+        "count": 1,
+        "id": "minecraft:leather_chestplate"
+      },
+      "label": "dyed_hidden",
+      "maxDamage": 80,
+      "maxStack": 1,
+      "name": "Leather Tunic",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.leather_chestplate"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.chest"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "3",
+            {
+              "translate": "attribute.name.generic.armor"
+            }
+          ]
+        }
+      ],
+      "wire": "AdkGAQAYAGVDIQA="
+    },
+    {
+      "action": "eat",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 15,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:food": {
+            "can_always_eat": true,
+            "eat_seconds": 0.75,
+            "effects": [
+              {
+                "effect": {
+                  "amplifier": 2,
+                  "duration": 80,
+                  "id": "minecraft:regeneration"
+                },
+                "probability": 0.5
+              }
+            ],
+            "nutrition": 3,
+            "saturation": 4.5
+          }
+        },
+        "count": 1,
+        "id": "minecraft:stone"
+      },
+      "label": "custom_food",
+      "maxDamage": 0,
+      "maxStack": 64,
+      "name": "Stone",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AQEBABQDQJAAAAE/QAAAAQkCUAABAQA/AAAA"
+    },
+    {
+      "action": "toot_horn",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.goat_horn"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:goat_horn"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 17,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:instrument": {
+            "range": 64,
+            "sound_event": "minecraft:item.goat_horn.sound.0",
+            "use_duration": 17
+          }
+        },
+        "count": 1,
+        "id": "minecraft:goat_horn"
+      },
+      "label": "inline_horn",
+      "maxDamage": 0,
+      "maxStack": 1,
+      "name": "Goat Horn",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.goat_horn"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AbAJAQAoAMMFEUKAAAA="
+    },
+    {
+      "action": "crossbow",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.crossbow"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "extra": [
+            " ",
+            {
+              "color": "white",
+              "hoverEvent": {
+                "action": "show_item",
+                "contents": {
+                  "count": 1,
+                  "id": "minecraft:firework_rocket"
+                }
+              },
+              "translate": "chat.square_brackets",
+              "with": [
+                {
+                  "extra": [
+                    {
+                      "translate": "item.minecraft.firework_rocket"
+                    }
+                  ],
+                  "text": ""
+                }
+              ]
+            }
+          ],
+          "translate": "item.minecraft.crossbow.projectile"
+        },
+        {
+          "color": "gray",
+          "extra": [
+            {
+              "color": "gray",
+              "extra": [
+                " ",
+                "1"
+              ],
+              "translate": "item.minecraft.firework_rocket.flight"
+            }
+          ],
+          "text": "  "
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:crossbow"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            9
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": true,
+      "duration": 28,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:charged_projectiles": [
+            {
+              "count": 1,
+              "id": "minecraft:firework_rocket"
+            }
+          ]
+        },
+        "count": 1,
+        "id": "minecraft:crossbow"
+      },
+      "label": "charged_rocket",
+      "maxDamage": 465,
+      "maxStack": 1,
+      "name": "Crossbow",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.crossbow"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "extra": [
+            " ",
+            {
+              "color": "white",
+              "hoverEvent": {
+                "action": "show_item",
+                "contents": {
+                  "count": 1,
+                  "id": "minecraft:firework_rocket"
+                }
+              },
+              "translate": "chat.square_brackets",
+              "with": [
+                {
+                  "extra": [
+                    {
+                      "translate": "item.minecraft.firework_rocket"
+                    }
+                  ],
+                  "text": ""
+                }
+              ]
+            }
+          ],
+          "translate": "item.minecraft.crossbow.projectile"
+        }
+      ],
+      "wire": "AaUJAQAdAQHYCAAA"
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:custom_model_data": 123
+        },
+        "count": 1,
+        "id": "minecraft:stone"
+      },
+      "label": "custom_model",
+      "maxDamage": 0,
+      "maxStack": 64,
+      "name": "Stone",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AQEBAA17"
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.filled_map"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "filled_map.unknown"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:filled_map"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            8
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        1193046
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:map_color": 1193046
+        },
+        "count": 1,
+        "id": "minecraft:filled_map"
+      },
+      "label": "map_color",
+      "maxDamage": 0,
+      "maxStack": 64,
+      "name": "Map",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.filled_map"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AdYHAQAZABI0Vg=="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.firework_star"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.minecraft.firework_star.shape.star"
+        },
+        {
+          "color": "gray",
+          "extra": [
+            {
+              "translate": "item.minecraft.firework_star.custom_color"
+            },
+            ", ",
+            {
+              "translate": "item.minecraft.firework_star.custom_color"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.minecraft.firework_star.trail"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:firework_star"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        8323199
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:firework_explosion": {
+            "colors": [
+              16711680,
+              255
+            ],
+            "has_trail": true,
+            "shape": "star"
+          }
+        },
+        "count": 1,
+        "id": "minecraft:firework_star"
+      },
+      "label": "firework_star",
+      "maxDamage": 0,
+      "maxStack": 64,
+      "name": "Firework Star",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.firework_star"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.minecraft.firework_star.shape.star"
+        },
+        {
+          "color": "gray",
+          "extra": [
+            {
+              "translate": "item.minecraft.firework_star.custom_color"
+            },
+            ", ",
+            {
+              "translate": "item.minecraft.firework_star.custom_color"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.minecraft.firework_star.trail"
+        }
+      ],
+      "wire": "AdkIAQAsAgIA/wAAAAAA/wABAA=="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.leather_chestplate"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.chest"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "3",
+            {
+              "translate": "attribute.name.generic.armor"
+            }
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:leather_chestplate"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        10511680,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": true,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "!minecraft:attribute_modifiers": {}
+        },
+        "count": 1,
+        "id": "minecraft:leather_chestplate"
+      },
+      "label": "removed_armor_modifiers",
+      "maxDamage": 80,
+      "maxStack": 1,
+      "name": "Leather Tunic",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.leather_chestplate"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.chest"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "3",
+            {
+              "translate": "attribute.name.generic.armor"
+            }
+          ]
+        }
+      ],
+      "wire": "AdkGAAEM"
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.leather_chestplate"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.chest"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "3",
+            {
+              "translate": "attribute.name.generic.armor"
+            }
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:leather_chestplate"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            8
+          ]
+        }
+      ],
+      "colors": [
+        10511680,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": true,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:attribute_modifiers": {
+            "modifiers": []
+          }
+        },
+        "count": 1,
+        "id": "minecraft:leather_chestplate"
+      },
+      "label": "empty_armor_modifiers",
+      "maxDamage": 80,
+      "maxStack": 1,
+      "name": "Leather Tunic",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.leather_chestplate"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.chest"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "3",
+            {
+              "translate": "attribute.name.generic.armor"
+            }
+          ]
+        }
+      ],
+      "wire": "AdkGAAA="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.offhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.2",
+          "with": [
+            "15",
+            {
+              "translate": "attribute.name.generic.movement_speed"
+            }
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            6
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:attribute_modifiers": {
+            "modifiers": [
+              {
+                "amount": 0.15,
+                "name": "Speed",
+                "operation": "add_multiplied_total",
+                "slot": "offhand",
+                "type": "minecraft:generic.movement_speed",
+                "uuid": [
+                  1,
+                  2,
+                  3,
+                  4
+                ]
+              }
+            ]
+          }
+        },
+        "count": 1,
+        "id": "minecraft:stone"
+      },
+      "label": "custom_attributes",
+      "maxDamage": 0,
+      "maxStack": 64,
+      "name": "Stone",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.offhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.2",
+          "with": [
+            "15",
+            {
+              "translate": "attribute.name.generic.movement_speed"
+            }
+          ]
+        }
+      ],
+      "wire": "AQEBAAwBEQAAAAEAAAACAAAAAwAAAAQFU3BlZWQ/wzMzMzMzMwICAQ=="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:diamond_sword"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            9
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": true,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:attribute_modifiers": {
+            "modifiers": [],
+            "show_in_tooltip": false
+          }
+        },
+        "count": 1,
+        "id": "minecraft:diamond_sword"
+      },
+      "label": "hidden_attributes",
+      "maxDamage": 1561,
+      "maxStack": 1,
+      "name": "Diamond Sword",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AcUGAQAMAAA="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:diamond_sword"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            10
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:unbreakable": {
+            "show_in_tooltip": false
+          }
+        },
+        "count": 1,
+        "id": "minecraft:diamond_sword"
+      },
+      "label": "hidden_unbreakable",
+      "maxDamage": 1561,
+      "maxStack": 1,
+      "name": "Diamond Sword",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        }
+      ],
+      "wire": "AcUGAQAEAA=="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.apple"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:apple"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            6
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "!minecraft:food": {}
+        },
+        "count": 1,
+        "id": "minecraft:apple"
+      },
+      "label": "removed_food",
+      "maxDamage": 0,
+      "maxStack": 64,
+      "name": "Apple",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.apple"
+            }
+          ],
+          "text": ""
+        }
+      ],
+      "wire": "AZ8GAAEU"
+    },
+    {
+      "action": "drink",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.potion.effect.empty"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "blue",
+          "translate": "potion.withDuration",
+          "with": [
+            {
+              "translate": "potion.withAmplifier",
+              "with": [
+                {
+                  "translate": "effect.minecraft.speed"
+                },
+                {
+                  "translate": "potion.potency.1"
+                }
+              ]
+            },
+            {
+              "translate": "effect.duration.infinite"
+            }
+          ]
+        },
+        "",
+        {
+          "color": "dark_purple",
+          "translate": "potion.whenDrank"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.2",
+          "with": [
+            "40",
+            {
+              "translate": "attribute.name.generic.movement_speed"
+            }
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:potion"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        3402751,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 32,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:potion_contents": {
+            "custom_effects": [
+              {
+                "amplifier": 1,
+                "duration": -1,
+                "id": "minecraft:speed"
+              }
+            ]
+          }
+        },
+        "count": 1,
+        "id": "minecraft:potion"
+      },
+      "label": "infinite_potion",
+      "maxDamage": 0,
+      "maxStack": 1,
+      "name": "Uncraftable Potion",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.potion.effect.empty"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "blue",
+          "translate": "potion.withDuration",
+          "with": [
+            {
+              "translate": "potion.withAmplifier",
+              "with": [
+                {
+                  "translate": "effect.minecraft.speed"
+                },
+                {
+                  "translate": "potion.potency.1"
+                }
+              ]
+            },
+            {
+              "translate": "effect.duration.infinite"
+            }
+          ]
+        },
+        "",
+        {
+          "color": "dark_purple",
+          "translate": "potion.whenDrank"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.2",
+          "with": [
+            "40",
+            {
+              "translate": "attribute.name.generic.movement_speed"
+            }
+          ]
+        }
+      ],
+      "wire": "AeYHAQAfAAABAAH/////DwABAQA="
+    },
+    {
+      "action": "drink",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.potion.effect.empty"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "blue",
+          "translate": "potion.withDuration",
+          "with": [
+            {
+              "translate": "effect.minecraft.regeneration"
+            },
+            "01:02:30"
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:potion"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        13458603,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 32,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:potion_contents": {
+            "custom_effects": [
+              {
+                "duration": 75000,
+                "id": "minecraft:regeneration"
+              }
+            ]
+          }
+        },
+        "count": 1,
+        "id": "minecraft:potion"
+      },
+      "label": "hour_potion",
+      "maxDamage": 0,
+      "maxStack": 1,
+      "name": "Uncraftable Potion",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.potion.effect.empty"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "blue",
+          "translate": "potion.withDuration",
+          "with": [
+            {
+              "translate": "effect.minecraft.regeneration"
+            },
+            "01:02:30"
+          ]
+        }
+      ],
+      "wire": "AeYHAQAfAAABCQD4yQQAAQEA"
+    },
+    {
+      "action": "toot_horn",
+      "advancedTooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.goat_horn"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "instrument.minecraft.ponder_goat_horn"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:goat_horn"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            7
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": false,
+      "duration": 140,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:instrument": "minecraft:ponder_goat_horn"
+        },
+        "count": 1,
+        "id": "minecraft:goat_horn"
+      },
+      "label": "named_horn",
+      "maxDamage": 0,
+      "maxStack": 1,
+      "name": "Goat Horn",
+      "rarity": "common",
+      "tooltip": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "item.minecraft.goat_horn"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "instrument.minecraft.ponder_goat_horn"
+        }
+      ],
+      "wire": "AbAJAQAoAQ=="
+    },
+    {
+      "action": "none",
+      "advancedTooltip": [
+        {
+          "color": "aqua",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "extra": [
+            " ",
+            {
+              "translate": "enchantment.level.2"
+            }
+          ],
+          "translate": "enchantment.minecraft.sharpness"
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:diamond_sword"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.components",
+          "with": [
+            10
+          ]
+        }
+      ],
+      "colors": [
+        16777215,
+        16777215
+      ],
+      "damage": 0,
+      "damageable": true,
+      "duration": 0,
+      "foil": false,
+      "input": {
+        "components": {
+          "minecraft:enchantment_glint_override": false,
+          "minecraft:enchantments": {
+            "levels": {
+              "minecraft:sharpness": 2
+            }
+          }
+        },
+        "count": 1,
+        "id": "minecraft:diamond_sword"
+      },
+      "label": "enchanted_foil_false",
+      "maxDamage": 1561,
+      "maxStack": 1,
+      "name": "Diamond Sword",
+      "rarity": "rare",
+      "tooltip": [
+        {
+          "color": "aqua",
+          "extra": [
+            {
+              "translate": "item.minecraft.diamond_sword"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "extra": [
+            " ",
+            {
+              "translate": "enchantment.level.2"
+            }
+          ],
+          "translate": "enchantment.minecraft.sharpness"
+        },
+        "",
+        {
+          "color": "gray",
+          "translate": "item.modifiers.mainhand"
+        },
+        {
+          "color": "blue",
+          "translate": "attribute.modifier.plus.0",
+          "with": [
+            "6",
+            {
+              "translate": "attribute.name.generic.attack_damage"
+            }
+          ]
+        },
+        {
+          "color": "red",
+          "translate": "attribute.modifier.take.0",
+          "with": [
+            "2.4",
+            {
+              "translate": "attribute.name.generic.attack_speed"
+            }
+          ]
+        }
+      ],
+      "wire": "AcUGAgAJAQ0CARIA"
+    }
+  ]
+}

@@ -52,7 +52,7 @@ export function craftResult(grid, n, items) {
   if (count === 2 && items) {
     const list = grid.filter(Boolean);
     const a = list[0], b = list[1];
-    const maxD = items.maxDurability(a.id);
+    const maxD = items.maxDurability(a);
     if (a.id === b.id && a.count === 1 && b.count === 1 && maxD > 0) {
       const da = maxD - a.damage, db = maxD - b.damage;
       const total = da + db + Math.floor(maxD * 5 / 100);

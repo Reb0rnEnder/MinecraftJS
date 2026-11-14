@@ -421,3 +421,14 @@ export function decorateItemCost766(cost) {
 }
 
 export { COMPONENT_NAMES, COMPONENT_IDS };
+
+// Read-only effective values for actual UI/game consumers and locally-created
+// default stacks. Wire patches remain authoritative; never synthesize slot NBT.
+export function itemComponentValues766(item) {
+  const id=typeof item==='number'?item:item?.itemId??item?.id;
+  if(!Number.isInteger(id)||!ITEM_DEFAULTS_766.items[id])return {};
+  if(item?.componentValues)return item.componentValues;
+  if(typeof item==='number'||!item?.componentPatch&&!item?.components)return ITEM_DEFAULTS_766.items[id].defaults;
+  const effective=effectiveComponents(id,patchArray(item),removedArray(item));
+  return Object.fromEntries(Object.entries(effective).map(([type,entry])=>[type,componentView(type,entry)]));
+}

@@ -1,9 +1,10 @@
+import{EFFECT_766}from'../client/js/game/effects-1.20.6.js';
 import{test}from'node:test';import assert from'node:assert/strict';import{readFileSync}from'node:fs';import{initBlocks,getBlock}from'../client/js/world/blocks.js';import{tickPortal,portalWarp,touchesPortal}from'../client/js/game/portal.js';import{moveParticle}from'../client/js/render/particle-collision.js';import{Game}from'../client/js/game/game.js';import{Reader}from'../client/js/net/buffer.js';import{Renderer}from'../client/js/render/renderer.js';import{mat4}from'../client/js/gfx/math.js';import{setPlatform}from'../client/js/platform/platform.js';
 const blocks=JSON.parse(readFileSync(new URL('../client/data/blocks.json',import.meta.url))),shapes=JSON.parse(readFileSync(new URL('../client/data/blockCollisionShapes.json',import.meta.url)));initBlocks(blocks,shapes);const portal=blocks.find(b=>b.name==='nether_portal'||b.name==='portal'),state=portal.defaultState??portal.id<<4,close=(a,b)=>assert.ok(Math.abs(a-b)<1e-7,`${a} != ${b}`);
 setPlatform({now:()=>0,width:854,height:480});
 test('portal contact includes the edge of the player; 80 visual ticks ramp in and stepping out fades',()=>{
  const sounds=[],g={gameMode:0,player:{x:1.1,y:63,z:.5},world:{getState:(x,y,z)=>x===0&&y===63&&z===0?state:0},sound:{playAtPlayer:(...a)=>sounds.push(a)},effects:new Map(),portalTime:0};assert.equal(touchesPortal(g),true);for(let i=0;i<80;i++)tickPortal(g);close(g.portalTime,1);assert.equal(sounds.length,1);
- g.player.x=3;tickPortal(g);close(g.portalTime,.95);g.effects.set(9,{duration:100});tickPortal(g);assert.ok(g.portalTime>.95);g.effects.get(9).duration=60;tickPortal(g);assert.ok(g.portalTime<.95);
+ g.player.x=3;tickPortal(g);close(g.portalTime,.95);g.effects.set(EFFECT_766.nausea,{duration:100});tickPortal(g);assert.ok(g.portalTime>.95);g.effects.get(EFFECT_766.nausea).duration=60;tickPortal(g);assert.ok(g.portalTime<.95);
  g.ridingEntityId=2;g.player.x=.5;assert.equal(touchesPortal(g),false);
 });
 test('portal distortion warps projection without altering FOV or player movement',()=>{

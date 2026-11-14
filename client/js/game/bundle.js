@@ -12,7 +12,7 @@ export function bundleWeight(item,items){
  const name=items.name(item.id);
  if(name==='bundle')return 4+bundleContentWeight(item,items);
  if((name==='beehive'||name==='bee_nest')&&items.nbt(item)?.BlockEntityTag?.Bees?.length)return 64;
- return Math.trunc(64/items.maxStack(item.id));
+ return Math.trunc(64/items.maxStack(item));
 }
 export function bundleContentWeight(item,items){return bundleContents(item,items).reduce((weight,entry)=>weight+entry.count*bundleWeight(entry,items),0);}
 export function bundleAdd(bundle,item,items,equal){
@@ -37,7 +37,7 @@ export function bundleSlotClick(container,slotId,button,equal){
     if(remaining)bundleAdd(cur,{...taken,count:remaining},items,equal);
    }
   }else if(!forbidden.has(stack.id)&&container.canTake(slotId)){
-   const count=Math.min(stack.count,items.maxStack(stack.id),Math.trunc((64-bundleContentWeight(cur,items))/bundleWeight(stack,items)));
+   const count=Math.min(stack.count,items.maxStack(stack),Math.trunc((64-bundleContentWeight(cur,items))/bundleWeight(stack,items)));
    if(count>0&&!container.isValid(slotId,stack)&&count<stack.count)return true;
    if(count>0){const taken=container.decr(slotId,count);if(taken){bundleAdd(cur,taken,items,equal);container.onPickupFromSlot(slotId,taken);bundleSound(container.game,'insert');}}
   }

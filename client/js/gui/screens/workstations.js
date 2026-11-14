@@ -134,7 +134,7 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
           const t=trades[this.row+j];if(!t)break;
           const ty=y+18+j*20;
           gui.button(x+5,ty,89,20,'',inside(mx,my,x+5,ty,89,20),true);
-          const cost=tradeCost(t,game.items.maxStack(t.a.id));
+          const cost=tradeCost(t,game.items.maxStack(t.a));
           game.itemRenderer.drawItem(gui,cost,x+10,ty+1);
           if(t.b)game.itemRenderer.drawItem(gui,t.b,x+40,ty+1);
           game.itemRenderer.drawItem(gui,t.out,x+73,ty+1);
@@ -169,7 +169,7 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
         if(game.inventory.cursor)return;
         const x=mx-this.guiLeft,y=my-this.guiTop;if(!inside(x,y,5,18,89,140))return;
         const t=win.tradeData?.trades[this.row+Math.floor((y-18)/20)];if(!t)return;
-        const item=x<35?tradeCost(t,game.items.maxStack(t.a.id)):x<60?t.b:t.out;
+        const item=x<35?tradeCost(t,game.items.maxStack(t.a)):x<60?t.b:t.out;
         if(item)gui.tooltip(game.items.tooltip(item,game.settings.advancedItemTooltips),mx,my);
       }
     }

@@ -1,3 +1,4 @@
+import {effectLabel766,effectDuration766,compareEffects766} from '../../game/effects-1.20.6.js';
 import {nativeCreativeRows766,creativeStack766} from '../creative-data-1.20.6.js';
 import {Writer766} from '../../net/configuration-1.20.6.js';
 import {ITEM_DEFAULTS_766} from '../../net/item-components-1.20.6-defaults.js';
@@ -372,51 +373,22 @@ export class InventoryScreen extends ContainerScreen {
   drawForeground(gui) { this.title(gui, this.game.assets.translate('container.crafting'), 97, 8); }
 }
 
-const POTION_ICON = { 1: 0, 2: 1, 3: 2, 4: 3, 5: 4, 8: 10, 9: 11, 10: 7, 11: 14, 12: 15, 13: 16, 14: 8, 15: 13, 16: 12, 17: 9, 18: 5, 19: 6, 20: 17, 21: 23, 22: 18 };
-// Potion.getName (effect.moveSpeed, ...) by effect id, from client/data/creative.json
-const effectKey = (game, id) => (game.assets.data.creative.effects[id] || { name: 'effect.none' }).name;
-
 // EffectRenderingInventoryScreen (1.18): right-side full or compact panels.
 export function drawModernEffects(game, gui, screen, mx, my) {
  if(screen.recipeBook?.visible&&screen.recipeBook.narrow)return;
  const x=screen.guiLeft+screen.xSize+2,available=gui.width-x;
  if(available<32||!game.effects.size)return;
  const wide=available>=120,entries=[...game.effects],dy=entries.length>5?Math.floor(132/(entries.length-1)):33;
- entries.sort(([a,ea],[b,eb])=>{
-  const ambient=Number(!!ea.ambient)-Number(!!eb.ambient);
-  return ambient||((ea.duration<=32147||eb.duration<=32147)&&!(ea.ambient&&eb.ambient)?ea.duration-eb.duration:0)||((game.items.effects[a]?.color||0)-(game.items.effects[b]?.color||0));
- });
+ entries.sort((a,b)=>compareEffects766(a,b,game.items.effects));
  let y=screen.guiTop;
  for(const[id,e]of entries){
   gui.blit('gui/container/inventory.png',x,y,0,wide?166:198,wide?120:32,32);
   drawEffectIcon(game,gui,id,x+(wide?6:7),y+7);
-  let name=game.assets.translate(effectKey(game,id));
-  if(e.amplifier>=1&&e.amplifier<=9)name+=' '+game.assets.translate('enchantment.level.'+(e.amplifier+1));
-  const secs=Math.floor(e.duration/20),duration=e.duration>32767?'**:**':Math.floor(secs/60)+':'+String(secs%60).padStart(2,'0');
+  const name=effectLabel766(game,id,e.amplifier),duration=effectDuration766(e.duration,k=>game.assets.translate(k),game.serverTickRate??20);
   if(wide){gui.text(name,x+28,y+6,0xffffff,true);gui.text(duration,x+28,y+16,0x7f7f7f,true);}
   else if(mx>=x&&mx<=x+33&&my>=y&&my<=y+dy)gui.tooltip([name,duration],mx,my);
   y+=dy;
  }
-}
-
-function drawEffects(game, gui, x, y) {
-  const n = game.effects.size;
-  let dy = 33;
-  if (n > 5) dy = Math.floor(132 / (n - 1));
-  const iconIdx = POTION_ICON;
-  for (const [id, e] of game.effects) {
-    gui.blit('gui/container/inventory.png', x, y, 0, 166, 140, 32);
-    drawEffectIcon(game,gui,id,x+6,y+7);
-    let name = game.assets.translate(effectKey(game, id)); // Potion.getName: effect.*
-    if (e.amplifier === 1) name += ' ' + game.assets.translate('enchantment.level.2');
-    else if (e.amplifier === 2) name += ' ' + game.assets.translate('enchantment.level.3');
-    else if (e.amplifier === 3) name += ' ' + game.assets.translate('enchantment.level.4');
-    gui.text(name, x + 10 + 18, y + 6, 0xffffff, true);
-    const secs = Math.floor(e.duration / 20);
-    const dur = e.duration > 32767 ? '**:**' : `${Math.floor(secs / 60)}:${String(secs % 60).padStart(2, '0')}`;
-    gui.text(dur, x + 10 + 18, y + 6 + 10, 0x7f7f7f, true);
-    y += dy;
-  }
 }
 
 // ---------------------------------------------------------------- server containers
@@ -1195,14 +1167,14 @@ export class CreativeScreen extends ContainerScreen {
       // a locked item (the empty saved toolbar's hint) cannot be taken (CustomCreativeLock)
       if (creativeLocked(it)) return true;
       const cur = inv.cursor;
-      if (btn === 2) { if (!cur && it) { const c = creativeCopy(it); c.count = g.items.maxStack(c.id); inv.cursor = c; } return true; }
+      if (btn === 2) { if (!cur && it) { const c = creativeCopy(it); c.count = g.items.maxStack(c); inv.cursor = c; } return true; }
       if (cur && it && stackable(cur, it)) {
-        if (btn === 0) { if (shift) cur.count = g.items.maxStack(cur.id); else if (cur.count < g.items.maxStack(cur.id)) cur.count++; }
+        if (btn === 0) { if (shift) cur.count = g.items.maxStack(cur); else if (cur.count < g.items.maxStack(cur)) cur.count++; }
         else if (cur.count <= 1) inv.cursor = null;
         else cur.count--;
       } else if (it && !cur) {
         const c = creativeCopy(it);
-        c.count = shift ? g.items.maxStack(c.id) : 1;
+        c.count = shift ? g.items.maxStack(c) : 1;
         inv.cursor = c;
       } else if (btn === 0 || !cur || cur.count <= 1) inv.cursor = null;
       else cur.count--;
@@ -1218,7 +1190,7 @@ export class CreativeScreen extends ContainerScreen {
     if (slot !== null) {
       const before = inv.slots.map((_, i) => creativeCopy(inv.get(i)));
       if (btn === 2) {
-        if (!inv.cursor && inv.get(slot)) { const c = creativeCopy(inv.get(slot)); c.count = g.items.maxStack(c.id); inv.cursor = c; }
+        if (!inv.cursor && inv.get(slot)) { const c = creativeCopy(inv.get(slot)); c.count = g.items.maxStack(c); inv.cursor = c; }
         return true;
       }
       if (shift && this.tabLabel() !== 'inventory') {
@@ -1264,7 +1236,7 @@ export class CreativeScreen extends ContainerScreen {
       if (e.code === g.settings.keys['hotbar' + (i + 1)] && (grid?.item || slot !== null)) {
         this.ignoreNextChar = true;
         if (grid && grid.item && !creativeLocked(grid.item)) {
-          const c = creativeCopy(grid.item); c.count = g.items.maxStack(c.id);
+          const c = creativeCopy(grid.item); c.count = g.items.maxStack(c);
           this.inv.setSlot(36 + i, c);
           sendCreativeSlot(g, 36 + i, c);
         } else if (!grid && slot !== null && slot !== 36 + i) {

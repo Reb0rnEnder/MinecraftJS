@@ -132,8 +132,7 @@ export class RecipeBookGui {
   _overlay(gui, mx, my) {
     const o = this.overlay;
     if (!o) return;
-    gui.rect(o.x - 1, o.y - 1, o.x + o.w + 1, o.y + o.h + 1, 0xff000000);
-    gui.rect(o.x, o.y, o.x + o.w, o.y + o.h, 0xffc6c6c6);
+    gui.sprite('recipe_book/overlay_recipe',o.x,o.y,o.w,o.h);
     for (const b of o.buttons) {
       const h = mx >= b.x && mx < b.x + 24 && my >= b.y && my < b.y + 24;
       gui.blit(TEX, b.x, b.y, 152 + (b.craftable ? 0 : 26), 78 + (h ? 26 : 0), 24, 24);

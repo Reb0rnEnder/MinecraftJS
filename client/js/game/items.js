@@ -1,3 +1,5 @@
+import {itemComponentValues766} from '../net/item-components-1.20.6.js';
+import {ITEM_DATA_766} from './item-data-1.20.6.js';
 import{bundleContents,bundleContentWeight}from'./bundle.js';
 const attributeKey = name => 'attribute.name.' + name.replace(/^minecraft:/, '').replace(/[A-Z]/g, c => '_' + c.toLowerCase());
 // Item metadata helpers: names, tooltips, stack sizes, durability, use actions, tool speeds.
@@ -12,61 +14,35 @@ const FOOD_NAMES = new Set(`apple mushroom_stew bread porkchop cooked_porkchop g
   rabbit_stew mutton cooked_mutton chorus_fruit beetroot beetroot_soup dried_kelp honey_bottle`.split(/\s+/));
 const SWORDS = new Set(['iron_sword', 'wooden_sword', 'stone_sword', 'diamond_sword', 'golden_sword','netherite_sword']);
 const POTIONS = new Set(['potion', 'splash_potion', 'lingering_potion', 'tipped_arrow']);
-const RARITY_UNCOMMON = new Set(`experience_bottle nether_star enchanted_book elytra dragon_breath totem_of_undying
-  heart_of_the_sea skeleton_skull wither_skeleton_skull player_head zombie_head creeper_head dragon_head`.split(/\s+/));
-const RARITY_RARE = new Set(['golden_apple', 'end_crystal', 'beacon', 'conduit']);
-const RARITY_EPIC = new Set(['enchanted_golden_apple', 'dragon_egg', 'command_block', 'chain_command_block', 'repeating_command_block', 'structure_block']);
 const SINGLE_LEVEL = new Set(`aqua_affinity binding_curse silk_touch flame infinity channeling mending vanishing_curse`.split(' '));
 const resource = (name) => name.includes(':') ? name : 'minecraft:' + name;
 const translationKey = (kind, name) => kind + '.' + resource(name).replace(':', '.');
-// Additions to the existing name-keyed potion/effect tables, verified against the 1.13.2 jar.
-const POTION_ADDITIONS = {
-  strong_slowness: { name: 'slowness', effects: [[2, 400, 3]] },
-  turtle_master: { name: 'turtle_master', effects: [[2, 400, 3], [11, 400, 2]] },
-  long_turtle_master: { name: 'turtle_master', effects: [[2, 800, 3], [11, 800, 2]] },
-  strong_turtle_master: { name: 'turtle_master', effects: [[2, 400, 5], [11, 400, 3]] },
-  slow_falling: { name: 'slow_falling', effects: [[28, 1800, 0]] },
-  long_slow_falling: { name: 'slow_falling', effects: [[28, 4800, 0]] },
-};
-const EFFECT_ADDITIONS = {
-  28: { key: 'minecraft:slow_falling', color: 16773073, bad: false, modifiers: [] },
-  29: { key: 'minecraft:conduit_power', color: 1950417, bad: false, modifiers: [] },
-  30: { key: 'minecraft:dolphins_grace', color: 8954814, bad: false, modifiers: [] },
-};
-const EGG_ADDITIONS = {
-  cod: [12691306, 15058059], dolphin: [2243405, 16382457], drowned: [9433559, 7969893],
-  phantom: [4411786, 8978176], pufferfish: [16167425, 3654642], salmon: [10489616, 951412],
-  tropical_fish: [15690005, 16775663], turtle: [15198183, 44975],
-};
-
 export class Items {
-  constructor(assets) {
+  constructor(assets,player=null) {
+    this.player=player;
     this.assets = assets;
     // Only item definitions belong here: block IDs and item IDs are different registries.
     this.byId = new Map(assets.data.items.map(d => [d.id, d]));
     this.byName = new Map(assets.data.items.map(d => [d.name, d]));
     this.maps = new Map();
-    this.effects = { ...EFFECT_ADDITIONS, ...assets.data.creative.effects };
+    this.effects = ITEM_DATA_766.effects;
   }
 
   def(id) { return this.byId.get(id) || null; }
 
   name(id) { const d = this.def(id); return d ? d.name : 'unknown'; }
 
-  maxStack(id) {
-    const d = this.def(id);
-    return d && d.stackSize ? d.stackSize : 64;
+  components(item) {return itemComponentValues766(item);}
+  component(item,type) {return this.components(item)[type];}
+  maxStack(item) {return this.component(item,'max_stack_size')??1;}
+  maxDurability(item) {return this.component(item,'max_damage')??0;}
+  isDamageable(item) {const c=this.components(item);return !!item&&c.max_damage!==undefined&&c.damage!==undefined&&c.unbreakable===undefined;}
+  damage(item) {return Math.max(0,Math.min(this.maxDurability(item),this.component(item,'damage')??0));}
+  rarity(item) {
+    const base=this.component(item,'rarity')??'common';
+    if(!this.enchantments(item,false).length)return base;
+    return base==='common'||base==='uncommon'?'rare':base==='rare'?'epic':base;
   }
-
-  maxDurability(id) {
-    const d = this.def(id);
-    return d && d.maxDurability ? d.maxDurability : 0;
-  }
-
-  isDamageable(item) { return !!item && this.maxDurability(item.id) > 0 && !this.nbt(item)?.Unbreakable; }
-
-  // Flattened slots have no damage field on the wire. It is the stack's Damage NBT, not a variant selector.
-  damage(item) { return Math.max(0, this.nbt(item)?.Damage | 0); }
 
   nbt(item) {
     if (item?._renderTag !== undefined) return item._renderTag; // Simplified block-entity display stack; never sent as an inventory stack.
@@ -80,68 +56,34 @@ export class Items {
 
   // ItemStack.getDisplayName: custom name, else the translated item name
   displayName(item) {
-    const tag = this.nbt(item);
-    if (tag && tag.display && typeof tag.display.Name === 'string') return chatToLegacy(tag.display.Name);
-    const d = this.def(item.id);
-    if (!d) return 'Unknown (' + item.id + ')';
-    if (d.name === 'written_book' && tag && tag.title) return tag.title;
-    if (d.name === 'player_head' && tag && tag.SkullOwner) {
-      const owner = typeof tag.SkullOwner === 'string' ? tag.SkullOwner : tag.SkullOwner.Name;
-      if (owner) return this.assets.translate('block.minecraft.player_head.named', [owner]);
-    }
-    if (POTIONS.has(d.name)) return this.potionName(item);
-    if(d.name==='compass'&&tag&&(Object.hasOwn(tag,'LodestonePos')||Object.hasOwn(tag,'LodestoneDimension')))return this.assets.translate('item.minecraft.lodestone_compass');
-    const key = translationKey(this.isBlockItem(item.id) ? 'block' : 'item', d.name);
-    const translated = this.assets.translate(key);
-    return translated === key ? d.displayName : translated;
+    const c=this.components(item);
+    if(c.custom_name!==undefined)return chatToLegacy(c.custom_name,{parsed:true});
+    if(c.item_name!==undefined)return chatToLegacy(c.item_name,{parsed:true});
+    const d=this.def(item.id);if(!d)return 'Unknown ('+item.id+')';
+    if(d.name==='written_book'&&c.written_book_content?.title){const title=c.written_book_content.title;return typeof title==='string'?title:title.content??title.raw??'';}
+    if(d.name==='player_head'&&c.profile?.name)return this.assets.translate('block.minecraft.player_head.named',[c.profile.name]);
+    if(POTIONS.has(d.name))return this.potionName(item);
+    if(d.name==='compass'&&c.lodestone_tracker!==undefined)return this.assets.translate('item.minecraft.lodestone_compass');
+    const key=translationKey(this.isBlockItem(item.id)?'block':'item',d.name),translated=this.assets.translate(key);return translated===key?d.displayName:translated;
   }
 
   potionName(item) { return this.assets.translate(translationKey('item', this.name(item.id)) + '.effect.' + this.potionType(item).name); }
 
-  // 1.9+ potions, splash / lingering potions and tipped arrows: the PotionType in tag "Potion" (client/data/creative.json,
-  // read from the game) plus CustomPotionEffects (PotionUtils.getEffectsFromStack)
   potionType(item) {
-    const tag = this.nbt(item);
-    const P = this.assets.data.creative.potions;
-    let n = tag && typeof tag.Potion === 'string' ? tag.Potion : '';
-    if (n && !n.includes(':')) n = 'minecraft:' + n;
-    return POTION_ADDITIONS[n.replace(/^minecraft:/, '')] || P[n] || P['minecraft:empty'];
+    const c=this.component(item,'potion_contents')||{},id=c.potionId;
+    if(id!==undefined&&id!==null)return ITEM_DATA_766.potions[id]||{name:'empty',effects:[]};
+    return Object.values(ITEM_DATA_766.potions).find(p=>p.key===c.potion)||{name:'empty',effects:[]};
   }
-
   potionEffects(item) {
-    const out = this.potionType(item).effects.map(([id, duration, amplifier]) => ({ id, duration, amplifier, particles: true }));
-    const tag = this.nbt(item);
-    if (tag && Array.isArray(tag.CustomPotionEffects)) {
-      for (const e of tag.CustomPotionEffects) {
-        if (!this.effects[e.Id & 255]) continue; // PotionEffect.readCustomPotionEffectFromNBT
-        out.push({ id: e.Id & 255, amplifier: e.Amplifier | 0, duration: e.Duration | 0, particles: e.ShowParticles === undefined ? true : !!e.ShowParticles });
-      }
-    }
-    return out;
+    const c=this.component(item,'potion_contents')||{},base=this.potionType(item).effects.map(e=>({...e}));
+    for(const e of c.customEffects||c.custom_effects||[]){const d=e.details||e,raw=e.id,id=typeof raw==='number'?raw:Number(Object.entries(ITEM_DATA_766.registries.mob_effect).find(([,name])=>name===resource(raw))?.[0]);if(this.effects[id])base.push({id,duration:d.duration??0,amplifier:d.amplifier??0,particles:d.showParticles??d.show_particles??true,ambient:d.ambient??false});}
+    return base;
   }
-
-  // PotionUtils.getColor
-  potionColor(item) {
-    const tag = this.nbt(item);
-    if (tag && typeof tag.CustomPotionColor === 'number') return tag.CustomPotionColor;
-    if (this.potionType(item).name === 'empty') return 0xf800f8;
-    return this.effectsColor(this.potionEffects(item));
-  }
-
-  // PotionUtils.getPotionColorFromEffectList
+  potionColor(item) {const c=this.component(item,'potion_contents')||{};return c.customColor??c.custom_color??this.effectsColor(this.potionEffects(item));}
   effectsColor(effects) {
-    if (!effects.length) return 3694022;
-    const E = this.effects, f32 = Math.fround;
-    let r = 0, g = 0, b = 0, n = 0;
-    for (const e of effects) {
-      if (!e.particles) continue;
-      const c = E[e.id] ? E[e.id].color : 0, l = e.amplifier + 1;
-      r = f32(r + f32(f32(l * ((c >> 16) & 255)) / 255)); g = f32(g + f32(f32(l * ((c >> 8) & 255)) / 255)); b = f32(b + f32(f32(l * (c & 255)) / 255));
-      n += l;
-    }
-    if (n === 0) return 0;
-    const ch = (v) => Math.trunc(f32(f32(v / n) * 255));
-    return (ch(r) << 16) | (ch(g) << 8) | ch(b);
+    let r=0,g=0,b=0,n=0;
+    for(const e of effects){if(e.particles===false)continue;const c=this.effects[e.id]?.color??0,w=e.amplifier+1;r+=w*((c>>16)&255);g+=w*((c>>8)&255);b+=w*(c&255);n+=w;}
+    return n?((Math.trunc(r/n)<<16)|(Math.trunc(g/n)<<8)|Math.trunc(b/n)):0x385dc6;
   }
 
   // PotionUtils.addPotionTooltip (durationFactor: potions 1, lingering 0.25, tipped arrows 0.125)
@@ -155,11 +97,11 @@ export class Items {
       if (!def) continue;
       let s = t(translationKey('effect', def.key));
       for (const [attr, amount, op] of def.modifiers) mods.push([attr, amount * (e.amplifier + 1), op]); // getAttributeModifierAmount
-      if (e.amplifier > 0) s += ' ' + t('potion.potency.' + e.amplifier);
-      if (e.duration > 20) {
+      if (e.amplifier > 0) s = t('potion.withAmplifier',s,t('potion.potency.' + e.amplifier));
+      if (e.duration > 20 || e.duration===-1) {
         // Potion.getPotionDurationString -> StringUtils.ticksToElapsedTime
         const ticks = Math.floor(Math.fround(e.duration * factor)), sec = Math.floor(ticks / 20), m = Math.floor(sec / 60), r = sec % 60;
-        s += ' (' + (e.duration >= 32767 && e.maxDuration ? '**:**' : m + ':' + (r < 10 ? '0' : '') + r) + ')';
+        const hours=Math.floor(m/60),time=e.duration===-1?t('effect.duration.infinite'):(hours?String(hours).padStart(2,'0')+':'+String(m%60).padStart(2,'0'):String(m).padStart(2,'0'))+':'+String(r).padStart(2,'0');s=t('potion.withDuration',s,time);
       }
       lines.push((def.bad ? '§c' : '§9') + s);
     }
@@ -176,8 +118,8 @@ export class Items {
 
   // The flattened egg determines its default entity; EntityTag can override the spawn type.
   eggEntity(item) {
-    const tag = this.nbt(item);
-    let id = tag && tag.EntityTag && typeof tag.EntityTag.id === 'string' ? tag.EntityTag.id : null;
+    const entity=this.component(item,'entity_data');const data=entity?simplify(entity):null;
+    let id = typeof data?.id==='string'?data.id:null;
     if (id && !id.includes(':')) id = 'minecraft:' + id;
     const name = this.name(item.id);
     return id || (name.endsWith('_spawn_egg') ? 'minecraft:' + name.slice(0, -10) : null);
@@ -186,31 +128,20 @@ export class Items {
   // EntityList.ENTITY_EGGS: [primary, secondary, translation name] or null
   eggInfo(item) {
     // ItemColors uses the egg item's own colours, even when EntityTag changes what it spawns.
-    const name = this.name(item.id).replace(/_spawn_egg$/, '');
-    const oldName = { evoker: 'evocation_illager', vindicator: 'vindication_illager' }[name] || name;
-    return this.assets.data.creative.eggs['minecraft:' + name] || EGG_ADDITIONS[name] || this.assets.data.creative.eggs['minecraft:' + oldName] || null;
+    return ITEM_DATA_766.eggs[resource(this.name(item.id))]||null;
   }
-
-  enchantments(item) {
-    const tag = this.nbt(item);
-    if (!tag) return [];
-    const list = this.name(item.id) === 'enchanted_book' ? tag.StoredEnchantments : tag.Enchantments;
-    return Array.isArray(list) ? list.filter(e => typeof e.id === 'string').map(e => ({ id: resource(e.id), lvl: e.lvl | 0 })) : [];
+  enchantments(item,stored=this.name(item?.id)==='enchanted_book') {
+    if(!item)return [];
+    const c=this.component(item,stored?'stored_enchantments':'enchantments');if(!c)return [];
+    if(c.levels)return this.sortEnchantments(Object.entries(c.levels).map(([id,lvl])=>({id:resource(id),lvl})));
+    return this.sortEnchantments((c.enchantments||[]).map(e=>({id:ITEM_DATA_766.registries.enchantment[e.id],lvl:e.level})).filter(e=>e.id));
   }
-
-  isEnchanted(item) {
-    if (!item) return false;
-    if (['enchanted_book', 'enchanted_golden_apple', 'experience_bottle', 'nether_star'].includes(this.name(item.id))) return true;
-    return this.enchantments(item).length > 0;
-  }
-
-  // ItemStack.hasEffect (the glint): enchanted items, plus ItemPotion.hasEffect for potions with any effect (splash and
-  // lingering potions too)
+  sortEnchantments(list) {const order=ITEM_DATA_766.enchantmentOrder.map(id=>ITEM_DATA_766.registries.enchantment[id]);return list.sort((a,b)=>{const ai=order.indexOf(a.id),bi=order.indexOf(b.id);return (ai<0?Infinity:ai)-(bi<0?Infinity:bi);});}
+  isEnchanted(item) {return !!item&&this.enchantments(item,false).length>0;}
   hasEffect(item) {
-    if (!item) return false;
-    const tag=this.nbt(item);if(this.name(item.id)==='compass'&&tag&&(Object.hasOwn(tag,'LodestonePos')||Object.hasOwn(tag,'LodestoneDimension')))return true;
-    if (['potion', 'splash_potion', 'lingering_potion'].includes(this.name(item.id)) && this.potionEffects(item).length) return true;
-    return this.isEnchanted(item);
+    if(!item)return false;const c=this.components(item);
+    if(c.enchantment_glint_override!==undefined)return c.enchantment_glint_override;
+    return this.name(item.id)==='compass'&&c.lodestone_tracker!==undefined||this.isEnchanted(item);
   }
 
   // Enchantment.getTranslatedName: curses in red, the level unless a single-level enchantment at level 1
@@ -229,86 +160,88 @@ export class Items {
     if (!item) return 0;
     // Numeric IDs use this target registry; gameplay callers use resource names.
     const name = typeof id === 'number' ? this.assets.data.enchantments.find(e => e.id === id)?.name : id;
-    const e = name && this.enchantments(item).find((x) => x.id === resource(name));
+    const e = name && this.enchantments(item,false).find((x) => x.id === resource(name));
     return e ? e.lvl : 0;
   }
 
   tooltip(item, advanced = false) {
-    const lines = [];
-    let name = this.displayName(item);
-    const tag = this.nbt(item);
-    const registryName = this.name(item.id), damage = this.damage(item);
-    const hasCustom = tag && tag.display && typeof tag.display.Name === 'string';
-    let rarity = RARITY_EPIC.has(registryName) ? 3 : RARITY_RARE.has(registryName) || registryName.startsWith('music_disc_') ? 2 : RARITY_UNCOMMON.has(registryName) ? 1 : 0;
-    if (this.enchantments(item).length) rarity = rarity < 2 ? 2 : 3;
-    const color = ['', '§e', '§b', '§d'][rarity];
-    if (hasCustom) name = chatToLegacy(tag.display.Name, { style: { italic: true, color: ['white', 'yellow', 'aqua', 'light_purple'][rarity] } });
-    lines.push(color + name);
-    const t = (k, ...a) => this.assets.translate(k, a);
-    // Item.addInformation: ItemPotion (and splash), ItemLingeringPotion, ItemTippedArrow
-    if (registryName === 'potion' || registryName === 'splash_potion') this.potionTooltip(item, lines, 1);
-    else if (registryName === 'lingering_potion') this.potionTooltip(item, lines, 0.25);
-    else if (registryName === 'tipped_arrow') this.potionTooltip(item, lines, 0.125);
-    if (tag && tag.author && registryName === 'written_book') lines.push('§7' + t('book.byAuthor', tag.author));
-    if(registryName==='bundle'){const weight=bundleContentWeight(item,this);lines.push('§7'+t('item.minecraft.bundle.fullness',weight,64));lines.bundleTooltip={items:bundleContents(item,this),weight};}
-    if (registryName.startsWith('music_disc_')) lines.push('§7' + t(translationKey('item', registryName) + '.desc'));
-    if (!(tag?.HideFlags & 1)) for (const e of this.enchantments(item)) lines.push('§7' + this.enchantmentName(e.id, e.lvl));
-    if (tag && tag.display) {
-      if (tag.display.color !== undefined && registryName.startsWith('leather_')) {
-        lines.push(advanced ? '§7Color: #' + tag.display.color.toString(16).toUpperCase() : '§7§o' + t('item.dyed'));
-      }
-      if (Array.isArray(tag.display.Lore)) for (const l of tag.display.Lore) {
-        try { lines.push(chatToLegacy(JSON.parse(l), { parsed: true, style: { color: 'dark_purple', italic: true } })); } catch { /* Native tooltips ignore malformed JSON lore. */ }
-      }
+    const c=this.components(item);if(Object.hasOwn(c,'hide_tooltip'))return [];
+    const rarity=this.rarity(item),color={common:'white',uncommon:'yellow',rare:'aqua',epic:'light_purple'}[rarity]||'white';
+    const name=c.custom_name??c.item_name??{text:this.displayName(item)},lines=[chatToLegacy(name,{parsed:true,style:{color,...(c.custom_name!==undefined?{italic:true}:{})}})];
+    const t=(key,...args)=>this.assets.translate(key,args),registryName=this.name(item.id);
+    if(!Object.hasOwn(c,'hide_additional_tooltip')){
+      if(POTIONS.has(registryName))this.potionTooltip(item,lines,registryName==='lingering_potion'?.25:registryName==='tipped_arrow'?.125:1);
+      if(registryName==='bundle'){const weight=bundleContentWeight(item,this);lines.push('§7'+t('item.minecraft.bundle.fullness',weight,64));lines.bundleTooltip={items:bundleContents(item,this),weight};}
+      const book=c.written_book_content;if(registryName==='written_book'&&book?.author)lines.push('§7'+t('book.byAuthor',book.author));
+      if(registryName.startsWith('music_disc_'))lines.push('§7'+t(translationKey('item',registryName)+'.desc'));
+      if(registryName==='goat_horn'){const instrument=c.instrument,meta=ITEM_DATA_766.instruments[instrument?.instrumentId];if(meta)lines.push('§7'+t('instrument.'+meta.key.replace(':','.')));}
+      if(registryName==='crossbow'&&this.chargedProjectiles(item).length){const projectile=this.chargedProjectiles(item)[0];lines.push(t('item.minecraft.crossbow.projectile')+' ['+this.displayName(projectile)+']');if(advanced&&this.name(projectile.id)==='firework_rocket'){const more=[];this.rocketTooltip(this.component(projectile,'fireworks'),more);lines.push(...more.map(s=>'§7  '+s));}}
+      if(registryName==='firework_rocket')this.rocketTooltip(c.fireworks,lines);
+      if(registryName==='filled_map'&&advanced&&!this.maps.has(c.map_id))lines.push('§7'+t('filled_map.unknown'));
+      if(registryName==='firework_star'&&c.firework_explosion)this.fireworkTooltip(c.firework_explosion,lines);
+
     }
-    const weapon = { iron_sword: 6, wooden_sword: 4, stone_sword: 5, diamond_sword: 7, golden_sword: 4,
-      iron_axe: 9, wooden_axe: 7, stone_axe: 9, diamond_axe: 9, golden_axe: 7,
-      iron_shovel: 4.5, wooden_shovel: 2.5, stone_shovel: 3.5, diamond_shovel: 5.5, golden_shovel: 2.5,
-      iron_pickaxe: 4, wooden_pickaxe: 2, stone_pickaxe: 3, diamond_pickaxe: 5, netherite_sword:8,netherite_axe:10,netherite_pickaxe:6,netherite_shovel:6.5, golden_pickaxe: 2, trident: 9 };
-    if (!(tag?.HideFlags & 2) && weapon[registryName] !== undefined) {
-      const sharp = this.enchantLevel(item, 'sharpness');
-      const dmg = weapon[registryName] + (sharp > 0 ? 0.5 * sharp + 0.5 : 0);
-      lines.push('');
-      lines.push('§9' + t('attribute.modifier.plus.0', String(Math.round(dmg * 100) / 100), t(attributeKey('generic.attackDamage'))));
+    for(const stored of [true,false]){
+      const enchant=this.component(item,stored?'stored_enchantments':'enchantments');
+      if(enchant&&(enchant.show_in_tooltip??enchant.showInTooltip??enchant.showTooltip??true))for(const e of this.enchantments(item,stored))lines.push('§7'+this.enchantmentName(e.id,e.lvl));
     }
-    if (advanced && this.isDamageable(item) && damage > 0) {
-      lines.push(t('item.durability', this.maxDurability(item.id) - damage, this.maxDurability(item.id)));
-    }
-    if (advanced) lines.push('§8' + resource(registryName));
+    const dye=c.dyed_color;if(dye&&(dye.show_in_tooltip??dye.showTooltip??true))lines.push(advanced?'§7'+t('item.color',('#'+(dye.rgb??dye.color).toString(16).toUpperCase())):'§7§o'+t('item.dyed'));
+    for(const line of c.lore||[])lines.push(chatToLegacy(line,{parsed:true,style:{color:'dark_purple',italic:true}}));
+    this.attributeTooltip(item,lines);
+    if(c.unbreakable!==undefined&&(typeof c.unbreakable==='boolean'?c.unbreakable:c.unbreakable.show_in_tooltip??c.unbreakable.showTooltip??true))lines.push('§9'+t('item.unbreakable'));
+    if(advanced){if(this.isDamageable(item)&&this.damage(item)>0)lines.push(t('item.durability',this.maxDurability(item)-this.damage(item),this.maxDurability(item)));lines.push('§8'+resource(registryName));const n=Object.keys(c).length;if(n)lines.push('§8'+t('item.components',n));}
     return lines;
   }
 
-  // Use action: 'none' | 'eat' | 'drink' | 'block' | 'bow' | 'spear'
+  rocketTooltip(fireworks,lines) {if(!fireworks)return;const duration=fireworks.flight_duration??fireworks.flightDuration??0;if(duration>0)lines.push('§7'+this.assets.translate('item.minecraft.firework_rocket.flight')+' '+duration);for(const explosion of fireworks.explosions||[])this.fireworkTooltip(explosion,lines);}
+
+  fireworkTooltip(explosion,lines) {
+    const t=(key,...args)=>this.assets.translate(key,args),base='item.minecraft.firework_star.';
+    lines.push('§7'+t(base+'shape.'+explosion.shape));
+    const colors=values=>values.map(c=>t(base+(ITEM_DATA_766.fireworkColors[c]||'custom_color'))).join(', ');
+    if(explosion.colors?.length)lines.push('§7'+colors(explosion.colors));
+    const fade=explosion.fadeColors??explosion.fade_colors;if(fade?.length)lines.push('§7'+t(base+'fade_to')+' '+colors(fade));
+    if(explosion.hasTrail??explosion.has_trail)lines.push('§7'+t(base+'trail'));
+    if(explosion.hasTwinkle??explosion.has_twinkle)lines.push('§7'+t(base+'flicker'));
+  }
+
+  attributeTooltip(item,lines) {
+    const attrs=this.component(item,'attribute_modifiers')||{};if((attrs.show_in_tooltip??attrs.showTooltip??true)===false)return;
+    const own=attrs.modifiers??attrs.attributes??[],mods=own.length?own:ITEM_DATA_766.items[item.id]?.defaultAttributes?.modifiers||[],t=(key,...args)=>this.assets.translate(key,args),player=typeof this.player==='function'?this.player():this.player;
+    const uuid=v=>Array.isArray(v)?v.map(n=>(n>>>0).toString(16).padStart(8,'0')).join('').replace(/^(........)(....)(....)(....)(............)$/,'$1-$2-$3-$4-$5'):v;
+    const groups=['mainhand','offhand','feet','legs','chest','head','body'];
+    for(const group of groups){const selected=mods.filter(m=>{const s=(m.slot??'any').replace('_','');return s==='any'||s===group||s==='hand'&&['mainhand','offhand'].includes(group)||s==='armor'&&['feet','legs','chest','head'].includes(group);});if(!selected.length)continue;
+      lines.push('','§7'+t('item.modifiers.'+group));
+      for(const m of selected){
+        const type=m.type??ITEM_DATA_766.registries.attribute[m.typeId],op={add_value:0,add:0,add_multiplied_base:1,multiply_base:1,add_multiplied_total:2,multiply_total:2}[m.operation]??0;
+        let value=m.amount??m.value,equal=false;
+        if(player&&uuid(m.uuid)===ITEM_DATA_766.baseAttackDamageUuid){value+=(player.attributes?.get('generic.attackDamage')?.value??1)+(this.enchantLevel(item,'sharpness')>0?.5*this.enchantLevel(item,'sharpness')+.5:0);equal=true;}
+        else if(player&&uuid(m.uuid)===ITEM_DATA_766.baseAttackSpeedUuid){value+=player.attributes?.get('generic.attackSpeed')?.value??4;equal=true;}
+        const amount=op?value*100:type==='minecraft:generic.knockback_resistance'?value*10:value,fmt=Number(amount.toFixed(2)).toString();
+        if(equal)lines.push('§2 '+t('attribute.modifier.equals.'+op,fmt,t(attributeKey(type))));
+        else if(value>0)lines.push('§9'+t('attribute.modifier.plus.'+op,fmt,t(attributeKey(type))));
+        else if(value<0)lines.push('§c'+t('attribute.modifier.take.'+op,Number((-amount).toFixed(2)).toString(),t(attributeKey(type))));
+      }
+    }
+  }
+
   useAction(item) {
-    if (!item) return 'none';
-    const native = this.assets.data.creative.itemMechanics?.[item.id];
-    if (native) return native.action;
-    // 1.9+: potions are always drinkable (splash / lingering are separate items), swords no longer block, shields do
-    const name = this.name(item.id);
-    if (name === 'potion' || name === 'milk_bucket') return 'drink';
-    if (FOOD_NAMES.has(name)) return 'eat';
-    if (name === 'shield') return 'block';
-    if (name === 'bow') return 'bow';
-    if (name === 'trident') return 'spear';
-    return 'none';
+    if(!item)return 'none';const action=ITEM_DATA_766.items[item.id]?.action||'none';
+    if(!['none','eat'].includes(action))return action;
+    return this.component(item,'food')!==undefined?'eat':'none';
   }
-
   useDuration(item) {
-    if (!item) return 0;
-    if(this.name(item.id)==='goat_horn')return this.assets.data.creative.instruments?.[this.nbt(item)?.instrument]?.duration||0;
-    if (this.name(item.id) === 'crossbow') return this.crossbowChargeDuration(item) + 3;
-    const native = this.assets.data.creative.itemMechanics?.[item.id];
-    if (native) return native.duration;
-    const a = this.useAction(item);
-    if (a === 'eat' || a === 'drink') return this.name(item.id) === 'dried_kelp' ? 16 : 32;
-    if (a === 'block' || a === 'bow' || a === 'spear') return 72000;
-    return 0;
+    if(!item)return 0;const c=this.components(item),name=this.name(item.id),meta=ITEM_DATA_766.items[item.id];
+    if(c.food&&['eat','none'].includes(meta?.action))return Math.trunc(Math.fround(Math.fround(c.food.eat_seconds??c.food.secondsToEat??1.6)*20));
+    if(name==='crossbow')return this.crossbowChargeDuration(item)+3;
+    if(name==='goat_horn'){const instrument=c.instrument;return instrument?.data?.useDuration??ITEM_DATA_766.instruments[instrument?.instrumentId]?.duration??(typeof instrument==='string'?Object.values(ITEM_DATA_766.instruments).find(i=>i.key===instrument)?.duration:undefined)??meta?.duration??0;}
+    return meta?.action==='eat'?0:meta?.duration||0;
   }
-
-  isFood(item) { return !!item && (this.assets.data.creative.itemMechanics?.[item.id]?.food ?? FOOD_NAMES.has(this.name(item.id))); }
-  canAlwaysEat(item) { return !!this.assets.data.creative.itemMechanics?.[item?.id]?.alwaysEat; }
-  crossbowChargeDuration(item) { return 25 - 5 * this.enchantLevel(item, 'quick_charge'); }
-  crossbowCharged(item) { return !!this.nbt(item)?.Charged; }
+  isFood(item) {return !!item&&this.component(item,'food')!==undefined;}
+  canAlwaysEat(item) {const food=this.component(item,'food');return !!(food?.can_always_eat??food?.canAlwaysEat);}
+  crossbowChargeDuration(item) {return 25-5*this.enchantLevel(item,'quick_charge');}
+  chargedProjectiles(item) {const value=this.component(item,'charged_projectiles');return value?.projectiles??value??[];}
+  crossbowCharged(item) {return this.chargedProjectiles(item).length>0;}
 
   // ItemTool.getStrVsBlock
   strVsBlock(item, blockDef) {

@@ -1,3 +1,4 @@
+import {EFFECT_766,compareEffects766} from '../game/effects-1.20.6.js';
 import { SYSTEM_CHAT_TAG } from './chat-tags.js';
 import { fillToastSlots, drawMultilineToast } from './system-toast.js';
 import{renderBlockOverlay}from'../render/block-overlay.js';
@@ -384,7 +385,7 @@ export class Hud {
       if (this._isBurning()) this.renderFire(gui);
     }
     const distortion=g.settings.screenEffectScale??1;
-    if(g.effects.has(9)&&distortion<1&&env.portal>0){const strength=env.portal*(1-distortion),size=2-strength,tex=gui.tex('misc/nausea.png');if(tex){gui.setBlend('add');gui.quad(tex,W*(1-size)/2,H*(1-size)/2,W*(1+size)/2,H*(1+size)/2,0,0,1,1,[.2*strength,.4*strength,.2*strength,1]);gui.setBlend('alpha');}}
+    if(g.effects.has(EFFECT_766.nausea)&&distortion<1&&env.portal>0){const strength=env.portal*(1-distortion),size=2-strength,tex=gui.tex('misc/nausea.png');if(tex){gui.setBlend('add');gui.quad(tex,W*(1-size)/2,H*(1-size)/2,W*(1+size)/2,H*(1+size)/2,0,0,1,1,[.2*strength,.4*strength,.2*strength,1]);gui.setBlend('alpha');}}
     // Native scope zoom uses frame time, independent of GUI visibility.
     this.scopeScale = (this.scopeScale ?? 0.5) + (1.125 - (this.scopeScale ?? 0.5)) * Math.min(1, 0.5 * (g.deltaFrameTime ?? 1));
     if (!isScoping(g)) this.scopeScale = 0.5;
@@ -401,7 +402,7 @@ export class Hud {
       const tex = gui.tex('misc/powder_snow_outline.png');
       if (tex) gui.quad(tex, 0, 0, W, H, 0, 0, 1, 1, [1, 1, 1, frozenFraction(g.player.frozenTicks)]);
     }
-    if (env.portal > 0 && !g.effects.has(9)) this.renderPortalOverlay(gui, env.portal);
+    if (env.portal > 0 && !g.effects.has(EFFECT_766.nausea)) this.renderPortalOverlay(gui, env.portal);
 
     if (g.gameMode === 3) this.spectatorGui.render(gui); // GuiSpectator.renderTooltip (nothing until the menu opens)
     else this.renderHotbar(gui, partial);
@@ -602,12 +603,12 @@ export class Hud {
       if (i * 2 + 1 === armor) gui.blit(ICONS, x, armorY, 25, 9, 9, 9);
       if (i * 2 + 1 > armor) gui.blit(ICONS, x, armorY, 16, 9, 9, 9);
     }
-    const regen = g.effects.has(10) ? this.updateCounter % Math.ceil(maxHealth + 5) : -1;
+    const regen = g.effects.has(EFFECT_766.regeneration) ? this.updateCounter % Math.ceil(maxHealth + 5) : -1;
     let absLeft = absorption;
     const hardcore = g.hardcore ? 5 : 0;
     for (let i = Math.ceil((maxHealth + absorption) / 2) - 1; i >= 0; i--) {
       let u = 16;
-      if (g.effects.has(19)) u += 36; else if (g.effects.has(20)) u += 72; else if (g.player.frozenTicks >= 140) u += 126;
+      if (g.effects.has(EFFECT_766.poison)) u += 36; else if (g.effects.has(EFFECT_766.wither)) u += 72; else if (g.player.frozenTicks >= 140) u += 126;
       const b0 = flash ? 1 : 0;
       const row = Math.ceil((i + 1) / 10) - 1;
       const x = left + (i % 10) * 8;
@@ -620,8 +621,8 @@ export class Hud {
         if (i * 2 + 1 === lastHealth) gui.blit(ICONS, x, y, u + (u === 142 ? 45 : 63), 9 * hardcore, 9, 9);
       }
       if (absLeft > 0) {
-        if (absLeft === absorption && absorption % 2 === 1) gui.blit(ICONS, x, y, (g.effects.has(20) ? 133 : 169), 9 * hardcore, 9, 9);
-        else gui.blit(ICONS, x, y, (g.effects.has(20) ? 124 : 160), 9 * hardcore, 9, 9);
+        if (absLeft === absorption && absorption % 2 === 1) gui.blit(ICONS, x, y, (g.effects.has(EFFECT_766.wither) ? 133 : 169), 9 * hardcore, 9, 9);
+        else gui.blit(ICONS, x, y, (g.effects.has(EFFECT_766.wither) ? 124 : 160), 9 * hardcore, 9, 9);
         absLeft -= 2;
       } else {
         if (i * 2 + 1 < health) gui.blit(ICONS, x, y, u + 36, 9 * hardcore, 9, 9);
@@ -634,7 +635,7 @@ export class Hud {
       for (let i = 0; i < 10; i++) {
         let y = top;
         let u = 16, b4 = 0;
-        if (g.effects.has(17)) { u += 36; b4 = 13; }
+        if (g.effects.has(EFFECT_766.hunger)) { u += 36; b4 = 13; }
         if (g.saturation <= 0 && this.updateCounter % (food * 3 + 1) === 0) y = top + (rnd(3) - 1);
         const x = right - i * 8 - 9;
         gui.blit(ICONS, x, y, 16 + b4 * 9, 27, 9, 9);
@@ -790,13 +791,13 @@ export class Hud {
     const g=this.game;
     if(g.screens.current?.effectsShift)return;
     let good=0,bad=0;
-    for(const [id,e] of [...g.effects].sort((a,b)=>b[0]-a[0])) {
+    for(const [id,e] of [...g.effects].sort((a,b)=>-compareEffects766(a,b,g.items.effects))) {
       const def=g.items.effects[id];if(!def||e.showIcon===false)continue;
       const beneficial=def.beneficial??!def.bad;
       const x=gui.width-25*(beneficial?++good:++bad),y=beneficial?1:27;
       gui.blit('gui/container/inventory.png',x,y,e.ambient?165:141,166,24,24);
       let alpha=1;
-      if(!e.ambient&&e.duration<=200){const n=10-Math.floor(e.duration/20);alpha=Math.max(0,Math.min(.5,e.duration/50))+Math.cos(e.duration*Math.PI/5)*Math.max(0,Math.min(.25,n/10*.25));}
+      if(!e.ambient&&e.duration!==-1&&e.duration<=200){const n=10-Math.floor(e.duration/20);alpha=Math.max(0,Math.min(.5,e.duration/50))+Math.cos(e.duration*Math.PI/5)*Math.max(0,Math.min(.25,n/10*.25));}
       drawEffectIcon(g,gui,id,x+3,y+3,18,alpha);
     }
   }
