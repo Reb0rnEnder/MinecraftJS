@@ -37,7 +37,7 @@ public class ExtractSupport {
   if(memo.containsKey(id))return memo.get(id);Set<Object> values=new LinkedHashSet<>();memo.put(id,values);
   String[] key=id.split(":",2);String name="data/"+key[0]+"/tags/blocks/"+key[1]+".json";
   InputStream resource=ExtractSupport.class.getClassLoader().getResourceAsStream(name);
-  if(resource==null)resource=ExtractSupport.class.getClassLoader().getResourceAsStream("data/minecraft/datapacks/update_1_20/"+name);
+  for(String pack:new String[]{"update_1_20","update_1_21","trade_rebalance"})if(resource==null)resource=ExtractSupport.class.getClassLoader().getResourceAsStream("data/minecraft/datapacks/"+pack+"/"+name);
   try(InputStream input=resource){
    if(input==null)throw new FileNotFoundException(name);JsonObject definition=new JsonParser().parse(new InputStreamReader(input,java.nio.charset.StandardCharsets.UTF_8)).getAsJsonObject();
    for(JsonElement el:definition.getAsJsonArray("values")){String value=el.isJsonObject()?el.getAsJsonObject().get("id").getAsString():el.getAsString();if(value.startsWith("#"))values.addAll(blockTag(value.substring(1),registry,memo));else values.add(m(c("net.minecraft.core.Registry"),"get",c("net.minecraft.resources.ResourceLocation")).invoke(registry,c("net.minecraft.resources.ResourceLocation").getConstructor(String.class).newInstance(value)));}

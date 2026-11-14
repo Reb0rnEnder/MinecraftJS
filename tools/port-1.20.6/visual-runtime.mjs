@@ -106,3 +106,7 @@ console.log(JSON.stringify({
   collisionShapes: Object.keys(collisionShapes).length,
   selectionShapes: boxes.length
 }, null, 2));
+
+// Attachment prediction consumes these predicates independently of opacity.
+const {supportData}=await import('./support-data.mjs');
+await supportData({output:join(output,"blockCollisionShapes.json")});
