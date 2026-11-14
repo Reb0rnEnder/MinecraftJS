@@ -452,3 +452,9 @@ native codec. The complete target gate passes 148 tests, zero skipped.
 The reported Creative crash is independently confirmed: its tab dataset is an
 empty deferred milestone placeholder. Native Creative population/component
 extraction is in progress and is not claimed fixed by this commit.
+
+## 2026-11-14 — Current parity inventory
+
+The source at `eb6440f` includes the native Creative/component catalog fix and foliage/biome corrections. Their gate passes 162 target tests; 81 applicable foliage backport checks pass on older targets. See [Creative/UI evidence](ui-parity-1.20.6.md) and [foliage evidence](foliage-parity-1.20.6.md). The earlier paragraph saying Creative extraction is in progress describes its historical commit, not the current source.
+
+A read-only source/consumer audit now drives the [granular parity checklist](parity-checklist-1.20.6.md). The native stack fixture still exposes a real gap: decoded sword damage is 37, while the old Items consumer reports 0. Modern font providers, sign/content/equipment and account acceptance remain open. Existing Fabulous code was found, so older wholly-absent claims were corrected to exact-target acceptance pending. No new exhaustive gameplay/account/GPU-performance acceptance is claimed by this documentation pass.

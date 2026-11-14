@@ -8,6 +8,11 @@ target **1.20.6**. Full feature parity is still unfinished; later ledger gates
 cover inventory actions, authenticated sessions, resource packs, presentation
 families, chat/commands and inherited baseline gaps.
 
+The current [full-parity checklist](docs/parity-checklist-1.20.6.md) separates
+accepted work, partial implementations, confirmed missing consumers and unverified
+scenarios. Its [editable JSON ledger](docs/parity-checklist-1.20.6.json) drives the
+counts; checkpoint counts are not completion percentages.
+
 See the [transition plan](docs/transition-1.20.6.md) and
 [native transport evidence](docs/development-1.20.6.md) for remaining gates.
 The [ordered task ledger](docs/transition-1.20.6.tasks.json) tracks dependencies and acceptance criteria. The GitHub handoff audit repaired live recipe joining, encrypted transport, reconfiguration/transfer, chat/sound consumers and native GUI sprites. The next resource gate covers remaining atlases, fonts and pack overlays; item-specific and authenticated-account acceptance remains open.

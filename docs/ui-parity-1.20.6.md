@@ -23,7 +23,7 @@ The [1.20.5 release notes](https://www.minecraft.net/en-us/article/minecraft-jav
 - `tools/test-1.20.6-ui.mjs` checks geometry, option construction, native blur definition, resource-pack sprites/compatibility/keyboard actions and menu-credits lifecycle.
 - `PLAYWRIGHT_MODULE=... node --test tools/test-menu-blur-browser.mjs` executes WebGL 2, WebGPU and software rendering. The six-pass 31×19 test agrees with an independent box-filter reference within one RGBA channel value on WebGL and exactly on the other two backends. This is not a gameplay performance measurement.
 - Chrome smoke captures of Title, Options, Accessibility, Online, Credits & Attribution, and Resource Packs are in ignored `cache/port-1.20.6/ui-audit/`; no console/page errors or missing required textures were recorded.
-- Target gate: 152 tests pass, zero skipped. This source batch does not rebuild published distributions.
+- UI/Creative checkpoint gate: 152 tests passed, zero skipped. The later foliage checkpoint raises the recorded target gate to 162; see the [current parity checklist](parity-checklist-1.20.6.md). These source batches do not rebuild published distributions.
 
 ## Version applicability
 

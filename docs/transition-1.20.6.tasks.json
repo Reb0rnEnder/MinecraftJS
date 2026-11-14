@@ -313,7 +313,9 @@
         "1.20.6"
       ],
       "acceptance": "Display interpolation, block-entity predicates, powered heads, Fabulous and known vehicle issues have explicit accepted resolutions or remain visibly open.",
-      "evidence": []
+      "evidence": [
+        "2026-11-14 source audit: Fabulous implementation and older backend fixtures exist; full absence claims in inherited summaries were stale. Exact 1.20.6 acceptance remains open. Display entities and powered heads still lack the dedicated consumers listed in the detailed checklist."
+      ]
     },
     {
       "id": "P15",
@@ -356,5 +358,12 @@
         "2026-11-14 shared native connection exception presentation pushed to all nine older targets, with native-version Creative toolbar metadata/caps corrected on 1.16.5\u20131.19.4. Relevant old-target regressions: 76 passed, zero skipped. No distributions rebuilt."
       ]
     }
-  ]
+  ],
+  "detailedChecklist": "docs/parity-checklist-1.20.6.json",
+  "detailedChecklistMarkdown": "docs/parity-checklist-1.20.6.md",
+  "currentAudit": {
+    "date": "2026-11-14",
+    "sourceCommit": "eb6440fa6328a8480008b22b559a5a2ade35abae",
+    "note": "Current source review, not an exhaustive new gameplay run. Detailed checkpoint counts and release mappings are generated separately."
+  }
 }

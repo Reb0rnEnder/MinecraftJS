@@ -1,0 +1,1336 @@
+{
+  "schemaVersion": 1,
+  "updatedOn": "2026-11-14",
+  "target": "1.20.6",
+  "auditedSourceCommit": "eb6440fa6328a8480008b22b559a5a2ade35abae",
+  "fullMultiplayerParity": false,
+  "fullJavaClientParity": false,
+  "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
+  "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
+  "lastRecordedValidation": {
+    "targetTests": 162,
+    "targetFailures": 0,
+    "targetSkipped": 0,
+    "backportFoliageTests": 81,
+    "backportFailures": 0,
+    "backportSkipped": 0,
+    "source": "docs/foliage-parity-1.20.6.md",
+    "note": "Existing scoped checks at audited source; not a new exhaustive gameplay run."
+  },
+  "sourceInventory": "docs/transition-1.20.6.release-index.json",
+  "releaseReview": {
+    "topics": {
+      "1.20|Additions / Blocks / Cherry leaves|1": {
+        "disposition": "client_acceptance_pending",
+        "checkpoints": [
+          "BASE-09",
+          "CONTENT-08"
+        ],
+        "evidence": "Tint accepted; complete leaf/plant interaction/effect family still needs acceptance."
+      },
+      "1.20.2|Changes / General / Scoreboard|1": {
+        "disposition": "needs_client_work",
+        "checkpoints": [
+          "CHAT-02"
+        ],
+        "evidence": "Number-format/per-score display consumers absent."
+      },
+      "1.20.3|Changes / Blocks / Grass|1": {
+        "disposition": "accepted",
+        "checkpoints": [
+          "BASE-09"
+        ],
+        "evidence": "Native short_grass rename and tint dispatch checked against final target."
+      },
+      "1.20.3|Changes / Blocks / Jigsaw block|1": {
+        "disposition": "needs_client_work",
+        "checkpoints": [
+          "UI-06"
+        ],
+        "evidence": "Editor lacks target priorities/fields."
+      },
+      "1.20.5|Additions / Mobs / Armadillo|1": {
+        "disposition": "needs_client_work",
+        "checkpoints": [
+          "PAWS-01"
+        ],
+        "evidence": "No current model-selection path."
+      },
+      "1.20.5|Additions / Mobs / Wolf|1": {
+        "disposition": "needs_client_work",
+        "checkpoints": [
+          "PAWS-02",
+          "PAWS-03"
+        ],
+        "evidence": "Variant and body-armor consumers missing."
+      },
+      "1.20.5|Changes / General / Background|1": {
+        "disposition": "client_acceptance_pending",
+        "checkpoints": [
+          "BASE-10",
+          "UI-01"
+        ],
+        "evidence": "Main native menu redesign accepted; exceptional backgrounds remain open."
+      },
+      "1.20.5|Changes / General / Font|1": {
+        "disposition": "needs_client_work",
+        "checkpoints": [
+          "FONT-01",
+          "FONT-02",
+          "FONT-03"
+        ],
+        "evidence": "Native references/filter/Unihex providers absent."
+      },
+      "1.20.5|Changes / General / Item stack components|1": {
+        "disposition": "needs_client_work",
+        "checkpoints": [
+          "BASE-04",
+          "ITEM-01",
+          "ITEM-03"
+        ],
+        "evidence": "Wire codecs accepted; actual legacy item consumers ignore component values."
+      }
+    },
+    "fixes": {},
+    "unkeyedFixes": {}
+  },
+  "workflow": [
+    "Update this JSON for each accepted batch, including evidence and acceptance criterion.",
+    "accepted means the named scope has native evidence and relevant regression/live checks; it never certifies a broader family.",
+    "missing requires inspected implementation evidence; unverified is not an assertion that code is absent.",
+    "Map release entries independently; server-owned results still need client acceptance where relevant.",
+    "Run node tools/port-1.20.6/parity-status.mjs --write, then --check; push validated batches.",
+    "Do not declare full parity until required checkpoints, release dispositions and native acceptance/build gates are closed."
+  ],
+  "checkpoints": [
+    {
+      "id": "BASE-01",
+      "area": "Foundation",
+      "status": "accepted",
+      "priority": 0,
+      "phase": "P00",
+      "scope": "multiplayer",
+      "title": "Pinned target identity and native inputs",
+      "reason": "Exact 1.20.6 jars/mappings/version fields are pinned.",
+      "evidence": [
+        "tools/port-1.20.6/target.json",
+        "tools/port-1.20.6/prepare.mjs"
+      ],
+      "acceptance": "Hashes, protocol 766, data 3839 and resource/data formats 32/41 agree."
+    },
+    {
+      "id": "BASE-02",
+      "area": "Foundation",
+      "status": "accepted",
+      "priority": 0,
+      "phase": "P02",
+      "scope": "multiplayer",
+      "title": "Native registries, visual shapes and model extraction",
+      "reason": "Native data extraction and graphical milestone are recorded.",
+      "evidence": [
+        "docs/transition-1.20.6.tasks.json",
+        "tools/port-1.20.6/reports.mjs"
+      ],
+      "acceptance": "Reproduce the native registry/state/model baseline; this does not certify each animation."
+    },
+    {
+      "id": "BASE-03",
+      "area": "Foundation",
+      "status": "accepted",
+      "priority": 0,
+      "phase": "P03",
+      "scope": "multiplayer",
+      "title": "Anonymous NBT and native text component codecs",
+      "reason": "Native Java fixtures include primitive translation arguments and rejection cases.",
+      "evidence": [
+        "tools/port-1.20.6/component-fixtures.json",
+        "tools/test-1.20.6-primitives.mjs"
+      ],
+      "acceptance": "Native valid/rejected component vectors and live /locate remain correct."
+    },
+    {
+      "id": "BASE-04",
+      "area": "Foundation",
+      "status": "accepted",
+      "priority": 0,
+      "phase": "P04",
+      "scope": "multiplayer",
+      "title": "All 56 item-component wire types and native defaults",
+      "reason": "Codec support preserves patches; downstream item behavior is tracked separately.",
+      "evidence": [
+        "tools/test-1.20.6-components.mjs",
+        "tools/port-1.20.6/stack-fixtures.json"
+      ],
+      "acceptance": "Native stack bytes, defaults, removals and nested stacks round-trip."
+    },
+    {
+      "id": "BASE-05",
+      "area": "Foundation",
+      "status": "accepted",
+      "priority": 0,
+      "phase": "P05",
+      "scope": "multiplayer",
+      "title": "Configuration, exact known packs and registry replacement",
+      "reason": "Offline fixture restores all 196 omitted native registry values.",
+      "evidence": [
+        "tools/test-1.20.6-configuration.mjs",
+        "client/js/net/configuration-1.20.6.js"
+      ],
+      "acceptance": "Keep Configuration generations isolated and matching known-pack resolution correct."
+    },
+    {
+      "id": "BASE-06",
+      "area": "Foundation",
+      "status": "accepted",
+      "priority": 0,
+      "phase": "P06",
+      "scope": "multiplayer",
+      "title": "All 122 clientbound Play packet body decoders",
+      "reason": "Decoder coverage exists; semantic handler acceptance remains NET-01.",
+      "evidence": [
+        "client/js/net/play-schema-1.20.6.js",
+        "tools/test-1.20.6-play.mjs"
+      ],
+      "acceptance": "Native packet IDs/bodies and complete payload consumption remain checked."
+    },
+    {
+      "id": "BASE-07",
+      "area": "Foundation",
+      "status": "accepted",
+      "priority": 0,
+      "phase": "P07",
+      "scope": "multiplayer",
+      "title": "Graphical native join, movement and death/respawn milestone",
+      "reason": "Actual Chrome/native fixture acceptance is recorded for these sequences only.",
+      "evidence": [
+        "docs/development-1.20.6.md",
+        "docs/transition-1.20.6.tasks.json"
+      ],
+      "acceptance": "Local fixture renders terrain/HUD/entities, moves and completes death/respawn without decoder errors."
+    },
+    {
+      "id": "BASE-08",
+      "area": "Foundation",
+      "status": "accepted",
+      "priority": 0,
+      "phase": "P08",
+      "scope": "multiplayer",
+      "title": "Creative tab populations and component-preserving stack transfer",
+      "reason": "All eight feature masks and operator variants are native; 1694 stack byte comparisons pass.",
+      "evidence": [
+        "tools/test-1.20.6-creative.mjs",
+        "client/js/gui/creative-data-1.20.6.js",
+        "docs/ui-parity-1.20.6.md"
+      ],
+      "acceptance": "Every enabled tab renders; native server accepts the component-bearing book placement."
+    },
+    {
+      "id": "BASE-09",
+      "area": "Foundation",
+      "status": "accepted",
+      "priority": 0,
+      "phase": "P10",
+      "scope": "multiplayer",
+      "title": "Grass/cherry/azalea and native biome color correction",
+      "reason": "22 block cases, 64 biome cases and 192 noise samples have native oracles.",
+      "evidence": [
+        "docs/foliage-parity-1.20.6.md",
+        "tools/test-1.20.6-foliage.mjs"
+      ],
+      "acceptance": "Native colors, colormaps and registry IDs agree; no claim about all weather/fog."
+    },
+    {
+      "id": "BASE-10",
+      "area": "Foundation",
+      "status": "accepted",
+      "priority": 0,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "Menu redesign foundation and six-pass blur",
+      "reason": "Native layout fixtures, option arrays, sprites and three-backend blur readbacks exist.",
+      "evidence": [
+        "docs/ui-parity-1.20.6.md",
+        "tools/test-menu-blur-browser.mjs"
+      ],
+      "acceptance": "Keep the listed native geometry/blur cases green; exceptional screens stay open below."
+    },
+    {
+      "id": "BASE-11",
+      "area": "Foundation",
+      "status": "accepted",
+      "priority": 0,
+      "phase": "P10",
+      "scope": "multiplayer",
+      "title": "UUID server-pack lifecycle implementation",
+      "reason": "Push/pop/replace, statuses, rollback and cancellation have scoped regressions.",
+      "evidence": [
+        "client/js/game/serverpacks-1.20.6.js",
+        "tools/test-1.20.6-serverpacks.mjs"
+      ],
+      "acceptance": "Retain the tested lifecycle semantics; native pack content/overlays and live combinations remain open."
+    },
+    {
+      "id": "BASE-12",
+      "area": "Foundation",
+      "status": "accepted",
+      "priority": 0,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "Selection arrows, title-icon centering and decoder presentation",
+      "reason": "Native sprites, integer offsets and packet identities were corrected.",
+      "evidence": [
+        "tools/test-1.20.6-ui.mjs",
+        "tools/test-1.20.6-decode-errors.mjs"
+      ],
+      "acceptance": "Native arrow regions and JS error identity remain correct without invented Java stack frames."
+    },
+    {
+      "id": "FONT-01",
+      "area": "Fonts and resources",
+      "status": "missing",
+      "priority": 0,
+      "phase": "P10",
+      "scope": "multiplayer",
+      "title": "Recursive font reference providers",
+      "reason": "loadFontSets supports only space/bitmap/legacy_unicode/ttf and warns on references.",
+      "evidence": [
+        "client/js/gui/font-providers.js"
+      ],
+      "acceptance": "Resolve default/custom font reference graphs with pack precedence, cycle handling and fallback."
+    },
+    {
+      "id": "FONT-02",
+      "area": "Fonts and resources",
+      "status": "missing",
+      "priority": 0,
+      "phase": "P10",
+      "scope": "multiplayer",
+      "title": "Unihex providers and asset-index font resources",
+      "reason": "No unihex provider exists; native unifont resources are not equivalent to a TTF fallback.",
+      "evidence": [
+        "client/js/gui/font-providers.js",
+        "docs/transition-1.20.6.md"
+      ],
+      "acceptance": "Load native ZIP/hex glyphs, metrics and size overrides, including CJK and supplementary characters."
+    },
+    {
+      "id": "FONT-03",
+      "area": "Fonts and resources",
+      "status": "missing",
+      "priority": 0,
+      "phase": "P10",
+      "scope": "multiplayer",
+      "title": "Uniform/Japanese filters and native Font Settings navigation",
+      "reason": "Current force-Unicode skips provider families rather than evaluating native filters.",
+      "evidence": [
+        "client/js/gui/font-providers.js",
+        "client/js/gui/screens/options.js"
+      ],
+      "acceptance": "Both native font options select correct filtered providers, survive reload and appear on the native Language/Font pages."
+    },
+    {
+      "id": "PACK-01",
+      "area": "Fonts and resources",
+      "status": "missing",
+      "priority": 1,
+      "phase": "P10",
+      "scope": "multiplayer",
+      "title": "Resource-pack overlays and resource filters",
+      "reason": "Current loader lacks native overlay-directory/filter semantics.",
+      "evidence": [
+        "client/js/asset-source.js",
+        "client/js/resource-models.js"
+      ],
+      "acceptance": "Default/custom packs honor format-gated overlays and filtered resources, including reload and removal."
+    },
+    {
+      "id": "PACK-02",
+      "area": "Fonts and resources",
+      "status": "missing",
+      "priority": 1,
+      "phase": "P10",
+      "scope": "multiplayer",
+      "title": "Native atlas source JSON and paletted permutations",
+      "reason": "Current atlas packs loaded images but has no native atlas-source dispatcher or palette generation.",
+      "evidence": [
+        "client/js/render/atlas.js",
+        "client/js/assets.js"
+      ],
+      "acceptance": "Native source families and generated trim/palette sprites resolve under custom pack overrides."
+    },
+    {
+      "id": "PACK-03",
+      "area": "Fonts and resources",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P10",
+      "scope": "multiplayer",
+      "title": "Default-pack priority, pack import and focus behavior",
+      "reason": "Default remains fixed last; drag/drop and focus behavior remain in UI ledger.",
+      "evidence": [
+        "client/js/gui/screens/packs.js",
+        "docs/ui-parity-1.20.6.md"
+      ],
+      "acceptance": "Reordering Default changes effective resource priority; import/confirmation/focus match native."
+    },
+    {
+      "id": "PACK-04",
+      "area": "Fonts and resources",
+      "status": "unverified",
+      "priority": 2,
+      "phase": "P10",
+      "scope": "multiplayer",
+      "title": "Live multi-pack reload and Configuration/Play lifecycle matrix",
+      "reason": "Scoped implementation tests do not certify every real download/reload/server combination.",
+      "evidence": [
+        "tools/test-1.20.6-serverpacks.mjs",
+        "client/js/game/serverpacks-1.20.6.js"
+      ],
+      "acceptance": "Native server scenarios cover stacked required/optional packs, failed downloads, transfer, cancellation and recovery."
+    },
+    {
+      "id": "ITEM-01",
+      "area": "Items and inventory",
+      "status": "missing",
+      "priority": 0,
+      "phase": "P08",
+      "scope": "multiplayer",
+      "title": "Connect damage, names and stack metadata to actual item consumers",
+      "reason": "Read-only native damaged-sword fixture: decoded damage 37, Items.damage returns 0; named fixture has no legacy NBT view.",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/js/net/item-components-1.20.6.js",
+        "tools/port-1.20.6/stack-fixtures.json"
+      ],
+      "acceptance": "Actual HUD/tooltips/use/render consumers observe added, default and explicitly removed components, not absent legacy NBT."
+    },
+    {
+      "id": "ITEM-02",
+      "area": "Items and inventory",
+      "status": "missing",
+      "priority": 0,
+      "phase": "P08",
+      "scope": "multiplayer",
+      "title": "Native potion/effect, spawn-egg and instrument metadata",
+      "reason": "Creative catalog metadata remains empty/deferred; legacy potion/egg/instrument consumers still read it.",
+      "evidence": [
+        "client/js/game/items.js",
+        "tools/port-1.20.6/creative-data.mjs"
+      ],
+      "acceptance": "Native potion names/colors/effects, spawn-egg colors and horn durations/selection match effective stack components."
+    },
+    {
+      "id": "ITEM-03",
+      "area": "Items and inventory",
+      "status": "partial",
+      "priority": 0,
+      "phase": "P08",
+      "scope": "multiplayer",
+      "title": "Enchantments, attributes, food, use duration and cooldown consumers",
+      "reason": "Wire components exist; substantial gameplay/tooltip logic still consumes old NBT/name lists.",
+      "evidence": [
+        "client/js/game/items.js",
+        "client/js/game/interaction.js"
+      ],
+      "acceptance": "Test enchanted/removed/custom components in tooltips, damage/use calculations, animation, food and cooldown behavior."
+    },
+    {
+      "id": "ITEM-04",
+      "area": "Items and inventory",
+      "status": "missing",
+      "priority": 1,
+      "phase": "P08",
+      "scope": "multiplayer",
+      "title": "Dye, potion, firework, map and glint item colors from components",
+      "reason": "ItemRenderer.layerTint still reads legacy display/Explosion/Potion fields.",
+      "evidence": [
+        "client/js/render/item-renderer.js",
+        "client/js/game/items.js"
+      ],
+      "acceptance": "GUI, held and dropped variants use native component colors and explicit glint overrides."
+    },
+    {
+      "id": "ITEM-05",
+      "area": "Items and inventory",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P08",
+      "scope": "multiplayer",
+      "title": "Books, skull profiles, banners, bundles and container item contents",
+      "reason": "Existing consumers/helpers were inherited and require modern component integration.",
+      "evidence": [
+        "client/js/render/item-renderer.js",
+        "client/js/game/items.js",
+        "client/js/game/bundle.js"
+      ],
+      "acceptance": "Names/lore/books/profile skins/patterns/nested contents preserve native component semantics through use and reload."
+    },
+    {
+      "id": "ITEM-06",
+      "area": "Items and inventory",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P08",
+      "scope": "multiplayer",
+      "title": "Dynamic registry holders in Creative stacks",
+      "reason": "Catalog currently records native vanilla registry order, not arbitrary server remapping.",
+      "evidence": [
+        "client/js/gui/creative-data-1.20.6.js",
+        "tools/port-1.20.6/creative-data.mjs"
+      ],
+      "acceptance": "Reordered/custom registries resolve enchantments, instruments, paintings and holder-based contents by server ownership."
+    },
+    {
+      "id": "MENU-01",
+      "area": "Items and inventory",
+      "status": "partial",
+      "priority": 0,
+      "phase": "P08",
+      "scope": "multiplayer",
+      "title": "All workstation slot layouts, actions and component-bearing clicks",
+      "reason": "Menu IDs and four-slot Smithing are mapped; many inherited backgrounds/actions lack target acceptance.",
+      "evidence": [
+        "client/js/gui/screens/workstations.js",
+        "client/js/gui/screens/containers.js",
+        "tools/test-1.20.6-actions.mjs"
+      ],
+      "acceptance": "All 25 menu types have native slot geometry and live pickup/split/shift/drag/number/drop/rejection checks."
+    },
+    {
+      "id": "MENU-02",
+      "area": "Items and inventory",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P08",
+      "scope": "multiplayer",
+      "title": "Recipes, recipe book, ghost recipes and result previews",
+      "reason": "Recipe join drift was fixed; detailed target consumers remain open.",
+      "evidence": [
+        "client/js/gui/screens/workstations.js",
+        "client/js/game/game.js",
+        "tools/test-1.20.6-actions.mjs"
+      ],
+      "acceptance": "Target serializers, special recipes, unlocks, filters, ghost/output previews and server corrections work with native components."
+    },
+    {
+      "id": "ACT-01",
+      "area": "Interaction and physics",
+      "status": "partial",
+      "priority": 0,
+      "phase": "P08",
+      "scope": "multiplayer",
+      "title": "Native can_break/can_place_on Adventure components",
+      "reason": "Adventure helper still parses old text predicates; component wire support alone does not enforce permissions.",
+      "evidence": [
+        "client/js/game/adventure.js",
+        "client/js/net/item-components-1.20.6.js"
+      ],
+      "acceptance": "Native component predicates honor tags/state/block-entity data and preserve permitted container/item interactions."
+    },
+    {
+      "id": "ACT-02",
+      "area": "Interaction and physics",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P08",
+      "scope": "multiplayer",
+      "title": "Contextual placement and prediction side effects",
+      "reason": "Native extracted support predicates cover selected families, not every context-dependent canSurvive override.",
+      "evidence": [
+        "client/js/game/interaction.js",
+        "docs/dripleaf-placement-parity.md"
+      ],
+      "acceptance": "Unsupported placement/orientation, consumption, sound/swing and authoritative rejection match native for every newly supported family."
+    },
+    {
+      "id": "ACT-03",
+      "area": "Interaction and physics",
+      "status": "unverified",
+      "priority": 1,
+      "phase": "P08",
+      "scope": "multiplayer",
+      "title": "1.20.5 physics/interaction attribute combinations",
+      "reason": "Basic attribute consumers are implemented; edge combinations are not fully accepted.",
+      "evidence": [
+        "tools/test-1.20.6-actions.mjs",
+        "client/js/game/physics.js"
+      ],
+      "acceptance": "Reach/scale/step/jump/gravity/safe-fall/break-speed combinations match native, including poses and remote entities."
+    },
+    {
+      "id": "UI-01",
+      "area": "Menus and input",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "Title initial fade and exceptional menu/loading backgrounds",
+      "reason": "Main redesign landed; initial focus/fade, dimension and End-poem exceptions remain open.",
+      "evidence": [
+        "docs/ui-parity-1.20.6.md",
+        "client/js/gui/screens/menus.js",
+        "client/js/gui/screens/credits.js"
+      ],
+      "acceptance": "Native timing/background/focus for startup, join, dimension change, credits and all exceptional screens."
+    },
+    {
+      "id": "UI-02",
+      "area": "Menus and input",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "Options, GUI scale, tooltips and native child-page layouts",
+      "reason": "Option order is extracted, but full tooltip/scale/fixed-versus-scroll behavior is not accepted.",
+      "evidence": [
+        "docs/ui-parity-1.20.6.md",
+        "client/js/gui/screens/options.js"
+      ],
+      "acceptance": "Every target option has native text/order/geometry, dynamic GUI-scale bounds and working behavior at multiple sizes."
+    },
+    {
+      "id": "UI-03",
+      "area": "Menus and input",
+      "status": "unverified",
+      "priority": 2,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "Pause, multiplayer/safety, Controls, Chat and Accessibility screen matrix",
+      "reason": "Inherited screens have scoped fixes, not exact target-wide visual/input acceptance.",
+      "evidence": [
+        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/menus.js",
+        "docs/ui-parity-1.20.6.md"
+      ],
+      "acceptance": "Native reference/layout scenarios cover all screens at multiple GUI scales and short/narrow windows."
+    },
+    {
+      "id": "UI-04",
+      "area": "Menus and input",
+      "status": "unverified",
+      "priority": 2,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "Keyboard focus, narration, clipboard and touchscreen defaults",
+      "reason": "Existing helpers do not establish target-wide tab traversal and narrated labels.",
+      "evidence": [
+        "client/js/gui/widgets.js",
+        "docs/ui-parity-1.20.6.md"
+      ],
+      "acceptance": "Native traversal, validation, selection/clipboard, shortcut and narration scenarios pass for each editable screen."
+    },
+    {
+      "id": "UI-05",
+      "area": "Menus and input",
+      "status": "partial",
+      "priority": 2,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "Credits interpolation and End-poem behavior",
+      "reason": "JSON menu credits work; End-poem background and frame interpolation remain open.",
+      "evidence": [
+        "client/js/gui/screens/credits.js",
+        "docs/ui-parity-1.20.6.md"
+      ],
+      "acceptance": "Native poem/credits appearance, timing, skip/speed controls and return/respawn behavior."
+    },
+    {
+      "id": "UI-06",
+      "area": "Menus and input",
+      "status": "missing",
+      "priority": 1,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "Native jigsaw editor fields and packet values",
+      "reason": "Editor still has three old fields and no placement/selection priorities.",
+      "evidence": [
+        "client/js/gui/screens/jigsaw.js",
+        "client/js/net/packets.js"
+      ],
+      "acceptance": "Native 1.20.6 jigsaw name/target/pool/joint/priorities/generation controls and server updates match."
+    },
+    {
+      "id": "UI-07",
+      "area": "Menus and input",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "F3, HUD, bossbars, toast and advancement presentation acceptance",
+      "reason": "Target identity/sprites are fixed; all content/states still need comparison.",
+      "evidence": [
+        "client/js/game/game.js",
+        "tools/test-1.20.6-presentation.mjs",
+        "docs/debug-overlay-version-audit.md"
+      ],
+      "acceptance": "Native target information and layouts remain correct across dimensions, effects, game modes and resource reloads."
+    },
+    {
+      "id": "CHAT-01",
+      "area": "Text, commands and accounts",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "Command syntax for target component items and new argument types",
+      "reason": "Target IDs are generated; inherited parser/completion requires native 1.20.5 syntax acceptance.",
+      "evidence": [
+        "client/js/game/commands.js",
+        "client/js/net/play-codec-1.20.6.js"
+      ],
+      "acceptance": "Native parser oracle covers modern item/component predicates, selectors, suggestions, errors, ranges and server completions."
+    },
+    {
+      "id": "CHAT-02",
+      "area": "Text, commands and accounts",
+      "status": "missing",
+      "priority": 1,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "Scoreboard number formats and per-score display text",
+      "reason": "Packet fields arrive, but Scoreboard.onScore stores only numeric values.",
+      "evidence": [
+        "client/js/game/scoreboard.js",
+        "client/js/net/play-codec-1.20.6.js"
+      ],
+      "acceptance": "Blank/styled/fixed number formats, optional display names, resets and updates render like native."
+    },
+    {
+      "id": "CHAT-03",
+      "area": "Text, commands and accounts",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "Incoming chat trust, deletion, filtering and registry decorations on 766",
+      "reason": "1.19.4 verifier is reused through target adapters; exact target signed sessions need acceptance.",
+      "evidence": [
+        "client/js/net/chat-verifier-1.19.4.js",
+        "client/js/net/chat-state-1.20.6.js",
+        "tools/test-1.20.6-presentation.mjs"
+      ],
+      "acceptance": "Native target certificates/chains/decorations/acks/deletion/filtering produce correct trust UI without trusting system messages as signed player chat."
+    },
+    {
+      "id": "CHAT-04",
+      "area": "Text, commands and accounts",
+      "status": "missing",
+      "priority": 1,
+      "phase": "P09",
+      "scope": "multiplayer",
+      "title": "Authenticated outgoing chat and signed command arguments",
+      "reason": "Outgoing encoder accepts supplied signatures; complete key/session/argument signing is not implemented.",
+      "evidence": [
+        "client/js/net/chat-state-1.20.6.js",
+        "docs/parity-status-all-versions.md"
+      ],
+      "acceptance": "Real account session sends native session updates and valid chat/command signatures with native acknowledgements."
+    },
+    {
+      "id": "CHAT-05",
+      "area": "Text, commands and accounts",
+      "status": "missing",
+      "priority": 1,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "Reportable logs and authenticated report submission",
+      "reason": "Social screen exposes disabled reporting rather than native reporting workflow.",
+      "evidence": [
+        "client/js/gui/screens/social.js",
+        "docs/social-account-parity.md"
+      ],
+      "acceptance": "Native report selection/context/reasons and authenticated submission/cancellation/error handling are accepted."
+    },
+    {
+      "id": "CHAT-06",
+      "area": "Text, commands and accounts",
+      "status": "partial",
+      "priority": 2,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "Social history, account blocking and narrated interactions",
+      "reason": "Geometry has prior scoped corrections; account block-list integration/history gates remain incomplete.",
+      "evidence": [
+        "client/js/gui/screens/social.js",
+        "docs/social-account-parity.md"
+      ],
+      "acceptance": "Real account block list and native history/search/offline rows/focus/narration behave correctly."
+    },
+    {
+      "id": "NET-01",
+      "area": "Network and session acceptance",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P06",
+      "scope": "multiplayer",
+      "title": "Packet-to-consumer coverage for all 122 Play IDs",
+      "reason": "All bodies decode, but generic decoding is not proof of every renderer/game handler.",
+      "evidence": [
+        "client/js/net/play-codec-1.20.6.js",
+        "client/js/game/game.js",
+        "docs/transition-1.20.6.tasks.json"
+      ],
+      "acceptance": "Each native packet has a tested semantic consumer or a documented native no-op; include bundles/reconfiguration edge cases."
+    },
+    {
+      "id": "NET-02",
+      "area": "Network and session acceptance",
+      "status": "unverified",
+      "priority": 1,
+      "phase": "P09",
+      "scope": "multiplayer",
+      "title": "Real authenticated/encrypted 1.20.6 account login",
+      "reason": "Crypto vectors exist; actual valid account-backed session was not exercised.",
+      "evidence": [
+        "docs/development-1.20.6.md",
+        "tools/test-login-transport.mjs"
+      ],
+      "acceptance": "User-authorized real account session completes encryption/authentication and normal gameplay; do not fabricate this acceptance."
+    },
+    {
+      "id": "NET-03",
+      "area": "Network and session acceptance",
+      "status": "unverified",
+      "priority": 1,
+      "phase": "P09",
+      "scope": "multiplayer",
+      "title": "Real transfer/reconfiguration/custom-registry server sequence",
+      "reason": "Controlled tests exist; complete two-server graphical/account lifecycle acceptance is still pending.",
+      "evidence": [
+        "tools/test-1.20.6-session.mjs",
+        "client/js/net/configuration-1.20.6.js"
+      ],
+      "acceptance": "Two controlled servers transfer/reconfigure repeatedly with correct inventory/chat/cookies/packs/registries and no stale state."
+    },
+    {
+      "id": "NET-04",
+      "area": "Network and session acceptance",
+      "status": "unverified",
+      "priority": 2,
+      "phase": "P09",
+      "scope": "multiplayer",
+      "title": "Cancellation, timeouts, disconnects and reconnect stress",
+      "reason": "Individual guards and native error wording are implemented.",
+      "evidence": [
+        "tools/test-login-transport.mjs",
+        "tools/test-1.20.6-decode-errors.mjs"
+      ],
+      "acceptance": "Native phase-specific recovery and cleanup pass repeated real connection/loading/error/reconnect scenarios."
+    },
+    {
+      "id": "CONTENT-01",
+      "area": "Trails and Tales",
+      "status": "missing",
+      "priority": 0,
+      "phase": "P11",
+      "scope": "multiplayer",
+      "title": "Two-sided and hanging sign rendering/editing/wax state",
+      "reason": "Sign editor defaults to front text and renderer consumes Text1..Text4 rather than front_text/back_text.",
+      "evidence": [
+        "client/js/gui/screens/sign.js",
+        "client/js/render/tile-renderer.js",
+        "client/js/net/packets.js"
+      ],
+      "acceptance": "Both sides, hanging/standing/wall transforms, dye/glow/wax/filtering and native edit screen update the correct side."
+    },
+    {
+      "id": "CONTENT-02",
+      "area": "Trails and Tales",
+      "status": "missing",
+      "priority": 1,
+      "phase": "P11",
+      "scope": "multiplayer",
+      "title": "Archaeology brushing and suspicious-block client presentation",
+      "reason": "No dedicated brush/suspicious-block interaction path was found in current interaction/renderer consumers.",
+      "evidence": [
+        "client/js/game/interaction.js",
+        "client/js/render/tile-renderer.js"
+      ],
+      "acceptance": "Brush/cancel timing, stages, displayed item, sounds/particles and authoritative result match native."
+    },
+    {
+      "id": "CONTENT-03",
+      "area": "Trails and Tales",
+      "status": "missing",
+      "priority": 1,
+      "phase": "P11",
+      "scope": "multiplayer",
+      "title": "Decorated pot textures, contents, wobble and events",
+      "reason": "No dedicated decorated-pot block-entity path exists in TileRenderer.",
+      "evidence": [
+        "client/js/render/tile-renderer.js"
+      ],
+      "acceptance": "Sherd faces, stored item insertion/feedback, wobble/projectile break and reconnect use native block-entity data; no invented GUI."
+    },
+    {
+      "id": "CONTENT-04",
+      "area": "Trails and Tales",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P11",
+      "scope": "multiplayer",
+      "title": "Chiseled bookshelf hit-slot/contents interactions",
+      "reason": "Block/model data exists; slot-specific local interaction and visible content need target acceptance.",
+      "evidence": [
+        "client/js/game/interaction.js",
+        "client/js/render/tile-renderer.js"
+      ],
+      "acceptance": "Every shelf slot/rotation, insertion/removal and server rejection/reload matches native."
+    },
+    {
+      "id": "CONTENT-05",
+      "area": "Trails and Tales",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P11",
+      "scope": "multiplayer",
+      "title": "Smithing templates, trim previews and worn armor layers",
+      "reason": "Target menu ID/four slots exist; old smithing background and missing palette/component consumers remain.",
+      "evidence": [
+        "client/js/gui/screens/workstations.js",
+        "client/js/render/entity-renderer.js",
+        "client/js/render/item-renderer.js"
+      ],
+      "acceptance": "Upgrade/trim recipes, template slots, native preview, dyed/worn armor and pack-provided trim textures work."
+    },
+    {
+      "id": "CONTENT-06",
+      "area": "Trails and Tales",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P11",
+      "scope": "multiplayer",
+      "title": "Camel poses, transitions, dash and two-passenger riding",
+      "reason": "Existing keyframes/metadata are inherited; complete transition/control/attachment acceptance is absent.",
+      "evidence": [
+        "client/js/render/wild-mobs-1.19.4.js",
+        "client/js/game/entities.js"
+      ],
+      "acceptance": "Native sit/stand/dash transitions, rider offsets/control and held/equipped state match real server metadata."
+    },
+    {
+      "id": "CONTENT-07",
+      "area": "Trails and Tales",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P11",
+      "scope": "multiplayer",
+      "title": "Sniffer states, eggs/plants and associated effects",
+      "reason": "Sniffer keyframes exist; presence does not certify digging/transitions or egg/plant presentation.",
+      "evidence": [
+        "client/js/render/wild-mobs-1.19.4.js",
+        "client/js/game/entities.js"
+      ],
+      "acceptance": "Native state changes, baby proportions, egg stages, plants, sounds/particles and reload match; AI/growth stay server-owned."
+    },
+    {
+      "id": "CONTENT-08",
+      "area": "Trails and Tales",
+      "status": "unverified",
+      "priority": 2,
+      "phase": "P11",
+      "scope": "multiplayer",
+      "title": "Cherry/bamboo construction, rafts and new block placement families",
+      "reason": "Native data and foliage colors are present; every construction state/passenger/support case is not accepted.",
+      "evidence": [
+        "docs/foliage-parity-1.20.6.md",
+        "client/js/game/interaction.js",
+        "client/js/render/entity-renderer.js"
+      ],
+      "acceptance": "Target doors/trapdoors/fences/stairs/rafts and all new plants have native placement, collision, sounds and passenger transforms."
+    },
+    {
+      "id": "CONTENT-09",
+      "area": "Trails and Tales",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P11",
+      "scope": "multiplayer",
+      "title": "Calibrated sensors, resonance and target vibration effects",
+      "reason": "Inherited vibration implementation exists; calibrated/resonance scenarios remain open.",
+      "evidence": [
+        "client/js/render/particles.js",
+        "docs/parity-fix-tasks-1.19.4.md"
+      ],
+      "acceptance": "Native server events produce correct routes/delays/frequencies/textures/sounds without adding unrelated shrieker rings."
+    },
+    {
+      "id": "CONTENT-10",
+      "area": "Trails and Tales",
+      "status": "partial",
+      "priority": 2,
+      "phase": "P11",
+      "scope": "multiplayer",
+      "title": "Updated bat, shield pose, entity names and pearl feedback",
+      "reason": "Target extracted models exist, but inherited state/presentation adapters require comparison.",
+      "evidence": [
+        "client/js/render/entity-models.js",
+        "client/js/render/entity-renderer.js",
+        "docs/transition-1.20.6.md"
+      ],
+      "acceptance": "Each changed presentation family has exact-target state/animation/visual evidence."
+    },
+    {
+      "id": "PAWS-01",
+      "area": "Armored Paws",
+      "status": "missing",
+      "priority": 1,
+      "phase": "P12",
+      "scope": "multiplayer",
+      "title": "Armadillo model, metadata, roll/unroll and brushing effects",
+      "reason": "Current EntityRenderer._modelFor returns null for an armadillo.",
+      "evidence": [
+        "client/js/render/entity-renderer.js",
+        "client/js/game/entities.js"
+      ],
+      "acceptance": "Native standing/rolled/transitions/baby model, metadata, scute/brush effects and sounds render correctly."
+    },
+    {
+      "id": "PAWS-02",
+      "area": "Armored Paws",
+      "status": "missing",
+      "priority": 1,
+      "phase": "P12",
+      "scope": "multiplayer",
+      "title": "All wolf variants and variant-specific textures/layers",
+      "reason": "Wolf texture selection uses only tame/angry/base paths and ignores variant registry.",
+      "evidence": [
+        "client/js/render/entity-renderer.js",
+        "client/js/game/entities.js",
+        "client/js/net/known-pack-1.20.6.js"
+      ],
+      "acceptance": "All nine server-selected variants retain native tame/angry/collar/baby state through updates and reload."
+    },
+    {
+      "id": "PAWS-03",
+      "area": "Armored Paws",
+      "status": "missing",
+      "priority": 1,
+      "phase": "P12",
+      "scope": "multiplayer",
+      "title": "Wolf armor, dye and damage layers with repair/removal feedback",
+      "reason": "No wolf-armor equipment/render path is present in current consumers.",
+      "evidence": [
+        "client/js/render/entity-renderer.js",
+        "client/js/game/items.js"
+      ],
+      "acceptance": "Native body equipment, cracks/dye, repair/shears removal, component copying and effects match server state."
+    },
+    {
+      "id": "PAWS-04",
+      "area": "Armored Paws",
+      "status": "unverified",
+      "priority": 1,
+      "phase": "P12",
+      "scope": "multiplayer",
+      "title": "Horse/llama body equipment and final 1.20.6 inventory hotfix",
+      "reason": "Native target fields decode; slot/body interpretation has no final live acceptance.",
+      "evidence": [
+        "client/js/gui/screens/containers.js",
+        "client/js/render/entity-renderer.js",
+        "docs/transition-1.20.6.md"
+      ],
+      "acceptance": "Horse/trader-llama inventory and armor/body equipment survive updates/rejoin; replay MC-271109 client-visible case."
+    },
+    {
+      "id": "RENDER-01",
+      "area": "Inherited rendering and effects",
+      "status": "missing",
+      "priority": 1,
+      "phase": "P14",
+      "scope": "multiplayer",
+      "title": "Block/item/text display entities and interpolation",
+      "reason": "No dedicated display entity model/build path is present; extracted data is insufficient.",
+      "evidence": [
+        "client/js/render/entity-renderer.js",
+        "client/js/game/entities.js"
+      ],
+      "acceptance": "Native transforms, billboard/light/shadow/text/background/culling and tick interpolation update correctly."
+    },
+    {
+      "id": "RENDER-02",
+      "area": "Inherited rendering and effects",
+      "status": "missing",
+      "priority": 1,
+      "phase": "P14",
+      "scope": "multiplayer",
+      "title": "Powered dragon/piglin head animation",
+      "reason": "Placed dragon jaw has a fixed angle and no powered animation state path.",
+      "evidence": [
+        "client/js/render/tile-renderer.js"
+      ],
+      "acceptance": "Redstone/note events animate eligible heads at native timing and survive block updates/reload."
+    },
+    {
+      "id": "RENDER-03",
+      "area": "Inherited rendering and effects",
+      "status": "unverified",
+      "priority": 2,
+      "phase": "P14",
+      "scope": "multiplayer",
+      "title": "Exact 1.20.6 Fabulous routing/composition and resource overrides",
+      "reason": "Implementation and older 1.16/1.17 evidence exist; stale absent claims must not be reused.",
+      "evidence": [
+        "client/js/render/fabulous.js",
+        "docs/fabulous-rendering.md",
+        "tools/test-fabulous-browser.mjs"
+      ],
+      "acceptance": "Compare exact 1.20.6 shader/render routing and real scenes on WebGL2/WebGPU/software including reload/resize."
+    },
+    {
+      "id": "RENDER-04",
+      "area": "Inherited rendering and effects",
+      "status": "unverified",
+      "priority": 2,
+      "phase": "P14",
+      "scope": "multiplayer",
+      "title": "Floating boat/chest-boat walking and constrained camera behavior",
+      "reason": "Latest historical report remains unresolved; fresh current-target reproduction is required.",
+      "evidence": [
+        "docs/parity-status-all-versions.md",
+        "client/js/game/physics.js"
+      ],
+      "acceptance": "Same native/server scene proves stable collision/support and native camera limits; do not claim an old report is reproduced now."
+    },
+    {
+      "id": "RENDER-05",
+      "area": "Inherited rendering and effects",
+      "status": "unverified",
+      "priority": 2,
+      "phase": "P14",
+      "scope": "multiplayer",
+      "title": "Sky, fog, weather, water, altitude and lighting transitions",
+      "reason": "Foliage correction does not certify environment rendering.",
+      "evidence": [
+        "client/js/render/entity-renderer.js",
+        "client/js/game/game.js",
+        "docs/parity-status-all-versions.md"
+      ],
+      "acceptance": "Exact target dimension/biome/altitude/status-effect scenarios match native across reload and all backends."
+    },
+    {
+      "id": "FX-01",
+      "area": "Inherited rendering and effects",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "Every client-owned sound trigger and target sound mappings",
+      "reason": "Native registry and selected triggers pass; tools/buckets/bottles/new families remain open.",
+      "evidence": [
+        "docs/client-sound-trigger-audit.md",
+        "client/js/game/items.js",
+        "client/js/game/interaction.js"
+      ],
+      "acceptance": "Audit success/failure/player-excluded triggers and physical playback; do not count registry entries as behavior acceptance."
+    },
+    {
+      "id": "FX-02",
+      "area": "Inherited rendering and effects",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "Particle parameters, physics, new effects and item-use bursts",
+      "reason": "Generic packets and selected effects are adapted; new families/component effects need native acceptance.",
+      "evidence": [
+        "client/js/render/particles.js",
+        "client/js/net/play-codec-1.20.6.js"
+      ],
+      "acceptance": "Native type parameters, motion/collision/tints/lifetime and target damage/use/brush/armor effects match."
+    },
+    {
+      "id": "FX-03",
+      "area": "Inherited rendering and effects",
+      "status": "partial",
+      "priority": 2,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "Server tick/freeze/step presentation",
+      "reason": "Handlers store tick-rate/frozen/step fields; timing and animations need behavioral audit.",
+      "evidence": [
+        "client/js/game/game.js"
+      ],
+      "acceptance": "Native freeze/step/rate scenes update entities, particles, interpolation and UI correctly without breaking real-time controls."
+    },
+    {
+      "id": "VERIFY-01",
+      "area": "Acceptance and release",
+      "status": "partial",
+      "priority": 1,
+      "phase": "P01",
+      "scope": "multiplayer",
+      "title": "Disposition every release topic and fix reference",
+      "reason": "The 415-entry index includes headings, not 415 completed or missing features.",
+      "evidence": [
+        "docs/transition-1.20.6.release-index.json"
+      ],
+      "acceptance": "Each non-heading topic, MC fix and unkeyed fix gets client/server/experiment/product/superseded disposition and linked evidence."
+    },
+    {
+      "id": "VERIFY-02",
+      "area": "Acceptance and release",
+      "status": "unverified",
+      "priority": 2,
+      "phase": "P15",
+      "scope": "multiplayer",
+      "title": "Whole-target native server scenario matrix",
+      "reason": "Milestone browser runs cover specific cases only.",
+      "evidence": [
+        "docs/native-acceptance.md",
+        "docs/transition-1.20.6.tasks.json"
+      ],
+      "acceptance": "All required content/menu/interaction sequences and hotfix cases pass on disposable native 1.20.6 fixtures."
+    },
+    {
+      "id": "VERIFY-03",
+      "area": "Acceptance and release",
+      "status": "unverified",
+      "priority": 2,
+      "phase": "P15",
+      "scope": "multiplayer",
+      "title": "WebGL2, WebGPU and software visual acceptance",
+      "reason": "Isolated blur/Fabulous/readback tests do not certify every current gameplay path.",
+      "evidence": [
+        "tools/test-menu-blur-browser.mjs",
+        "tools/test-fabulous-browser.mjs"
+      ],
+      "acceptance": "Representative identical scenes, resource changes, depth/transparency/lighting and adapter switching pass target references."
+    },
+    {
+      "id": "VERIFY-04",
+      "area": "Acceptance and release",
+      "status": "unverified",
+      "priority": 2,
+      "phase": "P15",
+      "scope": "multiplayer",
+      "title": "Frame-time, memory and rendering performance on representative hardware",
+      "reason": "No current 600-FPS guarantee or Java comparison is established.",
+      "evidence": [
+        "docs/visual-parity-and-performance-todo.md"
+      ],
+      "acceptance": "Capture CPU/GPU/frame-time/memory under matched settings and high view distance; record hardware and measured limits."
+    },
+    {
+      "id": "VERIFY-05",
+      "area": "Acceptance and release",
+      "status": "partial",
+      "priority": 2,
+      "phase": "P16",
+      "scope": "multiplayer",
+      "title": "Every shared fix reviewed/backported to native eligible targets",
+      "reason": "Recent foliage/exception/toolbars backports passed; future/new fixes need the same review.",
+      "evidence": [
+        "docs/foliage-parity-1.20.6.md",
+        "docs/parity-status-all-versions.md"
+      ],
+      "acceptance": "For each change record eligibility, native differences, target commit and relevant regressions; never import later features."
+    },
+    {
+      "id": "VERIFY-06",
+      "area": "Acceptance and release",
+      "status": "missing",
+      "priority": 2,
+      "phase": "P16",
+      "scope": "multiplayer",
+      "title": "Coherent static/offline distributions from validated source heads",
+      "reason": "Recent 1.20.6 source batches have not rebuilt published distributions.",
+      "evidence": [
+        "docs/transition-1.20.6.tasks.json",
+        "README.md"
+      ],
+      "acceptance": "Build sources/assets/source SHAs/manifest/checksums together and smoke-test both static and offline artifacts."
+    },
+    {
+      "id": "EXP-01",
+      "area": "Enabled native experiments",
+      "status": "partial",
+      "priority": 2,
+      "phase": "P15",
+      "scope": "experiment",
+      "title": "Bundles and trade-rebalance experiment acceptance",
+      "reason": "Creative feature masks are native; enabled feature consumers/trades are not fully accepted.",
+      "evidence": [
+        "client/js/gui/creative-data-1.20.6.js",
+        "client/js/game/bundle.js"
+      ],
+      "acceptance": "Both enabled/disabled cases match target behavior with native components and server-owned trades."
+    },
+    {
+      "id": "EXP-02",
+      "area": "Enabled native experiments",
+      "status": "partial",
+      "priority": 2,
+      "phase": "P15",
+      "scope": "experiment",
+      "title": "Update 1.21 content available inside the 1.20.6 jar",
+      "reason": "Catalog gating exists; enabled blocks/mobs/items/menus/effects are not fully implemented or accepted.",
+      "evidence": [
+        "client/js/gui/creative-data-1.20.6.js",
+        "client/js/render/entity-renderer.js"
+      ],
+      "acceptance": "Keep default stable catalogs clean; explicitly accept enabled crafter/trial/vault/breeze/mace and related target-native experiments without later 1.21 behavior."
+    },
+    {
+      "id": "PRODUCT-01",
+      "area": "Other product scope",
+      "status": "missing",
+      "priority": 3,
+      "phase": "P15",
+      "scope": "product",
+      "title": "Integrated singleplayer, world creation and local simulation",
+      "reason": "Not implemented by the server-connected browser client.",
+      "evidence": [
+        "README.md",
+        "client/js/gui/screens/menus.js"
+      ],
+      "acceptance": "Separate product implementation/acceptance is required for literal full Java-client parity."
+    },
+    {
+      "id": "PRODUCT-02",
+      "area": "Other product scope",
+      "status": "missing",
+      "priority": 3,
+      "phase": "P15",
+      "scope": "product",
+      "title": "Native Realms and account-backed services outside multiplayer baseline",
+      "reason": "Current product scope excludes native Realms; a stub is not equality.",
+      "evidence": [
+        "README.md",
+        "client/js/gui/screens/menus.js"
+      ],
+      "acceptance": "Implement/test native Realms and remaining applicable services, or label the result multiplayer-only parity."
+    },
+    {
+      "id": "EXTRA-01",
+      "area": "Optional compatibility",
+      "status": "partial",
+      "priority": 3,
+      "phase": "P15",
+      "scope": "optional",
+      "title": "Full OptiFine shader-pack render graphs/reflections/shadows",
+      "reason": "User-requested compatibility remains partial and is not a vanilla feature.",
+      "evidence": [
+        "client/js/render/shader-pack.js",
+        "client/js/render/shader-stages.js",
+        "docs/visual-parity-and-performance-todo.md"
+      ],
+      "acceptance": "Track actual pack-stage support separately; never substitute synthetic effects for unsupported pack programs."
+    },
+    {
+      "id": "EXTRA-02",
+      "area": "Optional compatibility",
+      "status": "partial",
+      "priority": 3,
+      "phase": "P15",
+      "scope": "optional",
+      "title": "Eagler/Wisp/proxy interoperability outside native protocol",
+      "reason": "Arch has scoped acceptance; WebMC rejected online-mode capability before Configuration.",
+      "evidence": [
+        "docs/development-1.20.6.md",
+        "client/js/net/wisp.js"
+      ],
+      "acceptance": "Track real server/proxy regressions and protocol extensions separately from vanilla server acceptance."
+    }
+  ]
+}

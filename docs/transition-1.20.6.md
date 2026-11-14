@@ -1,16 +1,17 @@
 # Transition plan: Java 1.20.6
 
-Updated 2026-11-06. Work in the **existing `1.20.6` branch** at `/home/ender/minecraftjs-1.20.6`. The latest user instruction authorizes proceeding with this port now; it supersedes the earlier requirement to finish every inherited fix first. Those fixes remain tracked, and still block a full-parity claim.
+Updated 2026-11-14. Work in the **existing `1.20.6` branch** at `/home/ender/minecraftjs-1.20.6`. The latest user instruction authorizes proceeding with this port now; it supersedes the earlier requirement to finish every inherited fix first. Those fixes remain tracked, and still block a full-parity claim.
 
 The target is the final native 1.20.6 multiplayer client behavior, not a succession of seven separately shipped ports. Intermediate releases establish when behavior changed; the final jar resolves conflicts and hotfixes. Integrated singleplayer/world creation and Realms remain separate missing products. Optional shader/Eagler compatibility has its own ledger.
 
-The executable work order and completion state are in [transition-1.20.6.tasks.json](transition-1.20.6.tasks.json). Update both files after each accepted milestone. A task is complete only when its acceptance evidence exists.
+The milestone work order is in [transition-1.20.6.tasks.json](transition-1.20.6.tasks.json). The current granular [full-parity checklist](parity-checklist-1.20.6.md), generated from its [JSON evidence ledger](parity-checklist-1.20.6.json), tracks actual open implementations and acceptance scenarios. Update both files after each accepted milestone. A task is complete only when its acceptance evidence exists.
 
 ## Starting point and source authority
 
 - Client/server jars and both official mappings were hash-verified again on 2026-11-06. Native `version.json` confirms protocol **766**, data version **3839**, resource format **32**, data format **41**, Java **21**. Pins: [target.json](../tools/port-1.20.6/target.json) and [input/source record](transition-1.20.6.inputs.json).
-- `npm run test:1.20.6` currently passes **nine tests**, including phase IDs, Configuration, cookies, anonymous NBT, login fields and initial Play layout. The earlier isolated-server handshake is recorded in [development evidence](development-1.20.6.md); it was not rerun for this planning update.
-- Graphical gameplay, generated data and active Play consumers still use the **1.19.4 baseline**. `Reader766.slot` and `Writer766.slot` explicitly reject unsupported item stacks. Receiving raw chunk packets does not establish terrain decoding or rendering.
+- The last recorded `npm run test:1.20.6` source gate passes **162 tests**, zero failures/skips, at `eb6440f` (2026-11-14). Recent applicable foliage backports pass **81 tests** across nine older targets. See [foliage evidence](foliage-parity-1.20.6.md); these are scoped checks, not full gameplay acceptance.
+- The default graphical runtime now uses native **1.20.6** protocol/data/assets/identity. A real Chrome client has joined the isolated native server, rendered terrain/entities/HUD, moved and completed death/respawn. All 122 clientbound Play bodies and all 56 item-component wire types have codecs. Complete packet consumers and item-component gameplay/render consumers are still open.
+- Native Creative tabs/feature variants, menu/blur/sprite foundations and foliage colors are accepted within their documented scopes. Fonts/reference/filter/Unihex, major component consumers, new content and target-wide acceptance remain open.
 - Shared border/look-at, respawn, text/completion, picking, sound and basic Adventure corrections are forwarded. The inherited [parity inventory](parity-status-all-versions.md) remains open.
 
 All seven requested historical Minecraft Wiki pages were fetched successfully with **direct curl (HTTP 200)** after the browser tool restricted them. The suggested Fandom pages were also tried: browser requests failed and direct requests returned HTTP 403 challenge pages, which are not treated as article content. The Wiki topic/section and fix-reference inventory is linked below; selected relevant sections and the official release notes inform this plan. This does not mean every historical fix was behaviorally reviewed. For future source checks, try direct HTTP before declaring a page unavailable, and verify that the response is the article rather than a challenge page. Exact native code and runtime fixtures determine implementations; protocol schemas are secondary cross-checks.
@@ -122,7 +123,7 @@ Maintain a separate experiment matrix for bundles, trade rebalance and any updat
 
 Compare exact target screens/options/F3, tooltips, input/clipboard, narration and social interactions against native code and reference images. Include the jigsaw selection/placement-priority fields, out-of-game panorama and in-game menu blur/background exceptions, hide-splash options, focus rules and GUI-scale controls. Port native command argument/component/particle syntax, server completions, NBT chat styles/hover, chat trust, outgoing authenticated signing/command arguments and reporting. Keep system messages distinct from verified player chat; never fabricate a trust result.
 
-Carry forward missing display rendering/interpolation (including synchronized render-property updates and next-tick position/rotation updates), complete block-entity predicate/save views, powered heads, atlas gaps, Fabulous compositing and unresolved floating-boat walking. Re-test earlier fixes with target-native fields rather than copying old metadata indices or NBT assumptions. Every client audio/particle trigger still needs behavior acceptance; registry equality is insufficient.
+Carry forward missing display rendering/interpolation (including synchronized render-property updates and next-tick position/rotation updates), complete block-entity predicate/save views, powered heads, atlas gaps, exact-target validation of the existing Fabulous implementation and unresolved floating-boat walking. Re-test earlier fixes with target-native fields rather than copying old metadata indices or NBT assumptions. Every client audio/particle trigger still needs behavior acceptance; registry equality is insufficient.
 
 **Gate:** inherited findings have explicit dispositions and target tests. Optional OptiFine shader support remains separately described and does not replace native Fabulous rendering.
 
@@ -136,7 +137,9 @@ Review shared fixes for every applicable existing branch, newest to oldest; pres
 
 ## Immediate next work
 
-P02 through P07 are complete. The tracked/default runtime now targets 1.20.6, and a real Chrome client has joined the isolated vanilla server, rendered target terrain/entities/HUD, moved through the normal input/network path and completed a real death/respawn cycle. Start **P08** for inventory/action reconciliation and target physics attributes; creative/item-mechanics data intentionally remains a target-marked deferred surface rather than copied 1.19.4 data. Keep all 87 target regressions plus native regeneration, asset-build and live-browser gates green.
+P02 through P07 are complete at their named milestone scopes. **P10 remains the next milestone**, with native font references, Unihex, filter options and Language/Font Settings first. **P08 also has confirmed critical consumer gaps**: the native damaged-sword fixture decodes damage 37 while `Items.damage` reads 0; custom-name/enchantment/potion/equipment consumers still depend on missing legacy NBT. See `ITEM-01` onward in the detailed checklist.
+
+Next priorities are component consumers and fonts, then native sign data/editor and menu correctness; resource overlays/atlases, Trails & Tales/Armored Paws and inherited display/head work; authenticated services, enabled experiments, backend/scenario acceptance and coherent builds. Update the JSON checklist and regenerate its Markdown after every accepted batch. Seven of 17 broad milestones are done, five partial, five todo; no completion percentage is inferred. No branch is certified as full parity.
 
 ## Native implementation anchors
 
