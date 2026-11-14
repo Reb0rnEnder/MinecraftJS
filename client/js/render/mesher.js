@@ -189,7 +189,7 @@ export class Mesher {
     let r = 0, g = 0, b = 0;
     for (let dz = -1; dz <= 1; dz++) {
       for (let dx = -1; dx <= 1; dx++) {
-        const c = fn(this.world.getBiome(x + dx, z + dz), y);
+        const c = fn(this.world.getBiome(x + dx, z + dz), y, x + dx, z + dz);
         r += (c >> 16) & 255; g += (c >> 8) & 255; b += c & 255;
       }
     }
