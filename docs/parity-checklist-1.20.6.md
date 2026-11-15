@@ -1,6 +1,6 @@
 # Full-parity checklist — MinecraftJS 1.20.6
 
-Updated 2026-11-15. Audited source: `62a5d9730f3ed36a2e68b0f00f214e01508e6835`. **Full multiplayer parity: no. Full Java-client parity: no.**
+Updated 2026-11-15. Audited source: `664d1a4d89a85e44cbdbbe6565c2a65f14791296`. **Full multiplayer parity: no. Full Java-client parity: no.**
 
 Edit [docs/parity-checklist-1.20.6.json](parity-checklist-1.20.6.json), then run `node tools/port-1.20.6/parity-status.mjs --write`. This file is generated; `--check` catches stale counts, invalid evidence paths and false completion claims.
 
@@ -10,13 +10,13 @@ The native multiplayer foundation works. Substantial feature and acceptance work
 
 | Scope | Accepted checkpoints | Partial | Missing implementation | Needs verification | Total |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Native multiplayer + enabled native experiments | 11 | 37 | 14 | 15 | 77 |
+| Native multiplayer + enabled native experiments | 11 | 38 | 13 | 15 | 77 |
 | Separate products / optional compatibility | 0 | 2 | 2 | 0 | 4 |
-| All tracked checkpoints | 11 | 39 | 16 | 15 | 81 |
+| All tracked checkpoints | 11 | 40 | 15 | 15 | 81 |
 
 These **checkpoints differ in size and do not enumerate every defect**. 66 required checkpoints are still open. An honest percentage or ETA is unavailable until release coverage is triaged. Accepted rows cover exactly their named scope, not an entire subsystem.
 
-Latest target gate: **230 tests**, zero failures/skips. See [docs/shared-sign-ui-audit.md](shared-sign-ui-audit.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
+Latest target gate: **242 tests**, zero failures/skips. See [docs/jigsaw-parity-audit.md](jigsaw-parity-audit.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
 
 ## What the source audit actually found
 
@@ -87,7 +87,7 @@ A box is checked only for `accepted`. For each open row, implement/verify the co
 - [ ] **UI-03 — Pause, multiplayer/safety, Controls, Chat and Accessibility screen matrix** (P2; Needs verification; P13). Native reference/layout scenarios cover all screens at multiple GUI scales and short/narrow windows. Evidence/start: [client/js/gui/screens/options.js](../client/js/gui/screens/options.js), [client/js/gui/screens/menus.js](../client/js/gui/screens/menus.js).
 - [ ] **UI-04 — Keyboard focus, narration, clipboard and touchscreen defaults** (P2; Needs verification; P13). Native traversal, validation, selection/clipboard, shortcut and narration scenarios pass for each editable screen. Evidence/start: [client/js/gui/widgets.js](../client/js/gui/widgets.js), [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md).
 - [ ] **UI-05 — Credits interpolation and End-poem behavior** (P2; Partial; P13). Native poem/credits appearance, timing, skip/speed controls and return/respawn behavior. Evidence/start: [client/js/gui/screens/credits.js](../client/js/gui/screens/credits.js), [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md).
-- [ ] **UI-06 — Native jigsaw editor fields and packet values** (P1; Missing implementation; P13). Native 1.20.6 jigsaw name/target/pool/joint/priorities/generation controls and server updates match. Evidence/start: [client/js/gui/screens/jigsaw.js](../client/js/gui/screens/jigsaw.js), [client/js/net/packets.js](../client/js/net/packets.js).
+- [ ] **UI-06 — Native jigsaw editor fields and packet values** (P1; Partial; P13). Native 1.20.6 jigsaw name/target/pool/joint/priorities/generation controls and server updates match. Evidence/start: [client/js/gui/screens/jigsaw.js](../client/js/gui/screens/jigsaw.js), [client/js/net/packets.js](../client/js/net/packets.js).
 - [ ] **UI-07 — F3, HUD, bossbars, toast and advancement presentation acceptance** (P1; Partial; P13). Native target information and layouts remain correct across dimensions, effects, game modes and resource reloads. Evidence/start: [client/js/game/game.js](../client/js/game/game.js), [tools/test-1.20.6-presentation.mjs](../tools/test-1.20.6-presentation.mjs).
 
 ### Text, commands and accounts

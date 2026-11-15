@@ -2,20 +2,20 @@
   "schemaVersion": 1,
   "updatedOn": "2026-11-15",
   "target": "1.20.6",
-  "auditedSourceCommit": "62a5d9730f3ed36a2e68b0f00f214e01508e6835",
+  "auditedSourceCommit": "664d1a4d89a85e44cbdbbe6565c2a65f14791296",
   "fullMultiplayerParity": false,
   "fullJavaClientParity": false,
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 230,
+    "targetTests": 242,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
-    "source": "docs/shared-sign-ui-audit.md",
-    "note": "230 current target tests and all native-data checks pass. The 81 foliage backport checks are the earlier separate audit. This batch has 138 scoped older-version checks; no live GPU or Java FPS metrics are claimed."
+    "source": "docs/jigsaw-parity-audit.md",
+    "note": "242 current target tests and all native-data checks pass. This jigsaw batch also passes 93 scoped older-version jigsaw/Controls checks and all seven browser bundles. The 81 foliage backport checks are the earlier separate audit; no live GPU or Java FPS metrics are claimed."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {
@@ -43,11 +43,11 @@
         "evidence": "Native short_grass rename and tint dispatch checked against final target."
       },
       "1.20.3|Changes / Blocks / Jigsaw block|1": {
-        "disposition": "needs_client_work",
+        "disposition": "client_acceptance_pending",
         "checkpoints": [
           "UI-06"
         ],
-        "evidence": "Editor lacks target priorities/fields."
+        "evidence": "Target priority fields and packet order implemented and verified against native packet writers; live editor/server generation acceptance pending. See docs/jigsaw-parity-audit.md."
       },
       "1.20.5|Additions / Mobs / Armadillo|1": {
         "disposition": "needs_client_work",
@@ -667,15 +667,18 @@
     {
       "id": "UI-06",
       "area": "Menus and input",
-      "status": "missing",
+      "status": "partial",
       "priority": 1,
       "phase": "P13",
       "scope": "multiplayer",
       "title": "Native jigsaw editor fields and packet values",
-      "reason": "Editor still has three old fields and no placement/selection priorities.",
+      "reason": "Native name/target/pool/final-state/joint/priorities and Generate controls implemented, including release-specific older editors. Java-produced packet/resource fixtures and actual screen regressions pass. Live graphical/editor and server generation acceptance remain open.",
       "evidence": [
         "client/js/gui/screens/jigsaw.js",
-        "client/js/net/packets.js"
+        "client/js/net/packets.js",
+        "docs/jigsaw-parity-audit.md",
+        "tools/test-jigsaw-parity.mjs",
+        "tools/fixtures/jigsaw-native.json"
       ],
       "acceptance": "Native 1.20.6 jigsaw name/target/pool/joint/priorities/generation controls and server updates match."
     },

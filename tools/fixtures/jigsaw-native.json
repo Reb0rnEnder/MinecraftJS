@@ -1,0 +1,198 @@
+{
+  "clientJarSha1": "05b6f1c6b46a29d6ea82b4e0d42190e42402030f",
+  "integers": [
+    {
+      "input": "",
+      "value": 0
+    },
+    {
+      "input": "+2",
+      "value": 2
+    },
+    {
+      "input": "-2",
+      "value": -2
+    },
+    {
+      "input": "-2147483648",
+      "value": -2147483648
+    },
+    {
+      "input": "2147483648",
+      "value": 0
+    },
+    {
+      "input": " 2",
+      "value": 0
+    },
+    {
+      "input": "2x",
+      "value": 0
+    },
+    {
+      "input": "2\n",
+      "value": 0
+    },
+    {
+      "input": "１２",
+      "value": 12
+    },
+    {
+      "input": "١٢",
+      "value": 12
+    },
+    {
+      "input": "-०१",
+      "value": -1
+    },
+    {
+      "input": "²",
+      "value": 0
+    },
+    {
+      "input": "𝟙",
+      "value": 0
+    },
+    {
+      "input": "-0",
+      "value": 0
+    }
+  ],
+  "minecraftVersion": "1.20.6",
+  "oracleSha256": "e49da87115e90cd0f0d44bd681989bf6cb60f5e671955c3531ce86fae69e6e64",
+  "packets": [
+    {
+      "body": "fffff840001e1048106d696e6563726166743a616e63686f720d637573746f6d3a7461726765740b637573746f6d3a706f6f6c196d696e6563726166743a6f616b5f6c6f675b617869733d785d08726f6c6c61626c65f4ffffff0f25",
+      "joint": "rollable",
+      "kind": "update"
+    },
+    {
+      "body": "fffff840001e1048106d696e6563726166743a616e63686f720d637573746f6d3a7461726765740b637573746f6d3a706f6f6c196d696e6563726166743a6f616b5f6c6f675b617869733d785d07616c69676e6564f4ffffff0f25",
+      "joint": "aligned",
+      "kind": "update"
+    },
+    {
+      "body": "fffff840001e10480001",
+      "keep": true,
+      "kind": "generate",
+      "levels": 0
+    },
+    {
+      "body": "fffff840001e10480701",
+      "keep": true,
+      "kind": "generate",
+      "levels": 7
+    },
+    {
+      "body": "fffff840001e10481401",
+      "keep": true,
+      "kind": "generate",
+      "levels": 20
+    },
+    {
+      "body": "fffff840001e10480000",
+      "keep": false,
+      "kind": "generate",
+      "levels": 0
+    },
+    {
+      "body": "fffff840001e10480700",
+      "keep": false,
+      "kind": "generate",
+      "levels": 7
+    },
+    {
+      "body": "fffff840001e10481400",
+      "keep": false,
+      "kind": "generate",
+      "levels": 20
+    }
+  ],
+  "resources": [
+    {
+      "input": "",
+      "normalized": "minecraft:",
+      "valid": true
+    },
+    {
+      "input": ":",
+      "normalized": "minecraft:",
+      "valid": true
+    },
+    {
+      "input": "minecraft:",
+      "normalized": "minecraft:",
+      "valid": true
+    },
+    {
+      "input": "stone",
+      "normalized": "minecraft:stone",
+      "valid": true
+    },
+    {
+      "input": ":stone",
+      "normalized": "minecraft:stone",
+      "valid": true
+    },
+    {
+      "input": "minecraft:stone",
+      "normalized": "minecraft:stone",
+      "valid": true
+    },
+    {
+      "input": "custom:path/a.b-c_d",
+      "normalized": "custom:path/a.b-c_d",
+      "valid": true
+    },
+    {
+      "error": "Non [a-z0-9_.-] character in namespace of location: UPPER:stone",
+      "input": "UPPER:stone",
+      "valid": false
+    },
+    {
+      "error": "Non [a-z0-9/._-] character in path of location: minecraft:Stone",
+      "input": "minecraft:Stone",
+      "valid": false
+    },
+    {
+      "error": "Non [a-z0-9_.-] character in namespace of location: mine craft:stone",
+      "input": "mine craft:stone",
+      "valid": false
+    },
+    {
+      "error": "Non [a-z0-9/._-] character in path of location: a:b:c",
+      "input": "a:b:c",
+      "valid": false
+    },
+    {
+      "error": "Non [a-z0-9/._-] character in path of location: a:[]",
+      "input": "a:[]",
+      "valid": false
+    },
+    {
+      "input": "a:/",
+      "normalized": "a:/",
+      "valid": true
+    },
+    {
+      "input": "a:..",
+      "normalized": "a:..",
+      "valid": true
+    },
+    {
+      "error": "Non [a-z0-9/._-] character in path of location: a:\\\\path",
+      "input": "a:\\path",
+      "valid": false
+    },
+    {
+      "error": "Non [a-z0-9_.-] character in namespace of location: \\u0105:stone",
+      "input": "ą:stone",
+      "valid": false
+    },
+    {
+      "error": "Non [a-z0-9/._-] character in path of location: a:stone\\n",
+      "input": "a:stone\n",
+      "valid": false
+    }
+  ]
+}
