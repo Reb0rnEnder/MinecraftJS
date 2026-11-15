@@ -401,8 +401,8 @@ export function wolf() {
         q.mane.py = 16; q.mane.px = -1; q.mane.pz = -3; q.mane.rx = PI * 2 / 5; q.mane.ry = 0;
         q.body.py = 18; q.body.pz = 0; q.body.rx = PI / 4;
         q.tail.py = 21; q.tail.pz = 6;
-        q.leg1.px = -2.5; q.leg1.py = 22; q.leg1.pz = 2; q.leg1.rx = PI * 3 / 2;
-        q.leg2.px = 0.5; q.leg2.py = 22; q.leg2.pz = 2; q.leg2.rx = PI * 3 / 2;
+        q.leg1.px = -2.5; q.leg1.py = 22.7; q.leg1.pz = 2; q.leg1.rx = PI * 3 / 2;
+        q.leg2.px = 0.5; q.leg2.py = 22.7; q.leg2.pz = 2; q.leg2.rx = PI * 3 / 2;
         q.leg3.rx = 5.811947; q.leg3.px = -2.49; q.leg3.py = 17; q.leg3.pz = -4;
         q.leg4.rx = 5.811947; q.leg4.px = 0.51; q.leg4.py = 17; q.leg4.pz = -4;
       } else {
