@@ -5,6 +5,7 @@ import {decodeUtf8} from '../util/utf8.js';
 import {TRUETYPE_WASM} from '../lib/truetype-wasm.js';
 const location=(value,prefix='')=>{const i=value.indexOf(':');return i<0?'minecraft:'+prefix+value:value.slice(0,i+1)+prefix+value.slice(i+1);};
 export async function fontBytes(assets,id) {
+ if(assets.readResourceBytes)return assets.readResourceBytes(id);
  const [namespace,...rest]=id.split(':'),path=rest.join(':');
  for(const pack of assets.packs||[]){const name=pack.prefix+'assets/'+namespace+'/'+path;if(pack.zip?.has(name))return pack.zip.read(name);}
  return assets.source.bytes(namespace+'/'+path);
@@ -92,8 +93,11 @@ export async function loadFontSets(assets) {
  const result={};
  for(const name of ['default','alt']){
   const path='font/'+name+'.json',definitions=[];
+  if(assets.readResourceStack){for(const {bytes}of await assets.readResourceStack('minecraft:font/'+name+'.json'))try{definitions.push(JSON.parse(decodeUtf8(bytes)));}catch{}}
+  else{
   for(const pack of assets.packs||[])if(pack.has(path))try{definitions.push(JSON.parse(decodeUtf8(pack.read(path))));}catch(e){console.warn('Bad font definition',pack.id,path);}
   const base=await assets.source.bytes('minecraft/'+path);if(base)definitions.push(JSON.parse(decodeUtf8(base)));
+  }
   const providers=[];
   for(const definition of definitions)for(const def of definition.providers||[])try{
    const key='font:'+name+':'+providers.length;
