@@ -1,3 +1,4 @@
+import {appendAdventureTooltips,tooltipHideFlags} from './adventure-tooltip.js';
 // Item metadata helpers: names, tooltips, stack sizes, durability, use actions, tool speeds.
 import { simplify } from '../net/nbt.js';
 import { blocks } from '../world/blocks.js';
@@ -165,7 +166,7 @@ export class Items {
     if (tag && tag.author && item.id === 387) lines.push('§7' + t('book.byAuthor', tag.author));
     const rec = this.names.recordDescription(item.id);
     if (rec) lines.push('§7' + rec);
-    for (const e of this.enchantments(item)) {
+    if (!(tooltipHideFlags(item)&1)) for (const e of this.enchantments(item)) {
       const key = 'enchantment.' + (ENCH_NAMES[e.id] || 'unknown');
       const ename = this.assets.translate(key);
       const lvl = this.assets.translate('enchantment.level.' + e.lvl);
@@ -179,12 +180,13 @@ export class Items {
     }
     const weapon = { 267: 6, 268: 4, 272: 5, 276: 7, 283: 4, 258: 3, 271: 3, 275: 4, 279: 6, 286: 3,
       256: 2.5, 269: 1, 273: 2, 277: 4, 284: 1, 257: 4, 270: 2, 274: 3, 278: 5, 285: 2 };
-    if (weapon[item.id] !== undefined) {
+    if (!(tooltipHideFlags(item)&2) && weapon[item.id] !== undefined) {
       const sharp = this.enchantLevel(item, 16);
       const dmg = weapon[item.id] + 1 + sharp * 1.25;
       lines.push('');
       lines.push('§9' + t('attribute.modifier.plus.0', String(Math.round(dmg * 100) / 100), t('attribute.name.generic.attackDamage')));
     }
+    appendAdventureTooltips(this,item,lines);
     if (advanced && this.isDamageable(item) && item.damage > 0) {
       lines.push('Durability: ' + (this.maxDurability(item.id) - item.damage) + ' / ' + this.maxDurability(item.id));
     }
