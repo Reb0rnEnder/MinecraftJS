@@ -1,3 +1,4 @@
+import{signTextItems}from'./sign-text-layout.js';
 import{buildSignFrame}from'./sign-model.js';
 import{isShulkerBox,shulkerTexture}from'./shulker-box.js';
 import {DEFAULT_SKIN} from './default-skins.js';
@@ -451,14 +452,10 @@ export class TileEntityRenderer {
           const style = glowingSignStyle(t.data?.Color, !!t.data?.GlowingText, dist, isScoping(g));
           t.signOutlined = style.outlineColor !== undefined;
           t.signTextParams = [];
-          const items = [];
-          for (let j = 0; j < 4; j++) {
-            const line=font.wrap(lines[j]||'',hanging?60:90)[0]||'';
-            if (line) items.push({ text: line, x: -font.width(line) / 2, y: (j-2)*(hanging?9:10), ...style });
-          }
+          const items=signTextItems(font,lines,style,hanging?60:90,hanging?9:10);
           t.textMeshes = buildTextMeshes(this.device, font, items);
           const tn = new Node();
-          const f3 = 0.015625 * f;
+          const f3 = Math.fround(.015625*Math.fround(f));
           tn.position.set(0,hanging?Math.fround(-.32):.5*f,hanging?Math.fround(.063):.07*f);
           tn.scale.set(f3, -f3, f3);
           for (const m of t.textMeshes) {
