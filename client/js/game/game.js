@@ -128,7 +128,7 @@ export class Game {
     this.gui.guiScaleSetting = settings.guiScale;
     this.applyLanguage();
     this.gui.resize();
-    this.items = new Items(assets);
+    this.items = new Items(assets);this.items.registryTags=()=>this.tags;
     this.accounts = new Accounts(settings);
     this.socialBlocking=new SocialBlocking(this);
     this.accounts.onActiveChanged=()=>this.socialBlocking.sync();
