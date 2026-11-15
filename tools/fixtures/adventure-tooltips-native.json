@@ -1,0 +1,1529 @@
+{
+  "cases": [
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy stone",
+      "nbt": "{CanDestroy:[\"stone\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy minecraft:stone",
+      "nbt": "{CanDestroy:[\"minecraft:stone\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy MINECRAFT:stone",
+      "nbt": "{CanDestroy:[\"MINECRAFT:stone\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy :stone",
+      "nbt": "{CanDestroy:[\":stone\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy ١",
+      "nbt": "{CanDestroy:[\"١\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8tile.air.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy -1",
+      "nbt": "{CanDestroy:[\"-1\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8tile.air.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy 2147483648",
+      "nbt": "{CanDestroy:[\"2147483648\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy 1",
+      "nbt": "{CanDestroy:[\"1\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy +1",
+      "nbt": "{CanDestroy:[\"+1\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy 001",
+      "nbt": "{CanDestroy:[\"001\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy minecraft:missing",
+      "nbt": "{CanDestroy:[\"minecraft:missing\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8tile.air.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy 999",
+      "nbt": "{CanDestroy:[\"999\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8tile.air.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy STONE",
+      "nbt": "{CanDestroy:[\"STONE\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy stone trailing",
+      "nbt": "{CanDestroy:[\"stone trailing\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy stone[foo=bad]",
+      "nbt": "{CanDestroy:[\"stone[foo=bad]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy oak_log['axis'='x']",
+      "nbt": "{CanDestroy:[\"oak_log['axis'='x']\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy oak_log[axis=x]",
+      "nbt": "{CanDestroy:[\"oak_log[axis=x]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy oak_log[axis=invalid]",
+      "nbt": "{CanDestroy:[\"oak_log[axis=invalid]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy wheat[age=04]",
+      "nbt": "{CanDestroy:[\"wheat[age=04]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy wheat[age=8]",
+      "nbt": "{CanDestroy:[\"wheat[age=8]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy wheat[age=+4]",
+      "nbt": "{CanDestroy:[\"wheat[age=+4]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy wheat[age=4.0]",
+      "nbt": "{CanDestroy:[\"wheat[age=4.0]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy stone{a:1}",
+      "nbt": "{CanDestroy:[\"stone{a:1}\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy stone{bad:",
+      "nbt": "{CanDestroy:[\"stone{bad:\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy stone[]",
+      "nbt": "{CanDestroy:[\"stone[]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy stone[",
+      "nbt": "{CanDestroy:[\"stone[\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy stone[ ]",
+      "nbt": "{CanDestroy:[\"stone[ ]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy #minecraft:logs",
+      "nbt": "{CanDestroy:[\"#minecraft:logs\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy #custom:missing",
+      "nbt": "{CanDestroy:[\"#custom:missing\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy typed flags 8b",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:8b}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy typed flags 8s",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:8s}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy typed flags 8L",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:8L}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy typed flags 8.9f",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:8.9f}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy typed flags 8.9d",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:8.9d}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy typed flags -0.1f",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:-0.1f}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy typed flags \"8\"",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:\"8\"}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name",
+        "§8tile.stone.stone.name",
+        "§8tile.dirt.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy duplicates",
+      "nbt": "{CanDestroy:[\"stone\",\"stone\",\"dirt\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name",
+        "§8tile.stone.stone.name",
+        "§8tile.dirt.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy empty",
+      "nbt": "{CanDestroy:[]}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy wrong list type",
+      "nbt": "{CanDestroy:[1,2]}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy wrong tag type",
+      "nbt": "{CanDestroy:\"stone\"}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy flags 0",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:0}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy flags 8",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:8}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy flags 24",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:24}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanDestroy flags 255",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:255}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn stone",
+      "nbt": "{CanPlaceOn:[\"stone\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn minecraft:stone",
+      "nbt": "{CanPlaceOn:[\"minecraft:stone\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn MINECRAFT:stone",
+      "nbt": "{CanPlaceOn:[\"MINECRAFT:stone\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn :stone",
+      "nbt": "{CanPlaceOn:[\":stone\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn ١",
+      "nbt": "{CanPlaceOn:[\"١\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.air.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn -1",
+      "nbt": "{CanPlaceOn:[\"-1\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.air.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn 2147483648",
+      "nbt": "{CanPlaceOn:[\"2147483648\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn 1",
+      "nbt": "{CanPlaceOn:[\"1\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn +1",
+      "nbt": "{CanPlaceOn:[\"+1\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn 001",
+      "nbt": "{CanPlaceOn:[\"001\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn minecraft:missing",
+      "nbt": "{CanPlaceOn:[\"minecraft:missing\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.air.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn 999",
+      "nbt": "{CanPlaceOn:[\"999\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.air.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn STONE",
+      "nbt": "{CanPlaceOn:[\"STONE\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn stone trailing",
+      "nbt": "{CanPlaceOn:[\"stone trailing\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn stone[foo=bad]",
+      "nbt": "{CanPlaceOn:[\"stone[foo=bad]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn oak_log['axis'='x']",
+      "nbt": "{CanPlaceOn:[\"oak_log['axis'='x']\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn oak_log[axis=x]",
+      "nbt": "{CanPlaceOn:[\"oak_log[axis=x]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn oak_log[axis=invalid]",
+      "nbt": "{CanPlaceOn:[\"oak_log[axis=invalid]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn wheat[age=04]",
+      "nbt": "{CanPlaceOn:[\"wheat[age=04]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn wheat[age=8]",
+      "nbt": "{CanPlaceOn:[\"wheat[age=8]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn wheat[age=+4]",
+      "nbt": "{CanPlaceOn:[\"wheat[age=+4]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn wheat[age=4.0]",
+      "nbt": "{CanPlaceOn:[\"wheat[age=4.0]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn stone{a:1}",
+      "nbt": "{CanPlaceOn:[\"stone{a:1}\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn stone{bad:",
+      "nbt": "{CanPlaceOn:[\"stone{bad:\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn stone[]",
+      "nbt": "{CanPlaceOn:[\"stone[]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn stone[",
+      "nbt": "{CanPlaceOn:[\"stone[\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn stone[ ]",
+      "nbt": "{CanPlaceOn:[\"stone[ ]\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn #minecraft:logs",
+      "nbt": "{CanPlaceOn:[\"#minecraft:logs\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8missingno",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn #custom:missing",
+      "nbt": "{CanPlaceOn:[\"#custom:missing\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8missingno"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn typed flags 8b",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:8b}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn typed flags 8s",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:8s}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn typed flags 8L",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:8L}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn typed flags 8.9f",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:8.9f}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn typed flags 8.9d",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:8.9d}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn typed flags -0.1f",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:-0.1f}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn typed flags \"8\"",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:\"8\"}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8tile.stone.stone.name",
+        "§8tile.dirt.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn duplicates",
+      "nbt": "{CanPlaceOn:[\"stone\",\"stone\",\"dirt\"]}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8tile.stone.stone.name",
+        "§8tile.dirt.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn empty",
+      "nbt": "{CanPlaceOn:[]}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn wrong list type",
+      "nbt": "{CanPlaceOn:[1,2]}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn wrong tag type",
+      "nbt": "{CanPlaceOn:\"stone\"}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn flags 0",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:0}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canPlace",
+        "§8tile.stone.stone.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn flags 16",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:16}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn flags 24",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:24}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "CanPlaceOn flags 255",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:255}",
+      "normal": [
+        "tile.stone.stone.name§r"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "§9item.unbreakable",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name",
+        "",
+        "§7item.canPlace",
+        "§8tile.dirt.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "both sections and unbreakable",
+      "nbt": "{CanDestroy:[\"stone\"],CanPlaceOn:[\"dirt\"],Unbreakable:1b}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "§9item.unbreakable",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name",
+        "",
+        "§7item.canPlace",
+        "§8tile.dirt.name"
+      ]
+    },
+    {
+      "advanced": [
+        "tile.stone.stone.name§r (#0001/0)",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name",
+        "§8minecraft:stone",
+        "§8item.nbt_tags"
+      ],
+      "label": "hidden unbreakable",
+      "nbt": "{CanDestroy:[\"stone\"],Unbreakable:1b,HideFlags:4}",
+      "normal": [
+        "tile.stone.stone.name§r",
+        "",
+        "§7item.canBreak",
+        "§8tile.stone.stone.name"
+      ]
+    }
+  ],
+  "clientJarSha1": "0f275bc1547d01fa5f56ba34bdc87d981ee12daf",
+  "oracleSha256": "1a887954e42463b86451a7637898eb00753072b5dba69be1479c7d016b197cad",
+  "version": "1.12.2"
+}
