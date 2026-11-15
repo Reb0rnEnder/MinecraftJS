@@ -1,3 +1,4 @@
+import{signTextItems}from'./sign-text-layout.js';
 import{isShulkerBox,shulkerTexture}from'./shulker-box.js';
 import { isScoping } from '../game/spyglass.js';
 // Tile entity (block entity) rendering: chests, signs, skulls, banners, enchanting book, beacon beam, end portal,
@@ -462,15 +463,11 @@ export class TileEntityRenderer {
           const style = glowingSignStyle(t.data?.Color, !!t.data?.GlowingText, dist, isScoping(g));
           t.signOutlined = style.outlineColor !== undefined;
           t.signTextParams = [];
-          const items = [];
-          for (let j = 0; j < 4; j++) {
-            const line = lines[j] || '';
-            if (line) items.push({ text: line, x: -font.width(line) / 2, y: j * 10 - 20, ...style });
-          }
+          const items=signTextItems(font,lines,style);
           t.textMeshes = buildTextMeshes(this.device, font, items);
           const tn = new Node();
-          const f3 = 0.015625 * f;
-          tn.position.set(0, 0.5 * f, 0.07 * f + 0.001);
+          const f3 = Math.fround(.015625*Math.fround(f));
+          tn.position.set(0,Math.fround(.5*Math.fround(f)),Math.fround(Math.fround(.07)*Math.fround(f)));
           tn.scale.set(f3, -f3, f3);
           for (const m of t.textMeshes) {
             const params = colorParams(1, 1, 1, 1, 0.05, 1);
