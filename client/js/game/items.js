@@ -1,3 +1,4 @@
+import {appendAdventureTooltips,tooltipHideFlags} from './adventure-tooltip.js';
 const attributeKey = name => 'attribute.name.' + name.replace(/^minecraft:/, '').replace(/[A-Z]/g, c => '_' + c.toLowerCase());
 // Item metadata helpers: names, tooltips, stack sizes, durability, use actions, tool speeds.
 import { simplify } from '../net/nbt.js';
@@ -250,7 +251,7 @@ export class Items {
     else if (registryName === 'tipped_arrow') this.potionTooltip(item, lines, 0.125);
     if (tag && tag.author && registryName === 'written_book') lines.push('§7' + t('book.byAuthor', tag.author));
     if (registryName.startsWith('music_disc_')) lines.push('§7' + t(translationKey('item', registryName) + '.desc'));
-    if (!(tag?.HideFlags & 1)) for (const e of this.enchantments(item)) lines.push('§7' + this.enchantmentName(e.id, e.lvl));
+    if (!(tooltipHideFlags(item) & 1)) for (const e of this.enchantments(item)) lines.push('§7' + this.enchantmentName(e.id, e.lvl));
     if (tag && tag.display) {
       if (tag.display.color !== undefined && registryName.startsWith('leather_')) {
         lines.push(advanced ? '§7Color: #' + tag.display.color.toString(16).toUpperCase() : '§7§o' + t('item.dyed'));
@@ -263,12 +264,13 @@ export class Items {
       iron_axe: 9, wooden_axe: 7, stone_axe: 9, diamond_axe: 9, golden_axe: 7,
       iron_shovel: 4.5, wooden_shovel: 2.5, stone_shovel: 3.5, diamond_shovel: 5.5, golden_shovel: 2.5,
       iron_pickaxe: 4, wooden_pickaxe: 2, stone_pickaxe: 3, diamond_pickaxe: 5, netherite_sword:8,netherite_axe:10,netherite_pickaxe:6,netherite_shovel:6.5, golden_pickaxe: 2, trident: 9 };
-    if (!(tag?.HideFlags & 2) && weapon[registryName] !== undefined) {
+    if (!(tooltipHideFlags(item) & 2) && weapon[registryName] !== undefined) {
       const sharp = this.enchantLevel(item, 'sharpness');
       const dmg = weapon[registryName] + (sharp > 0 ? 0.5 * sharp + 0.5 : 0);
       lines.push('');
       lines.push('§9' + t('attribute.modifier.plus.0', String(Math.round(dmg * 100) / 100), t(attributeKey('generic.attackDamage'))));
     }
+    appendAdventureTooltips(this,item,lines);
     if (advanced && this.isDamageable(item) && damage > 0) {
       lines.push(t('item.durability', this.maxDurability(item.id) - damage, this.maxDurability(item.id)));
     }

@@ -1,0 +1,4961 @@
+{
+  "cases": [
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy stone",
+      "nbt": "{CanDestroy:[\"stone\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy minecraft:stone",
+      "nbt": "{CanDestroy:[\"minecraft:stone\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy MINECRAFT:stone",
+      "nbt": "{CanDestroy:[\"MINECRAFT:stone\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy :stone",
+      "nbt": "{CanDestroy:[\":stone\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy ١",
+      "nbt": "{CanDestroy:[\"١\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy -1",
+      "nbt": "{CanDestroy:[\"-1\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy 2147483648",
+      "nbt": "{CanDestroy:[\"2147483648\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy 1",
+      "nbt": "{CanDestroy:[\"1\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy +1",
+      "nbt": "{CanDestroy:[\"+1\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy 001",
+      "nbt": "{CanDestroy:[\"001\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy minecraft:missing",
+      "nbt": "{CanDestroy:[\"minecraft:missing\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy 999",
+      "nbt": "{CanDestroy:[\"999\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy STONE",
+      "nbt": "{CanDestroy:[\"STONE\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy stone trailing",
+      "nbt": "{CanDestroy:[\"stone trailing\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy stone[foo=bad]",
+      "nbt": "{CanDestroy:[\"stone[foo=bad]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.oak_log"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy oak_log['axis'='x']",
+      "nbt": "{CanDestroy:[\"oak_log['axis'='x']\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.oak_log"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.oak_log"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy oak_log[axis=x]",
+      "nbt": "{CanDestroy:[\"oak_log[axis=x]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.oak_log"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy oak_log[axis=invalid]",
+      "nbt": "{CanDestroy:[\"oak_log[axis=invalid]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.wheat"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy wheat[age=04]",
+      "nbt": "{CanDestroy:[\"wheat[age=04]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.wheat"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy wheat[age=8]",
+      "nbt": "{CanDestroy:[\"wheat[age=8]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.wheat"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy wheat[age=+4]",
+      "nbt": "{CanDestroy:[\"wheat[age=+4]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.wheat"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy wheat[age=4.0]",
+      "nbt": "{CanDestroy:[\"wheat[age=4.0]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy stone{a:1}",
+      "nbt": "{CanDestroy:[\"stone{a:1}\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy stone{bad:",
+      "nbt": "{CanDestroy:[\"stone{bad:\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy stone[]",
+      "nbt": "{CanDestroy:[\"stone[]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy stone[",
+      "nbt": "{CanDestroy:[\"stone[\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy stone[ ]",
+      "nbt": "{CanDestroy:[\"stone[ ]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy #minecraft:logs",
+      "nbt": "{CanDestroy:[\"#minecraft:logs\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy #custom:missing",
+      "nbt": "{CanDestroy:[\"#custom:missing\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanDestroy typed flags 8b",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:8b}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanDestroy typed flags 8s",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:8s}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanDestroy typed flags 8L",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:8L}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanDestroy typed flags 8.9f",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:8.9f}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanDestroy typed flags 8.9d",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:8.9d}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanDestroy typed flags -0.1f",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:-0.1f}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanDestroy typed flags \"8\"",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:\"8\"}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.dirt"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy duplicates",
+      "nbt": "{CanDestroy:[\"stone\",\"stone\",\"dirt\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.dirt"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy empty",
+      "nbt": "{CanDestroy:[]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy wrong list type",
+      "nbt": "{CanDestroy:[1,2]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanDestroy wrong tag type",
+      "nbt": "{CanDestroy:\"stone\"}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanDestroy flags 0",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:0}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanDestroy flags 8",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:8}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanDestroy flags 24",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:24}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanDestroy flags 255",
+      "nbt": "{CanDestroy:[\"stone\"],HideFlags:255}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn stone",
+      "nbt": "{CanPlaceOn:[\"stone\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn minecraft:stone",
+      "nbt": "{CanPlaceOn:[\"minecraft:stone\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn MINECRAFT:stone",
+      "nbt": "{CanPlaceOn:[\"MINECRAFT:stone\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn :stone",
+      "nbt": "{CanPlaceOn:[\":stone\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn ١",
+      "nbt": "{CanPlaceOn:[\"١\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn -1",
+      "nbt": "{CanPlaceOn:[\"-1\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn 2147483648",
+      "nbt": "{CanPlaceOn:[\"2147483648\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn 1",
+      "nbt": "{CanPlaceOn:[\"1\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn +1",
+      "nbt": "{CanPlaceOn:[\"+1\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn 001",
+      "nbt": "{CanPlaceOn:[\"001\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn minecraft:missing",
+      "nbt": "{CanPlaceOn:[\"minecraft:missing\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn 999",
+      "nbt": "{CanPlaceOn:[\"999\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn STONE",
+      "nbt": "{CanPlaceOn:[\"STONE\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn stone trailing",
+      "nbt": "{CanPlaceOn:[\"stone trailing\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn stone[foo=bad]",
+      "nbt": "{CanPlaceOn:[\"stone[foo=bad]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.oak_log"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn oak_log['axis'='x']",
+      "nbt": "{CanPlaceOn:[\"oak_log['axis'='x']\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.oak_log"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.oak_log"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn oak_log[axis=x]",
+      "nbt": "{CanPlaceOn:[\"oak_log[axis=x]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.oak_log"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn oak_log[axis=invalid]",
+      "nbt": "{CanPlaceOn:[\"oak_log[axis=invalid]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.wheat"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn wheat[age=04]",
+      "nbt": "{CanPlaceOn:[\"wheat[age=04]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.wheat"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn wheat[age=8]",
+      "nbt": "{CanPlaceOn:[\"wheat[age=8]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.wheat"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn wheat[age=+4]",
+      "nbt": "{CanPlaceOn:[\"wheat[age=+4]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.wheat"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn wheat[age=4.0]",
+      "nbt": "{CanPlaceOn:[\"wheat[age=4.0]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn stone{a:1}",
+      "nbt": "{CanPlaceOn:[\"stone{a:1}\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn stone{bad:",
+      "nbt": "{CanPlaceOn:[\"stone{bad:\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn stone[]",
+      "nbt": "{CanPlaceOn:[\"stone[]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn stone[",
+      "nbt": "{CanPlaceOn:[\"stone[\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn stone[ ]",
+      "nbt": "{CanPlaceOn:[\"stone[ ]\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn #minecraft:logs",
+      "nbt": "{CanPlaceOn:[\"#minecraft:logs\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn #custom:missing",
+      "nbt": "{CanPlaceOn:[\"#custom:missing\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "text": "missingno"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn typed flags 8b",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:8b}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn typed flags 8s",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:8s}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn typed flags 8L",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:8L}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn typed flags 8.9f",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:8.9f}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn typed flags 8.9d",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:8.9d}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn typed flags -0.1f",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:-0.1f}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn typed flags \"8\"",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:\"8\"}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.dirt"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn duplicates",
+      "nbt": "{CanPlaceOn:[\"stone\",\"stone\",\"dirt\"]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.dirt"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn empty",
+      "nbt": "{CanPlaceOn:[]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn wrong list type",
+      "nbt": "{CanPlaceOn:[1,2]}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "1"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn wrong tag type",
+      "nbt": "{CanPlaceOn:\"stone\"}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn flags 0",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:0}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn flags 16",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:16}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn flags 24",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:24}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "2"
+          ]
+        }
+      ],
+      "label": "CanPlaceOn flags 255",
+      "nbt": "{CanPlaceOn:[\"stone\"],HideFlags:255}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "blue",
+          "translate": "item.unbreakable"
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.dirt"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "3"
+          ]
+        }
+      ],
+      "label": "both sections and unbreakable",
+      "nbt": "{CanDestroy:[\"stone\"],CanPlaceOn:[\"dirt\"],Unbreakable:1b}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "color": "blue",
+          "translate": "item.unbreakable"
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canPlace"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.dirt"
+        }
+      ]
+    },
+    {
+      "advanced": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        },
+        {
+          "color": "dark_gray",
+          "text": "minecraft:stone"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "item.nbt_tags",
+          "with": [
+            "3"
+          ]
+        }
+      ],
+      "label": "hidden unbreakable",
+      "nbt": "{CanDestroy:[\"stone\"],Unbreakable:1b,HideFlags:4}",
+      "normal": [
+        {
+          "color": "white",
+          "extra": [
+            {
+              "translate": "block.minecraft.stone"
+            }
+          ],
+          "text": ""
+        },
+        {
+          "text": ""
+        },
+        {
+          "color": "gray",
+          "translate": "item.canBreak"
+        },
+        {
+          "color": "dark_gray",
+          "translate": "block.minecraft.stone"
+        }
+      ]
+    }
+  ],
+  "clientJarSha1": "37fd3c903861eeff3bc24b71eed48f828b5269c8",
+  "oracleSha256": "1a887954e42463b86451a7637898eb00753072b5dba69be1479c7d016b197cad",
+  "version": "1.16.5"
+}

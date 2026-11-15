@@ -1,3 +1,4 @@
+import {parseJavaInteger} from '../util/java-integer.js';
 import {getBlock,getStateProperties} from '../world/blocks.js';
 import {parseSnbt} from '../net/snbt.js';
 
@@ -52,12 +53,21 @@ export function adventurePredicate(text){
   }catch{return null;}
 }
 
+// BlockStateParser resolves integer properties through Property.getValue.
+export function adventurePropertyValue(block,name,value){
+  const property=block.stateProperties?.find(p=>p.name===name);if(!property)return null;
+  let normalized=value;
+  if(property.type==='int'){const n=parseJavaInteger(value);if(n===null)return null;normalized=String(n);}
+  const values=property.values?.map(String)??(property.type==='bool'?['true','false']:Array.from({length:property.num_values},(_,i)=>String(i)));
+  return values.includes(normalized)?normalized:null;
+}
+
 export function matchesAdventurePredicate(predicate,block,state,tags,blockEntityNbt){
   const p=typeof predicate==='string'?adventurePredicate(predicate):predicate;if(!p||!block)return false;
   if(p.tag){if(!tags?.contains('blocks',p.id,block.id))return false;}
   else if(blockName(block)!==p.id)return false;
   const props=getStateProperties(state);
-  if(!Object.entries(p.properties).every(([key,value])=>Object.hasOwn(props,key)&&String(props[key])===value))return false;
+  if(!Object.entries(p.properties).every(([key,value])=>Object.hasOwn(props,key)&&String(props[key])===adventurePropertyValue(block,key,value)))return false;
   return p.nbt===null||matchesAdventureNbt(p.nbt,blockEntityNbt);
 }
 
