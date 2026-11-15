@@ -1,3 +1,4 @@
+import {appendAdventureTooltips} from './adventure-tooltip.js';
 import {itemComponentValues766} from '../net/item-components-1.20.6.js';
 import {ITEM_DATA_766} from './item-data-1.20.6.js';
 import{bundleContents,bundleContentWeight}from'./bundle.js';
@@ -164,8 +165,8 @@ export class Items {
     return e ? e.lvl : 0;
   }
 
-  tooltip(item, advanced = false) {
-    const c=this.components(item);if(Object.hasOwn(c,'hide_tooltip'))return [];
+  tooltip(item, advanced = false, creative = false) {
+    const c=this.components(item);if(!creative&&Object.hasOwn(c,'hide_tooltip'))return [];
     const rarity=this.rarity(item),color={common:'white',uncommon:'yellow',rare:'aqua',epic:'light_purple'}[rarity]||'white';
     const name=c.custom_name??c.item_name??{text:this.displayName(item)},lines=[chatToLegacy(name,{parsed:true,style:{color,...(c.custom_name!==undefined?{italic:true}:{})}})];
     const t=(key,...args)=>this.assets.translate(key,args),registryName=this.name(item.id);
@@ -189,6 +190,7 @@ export class Items {
     for(const line of c.lore||[])lines.push(chatToLegacy(line,{parsed:true,style:{color:'dark_purple',italic:true}}));
     this.attributeTooltip(item,lines);
     if(c.unbreakable!==undefined&&(typeof c.unbreakable==='boolean'?c.unbreakable:c.unbreakable.show_in_tooltip??c.unbreakable.showTooltip??true))lines.push('§9'+t('item.unbreakable'));
+    appendAdventureTooltips(this,item,lines);
     if(advanced){if(this.isDamageable(item)&&this.damage(item)>0)lines.push(t('item.durability',this.maxDurability(item)-this.damage(item),this.maxDurability(item)));lines.push('§8'+resource(registryName));const n=Object.keys(c).length;if(n)lines.push('§8'+t('item.components',n));}
     return lines;
   }

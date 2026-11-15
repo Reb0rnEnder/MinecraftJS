@@ -2,20 +2,20 @@
   "schemaVersion": 1,
   "updatedOn": "2026-11-15",
   "target": "1.20.6",
-  "auditedSourceCommit": "36da55b8303edc8c0a2bce24f8218d127e8f0f14",
+  "auditedSourceCommit": "92b4b4410a5db1438bbdef73f96de6ad79f89880",
   "fullMultiplayerParity": false,
   "fullJavaClientParity": false,
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 323,
+    "targetTests": 414,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
-    "source": "docs/adventure-components-1.20.6.md",
-    "note": "323 current target tests and all native-data checks pass. Adventure backport eligibility review: 517 passing older-version checks, with their native formats preserved. The preceding jigsaw batch passed 93 older GUI checks; foliage counts are historical and separate. No live graphical/FPS certification."
+    "source": "docs/adventure-tooltip-parity.md",
+    "note": "Native-data gates and final 414 target tests pass. This follow-up passes 1352 older Adventure/tooltip tests and all ten browser bundles. Earlier foliage/jigsaw counts are historical and separate; no live graphics/FPS certification."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {
@@ -173,10 +173,12 @@
       "phase": "P05",
       "scope": "multiplayer",
       "title": "Configuration, exact known packs and registry replacement",
-      "reason": "Offline fixture restores all 196 omitted native registry values.",
+      "reason": "Offline fixture restores all 196 omitted native registry values. Follow-up fixes stale 1.19.4 fallback tag IDs with target-native jar/registry data; membership, ordering and server replacement checks pass.",
       "evidence": [
         "tools/test-1.20.6-configuration.mjs",
-        "client/js/net/configuration-1.20.6.js"
+        "client/js/net/configuration-1.20.6.js",
+        "tools/port-1.20.6/default-tags.mjs",
+        "tools/test-native-tags-1.20.6.mjs"
       ],
       "acceptance": "Keep Configuration generations isolated and matching known-pack resolution correct."
     },
@@ -550,13 +552,15 @@
       "phase": "P08",
       "scope": "multiplayer",
       "title": "Native can_break/can_place_on Adventure components",
-      "reason": "Effective can_break/can_place_on components now drive actual Adventure mining and item use. Native 76-stack/state/NBT fixtures and five integration regressions pass, including optional range and NBT wire corrections. Native full block-entity metadata reconstruction, permission tooltips and live acceptance remain open.",
+      "reason": "Effective component permissions and native permission tooltips are implemented. The extended 81-stack oracle covers target tooltips, native Creative flags, optional wire fields and state/NBT matching; older native name/integer parsing is corrected and backported. Complete native block-entity metadata reconstruction and live acceptance remain open.",
       "evidence": [
         "client/js/game/adventure.js",
         "client/js/net/item-components-1.20.6.js",
         "docs/adventure-components-1.20.6.md",
         "tools/test-adventure.mjs",
-        "tools/fixtures/adventure-1.20.6.json"
+        "tools/fixtures/adventure-1.20.6.json",
+        "docs/adventure-tooltip-parity.md",
+        "tools/test-adventure-tooltips.mjs"
       ],
       "acceptance": "Native component predicates honor tags/state/block-entity data and preserve permitted container/item interactions."
     },

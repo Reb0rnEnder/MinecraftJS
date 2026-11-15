@@ -28,10 +28,11 @@ public class ExtractAdventure1206 extends ExtractCreative1206 {
  }
  public static void main(String[] args)throws Exception{
   loadMappings(Path.of(args[1]));m(c("net.minecraft.SharedConstants"),"tryDetectVersion").invoke(null);m(c("net.minecraft.server.Bootstrap"),"bootStrap").invoke(null);
-  Object rawLookup=m(c("net.minecraft.data.registries.VanillaRegistries"),"createLookup").invoke(null),lookup=blockLookup(rawLookup);stackRegistries=registryAccess(rawLookup,Path.of(args[2]));
+  Object rawLookup=m(c("net.minecraft.data.registries.VanillaRegistries"),"createLookup").invoke(null),lookup=blockLookup(ExtractItemUx1206.tooltipLookup(rawLookup));stackRegistries=registryAccess(rawLookup,Path.of(args[2]));
   Object ops=m(c("net.minecraft.resources.RegistryOps"),"create",DynamicOps.class,c("net.minecraft.core.HolderLookup$Provider")).invoke(null,JsonOps.INSTANCE,lookup);
-  Object blocks=reg("BLOCK");Map<String,Object> blockProperties=new TreeMap<>();List<Object> propertyTypes=new ArrayList<>();
+  Object blocks=reg("BLOCK");Map<String,Object> blockProperties=new TreeMap<>(),blockNames=new TreeMap<>();List<Object> propertyTypes=new ArrayList<>();
   for(Object block:(Iterable<?>)blocks){
+   blockNames.put(m(c("net.minecraft.core.Registry"),"getKey",Object.class).invoke(blocks,block).toString().replace("minecraft:",""),call(block,"getDescriptionId",new Class<?>[]{}));
    Map<String,Integer> props=new TreeMap<>();Object definition=call(block,"getStateDefinition",new Class<?>[]{});
    for(Object property:(Collection<?>)call(definition,"getProperties",new Class<?>[]{})){
     List<Comparable> allowed=new ArrayList<>((Collection<? extends Comparable>)call(property,"getPossibleValues",new Class<?>[]{}));Collections.sort(allowed);List<String> names=new ArrayList<>();for(Comparable value:allowed)names.add((String)call(property,"getName",new Class<?>[]{Comparable.class},value));
@@ -56,8 +57,10 @@ public class ExtractAdventure1206 extends ExtractCreative1206 {
     }
     if(nbtMatches){matched=true;break;}
    }
-   cases.add(Map.of("label",entry.get("label").getAsString(),"wire",stack((cur)stack,lookup),"matched",matched));
+   Map<String,Object> output=new LinkedHashMap<>();output.put("label",entry.get("label").getAsString());output.put("wire",stack((cur)stack,lookup));output.put("matched",matched);
+   Object context=m(c("net.minecraft.world.item.Item$TooltipContext"),"of",c("net.minecraft.core.HolderLookup$Provider")).invoke(null,lookup);Codec componentCodec=(Codec)f(c("net.minecraft.network.chat.ComponentSerialization"),"CODEC").get(null);
+   for(String mode:entry.get("label").getAsString().startsWith("tooltip")?new String[]{"NORMAL","ADVANCED","NORMAL_CREATIVE","ADVANCED_CREATIVE"}:new String[]{"NORMAL","ADVANCED"}){Object flag=f(c("net.minecraft.world.item.TooltipFlag"),mode.split("_")[0]).get(null);if(mode.endsWith("_CREATIVE"))flag=call(flag,"asCreative",new Class<?>[]{});List<Object> lines=new ArrayList<>();for(Object line:(List<?>)m(c("net.minecraft.world.item.ItemStack"),"getTooltipLines",c("net.minecraft.world.item.Item$TooltipContext"),c("net.minecraft.world.entity.player.Player"),c("net.minecraft.world.item.TooltipFlag")).invoke(stack,context,null,flag))lines.add(componentCodec.encodeStart(JsonOps.INSTANCE,line).getOrThrow());output.put(mode.toLowerCase(Locale.ROOT),lines);}cases.add(output);
   }
-  Files.writeString(Path.of(args[0]),new Gson().toJson(Map.of("cases",cases,"properties",blockProperties,"propertyTypes",propertyTypes)));
+  Files.writeString(Path.of(args[0]),new Gson().toJson(Map.of("cases",cases,"properties",blockProperties,"propertyTypes",propertyTypes,"blockNames",blockNames)));
  }
 }

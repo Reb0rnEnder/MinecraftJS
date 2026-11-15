@@ -1087,7 +1087,7 @@ export class CreativeScreen extends ContainerScreen {
     for (const f of this.fields) f.render(gui);
     const cursor = this.inv.cursor;
     if (cursor) this.game.itemRenderer.drawItem(gui, cursor, mx - 8, my - 8);
-    else if (hoverGrid) gui.tooltip(this._tooltip(hoverGrid), mx, my);
+    else if (hoverGrid) gui.tooltip(this._tooltip(hoverGrid,true), mx, my);
     else if (this.hovered !== null && this.container.get(this.hovered)) gui.tooltip(this._tooltip(this.container.get(this.hovered)), mx, my);
     else {
       const t = this._tabAt(mx, my,true);
@@ -1096,8 +1096,8 @@ export class CreativeScreen extends ContainerScreen {
     }
   }
 
-  _tooltip(it) {
-    const items = this.game.items, lines = items.tooltip(it, this.game.settings.advancedItemTooltips);
+  _tooltip(it,creativeSlot=false) {
+    const items = this.game.items, lines = items.tooltip(it, this.game.settings.advancedItemTooltips,creativeSlot);
     if (this.tabLabel() === 'search') {
       let group = this.catalog.tabOfId.get(it.id);
       if (items.name(it.id) === 'enchanted_book') {

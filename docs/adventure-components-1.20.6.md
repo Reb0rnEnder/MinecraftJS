@@ -1,5 +1,7 @@
 # Adventure component parity — 1.20.6
 
+Follow-up: [native tooltip and registry audit](adventure-tooltip-parity.md) extends this initial 76-stack/323-test checkpoint to 81 stacks and 414 tests, adds native permission tooltips, and corrects fallback tags. The counts below describe the initial batch.
+
 2026-11-15. The target still used the 1.19.4 CanDestroy/CanPlaceOn NBT parser for actual Adventure permissions. Those lists cannot grant permissions in 1.20.6: this release uses effective `can_break` / `can_place_on` components. Mining start/continuation and actual item-use prediction now consume them, including the selected hand. Container activation remains independent, and Survival/Creative keep their existing paths.
 
 The exact native client jar (`05b6f1c6b46a29d6ea82b4e0d42190e42402030f`) and official mappings were used. `AdventureModePredicate`, `BlockPredicate`, `StatePropertiesPredicate` and its Exact/Ranged matchers were reviewed. Native ItemStack codecs, native private `BlockPredicate.matchesState`, and native `NbtPredicate.matches` execute in `tools/port-1.20.6/ExtractAdventure1206.java`. The input jar, mappings and unsigned oracle class bytes are verified before generation.
