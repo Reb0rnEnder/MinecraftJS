@@ -1,3 +1,4 @@
+import{applyWolfMetadata}from'./wolf.js';
 import {encodeEntityPosition,relativeEntityPosition} from './entity-position.js';
 import {playPickupSound} from '../audio/client-sound-triggers.js';
 import { tickDroppedItem } from './dropped-item.js';
@@ -522,7 +523,7 @@ export class EntityManager {
         case 'vex': bit(12, 1, 'charging'); break;
         case 'pig': set(13, 'saddled');if(m[14]!==undefined){e.boostDuration=m[14];e.boostTicks=0;e.boosting=m[14]>0;}break;
         case 'sheep': if (m[13] !== undefined) { e.fleece = m[13] & 15; e.sheared = !!(m[13] & 16); } break;
-        case 'wolf': bit(13, 2, 'angry'); set(15, 'wolfHealth'); set(16, 'begging'); set(17, 'collar'); break;
+        case 'wolf': break; // Exact release accessors are consumed below.
         case 'ocelot': set(15, 'catType'); break;
         case 'parrot': set(15, 'parrotVariant'); break;
         case 'rabbit': set(13, 'rabbitType'); break;
@@ -554,6 +555,7 @@ export class EntityManager {
         default: break;
       }
     }
+    applyWolfMetadata(e,wire);
   }
 
   setAttributes(p) {
