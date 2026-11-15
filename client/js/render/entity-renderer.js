@@ -1,3 +1,4 @@
+import{updateWolfCollar,wolfTailAngle}from'./wolf-collar.js';
 import{updateGuiEquipment,guiHandPoses}from'./gui-player-equipment.js';
 import{paintingTiles,paintingTileLight}from'./painting.js';
 import {isSquid,squidTentacle,squidMatrix} from '../game/squid-animation.js';
@@ -511,6 +512,7 @@ export class EntityRenderer {
         addLayer(layerModel,layer.texture,{hideHat:!!layer.hideHat,cull:false});
       }
       if(e.type==='trader_llama')addLayer(M.llama(true),'entity/llama/decor/trader_llama.png',{cull:false});
+      if(e.type===95)v.wolfCollar=addLayer(M.wolf(),'entity/wolf/wolf_collar.png',{wolfCollar:true});
       if (e.type === 91) v.wool = addLayer(M.sheep(true), 'entity/sheep/sheep_fur.png');
       if (e.type === 52 || e.type === 59) addLayer(M.spider(), 'entity/spider_eyes.png', { fullBright: true, transparent: true, additive: true, depthWrite: false, eyes: true });
       if (e.type === 58) addLayer(M.enderman(), 'entity/enderman/enderman_eyes.png', { fullBright: true, transparent: true, additive: true, depthWrite: false, eyes: true });
@@ -1273,7 +1275,7 @@ export class EntityRenderer {
       elytra: (e.elytraTicks || 0) > 4, speedSq,
       onGround: e.onGround, eatingGrass: e.eatingGrass || 0, sitting: e.sitting, angry: e.angry, hanging: e.hanging,
       carrying: !!e.carried, screaming: e.screaming, horseType: e.horseType, saddled: !!(e.horseFlags & 4) || e.saddled,
-      tailRotation: e.tamed ? (0.55 - (20 - (e.wolfHealth || 20)) * 0.02) * Math.PI : Math.PI / 5,
+      tailRotation: wolfTailAngle(e),
       witchDrinking: e.kind === 'mob' && e.type === 66 && e.usingItem,
       squish: 0, tentacleAngle:isSquid(e)?squidTentacle(e,partial):undefined,
       peek: e.type === 69 ? (e.prevPeek || 0) + ((e.peek || 0) - (e.prevPeek || 0)) * partial : 0,
@@ -1294,6 +1296,7 @@ export class EntityRenderer {
       args.showArms = !!e.showArms; args.noBasePlate = !!e.noBasePlate;
       if (e.small) v.scaleGroup.scale.multiplyScalar(0.5);
     }
+    if(v.wolfCollar)updateWolfCollar(e,v.wolfCollar);
     if (v.lodSkip && v.posed && v.wasInvisible === !!e.invisible) {
       // Keep the previous pose; only the transforms above were updated
       this._updateHeld(e, v, held, args);
@@ -1341,7 +1344,7 @@ export class EntityRenderer {
       copyPose(model, L.model);
       if(L.hideHat){for(const key of ['head','hat','hatRim','headwear'])if(L.model.parts[key])L.model.parts[key].visible=false;}
       for (const r of L.model.roots) r.sync();
-      L.obj.visible = !e.invisible;
+      if(!L.wolfCollar)L.obj.visible = !e.invisible;
     }
     if (v.wool) v.wool.obj.visible = !e.sheared && !e.invisible;
     if (v.wool) { const c = FLEECE[e.fleece || 0]; v.wool.mat.params.setTint(c[0], c[1], c[2], 1); }
