@@ -3,6 +3,7 @@ import {parseSnbt} from '../net/snbt.js';
 // Client-side parsing of the server's Brigadier tree. Execution and permission checks stay on the server.
 const COLORS=['§b','§e','§a','§d','§6'];
 const COLOR_NAMES=['black','dark_blue','dark_green','dark_aqua','dark_red','dark_purple','gold','gray','dark_gray','blue','green','aqua','red','light_purple','yellow','white'];
+export const SCOREBOARD_SLOTS=['list','sidebar','belowName',...COLOR_NAMES.map(n=>'sidebar.team.'+n)];
 const normalize=s=>s.includes(':')?s:'minecraft:'+s;
 const matches=(value,prefix)=>value.toLowerCase().startsWith(prefix.toLowerCase())||value.toLowerCase().includes('_'+prefix.toLowerCase());
 export function playerSuggestions(game,text,cursor=text.length) {
@@ -137,7 +138,7 @@ export class CommandTree {
     const choices={
       'minecraft:color':COLOR_NAMES,'minecraft:entity_anchor':['eyes','feet'],
       'minecraft:operation':['=','+=','-=','*=','/=','%=','<','>','><'],
-      'minecraft:scoreboard_slot':['list','sidebar','belowName',...COLOR_NAMES.map(n=>'sidebar.team.'+n)],
+      'minecraft:scoreboard_slot':SCOREBOARD_SLOTS,
     }[parser];
     if(choices&&!choices.includes(value))return fail(start,{'minecraft:color':'argument.color.invalid','minecraft:entity_anchor':'argument.anchor.invalid','minecraft:operation':'arguments.operation.invalid','minecraft:scoreboard_slot':'argument.scoreboardDisplaySlot.invalid'}[parser],[value]);
     if(parser==='minecraft:item_slot'){
@@ -271,6 +272,7 @@ export class CommandTree {
       const node=this.nodes[id];if(node.type===1){names.push(node.name);continue;}
       if(node.suggestions){if(node.suggestions==='minecraft:ask_server')askServer=true;else if(node.suggestions==='minecraft:available_sounds')names.push(...this.game.assets.data.sounds.map(s=>normalize(s.name)));else if(node.suggestions==='minecraft:summonable_entities')names.push(...this.registry('entities'));else askServer=true;continue;}
       const parser=node.parser;
+      if(parser==='minecraft:scoreboard_slot')names.push(...SCOREBOARD_SLOTS);
       if(parser==='brigadier:bool')names.push('true','false');
       if(['minecraft:entity','minecraft:game_profile','minecraft:score_holder'].includes(parser)) {
         const selector=this.selectorSuggestions(prefix,context.start,cursor);if(selector)return selector;
