@@ -1,3 +1,4 @@
+import{signOutlineKey766}from'../client/js/render/sign-1.20.6.js';
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {TileEntityRenderer} from '../client/js/render/tile-renderer.js';
@@ -7,8 +8,8 @@ test('world sign glyph materials track ambient light after a light update',()=>{
  let light=0;
  const game={settings:{renderDistance:4},world:{getSkyLight:()=>light,getBlockLight:()=>light},renderer:{entityRoot:{add(){}},camPos:[0,64,0],boxVisible:()=>true,lightmapData}};
  const renderer=new TileEntityRenderer(game);renderer._renderMoving=()=>{};
- const params=new Float32Array([1,1,1,1]),tile={x:0,y:64,z:0,type:'sign',built:true,obj:{},mat:{params:{setLight(){}}},signTextParams:[params]};
- renderer.tiles.set('0,64,0',tile);renderer.render(0);
+ const params=new Float32Array([1,1,1,1]),tile={x:0,y:64,z:0,type:'sign',built:true,obj:{},mat:{params:{setLight(){}}},signTextParams:[{params,glowing:false}]};
+ tile.signOutlineKey=signOutlineKey766(game,tile);renderer.tiles.set('0,64,0',tile);renderer.render(0);
  for(let i=0;i<3;i++)assert.ok(Math.abs(params[i]-lightmapData[i]/255)<1e-6);
  light=15;renderer.render(0);assert.ok(Math.abs(params[0]-200/255)<1e-6);
  if(VANILLA_UI.version==='1.17.1'){

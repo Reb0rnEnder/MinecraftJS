@@ -1,6 +1,6 @@
 # Full-parity checklist — MinecraftJS 1.20.6
 
-Updated 2026-11-14. Audited source: `eb6440fa6328a8480008b22b559a5a2ade35abae`. **Full multiplayer parity: no. Full Java-client parity: no.**
+Updated 2026-11-14. Audited source: `92e620e61b3d6a45e1f9d40613711e320bf45c61`. **Full multiplayer parity: no. Full Java-client parity: no.**
 
 Edit [docs/parity-checklist-1.20.6.json](parity-checklist-1.20.6.json), then run `node tools/port-1.20.6/parity-status.mjs --write`. This file is generated; `--check` catches stale counts, invalid evidence paths and false completion claims.
 
@@ -10,20 +10,20 @@ The native multiplayer foundation works. Substantial feature and acceptance work
 
 | Scope | Accepted checkpoints | Partial | Missing implementation | Needs verification | Total |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Native multiplayer + enabled native experiments | 11 | 36 | 15 | 15 | 77 |
+| Native multiplayer + enabled native experiments | 11 | 37 | 14 | 15 | 77 |
 | Separate products / optional compatibility | 0 | 2 | 2 | 0 | 4 |
-| All tracked checkpoints | 11 | 38 | 17 | 15 | 81 |
+| All tracked checkpoints | 11 | 39 | 16 | 15 | 81 |
 
 These **checkpoints differ in size and do not enumerate every defect**. 66 required checkpoints are still open. An honest percentage or ETA is unavailable until release coverage is triaged. Accepted rows cover exactly their named scope, not an entire subsystem.
 
-Last recorded source gate: **162 target tests + 81 foliage backport tests**, zero failures/skips. See [docs/foliage-parity-1.20.6.md](foliage-parity-1.20.6.md). This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
+Latest target gate: **220 tests**, zero failures/skips. See [docs/sign-banner-parity-1.20.6.md](sign-banner-parity-1.20.6.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
 
 ## What the source audit actually found
 
 - A Java-generated sword fixture decodes damage 37, but `Items.damage` reads 0; the custom-name fixture has no legacy NBT view. Effective component data exists but is not connected to major old item consumers. Run `node tools/port-1.20.6/audit-parity-consumers.mjs` for the read-only item diagnostic.
 - Font references, filters, Unihex and Font Settings now have native-backed regressions. Live pack/backend acceptance remains; TTF support alone does not certify every font format.
 - Armadillo model selection currently falls through to null; wolf rendering ignores the new variant registry and lacks armor layers.
-- Signs still use old text fields/front-side editing; decorated pots and display entities lack dedicated rendering consumers.
+- Native hanging/two-sided sign consumers now have frame/serialization regressions; exact editor/live acceptance remains. Decorated pots and display entities still lack dedicated rendering consumers.
 - Score packets decode new fields while the scoreboard retains only numeric values. Jigsaw still has an older three-field editor.
 - Fabulous **has an implementation**. The remaining task is exact-target routing/scene validation; older prose saying it is wholly absent is stale.
 
@@ -108,7 +108,7 @@ A box is checked only for `accepted`. For each open row, implement/verify the co
 
 ### Trails and Tales
 
-- [ ] **CONTENT-01 — Two-sided and hanging sign rendering/editing/wax state** (P0; Missing implementation; P11). Both sides, hanging/standing/wall transforms, dye/glow/wax/filtering and native edit screen update the correct side. Evidence/start: [client/js/gui/screens/sign.js](../client/js/gui/screens/sign.js), [client/js/render/tile-renderer.js](../client/js/render/tile-renderer.js).
+- [ ] **CONTENT-01 — Two-sided and hanging sign rendering/editing/wax state** (P0; Partial; P11). Both sides, hanging/standing/wall transforms, dye/glow/wax/filtering and native edit screen update the correct side. Evidence/start: [client/js/gui/screens/sign.js](../client/js/gui/screens/sign.js), [client/js/render/tile-renderer.js](../client/js/render/tile-renderer.js).
 - [ ] **CONTENT-02 — Archaeology brushing and suspicious-block client presentation** (P1; Missing implementation; P11). Brush/cancel timing, stages, displayed item, sounds/particles and authoritative result match native. Evidence/start: [client/js/game/interaction.js](../client/js/game/interaction.js), [client/js/render/tile-renderer.js](../client/js/render/tile-renderer.js).
 - [ ] **CONTENT-03 — Decorated pot textures, contents, wobble and events** (P1; Missing implementation; P11). Sherd faces, stored item insertion/feedback, wobble/projectile break and reconnect use native block-entity data; no invented GUI. Evidence/start: [client/js/render/tile-renderer.js](../client/js/render/tile-renderer.js).
 - [ ] **CONTENT-04 — Chiseled bookshelf hit-slot/contents interactions** (P1; Partial; P11). Every shelf slot/rotation, insertion/removal and server rejection/reload matches native. Evidence/start: [client/js/game/interaction.js](../client/js/game/interaction.js), [client/js/render/tile-renderer.js](../client/js/render/tile-renderer.js).

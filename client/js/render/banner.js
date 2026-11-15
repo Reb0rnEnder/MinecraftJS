@@ -29,7 +29,7 @@ export function bannerLayers(base, patterns) {
 export function composeBanner(assets, layers, shield = false) {
   const bi = assets.image(shield ? 'entity/shield_base.png' : 'entity/banner_base.png');
   const dir = shield ? 'entity/shield/' : 'entity/banner/';
-  const imgs = layers.map((p) => (BANNER_CODES[p.Pattern] ? assets.image(dir + BANNER_CODES[p.Pattern] + '.png') : false));
+  const imgs = layers.map(p=>{const code=BANNER_CODES[p.Pattern];if(code)return assets.image(dir+code+'.png');if(!p.Pattern?.includes(':'))return false;const [namespace,path]=p.Pattern.split(':');return assets.image((namespace==='minecraft'?'':namespace+':')+dir+path+'.png');});
   if (!bi || imgs.some((i) => i === null)) return null;
   const W = bi.width, H = bi.height, src = bi.data;
   const out = new Uint8Array(src);

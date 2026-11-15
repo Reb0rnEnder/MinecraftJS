@@ -1,0 +1,41 @@
+{
+  "clientJarSha1": "05b6f1c6b46a29d6ea82b4e0d42190e42402030f",
+  "extractorSha256": "e98685d973fe61e491d68f62bd3a52c9440a6220c35bcb96ca950468c5fbc004",
+  "minecraftVersion": "1.20.6",
+  "samples": [
+    {
+      "label": "patterned blue banner",
+      "layers": [
+        {
+          "asset": "minecraft:stripe_center",
+          "dye": 14
+        },
+        {
+          "asset": "minecraft:flower",
+          "dye": 4
+        }
+      ],
+      "wire": "AfgIAQAwAh8ODAQ="
+    },
+    {
+      "label": "inline banner",
+      "layers": [
+        {
+          "asset": "custom:art",
+          "dye": 5
+        }
+      ],
+      "wire": "Ae0IAQAwAQAKY3VzdG9tOmFydA5jdXN0b20ucGF0dGVybgU="
+    },
+    {
+      "label": "patterned red shield",
+      "layers": [
+        {
+          "asset": "minecraft:cross",
+          "dye": 0
+        }
+      ],
+      "wire": "AYoJAgAxDjABBgA="
+    }
+  ]
+}

@@ -1279,7 +1279,7 @@ export class Game {
     if (!data || data.x === undefined) return;
     const pos = { x: data.x, y: data.y, z: data.z };
     const id = String(data.id || '').replace(/^minecraft:/, '');
-    if (id === 'sign') {
+    if (id === 'sign' || id === 'hanging_sign') {
       this.tileRenderer.setTileEntity(pos,9,data,nbt);
       return;
     }
@@ -1470,7 +1470,7 @@ export class Game {
 
   on_tile_entity_data(p) { if (p.nbtData) this.applyBlockEntity(p.nbtData); }
 
-  on_open_sign_entity(p) { this.screens.open(new SignEditScreen(this, p.location)); }
+  on_open_sign_entity(p) { this.screens.open(new SignEditScreen(this,p.location,p.isFrontText??true)); }
 
   // S37PacketStatistics only carries stats that changed since the last one, so keep a running copy
   // (StatFileWriter) and hand screens the whole map

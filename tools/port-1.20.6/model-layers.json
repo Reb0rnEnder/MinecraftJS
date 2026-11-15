@@ -1,0 +1,6 @@
+{
+  "hangingSign": {
+    "layer": "minecraft:hanging_sign/oak#main",
+    "fields": ["$root", "plank", "vChains", "normalChains"]
+  }
+}

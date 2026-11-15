@@ -1,3 +1,4 @@
+import{itemBannerLayers766}from'./banner-1.20.6.js';
 import{bundleBar,bundleContentWeight}from'../game/bundle.js';
 import {DEFAULT_SKIN} from './default-skins.js';
 import {blocksByName} from '../world/blocks.js';
@@ -6,7 +7,7 @@ import {compassProperty} from './compass.js';
 // and 3D meshes for held/dropped items (port of ItemModelGenerator extrusion).
 import { bedPiece, shulkerBox, skullModel } from './tile-renderer.js';
 import { blockModel } from './entity-models.js';
-import { composeBanner, bannerLayers, buildBanner, bannerSwing } from './banner.js';
+import { composeBanner, buildBanner, bannerSwing } from './banner.js';
 import { FORMAT, colorParams } from '../gfx/device.js';
 import { mat4, D2R } from '../gfx/math.js';
 import { Node } from '../gfx/scene.js';
@@ -28,11 +29,6 @@ const GRASS_ITEMS = new Set(['grass_block', 'short_grass', 'fern', 'tall_grass',
 const SKULLS = { skeleton_skull: 0, wither_skeleton_skull: 1, zombie_head: 2, player_head: 3, creeper_head: 4, dragon_head: 5, piglin_head: 6 };
 const POTIONS = new Set(['potion', 'splash_potion', 'lingering_potion', 'tipped_arrow']);
 const modelPath = (name) => name.replace(/^minecraft:/, '');
-// Shared banner compositor still indexes dyes black-first. Only adapt its colour input;
-// protocol404 item IDs, flattened colour names and NBT stay untouched.
-const bannerColors = (base, patterns) => bannerLayers(15 - (base & 15),
-  (Array.isArray(patterns) ? patterns : []).map(p => ({ ...p, Color: 15 - (p.Color & 15) })));
-
 export class ItemRenderer {
   constructor(game) {
     this.game = game;
@@ -161,8 +157,7 @@ export class ItemRenderer {
     if (name.startsWith('leather_') || name === 'firework_star') k += ':' + this.layerTint(item, 0) + ',' + this.layerTint(item, 1);
     k += ':' + this.modelFor(item, holder, held).path; // overrides (bow pulling, clock, compass, ...)
     if (name.endsWith('_banner') || name === 'shield') {
-      const tag = this.game.items.nbt(item);
-      k += ':' + JSON.stringify((tag && tag.BlockEntityTag) || null);
+      k += ':' + JSON.stringify(itemBannerLayers766(this.game,item));
     }
     if(name==='player_head')k+=':'+JSON.stringify(this.game.items.nbt(item)?.SkullOwner||null);
     return k;
@@ -367,17 +362,10 @@ export class ItemRenderer {
     }
     if (name === 'shield' || name === 'shield_blocking') {
       // TileEntityItemStackRenderer: ModelShield under scale(1, -1, -1); the banner design (BannerTextures.SHIELD_DESIGNS,
-      // base colour from BlockEntityTag.Base, white without) or the plain shield texture
-      const tag = this.game.items.nbt(item);
-      const bet = tag && tag.BlockEntityTag;
-      let tex = 'entity/shield_base_nopattern.png';
-      if (bet) {
-        const base = bet.Base !== undefined ? bet.Base : 0;
-        const img = composeBanner(this.assets, bannerColors(base, bet.Patterns), true);
-        if (!img) return null;
-        const key = 'shielditem:' + base + ':' + JSON.stringify(bet.Patterns || []);
-        tex = this.assets.textures.get(key) || this.assets.makeTexture(key, img.width, img.height, img.data);
-      }
+      // native base_color/banner_patterns components) or the plain shield texture
+      const layers=itemBannerLayers766(this.game,item);
+      let tex='entity/shield_base_nopattern.png';
+      if(layers){const img=composeBanner(this.assets,layers,true);if(!img)return null;const key='shielditem:'+JSON.stringify(layers);tex=this.assets.textures.get(key)||this.assets.makeTexture(key,img.width,img.height,img.data);}
       const { plate, handle } = blockModel('shield', ['plate', 'handle']);
       const g = new Node();
       for (const p of [plate, handle]) g.add(p.build());
@@ -388,12 +376,9 @@ export class ItemRenderer {
     }
     if (name.endsWith('_banner')) {
       // TileEntityBannerRenderer with no world: standing, rotation 0, flag at time 0, colours from the item
-      const tag = this.game.items.nbt(item);
-      const bet = tag && tag.BlockEntityTag;
-      const base = COLORS.indexOf(name.slice(0, -7));
-      const img = composeBanner(this.assets, bannerColors(base, bet && bet.Patterns));
-      if (!img) return null;
-      const key = 'banneritem:' + base + ':' + JSON.stringify((bet && bet.Patterns) || []);
+      const layers=itemBannerLayers766(this.game,item),img=composeBanner(this.assets,layers);
+      if(!img)return null;
+      const key='banneritem:'+JSON.stringify(layers);
       const tex = this.assets.textures.get(key) || this.assets.makeTexture(key, img.width, img.height, img.data);
       const b = buildBanner(entityMaterial(tex, { alphaTest: 0.1, fullBright: gui, guiLighting: gui }), true, 0);
       b.swing.rotation.x = bannerSwing(0);

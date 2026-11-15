@@ -2,20 +2,20 @@
   "schemaVersion": 1,
   "updatedOn": "2026-11-14",
   "target": "1.20.6",
-  "auditedSourceCommit": "eb6440fa6328a8480008b22b559a5a2ade35abae",
+  "auditedSourceCommit": "92e620e61b3d6a45e1f9d40613711e320bf45c61",
   "fullMultiplayerParity": false,
   "fullJavaClientParity": false,
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 162,
+    "targetTests": 220,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
-    "source": "docs/foliage-parity-1.20.6.md",
-    "note": "Existing scoped checks at audited source; not a new exhaustive gameplay run."
+    "source": "docs/sign-banner-parity-1.20.6.md",
+    "note": "220 target tests are current. The 81 foliage backport checks are the earlier separately recorded audit, not a newly repeated run; current shared backport batches are recorded in sign-banner-parity-1.20.6.md."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {
@@ -483,11 +483,13 @@
       "phase": "P08",
       "scope": "multiplayer",
       "title": "Books, skull profiles, banners, bundles and container item contents",
-      "reason": "Existing consumers/helpers were inherited and require modern component integration.",
+      "reason": "Banner/shield components and placed pattern data now render through Configuration-owned pattern assets; native stack fixtures and loom regressions pass. Books, skull profiles, bundles/container contents and remaining feature acceptance remain partial.",
       "evidence": [
         "client/js/render/item-renderer.js",
         "client/js/game/items.js",
-        "client/js/game/bundle.js"
+        "client/js/game/bundle.js",
+        "docs/sign-banner-parity-1.20.6.md",
+        "tools/fixtures/banner-stacks-1.20.6.json"
       ],
       "acceptance": "Names/lore/books/profile skins/patterns/nested contents preserve native component semantics through use and reload."
     },
@@ -852,16 +854,20 @@
     {
       "id": "CONTENT-01",
       "area": "Trails and Tales",
-      "status": "missing",
+      "status": "partial",
       "priority": 0,
       "phase": "P11",
       "scope": "multiplayer",
       "title": "Two-sided and hanging sign rendering/editing/wax state",
-      "reason": "Sign editor defaults to front text and renderer consumes Text1..Text4 rather than front_text/back_text.",
+      "reason": "Native hanging model, chain variants, both JSON-string text sides, color/glow, block-entity dispatch and side-aware update packets implemented. Native 68-state frame and serialization fixtures pass. Exact editor preview/layout, wax/filtered-account and live backend acceptance remain.",
       "evidence": [
         "client/js/gui/screens/sign.js",
         "client/js/render/tile-renderer.js",
-        "client/js/net/packets.js"
+        "client/js/net/packets.js",
+        "docs/sign-banner-parity-1.20.6.md",
+        "client/js/render/sign-1.20.6.js",
+        "tools/test-1.20.6-signs-banners.mjs",
+        "tools/fixtures/sign-transforms-1.20.6.json"
       ],
       "acceptance": "Both sides, hanging/standing/wall transforms, dye/glow/wax/filtering and native edit screen update the correct side."
     },

@@ -1,5 +1,6 @@
+import{itemBannerLayers766,bannerLayers766,loomPatterns766}from'../../render/banner-1.20.6.js';
 import {WORKSTATIONS_754} from '../../game/workstations-1.16.5.js';
-import {WORKSTATIONS_498,LOOM_PATTERNS,stonecutterRecipes,tradeCost} from '../../game/workstations-1.14.4.js';
+import {stonecutterRecipes,tradeCost} from '../../game/workstations-1.14.4.js';
 import {C} from '../../net/packets.js';
 import {BookScreen} from './book.js';
 import {Button} from '../widgets.js';
@@ -24,13 +25,7 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
       return stonecutterRecipes(game,input);
     }
     patterns(){
-      const banner=win.get(0),dye=win.get(1),pattern=win.get(2);
-      if(!banner||!dye||(game.items.nbt(banner)?.BlockEntityTag?.Patterns?.length||0)>=6)return [];
-      if(pattern){
-        const id={globe_banner_pattern:35,creeper_banner_pattern:36,skull_banner_pattern:37,flower_banner_pattern:38,mojang_banner_pattern:39,piglin_banner_pattern:40}[game.items.name(pattern.id)];
-        return id?[id]:[];
-      }
-      return Array.from({length:34},(_,i)=>i+1);
+      return loomPatterns766(game,win.get(0),win.get(1),win.get(2));
     }
     grid(){
       const stone=win.type==='minecraft:stonecutter';
@@ -40,7 +35,7 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
     icon(gui,id,x,y,width=5,height=10,layers=null){
       const key='loom/'+game.assets.version+'/'+(layers?JSON.stringify(layers):id);
       let tex=game.assets.textures.get(key);
-      if(!tex){const image=composeBanner(game.assets,layers||[{Pattern:'b',Color:8},{Pattern:LOOM_PATTERNS[id],Color:0}]);if(!image)return;tex=game.assets.makeTexture(key,image.width,image.height,image.data);}
+      if(!tex){const image=composeBanner(game.assets,layers||bannerLayers766(game,7,[{pattern:{patternId:id},colorId:15}]));if(!image)return;tex=game.assets.makeTexture(key,image.width,image.height,image.data);}
       gui.blit(tex,x,y,1,1,20,40,tex.width,tex.height,width,height);
     }
     drawBackground(gui,mx,my){
@@ -74,16 +69,14 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
         if(!stone){
           for(const [slot,sx,sy] of definition.slots.slice(0,3))if(!win.get(slot))gui.blit(this.tex,x+sx,y+sy,176+slot*16,0,16,16);
           const output=win.get(3);if(output){
-            const colors=['white','orange','magenta','light_blue','yellow','lime','pink','gray','light_gray','cyan','purple','blue','brown','green','red','black'];
-            const base=15-colors.indexOf(game.items.name(output.id).replace('_banner',''));
-            const layers=[{Pattern:'b',Color:base},...(game.items.nbt(output)?.BlockEntityTag?.Patterns||[]).map(p=>({...p,Color:15-p.Color}))];
+            const layers=itemBannerLayers766(game,output);
             this.icon(gui,0,x+141,y+8,20,40,layers);
           }
         }
         for(let j=0;j<rows*4;j++){
           const index=this.row*4+j;if(index>=entries.length)break;
           const gx=x+grid.x+j%4*w,gy=y+grid.y+Math.floor(j/4)*h;
-          const selected=win.properties[0]===(stone?index:entries[index]);
+          const selected=win.properties[0]===index;
           const hovered=inside(mx,my,gx,gy,w,h);
           gui.blit(this.tex,gx,gy,0,166+(selected?h:hovered?h*2:0),w,h);
           if(stone)game.itemRenderer.drawItem(gui,entries[index].data.result,gx,gy+2,false);
@@ -96,7 +89,7 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
       const grid=this.grid(),{entries,w,h,rows}=grid,x=mx-this.guiLeft,y=my-this.guiTop;
       if(inside(x,y,grid.x,grid.y,w*4,h*rows)){
         const index=this.row*4+Math.floor((x-grid.x)/w)+Math.floor((y-grid.y)/h)*4;
-        if(index<entries.length){game.send(C.menuButton(win.id,grid.stone?index:entries[index]));game.sound.playUi(grid.stone?'ui.stonecutter.select_recipe':'ui.loom.select_pattern',1);}
+        if(index<entries.length){game.send(C.menuButton(win.id,index));game.sound.playUi(grid.stone?'ui.stonecutter.select_recipe':'ui.loom.select_pattern',1);}
         return true;
       }
       if(inside(x,y,119,9,12,56)){this.scrolling=true;this.mouseMove(mx,my);return true;}

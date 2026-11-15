@@ -1,12 +1,13 @@
+import{signFace766,buildSign766,signOutlineKey766}from'./sign-1.20.6.js';
+import{placedBannerLayers766}from'./banner-1.20.6.js';
 import{isShulkerBox,shulkerTexture}from'./shulker-box.js';
 import {DEFAULT_SKIN} from './default-skins.js';
-import { isScoping } from '../game/spyglass.js';
 // Tile entity (block entity) rendering: chests, signs, skulls, banners, enchanting book, beacon beam, end portal,
 // beds and shulker boxes.
-import { composeBanner, bannerLayers, buildBanner, bannerSwing, placedBannerLayers } from './banner.js';
+import { composeBanner, buildBanner, bannerSwing } from './banner.js';
 import { Part, entityMaterial, entityMesh } from './boxmodel.js';
 import { blockModel } from './entity-models.js';
-import { buildTextMeshes, destroyTextMeshes } from './text-mesh.js';
+import { destroyTextMeshes } from './text-mesh.js';
 import { blocks, blocksByName, getBlock, getStateProperties, findState } from '../world/blocks.js';
 import { colorParams, FORMAT } from '../gfx/device.js';
 import { D2R, aabbInFrustum } from '../gfx/math.js';
@@ -14,8 +15,7 @@ import { Node, material } from '../gfx/scene.js';
 import { resolveState } from '../world/blockstates.js';
 import { Pistons } from '../game/pistons.js';
 import { JavaRandom } from '../util/jrandom.js';
-import {isSign,signWood,glowingSignStyle} from '../game/signs-1.14.4.js';
-import {chatToLegacy} from '../gui/chat.js';
+import {isSign,isHangingSign,signWood} from '../game/signs-1.14.4.js';
 import {applyTransform} from './item-renderer.js';
 const FLOWER_POT = {
   'minecraft:red_flower': ['rose', 'blue_orchid', 'allium', 'houstonia', 'red_tulip', 'orange_tulip', 'white_tulip', 'pink_tulip', 'oxeye_daisy'],
@@ -187,10 +187,10 @@ export class TileEntityRenderer {
     }
   }
 
-  setSign(pos, lines) {
-    this.signs.set(key(pos.x, pos.y, pos.z), lines);
+  setSign(pos, lines,front=true) {
+    if(front)this.signs.set(key(pos.x, pos.y, pos.z), lines);
     const t = this._ensure(pos.x, pos.y, pos.z, this.game.world.getState(pos.x, pos.y, pos.z));
-    if (t) { t.lines = lines; this._rebuild(t); }
+    if(t){t.data={...t.data,[front?'front_text':'back_text']:{...t.data?.[front?'front_text':'back_text'],messages:lines.map(text=>JSON.stringify(text))}};this._rebuild(t);}
   }
 
   setTileEntity(pos, action, data, nbt = null) {
@@ -211,10 +211,7 @@ export class TileEntityRenderer {
     if (!t) return;
     t.data = data;
     if(nbt)t.nbt=nbt;
-    if (t.type === 'sign' && data.Text1 !== undefined) {
-      t.lines = [1,2,3,4].map(n=>chatToLegacy(data['Text'+n]||''));
-      this.signs.set(key(pos.x,pos.y,pos.z),t.lines);
-    }
+    if(t.type==='sign'){t.lines=signFace766(data,true).lines;this.signs.set(key(pos.x,pos.y,pos.z),t.lines);}
     this._rebuild(t);
   }
 
@@ -439,48 +436,9 @@ export class TileEntityRenderer {
         break;
       }
       case 'sign': {
-        mat = entityMaterial('entity/signs/'+signWood(getBlock(st).name)+'.png', { alphaTest: 0.1 });
-        const { board, stick } = blockModel('sign', ['board', 'stick']); // ModelSign
-         const standing = !getBlock(st).name.includes('_wall_sign');
-        const f = 0.6666667;
-        const outer = new Node();
-        outer.position.set(0.5, 0.75 * f, 0.5);
-         if (standing) outer.rotation.y = -(Number(props.rotation || 0) * 360 / 16) * D2R;
-         else outer.rotation.y = -({ north: 180, south: 0, west: 90, east: -90 }[props.facing] || 0) * D2R;
-        const inner = new Node();
-        if (!standing) inner.position.set(0, -0.3125, -0.4375);
-        const sc = new Node(); sc.scale.set(f, -f, -f);
-        const model = new Node(); model.scale.set(1 / 16, 1 / 16, 1 / 16);
-        model.add(board.build()); board.setMaterial(mat);
-        if (standing) { model.add(stick.build()); stick.setMaterial(mat); }
-        sc.add(model);
-        // TileEntitySignRenderer: text in the rotated frame: translate(0, 0.5f, 0.07f), scale(f3, -f3, f3), f3 = 0.015625 * f
-        const lines = t.lines || this.signs.get(key(t.x, t.y, t.z)) || ['', '', '', ''];
-        if (lines.some((l) => l)) {
-          const font = g.gui.font;
-          const camera = g.renderer.camPos;
-          const dist = (t.x + .5 - camera[0]) ** 2 + (t.y + .5 - camera[1]) ** 2 + (t.z + .5 - camera[2]) ** 2;
-          const style = glowingSignStyle(t.data?.Color, !!t.data?.GlowingText, dist, isScoping(g));
-          t.signOutlined = style.outlineColor !== undefined;
-          t.signTextParams = [];
-          const items = [];
-          for (let j = 0; j < 4; j++) {
-            const line = lines[j] || '';
-            if (line) items.push({ text: line, x: -font.width(line) / 2, y: j * 10 - 20, ...style });
-          }
-          t.textMeshes = buildTextMeshes(this.device, font, items);
-          const tn = new Node();
-          const f3 = 0.015625 * f;
-          tn.position.set(0, 0.5 * f, 0.07 * f + 0.001);
-          tn.scale.set(f3, -f3, f3);
-          for (const m of t.textMeshes) {
-            const params = colorParams(1, 1, 1, 1, 0.05, 1);
-            t.signTextParams.push(params);
-            tn.addDrawable(m.mesh, material('color', m.tex || g.gui.white, params, { blend: 'none' }));
-          }
-          inner.add(tn);
-        }
-        inner.add(sc); outer.add(inner); obj.add(outer);
+        const name=getBlock(st).name;
+        mat=entityMaterial('entity/signs/'+(isHangingSign(name)?'hanging/':'')+signWood(name)+'.png',{alphaTest:.1});
+        obj.add(buildSign766(g,t,name,props,mat));
         break;
       }
       case 'skull': {
@@ -616,7 +574,7 @@ export class TileEntityRenderer {
   // Composite banner texture (base + tinted pattern masks), or null while the images load
   _bannerTexture(t) {
     const data = t.data || {};
-    const layers=placedBannerLayers(getBlock(t.state).name,data.Patterns);
+    const layers=placedBannerLayers766(this.game,getBlock(t.state).name,data);
     const img = composeBanner(this.game.assets, layers);
     if (!img) return null;
     t.texture = this.device.createTexture({ width: img.width, height: img.height, data: img.data });
@@ -710,11 +668,7 @@ export class TileEntityRenderer {
       const top = t.type === 'beacon' ? this.game.world.maxY : t.y + 1.5;
       const seen = t.type === 'beacon' ? aabbInFrustum(g.renderer.frustum, t.x, t.y, t.z, t.x + 1, top, t.z + 1) : g.renderer.boxVisible(t.x - 0.25, t.y, t.z - 0.25, t.x + 1.25, top, t.z + 1.25);
       if (!seen) { if (t.obj) t.obj.visible = false; continue; }
-      if (t.built && t.type === 'sign' && t.data?.GlowingText) {
-        const distance = (t.x + .5 - camPos[0]) ** 2 + (t.y + .5 - camPos[1]) ** 2 + (t.z + .5 - camPos[2]) ** 2;
-        const outlined = glowingSignStyle(t.data.Color, true, distance, isScoping(g)).outlineColor !== undefined;
-        if (outlined !== t.signOutlined) this._rebuild(t);
-      }
+      if(t.built&&t.type==='sign'&&signOutlineKey766(g,t)!==t.signOutlineKey)this._rebuild(t);
       if (!t.built) this._build(t);
       if (!t.obj) continue;
       t.obj.visible = true;
@@ -728,8 +682,8 @@ export class TileEntityRenderer {
         t.mat.params.setLight(sky, blk);
         if (t.type === 'sign' && t.signTextParams) {
           const index = ((Math.max(0, Math.min(15, sky)) << 4) + Math.max(0, Math.min(15, blk))) * 4;
-          for (const params of t.signTextParams) for (let i = 0; i < 3; i++)
-            params[i] = t.data?.GlowingText ? 1 : g.renderer.lightmapData[index + i] / 255;
+          for (const {params,glowing} of t.signTextParams) for (let i = 0; i < 3; i++)
+            params[i] = glowing ? 1 : g.renderer.lightmapData[index + i] / 255;
         }
       }
       if(t.type==='bell' && t.bellPart){
