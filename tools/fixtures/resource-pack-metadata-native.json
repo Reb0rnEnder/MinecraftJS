@@ -1,0 +1,487 @@
+{
+  "version": "1.19.4",
+  "clientJarSha1": "958928a560c9167687bea0cefeb7375da1e552a8",
+  "oracleSha256": "f0c3e33765e2436545f62fb5827d46be6b9b19457b866c317acfa223ec3a6b57",
+  "cases": [
+    {
+      "section": "filter",
+      "label": "none",
+      "value": {
+        "block": []
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "missing block",
+      "value": {},
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": false
+    },
+    {
+      "section": "filter",
+      "label": "all",
+      "value": {
+        "block": [
+          {}
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "namespace",
+      "value": {
+        "block": [
+          {
+            "namespace": "minecraft"
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "path",
+      "value": {
+        "block": [
+          {
+            "path": "textures/.*"
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        false,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "both",
+      "value": {
+        "block": [
+          {
+            "namespace": "minecraft",
+            "path": "textures/.*"
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "cross-product",
+      "value": {
+        "block": [
+          {
+            "namespace": "minecraft",
+            "path": "lang/.*"
+          },
+          {
+            "namespace": "custom",
+            "path": "textures/.*"
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        true,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "full match",
+      "value": {
+        "block": [
+          {
+            "namespace": "mine",
+            "path": "stone"
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "invalid regex",
+      "value": {
+        "block": [
+          {
+            "path": "["
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "case flag",
+      "value": {
+        "block": [
+          {
+            "namespace": "(?i)MINECRAFT"
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "quoted",
+      "value": {
+        "block": [
+          {
+            "path": "\\Qtextures/block/stone.png\\E"
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        false,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "non-string",
+      "value": {
+        "block": [
+          {
+            "path": 4
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    }
+  ]
+}

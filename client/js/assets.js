@@ -1,3 +1,4 @@
+import {readResourceStack,readResourceBytes,resourceMetadata,resourceNamespaces,resourceFilter} from './resource-layers.js';
 import{preloadTextures}from'./render/texture-preload.js';
 import {applyPackModels,applyPackTextures} from './resource-models.js';
 // Asset manager: base game assets (an assets/ folder next to the page, or the zip embedded in a single-file build)
@@ -35,6 +36,7 @@ export class ResourcePack {
       const d = meta.pack && meta.pack.description;
       this.description = chatToLegacy(d, { parsed: true });
       this.format = meta.pack && meta.pack.pack_format;
+      try{this.blocksResource=resourceFilter(meta.filter);}catch(e){console.warn('Bad resource filter in',id,e.message);}
       if (meta.language && typeof meta.language === 'object') this.languages = meta.language;
     } catch (e) { /* pack.mcmeta missing or malformed */ }
     try { const icon = this.zip.read(this.prefix + 'pack.png'); this.icon = icon ? decodePng(icon) : null; } catch (e) { this.icon = null; }
@@ -100,18 +102,13 @@ export class Assets {
 
   // ---------------------------------------------------------------- file access (pack-aware)
 
-  async readBytes(rel) {
-    for (const p of this.packs) if (p.has(rel)) return p.read(rel);
-    return this.source.bytes('minecraft/' + rel);
-  }
-
-  async readText(rel) { const b = await this.readBytes(rel); return b ? decodeUtf8(b) : null; }
-  async readResourceBytes(location) {
-    const [namespace,path]=location.includes(':')?location.split(':'):['minecraft',location];
-    for(const pack of this.packs){const key=pack.prefix+'assets/'+namespace+'/'+path;if(pack.zip.has(key))return pack.zip.read(key);}
-    return this.source.bytes(namespace+'/'+path);
-  }
-  async readJson(rel) { const t = await this.readText(rel); return t ? JSON.parse(t) : null; }
+  async readBytes(rel) {return this.readResourceBytes('minecraft:'+rel);}
+  async readText(rel) {const b=await this.readBytes(rel);return b?decodeUtf8(b):null;}
+  async readResourceStack(location){return readResourceStack(this,location);}
+  resourceNamespaces(){return resourceNamespaces(this);}
+  async readResourceBytes(location){return readResourceBytes(this,location);}
+  async resourceMetadata(location){return resourceMetadata(this,location);}
+  async readJson(rel) {const t=await this.readText(rel);return t?JSON.parse(t):null;}
 
   async readSound(rel) {
     const colon = rel.indexOf(':'), namespace = colon < 0 ? 'minecraft' : rel.slice(0, colon), path = colon < 0 ? rel : rel.slice(colon + 1);
@@ -120,22 +117,15 @@ export class Assets {
 
   // sounds.json: packs add events, or replace them when "replace": true
   async loadSoundDefinitions() {
-    let defs = {};
-    try { defs = JSON.parse(decodeUtf8(await this.source.bytes('minecraft/sounds.json'))); } catch (e) { defs = {}; }
-    for (const p of [...this.packs].reverse()) {
-      for (const path of p.zip.list(p.prefix + 'assets/')) {
-        const match = /^assets\/([^/]+)\/sounds\.json$/.exec(path.slice(p.prefix.length));
-        if (!match) continue;
-        try {
-          const add = JSON.parse(decodeUtf8(p.zip.read(path)));
-          for (const [name, d] of Object.entries(add)) {
-            const ev = (name.includes(':') ? name : match[1] + ':' + name).replace(/^minecraft:/, '');
-            if (d.replace || !defs[ev]) defs[ev] = { ...d };
-            else defs[ev] = { ...defs[ev], ...d, sounds: [...(defs[ev].sounds || []), ...(d.sounds || [])] };
-          }
-        } catch (e) { console.warn('Bad sounds.json in', p.id, path); }
+    const defs={};
+    for(const namespace of this.resourceNamespaces())for(const {bytes,pack} of (await this.readResourceStack(namespace+':sounds.json')).reverse())try{
+      const add=JSON.parse(decodeUtf8(bytes));
+      for(const [name,d]of Object.entries(add)){
+        const event=(name.includes(':')?name:namespace+':'+name).replace(/^minecraft:/,'');
+        if(d.replace||!defs[event])defs[event]={...d};
+        else defs[event]={...defs[event],...d,sounds:[...(defs[event].sounds||[]),...(d.sounds||[])]};
       }
-    }
+    }catch(e){console.warn('Bad sounds.json in',pack?.id||'default',e.message);}
     return defs;
   }
 
@@ -214,21 +204,17 @@ export class Assets {
     this.textures.clear();
     this.images.clear();this.imageLoads.clear();
     const packsLowFirst = [...this.packs].reverse();
-    this.villagerHats={...VILLAGER_HATS};
-    for(const pack of packsLowFirst)for(const path of pack.list('textures/entity/')){
-      if(!/\/(villager|zombie_villager)\/.*\.png\.mcmeta$/.test(path))continue;
-      try{this.villagerHats[path.slice(9,-7)]=JSON.parse(decodeUtf8(pack.read(path))).villager?.hat||'none';}catch{}
-    }
+    await this.loadVillagerHats();
 
     step('Loading block models...', 15);
     const models = await this.source.models();
     this.models = models.models;
     this.blockstates = models.blockstates;
-    applyPackModels(packsLowFirst,this.models,this.blockstates);
+    applyPackModels(packsLowFirst,this.models,this.blockstates,this);
 
     step('Loading textures...', 35);
     const { files, mcmeta } = await this.source.blockTextures();
-    applyPackTextures(packsLowFirst,files,mcmeta,this.models);
+    applyPackTextures(packsLowFirst,files,mcmeta,this.models,this);
     step('Building texture atlas...', 50);
     const textures = [];
     for (const [name, get] of files) {
@@ -326,22 +312,24 @@ export class Assets {
 
   // en_us is always loaded first so untranslated keys fall back to English (vanilla Locale behaviour);
   // the selected language and every active pack's .json files are layered on top.
+  async loadVillagerHats(){
+    const names=new Set(Object.keys(VILLAGER_HATS));
+    for(const pack of this.packs)for(const path of pack.list('textures/entity/'))if(/\/(villager|zombie_villager)\/.*\.png\.mcmeta$/.test(path))names.add(path.slice(9,-7));
+    const hats={};
+    for(const path of names){const meta=await this.resourceMetadata('minecraft:textures/'+path);if(meta.bytes)try{hats[path]=JSON.parse(decodeUtf8(meta.bytes)).villager?.hat||'none';}catch{}else if(meta.base&&!meta.filtered)hats[path]=VILLAGER_HATS[path];}
+    this.villagerHats=hats;
+  }
+
   async loadLanguage(code) {
     code = String(code || 'en_us').toLowerCase();
     if (!this.languages[code]) code = 'en_us';
     const packsLowFirst = [...this.packs].reverse();
-    this.villagerHats={...VILLAGER_HATS};
-    for(const pack of packsLowFirst)for(const path of pack.list('textures/entity/')){
-      if(!/\/(villager|zombie_villager)\/.*\.png\.mcmeta$/.test(path))continue;
-      try{this.villagerHats[path.slice(9,-7)]=JSON.parse(decodeUtf8(pack.read(path))).villager?.hat||'none';}catch{}
-    }
+    await this.loadVillagerHats();
     const lang = { ...MINECRAFTJS_EN };
     const own = {};
     const parse = (text, into) => Object.assign(into, JSON.parse(text));
     const layer = async (c, into) => {
-      const base = await this.source.bytes('minecraft/lang/' + c + '.json').catch(() => null);
-      if (base) parse(decodeUtf8(base), into);
-      for (const p of packsLowFirst) if (p.has('lang/' + c + '.json')) parse(decodeUtf8(p.read('lang/' + c + '.json')), into);
+      for(const namespace of this.resourceNamespaces())for(const {bytes}of (await this.readResourceStack(namespace+':lang/'+c+'.json')).reverse())parse(decodeUtf8(bytes),into);
     };
     await layer('en_us', lang);
     this.langEn = { ...lang }; // English table, used to map English data names to keys
