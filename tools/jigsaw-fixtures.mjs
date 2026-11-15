@@ -1,0 +1,20 @@
+import {readFile,writeFile,mkdir} from 'node:fs/promises';
+import {existsSync} from 'node:fs';
+import {execFileSync} from 'node:child_process';
+import {createHash} from 'node:crypto';
+import {join,delimiter} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {JIGSAW_LAYOUT as layout} from '../client/js/gui/jigsaw-layout.js';
+const root=fileURLToPath(new URL('../',import.meta.url)),cache=join(root,'cache/port-'+layout.version),out=join(cache,'jigsaw-oracle.json'),source=join(root,'tools/ExtractJigsawParity.java');
+const metadata=JSON.parse(await readFile(join(cache,'version.json')));
+if(metadata.id!==layout.version)throw Error('Wrong jigsaw oracle version');
+const sha=(bytes,kind='sha1')=>createHash(kind).update(bytes).digest('hex');
+for(const [key,file]of [['client','client.jar'],['client_mappings','client.txt']])if(sha(await readFile(join(cache,file)))!==metadata.downloads[key].sha1)throw Error('Wrong native input '+key);
+await mkdir(cache,{recursive:true});
+const cp=existsSync(join(cache,'bundler/META-INF/libraries'))?(await import('../lib/native-classpath.js')).nativeClasspath(cache):[join(cache,'client.jar'),join(cache,'server.jar')].join(delimiter);
+try{execFileSync(process.env.JAVA||'java',['-cp',cp,source,join(cache,'client.txt'),out,String(layout.modern),String(layout.priorities)],{stdio:'pipe',maxBuffer:8*1024*1024});}catch(e){process.stderr.write(e.stdout||'');process.stderr.write(e.stderr||e.message);throw Error('Native jigsaw oracle failed');}
+const fixture={minecraftVersion:layout.version,clientJarSha1:metadata.downloads.client.sha1,oracleSha256:sha(await readFile(source),'sha256'),...JSON.parse(await readFile(out))};
+const canonical=v=>Array.isArray(v)?v.map(canonical):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])])):v;
+const text=JSON.stringify(canonical(fixture),null,2)+'\n',path=join(root,'tools/fixtures/jigsaw-native.json');
+if(process.argv.includes('--check')){if(await readFile(path,'utf8')!==text)throw Error('Stale native jigsaw fixtures');}else await writeFile(path,text);
+console.log(layout.version+': native jigsaw '+fixture.resources.length+' resource cases, '+fixture.packets.length+' packet bodies');
