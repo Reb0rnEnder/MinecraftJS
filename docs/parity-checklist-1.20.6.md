@@ -1,6 +1,6 @@
 # Full-parity checklist — MinecraftJS 1.20.6
 
-Updated 2026-11-15. Audited source: `47b6799`. **Full multiplayer parity: no. Full Java-client parity: no.**
+Updated 2026-11-15. Audited source: `72828d4`. **Full multiplayer parity: no. Full Java-client parity: no.**
 
 Edit [docs/parity-checklist-1.20.6.json](parity-checklist-1.20.6.json), then run `node tools/port-1.20.6/parity-status.mjs --write`. This file is generated; `--check` catches stale counts, invalid evidence paths and false completion claims.
 
@@ -10,13 +10,13 @@ The native multiplayer foundation works. Substantial feature and acceptance work
 
 | Scope | Accepted checkpoints | Partial | Missing implementation | Needs verification | Total |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Native multiplayer + enabled native experiments | 15 | 38 | 9 | 17 | 79 |
+| Native multiplayer + enabled native experiments | 15 | 39 | 8 | 17 | 79 |
 | Separate products / optional compatibility | 0 | 2 | 2 | 0 | 4 |
-| All tracked checkpoints | 15 | 40 | 11 | 17 | 83 |
+| All tracked checkpoints | 15 | 41 | 10 | 17 | 83 |
 
 These **checkpoints differ in size and do not enumerate every defect**. 64 required checkpoints are still open. An honest percentage or ETA is unavailable until release coverage is triaged. Accepted rows cover exactly their named scope, not an entire subsystem.
 
-Latest target gate: **463 tests**, zero failures/skips. See [docs/armored-paws-parity.md](armored-paws-parity.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
+Latest target gate: **473 tests**, zero failures/skips. See [docs/score-format-parity.md](score-format-parity.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
 
 ## Completed implementation deliverables
 
@@ -29,6 +29,7 @@ These checked items describe completed work. A parent checkpoint can still have 
  - [x] Adventure component permissions, native tooltips and target fallback registry tags; full block-entity metadata remains ACT-01. [docs/adventure-tooltip-parity.md](adventure-tooltip-parity.md).
  - [x] Format-selected overlays and filtered resource stacks across files, fonts, sounds, languages, models and textures; advanced Java regex acceptance remains PACK-01. [docs/resource-stack-parity.md](resource-stack-parity.md).
  - [x] Armadillo native geometry and roll/peek animations; all wolf variant textures, BODY armor/dye/cracks and native metadata consumers. [docs/armored-paws-parity.md](armored-paws-parity.md).
+ - [x] Native sidebar/tab blank, styled and fixed number formats, per-score display text, inheritance and reset consumers. [docs/score-format-parity.md](score-format-parity.md).
 
 ## Current source findings
 
@@ -36,7 +37,7 @@ These checked items describe completed work. A parent checkpoint can still have 
 - Font references, filters, Unihex and Font Settings satisfy their named implementation scopes. Live font/backend and complex-script acceptance is separately tracked as FONT-04.
 - Native jigsaw fields and packet values are implemented and accepted as UI-06. Live server generation remains UI-06-LIVE.
 - Hanging/two-sided signs, banners and Adventure tooltips have native regressions. Complete block-entity metadata, decorated pots, display entities and remaining sign editor acceptance still need work.
-- Armadillo geometry/roll/peek and wolf variant/armor consumers now have native regressions. Remaining Paws animations/feedback and live acceptance are explicit in PAWS-01–04. Scoreboard formats remain missing.
+- Armadillo geometry/roll/peek and wolf variant/armor consumers now have native regressions. Remaining Paws animations/feedback and live acceptance are explicit in PAWS-01–04. Sidebar/tab scoreboard formats and per-score display text are implemented; below-name/hearts and wider acceptance remain.
 - Fabulous has an implementation; exact-target routing and scene validation remain open.
 - Resource-pack overlays and resource filters now have native-backed implementation. Advanced Java regex compatibility and atlas source/palette dispatch remain distinct open work.
 
@@ -108,7 +109,7 @@ A box is checked only for `accepted`. For each open row, implement/verify the co
 ### Text, commands and accounts
 
 - [ ] **CHAT-01 — Command syntax for target component items and new argument types** (P1; Partial; P13). Native parser oracle covers modern item/component predicates, selectors, suggestions, errors, ranges and server completions. Remaining: Target IDs are generated; inherited parser/completion requires native 1.20.5 syntax acceptance. Evidence/start: [client/js/game/commands.js](../client/js/game/commands.js), [client/js/net/play-codec-1.20.6.js](../client/js/net/play-codec-1.20.6.js).
-- [ ] **CHAT-02 — Scoreboard number formats and per-score display text** (P1; Missing implementation; P13). Blank/styled/fixed number formats, optional display names, resets and updates render like native. Remaining: Packet fields arrive, but Scoreboard.onScore stores only numeric values. Evidence/start: [client/js/game/scoreboard.js](../client/js/game/scoreboard.js), [client/js/net/play-codec-1.20.6.js](../client/js/net/play-codec-1.20.6.js).
+- [ ] **CHAT-02 — Scoreboard number formats and per-score display text** (P1; Partial; P13). Blank/styled/fixed number formats, optional display names, resets and updates render like native. Remaining: Sidebar/tab consumers now render native blank/styled/fixed formats, display text, defaults and resets with native packet fixtures. Below-name labels, tab-list hearts/blink and broader font/live/backend acceptance remain. Evidence/start: [docs/score-format-parity.md](score-format-parity.md), [tools/test-score-formats-1.20.6.mjs](../tools/test-score-formats-1.20.6.mjs).
 - [ ] **CHAT-03 — Incoming chat trust, deletion, filtering and registry decorations on 766** (P1; Partial; P13). Native target certificates/chains/decorations/acks/deletion/filtering produce correct trust UI without trusting system messages as signed player chat. Remaining: 1.19.4 verifier is reused through target adapters; exact target signed sessions need acceptance. Evidence/start: [client/js/net/chat-verifier-1.19.4.js](../client/js/net/chat-verifier-1.19.4.js), [client/js/net/chat-state-1.20.6.js](../client/js/net/chat-state-1.20.6.js).
 - [ ] **CHAT-04 — Authenticated outgoing chat and signed command arguments** (P1; Missing implementation; P09). Real account session sends native session updates and valid chat/command signatures with native acknowledgements. Remaining: Outgoing encoder accepts supplied signatures; complete key/session/argument signing is not implemented. Evidence/start: [client/js/net/chat-state-1.20.6.js](../client/js/net/chat-state-1.20.6.js), [docs/parity-status-all-versions.md](parity-status-all-versions.md).
 - [ ] **CHAT-05 — Reportable logs and authenticated report submission** (P1; Missing implementation; P13). Native report selection/context/reasons and authenticated submission/cancellation/error handling are accepted. Remaining: Social screen exposes disabled reporting rather than native reporting workflow. Evidence/start: [client/js/gui/screens/social.js](../client/js/gui/screens/social.js), [docs/social-account-parity.md](social-account-parity.md).
@@ -182,7 +183,7 @@ The existing index has 415 topic/heading entries, including 318 non-heading topi
 
 | Reference family | Indexed | Mapped to disposition/tasks | Still unmapped |
 | --- | ---: | ---: | ---: |
-| topics | 318 | 9 | 309 |
+| topics | 318 | 10 | 308 |
 | fixes | 806 | 0 | 806 |
 | unkeyedFixes | 1 | 0 | 1 |
 

@@ -6,6 +6,7 @@ import {parseSnbt} from '../net/snbt.js';
 // Client-side parsing of the server's Brigadier tree. Execution and permission checks stay on the server.
 const COLORS=['§b','§e','§a','§d','§6'];
 const COLOR_NAMES=['black','dark_blue','dark_green','dark_aqua','dark_red','dark_purple','gold','gray','dark_gray','blue','green','aqua','red','light_purple','yellow','white'];
+export const SCOREBOARD_SLOTS=['list','sidebar','below_name',...COLOR_NAMES.map(n=>'sidebar.team.'+n)];
 const normalize=s=>s.includes(':')?s:'minecraft:'+s;
 const matches=(value,prefix)=>value.toLowerCase().startsWith(prefix.toLowerCase())||value.toLowerCase().includes('_'+prefix.toLowerCase());
 export function playerSuggestions(game,text,cursor=text.length) {
@@ -153,7 +154,7 @@ export class CommandTree {
     const choices={
       'minecraft:color':COLOR_NAMES,'minecraft:entity_anchor':['eyes','feet'],
       'minecraft:operation':['=','+=','-=','*=','/=','%=','<','>','><'],
-      'minecraft:scoreboard_slot':['list','sidebar','belowName',...COLOR_NAMES.map(n=>'sidebar.team.'+n)],
+      'minecraft:scoreboard_slot':SCOREBOARD_SLOTS,
     }[parser];
     if(choices&&!choices.includes(value))return fail(start,{'minecraft:color':'argument.color.invalid','minecraft:entity_anchor':'argument.anchor.invalid','minecraft:operation':'arguments.operation.invalid','minecraft:scoreboard_slot':'argument.scoreboardDisplaySlot.invalid'}[parser],[value]);
     if(parser==='minecraft:item_slot'){
@@ -292,6 +293,7 @@ export class CommandTree {
         const entries=this.namedRegistry(node.properties?.registry);if(entries)names.push(...entries);else askServer=true;
         if(parser.includes('or_tag'))names.push(...Object.keys(this.game.commandTags?.[node.properties?.registry]||{}).map(n=>'#'+n));
       }
+      if(parser==='minecraft:scoreboard_slot')names.push(...SCOREBOARD_SLOTS);
       if(parser==='brigadier:bool')names.push('true','false');
       if(['minecraft:entity','minecraft:game_profile','minecraft:score_holder'].includes(parser)) {
         const selector=this.selectorSuggestions(prefix,context.start,cursor);if(selector)return selector;

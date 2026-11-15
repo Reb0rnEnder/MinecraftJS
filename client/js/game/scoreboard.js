@@ -1,3 +1,4 @@
+import{formatScore766}from'./score-format-1.20.6.js';
 // Player list (tab), scoreboard objectives/scores and teams.
 import { chatToLegacy } from '../gui/chat.js';
 
@@ -43,7 +44,7 @@ export class Scoreboard {
   }
 
   onObjective(p) {
-    if (p.action === 0) this.objectives.set(p.objective, { displayName: chatToLegacy(p.displayText), type: p.type, scores: new Map() });
+    if (p.action === 0) this.objectives.set(p.objective, { displayName: chatToLegacy(p.displayText), type: p.type, numberFormat:p.numberFormat??null, scoreInfo:new Map(), scores: new Map() });
     else if (p.action === 1) {
       this.objectives.delete(p.objective);
       if (this.defaultSidebar === p.objective) this.sidebar = null;
@@ -52,18 +53,29 @@ export class Scoreboard {
       if (this.belowName === p.objective) this.belowName = null;
     } else if (p.action === 2) {
       const o = this.objectives.get(p.objective);
-      if (o) { o.displayName = chatToLegacy(p.displayText); o.type = p.type; }
+      if (o) { o.displayName = chatToLegacy(p.displayText); o.type = p.type;o.numberFormat=p.numberFormat??null; }
     }
   }
 
   onScore(p) {
     if (p.action === 1) {
-      if (p.scoreName) { const o = this.objectives.get(p.scoreName); if (o) o.scores.delete(p.itemName); }
-      else for (const o of this.objectives.values()) o.scores.delete(p.itemName);
+      if (p.scoreName) { const o = this.objectives.get(p.scoreName); if (o) {o.scores.delete(p.itemName);o.scoreInfo.delete(p.itemName);} }
+      else for (const o of this.objectives.values()){o.scores.delete(p.itemName);o.scoreInfo.delete(p.itemName);}
       return;
     }
     const o = this.objectives.get(p.scoreName);
-    if (o) o.scores.set(p.itemName, p.value);
+    if (o) {o.scores.set(p.itemName, p.value);o.scoreInfo.set(p.itemName,{displayName:p.displayName??null,numberFormat:p.numberFormat??null});}
+  }
+
+  scoreText(objective,owner,context='sidebar'){
+    return formatScore766(objective.scores.get(owner)??0,objective.scoreInfo?.get(owner)?.numberFormat??objective.numberFormat,context);
+  }
+
+  scoreDisplayName(objective,owner){
+    const display=objective.scoreInfo?.get(owner)?.displayName;
+    if(display===null||display===undefined)return this.formatName(owner);
+    const t=this.playerTeam.get(owner),name=chatToLegacy(display,{style:{color:TEAM_COLORS[t?.color]}});
+    return t?(t.prefix||'')+'§r'+name+'§r'+(t.suffix||'')+'§r':name;
   }
 
   onDisplay(p) {

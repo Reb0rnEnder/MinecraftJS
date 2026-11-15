@@ -1,3 +1,4 @@
+import{textBackgroundColor}from'./text-background.js';
 import {EFFECT_766,compareEffects766} from '../game/effects-1.20.6.js';
 import { SYSTEM_CHAT_TAG } from './chat-tags.js';
 import { fillToastSlots, drawMultilineToast } from './system-toast.js';
@@ -897,33 +898,25 @@ export class Hud {
     const obj = sb.objectives.get(sb.sidebar);
     if (!obj) return;
     let scores = [...obj.scores.entries()].filter(([n]) => !n.startsWith('#'));
-    scores.sort((a, b) => a[1] - b[1] || (a[0] < b[0] ? 1 : -1));
-    if (scores.length > 15) scores = scores.slice(scores.length - 15);
+    scores.sort((a,b)=>b[1]-a[1]||(a[0].toLowerCase()<b[0].toLowerCase()?-1:a[0].toLowerCase()>b[0].toLowerCase()?1:0));
+    scores=scores.slice(0,15);
     const W = gui.width, H = gui.height;
     let w = gui.textWidth(obj.displayName);
     const rows = scores.map(([name, val]) => {
-      const n = sb.formatName(name);
-      const v = '§c' + val;
-      w = Math.max(w, gui.textWidth(n + ': ' + v));
+      const n=sb.scoreDisplayName(obj,name),v=sb.scoreText(obj,name);
+      w=Math.max(w,gui.textWidth(n)+(gui.textWidth(v)>0?gui.textWidth(': ')+gui.textWidth(v):0));
       return [n, v];
     });
     const totalH = rows.length * 9;
-    const baseY = H / 2 + totalH / 3;
+    const baseY = Math.floor(H / 2) + Math.floor(totalH / 3);
     const k1 = 3;
     const x0 = W - w - k1;
-    rows.reverse();
-    for (let j = 1; j <= rows.length; j++) {
-      const [n, v] = rows[j - 1];
-      const y = baseY - j * 9;
-      const r = W - k1 + 2;
-      gui.rect(x0 - 2, y, r, y + 9, 0x50000000);
-      gui.text(n, x0, y, 0xffffff, false);
-      gui.text(v, r - gui.textWidth(v), y, 0xffffff, false);
-      if (j === rows.length) {
-        gui.rect(x0 - 2, y - 9 - 1, r, y - 1, 0x60000000);
-        gui.rect(x0 - 2, y - 1, r, y, 0x50000000);
-        gui.text(obj.displayName, x0 + w / 2 - gui.textWidth(obj.displayName) / 2, y - 9, 0xffffff, false);
-      }
+    const right=W-k1+2,top=baseY-totalH,color=a=>textBackgroundColor(this.game.settings,a);
+    gui.rect(x0-2,top-10,right,top-1,color(.4));gui.rect(x0-2,top-1,right,baseY,color(.3));
+    gui.text(obj.displayName,x0+Math.floor(w/2)-Math.floor(gui.textWidth(obj.displayName)/2),top-9,0xffffff,false);
+    for(let j=0;j<rows.length;j++){
+      const [n,v]=rows[j],y=baseY-(rows.length-j)*9;
+      gui.text(n,x0,y,0xffffff,false);gui.text(v,right-gui.textWidth(v),y,0xffffff,false);
     }
   }
 
@@ -937,7 +930,7 @@ export class Hud {
     let nameW = 0, scoreW = 0;
     for (const p of players) {
       nameW = Math.max(nameW, gui.textWidth(sb.tabName(p)));
-      if (listObj && listObj.type !== 'hearts') scoreW = Math.max(scoreW, gui.textWidth(' ' + (listObj.scores.get(p.name) || 0)));
+      if(listObj&&listObj.type!=='hearts'){const width=gui.textWidth(sb.scoreText(listObj,p.name,'list'));scoreW=Math.max(scoreW,width>0?gui.textWidth(' ')+width:0);}
     }
     const n = players.length;
     let rowsPerCol = n;
@@ -976,8 +969,7 @@ export class Hud {
       const name = sb.tabName(p);
       gui.text(p.gamemode === 3 ? '§o' + stripCodes(name) : name, tx, yy, p.gamemode === 3 ? 0x90ffffff : 0xffffff, true);
       if (listObj) {
-        const v = listObj.scores.get(p.name) || 0;
-        const s = '§e' + v;
+        const s=sb.scoreText(listObj,p.name,'list');
         if (listObj.type !== 'hearts') gui.text(s, x + colW - 12 - gui.textWidth(s), yy, 0xffffff, true);
       }
       // ping icon

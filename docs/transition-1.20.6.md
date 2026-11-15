@@ -137,7 +137,7 @@ Review shared fixes for every applicable existing branch, newest to oldest; pres
 
 ## Immediate next work
 
-The detailed checklist is the source of current completion state. Native item API/tooltip consumers, font providers/settings, sign/banner transforms, jigsaw controls, resource overlays/filters, and the initial Armored Paws rendering/state consumers now have native regressions. The former damaged-sword value-zero and missing-font-provider findings are resolved.
+The detailed checklist is the source of current completion state. Native item API/tooltip consumers, font providers/settings, sign/banner transforms, jigsaw controls, resource overlays/filters, and the initial Armored Paws rendering/state consumers and sidebar/list scoreboard formats now have native regressions. The former damaged-sword value-zero and missing-font-provider findings are resolved.
 
 Next work includes the remaining Paws animations/feedback and horse/llama body equipment; archaeology/decorated pots and armor trims; atlas source/palette dispatch; display/head rendering and score formats; authenticated services, enabled experiments, and backend/scenario acceptance. See [Armored Paws evidence](armored-paws-parity.md) and the [generated checklist](parity-checklist-1.20.6.md) for implemented parts and remaining criteria. Six of 17 broad milestones are done, seven partial, four todo. Their sizes differ; no completion percentage is inferred. No branch is certified as full parity.
 

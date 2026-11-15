@@ -2,20 +2,20 @@
   "schemaVersion": 1,
   "updatedOn": "2026-11-15",
   "target": "1.20.6",
-  "auditedSourceCommit": "47b6799",
+  "auditedSourceCommit": "72828d4",
   "fullMultiplayerParity": false,
   "fullJavaClientParity": false,
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 463,
+    "targetTests": 473,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
-    "source": "docs/armored-paws-parity.md",
-    "note": "463 target tests, exact native oracles and development asset extraction pass; 27 older wolf regressions, six native metadata regenerations and all ten browser bundles pass. Earlier resource/tooltip/foliage counts are separate."
+    "source": "docs/score-format-parity.md",
+    "note": "473 target tests and exact native oracles pass. Seven older Brigadier targets pass seven slot-suggestion checks; six applicable older targets pass 12 background checks. Browser bundles pass. Prior resource/wolf checks remain recorded separately."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {
@@ -29,11 +29,11 @@
         "evidence": "Tint accepted; complete leaf/plant interaction/effect family still needs acceptance."
       },
       "1.20.2|Changes / General / Scoreboard|1": {
-        "disposition": "needs_client_work",
+        "disposition": "accepted",
         "checkpoints": [
           "CHAT-02"
         ],
-        "evidence": "Number-format/per-score display consumers absent."
+        "evidence": "Native DisplaySlot enum and command parser/suggestions use below_name in 1.20.6. Older targets preserve belowName. Number formats/per-score names are a separate 1.20.3 addition."
       },
       "1.20.3|Changes / Blocks / Grass|1": {
         "disposition": "accepted",
@@ -89,6 +89,13 @@
           "ITEM-03"
         ],
         "evidence": "Wire codecs accepted; actual legacy item consumers ignore component values."
+      },
+      "1.20.3|Changes / Command format / /scoreboard|1": {
+        "disposition": "client_acceptance_pending",
+        "checkpoints": [
+          "CHAT-02"
+        ],
+        "evidence": "Blank/styled/fixed and per-score display values consume native packet data in sidebar/tab. Remaining contexts/GUI acceptance stay explicit in CHAT-02."
       }
     },
     "fixes": {},
@@ -729,13 +736,15 @@
     {
       "id": "CHAT-02",
       "area": "Text, commands and accounts",
-      "status": "missing",
+      "status": "partial",
       "priority": 1,
       "phase": "P13",
       "scope": "multiplayer",
       "title": "Scoreboard number formats and per-score display text",
-      "reason": "Packet fields arrive, but Scoreboard.onScore stores only numeric values.",
+      "reason": "Sidebar/tab consumers now render native blank/styled/fixed formats, display text, defaults and resets with native packet fixtures. Below-name labels, tab-list hearts/blink and broader font/live/backend acceptance remain.",
       "evidence": [
+        "docs/score-format-parity.md",
+        "tools/test-score-formats-1.20.6.mjs",
         "client/js/game/scoreboard.js",
         "client/js/net/play-codec-1.20.6.js"
       ],
@@ -1479,6 +1488,13 @@
         "PAWS-03"
       ],
       "evidence": "docs/armored-paws-parity.md"
+    },
+    {
+      "title": "Native sidebar/tab blank, styled and fixed number formats, per-score display text, inheritance and reset consumers",
+      "checkpoints": [
+        "CHAT-02"
+      ],
+      "evidence": "docs/score-format-parity.md"
     }
   ],
   "sourceFindings": [
@@ -1486,7 +1502,7 @@
     "Font references, filters, Unihex and Font Settings satisfy their named implementation scopes. Live font/backend and complex-script acceptance is separately tracked as FONT-04.",
     "Native jigsaw fields and packet values are implemented and accepted as UI-06. Live server generation remains UI-06-LIVE.",
     "Hanging/two-sided signs, banners and Adventure tooltips have native regressions. Complete block-entity metadata, decorated pots, display entities and remaining sign editor acceptance still need work.",
-    "Armadillo geometry/roll/peek and wolf variant/armor consumers now have native regressions. Remaining Paws animations/feedback and live acceptance are explicit in PAWS-01\u201304. Scoreboard formats remain missing.",
+    "Armadillo geometry/roll/peek and wolf variant/armor consumers now have native regressions. Remaining Paws animations/feedback and live acceptance are explicit in PAWS-01\u201304. Sidebar/tab scoreboard formats and per-score display text are implemented; below-name/hearts and wider acceptance remain.",
     "Fabulous has an implementation; exact-target routing and scene validation remain open.",
     "Resource-pack overlays and resource filters now have native-backed implementation. Advanced Java regex compatibility and atlas source/palette dispatch remain distinct open work."
   ]

@@ -1,3 +1,4 @@
+import{readScoreFormat766}from'../game/score-format-1.20.6.js';
 import {NATIVE_PLAY_CLIENTBOUND_NAMES_766} from './native-packet-names-1.20.6.js';
 import {DecoderError} from './network-errors.js';
 import { Reader766 } from "./configuration-1.20.6.js";
@@ -441,9 +442,9 @@ function normalize(name, packet, context = null) {
   if (name === 'playerlist_header') return {...packet,header:componentJson(packet.header),footer:componentJson(packet.footer)};
   if (name === 'teams') return {...packet,name:'scoreboard_team',displayName:componentJson(packet.name),color:packet.formatting,
     prefix:componentJson(packet.prefix),suffix:componentJson(packet.suffix)};
-  if (name === 'scoreboard_objective') return {...packet,name,objective:packet.name,displayText:componentJson(packet.displayText)};
+  if (name === 'scoreboard_objective') return {...packet,name,objective:packet.name,displayText:componentJson(packet.displayText),type:packet.type===1?'hearts':'integer',numberFormat:readScoreFormat766(packet.number_format,packet.styling)};
   if (name === 'scoreboard_display_objective') return {...packet,name,objective:packet.name};
-  if (name === 'scoreboard_score') return {...packet,action:0,displayName:componentJson(packet.display_name)};
+  if (name === 'scoreboard_score') return {...packet,action:0,displayName:componentJson(packet.display_name),numberFormat:readScoreFormat766(packet.number_format,packet.styling)};
   if (name === 'reset_score') return {...packet,name:'scoreboard_score',action:1,itemName:packet.entity_name,scoreName:packet.objective_name};
   if (name === 'boss_bar') return {...packet,uuid:packet.entityUUID,title:componentJson(packet.title)};
   if (name === 'unlock_recipes') return {...packet,recipes:packet.recipes1,recipesToHighlight:packet.recipes2};
