@@ -6,7 +6,8 @@
     "start": "node proxy.js",
     "dev": "node proxy.js",
     "assets": "node tools/build.js assets",
-    "build": "node tools/build.js html"
+    "build": "node tools/build.js html",
+    "test:jigsaw": "node tools/jigsaw-fixtures.mjs --check && node --test tools/test-jigsaw-parity.mjs"
   },
   "dependencies": {
     "express": "^4.18.2",
