@@ -1,3 +1,4 @@
+import{signTextItems}from'./sign-text-layout.js';
 import{isShulkerBox,shulkerTexture}from'./shulker-box.js';
 // Tile entity (block entity) rendering: chests, signs, skulls, banners, enchanting book, beacon beam, end portal,
 // beds and shulker boxes.
@@ -445,15 +446,11 @@ export class TileEntityRenderer {
         const lines = t.lines || this.signs.get(key(t.x, t.y, t.z)) || ['', '', '', ''];
         if (lines.some((l) => l)) {
           const font = g.gui.font;
-          const items = [];
-          for (let j = 0; j < 4; j++) {
-            const line = lines[j] || '';
-            if (line) items.push({ text: line, x: -font.width(line) / 2, y: j * 10 - 20, color: 0x000000 });
-          }
+          const items=signTextItems(font,lines,{color:0x000000});
           t.textMeshes = buildTextMeshes(this.device, font, items);
           const tn = new Node();
-          const f3 = 0.015625 * f;
-          tn.position.set(0, 0.5 * f, 0.07 * f + 0.001);
+          const f3 = Math.fround(.015625*Math.fround(f));
+          tn.position.set(0,Math.fround(.5*Math.fround(f)),Math.fround(Math.fround(.07)*Math.fround(f)));
           tn.scale.set(f3, -f3, f3);
           t.signTextParams = [];
           for (const m of t.textMeshes) {
