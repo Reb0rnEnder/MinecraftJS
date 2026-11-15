@@ -1,0 +1,26 @@
+import {createRequire} from 'node:module';import {readFile,writeFile,mkdir} from 'node:fs/promises';import {existsSync,readdirSync} from 'node:fs';import {fileURLToPath} from 'node:url';import {join,dirname,delimiter} from 'node:path';import {execFileSync} from 'node:child_process';import {createHash} from 'node:crypto';
+const require=createRequire(import.meta.url),{MC_VERSION:version,getVersionJson}=require('../lib/mcassets.js'),root=fileURLToPath(new URL('../',import.meta.url)),port=join(root,'cache/port-'+version),jar=existsSync(join(port,'client.jar'))?join(port,'client.jar'):join(root,'cache',version+'.jar'),folder=join(root,'cache/adventure-tooltip-native-'+version),source=join(root,'tools/ExtractAdventureTooltips.java');
+const metaPath=existsSync(join(port,'version.json'))?join(port,'version.json'):join(root,'cache',version+'.json'),metadata=existsSync(metaPath)?JSON.parse(await readFile(metaPath)):await getVersionJson(),sha=(bytes,type='sha1')=>createHash(type).update(bytes).digest('hex');
+if(metadata.id!==version||sha(await readFile(jar))!==metadata.downloads.client.sha1)throw Error('Wrong native tooltip jar');
+const jars=p=>existsSync(p)?readdirSync(p,{withFileTypes:true}).flatMap(e=>e.isDirectory()?jars(join(p,e.name)):e.name.endsWith('.jar')?[join(p,e.name)]:[]):[];
+let dependencies=jars(join(port,'bundler/META-INF/libraries'));
+if(!dependencies.length&&existsSync(join(port,'server.jar')))dependencies=[join(port,'server.jar')];
+if(!dependencies.length)for(const library of metadata.libraries){const d=library.downloads?.artifact;if(!d)continue;const path=join(root,'cache/tooltip-libraries',d.path);if(!existsSync(path)){await mkdir(dirname(path),{recursive:true});const bytes=execFileSync('curl',['--fail','--silent','--show-error','--location','--retry','2',d.url],{maxBuffer:64*1024*1024});if(sha(bytes)!==d.sha1)throw Error('Wrong native library '+d.path);await writeFile(path,bytes);}else if(sha(await readFile(path))!==d.sha1)throw Error('Wrong cached native library '+d.path);dependencies.push(path);}
+const config={version,blocks:JSON.parse(await readFile(join(root,'client/data/blocks.json'))).map(b=>b.name),cases:[]};
+const aliases={'1.8.9':{bootstrap:'kb',stack:'zx',parser:'ed'},'1.12.2':{bootstrap:'ni',stack:'aip',parser:'gp'},'1.13.2':{bootstrap:'pf',stack:'ate',parser:'hp'}};Object.assign(config,aliases[version]||{mappings:join(port,'client.txt')});
+const add=(label,nbt)=>config.cases.push({label,nbt});
+for(const [key,flag]of [['CanDestroy',8],['CanPlaceOn',16]]){
+ for(const value of ['stone','minecraft:stone','MINECRAFT:stone',':stone','١','-1','2147483648','1','+1','001','minecraft:missing','999','STONE','stone trailing','stone[foo=bad]',"oak_log['axis'='x']",'oak_log[axis=x]','oak_log[axis=invalid]','wheat[age=04]','wheat[age=8]','wheat[age=+4]','wheat[age=4.0]','stone{a:1}','stone{bad:','stone[]','stone[','stone[ ]','#minecraft:logs','#custom:missing'])add(key+' '+value,'{'+key+':['+JSON.stringify(value)+']}');
+ for(const value of ['8b','8s','8L','8.9f','8.9d','-0.1f','"8"'])add(key+' typed flags '+value,'{'+key+':['+JSON.stringify('stone')+'],HideFlags:'+value+'}');
+ add(key+' duplicates','{'+key+':["stone","stone","dirt"]}');add(key+' empty','{'+key+':[]}');add(key+' wrong list type','{'+key+':[1,2]}');add(key+' wrong tag type','{'+key+':"stone"}');
+ for(const mask of [0,flag,24,255])add(key+' flags '+mask,'{'+key+':["stone"],HideFlags:'+mask+'}');
+}
+add('both sections and unbreakable','{CanDestroy:["stone"],CanPlaceOn:["dirt"],Unbreakable:1b}');add('hidden unbreakable','{CanDestroy:["stone"],Unbreakable:1b,HideFlags:4}');
+await mkdir(folder,{recursive:true});const input=join(folder,'input.json'),out=join(folder,'native.json');await writeFile(input,JSON.stringify(config));
+try{execFileSync(process.env.JAVA||'java',['-cp',[jar,...dependencies].join(delimiter),source,input,out],{stdio:'pipe',maxBuffer:8*1024*1024});}catch(e){process.stderr.write(e.stdout||'');process.stderr.write(e.stderr||e.message);throw Error('Native tooltip oracle failed '+version);}
+const native=JSON.parse(await readFile(out)),canonical=v=>Array.isArray(v)?v.map(canonical):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,canonical(v[k])])):v;
+const fixture={version,clientJarSha1:metadata.downloads.client.sha1,oracleSha256:sha(await readFile(source),'sha256'),cases:native.cases},names=Object.fromEntries(Object.entries(native.blockNames).map(([key,value])=>[key,typeof value==='string'?value:value.translate]));
+for(const [path,text]of [[join(root,'tools/fixtures/adventure-tooltips-native.json'),JSON.stringify(canonical(fixture),null,2)+'\n'],[join(root,'client/js/game/adventure-tooltip-data.js'),'// Native '+version+' block names used by ItemStack permission tooltips.\nexport const ADVENTURE_TOOLTIP_DATA='+JSON.stringify(canonical({version,blockNames:names,legacy:version==='1.8.9'||version==='1.12.2',emptyTagFallback:!['1.19.4','1.20.6'].includes(version)}))+';\n']]){
+ if(process.argv.includes('--check')){if(await readFile(path,'utf8')!==text)throw Error('Stale native tooltip data '+path);}else await writeFile(path,text);
+}
+console.log(version+': '+native.cases.length+' native tooltip cases, '+Object.keys(names).length+' native block names');
