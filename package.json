@@ -6,7 +6,8 @@
     "start": "node proxy.js",
     "dev": "node proxy.js",
     "assets": "node tools/build.js assets",
-    "build": "node tools/build.js html"
+    "build": "node tools/build.js html",
+    "test:adventure-tooltips": "node tools/adventure-tooltip-fixtures.mjs --check && node --test tools/test-adventure-tooltips.mjs tools/test-adventure.mjs"
   },
   "dependencies": {
     "express": "^4.18.2",

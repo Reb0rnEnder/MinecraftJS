@@ -121,7 +121,7 @@ export class Game {
     this.gui.guiScaleSetting = settings.guiScale;
     this.applyLanguage();
     this.gui.resize();
-    this.items = new Items(assets);
+    this.items = new Items(assets);this.items.registryTags=()=>this.tags;
     this.accounts = new Accounts(settings);
     this.renderer = new Renderer(device, assets);
     this.renderer.renderDistance = settings.renderDistance;
