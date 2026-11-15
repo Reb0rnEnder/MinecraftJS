@@ -1,3 +1,6 @@
+import{PAWS_DATA_766}from'../game/paws-data-1.20.6.js';
+import{mcCos}from'../game/physics.js';
+import{animateArmadillo766}from'./armadillo-1.20.6.js';
 import {animateWildMob} from './wild-mobs-1.19.4.js';
 import { spyglassArmPitch } from './spyglass-pose.js';
 import { animateAxolotl } from './axolotl-pose.js';
@@ -78,7 +81,7 @@ function jarAdapter(name, names, pose, options = {}) {
   };
   Object.values(p).flat().forEach(visit);
   const roots = [...all].filter((part) => !children.has(part));
-  const keys = ['px', 'py', 'pz', 'rx', 'ry', 'rz', 'sx','sy','sz','visible'];
+  const keys = ['px', 'py', 'pz', 'rx', 'ry', 'rz', 'sx','sy','sz','visible','skipDraw'];
   const rest = [...all].map((part) => [part, keys.map((key) => part[key])]);
   const m = {
     parts: p, roots, jarModel: name, modelScale: 1, materialOptions: { cull: false }, ...options,
@@ -394,35 +397,18 @@ export function chicken() {
   };
 }
 
-export function wolf() {
-  const p = J('wolf', ['head', 'body', 'leg1', 'leg2', 'leg3', 'leg4', 'tail', 'mane']);
-  return {
-    parts: p, roots: [p.head, p.body, p.mane, p.leg1, p.leg2, p.leg3, p.leg4, p.tail], childY: 5, childZ: 2, quadruped: true,
-    animate: (m, a) => {
-      const q = m.parts;
-      if (a.sitting) {
-        q.mane.py = 16; q.mane.px = -1; q.mane.pz = -3; q.mane.rx = PI * 2 / 5; q.mane.ry = 0;
-        q.body.py = 18; q.body.pz = 0; q.body.rx = PI / 4;
-        q.tail.py = 21; q.tail.pz = 6;
-        q.leg1.px = -2.5; q.leg1.py = 22; q.leg1.pz = 2; q.leg1.rx = PI * 3 / 2;
-        q.leg2.px = 0.5; q.leg2.py = 22; q.leg2.pz = 2; q.leg2.rx = PI * 3 / 2;
-        q.leg3.rx = 5.811947; q.leg3.px = -2.49; q.leg3.py = 17; q.leg3.pz = -4;
-        q.leg4.rx = 5.811947; q.leg4.px = 0.51; q.leg4.py = 17; q.leg4.pz = -4;
-      } else {
-        q.body.py = 14; q.body.pz = 2; q.body.rx = PI / 2;
-        q.mane.py = 14; q.mane.pz = -3; q.mane.px = -1; q.mane.rx = PI / 2; // ModelWolf: mane sits in front of the body
-        q.tail.py = 12; q.tail.pz = 8;
-        q.leg1.py = 16; q.leg1.pz = 7; q.leg2.py = 16; q.leg2.pz = 7; q.leg3.py = 16; q.leg3.pz = -4; q.leg4.py = 16; q.leg4.pz = -4;
-        q.leg1.px = -2.5; q.leg2.px = 0.5; q.leg3.px = -2.5; q.leg4.px = 0.5;
-        q.leg1.rx = cos(a.ls * 0.6662) * 1.4 * a.lsa; q.leg2.rx = cos(a.ls * 0.6662 + PI) * 1.4 * a.lsa;
-        q.leg3.rx = cos(a.ls * 0.6662 + PI) * 1.4 * a.lsa; q.leg4.rx = cos(a.ls * 0.6662) * 1.4 * a.lsa;
-      }
-      q.head.rx = a.pitch * PI / 180; q.head.ry = a.yaw * PI / 180;
-      q.head.rz = 0;
-      q.tail.rx = a.tailRotation !== undefined ? a.tailRotation : PI / 5;
-      q.tail.ry = a.angry ? 0 : cos(a.ls * 0.6662) * 1.4 * a.lsa;
-    },
-  };
+export function wolf(key='wolf') {
+  return jarAdapter(key,['head','body','leg1','leg2','leg3','leg4','tail','mane','realHead','realTail'],(m,a)=>{
+    const q=m.parts,f=Math.fround,c=(phase)=>f(f(mcCos(f(phase*f(.6662)))*f(1.4))*f(a.lsa));
+    q.tail.ry=a.angry?0:c(a.ls);
+    if(a.sitting){
+      q.mane.pivot(-1,16,-3).rot(1.2566371,0,0);q.body.pivot(0,18,0).rot(.7853982,0,0);q.tail.pivot(-1,21,6);
+      q.leg1.pivot(-2.5,22.7,2).rx=4.712389;q.leg2.pivot(.5,22.7,2).rx=4.712389;
+      q.leg3.pivot(-2.49,17,-4).rx=5.811947;q.leg4.pivot(.51,17,-4).rx=5.811947;
+    }else{q.leg1.rx=q.leg4.rx=c(a.ls);q.leg2.rx=q.leg3.rx=f(f(mcCos(f(f(a.ls*f(.6662))+f(PI)))*f(1.4))*f(a.lsa));}
+    q.head.rx=a.pitch*PI/180;q.head.ry=a.yaw*PI/180;q.tail.rx=a.tailRotation??PI/5;
+    q.realHead.rz=a.headRoll??0;q.mane.rz=a.maneRoll??0;q.body.rz=a.bodyRoll??0;q.realTail.rz=a.tailRoll??0;
+  },{nativeAgeable:{scaleHead:false,headScale:2,bodyScale:2,headY:5,headZ:2,bodyY:24}});
 }
 
 export function ocelot() {
@@ -573,8 +559,9 @@ export function vex() {
 // Native model roots for newly registered families. Their animation state
 // adapters are implemented separately; retaining native hierarchy avoids
 // incorrectly treating a different release's model as a biped.
-export const WILD_MOB_TEXTURES={allay:'entity/allay/allay.png',frog:'entity/frog/temperate_frog.png',tadpole:'entity/tadpole/tadpole.png',warden:'entity/warden/warden.png',camel:'entity/camel/camel.png',sniffer:'entity/sniffer/sniffer.png'};
+export const WILD_MOB_TEXTURES={armadillo:'entity/armadillo.png',allay:'entity/allay/allay.png',frog:'entity/frog/temperate_frog.png',tadpole:'entity/tadpole/tadpole.png',warden:'entity/warden/warden.png',camel:'entity/camel/camel.png',sniffer:'entity/sniffer/sniffer.png'};
 export function wildMob(name) {
+ if(name==='armadillo')return jarAdapter(name,JAR[name].slotNames,animateArmadillo766,{texture:WILD_MOB_TEXTURES[name],nativeAgeable:{bodyOnly:true,scaleHead:false,headY:0,headZ:0,headScale:1,bodyScale:1/PAWS_DATA_766.armadilloAgeable.scale,bodyY:PAWS_DATA_766.armadilloAgeable.bodyY}});
  return jarAdapter(name,JAR[name].slotNames,animateWildMob,{texture:WILD_MOB_TEXTURES[name]});
 }
 

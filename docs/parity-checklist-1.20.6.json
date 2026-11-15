@@ -2,20 +2,20 @@
   "schemaVersion": 1,
   "updatedOn": "2026-11-15",
   "target": "1.20.6",
-  "auditedSourceCommit": "e57eea59e93f2dd729ddf8af3535e7dc8a973918",
+  "auditedSourceCommit": "47b6799",
   "fullMultiplayerParity": false,
   "fullJavaClientParity": false,
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 451,
+    "targetTests": 463,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
-    "source": "docs/resource-stack-parity.md",
-    "note": "451 target tests and native-data gates pass; 80 older resource-stack/namespace/font-spacing checks and all ten browser bundles pass. Earlier tooltip, foliage and jigsaw counts are historical and separate."
+    "source": "docs/armored-paws-parity.md",
+    "note": "463 target tests, exact native oracles and development asset extraction pass; 27 older wolf regressions, six native metadata regenerations and all ten browser bundles pass. Earlier resource/tooltip/foliage counts are separate."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {
@@ -1027,13 +1027,15 @@
     {
       "id": "PAWS-01",
       "area": "Armored Paws",
-      "status": "missing",
+      "status": "partial",
       "priority": 1,
       "phase": "P12",
       "scope": "multiplayer",
       "title": "Armadillo model, metadata, roll/unroll and brushing effects",
-      "reason": "Current EntityRenderer._modelFor returns null for an armadillo.",
+      "reason": "Native geometry, four animation clips, shell/baby dimensions, metadata and peek timing/sound are implemented and native-tested. Live brushing/scute feedback and backend acceptance remain.",
       "evidence": [
+        "docs/armored-paws-parity.md",
+        "tools/test-paws-1.20.6.mjs",
         "client/js/render/entity-renderer.js",
         "client/js/game/entities.js"
       ],
@@ -1042,13 +1044,15 @@
     {
       "id": "PAWS-02",
       "area": "Armored Paws",
-      "status": "missing",
+      "status": "partial",
       "priority": 1,
       "phase": "P12",
       "scope": "multiplayer",
       "title": "All wolf variants and variant-specific textures/layers",
-      "reason": "Wolf texture selection uses only tame/angry/base paths and ignores variant registry.",
+      "reason": "All nine Configuration-owned variants, tame/anger/collar/baby layers and partial metadata updates are implemented. Interested-head/wet-shake animation/feedback and live reload/backend acceptance remain.",
       "evidence": [
+        "docs/armored-paws-parity.md",
+        "tools/test-paws-1.20.6.mjs",
         "client/js/render/entity-renderer.js",
         "client/js/game/entities.js",
         "client/js/net/known-pack-1.20.6.js"
@@ -1058,13 +1062,15 @@
     {
       "id": "PAWS-03",
       "area": "Armored Paws",
-      "status": "missing",
+      "status": "partial",
       "priority": 1,
       "phase": "P12",
       "scope": "multiplayer",
       "title": "Wolf armor, dye and damage layers with repair/removal feedback",
-      "reason": "No wolf-armor equipment/render path is present in current consumers.",
+      "reason": "Native BODY slot, armor geometry/dye/cracks, invisible equipment and repair/removal state updates are implemented. Live repair/shears outcomes and all associated feedback remain unverified.",
       "evidence": [
+        "docs/armored-paws-parity.md",
+        "tools/test-paws-1.20.6.mjs",
         "client/js/render/entity-renderer.js",
         "client/js/game/items.js"
       ],
@@ -1318,7 +1324,7 @@
       "phase": "P15",
       "scope": "experiment",
       "title": "Update 1.21 content available inside the 1.20.6 jar",
-      "reason": "Catalog gating exists; enabled blocks/mobs/items/menus/effects are not fully implemented or accepted.",
+      "reason": "Catalog gating exists. The native entity table now exposes missing Bogged/Breeze adapters, wind-charge and ominous-spawner presentation explicitly; enabled experimental content is not fully implemented or accepted.",
       "evidence": [
         "client/js/gui/creative-data-1.20.6.js",
         "client/js/render/entity-renderer.js"
@@ -1464,6 +1470,15 @@
         "PACK-01"
       ],
       "evidence": "docs/resource-stack-parity.md"
+    },
+    {
+      "title": "Armadillo native geometry and roll/peek animations; all wolf variant textures, BODY armor/dye/cracks and native metadata consumers",
+      "checkpoints": [
+        "PAWS-01",
+        "PAWS-02",
+        "PAWS-03"
+      ],
+      "evidence": "docs/armored-paws-parity.md"
     }
   ],
   "sourceFindings": [
@@ -1471,7 +1486,7 @@
     "Font references, filters, Unihex and Font Settings satisfy their named implementation scopes. Live font/backend and complex-script acceptance is separately tracked as FONT-04.",
     "Native jigsaw fields and packet values are implemented and accepted as UI-06. Live server generation remains UI-06-LIVE.",
     "Hanging/two-sided signs, banners and Adventure tooltips have native regressions. Complete block-entity metadata, decorated pots, display entities and remaining sign editor acceptance still need work.",
-    "Armadillo models, wolf variants/armor and scoreboard formats are still missing consumers.",
+    "Armadillo geometry/roll/peek and wolf variant/armor consumers now have native regressions. Remaining Paws animations/feedback and live acceptance are explicit in PAWS-01\u201304. Scoreboard formats remain missing.",
     "Fabulous has an implementation; exact-target routing and scene validation remain open.",
     "Resource-pack overlays and resource filters now have native-backed implementation. Advanced Java regex compatibility and atlas source/palette dispatch remain distinct open work."
   ]

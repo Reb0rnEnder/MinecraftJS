@@ -59,7 +59,7 @@ export class Part {
     this.sx = this.sy = this.sz = 1;
     this.children = [];
     this.mirror = false;
-    this.visible = true;
+    this.visible = true;this.skipDraw=false;
     this.obj = null;
   }
   tex(u, v) { this.u = u; this.v = v; return this; }
@@ -78,7 +78,7 @@ export class Part {
     if (this.boxes.length) {
       const mesh = boxesMesh(this.boxes, this.texW, this.texH);
       g.addDrawable(mesh, null);
-      this.drawable = g.drawables[0];
+      this.drawable = g.drawables[0];this.drawable.modelPart=this;
     }
     for (const c of this.children) g.add(c.build());
     this.obj = g;
@@ -93,6 +93,7 @@ export class Part {
     o.rotation.set(this.rx, this.ry, this.rz, 'ZYX');
     o.scale.set(this.sx,this.sy,this.sz);
     o.visible = this.visible;
+    if(this.drawable)this.drawable.visible=!this.skipDraw;
     for (const c of this.children) c.sync();
   }
 

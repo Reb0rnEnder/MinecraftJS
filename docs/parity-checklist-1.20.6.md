@@ -1,22 +1,22 @@
 # Full-parity checklist — MinecraftJS 1.20.6
 
-Updated 2026-11-15. Audited source: `e57eea59e93f2dd729ddf8af3535e7dc8a973918`. **Full multiplayer parity: no. Full Java-client parity: no.**
+Updated 2026-11-15. Audited source: `47b6799`. **Full multiplayer parity: no. Full Java-client parity: no.**
 
 Edit [docs/parity-checklist-1.20.6.json](parity-checklist-1.20.6.json), then run `node tools/port-1.20.6/parity-status.mjs --write`. This file is generated; `--check` catches stale counts, invalid evidence paths and false completion claims.
 
 ## How far along?
 
-The native multiplayer foundation works. Substantial feature and acceptance work remains, including confirmed missing consumers. Existing transition milestones: **6 done, 6 partial, 5 todo** (17 total). They differ greatly in size, so this is not a completion percentage.
+The native multiplayer foundation works. Substantial feature and acceptance work remains, including confirmed missing consumers. Existing transition milestones: **6 done, 7 partial, 4 todo** (17 total). They differ greatly in size, so this is not a completion percentage.
 
 | Scope | Accepted checkpoints | Partial | Missing implementation | Needs verification | Total |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Native multiplayer + enabled native experiments | 15 | 35 | 12 | 17 | 79 |
+| Native multiplayer + enabled native experiments | 15 | 38 | 9 | 17 | 79 |
 | Separate products / optional compatibility | 0 | 2 | 2 | 0 | 4 |
-| All tracked checkpoints | 15 | 37 | 14 | 17 | 83 |
+| All tracked checkpoints | 15 | 40 | 11 | 17 | 83 |
 
 These **checkpoints differ in size and do not enumerate every defect**. 64 required checkpoints are still open. An honest percentage or ETA is unavailable until release coverage is triaged. Accepted rows cover exactly their named scope, not an entire subsystem.
 
-Latest target gate: **451 tests**, zero failures/skips. See [docs/resource-stack-parity.md](resource-stack-parity.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
+Latest target gate: **463 tests**, zero failures/skips. See [docs/armored-paws-parity.md](armored-paws-parity.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
 
 ## Completed implementation deliverables
 
@@ -28,6 +28,7 @@ These checked items describe completed work. A parent checkpoint can still have 
  - [x] Native sign geometry/text and banner/shield pattern consumers; remaining editors/content stay open. [docs/sign-banner-parity-1.20.6.md](sign-banner-parity-1.20.6.md).
  - [x] Adventure component permissions, native tooltips and target fallback registry tags; full block-entity metadata remains ACT-01. [docs/adventure-tooltip-parity.md](adventure-tooltip-parity.md).
  - [x] Format-selected overlays and filtered resource stacks across files, fonts, sounds, languages, models and textures; advanced Java regex acceptance remains PACK-01. [docs/resource-stack-parity.md](resource-stack-parity.md).
+ - [x] Armadillo native geometry and roll/peek animations; all wolf variant textures, BODY armor/dye/cracks and native metadata consumers. [docs/armored-paws-parity.md](armored-paws-parity.md).
 
 ## Current source findings
 
@@ -35,7 +36,7 @@ These checked items describe completed work. A parent checkpoint can still have 
 - Font references, filters, Unihex and Font Settings satisfy their named implementation scopes. Live font/backend and complex-script acceptance is separately tracked as FONT-04.
 - Native jigsaw fields and packet values are implemented and accepted as UI-06. Live server generation remains UI-06-LIVE.
 - Hanging/two-sided signs, banners and Adventure tooltips have native regressions. Complete block-entity metadata, decorated pots, display entities and remaining sign editor acceptance still need work.
-- Armadillo models, wolf variants/armor and scoreboard formats are still missing consumers.
+- Armadillo geometry/roll/peek and wolf variant/armor consumers now have native regressions. Remaining Paws animations/feedback and live acceptance are explicit in PAWS-01–04. Scoreboard formats remain missing.
 - Fabulous has an implementation; exact-target routing and scene validation remain open.
 - Resource-pack overlays and resource filters now have native-backed implementation. Advanced Java regex compatibility and atlas source/palette dispatch remain distinct open work.
 
@@ -135,9 +136,9 @@ A box is checked only for `accepted`. For each open row, implement/verify the co
 
 ### Armored Paws
 
-- [ ] **PAWS-01 — Armadillo model, metadata, roll/unroll and brushing effects** (P1; Missing implementation; P12). Native standing/rolled/transitions/baby model, metadata, scute/brush effects and sounds render correctly. Remaining: Current EntityRenderer._modelFor returns null for an armadillo. Evidence/start: [client/js/render/entity-renderer.js](../client/js/render/entity-renderer.js), [client/js/game/entities.js](../client/js/game/entities.js).
-- [ ] **PAWS-02 — All wolf variants and variant-specific textures/layers** (P1; Missing implementation; P12). All nine server-selected variants retain native tame/angry/collar/baby state through updates and reload. Remaining: Wolf texture selection uses only tame/angry/base paths and ignores variant registry. Evidence/start: [client/js/render/entity-renderer.js](../client/js/render/entity-renderer.js), [client/js/game/entities.js](../client/js/game/entities.js).
-- [ ] **PAWS-03 — Wolf armor, dye and damage layers with repair/removal feedback** (P1; Missing implementation; P12). Native body equipment, cracks/dye, repair/shears removal, component copying and effects match server state. Remaining: No wolf-armor equipment/render path is present in current consumers. Evidence/start: [client/js/render/entity-renderer.js](../client/js/render/entity-renderer.js), [client/js/game/items.js](../client/js/game/items.js).
+- [ ] **PAWS-01 — Armadillo model, metadata, roll/unroll and brushing effects** (P1; Partial; P12). Native standing/rolled/transitions/baby model, metadata, scute/brush effects and sounds render correctly. Remaining: Native geometry, four animation clips, shell/baby dimensions, metadata and peek timing/sound are implemented and native-tested. Live brushing/scute feedback and backend acceptance remain. Evidence/start: [docs/armored-paws-parity.md](armored-paws-parity.md), [tools/test-paws-1.20.6.mjs](../tools/test-paws-1.20.6.mjs).
+- [ ] **PAWS-02 — All wolf variants and variant-specific textures/layers** (P1; Partial; P12). All nine server-selected variants retain native tame/angry/collar/baby state through updates and reload. Remaining: All nine Configuration-owned variants, tame/anger/collar/baby layers and partial metadata updates are implemented. Interested-head/wet-shake animation/feedback and live reload/backend acceptance remain. Evidence/start: [docs/armored-paws-parity.md](armored-paws-parity.md), [tools/test-paws-1.20.6.mjs](../tools/test-paws-1.20.6.mjs).
+- [ ] **PAWS-03 — Wolf armor, dye and damage layers with repair/removal feedback** (P1; Partial; P12). Native body equipment, cracks/dye, repair/shears removal, component copying and effects match server state. Remaining: Native BODY slot, armor geometry/dye/cracks, invisible equipment and repair/removal state updates are implemented. Live repair/shears outcomes and all associated feedback remain unverified. Evidence/start: [docs/armored-paws-parity.md](armored-paws-parity.md), [tools/test-paws-1.20.6.mjs](../tools/test-paws-1.20.6.mjs).
 - [ ] **PAWS-04 — Horse/llama body equipment and final 1.20.6 inventory hotfix** (P1; Needs verification; P12). Horse/trader-llama inventory and armor/body equipment survive updates/rejoin; replay MC-271109 client-visible case. Remaining: Native target fields decode; slot/body interpretation has no final live acceptance. Evidence/start: [client/js/gui/screens/containers.js](../client/js/gui/screens/containers.js), [client/js/render/entity-renderer.js](../client/js/render/entity-renderer.js).
 
 ### Inherited rendering and effects
@@ -163,7 +164,7 @@ A box is checked only for `accepted`. For each open row, implement/verify the co
 ### Enabled native experiments
 
 - [ ] **EXP-01 — Bundles and trade-rebalance experiment acceptance** (P2; Partial; P15; experiment). Both enabled/disabled cases match target behavior with native components and server-owned trades. Remaining: Creative feature masks are native; enabled feature consumers/trades are not fully accepted. Evidence/start: [client/js/gui/creative-data-1.20.6.js](../client/js/gui/creative-data-1.20.6.js), [client/js/game/bundle.js](../client/js/game/bundle.js).
-- [ ] **EXP-02 — Update 1.21 content available inside the 1.20.6 jar** (P2; Partial; P15; experiment). Keep default stable catalogs clean; explicitly accept enabled crafter/trial/vault/breeze/mace and related target-native experiments without later 1.21 behavior. Remaining: Catalog gating exists; enabled blocks/mobs/items/menus/effects are not fully implemented or accepted. Evidence/start: [client/js/gui/creative-data-1.20.6.js](../client/js/gui/creative-data-1.20.6.js), [client/js/render/entity-renderer.js](../client/js/render/entity-renderer.js).
+- [ ] **EXP-02 — Update 1.21 content available inside the 1.20.6 jar** (P2; Partial; P15; experiment). Keep default stable catalogs clean; explicitly accept enabled crafter/trial/vault/breeze/mace and related target-native experiments without later 1.21 behavior. Remaining: Catalog gating exists. The native entity table now exposes missing Bogged/Breeze adapters, wind-charge and ominous-spawner presentation explicitly; enabled experimental content is not fully implemented or accepted. Evidence/start: [client/js/gui/creative-data-1.20.6.js](../client/js/gui/creative-data-1.20.6.js), [client/js/render/entity-renderer.js](../client/js/render/entity-renderer.js).
 
 ### Other product scope
 

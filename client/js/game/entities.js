@@ -1,3 +1,4 @@
+import {applyPawsMetadata,tickArmadillo766} from './paws-1.20.6.js';
 import {EFFECT_766} from './effects-1.20.6.js';
 import {encodeEntityPosition,relativeEntityPosition} from './entity-position.js';
 import {playPickupSound} from '../audio/client-sound-triggers.js';
@@ -179,6 +180,8 @@ export class EntityManager {
     e.type = fam ? fam[0] : e.entityName || `unknown:${p.type}`;
     if (fam && fam[1]) Object.assign(e, fam[1]);
     if (e.type === 99) e.health = e.maxHealth = 100;
+    if(e.entityName==='wolf')e.health=e.maxHealth=8;
+    if(e.entityName==='armadillo')e.health=e.maxHealth=12;
     e.kind = e.entityName === 'armor_stand' ? 'armorstand' : def && def.mob ? 'mob' : 'unknown_mob';
     e.typeName = MOB_NAMES[e.type] || e.entityName || 'Unknown entity';
     e.headYaw = e.prevHeadYaw = p.headPitch; // packet's "headPitch" is the head yaw
@@ -369,6 +372,7 @@ export class EntityManager {
     if (slot === 0) e.equipment[0] = item;
     else if (slot === 1) e.offhand = item;
     else if (slot >= 2 && slot <= 5) e.equipment[slot - 1] = item;
+    else if(slot===6)e.bodyEquipment=item;
   }
 
   setMetadata(id, meta) {
@@ -568,7 +572,7 @@ export class EntityManager {
         case 'vex': bit(12, 1, 'charging'); break;
         case 'pig': set(13, 'saddled');if(m[14]!==undefined){e.boostDuration=m[14];e.boostTicks=0;e.boosting=m[14]>0;}break;
         case 'sheep': if (m[13] !== undefined) { e.fleece = m[13] & 15; e.sheared = !!(m[13] & 16); } break;
-        case 'wolf': bit(13, 2, 'angry'); set(15, 'wolfHealth'); set(16, 'begging'); set(17, 'collar'); break;
+        case 'wolf': break; // Native 1.20.6 accessors are consumed by applyPawsMetadata below.
         case 'ocelot': set(15, 'catType'); break;
         case 'parrot': set(15, 'parrotVariant'); break;
         case 'rabbit': set(13, 'rabbitType'); break;
@@ -600,6 +604,7 @@ export class EntityManager {
         default: break;
       }
     }
+    applyPawsMetadata(e,wire);
   }
 
   setAttributes(p) {
@@ -639,6 +644,7 @@ export class EntityManager {
     const g = this.game;
     if (!e) return;
     if(e.entityName==='warden'){if(p.entityStatus===4)e.wildAttackStart=e.ticks;if(p.entityStatus===62)e.sonicBoomStart=e.ticks;if(p.entityStatus===61)e.tendrilStart=e.ticks;}
+    if(e.entityName==='armadillo'&&p.entityStatus===64){e.armadilloPeekReceived=true;g.sound.play('entity.armadillo.peek',e.x,e.y,e.z,1,1,{category:'neutral'});}
     switch (p.entityStatus) {
       case 2: e.hurtTime = 10; g.sound.playEntityHurt(e); break;
       case 3: e.dead = true; e.health = 0; g.sound.playEntityDeath(e); break;
@@ -967,6 +973,7 @@ export class EntityManager {
       if (e.id !== g.entityId) g.particles?.sprint?.(e);
       if(e.entityName==='goat') e.goatRammingTicks = Math.max(0, Math.min(20, (e.goatRammingTicks || 0) + (e.goatRamming ? 1 : -2)));
       if(e.entityName==='glow_squid'&&e.darkTicks>0)e.darkTicks--;
+      if(e.entityName==='armadillo')tickArmadillo766(e);
       if(e.entityName==='fox')tickFox(e);
       if(e.entityName==='bee'){tickBeeSound(this,e);e.prevBeeRoll=e.beeRoll||0;e.beeRoll=Math.fround(e.beeRolling?Math.min(1,Math.fround(e.prevBeeRoll+Math.fround(.2))):Math.max(0,Math.fround(e.prevBeeRoll-Math.fround(.24))));}
       if (e.boostedId && e.boostedId === g.entityId) this._fireworkBoost(e);

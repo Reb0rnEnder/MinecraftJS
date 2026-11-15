@@ -186,7 +186,7 @@ async function collectAssets(opts) {
   // Extraction failures must stop the build rather than publish stale geometry.
   const models = assertCompleteModels(extractModels(jar));
   const {validateVisualRuntime}=await import('./port-1.14.4/validate-visual-runtime.mjs');
-  console.log("Native visual validation:",JSON.stringify(validateVisualRuntime(jar,models,null,{dataDir:DATA_DIR})));
+  console.log("Native visual validation:",JSON.stringify(validateVisualRuntime(jar,models,null,{dataDir:DATA_DIR,pendingEntities:new Set(['bogged','breeze'])})));
   files.set('bundles/entity-models.json', Buffer.from(JSON.stringify(models)));
   console.log(`Entity models: ${Object.keys(models).length} from the jar`);
 

@@ -137,9 +137,9 @@ Review shared fixes for every applicable existing branch, newest to oldest; pres
 
 ## Immediate next work
 
-P02 through P07 are complete at their named milestone scopes. **P10 remains the next milestone**, with native font references, Unihex, filter options and Language/Font Settings first. **P08 also has confirmed critical consumer gaps**: the native damaged-sword fixture decodes damage 37 while `Items.damage` reads 0; custom-name/enchantment/potion/equipment consumers still depend on missing legacy NBT. See `ITEM-01` onward in the detailed checklist.
+The detailed checklist is the source of current completion state. Native item API/tooltip consumers, font providers/settings, sign/banner transforms, jigsaw controls, resource overlays/filters, and the initial Armored Paws rendering/state consumers now have native regressions. The former damaged-sword value-zero and missing-font-provider findings are resolved.
 
-Next priorities are component consumers and fonts, then native sign data/editor and menu correctness; resource overlays/atlases, Trails & Tales/Armored Paws and inherited display/head work; authenticated services, enabled experiments, backend/scenario acceptance and coherent builds. Update the JSON checklist and regenerate its Markdown after every accepted batch. Seven of 17 broad milestones are done, five partial, five todo; no completion percentage is inferred. No branch is certified as full parity.
+Next work includes the remaining Paws animations/feedback and horse/llama body equipment; archaeology/decorated pots and armor trims; atlas source/palette dispatch; display/head rendering and score formats; authenticated services, enabled experiments, and backend/scenario acceptance. See [Armored Paws evidence](armored-paws-parity.md) and the [generated checklist](parity-checklist-1.20.6.md) for implemented parts and remaining criteria. Six of 17 broad milestones are done, seven partial, four todo. Their sizes differ; no completion percentage is inferred. No branch is certified as full parity.
 
 ## Native implementation anchors
 

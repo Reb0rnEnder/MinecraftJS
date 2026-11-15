@@ -1,3 +1,6 @@
+import{PAWS_DATA_766}from'../game/paws-data-1.20.6.js';
+import{wolfTexture766,wolfArmor766}from'./wolf-1.20.6.js';
+import{wolfTailAngle766}from'../game/paws-1.20.6.js';
 import {updateGolemCracks} from './iron-golem-cracks.js';
 import{updateGuiEquipment,guiHandPoses}from'./gui-player-equipment.js';
 import{paintingTiles,paintingTileLight}from'./painting.js';
@@ -274,7 +277,7 @@ export class EntityRenderer {
 
   _texFor(e) {
     if(e.entityName==='frog')return 'entity/frog/'+(['temperate','warm','cold'][e.frogVariant||0]||'temperate')+'_frog.png';
-    if(['allay','tadpole','warden','camel','sniffer'].includes(e.entityName))return M.WILD_MOB_TEXTURES[e.entityName];
+    if(['armadillo','allay','tadpole','warden','camel','sniffer'].includes(e.entityName))return M.WILD_MOB_TEXTURES[e.entityName];
     if (e.kind === 'player') return null;
     if (e.kind === 'armorstand') return 'entity/armorstand/wood.png';
     const t = e.type;
@@ -307,7 +310,7 @@ export class EntityRenderer {
       case 'goat': return 'entity/goat/goat.png';
       case 'axolotl': return 'entity/axolotl/axolotl_'+(['lucy','wild','gold','cyan','blue'][e.axolotlVariant]||'lucy')+'.png';
       case 'glow_squid': return 'entity/squid/glow_squid.png';
-      case 95: return e.tamed ? 'entity/wolf/wolf_tame.png' : e.angry ? 'entity/wolf/wolf_angry.png' : 'entity/wolf/wolf.png';
+      case 95: return wolfTexture766(this.game,e);
       case 96: return 'entity/cow/'+(e.mooshroomType==='brown'?'brown':'red')+'_mooshroom.png';
       case 97: return 'entity/snow_golem.png';
       case 98: return 'entity/cat/' + (CAT_TEX[e.catType || 0] || 'ocelot') + '.png';
@@ -352,7 +355,7 @@ export class EntityRenderer {
   }
 
   _modelFor(e) {
-    if(['allay','frog','tadpole','warden','camel','sniffer'].includes(e.entityName))return M.wildMob(e.entityName);
+    if(['armadillo','allay','frog','tadpole','warden','camel','sniffer'].includes(e.entityName))return M.wildMob(e.entityName);
     if (e.kind === 'player') {
       const s = this.skinFor(e);
       return M.playerModel(s.slim, 64, 64);
@@ -524,6 +527,7 @@ export class EntityRenderer {
         addLayer(layerModel,layer.texture,{hideHat:!!layer.hideHat,cull:false});
       }
       if(e.type==='trader_llama')addLayer(M.llama(true),'entity/llama/decor/trader_llama.png',{cull:false});
+      if(e.type===95){v.wolfCollar=addLayer(M.wolf(),'entity/wolf/wolf_collar.png',{wolfLayer:true});v.wolfArmor=addLayer(M.wolf('wolfArmor'),'entity/wolf/wolf_armor.png',{wolfLayer:true});v.wolfArmorDye=addLayer(M.wolf('wolfArmor'),'entity/wolf/wolf_armor_overlay.png',{wolfLayer:true});v.wolfArmorCracks=addLayer(M.wolf('wolfArmor'),'entity/wolf/wolf_armor_crackiness_low.png',{wolfLayer:true});}
       if (e.type === 99) v.golemCracks = addLayer(M.ironGolem(), 'entity/iron_golem/iron_golem_crackiness_low.png', { golemCracks: true });
       if (e.type === 91) v.wool = addLayer(M.sheep(true), 'entity/sheep/sheep_fur.png');
       if (e.type === 52 || e.type === 59) addLayer(M.spider(), 'entity/spider_eyes.png', { fullBright: true, transparent: true, additive: true, depthWrite: false, eyes: true });
@@ -1297,7 +1301,7 @@ export class EntityRenderer {
       elytra: (e.elytraTicks || 0) > 4, speedSq,
       onGround: e.onGround, eatingGrass: e.eatingGrass || 0, sitting: e.sitting, angry: e.angry, hanging: e.hanging,
       carrying: !!e.carried, screaming: e.screaming, horseType: e.horseType, saddled: !!(e.horseFlags & 4) || e.saddled,
-      tailRotation: e.tamed ? (0.55 - (20 - (e.wolfHealth || 20)) * 0.02) * Math.PI : Math.PI / 5,
+      tailRotation: wolfTailAngle766(e),
       witchDrinking: e.kind === 'mob' && e.type === 66 && e.usingItem,
       squish: 0, tentacleAngle:isSquid(e)?squidTentacle(e,partial):undefined,
       peek: e.type === 69 ? (e.prevPeek || 0) + ((e.peek || 0) - (e.prevPeek || 0)) * partial : 0,
@@ -1324,6 +1328,7 @@ export class EntityRenderer {
     }
     // Health and invisibility changes must apply even when distant poses are throttled.
     if (v.golemCracks) updateGolemCracks(e, v.golemCracks);
+    if(v.wolfCollar){const armor=wolfArmor766(g.items,e.bodyEquipment),color=PAWS_DATA_766.dyes[e.collar??14]??PAWS_DATA_766.dyes[14];v.wolfCollar.obj.visible=!!e.tamed&&!armor&&!e.invisible;v.wolfCollar.mat.params.setTint(...color,1);v.wolfArmor.obj.visible=!!armor;v.wolfArmorDye.obj.visible=!!armor?.color;v.wolfArmorCracks.obj.visible=!!armor?.crack;if(armor?.color)v.wolfArmorDye.mat.params.setTint(...armor.color,1);if(armor?.crack)v.wolfArmorCracks.mat.tex='entity/wolf/wolf_armor_crackiness_'+armor.crack+'.png';}
     if (v.lodSkip && v.posed && v.wasInvisible === !!e.invisible) {
       // Keep the previous pose; only the transforms above were updated
       this._updateHeld(e, v, held, args);
@@ -1337,7 +1342,7 @@ export class EntityRenderer {
     for (const r of model.roots) r.sync();
     // Invisibility hides the body, not equipped armor/items. Keep arm/head nodes
     // alive for attached equipment, and keep hologram-only stands bodyless.
-    for (const draw of v.bodyDrawables) draw.visible = !e.invisible;
+    for (const draw of v.bodyDrawables) draw.visible = !e.invisible&&!draw.modelPart?.skipDraw;
     // Player-specific visibility
     if (e.kind === 'player') {
       const pp = model.parts;
@@ -1370,9 +1375,10 @@ export class EntityRenderer {
       if (L.golemCracks && !L.obj.visible) continue;
       if (!L.golemCracks) L.model.animate(L.model, args);
       copyPose(model, L.model);
+      if(L.model.nativeAgeable)scaleAgeableGroups(L.model.childGroups,!!e.child,L.model.nativeAgeable);
       if(L.hideHat){for(const key of ['head','hat','hatRim','headwear'])if(L.model.parts[key])L.model.parts[key].visible=false;}
       for (const r of L.model.roots) r.sync();
-      L.obj.visible = !e.invisible;
+      if(!L.wolfLayer)L.obj.visible = !e.invisible;
     }
     if (v.wool) v.wool.obj.visible = !e.sheared && !e.invisible;
     if (v.wool) { const c = FLEECE[e.fleece || 0]; v.wool.mat.params.setTint(c[0], c[1], c[2], 1); }

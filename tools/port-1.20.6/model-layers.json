@@ -1,6 +1,60 @@
 {
   "hangingSign": {
     "layer": "minecraft:hanging_sign/oak#main",
-    "fields": ["$root", "plank", "vChains", "normalChains"]
+    "fields": [
+      "$root",
+      "plank",
+      "vChains",
+      "normalChains"
+    ]
+  },
+  "wolf": {
+    "layer": "minecraft:wolf#main",
+    "fields": [
+      "head",
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "tail",
+      "upper_body",
+      "real_head",
+      "real_tail"
+    ]
+  },
+  "wolfArmor": {
+    "layer": "minecraft:wolf_armor#main",
+    "fields": [
+      "head",
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "tail",
+      "upper_body",
+      "real_head",
+      "real_tail"
+    ]
+  },
+  "armadillo": {
+    "layer": "minecraft:armadillo#main",
+    "fields": [
+      "$root",
+      "body",
+      "head",
+      "tail",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "cube",
+      "head_cube",
+      "right_ear",
+      "left_ear",
+      "right_ear_cube",
+      "left_ear_cube"
+    ]
   }
 }

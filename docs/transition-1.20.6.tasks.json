@@ -266,7 +266,7 @@
     {
       "id": "P12",
       "title": "Implement Armored Paws and final equipment/inventory behavior",
-      "status": "todo",
+      "status": "partial",
       "dependsOn": [
         "P04",
         "P08",
@@ -277,7 +277,10 @@
         "1.20.6"
       ],
       "acceptance": "Armadillo, wolf variants/armor and body-equipment/llama slot interpretation match native state and rendering.",
-      "evidence": []
+      "evidence": [
+        "2026-11-15: native Armadillo geometry/animation/state and wolf variants/body armor/dye/cracks implemented; 463 target regressions. See docs/armored-paws-parity.md.",
+        "Remaining wolf interested/wet-shake behavior, live brush/repair/removal feedback, horse/llama body-equipment interpretation and backend acceptance."
+      ]
     },
     {
       "id": "P13",
