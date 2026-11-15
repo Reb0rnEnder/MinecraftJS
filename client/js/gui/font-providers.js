@@ -5,6 +5,7 @@ import {decodeUtf8} from '../util/utf8.js';
 import {TRUETYPE_WASM} from '../lib/truetype-wasm.js';
 const location=(value,prefix='')=>{const i=value.indexOf(':');return i<0?'minecraft:'+prefix+value:value.slice(0,i+1)+prefix+value.slice(i+1);};
 export async function fontBytes(assets,id) {
+ if(assets.readResourceBytes)return assets.readResourceBytes(id);
  const [namespace,...rest]=id.split(':'),path=rest.join(':');
  for(const pack of assets.packs||[]){const name=pack.prefix+'assets/'+namespace+'/'+path;if(pack.zip?.has(name))return pack.zip.read(name);}
  return assets.source.bytes(namespace+'/'+path);
@@ -93,8 +94,11 @@ export async function loadFontSets(assets) {
  for(const pack of assets.packs||[])for(const path of pack.zip?.list(pack.prefix+'assets/')||[]){const match=/^([^/]+)\/font\/(.+)\.json$/.exec(path.slice((pack.prefix+'assets/').length));if(match)fonts.add(match[1]+':'+match[2]);}
  for(const id of fonts){
   const [namespace,...parts]=id.split(':'),name=parts.join(':'),path='font/'+name+'.json',definitions=[];
+  if(assets.readResourceStack){for(const {bytes}of await assets.readResourceStack(id.replace(':',':font/')+'.json'))try{definitions.push(JSON.parse(decodeUtf8(bytes)));}catch{}}
+  else{
   for(const pack of assets.packs||[])if(pack.zip?.has(pack.prefix+'assets/'+namespace+'/'+path)||namespace==='minecraft'&&pack.has(path))try{const bytes=pack.zip?.read(pack.prefix+'assets/'+namespace+'/'+path)||pack.read(path);definitions.push(JSON.parse(decodeUtf8(bytes)));}catch(e){console.warn('Bad font definition',pack.id,path);}
   const base=['minecraft:default','minecraft:alt','minecraft:uniform'].includes(id)?await assets.source.bytes(namespace+'/'+path):null;if(base)definitions.push(JSON.parse(decodeUtf8(base)));
+  }
   const providers=[];
   for(const definition of definitions)for(const def of definition.providers||[])try{
    const key='font:'+id+':'+providers.length;
