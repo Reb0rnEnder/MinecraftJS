@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
-  "updatedOn": "2026-11-14",
+  "updatedOn": "2026-11-15",
   "target": "1.20.6",
-  "auditedSourceCommit": "92e620e61b3d6a45e1f9d40613711e320bf45c61",
+  "auditedSourceCommit": "62a5d9730f3ed36a2e68b0f00f214e01508e6835",
   "fullMultiplayerParity": false,
   "fullJavaClientParity": false,
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 220,
+    "targetTests": 230,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
-    "source": "docs/sign-banner-parity-1.20.6.md",
-    "note": "220 target tests are current. The 81 foliage backport checks are the earlier separately recorded audit, not a newly repeated run; current shared backport batches are recorded in sign-banner-parity-1.20.6.md."
+    "source": "docs/shared-sign-ui-audit.md",
+    "note": "230 current target tests and all native-data checks pass. The 81 foliage backport checks are the earlier separate audit. This batch has 138 scoped older-version checks; no live GPU or Java FPS metrics are claimed."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {

@@ -378,12 +378,12 @@ for (const binding of Object.values(KEY_BINDINGS)) binding[1] = VANILLA_UI.bindi
 const compareText = (a,b) => a < b ? -1 : a > b ? 1 : 0; // Java String.compareTo, not locale collation.
 
 
-class ControlsScreen extends OptionsBase {
+class ControlsScreen extends NativeOptionsListScreen {
  constructor(game,parent){super(game,parent,'controls.title');}
- init(){const cx=Math.floor(this.width/2),y=this.height/6-12;
-  this.buttons.push(new Button(202,cx-155,y,150,20,tr('options.mouse_settings'),()=>this.game.screens.open(new MouseSettingsScreen(this.game,this))));
-  this.buttons.push(new Button(203,cx+5,y,150,20,tr('controls.keybinds'),()=>this.game.screens.open(new KeyBindsScreen(this.game,this))));
-  this.grid(['key.sneak','key.sprint','options.autoJump','options.operatorItemsTab'].map(key=>nativeOption(this,key)),y+24);this.doneButton(y+72);
+ optionKeys(){return ['options.mouse_settings','controls.keybinds','key.sneak','key.sprint','options.autoJump','options.operatorItemsTab'];}
+ makeOption(key){
+  if(key==='options.mouse_settings'||key==='controls.keybinds')return{label:()=>tr(key),click:()=>this.game.screens.open(new (key==='options.mouse_settings'?MouseSettingsScreen:KeyBindsScreen)(this.game,this))};
+  return super.makeOption(key);
  }
 }
 

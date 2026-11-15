@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {ZipFile} from '../lib/zip.js';
-import {OptionsScreen,AccessibilityScreen,OnlineOptionsScreen,CreditsAndAttributionScreen} from '../client/js/gui/screens/options.js';
+import {OptionsScreen,AccessibilityScreen,OnlineOptionsScreen,CreditsAndAttributionScreen,ControlsScreen,MouseSettingsScreen,KeyBindsScreen} from '../client/js/gui/screens/options.js';
 import {ResourcePacksScreen} from '../client/js/gui/screens/packs.js';
 import {packCompatibility} from '../client/js/resource-pack-compatibility.js';
 import {TitleScreen} from '../client/js/gui/screens/menus.js';
@@ -74,3 +74,5 @@ test('15px title icons use native integer centering inside their 20px buttons',(
  const g=game(),s=new TitleScreen(g);s.init();const calls=[];
  for(const id of [5,6]){const b=s.buttons.find(b=>b.id===id);b.render({button(){},sprite:(...args)=>calls.push(args)},-1,-1);assert.equal(calls.at(-1)[1],b.x+3);assert.equal(calls.at(-1)[2],b.y+3);}
 });
+
+test('Controls uses the native option-list layout and routes its first row to mouse/key-bind screens',()=>{const g=game(),s=new ControlsScreen(g,null);s.init();assert.deepEqual(s.rows.flat().map(b=>b.optionKey),['options.mouse_settings','controls.keybinds','key.sneak','key.sprint','options.autoJump','options.operatorItemsTab']);assert.deepEqual([s.list.top,s.list.bottom],[33,g.gui.height-33]);assert.equal(s.buttons[0].y,g.gui.height-26);s.rows[0][0].onClick();assert.ok(g.screens.current instanceof MouseSettingsScreen);assert.equal(g.screens.current.parent,s);s.rows[0][1].onClick();assert.ok(g.screens.current instanceof KeyBindsScreen);assert.equal(g.screens.current.parent,s);});

@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import {test} from 'node:test';
-import {ControlsScreen,MouseSettingsScreen,AccessibilityScreen,VideoScreen} from '../client/js/gui/screens/options.js';
+import * as Options from '../client/js/gui/screens/options.js';
+const {MouseSettingsScreen,AccessibilityScreen,VideoScreen}=Options,ControlsScreen=Options.KeyBindsScreen||Options.ControlsScreen;
 import {Settings,DEFAULT_KEYS} from '../client/js/game/settings.js';
 import {setPlatform} from '../client/js/platform/platform.js';
 import {setTranslator} from '../client/js/gui/i18n.js';
@@ -9,16 +10,16 @@ import {Input} from '../client/js/game/input.js';
 setPlatform({loadSetting:()=>null,saveSetting(){},now:()=>100,isFullscreen:()=>false});
 setTranslator(k=>k);
 function fixture(width=420,height=300){
- const texts=[],buttons=[],gui={width,height,textWidth:s=>s.length*6,button:(...b)=>buttons.push(b),text:(...t)=>texts.push(t),textCentered(){},dirtBackground(){},worldBackground(){},rect(){},quad(){},scissor(){},clearScissor(){},gradient(){}};
+ const texts=[],buttons=[],gui={width,height,textWidth:s=>s.length*6,button:(...b)=>buttons.push(b),text:(...t)=>texts.push(t),textCentered(){},dirtBackground(){},worldBackground(){},rect(){},quad(){},scissor(){},clearScissor(){},gradient(){},menuBackground(){},sprite(){}};
  const game={gui,settings:new Settings(),assets:{texture:()=>null},sound:{playUi(){}},narrator:{label:()=>'',active:false,cycle(){}},screens:{open(s){this.current=s;},close(){}},renderer:{},device:{name:'WebGL 2'},applyGraphicsSettings(){}};
  return {game,texts,buttons};
 }
 test('controls use extracted native geometry at narrow and wide GUI sizes',()=>{
  for(const [w,h] of [[420,300],[427,301],[854,480]]){
   const {game,texts}=fixture(w,h),s=new ControlsScreen(game,null);s.init();
-  assert.equal(s.list.top,43);assert.equal(s.list.bottom,h-32);assert.equal(s.list.slotHeight,20);
+  assert.equal(s.list.top,Options.KeyBindsScreen?20:43);assert.equal(s.list.bottom,h-32);assert.equal(s.list.slotHeight,20);
   assert.equal(s.list.width,w+45);assert.equal(s.list.showSelectionBox,false);
-  assert.deepEqual(s.buttons.map(b=>[b.id,b.y]),[[202,18],[203,18],[201,h-29],[200,h-29]]);
+  assert.deepEqual(s.buttons.map(b=>[b.id,b.y]),Options.KeyBindsScreen?[[201,h-29],[200,h-29]]:[[202,18],[203,18],[201,h-29],[200,h-29]]);
   s.render(game.gui,-1,-1);assert.ok(texts.every(t=>Number.isInteger(t[1])&&Number.isInteger(t[2])),'text lies on integer GUI pixels');
  }
 });
@@ -35,8 +36,7 @@ test('binding, duplicate warnings, Escape unbinding, mouse binding and reset act
 });
 test('Tab traverses row widgets, skips disabled Reset buttons, and scrolls focused bindings into view',()=>{
  const {game}=fixture(420,220),s=new ControlsScreen(game,null);s.init();
- s.key({code:'Tab'});assert.equal(s.focusedWidget,s.buttons[0]);
- s.key({code:'Tab'});assert.equal(s.focusedWidget,s.buttons[1]);
+ if(!Options.KeyBindsScreen){s.key({code:'Tab'});assert.equal(s.focusedWidget,s.buttons[0]);s.key({code:'Tab'});assert.equal(s.focusedWidget,s.buttons[1]);}
  s.key({code:'Tab'});const first=s.entries.find(e=>e.key);assert.equal(s.focusedWidget,first.changeButton);
  s.key({code:'Enter'});assert.equal(s.binding,first.key);s.key({code:'KeyR'});s.key({code:'Tab'});assert.equal(s.focusedWidget,first.resetButton);
  s.key({code:'Enter'});assert.equal(game.settings.keys[first.key],DEFAULT_KEYS[first.key]);s.key({code:'Tab'});assert.notEqual(s.focusedWidget,s.buttons[0],'reset becoming disabled does not restart focus traversal');
@@ -52,13 +52,13 @@ test('controls list drags only via the scrollbar; row controls still take clicks
 });
 test('mouse settings use native option rows and support focused slider keys',()=>{
  const {game}=fixture(420,180),s=new MouseSettingsScreen(game,null);s.init();
- assert.deepEqual([s.list.top,s.list.bottom,s.list.slotHeight,s.list.listWidth],[32,148,25,400]);
- assert.equal(s.buttons[0].y,153);s.key({code:'Tab'});const slider=s.focusedWidget,value=game.settings.sensitivity;
+ assert.deepEqual([s.list.top,s.list.bottom,s.list.slotHeight,s.list.listWidth],[33,147,25,400]);
+ assert.equal(s.buttons[0].y,154);s.key({code:'Tab'});const slider=s.focusedWidget,value=game.settings.sensitivity;
  s.key({code:'ArrowRight'});assert.ok(game.settings.sensitivity>value);s.key({code:'ArrowLeft'});assert.ok(Math.abs(game.settings.sensitivity-value)<1e-9);
 });
 test('Accessibility positions match the native grid; 1.15 video begins with the wide biome row',()=>{
  const {game}=fixture(),a=new AccessibilityScreen(game,null);a.init();
- assert.equal(a.buttons[0].y,50);assert.equal(a.buttons.at(-1).y,194);
+ if(a.rows){assert.deepEqual(a.rows.flat().map(b=>b.optionKey),VANILLA_UI.accessibilityOptions);assert.deepEqual([a.list.top,a.list.bottom,a.list.slotHeight],[33,267,25]);assert.ok(a.buttons.every(b=>b.y===274));}else{assert.equal(a.buttons[0].y,50);assert.equal(a.buttons.at(-1).y,194);}
  if(VANILLA_UI.version==='1.15.2'){
   assert.equal(a.buttons.length,9);assert.ok(VANILLA_UI.accessibilityOptions.includes('key.sneak'));assert.ok(VANILLA_UI.accessibilityOptions.includes('key.sprint'));
   const sneak=a.buttons[VANILLA_UI.accessibilityOptions.indexOf('key.sneak')];sneak.onClick();assert.equal(game.settings.toggleCrouch,true);assert.match(sneak.label(),/options.key.toggle/);
@@ -74,3 +74,5 @@ if(VANILLA_UI.version==='1.15.2')test('toggle sneak/sprint latch on presses, ign
  handlers.pointerlock(false);assert.equal(input.isDown('sprint'),false);settings.toggleCrouch=false;
  handlers.keydown({code:key,repeat:false});assert.equal(input.isDown('sneak'),true);handlers.keyup({code:key});assert.equal(input.isDown('sneak'),false);
 });
+
+if(Options.KeyBindsScreen)test('native Controls parent opens its separate key-bind screen',()=>{const {game}=fixture(),s=new Options.ControlsScreen(game,null);s.init();const key=s.rows.flat().find(b=>b.optionKey==='controls.keybinds');assert.ok(key);key.onClick();assert.ok(game.screens.current instanceof Options.KeyBindsScreen);assert.equal(game.screens.current.parent,s);});

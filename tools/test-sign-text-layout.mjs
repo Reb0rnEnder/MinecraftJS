@@ -1,0 +1,13 @@
+import{test}from'node:test';import assert from'node:assert/strict';import{readFileSync}from'node:fs';import{initBlocks}from'../client/js/world/blocks.js';import{setJarModels}from'../client/js/render/entity-models.js';import{setModelDevice}from'../client/js/render/boxmodel.js';import{TileEntityRenderer}from'../client/js/render/tile-renderer.js';import{Node}from'../client/js/gfx/scene.js';import{signTextItems}from'../client/js/render/sign-text-layout.js';
+const read=p=>JSON.parse(readFileSync(new URL('../client/'+p,import.meta.url))),data=read('data/blocks.json');initBlocks(data,read('data/blockCollisionShapes.json'));setJarModels(read('assets/bundles/entity-models.json'));const device={createMesh:(format,cpu)=>({format,cpu}),destroyMesh(){}};setModelDevice(device);
+function font(){return{width:s=>s.length*5,wrap:(s,w)=>{const parts=s.split('\n');return[parts[0].slice(0,Math.floor(w/5)),parts[0].slice(Math.floor(w/5)),...parts.slice(1)];},layout:()=>({quads:[]})};}
+test('sign rows use only the native first 90px line and Java integer centering',()=>{
+ const f=font(),items=signTextItems(f,['ABCDEFGHIJKLMNOPQRSTUVWXYZ','first\nsecond','',''],{color:0});assert.deepEqual(items,[{text:'ABCDEFGHIJKLMNOPQR',x:-45,y:-20,color:0},{text:'first',x:-12,y:-10,color:0}]);const hanging=signTextItems(f,['ABCDEFGHIJKLMNOPQRSTUVWXYZ','','',''],{},60,9);assert.equal(hanging[0].text,'ABCDEFGHIJKL');assert.equal(hanging[0].y,-18);
+});
+test('the actual placed-sign renderer applies clipping, centering and the native text plane',()=>{
+ const b=data.find(b=>b.name==='oak_sign')||data.find(b=>b.name==='standing_sign')||data.find(b=>b.name==='sign');assert.ok(b);const state=b.defaultState??b.minStateId??(b.id<<4),drawn=[],f=font();f.layout=(text,x,y,color)=>{drawn.push({text,x,y,color});return{quads:[]};};
+ const g={device,settings:{},gui:{font:f},renderer:{entityRoot:new Node(),camPos:[0,0,0]},world:{getState:()=>state}},r=new TileEntityRenderer(g),t={type:'sign',state,x:0,y:0,z:0,data:{},lines:['ABCDEFGHIJKLMNOPQRSTUVWXYZ','first\nsecond','','']};
+ // Modern sides contain the same JSON-string component format as native SignText.
+ t.data.front_text={messages:t.lines.map(s=>JSON.stringify(s))};r._build(t);assert.ok(t.obj);assert.equal(drawn[0].text,'ABCDEFGHIJKLMNOPQR');assert.equal(drawn[1].text,'first');assert.equal(drawn[1].x,-12);assert.equal(drawn[1].y,-10);
+ let plane;t.obj.traverse(n=>{if(Math.abs(n.scale.x-Math.fround(.015625*Math.fround(2/3)))<1e-9)plane=n;});assert.ok(plane);assert.ok(Math.abs(plane.position.y-Math.fround(1/3))<1e-7);assert.ok(Math.abs(plane.position.z-.046666666865348816)<1e-7,'no extra anti-z-fighting depth offset');
+});
