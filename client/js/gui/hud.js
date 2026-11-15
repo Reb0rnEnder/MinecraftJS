@@ -1,3 +1,4 @@
+import{textBackgroundColor}from'./text-background.js';
 import{renderBlockOverlay}from'../render/block-overlay.js';
 import {debugLeft,packetRates} from './debug-overlay.js';
 import {VANILLA_UI} from './vanilla-layout.js';
@@ -840,12 +841,12 @@ export class Hud {
       const [n, v] = rows[j - 1];
       const y = baseY - j * 9;
       const r = W - k1 + 2;
-      gui.rect(x0 - 2, y, r, y + 9, 0x50000000);
+      gui.rect(x0 - 2, y, r, y + 9, textBackgroundColor(this.game.settings,.3));
       gui.text(n, x0, y, 0xffffff, false);
       gui.text(v, r - gui.textWidth(v), y, 0xffffff, false);
       if (j === rows.length) {
-        gui.rect(x0 - 2, y - 9 - 1, r, y - 1, 0x60000000);
-        gui.rect(x0 - 2, y - 1, r, y, 0x50000000);
+        gui.rect(x0 - 2, y - 9 - 1, r, y - 1, textBackgroundColor(this.game.settings,.4));
+        gui.rect(x0 - 2, y - 1, r, y, textBackgroundColor(this.game.settings,.3));
         gui.text(obj.displayName, x0 + w / 2 - gui.textWidth(obj.displayName) / 2, y - 9, 0xffffff, false);
       }
     }
