@@ -2,20 +2,20 @@
   "schemaVersion": 1,
   "updatedOn": "2026-11-15",
   "target": "1.20.6",
-  "auditedSourceCommit": "92b4b4410a5db1438bbdef73f96de6ad79f89880",
+  "auditedSourceCommit": "e57eea59e93f2dd729ddf8af3535e7dc8a973918",
   "fullMultiplayerParity": false,
   "fullJavaClientParity": false,
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 414,
+    "targetTests": 451,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
-    "source": "docs/adventure-tooltip-parity.md",
-    "note": "Native-data gates and final 414 target tests pass. This follow-up passes 1352 older Adventure/tooltip tests and all ten browser bundles. Earlier foliage/jigsaw counts are historical and separate; no live graphics/FPS certification."
+    "source": "docs/resource-stack-parity.md",
+    "note": "451 target tests and native-data gates pass; 80 older resource-stack/namespace/font-spacing checks and all ten browser bundles pass. Earlier tooltip, foliage and jigsaw counts are historical and separate."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {
@@ -294,12 +294,12 @@
     {
       "id": "FONT-01",
       "area": "Fonts and resources",
-      "status": "partial",
+      "status": "accepted",
       "priority": 0,
       "phase": "P10",
       "scope": "multiplayer",
       "title": "Recursive font reference providers",
-      "reason": "Native reference/filter/Unihex stack and font-options navigation implemented; 78 Java glyph/pixel fixtures and GUI/provider regressions pass. Live WebMC pack/backend acceptance and remaining malformed-provider/complex-script cases are not certified.",
+      "reason": "Named native provider/metrics/navigation scope is implemented and covered by the pinned 78-glyph metric/pixel oracle plus provider, reload and GUI regressions. Broader live font/backend acceptance is tracked separately as FONT-04.",
       "evidence": [
         "client/js/gui/font-providers.js",
         "docs/font-audit-1.20.6.md",
@@ -311,12 +311,12 @@
     {
       "id": "FONT-02",
       "area": "Fonts and resources",
-      "status": "partial",
+      "status": "accepted",
       "priority": 0,
       "phase": "P10",
       "scope": "multiplayer",
       "title": "Unihex providers and asset-index font resources",
-      "reason": "Native reference/filter/Unihex stack and font-options navigation implemented; 78 Java glyph/pixel fixtures and GUI/provider regressions pass. Live WebMC pack/backend acceptance and remaining malformed-provider/complex-script cases are not certified.",
+      "reason": "Named native provider/metrics/navigation scope is implemented and covered by the pinned 78-glyph metric/pixel oracle plus provider, reload and GUI regressions. Broader live font/backend acceptance is tracked separately as FONT-04.",
       "evidence": [
         "client/js/gui/font-providers.js",
         "docs/transition-1.20.6.md",
@@ -329,12 +329,12 @@
     {
       "id": "FONT-03",
       "area": "Fonts and resources",
-      "status": "partial",
+      "status": "accepted",
       "priority": 0,
       "phase": "P10",
       "scope": "multiplayer",
       "title": "Uniform/Japanese filters and native Font Settings navigation",
-      "reason": "Native reference/filter/Unihex stack and font-options navigation implemented; 78 Java glyph/pixel fixtures and GUI/provider regressions pass. Live WebMC pack/backend acceptance and remaining malformed-provider/complex-script cases are not certified.",
+      "reason": "Named native provider/metrics/navigation scope is implemented and covered by the pinned 78-glyph metric/pixel oracle plus provider, reload and GUI regressions. Broader live font/backend acceptance is tracked separately as FONT-04.",
       "evidence": [
         "client/js/gui/font-providers.js",
         "client/js/gui/screens/options.js",
@@ -347,15 +347,19 @@
     {
       "id": "PACK-01",
       "area": "Fonts and resources",
-      "status": "missing",
+      "status": "partial",
       "priority": 1,
       "phase": "P10",
       "scope": "multiplayer",
       "title": "Resource-pack overlays and resource filters",
-      "reason": "Current loader lacks native overlay-directory/filter semantics.",
+      "reason": "Native overlay metadata, virtual directories and shared filtering/resource stacks now drive files, fonts, sounds, languages, models and textures. Native 30-case metadata oracle and integration checks pass; full Java regex-language compatibility and broader graphical lifecycle acceptance remain open.",
       "evidence": [
         "client/js/asset-source.js",
-        "client/js/resource-models.js"
+        "client/js/resource-models.js",
+        "client/js/resource-layers.js",
+        "docs/resource-stack-parity.md",
+        "tools/test-resource-layers.mjs",
+        "tools/fixtures/resource-pack-metadata-native.json"
       ],
       "acceptance": "Default/custom packs honor format-gated overlays and filtered resources, including reload and removal."
     },
@@ -674,12 +678,12 @@
     {
       "id": "UI-06",
       "area": "Menus and input",
-      "status": "partial",
+      "status": "accepted",
       "priority": 1,
       "phase": "P13",
       "scope": "multiplayer",
       "title": "Native jigsaw editor fields and packet values",
-      "reason": "Native name/target/pool/final-state/joint/priorities and Generate controls implemented, including release-specific older editors. Java-produced packet/resource fixtures and actual screen regressions pass. Live graphical/editor and server generation acceptance remain open.",
+      "reason": "Native four fields, joint, priorities, generation controls and packet values are implemented. Pinned Java resource/packet fixtures and editor regressions pass; live server generation is tracked separately as UI-06-LIVE.",
       "evidence": [
         "client/js/gui/screens/jigsaw.js",
         "client/js/net/packets.js",
@@ -687,7 +691,7 @@
         "tools/test-jigsaw-parity.mjs",
         "tools/fixtures/jigsaw-native.json"
       ],
-      "acceptance": "Native 1.20.6 jigsaw name/target/pool/joint/priorities/generation controls and server updates match."
+      "acceptance": "Native 1.20.6 editor fields, validation, controls and outgoing update/generate values match the pinned client."
     },
     {
       "id": "UI-07",
@@ -1381,6 +1385,94 @@
         "client/js/net/wisp.js"
       ],
       "acceptance": "Track real server/proxy regressions and protocol extensions separately from vanilla server acceptance."
+    },
+    {
+      "id": "FONT-04",
+      "area": "Fonts and resources",
+      "status": "unverified",
+      "priority": 2,
+      "phase": "P10",
+      "scope": "multiplayer",
+      "title": "Live font-pack/backend and complex-script acceptance",
+      "reason": "Native provider scopes FONT-01/02/03 are implemented; authenticated WebMC pack delivery, graphical backend matrix and complete bidi/complex-script behavior remain uncertified.",
+      "evidence": [
+        "docs/font-audit-1.20.6.md",
+        "client/js/gui/font-providers.js"
+      ],
+      "acceptance": "Exercise real pack delivery/reload, missing/malformed fonts, fallback and complex scripts on applicable graphics backends."
+    },
+    {
+      "id": "UI-06-LIVE",
+      "area": "Menus and input",
+      "status": "unverified",
+      "priority": 2,
+      "phase": "P13",
+      "scope": "multiplayer",
+      "title": "Jigsaw live server edits and generation acceptance",
+      "reason": "Native editor/packet implementation UI-06 is complete; a live graphical native-server generation scenario has not been recorded.",
+      "evidence": [
+        "docs/jigsaw-parity-audit.md",
+        "tools/test-jigsaw-parity.mjs"
+      ],
+      "acceptance": "Verify field edits, cancellation and Generate against resulting native server block-entity data and generated structures."
     }
+  ],
+  "completedWork": [
+    {
+      "title": "Protocol 766 body layouts: 122 incoming IDs and 58 actual outgoing builders",
+      "checkpoints": [
+        "BASE-06"
+      ],
+      "evidence": "tools/test-1.20.6-packet-corpus.mjs"
+    },
+    {
+      "title": "Native placement-support data for all 26,684 block states; contextual placement remains ACT-02",
+      "checkpoints": [
+        "ACT-02"
+      ],
+      "evidence": "docs/placement-support-1.20.6.md"
+    },
+    {
+      "title": "Component damage, names, stack limits and item APIs; broader consumer matrix remains ITEM-01\u201304",
+      "checkpoints": [
+        "ITEM-01",
+        "ITEM-02",
+        "ITEM-03",
+        "ITEM-04"
+      ],
+      "evidence": "tools/test-1.20.6-item-ux.mjs"
+    },
+    {
+      "title": "Native sign geometry/text and banner/shield pattern consumers; remaining editors/content stay open",
+      "checkpoints": [
+        "CONTENT-01",
+        "ITEM-05"
+      ],
+      "evidence": "docs/sign-banner-parity-1.20.6.md"
+    },
+    {
+      "title": "Adventure component permissions, native tooltips and target fallback registry tags; full block-entity metadata remains ACT-01",
+      "checkpoints": [
+        "ACT-01",
+        "BASE-05"
+      ],
+      "evidence": "docs/adventure-tooltip-parity.md"
+    },
+    {
+      "title": "Format-selected overlays and filtered resource stacks across files, fonts, sounds, languages, models and textures; advanced Java regex acceptance remains PACK-01",
+      "checkpoints": [
+        "PACK-01"
+      ],
+      "evidence": "docs/resource-stack-parity.md"
+    }
+  ],
+  "sourceFindings": [
+    "Sword damage, names, stack metadata, native potion/effect tables and item API consumers are implemented and have native regressions. Remaining item families and end-to-end acceptance are identified in ITEM-01\u201306; the old damage-zero diagnostic is resolved.",
+    "Font references, filters, Unihex and Font Settings satisfy their named implementation scopes. Live font/backend and complex-script acceptance is separately tracked as FONT-04.",
+    "Native jigsaw fields and packet values are implemented and accepted as UI-06. Live server generation remains UI-06-LIVE.",
+    "Hanging/two-sided signs, banners and Adventure tooltips have native regressions. Complete block-entity metadata, decorated pots, display entities and remaining sign editor acceptance still need work.",
+    "Armadillo models, wolf variants/armor and scoreboard formats are still missing consumers.",
+    "Fabulous has an implementation; exact-target routing and scene validation remain open.",
+    "Resource-pack overlays and resource filters now have native-backed implementation. Advanced Java regex compatibility and atlas source/palette dispatch remain distinct open work."
   ]
 }

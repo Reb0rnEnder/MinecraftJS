@@ -1,0 +1,917 @@
+{
+  "version": "1.20.6",
+  "clientJarSha1": "05b6f1c6b46a29d6ea82b4e0d42190e42402030f",
+  "oracleSha256": "f0c3e33765e2436545f62fb5827d46be6b9b19457b866c317acfa223ec3a6b57",
+  "cases": [
+    {
+      "section": "filter",
+      "label": "none",
+      "value": {
+        "block": []
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "missing block",
+      "value": {},
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": false
+    },
+    {
+      "section": "filter",
+      "label": "all",
+      "value": {
+        "block": [
+          {}
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        true,
+        true,
+        true,
+        true
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "namespace",
+      "value": {
+        "block": [
+          {
+            "namespace": "minecraft"
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "path",
+      "value": {
+        "block": [
+          {
+            "path": "textures/.*"
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        false,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "both",
+      "value": {
+        "block": [
+          {
+            "namespace": "minecraft",
+            "path": "textures/.*"
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "cross-product",
+      "value": {
+        "block": [
+          {
+            "namespace": "minecraft",
+            "path": "lang/.*"
+          },
+          {
+            "namespace": "custom",
+            "path": "textures/.*"
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        true,
+        true,
+        false,
+        false
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "full match",
+      "value": {
+        "block": [
+          {
+            "namespace": "mine",
+            "path": "stone"
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        false,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "invalid regex",
+      "value": {
+        "block": [
+          {
+            "path": "["
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": false
+    },
+    {
+      "section": "filter",
+      "label": "case flag",
+      "value": {
+        "block": [
+          {
+            "namespace": "(?i)MINECRAFT"
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        true,
+        false,
+        false,
+        false
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "quoted",
+      "value": {
+        "block": [
+          {
+            "path": "\\Qtextures/block/stone.png\\E"
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": true,
+      "results": [
+        true,
+        false,
+        true,
+        false,
+        true
+      ]
+    },
+    {
+      "section": "filter",
+      "label": "non-string",
+      "value": {
+        "block": [
+          {
+            "path": 4
+          }
+        ]
+      },
+      "queries": [
+        {
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        },
+        {
+          "namespace": "custom",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "namespace": "custom",
+          "path": "font/default.json"
+        },
+        {
+          "namespace": "x",
+          "path": "textures/block/stone.png.mcmeta"
+        }
+      ],
+      "valid": false
+    },
+    {
+      "section": "overlays",
+      "label": "range 32",
+      "value": {
+        "entries": [
+          {
+            "formats": 32,
+            "directory": "layer"
+          }
+        ]
+      },
+      "queries": [
+        13,
+        31,
+        32,
+        33,
+        40
+      ],
+      "valid": true,
+      "results": [
+        [],
+        [],
+        [
+          "layer"
+        ],
+        [],
+        []
+      ]
+    },
+    {
+      "section": "overlays",
+      "label": "range [30,32]",
+      "value": {
+        "entries": [
+          {
+            "formats": [
+              30,
+              32
+            ],
+            "directory": "layer"
+          }
+        ]
+      },
+      "queries": [
+        13,
+        31,
+        32,
+        33,
+        40
+      ],
+      "valid": true,
+      "results": [
+        [],
+        [
+          "layer"
+        ],
+        [
+          "layer"
+        ],
+        [],
+        []
+      ]
+    },
+    {
+      "section": "overlays",
+      "label": "range [33,40]",
+      "value": {
+        "entries": [
+          {
+            "formats": [
+              33,
+              40
+            ],
+            "directory": "layer"
+          }
+        ]
+      },
+      "queries": [
+        13,
+        31,
+        32,
+        33,
+        40
+      ],
+      "valid": true,
+      "results": [
+        [],
+        [],
+        [],
+        [
+          "layer"
+        ],
+        [
+          "layer"
+        ]
+      ]
+    },
+    {
+      "section": "overlays",
+      "label": "range {\"min_inclusive\":31,\"max_inclusive\":33}",
+      "value": {
+        "entries": [
+          {
+            "formats": {
+              "min_inclusive": 31,
+              "max_inclusive": 33
+            },
+            "directory": "layer"
+          }
+        ]
+      },
+      "queries": [
+        13,
+        31,
+        32,
+        33,
+        40
+      ],
+      "valid": true,
+      "results": [
+        [],
+        [
+          "layer"
+        ],
+        [
+          "layer"
+        ],
+        [
+          "layer"
+        ],
+        []
+      ]
+    },
+    {
+      "section": "overlays",
+      "label": "range {\"min_inclusive\":31}",
+      "value": {
+        "entries": [
+          {
+            "formats": {
+              "min_inclusive": 31
+            },
+            "directory": "layer"
+          }
+        ]
+      },
+      "queries": [
+        13,
+        31,
+        32,
+        33,
+        40
+      ],
+      "valid": false
+    },
+    {
+      "section": "overlays",
+      "label": "range [32]",
+      "value": {
+        "entries": [
+          {
+            "formats": [
+              32
+            ],
+            "directory": "layer"
+          }
+        ]
+      },
+      "queries": [
+        13,
+        31,
+        32,
+        33,
+        40
+      ],
+      "valid": false
+    },
+    {
+      "section": "overlays",
+      "label": "range [32,33,34]",
+      "value": {
+        "entries": [
+          {
+            "formats": [
+              32,
+              33,
+              34
+            ],
+            "directory": "layer"
+          }
+        ]
+      },
+      "queries": [
+        13,
+        31,
+        32,
+        33,
+        40
+      ],
+      "valid": false
+    },
+    {
+      "section": "overlays",
+      "label": "range [33,31]",
+      "value": {
+        "entries": [
+          {
+            "formats": [
+              33,
+              31
+            ],
+            "directory": "layer"
+          }
+        ]
+      },
+      "queries": [
+        13,
+        31,
+        32,
+        33,
+        40
+      ],
+      "valid": false
+    },
+    {
+      "section": "overlays",
+      "label": "range 32.5",
+      "value": {
+        "entries": [
+          {
+            "formats": 32.5,
+            "directory": "layer"
+          }
+        ]
+      },
+      "queries": [
+        13,
+        31,
+        32,
+        33,
+        40
+      ],
+      "valid": true,
+      "results": [
+        [],
+        [],
+        [
+          "layer"
+        ],
+        [],
+        []
+      ]
+    },
+    {
+      "section": "overlays",
+      "label": "range \"32\"",
+      "value": {
+        "entries": [
+          {
+            "formats": "32",
+            "directory": "layer"
+          }
+        ]
+      },
+      "queries": [
+        13,
+        31,
+        32,
+        33,
+        40
+      ],
+      "valid": false
+    },
+    {
+      "section": "overlays",
+      "label": "directory layer",
+      "value": {
+        "entries": [
+          {
+            "formats": 32,
+            "directory": "layer"
+          }
+        ]
+      },
+      "queries": [
+        32
+      ],
+      "valid": true,
+      "results": [
+        [
+          "layer"
+        ]
+      ]
+    },
+    {
+      "section": "overlays",
+      "label": "directory A_1.2-3",
+      "value": {
+        "entries": [
+          {
+            "formats": 32,
+            "directory": "A_1.2-3"
+          }
+        ]
+      },
+      "queries": [
+        32
+      ],
+      "valid": true,
+      "results": [
+        [
+          "A_1.2-3"
+        ]
+      ]
+    },
+    {
+      "section": "overlays",
+      "label": "directory .",
+      "value": {
+        "entries": [
+          {
+            "formats": 32,
+            "directory": "."
+          }
+        ]
+      },
+      "queries": [
+        32
+      ],
+      "valid": true,
+      "results": [
+        [
+          "."
+        ]
+      ]
+    },
+    {
+      "section": "overlays",
+      "label": "directory ..",
+      "value": {
+        "entries": [
+          {
+            "formats": 32,
+            "directory": ".."
+          }
+        ]
+      },
+      "queries": [
+        32
+      ],
+      "valid": true,
+      "results": [
+        [
+          ".."
+        ]
+      ]
+    },
+    {
+      "section": "overlays",
+      "label": "directory nested/layer",
+      "value": {
+        "entries": [
+          {
+            "formats": 32,
+            "directory": "nested/layer"
+          }
+        ]
+      },
+      "queries": [
+        32
+      ],
+      "valid": false
+    },
+    {
+      "section": "overlays",
+      "label": "directory ",
+      "value": {
+        "entries": [
+          {
+            "formats": 32,
+            "directory": ""
+          }
+        ]
+      },
+      "queries": [
+        32
+      ],
+      "valid": false
+    },
+    {
+      "section": "overlays",
+      "label": "directory space name",
+      "value": {
+        "entries": [
+          {
+            "formats": 32,
+            "directory": "space name"
+          }
+        ]
+      },
+      "queries": [
+        32
+      ],
+      "valid": false
+    },
+    {
+      "section": "overlays",
+      "label": "order",
+      "value": {
+        "entries": [
+          {
+            "formats": 32,
+            "directory": "a"
+          },
+          {
+            "formats": 32,
+            "directory": "b"
+          },
+          {
+            "formats": 33,
+            "directory": "c"
+          },
+          {
+            "formats": 32,
+            "directory": "a"
+          }
+        ]
+      },
+      "queries": [
+        32,
+        33
+      ],
+      "valid": true,
+      "results": [
+        [
+          "a",
+          "b",
+          "a"
+        ],
+        [
+          "c"
+        ]
+      ]
+    }
+  ]
+}

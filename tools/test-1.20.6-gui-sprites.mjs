@@ -36,9 +36,9 @@ test('native nine-slice sprites cover the destination exactly while preserving t
 
 test('sprite metadata belongs to the pack supplying its PNG and malformed tile sizes cannot hang rendering',async()=>{
   const path='gui/sprites/widget/button.png',base={type:'nine_slice',width:200,height:20,border:3};
-  const fake=()=>({version:1,guiSpriteScaling:new Map(),guiSpriteLoads:new Map(),defaultGuiSprites:{[path]:base},packs:[],async imageAsync(){return{}}});
+  const fake=()=>Object.assign(Object.create(Assets.prototype),{version:1,source:{bytes:async()=>null},guiSpriteScaling:new Map(),guiSpriteLoads:new Map(),defaultGuiSprites:{[path]:base},packs:[],async imageAsync(){return{}}});
   let a=fake();assert.deepEqual(await Assets.prototype.loadGuiSprite.call(a,path),base);
-  a=fake();a.packs=[{has:()=>true,read:()=>null}];assert.deepEqual(await Assets.prototype.loadGuiSprite.call(a,path),{type:'stretch'});
+  a=fake();a.packs=[{has:p=>p.endsWith('.png'),read:p=>p.endsWith('.png')?new Uint8Array([1]):null}];assert.deepEqual(await Assets.prototype.loadGuiSprite.call(a,path),{type:'stretch'});
   a=fake();a.packs=[{has:()=>true,read:()=>new TextEncoder().encode(JSON.stringify({gui:{scaling:{type:'tile',width:0,height:16}}}))}];
   await assert.rejects(Assets.prototype.loadGuiSprite.call(a,path),/dimensions/);
 });
