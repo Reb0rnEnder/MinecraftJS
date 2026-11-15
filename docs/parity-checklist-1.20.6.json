@@ -2,20 +2,20 @@
   "schemaVersion": 1,
   "updatedOn": "2026-11-15",
   "target": "1.20.6",
-  "auditedSourceCommit": "664d1a4d89a85e44cbdbbe6565c2a65f14791296",
+  "auditedSourceCommit": "36da55b8303edc8c0a2bce24f8218d127e8f0f14",
   "fullMultiplayerParity": false,
   "fullJavaClientParity": false,
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 242,
+    "targetTests": 323,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
-    "source": "docs/jigsaw-parity-audit.md",
-    "note": "242 current target tests and all native-data checks pass. This jigsaw batch also passes 93 scoped older-version jigsaw/Controls checks and all seven browser bundles. The 81 foliage backport checks are the earlier separate audit; no live GPU or Java FPS metrics are claimed."
+    "source": "docs/adventure-components-1.20.6.md",
+    "note": "323 current target tests and all native-data checks pass. Adventure backport eligibility review: 517 passing older-version checks, with their native formats preserved. The preceding jigsaw batch passed 93 older GUI checks; foliage counts are historical and separate. No live graphical/FPS certification."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {
@@ -156,7 +156,7 @@
       "phase": "P04",
       "scope": "multiplayer",
       "title": "All 56 item-component wire types and native defaults",
-      "reason": "All 56 component IDs have schema codecs; native food/instrument regressions are corrected, but independent native coverage of every customized component branch remains incomplete.",
+      "reason": "All 56 component IDs have schema codecs; native food/instrument and Adventure ranged-property/optional-NBT wire errors are corrected. Native coverage now includes 76 customized Adventure stacks; independent coverage of every other customized component branch remains incomplete.",
       "evidence": [
         "tools/test-1.20.6-components.mjs",
         "tools/port-1.20.6/stack-fixtures.json",
@@ -550,10 +550,13 @@
       "phase": "P08",
       "scope": "multiplayer",
       "title": "Native can_break/can_place_on Adventure components",
-      "reason": "Adventure helper still parses old text predicates; component wire support alone does not enforce permissions.",
+      "reason": "Effective can_break/can_place_on components now drive actual Adventure mining and item use. Native 76-stack/state/NBT fixtures and five integration regressions pass, including optional range and NBT wire corrections. Native full block-entity metadata reconstruction, permission tooltips and live acceptance remain open.",
       "evidence": [
         "client/js/game/adventure.js",
-        "client/js/net/item-components-1.20.6.js"
+        "client/js/net/item-components-1.20.6.js",
+        "docs/adventure-components-1.20.6.md",
+        "tools/test-adventure.mjs",
+        "tools/fixtures/adventure-1.20.6.json"
       ],
       "acceptance": "Native component predicates honor tags/state/block-entity data and preserve permitted container/item interactions."
     },

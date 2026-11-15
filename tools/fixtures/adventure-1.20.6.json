@@ -1,0 +1,791 @@
+{
+  "clientJarSha1": "05b6f1c6b46a29d6ea82b4e0d42190e42402030f",
+  "extractorSha256": "6a02c674e413549f378abef9ce126eb4297ee149d8f4062ea2750a9ae0bed76e",
+  "minecraftVersion": "1.20.6",
+  "samples": [
+    {
+      "actualNbt": null,
+      "block": "minecraft:stone",
+      "component": "can_break",
+      "label": "can_break any",
+      "matched": true,
+      "state": {},
+      "wire": "AccGAQALAQAAAAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:stone",
+      "component": "can_break",
+      "label": "can_break none",
+      "matched": false,
+      "state": {},
+      "wire": "AccGAQALAAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:stone",
+      "component": "can_break",
+      "label": "can_break stone",
+      "matched": true,
+      "state": {},
+      "wire": "AccGAQALAQECAQAAAQ=="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:dirt",
+      "component": "can_break",
+      "label": "can_break mismatch",
+      "matched": false,
+      "state": {},
+      "wire": "AccGAQALAQECAQAAAQ=="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:dirt",
+      "component": "can_break",
+      "label": "can_break OR",
+      "matched": true,
+      "state": {},
+      "wire": "AccGAQALAgECAQAAAQIJAAAA"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:dirt",
+      "component": "can_break",
+      "label": "can_break ID set",
+      "matched": true,
+      "state": {},
+      "wire": "AccGAQALAQEDAQkAAAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_log",
+      "component": "can_break",
+      "label": "can_break logs oak_log",
+      "matched": true,
+      "state": {},
+      "wire": "AccGAQALAQEADm1pbmVjcmFmdDpsb2dzAAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:birch_log",
+      "component": "can_break",
+      "label": "can_break logs birch_log",
+      "matched": true,
+      "state": {},
+      "wire": "AccGAQALAQEADm1pbmVjcmFmdDpsb2dzAAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:stone",
+      "component": "can_break",
+      "label": "can_break logs stone",
+      "matched": false,
+      "state": {},
+      "wire": "AccGAQALAQEADm1pbmVjcmFmdDpsb2dzAAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_break",
+      "label": "can_break exact age 4",
+      "matched": true,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQALAQABAQNhZ2UBATQAAQ=="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_break",
+      "label": "can_break exact age 04",
+      "matched": true,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQALAQABAQNhZ2UBAjA0AAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_break",
+      "label": "can_break exact age +4",
+      "matched": true,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQALAQABAQNhZ2UBAis0AAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_break",
+      "label": "can_break exact age 8",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQALAQABAQNhZ2UBATgAAQ=="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_break",
+      "label": "can_break exact age bad",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQALAQABAQNhZ2UBA2JhZAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_break",
+      "label": "can_break exact age 4.0",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQALAQABAQNhZ2UBAzQuMAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_break",
+      "label": "can_break exact missing 4",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQALAQABAQdtaXNzaW5nAQE0AAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_break",
+      "label": "can_break range {\"min\":\"2\",\"max\":\"5\"}",
+      "matched": true,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQALAQABAQNhZ2UAAQEyAQE1AAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_break",
+      "label": "can_break range {\"min\":\"5\"}",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQALAQABAQNhZ2UAAQE1AAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_break",
+      "label": "can_break range {\"max\":\"3\"}",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQALAQABAQNhZ2UAAAEBMwAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_break",
+      "label": "can_break range {\"min\":\"04\",\"max\":\"4\"}",
+      "matched": true,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQALAQABAQNhZ2UAAQIwNAEBNAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_break",
+      "label": "can_break range {}",
+      "matched": true,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQALAQABAQNhZ2UAAAAAAQ=="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_break",
+      "label": "can_break range {\"min\":\"-1\"}",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQALAQABAQNhZ2UAAQItMQAAAQ=="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_break",
+      "label": "can_break range {\"max\":\"8\"}",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQALAQABAQNhZ2UAAAEBOAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_break",
+      "label": "can_break range {\"min\":\"bad\"}",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQALAQABAQNhZ2UAAQNiYWQAAAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_break",
+      "label": "can_break range {\"min\":\"7\",\"max\":\"2\"}",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQALAQABAQNhZ2UAAQE3AQEyAAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_break",
+      "label": "can_break direction {\"min\":\"south\",\"max\":\"east\"}",
+      "matched": true,
+      "state": {
+        "facing": "west"
+      },
+      "wire": "AccGAQALAQABAQZmYWNpbmcAAQVzb3V0aAEEZWFzdAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_break",
+      "label": "can_break direction {\"min\":\"east\",\"max\":\"west\"}",
+      "matched": false,
+      "state": {
+        "facing": "west"
+      },
+      "wire": "AccGAQALAQABAQZmYWNpbmcAAQRlYXN0AQR3ZXN0AAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_break",
+      "label": "can_break direction {\"max\":\"north\"}",
+      "matched": false,
+      "state": {
+        "facing": "west"
+      },
+      "wire": "AccGAQALAQABAQZmYWNpbmcAAAEFbm9ydGgAAQ=="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_break",
+      "label": "can_break direction {\"min\":\"east\"}",
+      "matched": false,
+      "state": {
+        "facing": "west"
+      },
+      "wire": "AccGAQALAQABAQZmYWNpbmcAAQRlYXN0AAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_break",
+      "label": "can_break direction {\"min\":\"invalid\"}",
+      "matched": false,
+      "state": {
+        "facing": "west"
+      },
+      "wire": "AccGAQALAQABAQZmYWNpbmcAAQdpbnZhbGlkAAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_break",
+      "label": "can_break boolean {\"min\":\"false\",\"max\":\"true\"}",
+      "matched": true,
+      "state": {
+        "waterlogged": "false"
+      },
+      "wire": "AccGAQALAQABAQt3YXRlcmxvZ2dlZAABBWZhbHNlAQR0cnVlAAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_break",
+      "label": "can_break boolean {\"min\":\"true\"}",
+      "matched": false,
+      "state": {
+        "waterlogged": "false"
+      },
+      "wire": "AccGAQALAQABAQt3YXRlcmxvZ2dlZAABBHRydWUAAAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_break",
+      "label": "can_break boolean {\"max\":\"false\"}",
+      "matched": true,
+      "state": {
+        "waterlogged": "false"
+      },
+      "wire": "AccGAQALAQABAQt3YXRlcmxvZ2dlZAAAAQVmYWxzZQAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_break",
+      "label": "can_break boolean {\"min\":\"TRUE\"}",
+      "matched": false,
+      "state": {
+        "waterlogged": "false"
+      },
+      "wire": "AccGAQALAQABAQt3YXRlcmxvZ2dlZAABBFRSVUUAAAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:stone",
+      "component": "can_break",
+      "label": "can_break state and blocks AND",
+      "matched": false,
+      "state": {},
+      "wire": "AccGAQALAQECAQEBA2FnZQAAAAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:chest",
+      "component": "can_break",
+      "label": "can_break NBT missing",
+      "matched": false,
+      "state": {},
+      "wire": "AccGAQALAQECsQEAAQoAAQ=="
+    },
+    {
+      "actualNbt": "{id:\"minecraft:chest\",x:0,y:64,z:0,Items:[]}",
+      "block": "minecraft:chest",
+      "component": "can_break",
+      "label": "can_break NBT subset",
+      "matched": true,
+      "state": {},
+      "wire": "AccGAQALAQECsQEAAQoDAAF4AAAAAAkABUl0ZW1zAAAAAAAAAQ=="
+    },
+    {
+      "actualNbt": "{id:\"minecraft:chest\",x:0,y:64,z:0,Items:[]}",
+      "block": "minecraft:chest",
+      "component": "can_break",
+      "label": "can_break NBT wrong type",
+      "matched": false,
+      "state": {},
+      "wire": "AccGAQALAQECsQEAAQoBAAF4AAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:stone",
+      "component": "can_place_on",
+      "label": "can_place_on any",
+      "matched": true,
+      "state": {},
+      "wire": "AccGAQAKAQAAAAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:stone",
+      "component": "can_place_on",
+      "label": "can_place_on none",
+      "matched": false,
+      "state": {},
+      "wire": "AccGAQAKAAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:stone",
+      "component": "can_place_on",
+      "label": "can_place_on stone",
+      "matched": true,
+      "state": {},
+      "wire": "AccGAQAKAQECAQAAAQ=="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:dirt",
+      "component": "can_place_on",
+      "label": "can_place_on mismatch",
+      "matched": false,
+      "state": {},
+      "wire": "AccGAQAKAQECAQAAAQ=="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:dirt",
+      "component": "can_place_on",
+      "label": "can_place_on OR",
+      "matched": true,
+      "state": {},
+      "wire": "AccGAQAKAgECAQAAAQIJAAAA"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:dirt",
+      "component": "can_place_on",
+      "label": "can_place_on ID set",
+      "matched": true,
+      "state": {},
+      "wire": "AccGAQAKAQEDAQkAAAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_log",
+      "component": "can_place_on",
+      "label": "can_place_on logs oak_log",
+      "matched": true,
+      "state": {},
+      "wire": "AccGAQAKAQEADm1pbmVjcmFmdDpsb2dzAAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:birch_log",
+      "component": "can_place_on",
+      "label": "can_place_on logs birch_log",
+      "matched": true,
+      "state": {},
+      "wire": "AccGAQAKAQEADm1pbmVjcmFmdDpsb2dzAAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:stone",
+      "component": "can_place_on",
+      "label": "can_place_on logs stone",
+      "matched": false,
+      "state": {},
+      "wire": "AccGAQAKAQEADm1pbmVjcmFmdDpsb2dzAAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_place_on",
+      "label": "can_place_on exact age 4",
+      "matched": true,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQAKAQABAQNhZ2UBATQAAQ=="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_place_on",
+      "label": "can_place_on exact age 04",
+      "matched": true,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQAKAQABAQNhZ2UBAjA0AAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_place_on",
+      "label": "can_place_on exact age +4",
+      "matched": true,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQAKAQABAQNhZ2UBAis0AAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_place_on",
+      "label": "can_place_on exact age 8",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQAKAQABAQNhZ2UBATgAAQ=="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_place_on",
+      "label": "can_place_on exact age bad",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQAKAQABAQNhZ2UBA2JhZAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_place_on",
+      "label": "can_place_on exact age 4.0",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQAKAQABAQNhZ2UBAzQuMAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_place_on",
+      "label": "can_place_on exact missing 4",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQAKAQABAQdtaXNzaW5nAQE0AAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_place_on",
+      "label": "can_place_on range {\"min\":\"2\",\"max\":\"5\"}",
+      "matched": true,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQAKAQABAQNhZ2UAAQEyAQE1AAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_place_on",
+      "label": "can_place_on range {\"min\":\"5\"}",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQAKAQABAQNhZ2UAAQE1AAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_place_on",
+      "label": "can_place_on range {\"max\":\"3\"}",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQAKAQABAQNhZ2UAAAEBMwAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_place_on",
+      "label": "can_place_on range {\"min\":\"04\",\"max\":\"4\"}",
+      "matched": true,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQAKAQABAQNhZ2UAAQIwNAEBNAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_place_on",
+      "label": "can_place_on range {}",
+      "matched": true,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQAKAQABAQNhZ2UAAAAAAQ=="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_place_on",
+      "label": "can_place_on range {\"min\":\"-1\"}",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQAKAQABAQNhZ2UAAQItMQAAAQ=="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_place_on",
+      "label": "can_place_on range {\"max\":\"8\"}",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQAKAQABAQNhZ2UAAAEBOAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_place_on",
+      "label": "can_place_on range {\"min\":\"bad\"}",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQAKAQABAQNhZ2UAAQNiYWQAAAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:wheat",
+      "component": "can_place_on",
+      "label": "can_place_on range {\"min\":\"7\",\"max\":\"2\"}",
+      "matched": false,
+      "state": {
+        "age": "4"
+      },
+      "wire": "AccGAQAKAQABAQNhZ2UAAQE3AQEyAAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_place_on",
+      "label": "can_place_on direction {\"min\":\"south\",\"max\":\"east\"}",
+      "matched": true,
+      "state": {
+        "facing": "west"
+      },
+      "wire": "AccGAQAKAQABAQZmYWNpbmcAAQVzb3V0aAEEZWFzdAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_place_on",
+      "label": "can_place_on direction {\"min\":\"east\",\"max\":\"west\"}",
+      "matched": false,
+      "state": {
+        "facing": "west"
+      },
+      "wire": "AccGAQAKAQABAQZmYWNpbmcAAQRlYXN0AQR3ZXN0AAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_place_on",
+      "label": "can_place_on direction {\"max\":\"north\"}",
+      "matched": false,
+      "state": {
+        "facing": "west"
+      },
+      "wire": "AccGAQAKAQABAQZmYWNpbmcAAAEFbm9ydGgAAQ=="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_place_on",
+      "label": "can_place_on direction {\"min\":\"east\"}",
+      "matched": false,
+      "state": {
+        "facing": "west"
+      },
+      "wire": "AccGAQAKAQABAQZmYWNpbmcAAQRlYXN0AAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_place_on",
+      "label": "can_place_on direction {\"min\":\"invalid\"}",
+      "matched": false,
+      "state": {
+        "facing": "west"
+      },
+      "wire": "AccGAQAKAQABAQZmYWNpbmcAAQdpbnZhbGlkAAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_place_on",
+      "label": "can_place_on boolean {\"min\":\"false\",\"max\":\"true\"}",
+      "matched": true,
+      "state": {
+        "waterlogged": "false"
+      },
+      "wire": "AccGAQAKAQABAQt3YXRlcmxvZ2dlZAABBWZhbHNlAQR0cnVlAAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_place_on",
+      "label": "can_place_on boolean {\"min\":\"true\"}",
+      "matched": false,
+      "state": {
+        "waterlogged": "false"
+      },
+      "wire": "AccGAQAKAQABAQt3YXRlcmxvZ2dlZAABBHRydWUAAAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_place_on",
+      "label": "can_place_on boolean {\"max\":\"false\"}",
+      "matched": true,
+      "state": {
+        "waterlogged": "false"
+      },
+      "wire": "AccGAQAKAQABAQt3YXRlcmxvZ2dlZAAAAQVmYWxzZQAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:oak_stairs",
+      "component": "can_place_on",
+      "label": "can_place_on boolean {\"min\":\"TRUE\"}",
+      "matched": false,
+      "state": {
+        "waterlogged": "false"
+      },
+      "wire": "AccGAQAKAQABAQt3YXRlcmxvZ2dlZAABBFRSVUUAAAE="
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:stone",
+      "component": "can_place_on",
+      "label": "can_place_on state and blocks AND",
+      "matched": false,
+      "state": {},
+      "wire": "AccGAQAKAQECAQEBA2FnZQAAAAAB"
+    },
+    {
+      "actualNbt": null,
+      "block": "minecraft:chest",
+      "component": "can_place_on",
+      "label": "can_place_on NBT missing",
+      "matched": false,
+      "state": {},
+      "wire": "AccGAQAKAQECsQEAAQoAAQ=="
+    },
+    {
+      "actualNbt": "{id:\"minecraft:chest\",x:0,y:64,z:0,Items:[]}",
+      "block": "minecraft:chest",
+      "component": "can_place_on",
+      "label": "can_place_on NBT subset",
+      "matched": true,
+      "state": {},
+      "wire": "AccGAQAKAQECsQEAAQoDAAF4AAAAAAkABUl0ZW1zAAAAAAAAAQ=="
+    },
+    {
+      "actualNbt": "{id:\"minecraft:chest\",x:0,y:64,z:0,Items:[]}",
+      "block": "minecraft:chest",
+      "component": "can_place_on",
+      "label": "can_place_on NBT wrong type",
+      "matched": false,
+      "state": {},
+      "wire": "AccGAQAKAQECsQEAAQoBAAF4AAAB"
+    }
+  ]
+}

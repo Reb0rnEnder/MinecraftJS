@@ -1,6 +1,6 @@
 # Full-parity checklist — MinecraftJS 1.20.6
 
-Updated 2026-11-15. Audited source: `664d1a4d89a85e44cbdbbe6565c2a65f14791296`. **Full multiplayer parity: no. Full Java-client parity: no.**
+Updated 2026-11-15. Audited source: `36da55b8303edc8c0a2bce24f8218d127e8f0f14`. **Full multiplayer parity: no. Full Java-client parity: no.**
 
 Edit [docs/parity-checklist-1.20.6.json](parity-checklist-1.20.6.json), then run `node tools/port-1.20.6/parity-status.mjs --write`. This file is generated; `--check` catches stale counts, invalid evidence paths and false completion claims.
 
@@ -16,7 +16,7 @@ The native multiplayer foundation works. Substantial feature and acceptance work
 
 These **checkpoints differ in size and do not enumerate every defect**. 66 required checkpoints are still open. An honest percentage or ETA is unavailable until release coverage is triaged. Accepted rows cover exactly their named scope, not an entire subsystem.
 
-Latest target gate: **242 tests**, zero failures/skips. See [docs/jigsaw-parity-audit.md](jigsaw-parity-audit.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
+Latest target gate: **323 tests**, zero failures/skips. See [docs/adventure-components-1.20.6.md](adventure-components-1.20.6.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
 
 ## What the source audit actually found
 

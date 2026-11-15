@@ -89,6 +89,11 @@ export async function generateComponentSchema(check = false) {
   // Native Instrument is (SoundEvent holder, VarInt ticks, float range).
   types.InstrumentData[1]=types.InstrumentData[1].filter(field=>field.name!=='description');
   types.InstrumentData[1].find(field=>field.name==='useDuration').type='varint';
+  // StatePropertiesPredicate.RangedMatcher carries two Optional<String>s.
+  const range=types.ItemBlockProperty[1].find(field=>field.name==='value').type[1].fields.false;
+  for(const field of range[1])field.type=['option','string'];
+  // BlockPredicate has an Optional<NbtPredicate>, with a separate presence bool.
+  types.ItemBlockPredicate[1].find(field=>field.name==='nbt').type=['option','anonymousNbt'];
 
   const schema = {
     minecraftVersion: target.minecraftVersion,
