@@ -1,3 +1,4 @@
+import{brushArmPose766}from'../game/brushing-1.20.6.js';
 import{PAWS_DATA_766}from'../game/paws-data-1.20.6.js';
 import{mcCos}from'../game/physics.js';
 import{animateArmadillo766}from'./armadillo-1.20.6.js';
@@ -148,10 +149,12 @@ export function animateBiped(m, a) {
   if (lp === 'block') { p.leftArm.rx = p.leftArm.rx * 0.5 - 0.9424779; p.leftArm.ry = 0.5235988; }
   else if (lp === 'item') p.leftArm.rx = p.leftArm.rx * 0.5 - PI / 10;
   else if (lp === 'spyglass') { p.leftArm.rx = spyglassArmPitch(p.head.rx, a.sneak); p.leftArm.ry = p.head.ry + .2617994; }
+  else if(lp==='brush')brushArmPose766(p.leftArm);
   else if (lp === 'spear') { p.leftArm.rx = p.leftArm.rx * 0.5 - PI; p.leftArm.ry = 0; }
   if (rp === 'block') { p.rightArm.rx = p.rightArm.rx * 0.5 - 0.9424779; p.rightArm.ry = -0.5235988; }
   else if (rp === 'item') p.rightArm.rx = p.rightArm.rx * 0.5 - PI / 10;
   else if (rp === 'spyglass') { p.rightArm.rx = spyglassArmPitch(p.head.rx, a.sneak); p.rightArm.ry = p.head.ry - .2617994; }
+  else if(rp==='brush')brushArmPose766(p.rightArm);
   else if (rp === 'spear') { p.rightArm.rx = p.rightArm.rx * 0.5 - PI; p.rightArm.ry = 0; }
   p.body.ry = 0;
   p.rightArm.pz = 0; p.rightArm.px = -5; p.leftArm.pz = 0; p.leftArm.px = 5;

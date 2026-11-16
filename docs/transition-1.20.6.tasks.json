@@ -250,7 +250,7 @@
     {
       "id": "P11",
       "title": "Implement stable Trails & Tales and later presentation families",
-      "status": "todo",
+      "status": "partial",
       "dependsOn": [
         "P08",
         "P10"
@@ -261,7 +261,9 @@
         "1.20.4"
       ],
       "acceptance": "Every construction/sign/archaeology/pot/smithing/mob/effect family has native interaction and visual evidence, with server ownership distinguished.",
-      "evidence": []
+      "evidence": [
+        "docs/archaeology-pot-parity.md"
+      ]
     },
     {
       "id": "P12",

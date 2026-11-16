@@ -56,5 +56,22 @@
       "right_ear_cube",
       "left_ear_cube"
     ]
+  },
+  "decoratedPotBase": {
+    "layer": "minecraft:decorated_pot_base#main",
+    "fields": [
+      "neck",
+      "top",
+      "bottom"
+    ]
+  },
+  "decoratedPotSides": {
+    "layer": "minecraft:decorated_pot_sides#main",
+    "fields": [
+      "back",
+      "left",
+      "right",
+      "front"
+    ]
   }
 }

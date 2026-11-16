@@ -431,6 +431,11 @@ export class SoundManager {
       this.playBlockBreak(x, y, z, p.data);
       return;
     }
+    if(p.effectId===3008){
+      const name=getBlock(p.data)?.name;
+      if(name==='suspicious_sand'||name==='suspicious_gravel')this.play('item.brush.brushing.'+(name==='suspicious_sand'?'sand':'gravel')+'.complete',cx,cy,cz,1,1,{category:'player'});
+      return;
+    }
     if(p.effectId===1500){this.play(p.data>0?'block.composter.fill_success':'block.composter.fill',x,y,z,1,1,{category:'block'});return;}
     if(p.effectId===2006){if(p.data===1)this.play('entity.dragon_fireball.explode',cx,cy,cz,1,r()*.1+.9,{category:'hostile'});return;}
     const gl = GLOBAL_EVENTS[p.effectId];

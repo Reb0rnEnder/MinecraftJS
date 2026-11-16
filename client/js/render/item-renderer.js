@@ -1,3 +1,4 @@
+import{buildPot766,itemPotDecorations766}from'./decorated-pot-1.20.6.js';
 import{itemBannerLayers766}from'./banner-1.20.6.js';
 import{bundleBar,bundleContentWeight}from'../game/bundle.js';
 import {DEFAULT_SKIN} from './default-skins.js';
@@ -159,6 +160,7 @@ export class ItemRenderer {
     if (name.endsWith('_banner') || name === 'shield') {
       k += ':' + JSON.stringify(itemBannerLayers766(this.game,item));
     }
+    if(name==='decorated_pot')k+=':'+JSON.stringify(itemPotDecorations766(this.game,item));
     if(name==='player_head')k+=':'+JSON.stringify(this.game.items.nbt(item)?.SkullOwner||null);
     return k;
   }
@@ -322,6 +324,7 @@ export class ItemRenderer {
     const name = m.itemName || m.name;
     const root = new Node();
     const mat = (tex) => entityMaterial(tex, { alphaTest: 0.1, fullBright: gui, guiLighting: gui });
+    if(name==='decorated_pot'){root.add(buildPot766(itemPotDecorations766(this.game,item),'north',mat).root);return root;}
     if (name === 'chest' || name === 'trapped_chest' || name === 'ender_chest') {
       const tex = name === 'ender_chest' ? 'entity/chest/ender.png' : name === 'trapped_chest' ? 'entity/chest/trapped.png' : 'entity/chest/normal.png';
       const { lid, below, knob } = blockModel('chest', ['lid', 'below', 'knob']); // ModelChest

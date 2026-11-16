@@ -853,7 +853,7 @@ export class Particles {
         }
         break;
       }
-      case 2001: {
+      case 2001: case 3008: {
         const st = p.data; // Flattened block-state ID since protocol 393 (1.13).
         this.blockBreak(x, y, z, st);
         break;

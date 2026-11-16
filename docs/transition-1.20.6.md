@@ -144,3 +144,7 @@ Next work includes the remaining Paws animations/feedback and horse/llama body e
 ## Native implementation anchors
 
 Confirmed in pinned mappings during this planning pass: ItemStack `cur`, DataComponentPatch `kj`, DataComponents `km`, RegistryFriendlyByteBuf `xa`, ComponentSerialization `xr`, ConfigurationProtocols `abx`, ClientPacketListener `fxy`, Attributes `buz`, UnihexProvider `fkm`, GuiSpriteScaling `gqt`, PalettedPermutations `gpm`. These identify exact source inputs; class presence does not validate behavior.
+
+## Archaeology/pot implementation batch (2026-11-17)
+
+P11 is now partial: decorated-pot geometry/patterns/events and archaeology brush/particles/sounds/emerging items are implemented. The exact 1.20.6 gate passes 482 tests; development assets have 128 native models. See [native evidence and remaining live acceptance](archaeology-pot-parity.md). Chunk fading belongs to 1.21.11/25w44a and remains a later-transition feature. Shared [audio build validation](audio-build-audit.md) is pushed across all existing targets; Opus remains the default.

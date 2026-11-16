@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
-  "updatedOn": "2026-11-15",
+  "updatedOn": "2026-11-17",
   "target": "1.20.6",
-  "auditedSourceCommit": "72828d4",
+  "auditedSourceCommit": "af3c718",
   "fullMultiplayerParity": false,
   "fullJavaClientParity": false,
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 473,
+    "targetTests": 482,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
-    "source": "docs/score-format-parity.md",
-    "note": "473 target tests and exact native oracles pass. Seven older Brigadier targets pass seven slot-suggestion checks; six applicable older targets pass 12 background checks. Browser bundles pass. Prior resource/wolf checks remain recorded separately."
+    "source": "docs/archaeology-pot-parity.md",
+    "note": "482 target tests and exact native oracles pass. Development assets rebuilt with 128 native models. New pot/brush integration checks pass; live loot progression/projectile/reconnect acceptance is pending. Shared audio changes pass five checks on each of ten targets, and all 3701 modern encoded sounds decode in Chromium."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {
@@ -897,29 +897,34 @@
     {
       "id": "CONTENT-02",
       "area": "Trails and Tales",
-      "status": "missing",
+      "status": "partial",
       "priority": 1,
       "phase": "P11",
       "scope": "multiplayer",
       "title": "Archaeology brushing and suspicious-block client presentation",
-      "reason": "No dedicated brush/suspicious-block interaction path was found in current interaction/renderer consumers.",
+      "reason": "Brushing timing, both-hand/third-person poses, native dust/sounds, server-stage item rendering and completion event implemented. Live full loot progression, cancellation through server updates and screenshot/audio acceptance remain.",
       "evidence": [
-        "client/js/game/interaction.js",
-        "client/js/render/tile-renderer.js"
+        "docs/archaeology-pot-parity.md",
+        "tools/test-archaeology-1.20.6.mjs",
+        "tools/fixtures/pots-1.20.6.json",
+        "client/js/game/brushing-1.20.6.js"
       ],
       "acceptance": "Brush/cancel timing, stages, displayed item, sounds/particles and authoritative result match native."
     },
     {
       "id": "CONTENT-03",
       "area": "Trails and Tales",
-      "status": "missing",
+      "status": "partial",
       "priority": 1,
       "phase": "P11",
       "scope": "multiplayer",
       "title": "Decorated pot textures, contents, wobble and events",
-      "reason": "No dedicated decorated-pot block-entity path exists in TileRenderer.",
+      "reason": "Native geometry, all sherd faces, item components, block-entity updates, server wobble events and insertion consumption implemented and regression-tested. Live projectile shattering and content/decorations after reconnect remain to be recorded.",
       "evidence": [
-        "client/js/render/tile-renderer.js"
+        "docs/archaeology-pot-parity.md",
+        "tools/test-archaeology-1.20.6.mjs",
+        "tools/fixtures/pots-1.20.6.json",
+        "client/js/render/decorated-pot-1.20.6.js"
       ],
       "acceptance": "Sherd faces, stored item insertion/feedback, wobble/projectile break and reconnect use native block-entity data; no invented GUI."
     },
@@ -1495,6 +1500,14 @@
         "CHAT-02"
       ],
       "evidence": "docs/score-format-parity.md"
+    },
+    {
+      "title": "Native decorated-pot geometry, sherd faces, item rendering, insertion consumption and wobble events; brush poses/dust/sounds, suspicious-block item emergence and completion consumers",
+      "checkpoints": [
+        "CONTENT-02",
+        "CONTENT-03"
+      ],
+      "evidence": "docs/archaeology-pot-parity.md"
     }
   ],
   "sourceFindings": [

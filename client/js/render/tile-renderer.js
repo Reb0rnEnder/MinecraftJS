@@ -1,3 +1,6 @@
+import{brushTranslation766}from'../game/brushing-1.20.6.js';
+import{savedItem766}from'./saved-item-1.20.6.js';
+import{buildPot766,potFrame766}from'./decorated-pot-1.20.6.js';
 import{signFace766,buildSign766,signOutlineKey766}from'./sign-1.20.6.js';
 import{placedBannerLayers766}from'./banner-1.20.6.js';
 import{isShulkerBox,shulkerTexture}from'./shulker-box.js';
@@ -9,7 +12,7 @@ import { Part, entityMaterial, entityMesh } from './boxmodel.js';
 import { blockModel } from './entity-models.js';
 import { destroyTextMeshes } from './text-mesh.js';
 import { blocks, blocksByName, getBlock, getStateProperties, findState } from '../world/blocks.js';
-import { colorParams, FORMAT } from '../gfx/device.js';
+import { colorParams, FORMAT, EntityParams } from '../gfx/device.js';
 import { D2R, aabbInFrustum } from '../gfx/math.js';
 import { Node, material } from '../gfx/scene.js';
 import { resolveState } from '../world/blockstates.js';
@@ -27,6 +30,12 @@ const FLOWER_POT = {
 const FLOWER_POT_IDS = { 38: 'minecraft:red_flower', 37: 'minecraft:yellow_flower', 6: 'minecraft:sapling', 40: 'minecraft:red_mushroom', 39: 'minecraft:brown_mushroom', 32: 'minecraft:deadbush', 31: 'minecraft:tallgrass', 81: 'minecraft:cactus' };
 
 const key = (x, y, z) => x + ',' + y + ',' + z;
+// Built-in item objects clone geometry but share cached materials. Tile-local
+// lighting must not change a GUI icon, a held item, or another item instance.
+function privateItemMaterials(node){
+  const copies=new Map();node.traverse(n=>{for(const d of n.drawables){const source=d.mat;if(source?.pipeline!=='entity')continue;if(!copies.has(source)){const params=new EntityParams();params.p.set(source.params?.p||source.params);copies.set(source,{...source,params});}d.mat=copies.get(source);}});return [...copies.values()];
+}
+
 // Skull identity moved from tile NBT into the block registry in 1.13.
 const SKULL_TYPES = new Map(['skeleton_skull', 'wither_skeleton_skull', 'zombie_head', 'player_head', 'creeper_head', 'dragon_head', 'piglin_head']
   .map((name, type) => [name, type]));
@@ -140,6 +149,8 @@ export class TileEntityRenderer {
     else if (n.endsWith('_banner') || n.endsWith('_wall_banner')) type = 'banner';
     else if (n === 'enchanting_table') type = 'book';
     else if (n === 'bell') type = 'bell';
+    else if(n==='decorated_pot')type='decorated_pot';
+    else if(n==='suspicious_sand'||n==='suspicious_gravel')type='brushable';
     else if ((n === 'campfire'||n==='soul_campfire')) type = 'campfire';
     else if (n === 'lectern') type = 'lectern';
     else if (n === 'beacon') type = 'beacon';
@@ -155,7 +166,7 @@ export class TileEntityRenderer {
   // Use the live model (including lid/cloth transforms) for the damage pass.
   breakingModel(pos,state) {
     let t=this._ensure(pos.x,pos.y,pos.z,state);
-    if(!t||!['chest','sign','skull','banner','bed','shulker','bell'].includes(t.type))return null;
+    if(!t||!['chest','sign','skull','banner','bed','shulker','bell','decorated_pot'].includes(t.type))return null;
     if(!t.built)this._build(t);
     if(t.type==='chest'&&t.secondary){
       const current=this.game.world.getBlockDef(pos.x,pos.y,pos.z).id;
@@ -179,7 +190,7 @@ export class TileEntityRenderer {
          if (name === 'chest' || name === 'trapped_chest' || name === 'ender_chest' || isSign(name) || (name === 'campfire'||name==='soul_campfire') || name === 'lectern' ||
             name.endsWith('_bed') || name.endsWith('_banner') || name.endsWith('_wall_banner') || skullType(name) !== undefined ||
             name === 'flower_pot' || name === 'end_portal' || name === 'end_gateway' || isShulkerBox(name) ||
-           name === 'enchanting_table' || name === 'beacon' || name === 'bell') {
+           name === 'enchanting_table' || name === 'beacon' || name === 'bell' || name==='decorated_pot' || name==='suspicious_sand' || name==='suspicious_gravel') {
            const x = c.x * 16 + (i & 15), y = sy * 16 + (i >> 8), z = c.z * 16 + ((i >> 4) & 15);
            this._ensure(x, y, z, state);
          }
@@ -218,6 +229,10 @@ export class TileEntityRenderer {
   onBlockAction(p) {
     const b = blocks[p.blockId];
     if (!b) return;
+    if(b.name==='decorated_pot'&&p.byte1===1&&(p.byte2===0||p.byte2===1)){
+      const t=this._ensure(p.location.x,p.location.y,p.location.z,this.game.world.getState(p.location.x,p.location.y,p.location.z));
+      if(t){t.wobbleStyle=p.byte2;t.wobbleStart=Number.isFinite(this.game.world.worldAge)?this.game.world.worldAge:this.ticks;}
+    }
     if (b.name === 'bell' && p.byte1 === 1) {
       const t=this._ensure(p.location.x,p.location.y,p.location.z,this.game.world.getState(p.location.x,p.location.y,p.location.z));
       if(t){t.bellTime=0;t.bellDirection=p.byte2;t.bellShaking=true;}
@@ -395,7 +410,22 @@ export class TileEntityRenderer {
     obj.position.set(t.x, t.y, t.z);
     t.ownMeshes = [];
     let mat;
+    t.materials=null;
     switch (t.type) {
+      case 'brushable':{
+        const face=t.data?.hit_direction,dusted=Number(props.dusted||0),item=savedItem766(g.items,t.data?.item);
+        if(!item||dusted<=0||!Number.isInteger(face)||face<0||face>5)break;
+        mat=entityMaterial(()=>g.assets.atlasTexture,{alphaTest:.1});const node=g.itemRenderer.objectFor(item,mat)?.obj;if(!node)break;
+        t.materials=privateItemMaterials(node);
+        applyTransform(node,g.itemRenderer.modelFor(item).display?.fixed);
+        const holder=new Node(),[x,y,z]=brushTranslation766(face,dusted);holder.position.set(x,.5+y,z);holder.rotation.y=(face>=4?176:86)*D2R;holder.scale.set(.5,.5,.5);holder.add(node);obj.add(holder);t.brushFace=face;
+        break;
+      }
+      case 'decorated_pot':{
+        const list=t.data?.sherds,valid=Array.isArray(list)&&list.length<=4&&list.every(n=>typeof n==='string'&&g.items.byName.has(n.replace(/^minecraft:/,'')));
+        const pot=buildPot766(valid?list:[],props.facing);obj.add(pot.root);t.potRoot=pot.root;t.materials=pot.materials;mat=pot.materials[0];
+        break;
+      }
       case 'bell': {
         mat=entityMaterial('entity/bell/bell_body.png');
         const bell=new Part(32,32).tex(0,0).box(-3,-6,-3,6,7,6).pivot(8,12,8);
@@ -476,12 +506,11 @@ export class TileEntityRenderer {
       case 'campfire': {
         const facing=['south','west','north','east'].indexOf(props.facing);
         const atlasMat=entityMaterial(()=>g.assets.atlasTexture,{alphaTest:.1});
-        mat=atlasMat;
+        mat=atlasMat;t.materials=[];
         for(const entry of t.data?.Items||[]) {
-          const def=g.items.byName.get(String(entry.id).replace(/^minecraft:/,''));
-          if(!def||entry.Count<=0)continue;
-          const item={id:def.id,count:entry.Count,nbt:null,_renderTag:entry.tag||{}};
+          const item=savedItem766(g.items,entry);if(!item)continue;
           const node=g.itemRenderer.objectFor(item,atlasMat)?.obj;if(!node)continue;
+          t.materials.push(...privateItemMaterials(node));
           applyTransform(node,g.itemRenderer.modelFor(item).display?.fixed);
           const slot=new Node(),flat=new Node(),scaled=new Node();
           slot.position.set(.5,.44921875,.5);slot.rotation.y=-((facing+Number(entry.Slot||0))%4)*Math.PI/2;
@@ -679,12 +708,18 @@ export class TileEntityRenderer {
           sky = Math.max(sky, g.world.getSkyLight(t.x + ox, t.y + oy, t.z + oz) - 1);
           blk = Math.max(blk, g.world.getBlockLight(t.x + ox, t.y + oy, t.z + oz) - 1);
         }
+        if(t.type==='brushable'&&Number.isInteger(t.brushFace)){const [ox,oy,oz]=SHULKER_FACING[t.brushFace];sky=g.world.getSkyLight(t.x+ox,t.y+oy,t.z+oz);blk=g.world.getBlockLight(t.x+ox,t.y+oy,t.z+oz);}
         t.mat.params.setLight(sky, blk);
+        for(const material of t.materials||[])material.params.setLight(sky,blk);
         if (t.type === 'sign' && t.signTextParams) {
           const index = ((Math.max(0, Math.min(15, sky)) << 4) + Math.max(0, Math.min(15, blk))) * 4;
           for (const {params,glowing} of t.signTextParams) for (let i = 0; i < 3; i++)
             params[i] = glowing ? 1 : g.renderer.lightmapData[index + i] / 255;
         }
+      }
+      if(t.type==='decorated_pot'&&t.potRoot){
+        const age=Number.isFinite(g.world.worldAge)?g.world.worldAge:this.ticks;
+        t.potRoot.matrix=potFrame766(getStateProperties(t.state).facing,t.wobbleStyle,age-(t.wobbleStart??age),partial);
       }
       if(t.type==='bell' && t.bellPart){
         const time=(t.bellTime||0)+partial;

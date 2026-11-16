@@ -1284,6 +1284,7 @@ export class EntityRenderer {
         if (name === 'trident') return 'spear';
         if (name === 'spyglass') return 'spyglass';
         if (name === 'crossbow') return 'crossbow_charge';
+        if(name==='brush')return 'brush';
       }
       if(g.items.name(stack.id)==='crossbow'&&g.items.crossbowCharged(stack))return 'crossbow_hold';
       return 'item';

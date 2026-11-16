@@ -1,3 +1,4 @@
+import{startBrushing766,tickBrushing766}from'./brushing-1.20.6.js';
 import {EFFECT_766} from './effects-1.20.6.js';
 import {adventureAllows} from './adventure.js';
 import {entityPickRadius} from './entity-pick-radius.js';
@@ -97,14 +98,14 @@ export class Interaction {
   reach() { return this.player.blockInteractionRange ?? (this.game.gameMode === 1 ? 5 : 4.5); }
 
   // Minecraft.getMouseOver
-  updateTarget(partial = 1) {
+  updateTarget(partial = 1, entityRangeOverride) {
     const g = this.game;
     const eye = g.eyePosition(partial);
     const look = g.lookVector(partial);
     const reach = this.reach();
     let hit = g.world.raycast(eye[0], eye[1], eye[2], look[0], look[1], look[2], reach);
     let blockDist = hit ? hit.dist : reach;
-    let entityReach = this.player.entityInteractionRange ?? (g.gameMode === 1 ? 6 : 3);
+    let entityReach = entityRangeOverride ?? this.player.entityInteractionRange ?? (g.gameMode === 1 ? 6 : 3);
     if (g.gameMode !== 1 && blockDist > 3) blockDist = blockDist;
     // Entities
     let best = null;
@@ -133,6 +134,7 @@ export class Interaction {
 
   onSlotChanged() {
     this.finishSpyglass();
+    this.brushItemId=undefined;
     if (this.isHitting) this.resetBreaking();
     this.player.usingItem = false;
   }
@@ -167,6 +169,7 @@ export class Interaction {
       this.useTicks++;
       if (!useDown) this.stopUsingItem();
       const held = g.inventory.getHand(this.activeHand);
+      if(this.brushItemId!==undefined)tickBrushing766(this,held);
       const dur = g.items.useDuration(held);
       if (held && g.items.name(held.id) === 'spyglass' && dur > 0 && this.useTicks >= dur) this.stopUsingItem();
       if (held && ['eat','drink'].includes(g.items.useAction(held)) && dur > 0 && this.useTicks >= dur) {
@@ -542,7 +545,9 @@ export class Interaction {
         const b = getBlock(g.world.getState(t.x, t.y, t.z));
         if (b && b.id !== 0) {
           const before = stack ? stack.count : 0;
-          if (this.onPlayerRightClick(t, hand)) {
+          const result=this.onPlayerRightClick(t,hand);
+          if (result) {
+            if(result==='consume')return;
             this.swing(hand);
             if (stack) {
               if (stack.count <= 0) g.inventory.setHand(hand, null);
@@ -569,6 +574,7 @@ export class Interaction {
     if (g.gameMode !== 3) {
       const mainAndOffEmpty = !g.inventory.held() && !g.inventory.offhand;
       if ((!this.player.sneaking || mainAndOffEmpty) && b && (INTERACTIVE.has(b.name) || b.isDoor || b.isFenceGate || b.name.endsWith('_trapdoor') || b.name.endsWith('_button') || b.name.endsWith('_bed') || b.name.endsWith('_sign') || ['repeater','comparator','note_block','daylight_detector','shulker_box','light_gray_shulker_box'].includes(b.name)) && b.name !== 'iron_door' && b.name !== 'iron_trapdoor') activated = true;
+      if((!this.player.sneaking||mainAndOffEmpty)&&b?.name==='decorated_pot')activated=true;
       if ((!this.player.sneaking || mainAndOffEmpty) && b && cavesBlockUse(b.name, getStateProperties(g.world.getState(t.x,t.y,t.z)), held ? g.items.name(held.id) : null, g.gameMode === 0 || g.gameMode === 1, g.food < 20, fy)) activated = true;
       // BlockCommandBlock.onBlockActivated: only for players who can use command blocks, who get GuiCommandBlock
       // (TileEntityStructure.usedBy too: GuiEditStructure)
@@ -579,6 +585,7 @@ export class Interaction {
     // CPacketPlayerTryUseItemOnBlock (cursor position on the face)
     g.send(C.blockPlace(t.x, t.y, t.z, t.face, hand, fx, fy, fz,false,g.blockPrediction?.current||0));
     if (activated) {
+      if(b.name==='decorated_pot')return 'consume';
       playActivatedBlockSound(g,t,b);
       if (COMMAND_BLOCKS.has(b.name)) g.screens.open(new CommandBlockScreen(g, { x: t.x, y: t.y, z: t.z }));
       if (b.name === 'structure_block') g.screens.open(new StructureBlockScreen(g, { x: t.x, y: t.y, z: t.z }, g.structureBlocks.get(t.x + ',' + t.y + ',' + t.z)));
@@ -588,6 +595,7 @@ export class Interaction {
     }
     if (g.gameMode === 3) return true;
     if(g.gameMode===2&&!adventureAllows(g,held,'CanPlaceOn',t))return false;
+    if(held&&g.items.name(held.id)==='brush')return startBrushing766(this,held,hand);
     if (held && g.items.name(held.id)==='scaffolding') return true; // authoritative extension/support/falling rules
     if (!held) return false;
     if (g.gameMode === 1) {
@@ -805,6 +813,7 @@ export class Interaction {
       if(g.gameMode!==1&&--held.count<=0)g.inventory.setHand(hand,null);
       return true;
     }
+    if(name==='brush')return false; // BrushItem only starts through useOn a block.
     const action = g.items.useAction(held);
     if (name === 'crossbow' && g.items.crossbowCharged(held)) return true; // Server fires and clears Charged NBT.
     if (action === 'bow' || action === 'crossbow') {
@@ -886,6 +895,7 @@ export class Interaction {
       }
     }
     this.finishSpyglass();
+    this.brushItemId=undefined;
     this.player.usingItem = false;
     this.useTicks = 0;
   }

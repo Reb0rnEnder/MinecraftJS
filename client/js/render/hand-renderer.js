@@ -1,3 +1,4 @@
+import{applyBrushFrame766}from'../game/brushing-1.20.6.js';
 import{firstPersonBlockLight}from'./dynamic-lights.js';
 import{EMPTY_DYNAMIC_LIGHTS}from'../gfx/dynamic-lighting.js';
 import { usingSpyglass } from '../game/spyglass.js';
@@ -244,6 +245,8 @@ export class HandRenderer {
         mat4.translate(m, m, f3 * 0.6 * side, f3 * -0.5, 0);
         R(side * f3 * 90, 0, 1, 0); R(f3 * 10, 1, 0, 0); R(side * f3 * 30, 0, 0, 1);
         this._side(m, side, equip);
+      } else if(act==='brush'){
+        applyBrushFrame766(m,side,it.useTicks,partial,equip);
       } else if (act === 'bow') {
         this._side(m, side, equip);
         mat4.translate(m, m, side * -0.2785682, 0.18344387, 0.15731531);

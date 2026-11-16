@@ -1,22 +1,22 @@
 # Full-parity checklist — MinecraftJS 1.20.6
 
-Updated 2026-11-15. Audited source: `72828d4`. **Full multiplayer parity: no. Full Java-client parity: no.**
+Updated 2026-11-17. Audited source: `af3c718`. **Full multiplayer parity: no. Full Java-client parity: no.**
 
 Edit [docs/parity-checklist-1.20.6.json](parity-checklist-1.20.6.json), then run `node tools/port-1.20.6/parity-status.mjs --write`. This file is generated; `--check` catches stale counts, invalid evidence paths and false completion claims.
 
 ## How far along?
 
-The native multiplayer foundation works. Substantial feature and acceptance work remains, including confirmed missing consumers. Existing transition milestones: **6 done, 7 partial, 4 todo** (17 total). They differ greatly in size, so this is not a completion percentage.
+The native multiplayer foundation works. Substantial feature and acceptance work remains, including confirmed missing consumers. Existing transition milestones: **6 done, 8 partial, 3 todo** (17 total). They differ greatly in size, so this is not a completion percentage.
 
 | Scope | Accepted checkpoints | Partial | Missing implementation | Needs verification | Total |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Native multiplayer + enabled native experiments | 15 | 39 | 8 | 17 | 79 |
+| Native multiplayer + enabled native experiments | 15 | 41 | 6 | 17 | 79 |
 | Separate products / optional compatibility | 0 | 2 | 2 | 0 | 4 |
-| All tracked checkpoints | 15 | 41 | 10 | 17 | 83 |
+| All tracked checkpoints | 15 | 43 | 8 | 17 | 83 |
 
 These **checkpoints differ in size and do not enumerate every defect**. 64 required checkpoints are still open. An honest percentage or ETA is unavailable until release coverage is triaged. Accepted rows cover exactly their named scope, not an entire subsystem.
 
-Latest target gate: **473 tests**, zero failures/skips. See [docs/score-format-parity.md](score-format-parity.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
+Latest target gate: **482 tests**, zero failures/skips. See [docs/archaeology-pot-parity.md](archaeology-pot-parity.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
 
 ## Completed implementation deliverables
 
@@ -30,6 +30,7 @@ These checked items describe completed work. A parent checkpoint can still have 
  - [x] Format-selected overlays and filtered resource stacks across files, fonts, sounds, languages, models and textures; advanced Java regex acceptance remains PACK-01. [docs/resource-stack-parity.md](resource-stack-parity.md).
  - [x] Armadillo native geometry and roll/peek animations; all wolf variant textures, BODY armor/dye/cracks and native metadata consumers. [docs/armored-paws-parity.md](armored-paws-parity.md).
  - [x] Native sidebar/tab blank, styled and fixed number formats, per-score display text, inheritance and reset consumers. [docs/score-format-parity.md](score-format-parity.md).
+ - [x] Native decorated-pot geometry, sherd faces, item rendering, insertion consumption and wobble events; brush poses/dust/sounds, suspicious-block item emergence and completion consumers. [docs/archaeology-pot-parity.md](archaeology-pot-parity.md).
 
 ## Current source findings
 
@@ -125,8 +126,8 @@ A box is checked only for `accepted`. For each open row, implement/verify the co
 ### Trails and Tales
 
 - [ ] **CONTENT-01 — Two-sided and hanging sign rendering/editing/wax state** (P0; Partial; P11). Both sides, hanging/standing/wall transforms, dye/glow/wax/filtering and native edit screen update the correct side. Remaining: Native hanging model, chain variants, both JSON-string text sides, color/glow, block-entity dispatch and side-aware update packets implemented. Native 68-state frame and serialization fixtures pass. Exact editor preview/layout, wax/filtered-account and live backend acceptance remain. Evidence/start: [client/js/gui/screens/sign.js](../client/js/gui/screens/sign.js), [client/js/render/tile-renderer.js](../client/js/render/tile-renderer.js).
-- [ ] **CONTENT-02 — Archaeology brushing and suspicious-block client presentation** (P1; Missing implementation; P11). Brush/cancel timing, stages, displayed item, sounds/particles and authoritative result match native. Remaining: No dedicated brush/suspicious-block interaction path was found in current interaction/renderer consumers. Evidence/start: [client/js/game/interaction.js](../client/js/game/interaction.js), [client/js/render/tile-renderer.js](../client/js/render/tile-renderer.js).
-- [ ] **CONTENT-03 — Decorated pot textures, contents, wobble and events** (P1; Missing implementation; P11). Sherd faces, stored item insertion/feedback, wobble/projectile break and reconnect use native block-entity data; no invented GUI. Remaining: No dedicated decorated-pot block-entity path exists in TileRenderer. Evidence/start: [client/js/render/tile-renderer.js](../client/js/render/tile-renderer.js).
+- [ ] **CONTENT-02 — Archaeology brushing and suspicious-block client presentation** (P1; Partial; P11). Brush/cancel timing, stages, displayed item, sounds/particles and authoritative result match native. Remaining: Brushing timing, both-hand/third-person poses, native dust/sounds, server-stage item rendering and completion event implemented. Live full loot progression, cancellation through server updates and screenshot/audio acceptance remain. Evidence/start: [docs/archaeology-pot-parity.md](archaeology-pot-parity.md), [tools/test-archaeology-1.20.6.mjs](../tools/test-archaeology-1.20.6.mjs).
+- [ ] **CONTENT-03 — Decorated pot textures, contents, wobble and events** (P1; Partial; P11). Sherd faces, stored item insertion/feedback, wobble/projectile break and reconnect use native block-entity data; no invented GUI. Remaining: Native geometry, all sherd faces, item components, block-entity updates, server wobble events and insertion consumption implemented and regression-tested. Live projectile shattering and content/decorations after reconnect remain to be recorded. Evidence/start: [docs/archaeology-pot-parity.md](archaeology-pot-parity.md), [tools/test-archaeology-1.20.6.mjs](../tools/test-archaeology-1.20.6.mjs).
 - [ ] **CONTENT-04 — Chiseled bookshelf hit-slot/contents interactions** (P1; Partial; P11). Every shelf slot/rotation, insertion/removal and server rejection/reload matches native. Remaining: Block/model data exists; slot-specific local interaction and visible content need target acceptance. Evidence/start: [client/js/game/interaction.js](../client/js/game/interaction.js), [client/js/render/tile-renderer.js](../client/js/render/tile-renderer.js).
 - [ ] **CONTENT-05 — Smithing templates, trim previews and worn armor layers** (P1; Partial; P11). Upgrade/trim recipes, template slots, native preview, dyed/worn armor and pack-provided trim textures work. Remaining: Target menu ID/four slots exist; old smithing background and missing palette/component consumers remain. Evidence/start: [client/js/gui/screens/workstations.js](../client/js/gui/screens/workstations.js), [client/js/render/entity-renderer.js](../client/js/render/entity-renderer.js).
 - [ ] **CONTENT-06 — Camel poses, transitions, dash and two-passenger riding** (P1; Partial; P11). Native sit/stand/dash transitions, rider offsets/control and held/equipped state match real server metadata. Remaining: Existing keyframes/metadata are inherited; complete transition/control/attachment acceptance is absent. Evidence/start: [client/js/render/wild-mobs-1.19.4.js](../client/js/render/wild-mobs-1.19.4.js), [client/js/game/entities.js](../client/js/game/entities.js).
