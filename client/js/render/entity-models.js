@@ -1,3 +1,5 @@
+import{animateBat766}from'./bat-1.20.6.js';
+import{shieldArmPose766}from'./shield-pose-1.20.6.js';
 import{brushArmPose766}from'../game/brushing-1.20.6.js';
 import{PAWS_DATA_766}from'../game/paws-data-1.20.6.js';
 import{mcCos}from'../game/physics.js';
@@ -146,12 +148,12 @@ export function animateBiped(m, a) {
   }
   const rp = a.rightPose || (a.heldRight ? 'item' : 'empty'), lp = a.leftPose || 'empty';
   p.rightArm.ry = 0; p.leftArm.ry = 0;
-  if (lp === 'block') { p.leftArm.rx = p.leftArm.rx * 0.5 - 0.9424779; p.leftArm.ry = 0.5235988; }
+  if (lp === 'block')shieldArmPose766(p.leftArm,p.head,false);
   else if (lp === 'item') p.leftArm.rx = p.leftArm.rx * 0.5 - PI / 10;
   else if (lp === 'spyglass') { p.leftArm.rx = spyglassArmPitch(p.head.rx, a.sneak); p.leftArm.ry = p.head.ry + .2617994; }
   else if(lp==='brush')brushArmPose766(p.leftArm);
   else if (lp === 'spear') { p.leftArm.rx = p.leftArm.rx * 0.5 - PI; p.leftArm.ry = 0; }
-  if (rp === 'block') { p.rightArm.rx = p.rightArm.rx * 0.5 - 0.9424779; p.rightArm.ry = -0.5235988; }
+  if (rp === 'block')shieldArmPose766(p.rightArm,p.head,true);
   else if (rp === 'item') p.rightArm.rx = p.rightArm.rx * 0.5 - PI / 10;
   else if (rp === 'spyglass') { p.rightArm.rx = spyglassArmPitch(p.head.rx, a.sneak); p.rightArm.ry = p.head.ry - .2617994; }
   else if(rp==='brush')brushArmPose766(p.rightArm);
@@ -759,27 +761,7 @@ export function guardian() {
 }
 
 export function bat() {
-  const p = J('bat', ['head', 'body', 'rightWing', 'leftWing', 'rightWingTip', 'leftWingTip']);
-  return {
-    parts: p, roots: [p.head, p.body], modelScale: 0.35,
-    animate: (m, a) => {
-      const q = m.parts;
-      if (a.hanging) {
-        q.head.rx = a.pitch * PI / 180; q.head.ry = PI - a.yaw * PI / 180; q.head.rz = PI;
-        q.head.px = 0; q.head.py = -2; q.head.pz = 0;
-        q.rightWing.px = -3; q.rightWing.py = 0; q.rightWing.pz = 3; q.leftWing.px = 3; q.leftWing.py = 0; q.leftWing.pz = 3;
-        q.body.rx = PI; q.rightWing.rx = -0.15707964; q.rightWing.ry = -PI * 2 / 5; q.rightWingTip.ry = -1.7278761;
-        q.leftWing.rx = q.rightWing.rx; q.leftWing.ry = -q.rightWing.ry; q.leftWingTip.ry = -q.rightWingTip.ry;
-      } else {
-        q.head.rx = a.pitch * PI / 180; q.head.ry = a.yaw * PI / 180; q.head.rz = 0;
-        q.head.px = 0; q.head.py = 0; q.head.pz = 0;
-        q.rightWing.px = 0; q.rightWing.py = 0; q.rightWing.pz = 0; q.leftWing.px = 0; q.leftWing.py = 0; q.leftWing.pz = 0;
-        q.body.rx = PI / 4 + cos(a.age * 0.1) * 0.15; q.body.ry = 0;
-        q.rightWing.ry = cos(a.age * 1.3) * PI * 0.25; q.leftWing.ry = -q.rightWing.ry;
-        q.rightWingTip.ry = q.rightWing.ry * 0.5; q.leftWingTip.ry = -q.rightWing.ry * 0.5;
-      }
-    },
-  };
+  return jarAdapter('bat',['$root','head','body','right_wing','left_wing','right_wing_tip','left_wing_tip','feet'],animateBat766);
 }
 
 export function squid(name = 'squid') {

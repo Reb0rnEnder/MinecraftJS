@@ -1,3 +1,4 @@
+import{tickBat766}from'../render/bat-1.20.6.js';
 import {applyPawsMetadata,tickArmadillo766} from './paws-1.20.6.js';
 import {EFFECT_766} from './effects-1.20.6.js';
 import {encodeEntityPosition,relativeEntityPosition} from './entity-position.js';
@@ -974,6 +975,7 @@ export class EntityManager {
       if(e.entityName==='goat') e.goatRammingTicks = Math.max(0, Math.min(20, (e.goatRammingTicks || 0) + (e.goatRamming ? 1 : -2)));
       if(e.entityName==='glow_squid'&&e.darkTicks>0)e.darkTicks--;
       if(e.entityName==='armadillo')tickArmadillo766(e);
+      if(e.entityName==='bat')tickBat766(e);
       if(e.entityName==='fox')tickFox(e);
       if(e.entityName==='bee'){tickBeeSound(this,e);e.prevBeeRoll=e.beeRoll||0;e.beeRoll=Math.fround(e.beeRolling?Math.min(1,Math.fround(e.prevBeeRoll+Math.fround(.2))):Math.max(0,Math.fround(e.prevBeeRoll-Math.fround(.24))));}
       if (e.boostedId && e.boostedId === g.entityId) this._fireworkBoost(e);

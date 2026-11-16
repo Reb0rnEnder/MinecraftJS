@@ -2,20 +2,20 @@
   "schemaVersion": 1,
   "updatedOn": "2026-11-17",
   "target": "1.20.6",
-  "auditedSourceCommit": "af3c718",
+  "auditedSourceCommit": "07f49d5",
   "fullMultiplayerParity": false,
   "fullJavaClientParity": false,
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 482,
+    "targetTests": 485,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
-    "source": "docs/archaeology-pot-parity.md",
-    "note": "482 target tests and exact native oracles pass. Development assets rebuilt with 128 native models. New pot/brush integration checks pass; live loot progression/projectile/reconnect acceptance is pending. Shared audio changes pass five checks on each of ten targets, and all 3701 modern encoded sounds decode in Chromium."
+    "source": "docs/bat-shield-parity.md",
+    "note": "485 target tests and exact native oracles pass, zero skips. Development assets rebuilt with 128 native models. Bat/shield and archaeology batch checks pass; live scenarios remain explicitly pending. Audio changes remain pushed to all ten targets."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {
@@ -1028,13 +1028,12 @@
       "phase": "P11",
       "scope": "multiplayer",
       "title": "Updated bat, shield pose, entity names and pearl feedback",
-      "reason": "Target extracted models exist, but inherited state/presentation adapters require comparison. Unified player spawns now preserve player pickability and the NPC targeting/attack path is covered.",
+      "reason": "Updated bat native hierarchy/keyframes/scale and clamped head-following shield posture now match native method fixtures. Unified player spawn/NPC pickability remains covered. Live bat/shield screenshots, changed entity-name behavior and pearl feedback acceptance remain.",
       "evidence": [
-        "client/js/render/entity-models.js",
-        "client/js/render/entity-renderer.js",
-        "docs/transition-1.20.6.md",
-        "docs/effects-gui-players-1.20.6.md",
-        "tools/test-1.20.6-effects-recipebook-players.mjs"
+        "docs/bat-shield-parity.md",
+        "tools/test-presentation-1.20.6.mjs",
+        "tools/fixtures/presentation-1.20.6.json",
+        "docs/effects-gui-players-1.20.6.md"
       ],
       "acceptance": "Each changed presentation family has exact-target state/animation/visual evidence."
     },
@@ -1508,6 +1507,13 @@
         "CONTENT-03"
       ],
       "evidence": "docs/archaeology-pot-parity.md"
+    },
+    {
+      "title": "Native 1.20.3+ bat hierarchy, flying/resting keyframes and full model scale; head-following shield poses for both arms",
+      "checkpoints": [
+        "CONTENT-10"
+      ],
+      "evidence": "docs/bat-shield-parity.md"
     }
   ],
   "sourceFindings": [

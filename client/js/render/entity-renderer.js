@@ -1239,7 +1239,7 @@ export class EntityRenderer {
         case 59: sx = sy = sz = 0.7; break;
         case 56: sx = sy = sz = 4.5; break;
         case 64: sx = sy = sz = 2; break;
-        case 65: sx = sy = sz = 0.35; break;
+        // 1.20.3 BatRenderer uses the model at its native size.
         case 55: case 62: { const s = e.size || 1; sx = sy = sz = s; break; }
         case 50: {
           // Creeper swell (RenderCreeper.preRenderCallback / getColorMultiplier)

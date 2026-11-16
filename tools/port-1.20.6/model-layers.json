@@ -73,5 +73,18 @@
       "right",
       "front"
     ]
+  },
+  "bat": {
+    "layer": "minecraft:bat#main",
+    "fields": [
+      "$root",
+      "head",
+      "body",
+      "right_wing",
+      "left_wing",
+      "right_wing_tip",
+      "left_wing_tip",
+      "feet"
+    ]
   }
 }

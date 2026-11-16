@@ -1,6 +1,6 @@
 # Full-parity checklist — MinecraftJS 1.20.6
 
-Updated 2026-11-17. Audited source: `af3c718`. **Full multiplayer parity: no. Full Java-client parity: no.**
+Updated 2026-11-17. Audited source: `07f49d5`. **Full multiplayer parity: no. Full Java-client parity: no.**
 
 Edit [docs/parity-checklist-1.20.6.json](parity-checklist-1.20.6.json), then run `node tools/port-1.20.6/parity-status.mjs --write`. This file is generated; `--check` catches stale counts, invalid evidence paths and false completion claims.
 
@@ -16,7 +16,7 @@ The native multiplayer foundation works. Substantial feature and acceptance work
 
 These **checkpoints differ in size and do not enumerate every defect**. 64 required checkpoints are still open. An honest percentage or ETA is unavailable until release coverage is triaged. Accepted rows cover exactly their named scope, not an entire subsystem.
 
-Latest target gate: **482 tests**, zero failures/skips. See [docs/archaeology-pot-parity.md](archaeology-pot-parity.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
+Latest target gate: **485 tests**, zero failures/skips. See [docs/bat-shield-parity.md](bat-shield-parity.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
 
 ## Completed implementation deliverables
 
@@ -31,6 +31,7 @@ These checked items describe completed work. A parent checkpoint can still have 
  - [x] Armadillo native geometry and roll/peek animations; all wolf variant textures, BODY armor/dye/cracks and native metadata consumers. [docs/armored-paws-parity.md](armored-paws-parity.md).
  - [x] Native sidebar/tab blank, styled and fixed number formats, per-score display text, inheritance and reset consumers. [docs/score-format-parity.md](score-format-parity.md).
  - [x] Native decorated-pot geometry, sherd faces, item rendering, insertion consumption and wobble events; brush poses/dust/sounds, suspicious-block item emergence and completion consumers. [docs/archaeology-pot-parity.md](archaeology-pot-parity.md).
+ - [x] Native 1.20.3+ bat hierarchy, flying/resting keyframes and full model scale; head-following shield poses for both arms. [docs/bat-shield-parity.md](bat-shield-parity.md).
 
 ## Current source findings
 
@@ -134,7 +135,7 @@ A box is checked only for `accepted`. For each open row, implement/verify the co
 - [ ] **CONTENT-07 — Sniffer states, eggs/plants and associated effects** (P1; Partial; P11). Native state changes, baby proportions, egg stages, plants, sounds/particles and reload match; AI/growth stay server-owned. Remaining: Sniffer keyframes exist; presence does not certify digging/transitions or egg/plant presentation. Evidence/start: [client/js/render/wild-mobs-1.19.4.js](../client/js/render/wild-mobs-1.19.4.js), [client/js/game/entities.js](../client/js/game/entities.js).
 - [ ] **CONTENT-08 — Cherry/bamboo construction, rafts and new block placement families** (P2; Needs verification; P11). Target doors/trapdoors/fences/stairs/rafts and all new plants have native placement, collision, sounds and passenger transforms. Remaining: Native data and foliage colors are present; every construction state/passenger/support case is not accepted. Evidence/start: [docs/foliage-parity-1.20.6.md](foliage-parity-1.20.6.md), [client/js/game/interaction.js](../client/js/game/interaction.js).
 - [ ] **CONTENT-09 — Calibrated sensors, resonance and target vibration effects** (P1; Partial; P11). Native server events produce correct routes/delays/frequencies/textures/sounds without adding unrelated shrieker rings. Remaining: Inherited vibration implementation exists; calibrated/resonance scenarios remain open. Evidence/start: [client/js/render/particles.js](../client/js/render/particles.js), [docs/parity-fix-tasks-1.19.4.md](parity-fix-tasks-1.19.4.md).
-- [ ] **CONTENT-10 — Updated bat, shield pose, entity names and pearl feedback** (P2; Partial; P11). Each changed presentation family has exact-target state/animation/visual evidence. Remaining: Target extracted models exist, but inherited state/presentation adapters require comparison. Unified player spawns now preserve player pickability and the NPC targeting/attack path is covered. Evidence/start: [client/js/render/entity-models.js](../client/js/render/entity-models.js), [client/js/render/entity-renderer.js](../client/js/render/entity-renderer.js).
+- [ ] **CONTENT-10 — Updated bat, shield pose, entity names and pearl feedback** (P2; Partial; P11). Each changed presentation family has exact-target state/animation/visual evidence. Remaining: Updated bat native hierarchy/keyframes/scale and clamped head-following shield posture now match native method fixtures. Unified player spawn/NPC pickability remains covered. Live bat/shield screenshots, changed entity-name behavior and pearl feedback acceptance remain. Evidence/start: [docs/bat-shield-parity.md](bat-shield-parity.md), [tools/test-presentation-1.20.6.mjs](../tools/test-presentation-1.20.6.mjs).
 
 ### Armored Paws
 

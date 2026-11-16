@@ -148,3 +148,5 @@ Confirmed in pinned mappings during this planning pass: ItemStack `cur`, DataCom
 ## Archaeology/pot implementation batch (2026-11-17)
 
 P11 is now partial: decorated-pot geometry/patterns/events and archaeology brush/particles/sounds/emerging items are implemented. The exact 1.20.6 gate passes 482 tests; development assets have 128 native models. See [native evidence and remaining live acceptance](archaeology-pot-parity.md). Chunk fading belongs to 1.21.11/25w44a and remains a later-transition feature. Shared [audio build validation](audio-build-audit.md) is pushed across all existing targets; Opus remains the default.
+
+The following bat/shield batch passes 485 target tests: [native model and posture evidence](bat-shield-parity.md). Both are 1.20.3 changes and are kept out of older native targets.

@@ -5,7 +5,7 @@ public class ExtractPawsAnimations1206 extends ExtractCreative1206 {
   Class<?> definition=c("net.minecraft.client.animation.AnimationDefinition"),channel=c("net.minecraft.client.animation.AnimationChannel"),keyframe=c("net.minecraft.client.animation.Keyframe"),targets=c("net.minecraft.client.animation.AnimationChannel$Targets"),interpolations=c("net.minecraft.client.animation.AnimationChannel$Interpolations");
   Map<Object,String> targetNames=new IdentityHashMap<>(),interpolationNames=new IdentityHashMap<>();for(String n:new String[]{"POSITION","ROTATION","SCALE"})targetNames.put(f(targets,n).get(null),n.toLowerCase(Locale.ROOT));for(String n:new String[]{"LINEAR","CATMULLROM"})interpolationNames.put(f(interpolations,n).get(null),n.toLowerCase(Locale.ROOT));
   Map<String,Object> result=new LinkedHashMap<>();
-  for(String model:new String[]{"Armadillo"}){
+  for(String model:args.length>2?args[2].split(","):new String[]{"Armadillo"}){
    String owner="net.minecraft.client.animation.definitions."+model+"Animation";Class<?> cls=c(owner);Map<String,Object> animations=new LinkedHashMap<>();
    for(Map.Entry<String,String> entry:fieldNames.get(owner).entrySet()){
     Field field=cls.getDeclaredField(entry.getValue());if(field.getType()!=definition)continue;field.setAccessible(true);Object animation=field.get(null);Map<String,Object> bones=new LinkedHashMap<>();
