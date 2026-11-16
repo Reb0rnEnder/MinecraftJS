@@ -33,7 +33,6 @@ const os = require('os');
 const path = require('path');
 const zlib = require('zlib');
 const crypto = require('crypto');
-const { execFile } = require('child_process');
 const { ZipFile } = require('../lib/zip');
 const mcassets = require('../lib/mcassets');
 const {indexedClientAssets}=require('../lib/asset-layers');
@@ -98,62 +97,7 @@ function writeConfig(opts, defaultOut) {
 // Audio compression (ffmpeg: $FFMPEG, PATH, or the ffmpeg-static dev dependency)
 // ---------------------------------------------------------------------------
 
-function findFfmpeg() {
-  if (process.env.FFMPEG) return process.env.FFMPEG;
-  for (const dir of (process.env.PATH || '').split(path.delimiter)) {
-    for (const exe of ['ffmpeg', 'ffmpeg.exe']) {
-      const p = path.join(dir, exe);
-      if (fs.existsSync(p)) return p;
-    }
-  }
-  try { return require('ffmpeg-static'); } catch (e) { return null; }
-}
-
-function run(exe, args, input) {
-  return new Promise((resolve, reject) => {
-    const child = execFile(exe, args, { encoding: 'buffer', maxBuffer: 1 << 30 }, (err, stdout, stderr) => {
-      if (err) reject(new Error(stderr.toString().trim().split('\n').pop() || err.message));
-      else resolve(stdout);
-    });
-    child.stdin.end(input);
-  });
-}
-
-class AudioEncoder {
-  constructor(opts) {
-    this.codec = opts.audio || 'opus';
-    this.sfxKbps = parseInt(opts['sfx-kbps'], 10) || 32;
-    this.musicKbps = parseInt(opts['music-kbps'], 10) || 48;
-    this.ffmpeg = this.codec === 'copy' ? null : findFfmpeg();
-    if (this.codec !== 'copy' && !this.ffmpeg) {
-      console.warn('ffmpeg not found (install it, set FFMPEG, or `npm install`): sounds are copied uncompressed');
-      this.codec = 'copy';
-    }
-    this.cacheDir = path.join(mcassets.CACHE_DIR, 'audio');
-  }
-
-  // Music and records are stereo at a higher bitrate; positional effects are mono (vanilla plays them as mono sources)
-  async encode(rel, bytes) {
-    if (this.codec === 'copy') return bytes;
-    const music = /^(music|records)\//.test(rel);
-    const kbps = music ? this.musicKbps : this.sfxKbps;
-    const key = crypto.createHash('sha1').update(bytes).digest('hex') + `-${this.codec}-${kbps}${music ? 's' : 'm'}.ogg`;
-    const cached = path.join(this.cacheDir, key);
-    if (fs.existsSync(cached) && fs.statSync(cached).size > 0) return fs.readFileSync(cached);
-    if (!bytes.length) throw new Error('Empty sound file ' + rel);
-    const codecArgs = this.codec === 'opus'
-      ? ['-c:a', 'libopus', '-b:a', kbps + 'k', '-vbr', 'on', '-application', 'audio']
-      : ['-c:a', 'libvorbis', '-b:a', kbps + 'k'];
-    const out = await run(this.ffmpeg, ['-hide_banner', '-loglevel', 'error', '-i', 'pipe:0', '-vn', '-map_metadata', '-1',
-      ...(music ? [] : ['-ac', '1']), ...codecArgs, '-f', 'ogg', 'pipe:1'], bytes);
-    // Keep the original when re-encoding does not make it smaller (tiny clips)
-    const result = out.length && out.length < bytes.length ? out : bytes;
-    fs.mkdirSync(this.cacheDir, { recursive: true });
-    fs.writeFileSync(cached + '.tmp', result); // rename: an interrupted build never leaves a partial entry
-    fs.renameSync(cached + '.tmp', cached);
-    return result;
-  }
-}
+const { AudioEncoder, validateAudioOptions } = require('../lib/audio-encoder');
 
 async function pool(items, n, fn) {
   let i = 0;
@@ -395,7 +339,8 @@ async function buildAssets(opts) {
 
 (async () => {
   const opts = parseArgs(process.argv.slice(2));
-  if(opts.help){console.log('MinecraftJS '+mcassets.MC_VERSION+' build\n  npm run build -- [--out=client.html]\n  npm run build -- --static [--out=dist/site]\n  --format=directory is an alias for --static\n  --proxy=type,url[,name] --server=address[,name] --config=config.json\nUpload the entire static directory. Configure an external WebSocket proxy for Java servers.');return;}
+  if(opts.help){console.log('MinecraftJS '+mcassets.MC_VERSION+' build\n  npm run build -- [--out=client.html]\n  npm run build -- --static [--out=dist/site]\n  --format=directory is an alias for --static\n  --audio=opus|vorbis|copy (default opus)\n  --sfx-kbps=N (default 32) --music-kbps=N (default 48) --no-music\n  --proxy=type,url[,name] --server=address[,name] --config=config.json\nUpload the entire static directory. Configure an external WebSocket proxy for Java servers.');return;}
+  validateAudioOptions(opts);
   const task = opts._[0] || 'html';
   if(task==='static'||opts.static||opts.format==='directory')await buildStatic(opts);
   else if(opts.format&&opts.format!=='html')throw new Error('Unknown format '+opts.format+' (html or directory)');
