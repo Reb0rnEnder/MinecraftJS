@@ -10,6 +10,7 @@ const express = require('express');
 const { WebSocketServer } = require('ws');
 const crypto = require('crypto');
 const { ZipFile } = require('./lib/zip');
+const {builtModelBundleMatches}=require('./lib/model-bundle-signature');
 const msauth = require('./lib/msauth');
 const mcassets = require('./lib/mcassets');
 const { extractModels } = require('./lib/modelextract');
@@ -27,6 +28,7 @@ const PROXY_VERSION = require('./package.json').version || '';
 // ---------------------------------------------------------------------------
 
 let jar = null;
+let validBuiltModels=false;
 let assetIndex = null; // mcassets.loadAssetIndex(): { objects, read(name) }
 const bundleCache = new Map();
 
@@ -115,7 +117,7 @@ async function readAsset(rel) {
 
 const app = express();
 const serveClient=express.static(CLIENT_DIR);
-app.use((req,res,next)=>options.proxyOnly?next():serveClient(req,res,next));
+app.use((req,res,next)=>{if(options.proxyOnly)return next();if(req.path==='/assets/bundles/entity-models.json'&&!validBuiltModels)return next();return serveClient(req,res,next);});
 
 // Pages on other sites (static hosting, the single-file build) use this proxy for sign in and skins
 app.use(['/auth', '/skin', '/profile', '/pack'], (req, res, next) => {
@@ -512,6 +514,7 @@ wss.on('connection', (ws) => {
   const built = fs.existsSync(path.join(CLIENT_DIR, 'assets', 'pack.mcmeta'));
   try {
     jar = new ZipFile(await mcassets.locateJar());
+    try{validBuiltModels=builtModelBundleMatches(JSON.parse(fs.readFileSync(path.join(CLIENT_DIR,'assets/bundles/entity-models-source.json'),'utf8')),jar.data,fs.readFileSync(path.join(CLIENT_DIR,'assets/bundles/entity-models.json')));}catch{validBuiltModels=false;}
     console.log(built ? 'Game assets: client/assets/' : 'Game assets loaded (served from the game jar)');
   } catch (e) {
     console.error('Could not load game assets:', e.message);
