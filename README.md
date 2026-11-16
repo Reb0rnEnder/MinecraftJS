@@ -93,10 +93,18 @@ Options (after `npm run build --` or with `node tools/build.js html`):
 | `--server=address[,name]` | add a server to the embedded config (repeatable) |
 | `--no-proxies`, `--no-servers` | ignore that list from `--config` before adding `--proxy` / `--server` entries |
 | `--out=path` | output file |
-| `--audio=opus\|vorbis\|copy` | sound codec (`copy` keeps the original files) |
+| `--audio=opus\|vorbis\|copy` | sound codec (default **Opus**; `copy` keeps the original files) |
 | `--sfx-kbps=N`, `--music-kbps=N` | bitrates (32 and 48) |
 
-Encoded sounds are cached in `cache/audio/`, so later builds are fast.
+The audio options apply to single-file HTML, static-site and development asset builds:
+
+```sh
+npm run build -- --audio=opus                 # default: effects 32 kbps, music 48 kbps
+npm run build -- --static --audio=copy        # retain original Mojang Vorbis files
+npm run assets -- --audio=vorbis --music-kbps=96
+```
+
+Opus is lossy, as are the original Vorbis files. Small clips retain their original bytes if re-encoding would enlarge them. Encoded sounds are cached under the target's asset cache in `audio/`; later builds reuse them. Install FFmpeg (or set `FFMPEG`) to transcode; a missing encoder produces a warning and keeps originals. Use `node tools/benchmark-audio.mjs` to measure this target's complete sound corpus, optionally setting `PLAYWRIGHT_MODULE` to a Playwright module path to test actual browser decoding. See [the audio build audit](docs/audio-build-audit.md).
 
 ### Assets folder (static hosting)
 
