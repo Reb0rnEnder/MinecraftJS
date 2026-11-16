@@ -1,3 +1,4 @@
+import{bookshelfUse766}from'./bookshelf-1.20.6.js';
 import{startBrushing766,tickBrushing766}from'./brushing-1.20.6.js';
 import {EFFECT_766} from './effects-1.20.6.js';
 import {adventureAllows} from './adventure.js';
@@ -570,11 +571,12 @@ export class Interaction {
     const held = g.inventory.getHand(hand);
     const fx = t.hit[0] - t.x, fy = t.hit[1] - t.y, fz = t.hit[2] - t.z;
         const b = getBlock(g.world.getState(t.x, t.y, t.z));
-    let activated = false;
+    let activated = false,shelfResult=null;
     if (g.gameMode !== 3) {
       const mainAndOffEmpty = !g.inventory.held() && !g.inventory.offhand;
       if ((!this.player.sneaking || mainAndOffEmpty) && b && (INTERACTIVE.has(b.name) || b.isDoor || b.isFenceGate || b.name.endsWith('_trapdoor') || b.name.endsWith('_button') || b.name.endsWith('_bed') || b.name.endsWith('_sign') || ['repeater','comparator','note_block','daylight_detector','shulker_box','light_gray_shulker_box'].includes(b.name)) && b.name !== 'iron_door' && b.name !== 'iron_trapdoor') activated = true;
       if((!this.player.sneaking||mainAndOffEmpty)&&b?.name==='decorated_pot')activated=true;
+      if((!this.player.sneaking||mainAndOffEmpty)&&b?.name==='chiseled_bookshelf'){shelfResult=bookshelfUse766(g,t,getStateProperties(g.world.getState(t.x,t.y,t.z)),held,hand);if(shelfResult!==null)activated=true;}
       if ((!this.player.sneaking || mainAndOffEmpty) && b && cavesBlockUse(b.name, getStateProperties(g.world.getState(t.x,t.y,t.z)), held ? g.items.name(held.id) : null, g.gameMode === 0 || g.gameMode === 1, g.food < 20, fy)) activated = true;
       // BlockCommandBlock.onBlockActivated: only for players who can use command blocks, who get GuiCommandBlock
       // (TileEntityStructure.usedBy too: GuiEditStructure)
@@ -586,6 +588,7 @@ export class Interaction {
     g.send(C.blockPlace(t.x, t.y, t.z, t.face, hand, fx, fy, fz,false,g.blockPrediction?.current||0));
     if (activated) {
       if(b.name==='decorated_pot')return 'consume';
+      if(b.name==='chiseled_bookshelf')return shelfResult;
       playActivatedBlockSound(g,t,b);
       if (COMMAND_BLOCKS.has(b.name)) g.screens.open(new CommandBlockScreen(g, { x: t.x, y: t.y, z: t.z }));
       if (b.name === 'structure_block') g.screens.open(new StructureBlockScreen(g, { x: t.x, y: t.y, z: t.z }, g.structureBlocks.get(t.x + ',' + t.y + ',' + t.z)));

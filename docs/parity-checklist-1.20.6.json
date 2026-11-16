@@ -2,20 +2,20 @@
   "schemaVersion": 1,
   "updatedOn": "2026-11-17",
   "target": "1.20.6",
-  "auditedSourceCommit": "07f49d5",
+  "auditedSourceCommit": "1c6413f",
   "fullMultiplayerParity": false,
   "fullJavaClientParity": false,
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 485,
+    "targetTests": 489,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
-    "source": "docs/bat-shield-parity.md",
-    "note": "485 target tests and exact native oracles pass, zero skips. Development assets rebuilt with 128 native models. Bat/shield and archaeology batch checks pass; live scenarios remain explicitly pending. Audio changes remain pushed to all ten targets."
+    "source": "docs/bookshelf-parity.md",
+    "note": "489 modern target tests and native oracles pass, zero skips. The adapted 1.19.4 experimental bookshelf batch passes 20 regressions and its own native oracle. All previous audio backports remain pushed; live acceptance is explicitly tracked."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {
@@ -936,10 +936,11 @@
       "phase": "P11",
       "scope": "multiplayer",
       "title": "Chiseled bookshelf hit-slot/contents interactions",
-      "reason": "Block/model data exists; slot-specific local interaction and visible content need target acceptance.",
+      "reason": "All facing/slot/float hit tests, tag-driven book insertion/removal, native click consumption and authoritative state behavior are implemented against 1008 native interactions. Live content/visual/reconnect acceptance remains.",
       "evidence": [
-        "client/js/game/interaction.js",
-        "client/js/render/tile-renderer.js"
+        "docs/bookshelf-parity.md",
+        "tools/test-bookshelf-1.20.6.mjs",
+        "tools/fixtures/bookshelf-1.20.6.json"
       ],
       "acceptance": "Every shelf slot/rotation, insertion/removal and server rejection/reload matches native."
     },
@@ -1514,6 +1515,13 @@
         "CONTENT-10"
       ],
       "evidence": "docs/bat-shield-parity.md"
+    },
+    {
+      "title": "Native chiseled-bookshelf face/slot interaction, click consumption and tag-based eligibility; adapted experimental 1.19.4 implementation preserves its four books and hand/feature rules",
+      "checkpoints": [
+        "CONTENT-04"
+      ],
+      "evidence": "docs/bookshelf-parity.md"
     }
   ],
   "sourceFindings": [

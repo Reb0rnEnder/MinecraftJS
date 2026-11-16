@@ -150,3 +150,5 @@ Confirmed in pinned mappings during this planning pass: ItemStack `cur`, DataCom
 P11 is now partial: decorated-pot geometry/patterns/events and archaeology brush/particles/sounds/emerging items are implemented. The exact 1.20.6 gate passes 482 tests; development assets have 128 native models. See [native evidence and remaining live acceptance](archaeology-pot-parity.md). Chunk fading belongs to 1.21.11/25w44a and remains a later-transition feature. Shared [audio build validation](audio-build-audit.md) is pushed across all existing targets; Opus remains the default.
 
 The following bat/shield batch passes 485 target tests: [native model and posture evidence](bat-shield-parity.md). Both are 1.20.3 changes and are kept out of older native targets.
+
+The chiseled-bookshelf batch now passes 489 modern target tests and an adapted 20-test 1.19.4 experimental regression batch. Its exact per-version native interactions and remaining live acceptance are recorded in [bookshelf parity](bookshelf-parity.md).

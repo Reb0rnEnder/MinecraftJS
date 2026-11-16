@@ -263,7 +263,8 @@
       "acceptance": "Every construction/sign/archaeology/pot/smithing/mob/effect family has native interaction and visual evidence, with server ownership distinguished.",
       "evidence": [
         "docs/archaeology-pot-parity.md",
-        "docs/bat-shield-parity.md"
+        "docs/bat-shield-parity.md",
+        "docs/bookshelf-parity.md"
       ]
     },
     {
