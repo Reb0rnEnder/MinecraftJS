@@ -34,6 +34,7 @@ const path = require('path');
 const zlib = require('zlib');
 const crypto = require('crypto');
 const { ZipFile } = require('../lib/zip');
+const {modelBundleStamp}=require('../lib/model-bundle-signature');
 const mcassets = require('../lib/mcassets');
 const {indexedClientAssets}=require('../lib/asset-layers');
 const { extractModels, assertCompleteModels } = require('../lib/modelextract');
@@ -132,6 +133,7 @@ async function collectAssets(opts) {
   const {validateVisualRuntime}=await import('./port-1.14.4/validate-visual-runtime.mjs');
   console.log("Native visual validation:",JSON.stringify(validateVisualRuntime(jar,models,null,{dataDir:DATA_DIR,pendingEntities:new Set(['bogged','breeze'])})));
   files.set('bundles/entity-models.json', Buffer.from(JSON.stringify(models)));
+  files.set('bundles/entity-models-source.json',Buffer.from(JSON.stringify(modelBundleStamp(jar.data,files.get('bundles/entity-models.json')))));
   console.log(`Entity models: ${Object.keys(models).length} from the jar`);
 
   const index = await mcassets.loadAssetIndex();
