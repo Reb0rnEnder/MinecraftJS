@@ -704,7 +704,7 @@ export class TileEntityRenderer {
       if (t.mat) {
         // Use the brightest neighbour for opaque-ish tiles
         let sky = g.world.getSkyLight(t.x, t.y, t.z), blk = g.world.getBlockLight(t.x, t.y, t.z);
-        for (const [ox, oy, oz] of [[0, 1, 0], [1, 0, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1]]) {
+        if(t.type!=='decorated_pot'&&t.type!=='brushable')for (const [ox, oy, oz] of [[0, 1, 0], [1, 0, 0], [-1, 0, 0], [0, 0, 1], [0, 0, -1]]) {
           sky = Math.max(sky, g.world.getSkyLight(t.x + ox, t.y + oy, t.z + oz) - 1);
           blk = Math.max(blk, g.world.getBlockLight(t.x + ox, t.y + oy, t.z + oz) - 1);
         }

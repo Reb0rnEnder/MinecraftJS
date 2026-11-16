@@ -2,20 +2,20 @@
   "schemaVersion": 1,
   "updatedOn": "2026-11-17",
   "target": "1.20.6",
-  "auditedSourceCommit": "1c6413f",
+  "auditedSourceCommit": "53c7e96",
   "fullMultiplayerParity": false,
   "fullJavaClientParity": false,
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 489,
+    "targetTests": 490,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
-    "source": "docs/bookshelf-parity.md",
-    "note": "489 modern target tests and native oracles pass, zero skips. The adapted 1.19.4 experimental bookshelf batch passes 20 regressions and its own native oracle. All previous audio backports remain pushed; live acceptance is explicitly tracked."
+    "source": "docs/archaeology-pot-parity.md",
+    "note": "490 modern JavaScript tests pass; full exact-native generation is checked separately in the same gate. Final pot material/light sampling is covered. Native 1.19.4 prototype bookshelf fixes pass their own native oracle and 20-test regression batch. All audio-builder changes are pushed across ten existing targets."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {

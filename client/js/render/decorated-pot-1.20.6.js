@@ -26,9 +26,9 @@ export function potFrame766(facing='south',style=-1,elapsed=0,partial=0){
 }
 export function buildPot766(decorations=[],facing='south',makeMaterial=path=>entityMaterial(path)){
   const root=new Node(),model=new Node(),materials=[],textures=potTextures766(decorations);root.matrix=potFrame766(facing);model.scale.set(1/16,1/16,1/16);root.add(model);
-  const base=makeMaterial('entity/decorated_pot/decorated_pot_base.png');materials.push(base);
+  const base=makeMaterial('entity/decorated_pot/decorated_pot_base.png');base.state={...base.state,cull:true};materials.push(base);
   for(const part of Object.values(blockModel('decoratedPotBase',['neck','top','bottom']))){model.add(part.build());part.setMaterial(base);}
   const sides=blockModel('decoratedPotSides',SIDES);
-  for(const side of SIDES){const part=sides[side],mat=makeMaterial(textures[side]);materials.push(mat);model.add(part.build());part.setMaterial(mat);}
+  for(const side of SIDES){const part=sides[side],mat=makeMaterial(textures[side]);mat.state={...mat.state,cull:true};materials.push(mat);model.add(part.build());part.setMaterial(mat);}
   return{root,materials};
 }

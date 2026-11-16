@@ -34,3 +34,5 @@ Historical cross-checks: [Java 1.20](https://minecraft.wiki/w/Java_Edition_1.20)
 ## Future chunk fading
 
 Chunk fade-in is native Java **1.21.11**, introduced in **25w44a** with its Video Settings control. It is not a missing 1.20.6 or older feature. Keep it for a 1.21.11 transition rather than backporting its option, assets or rendering behavior. References: [Mojang 25w44a](https://www.minecraft.net/en-us/article/minecraft-snapshot-25w44a), [versioned Wiki history](https://minecraft.wiki/w/Java_Edition_25w44a), [chunk history](https://minecraft.wiki/w/Chunk).
+
+Final material review: native `RenderType.entitySolid` retains culling, while `entityCutoutNoCull` explicitly disables it. Pot base/sides now use the native culled state, including item renderers. Placed pots use the dispatcher's block-position light sample rather than the inherited brightest-neighbor approximation; brushable item lighting continues to sample its native adjacent face. The additional focused regression checks all five pot materials and both light channels.

@@ -829,6 +829,7 @@ export class Interaction {
       const canEat = (g.items.canAlwaysEat(held) || g.food < 20) && !this.player.invulnerable;
       const food = action === 'eat' && !canEat;
       if (!food) {
+        this.brushItemId=undefined;
         this.player.usingItem = true;
         this.consumeSnapshot=action==='eat'||action==='drink'?copy(held):null;
         this.activeHand = hand;
@@ -881,6 +882,7 @@ export class Interaction {
 
   // The server's completion status also emits the final use effect locally.
   finishItemUse() {
+    this.brushItemId=undefined;
     const item=this.consumeSnapshot;this.consumeSnapshot=null;
     if(item)consumeEffect(this.game,item,16);
   }
