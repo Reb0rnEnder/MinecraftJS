@@ -85,6 +85,8 @@ npm run assets -- --audio=vorbis --music-kbps=96
 
 Opus is lossy, as are the original Vorbis files. Small clips retain their original bytes if re-encoding would enlarge them. Encoded sounds are cached under the target's asset cache in `audio/`; later builds reuse them. Install FFmpeg (or set `FFMPEG`) to transcode; a missing encoder produces a warning and keeps originals. Use `node tools/benchmark-audio.mjs` to measure this target's complete sound corpus, optionally setting `PLAYWRIGHT_MODULE` to a Playwright module path to test actual browser decoding. See [the audio build audit](docs/audio-build-audit.md).
 
+On proxy startup, prebuilt entity models are checked against their extraction sources, jar and content hash. Stale model bundles are regenerated from the target jar; restart the proxy after pulling code. See [model-bundle cache provenance](docs/model-bundle-cache.md).
+
 ### Assets folder (static hosting)
 
 ```sh
