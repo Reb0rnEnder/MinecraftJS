@@ -11,7 +11,8 @@
     "test:adventure-tooltips": "node tools/adventure-tooltip-fixtures.mjs --check && node --test tools/test-adventure-tooltips.mjs tools/test-adventure.mjs",
     "test:resource-layers": "node tools/pack-metadata-fixtures.mjs --check && node --test tools/test-resource-layers.mjs tools/test-resource-image-namespaces.mjs tools/test-font-spacing.mjs",
     "test:wolf-parity": "node tools/wolf-metadata.mjs --check && node --test tools/test-wolf-collar.mjs",
-    "test:scoreboard-accuracy": "node --test tools/test-scoreboard-slots.mjs tools/test-scoreboard-background.mjs"
+    "test:scoreboard-accuracy": "node --test tools/test-scoreboard-slots.mjs tools/test-scoreboard-background.mjs",
+    "test:bookshelf": "node tools/port-1.19.4/bookshelf-fixtures.mjs --check && node --test tools/test-bookshelf-1.19.4.mjs tools/test-attachment-placement.mjs tools/test-slab-prediction.mjs tools/test-client-use-pickup-sounds.mjs tools/test-native-tags.mjs"
   },
   "dependencies": {
     "express": "^4.18.2",

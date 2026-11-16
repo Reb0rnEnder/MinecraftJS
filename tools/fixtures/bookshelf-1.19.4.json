@@ -1,0 +1,8999 @@
+{
+  "books": [
+    "minecraft:book",
+    "minecraft:written_book",
+    "minecraft:enchanted_book",
+    "minecraft:writable_book"
+  ],
+  "clientJarSha1": "958928a560c9167687bea0cefeb7375da1e552a8",
+  "hits": [
+    {
+      "face": 0,
+      "facing": "north",
+      "point": [
+        -2.5,
+        64,
+        7.5
+      ],
+      "slot": -1
+    },
+    {
+      "face": 1,
+      "facing": "north",
+      "point": [
+        -2.5,
+        65,
+        7.5
+      ],
+      "slot": -1
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -3,
+        64.2,
+        7
+      ],
+      "slot": 5
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -3,
+        64.5,
+        7
+      ],
+      "slot": 2
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -3,
+        64.8,
+        7
+      ],
+      "slot": 2
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -2.62500003,
+        64.2,
+        7
+      ],
+      "slot": 4
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -2.62500003,
+        64.5,
+        7
+      ],
+      "slot": 1
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -2.62500003,
+        64.8,
+        7
+      ],
+      "slot": 1
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -2.625,
+        64.2,
+        7
+      ],
+      "slot": 4
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -2.625,
+        64.5,
+        7
+      ],
+      "slot": 1
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -2.625,
+        64.8,
+        7
+      ],
+      "slot": 1
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -2.31250003,
+        64.2,
+        7
+      ],
+      "slot": 3
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -2.31250003,
+        64.5,
+        7
+      ],
+      "slot": 0
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -2.31250003,
+        64.8,
+        7
+      ],
+      "slot": 0
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -2.3125,
+        64.2,
+        7
+      ],
+      "slot": 3
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -2.3125,
+        64.5,
+        7
+      ],
+      "slot": 0
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -2.3125,
+        64.8,
+        7
+      ],
+      "slot": 0
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -2.1,
+        64.2,
+        7
+      ],
+      "slot": 3
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -2.1,
+        64.5,
+        7
+      ],
+      "slot": 0
+    },
+    {
+      "face": 2,
+      "facing": "north",
+      "point": [
+        -2.1,
+        64.8,
+        7
+      ],
+      "slot": 0
+    },
+    {
+      "face": 3,
+      "facing": "north",
+      "point": [
+        -2.5,
+        64.5,
+        8
+      ],
+      "slot": -1
+    },
+    {
+      "face": 4,
+      "facing": "north",
+      "point": [
+        -3,
+        64.5,
+        7.5
+      ],
+      "slot": -1
+    },
+    {
+      "face": 5,
+      "facing": "north",
+      "point": [
+        -2,
+        64.5,
+        7.5
+      ],
+      "slot": -1
+    },
+    {
+      "face": 0,
+      "facing": "south",
+      "point": [
+        -2.5,
+        64,
+        7.5
+      ],
+      "slot": -1
+    },
+    {
+      "face": 1,
+      "facing": "south",
+      "point": [
+        -2.5,
+        65,
+        7.5
+      ],
+      "slot": -1
+    },
+    {
+      "face": 2,
+      "facing": "south",
+      "point": [
+        -2.5,
+        64.5,
+        7
+      ],
+      "slot": -1
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -3,
+        64.2,
+        8
+      ],
+      "slot": 3
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -3,
+        64.5,
+        8
+      ],
+      "slot": 0
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -3,
+        64.8,
+        8
+      ],
+      "slot": 0
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -2.62500003,
+        64.2,
+        8
+      ],
+      "slot": 3
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -2.62500003,
+        64.5,
+        8
+      ],
+      "slot": 0
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -2.62500003,
+        64.8,
+        8
+      ],
+      "slot": 0
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -2.625,
+        64.2,
+        8
+      ],
+      "slot": 4
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -2.625,
+        64.5,
+        8
+      ],
+      "slot": 1
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -2.625,
+        64.8,
+        8
+      ],
+      "slot": 1
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -2.31250003,
+        64.2,
+        8
+      ],
+      "slot": 4
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -2.31250003,
+        64.5,
+        8
+      ],
+      "slot": 1
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -2.31250003,
+        64.8,
+        8
+      ],
+      "slot": 1
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -2.3125,
+        64.2,
+        8
+      ],
+      "slot": 5
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -2.3125,
+        64.5,
+        8
+      ],
+      "slot": 2
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -2.3125,
+        64.8,
+        8
+      ],
+      "slot": 2
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -2.1,
+        64.2,
+        8
+      ],
+      "slot": 5
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -2.1,
+        64.5,
+        8
+      ],
+      "slot": 2
+    },
+    {
+      "face": 3,
+      "facing": "south",
+      "point": [
+        -2.1,
+        64.8,
+        8
+      ],
+      "slot": 2
+    },
+    {
+      "face": 4,
+      "facing": "south",
+      "point": [
+        -3,
+        64.5,
+        7.5
+      ],
+      "slot": -1
+    },
+    {
+      "face": 5,
+      "facing": "south",
+      "point": [
+        -2,
+        64.5,
+        7.5
+      ],
+      "slot": -1
+    },
+    {
+      "face": 0,
+      "facing": "west",
+      "point": [
+        -2.5,
+        64,
+        7.5
+      ],
+      "slot": -1
+    },
+    {
+      "face": 1,
+      "facing": "west",
+      "point": [
+        -2.5,
+        65,
+        7.5
+      ],
+      "slot": -1
+    },
+    {
+      "face": 2,
+      "facing": "west",
+      "point": [
+        -2.5,
+        64.5,
+        7
+      ],
+      "slot": -1
+    },
+    {
+      "face": 3,
+      "facing": "west",
+      "point": [
+        -2.5,
+        64.5,
+        8
+      ],
+      "slot": -1
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.2,
+        7
+      ],
+      "slot": 3
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.5,
+        7
+      ],
+      "slot": 0
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.8,
+        7
+      ],
+      "slot": 0
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.2,
+        7.37499997
+      ],
+      "slot": 3
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.5,
+        7.37499997
+      ],
+      "slot": 0
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.8,
+        7.37499997
+      ],
+      "slot": 0
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.2,
+        7.375
+      ],
+      "slot": 4
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.5,
+        7.375
+      ],
+      "slot": 1
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.8,
+        7.375
+      ],
+      "slot": 1
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.2,
+        7.68749997
+      ],
+      "slot": 4
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.5,
+        7.68749997
+      ],
+      "slot": 1
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.8,
+        7.68749997
+      ],
+      "slot": 1
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.2,
+        7.6875
+      ],
+      "slot": 5
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.5,
+        7.6875
+      ],
+      "slot": 2
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.8,
+        7.6875
+      ],
+      "slot": 2
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.2,
+        7.9
+      ],
+      "slot": 5
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.5,
+        7.9
+      ],
+      "slot": 2
+    },
+    {
+      "face": 4,
+      "facing": "west",
+      "point": [
+        -3,
+        64.8,
+        7.9
+      ],
+      "slot": 2
+    },
+    {
+      "face": 5,
+      "facing": "west",
+      "point": [
+        -2,
+        64.5,
+        7.5
+      ],
+      "slot": -1
+    },
+    {
+      "face": 0,
+      "facing": "east",
+      "point": [
+        -2.5,
+        64,
+        7.5
+      ],
+      "slot": -1
+    },
+    {
+      "face": 1,
+      "facing": "east",
+      "point": [
+        -2.5,
+        65,
+        7.5
+      ],
+      "slot": -1
+    },
+    {
+      "face": 2,
+      "facing": "east",
+      "point": [
+        -2.5,
+        64.5,
+        7
+      ],
+      "slot": -1
+    },
+    {
+      "face": 3,
+      "facing": "east",
+      "point": [
+        -2.5,
+        64.5,
+        8
+      ],
+      "slot": -1
+    },
+    {
+      "face": 4,
+      "facing": "east",
+      "point": [
+        -3,
+        64.5,
+        7.5
+      ],
+      "slot": -1
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.2,
+        7
+      ],
+      "slot": 5
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.5,
+        7
+      ],
+      "slot": 2
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.8,
+        7
+      ],
+      "slot": 2
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.2,
+        7.37499997
+      ],
+      "slot": 4
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.5,
+        7.37499997
+      ],
+      "slot": 1
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.8,
+        7.37499997
+      ],
+      "slot": 1
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.2,
+        7.375
+      ],
+      "slot": 4
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.5,
+        7.375
+      ],
+      "slot": 1
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.8,
+        7.375
+      ],
+      "slot": 1
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.2,
+        7.68749997
+      ],
+      "slot": 3
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.5,
+        7.68749997
+      ],
+      "slot": 0
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.8,
+        7.68749997
+      ],
+      "slot": 0
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.2,
+        7.6875
+      ],
+      "slot": 3
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.5,
+        7.6875
+      ],
+      "slot": 0
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.8,
+        7.6875
+      ],
+      "slot": 0
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.2,
+        7.9
+      ],
+      "slot": 3
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.5,
+        7.9
+      ],
+      "slot": 0
+    },
+    {
+      "face": 5,
+      "facing": "east",
+      "point": [
+        -2,
+        64.8,
+        7.9
+      ],
+      "slot": 0
+    }
+  ],
+  "oracleSha256": "759fe2f10e02347249dfe661ee6a80ad3ae0688db972b08df74701affbd066d3",
+  "uses": [
+    {
+      "consumes": true,
+      "hit": 2,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 2,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 2,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 2,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 2,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 2,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 2,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 2,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 2,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 2,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 2,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 2,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 2,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 2,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 3,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 3,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 3,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 3,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 3,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 3,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 3,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 3,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 3,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 3,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 3,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 3,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 3,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 3,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 4,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 4,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 4,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 4,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 4,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 4,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 4,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 4,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 4,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 4,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 4,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 4,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 4,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 4,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 5,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 5,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 5,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 5,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 5,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 5,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 5,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 5,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 5,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 5,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 5,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 5,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 5,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 5,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 6,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 6,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 6,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 6,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 6,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 6,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 6,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 6,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 6,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 6,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 6,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 6,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 6,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 6,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 7,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 7,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 7,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 7,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 7,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 7,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 7,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 7,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 7,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 7,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 7,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 7,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 7,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 7,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 8,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 8,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 8,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 8,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 8,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 8,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 8,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 8,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 8,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 8,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 8,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 8,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 8,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 8,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 9,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 9,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 9,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 9,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 9,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 9,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 9,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 9,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 9,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 9,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 9,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 9,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 9,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 9,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 10,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 10,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 10,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 10,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 10,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 10,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 10,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 10,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 10,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 10,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 10,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 10,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 10,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 10,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 11,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 11,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 11,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 11,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 11,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 11,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 11,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 11,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 11,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 11,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 11,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 11,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 11,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 11,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 12,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 12,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 12,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 12,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 12,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 12,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 12,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 12,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 12,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 12,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 12,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 12,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 12,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 12,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 13,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 13,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 13,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 13,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 13,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 13,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 13,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 13,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 13,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 13,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 13,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 13,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 13,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 13,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 14,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 14,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 14,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 14,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 14,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 14,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 14,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 14,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 14,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 14,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 14,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 14,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 14,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 14,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 15,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 15,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 15,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 15,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 15,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 15,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 15,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 15,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 15,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 15,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 15,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 15,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 15,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 15,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 16,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 16,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 16,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 16,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 16,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 16,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 16,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 16,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 16,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 16,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 16,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 16,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 16,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 16,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 17,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 17,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 17,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 17,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 17,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 17,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 17,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 17,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 17,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 17,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 17,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 17,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 17,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 17,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 18,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 18,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 18,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 18,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 18,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 18,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 18,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 18,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 18,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 18,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 18,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 18,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 18,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 18,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 19,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 19,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 19,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 19,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 19,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 19,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 19,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 19,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 19,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 19,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 19,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 19,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 19,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 19,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 26,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 26,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 26,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 26,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 26,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 26,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 26,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 26,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 26,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 26,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 26,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 26,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 26,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 26,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 27,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 27,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 27,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 27,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 27,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 27,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 27,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 27,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 27,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 27,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 27,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 27,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 27,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 27,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 28,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 28,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 28,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 28,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 28,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 28,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 28,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 28,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 28,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 28,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 28,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 28,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 28,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 28,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 29,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 29,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 29,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 29,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 29,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 29,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 29,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 29,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 29,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 29,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 29,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 29,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 29,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 29,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 30,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 30,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 30,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 30,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 30,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 30,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 30,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 30,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 30,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 30,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 30,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 30,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 30,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 30,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 31,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 31,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 31,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 31,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 31,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 31,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 31,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 31,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 31,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 31,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 31,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 31,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 31,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 31,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 32,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 32,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 32,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 32,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 32,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 32,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 32,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 32,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 32,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 32,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 32,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 32,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 32,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 32,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 33,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 33,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 33,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 33,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 33,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 33,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 33,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 33,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 33,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 33,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 33,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 33,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 33,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 33,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 34,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 34,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 34,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 34,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 34,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 34,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 34,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 34,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 34,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 34,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 34,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 34,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 34,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 34,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 35,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 35,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 35,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 35,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 35,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 35,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 35,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 35,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 35,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 35,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 35,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 35,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 35,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 35,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 36,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 36,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 36,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 36,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 36,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 36,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 36,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 36,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 36,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 36,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 36,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 36,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 36,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 36,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 37,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 37,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 37,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 37,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 37,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 37,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 37,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 37,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 37,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 37,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 37,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 37,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 37,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 37,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 38,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 38,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 38,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 38,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 38,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 38,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 38,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 38,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 38,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 38,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 38,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 38,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 38,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 38,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 39,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 39,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 39,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 39,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 39,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 39,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 39,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 39,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 39,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 39,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 39,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 39,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 39,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 39,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 40,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 40,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 40,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 40,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 40,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 40,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 40,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 40,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 40,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 40,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 40,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 40,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 40,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 40,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 41,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 41,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 41,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 41,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 41,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 41,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 41,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 41,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 41,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 41,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 41,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 41,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 41,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 41,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 42,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 42,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 42,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 42,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 42,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 42,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 42,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 42,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 42,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 42,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 42,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 42,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 42,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 42,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 43,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 43,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 43,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 43,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 43,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 43,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 43,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 43,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 43,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 43,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 43,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 43,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 43,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 43,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 50,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 50,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 50,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 50,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 50,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 50,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 50,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 50,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 50,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 50,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 50,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 50,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 50,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 50,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 51,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 51,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 51,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 51,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 51,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 51,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 51,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 51,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 51,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 51,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 51,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 51,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 51,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 51,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 52,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 52,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 52,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 52,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 52,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 52,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 52,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 52,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 52,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 52,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 52,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 52,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 52,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 52,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 53,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 53,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 53,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 53,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 53,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 53,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 53,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 53,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 53,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 53,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 53,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 53,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 53,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 53,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 54,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 54,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 54,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 54,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 54,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 54,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 54,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 54,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 54,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 54,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 54,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 54,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 54,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 54,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 55,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 55,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 55,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 55,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 55,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 55,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 55,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 55,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 55,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 55,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 55,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 55,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 55,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 55,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 56,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 56,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 56,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 56,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 56,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 56,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 56,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 56,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 56,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 56,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 56,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 56,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 56,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 56,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 57,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 57,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 57,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 57,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 57,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 57,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 57,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 57,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 57,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 57,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 57,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 57,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 57,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 57,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 58,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 58,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 58,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 58,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 58,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 58,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 58,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 58,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 58,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 58,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 58,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 58,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 58,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 58,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 59,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 59,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 59,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 59,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 59,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 59,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 59,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 59,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 59,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 59,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 59,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 59,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 59,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 59,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 60,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 60,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 60,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 60,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 60,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 60,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 60,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 60,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 60,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 60,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 60,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 60,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 60,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 60,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 61,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 61,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 61,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 61,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 61,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 61,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 61,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 61,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 61,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 61,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 61,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 61,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 61,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 61,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 62,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 62,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 62,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 62,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 62,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 62,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 62,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 62,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 62,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 62,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 62,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 62,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 62,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 62,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 63,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 63,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 63,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 63,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 63,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 63,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 63,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 63,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 63,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 63,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 63,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 63,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 63,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 63,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 64,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 64,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 64,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 64,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 64,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 64,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 64,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 64,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 64,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 64,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 64,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 64,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 64,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 64,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 65,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 65,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 65,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 65,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 65,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 65,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 65,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 65,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 65,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 65,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 65,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 65,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 65,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 65,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 66,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 66,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 66,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 66,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 66,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 66,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 66,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 66,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 66,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 66,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 66,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 66,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 66,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 66,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 67,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 67,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 67,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 67,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 67,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 67,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 67,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 67,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 67,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 67,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 67,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 67,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 67,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 67,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 74,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 74,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 74,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 74,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 74,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 74,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 74,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 74,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 74,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 74,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 74,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 74,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 74,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 74,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 75,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 75,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 75,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 75,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 75,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 75,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 75,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 75,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 75,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 75,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 75,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 75,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 75,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 75,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 76,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 76,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 76,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 76,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 76,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 76,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 76,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 76,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 76,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 76,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 76,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 76,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 76,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 76,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 77,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 77,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 77,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 77,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 77,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 77,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 77,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 77,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 77,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 77,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 77,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 77,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 77,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 77,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 78,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 78,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 78,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 78,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 78,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 78,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 78,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 78,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 78,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 78,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 78,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 78,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 78,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 78,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 79,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 79,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 79,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 79,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 79,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 79,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 79,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 79,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 79,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 79,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 79,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 79,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 79,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 79,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 80,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 80,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 80,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 80,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 80,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 80,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 80,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 80,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 80,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 80,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 80,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 80,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 80,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 80,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 81,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 81,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 81,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 81,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 81,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 81,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 81,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 81,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 81,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 81,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 81,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 81,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 81,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 81,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 82,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 82,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 82,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 82,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 82,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 82,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 82,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 82,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 82,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 82,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 82,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 82,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 82,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 82,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 83,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 83,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 83,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 83,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 83,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 83,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 83,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 83,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 83,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 83,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 83,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 83,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 83,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 83,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 84,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 84,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 84,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 84,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 84,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 84,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 84,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 84,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 84,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 84,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 84,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 84,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 84,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 84,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 85,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 85,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 85,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 85,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 85,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 85,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 85,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 85,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 85,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 85,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 85,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 85,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 85,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 85,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 86,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 86,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 86,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 86,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 86,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 86,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 86,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 86,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 86,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 86,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 86,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 86,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 86,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 86,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 87,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 87,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 87,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 87,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 87,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 87,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 87,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 87,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 87,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 87,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 87,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 87,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 87,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 87,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 88,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 88,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 88,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 88,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 88,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 88,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 88,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 88,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 88,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 88,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 88,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 88,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 88,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 88,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 89,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 89,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 89,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 89,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 89,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 89,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 89,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 89,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 89,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 89,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 89,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 89,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 89,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 89,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 90,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 90,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 90,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 90,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 90,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 90,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 90,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 90,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 90,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 90,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 90,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 90,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 90,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 90,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 91,
+      "item": "minecraft:air",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 91,
+      "item": "minecraft:book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 91,
+      "item": "minecraft:writable_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 91,
+      "item": "minecraft:written_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 91,
+      "item": "minecraft:enchanted_book",
+      "occupied": false,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 91,
+      "item": "minecraft:knowledge_book",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 91,
+      "item": "minecraft:stone",
+      "occupied": false,
+      "result": "CONSUME",
+      "swing": false
+    },
+    {
+      "consumes": true,
+      "hit": 91,
+      "item": "minecraft:air",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 91,
+      "item": "minecraft:book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 91,
+      "item": "minecraft:writable_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 91,
+      "item": "minecraft:written_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 91,
+      "item": "minecraft:enchanted_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 91,
+      "item": "minecraft:knowledge_book",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    },
+    {
+      "consumes": true,
+      "hit": 91,
+      "item": "minecraft:stone",
+      "occupied": true,
+      "result": "SUCCESS",
+      "swing": true
+    }
+  ],
+  "version": "1.19.4"
+}
