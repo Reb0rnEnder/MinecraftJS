@@ -33,6 +33,7 @@ const path = require('path');
 const zlib = require('zlib');
 const crypto = require('crypto');
 const { ZipFile } = require('../lib/zip');
+const {modelBundleStamp}=require('../lib/model-bundle-signature');
 const mcassets = require('../lib/mcassets');
 const { extractModels } = require('../lib/modelextract');
 
@@ -125,6 +126,7 @@ async function collectAssets(opts) {
   const em = extractModels(jar);
   for (const e of em.errors) console.warn('  entity model ' + e);
   files.set('bundles/entity-models.json', Buffer.from(JSON.stringify(em.models)));
+  files.set('bundles/entity-models-source.json',Buffer.from(JSON.stringify(modelBundleStamp(jar.data,files.get('bundles/entity-models.json')))));
   console.log(`Entity models: ${Object.keys(em.models).length} from the jar`);
 
   const index = await mcassets.loadAssetIndex();
