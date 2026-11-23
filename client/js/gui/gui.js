@@ -1,3 +1,4 @@
+import {calculateGuiScale} from './gui-scale.js';
 import{bundleTooltipLayout,drawBundleTooltip}from'./bundle-tooltip.js';
 import{EMPTY_DYNAMIC_LIGHTS}from'../gfx/dynamic-lighting.js';
 import {VANILLA_UI} from './vanilla-layout.js';
@@ -44,9 +45,7 @@ export class Gui {
 
   resize() {
     const w = platform().width, h = platform().height;
-    let scale = 1;
-    const max = this.guiScaleSetting === 0 ? 1000 : this.guiScaleSetting;
-    while (scale < max && w / (scale + 1) >= 320 && h / (scale + 1) >= 240) scale++;
+    const scale = calculateGuiScale(w,h,this.guiScaleSetting,!!this.font.unicode);
     this.scale = scale;
     this.width = Math.ceil(w / scale);
     this.height = Math.ceil(h / scale);
