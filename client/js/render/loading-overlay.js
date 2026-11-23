@@ -23,7 +23,8 @@ export function loadingRects(layout,progress,alpha=1){
 export function renderLoadingOverlay(gui,progress,{backgroundAlpha=1,logoAlpha=1,barAlpha=1,dark=false}={}){
  const layout=loadingLayout(gui.width,gui.height,dark),[r,g,b]=layout.background;
  gui.rect(0,0,gui.width,gui.height,((Math.ceil(backgroundAlpha*255)<<24)|(Math.round(r*255)<<16)|(Math.round(g*255)<<8)|Math.round(b*255))>>>0);
- const tex=gui.tex(LOADING_LOGO);
+ // LoadingOverlay.LogoTexture uses TextureMetadataSection(blur, clamp): linear filtering (1.16+).
+ const tex=gui.assets?gui.assets.texture(LOADING_LOGO,{filter:'linear'}):gui.tex(LOADING_LOGO);
  if(tex){gui.setBlend(LOADING_STYLE==='studios'?'add':'alpha');for(const [x,y,w,h,u0,v0,u1,v1]of loadingLogoQuads(layout))gui.quad(tex,x,y,x+w,y+h,u0,v0,u1,v1,[1,1,1,logoAlpha]);gui.setBlend('alpha');}
  for(const [x,y,r,b,c]of loadingRects(layout,progress,barAlpha))if(r>x&&b>y)gui.rect(x,y,r,b,((Math.round(c[3]*255)<<24)|(Math.round(c[0]*255)<<16)|(Math.round(c[1]*255)<<8)|Math.round(c[2]*255))>>>0);
 }
