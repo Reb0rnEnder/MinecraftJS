@@ -78,6 +78,7 @@ import { EntityManager, shulkerBox } from './entities.js';
 import { EntityRenderer } from '../render/entity-renderer.js';
 import { ItemRenderer } from '../render/item-renderer.js';
 import { HandRenderer } from '../render/hand-renderer.js';
+import {StatsCounter} from './stats-counter.js';
 import { Pistons } from './pistons.js';
 import { ServerPacks } from './serverpacks.js';
 import { PostEffects, entityShaderName } from '../render/post.js';
@@ -718,7 +719,7 @@ export class Game {
     this.tags = new RegistryTags();if(this.world)this.world.registryTags=this.tags; this.commands = null;
     if (this.advancements) this.advancements.clear();
     this.hud.resetServerState();
-    this.statValues = null; this.stats = null;
+    this.statsCounter = null;
     if (this.serverPacks) this.serverPacks.clear();
   }
 
@@ -1274,13 +1275,11 @@ export class Game {
 
   on_open_sign_entity(p) { this.screens.open(new SignEditScreen(this, p.location)); }
 
-  // S37PacketStatistics only carries stats that changed since the last one, so keep a running copy
-  // (StatFileWriter) and hand screens the whole map
+  // ClientboundAwardStatsPacket only carries changed stats; keep the running StatsCounter and hand it to screens
   on_statistics(p) {
-    if (!this.statValues) this.statValues = new Map();
-    for (const e of p.entries) this.statValues.set(e.name, e.value);
-    this.stats = [...this.statValues].map(([name, value]) => ({ name, value }));
-    if (this.screens.current && this.screens.current.onStats) this.screens.current.onStats(this.stats);
+    this.statsCounter ||= new StatsCounter(this.assets.data);
+    this.statsCounter.apply(p.entries);
+    this.screens.current?.onStats?.(this.statsCounter);
   }
 
   on_player_info(p) {
