@@ -8,14 +8,14 @@
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 502,
+    "targetTests": 511,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
     "source": "docs/ui-parity-1.20.6.md",
-    "note": "502 modern tests and exact native oracles pass, zero failures/skips, including native stat registries/Block.asItem data, the extended UI layout oracle (Statistics, Key Binds, loading dots) and Java-verified stat formatters. Statistics regressions pass on all eight 1.13+ targets with no new failures in their touched suites; all bundles build. Live acceptance remains open."
+    "note": "511 modern tests and exact native oracles pass, zero failures/skips, adding native Advancements and Social Interactions regressions. Browser checks cover Advancements, Social Interactions, Statistics, Key Binds and resource packs. Linear loading-logo filtering (1.16.5+) and the preloading default (all ten targets) add no failures to touched suites; all ten bundles build. Live acceptance remains open."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {
@@ -647,7 +647,7 @@
       "phase": "P13",
       "scope": "multiplayer",
       "title": "Pause, multiplayer/safety, Controls, Chat and Accessibility screen matrix",
-      "reason": "Pause, multiplayer warning, Key Binds and Statistics now use native 1.20.6 layouts and sprites (fixture/regression and browser checked). Chat and Accessibility still need a whole-screen visual/input matrix at multiple GUI scales and short/narrow windows.",
+      "reason": "Pause, multiplayer warning, Key Binds, Statistics, Advancements and Social Interactions now use native 1.20.6 layouts and sprites (fixture/regression and browser checked). Chat and Accessibility still need a whole-screen visual/input matrix at multiple GUI scales and short/narrow windows.",
       "evidence": [
         "client/js/gui/screens/pause.js",
         "client/js/gui/screens/menus.js",
@@ -1553,6 +1553,14 @@
     {
       "title": "Native Statistics screen and award-stats decoding through the native registries and Block.asItem pairs, fixing the Statistics crash; backported per release to 1.13.2-1.19.4",
       "checkpoints": [
+        "UI-03"
+      ],
+      "evidence": "docs/ui-parity-1.20.6.md"
+    },
+    {
+      "title": "Native 1.20.6 Advancements and Social Interactions screens (sprite-era layouts, header/footer, tooltips), linear Mojang Studios loading logo on 1.16.5+, and preloading off by default",
+      "checkpoints": [
+        "UI-01",
         "UI-03"
       ],
       "evidence": "docs/ui-parity-1.20.6.md"

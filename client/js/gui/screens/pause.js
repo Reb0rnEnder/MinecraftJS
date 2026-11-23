@@ -28,7 +28,7 @@ export class PauseScreen extends Screen {
     }));
     // Remote servers (the only kind this client joins) get Player Reporting instead of Open to LAN.
     this.buttons.push(new Button(7, col(1), row(3), 98, 20, tr('menu.playerReporting'), () => {
-      import('./social.js').then((m) => { const s = new m.SocialInteractionsScreen(g); s.close = () => g.screens.open(this); g.screens.open(s); });
+      import('./social.js').then((m) => g.screens.open(new m.SocialInteractionsScreen(g, this)));
     }));
     this.buttons.push(new Button(1, col(0), row(4), 204, 20, tr('menu.disconnect'), () => g.disconnect(false)));
   }

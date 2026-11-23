@@ -211,6 +211,17 @@ export class Gui {
     }
   }
 
+  // GuiGraphics.blitSprite(sprite, textureWidth, textureHeight, u, v, x, y, width, height): a sub-region of a
+  // stretch sprite whose virtual size is textureWidth x textureHeight; other scalings draw the whole sprite.
+  spriteRegion(name,texW,texH,u,v,x,y,w,h) {
+    const path='gui/sprites/'+name+'.png',t=this.tex(path);
+    this.assets.loadGuiSprite?.(path).catch(()=>{});
+    if(!t||w<=0||h<=0)return;
+    const s=this.assets.guiSpriteScaling?.get(path)||{type:'stretch'};
+    if(s.type!=='stretch'){this.sprite(name,x,y,w,h);return;}
+    this.quad(t,x,y,x+w,y+h,u/texW,v/texH,(u+w)/texW,(v+h)/texH,WHITE);
+  }
+
   // Draw a texture region given in texture pixels
   drawImage(path, sx, sy, sw, sh, x, y, w, h, color = WHITE) {
     const t = this.tex(path);

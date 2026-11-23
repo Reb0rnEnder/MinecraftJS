@@ -1,22 +1,28 @@
-// GuiScreenAdvancements / GuiAdvancementTab / GuiAdvancement (1.12): a 252x140 window with one tab per root
-// advancement, the tab's tree on a tiled background that can be dragged, and a hover panel per advancement.
+// Native 1.20.6 AdvancementsScreen / AdvancementTab / AdvancementWidget: a 252x140 window inside a
+// HeaderAndFooterLayout (title header, Done footer), one sprite tab per root advancement when there is more than
+// one, the tab's tree on a tiled background that can be dragged or scrolled, and a hover panel per advancement.
 import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
+import { Button } from '../widgets.js';
 import { C } from '../../net/packets.js';
 
 const WINDOW = 'gui/advancements/window.png';
-const TABS = 'gui/advancements/tabs.png';
-const WIDGETS = 'gui/advancements/widgets.png';
-const FRAME_ICON = [0, 26, 52]; // FrameType task, challenge, goal -> widgets.png u
 const FRAME_NAME = ['task', 'challenge', 'goal'];
+// AdvancementType chat colours applied to descriptions (task/goal GREEN, challenge DARK_PURPLE)
+const FRAME_COLOR = ['\u00a7a', '\u00a75', '\u00a7a'];
+const frameSprite = (frame, obtained) => 'advancements/' + (FRAME_NAME[frame] || 'task') + '_frame_' + (obtained ? 'obtained' : 'unobtained');
+const boxSprite = (obtained) => 'advancements/box_' + (obtained ? 'obtained' : 'unobtained');
+// AdvancementWidget.findOptimalLines test offsets
+const LINE_OFFSETS = [0, 10, -10, 25, -25];
 
-// AdvancementTabType: [textureX, textureY, width, height, max]
+// AdvancementTabType: sprite family, ends (first/middle/last), size and capacity
 const TAB_TYPES = [
-  { name: 'above', tx: 0, ty: 0, w: 28, h: 32, max: 8 },
-  { name: 'below', tx: 84, ty: 0, w: 28, h: 32, max: 8 },
-  { name: 'left', tx: 0, ty: 64, w: 32, h: 28, max: 5 },
-  { name: 'right', tx: 96, ty: 64, w: 32, h: 28, max: 5 },
+  { name: 'above', ends: ['left', 'middle', 'right'], w: 28, h: 32, max: 8 },
+  { name: 'below', ends: ['left', 'middle', 'right'], w: 28, h: 32, max: 8 },
+  { name: 'left', ends: ['top', 'middle', 'bottom'], w: 32, h: 28, max: 5 },
+  { name: 'right', ends: ['top', 'middle', 'bottom'], w: 32, h: 28, max: 5 },
 ];
+const tabSprite = (t, i, selected) => 'advancements/tab_' + t.name + '_' + t.ends[i === 0 ? 0 : i === t.max - 1 ? 2 : 1] + (selected ? '_selected' : '');
 function tabPlace(index) {
   for (const t of TAB_TYPES) { if (index < t.max) return { t, i: index }; index -= t.max; }
   return null;
@@ -28,12 +34,12 @@ export class AdvancementsScreen extends Screen {
   constructor(game, parent) {
     super(game);
     this.parent = parent;
-    this.background = 'world';
     this.adv = game.advancements;
     this.tabs = new Map(); // root id -> tab state
   }
 
   init() {
+    this.buttons.push(new Button(0, Math.floor(this.width / 2) - 100, this.height - 26, 200, 20, tr('gui.done'), () => this.close()));
     this.adv.listener = this;
     this.onAdvancementsChanged();
     // ClientAdvancementManager.setSelectedTab(first, tellServer)
@@ -81,25 +87,23 @@ export class AdvancementsScreen extends Screen {
     const n = a.requirements.length;
     const k = n > 1 ? font.width('  ') + font.width('0') * String(n).length * 2 + font.width('/') : 0;
     let l = 29 + font.width(title) + k;
-    const description = this._optimalLines(d.description, l);
+    const description = this._optimalLines((FRAME_COLOR[d.frame] || '') + (d.description || ''), l);
     for (const s of description) l = Math.max(l, font.width(s));
     return { a, parent, x: Math.floor(d.x * 28), y: Math.floor(d.y * 27), title, description, width: l + 3 + 5 };
   }
 
-  // GuiAdvancement.findOptimalLines
+  // AdvancementWidget.findOptimalLines: try widths around maxWidth, keep the first whose widest line is within 10
   _optimalLines(text, maxWidth) {
     const font = this.gui.font;
-    if (!text) return [];
-    const list = font.wrap(text, maxWidth);
-    if (list.length < 2) return list;
-    const i = font.width(list[0] + ' ' + list[1].split(' ')[0]);
-    if (i - maxWidth <= 10) return font.wrap(text, i);
-    const m = list[0].match(/^(.+) \S+$/);
-    if (m) {
-      const j = font.width(m[1]);
-      if (maxWidth - j <= 10) return font.wrap(text, j);
+    if (!text.replace(/\u00a7./g, '')) return [];
+    let best = null, bestDiff = Infinity;
+    for (const offset of LINE_OFFSETS) {
+      const lines = font.wrap(text, maxWidth - offset), widest = Math.max(0, ...lines.map((l) => font.width(l)));
+      const diff = Math.abs(widest - maxWidth);
+      if (diff <= 10) return lines;
+      if (diff < bestDiff) { bestDiff = diff; best = lines; }
     }
-    return list;
+    return best;
   }
 
   _visible(w) { return !w.a.display.hidden || this.adv.isDone(w.a); }
@@ -118,32 +122,41 @@ export class AdvancementsScreen extends Screen {
           return true;
         }
       }
-      if (mx >= L + 9 && mx < L + 243 && my >= T + 18 && my < T + 131) { this.dragging = { x: mx, y: my }; return true; }
     }
-    return super.mouseDown(mx, my, button);
+    if (super.mouseDown(mx, my, button)) return true;
+    // mouseDragged: left drags anywhere scroll the tab; the first drag event of the screen only arms it
+    if (button === 0) { this.dragging = { x: mx, y: my }; return true; }
+    return false;
   }
+
+  _scroll(tab, dx, dy) {
+    if (tab.maxX - tab.minX > 234) tab.scrollX = Math.max(-(tab.maxX - 234), Math.min(0, tab.scrollX + dx));
+    if (tab.maxY - tab.minY > 113) tab.scrollY = Math.max(-(tab.maxY - 113), Math.min(0, tab.scrollY + dy));
+  }
+
+  // mouseScrolled: 16 pixels per notch
+  wheel(d) { const tab = this.selected; if (tab) this._scroll(tab, 0, -d * 16); }
 
   mouseMove(mx, my) {
     if (!this.dragging) return;
     const tab = this.selected;
-    if (tab) {
-      // GuiAdvancementTab.scroll: only along axes where the tree is larger than the view
-      const dx = mx - this.dragging.x, dy = my - this.dragging.y;
-      if (tab.maxX - tab.minX > 234) tab.scrollX = Math.max(-(tab.maxX - 234), Math.min(0, tab.scrollX + dx));
-      if (tab.maxY - tab.minY > 113) tab.scrollY = Math.max(-(tab.maxY - 113), Math.min(0, tab.scrollY + dy));
-    }
+    if (!this.dragArmed) this.dragArmed = true;
+    else if (tab) this._scroll(tab, mx - this.dragging.x, my - this.dragging.y);
     this.dragging = { x: mx, y: my };
   }
 
   mouseUp(mx, my, button) { this.dragging = null; super.mouseUp(mx, my, button); }
 
   key(e) {
-    if (e.code === this.game.settings.keys.advancements) { this.close(); return true; }
+    // the advancements key closes straight to the game (setScreen(null)); removed() still tells the server
+    if (e.code === this.game.settings.keys.advancements) { this.adv.listener = null; this.game.send(C.seenAdvancements(null)); this.game.screens.close(); return true; }
     return super.key(e);
   }
 
   render(gui, mx, my, partial) {
-    gui.worldBackground();
+    gui.menuBackground(this.game.inWorld);
+    gui.textCentered(tr('gui.advancements'), Math.floor(this.width / 2), 12, 0xffffff);
+    for (const b of this.buttons) b.render(gui, mx, my);
     const L = Math.floor((this.width - 252) / 2), T = Math.floor((this.height - 140) / 2);
     this._renderInside(gui, L, T);
     this._renderWindow(gui, L, T);
@@ -195,8 +208,7 @@ export class AdvancementsScreen extends Screen {
     // GuiAdvancement.draw
     for (const w of tab.widgets) {
       if (!this._visible(w)) continue;
-      const state = this.adv.percent(w.a) >= 1 ? 0 : 1;
-      gui.blit(WIDGETS, x + i + w.x + 3, y + j + w.y, FRAME_ICON[w.a.display.frame] || 0, 128 + state * 26, 26, 26);
+      gui.sprite(frameSprite(w.a.display.frame, this.adv.percent(w.a) >= 1), x + i + w.x + 3, y + j + w.y, 26, 26);
       if (w.a.display.icon) this.game.itemRenderer.drawItem(gui, w.a.display.icon, x + i + w.x + 8, y + j + w.y + 5, false);
     }
     gui.clearScissor();
@@ -208,11 +220,7 @@ export class AdvancementsScreen extends Screen {
     if (this.tabs.size > 1) {
       for (const tab of this.tabs.values()) {
         const { t, i } = tab.place;
-        let u = t.tx;
-        if (i > 0) u += t.w;
-        if (i === t.max - 1) u += t.w;
-        const selected = tab.root.id === this.adv.selectedTab;
-        gui.blit(TABS, L + tabX(t, i), T + tabY(t, i), u, selected ? t.ty + t.h : t.ty, t.w, t.h);
+        gui.sprite(tabSprite(t, i, tab.root.id === this.adv.selectedTab), L + tabX(t, i), T + tabY(t, i), t.w, t.h);
       }
       for (const tab of this.tabs.values()) {
         const { t, i } = tab.place;
@@ -221,7 +229,8 @@ export class AdvancementsScreen extends Screen {
         if (tab.root.display.icon) this.game.itemRenderer.drawItem(gui, tab.root.display.icon, x, y, false);
       }
     }
-    gui.text(tr('gui.advancements'), L + 8, T + 6, 0x404040, false);
+    // the selected tab's title, or "Advancements" without a tab
+    gui.text(this.selected ? this.selected.root.display.title : tr('gui.advancements'), L + 8, T + 6, 0x404040, false);
   }
 
   // GuiScreenAdvancements.renderToolTips + GuiAdvancementTab.drawToolTips + GuiAdvancement.drawHover
@@ -269,10 +278,10 @@ export class AdvancementsScreen extends Screen {
     const l = oy + scrollY + w.y;
     const i1 = ox + (flag ? scrollX + w.x - w.width + 26 + 6 : scrollX + w.x);
     const j1 = 32 + w.description.length * 9;
-    if (w.description.length) this._nine(gui, i1, flag1 ? l + 26 - j1 : l, w.width, j1);
-    gui.blit(WIDGETS, i1, l, 0, st * 26, j, 26);
-    gui.blit(WIDGETS, i1 + j, l, 200 - k, st1 * 26, k, 26);
-    gui.blit(WIDGETS, ox + scrollX + w.x + 3, oy + scrollY + w.y, FRAME_ICON[w.a.display.frame] || 0, 128 + st2 * 26, 26, 26);
+    if (w.description.length) gui.sprite('advancements/title_box', i1, flag1 ? l + 26 - j1 : l, w.width, j1);
+    gui.spriteRegion(boxSprite(st === 0), 200, 26, 0, 0, i1, l, j, 26);
+    gui.spriteRegion(boxSprite(st1 === 0), 200, 26, 200 - k, 0, i1 + j, l, k, 26);
+    gui.sprite(frameSprite(w.a.display.frame, st2 === 0), ox + scrollX + w.x + 3, oy + scrollY + w.y, 26, 26);
     if (flag) {
       gui.text(w.title, i1 + 5, oy + scrollY + w.y + 9, 0xffffffff, true);
       if (s) gui.text(s, ox + scrollX + w.x - sw, oy + scrollY + w.y + 9, 0xffffffff, true);
@@ -285,23 +294,6 @@ export class AdvancementsScreen extends Screen {
       gui.text(line, i1 + 5, yy, 0xffaaaaaa, false);
     });
     if (w.a.display.icon) this.game.itemRenderer.drawItem(gui, w.a.display.icon, ox + scrollX + w.x + 8, oy + scrollY + w.y + 5, false);
-  }
-
-  // GuiAdvancement.render9Sprite(x, y, width, height, 10, 200, 26, 0, 52)
-  _nine(gui, x, y, width, height) {
-    const p = 10, uw = 200, vh = 26, u = 0, v = 52;
-    const rep = (rx, ry, rw, rh, tx, ty, tw, th) => {
-      for (let i = 0; i < rw; i += tw) for (let l = 0; l < rh; l += th) gui.blit(WIDGETS, rx + i, ry + l, tx, ty, Math.min(tw, rw - i), Math.min(th, rh - l));
-    };
-    gui.blit(WIDGETS, x, y, u, v, p, p);
-    rep(x + p, y, width - p - p, p, u + p, v, uw - p - p, vh);
-    gui.blit(WIDGETS, x + width - p, y, u + uw - p, v, p, p);
-    gui.blit(WIDGETS, x, y + height - p, u, v + vh - p, p, p);
-    rep(x + p, y + height - p, width - p - p, p, u + p, v + vh - p, uw - p - p, vh);
-    gui.blit(WIDGETS, x + width - p, y + height - p, u + uw - p, v + vh - p, p, p);
-    rep(x, y + p, p, height - p - p, u, v + p, uw, vh - p - p);
-    rep(x + p, y + p, width - p - p, height - p - p, u + p, v + p, uw - p - p, vh - p - p);
-    rep(x + width - p, y + p, p, height - p - p, u + uw - p, v + p, uw, vh - p - p);
   }
 }
 
