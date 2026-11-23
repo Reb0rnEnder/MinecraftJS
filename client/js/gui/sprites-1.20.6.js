@@ -26,8 +26,9 @@ for(const [v,hardcore] of [[0,false],[45,true]]){
   }
 }
 icons(52,9,9,9,'hud/heart/vehicle_container');icons(88,9,9,9,'hud/heart/vehicle_full');icons(97,9,9,9,'hud/heart/vehicle_half');
-icons(0,64,182,5,'hud/jump_bar_background');icons(0,69,182,5,'hud/jump_bar_progress');
-icons(0,84,182,5,'hud/experience_bar_background');icons(0,89,182,5,'hud/experience_bar_progress');
+// Legacy icons.png: the experience bar sat at v 64/69 and the horse jump bar at v 84/89.
+icons(0,64,182,5,'hud/experience_bar_background');icons(0,69,182,5,'hud/experience_bar_progress');
+icons(0,84,182,5,'hud/jump_bar_background');icons(0,89,182,5,'hud/jump_bar_progress');
 icons(0,94,18,18,'hud/hotbar_attack_indicator_background');icons(18,94,18,18,'hud/hotbar_attack_indicator_progress');
 icons(36,94,16,4,'hud/crosshair_attack_indicator_background');icons(52,94,17,4,'hud/crosshair_attack_indicator_progress');icons(68,94,16,16,'hud/crosshair_attack_indicator_full');
 for(let i=0;i<6;i++)icons(0,176+i*8,10,8,i===5?'server_list/unreachable':'server_list/ping_'+(5-i));

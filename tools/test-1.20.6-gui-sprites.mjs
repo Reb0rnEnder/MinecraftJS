@@ -49,3 +49,10 @@ test('server, proxy and pack arrow rectangles all resolve to native sprites',()=
   ['gui/resource_packs.png','transferable_list',[[0,'select'],[32,'unselect'],[64,'move_down'],[96,'move_up']]],
  ])for(const [u,name] of regions)for(const [v,suffix] of [[0,''],[32,'_highlighted']])assert.equal(legacyGuiSprite(sheet,u,v,32,32).path,'gui/sprites/'+prefix+'/'+name+suffix+'.png');
 });
+test('the HUD experience bar uses the green experience sprites and the horse jump bar its own',()=>{
+  // GuiIngame.renderExpBar drew icons.png (0,64)/(0,69); renderHorseJumpBar drew (0,84)/(0,89).
+  assert.equal(legacyGuiSprite('gui/icons.png',0,64,182,5).path,'gui/sprites/hud/experience_bar_background.png');
+  assert.equal(legacyGuiSprite('gui/icons.png',0,69,91,5).path,'gui/sprites/hud/experience_bar_progress.png');
+  assert.equal(legacyGuiSprite('gui/icons.png',0,84,182,5).path,'gui/sprites/hud/jump_bar_background.png');
+  assert.equal(legacyGuiSprite('gui/icons.png',0,89,91,5).path,'gui/sprites/hud/jump_bar_progress.png');
+});

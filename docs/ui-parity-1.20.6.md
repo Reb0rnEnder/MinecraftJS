@@ -53,3 +53,7 @@ Every older target shared the same pre-1.13 loop with a cycle capped at 3 and no
 ## Statistics backport
 
 Every 1.13+ target still used the 1.12 statistics screen and decoded the 1.13 award-stats packet by name, so opening Statistics crashed (1.14.4+) or misread the packet (1.13.2). All eight targets now decode through their own native registries and draw their own native screen. On 1.13.2–1.19.4 that is the stats_icons screen (General/Items/Mobs, 375-wide item rows): General keeps registration order until 1.16 sorts it, and 1.13.2 has its own mob-row offsets. 1.20.6 uses the sprite screen above. Registry order comes from each target's data-generator report. 1.13.2 has no report, so its order comes from the decompiled StatList. The tutorial's tree and planks checks now read the same counter, using each release's native TREE_BLOCKS set or tag.
+
+## HUD bars and tutorial
+
+The 1.20.6 legacy-sheet adapter mapped icons.png v 64/69 (the old experience bar) to the jump-bar sprites, so the experience bar was drawn blue. The two bars now map to their own sprites. The tutorial on every 1.13+ target identified trees, logs and planks by 1.12 numeric ids and `state >> 4` block ids, so hovering, punching and pickups never advanced it. Each target now follows its decompiled steps: `#logs` and `#planks` block/item tags, and for find-tree the native TREE_BLOCKS set (1.13.2-1.18.2) or `#completes_find_tree_tutorial` (1.19.4+). On 1.20.6 the tutorial toast uses the `toast/*` sprites.

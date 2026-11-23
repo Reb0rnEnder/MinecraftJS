@@ -8,14 +8,14 @@
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 511,
+    "targetTests": 518,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
     "source": "docs/ui-parity-1.20.6.md",
-    "note": "511 modern tests and exact native oracles pass, zero failures/skips, adding native Advancements and Social Interactions regressions. Browser checks cover Advancements, Social Interactions, Statistics, Key Binds and resource packs. Linear loading-logo filtering (1.16.5+) and the preloading default (all ten targets) add no failures to touched suites; all ten bundles build. Live acceptance remains open."
+    "note": "518 modern tests and exact native oracles pass, zero failures/skips, including native tutorial step regressions and the experience/jump bar sprite mapping. Tutorial regressions pass on all eight 1.13+ targets with no new failures in their touched suites; all bundles build. Live acceptance remains open."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {
@@ -1564,6 +1564,13 @@
         "UI-03"
       ],
       "evidence": "docs/ui-parity-1.20.6.md"
+    },
+    {
+      "title": "Native experience-bar sprites (the legacy adapter had swapped them with the horse jump bar) and tutorial steps that recognise trees, logs and planks by each release's tags or TREE_BLOCKS set, with 1.20.6 toast sprites",
+      "checkpoints": [
+        "UI-07"
+      ],
+      "evidence": "docs/ui-parity-1.20.6.md"
     }
   ],
   "sourceFindings": [
@@ -1574,7 +1581,6 @@
     "Armadillo geometry/roll/peek and wolf variant/armor consumers now have native regressions. Remaining Paws animations/feedback and live acceptance are explicit in PAWS-01\u201304. Sidebar/tab scoreboard formats and per-score display text are implemented; below-name/hearts and wider acceptance remain.",
     "Fabulous has an implementation; exact-target routing and scene validation remain open.",
     "Resource-pack overlays and resource filters now have native-backed implementation. Advanced Java regex compatibility and atlas source/palette dispatch remain distinct open work.",
-    "World End portals/gateways on 1.17.1-1.20.6 still use the 1.12 16-pass texgen renderer instead of the native rendertype_end_portal shader (15/16 layers, GameTime drift). Porting it to the WebGL 2, WebGPU and software backends would also unlock the native End-poem background.",
-    "The tutorial on every 1.13+ target still identifies trees, logs and planks by 1.12 numeric item ids and state >> 4 block ids, so its find-tree/punch-tree/craft-planks transitions only work through the stats counter. Inventory, hover and slot checks need native item/block tags."
+    "World End portals/gateways on 1.17.1-1.20.6 still use the 1.12 16-pass texgen renderer instead of the native rendertype_end_portal shader (15/16 layers, GameTime drift). Porting it to the WebGL 2, WebGPU and software backends would also unlock the native End-poem background."
   ]
 }

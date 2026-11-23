@@ -16,7 +16,7 @@ The native multiplayer foundation works. Substantial feature and acceptance work
 
 These **checkpoints differ in size and do not enumerate every defect**. 64 required checkpoints are still open. An honest percentage or ETA is unavailable until release coverage is triaged. Accepted rows cover exactly their named scope, not an entire subsystem.
 
-Latest target gate: **511 tests**, zero failures/skips. See [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
+Latest target gate: **518 tests**, zero failures/skips. See [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
 
 ## Completed implementation deliverables
 
@@ -38,6 +38,7 @@ These checked items describe completed work. A parent checkpoint can still have 
  - [x] Native 1.20.5+ selection lists (no header/footer overlays, native background offset, scrollbar and row widths), native Key Binds rows and footer, and resource-pack icon filtering/first-frame Default icon. [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md).
  - [x] Native Statistics screen and award-stats decoding through the native registries and Block.asItem pairs, fixing the Statistics crash; backported per release to 1.13.2-1.19.4. [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md).
  - [x] Native 1.20.6 Advancements and Social Interactions screens (sprite-era layouts, header/footer, tooltips), linear Mojang Studios loading logo on 1.16.5+, and preloading off by default. [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md).
+ - [x] Native experience-bar sprites (the legacy adapter had swapped them with the horse jump bar) and tutorial steps that recognise trees, logs and planks by each release's tags or TREE_BLOCKS set, with 1.20.6 toast sprites. [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md).
 
 ## Current source findings
 
@@ -49,7 +50,6 @@ These checked items describe completed work. A parent checkpoint can still have 
 - Fabulous has an implementation; exact-target routing and scene validation remain open.
 - Resource-pack overlays and resource filters now have native-backed implementation. Advanced Java regex compatibility and atlas source/palette dispatch remain distinct open work.
 - World End portals/gateways on 1.17.1-1.20.6 still use the 1.12 16-pass texgen renderer instead of the native rendertype_end_portal shader (15/16 layers, GameTime drift). Porting it to the WebGL 2, WebGPU and software backends would also unlock the native End-poem background.
-- The tutorial on every 1.13+ target still identifies trees, logs and planks by 1.12 numeric item ids and state >> 4 block ids, so its find-tree/punch-tree/craft-planks transitions only work through the stats counter. Inventory, hover and slot checks need native item/block tags.
 
 ## Work order
 
