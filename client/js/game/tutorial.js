@@ -2,9 +2,11 @@
 // planks). The current step is the "tutorialStep" option, saved so the hints only ever run once. Only survival goes
 // past the movement step.
 import { tr } from '../gui/i18n.js';
+import { DEFAULT_TAGS } from './default-tags.js';
 
 const LOGS = new Set([17, 162]);
 const TREES = new Set([17, 162, 18, 161]);
+const TREE_BLOCKS = ["oak_log", "spruce_log", "birch_log", "jungle_log", "acacia_log", "dark_oak_log", "oak_wood", "spruce_wood", "birch_wood", "jungle_wood", "acacia_wood", "dark_oak_wood", "oak_leaves", "spruce_leaves", "birch_leaves", "jungle_leaves", "acacia_leaves", "dark_oak_leaves"];
 const PLANKS = 5;
 
 // TutorialToast.Icons (column, row in toasts.png from u 176)
@@ -57,8 +59,15 @@ export class Tutorial {
   }
 
   // The statistics the server has sent (from the stats screen)
-  stat(name) { const v = this.game.statValues; return v ? v.get(name) || 0 : 0; }
-  punchedTrees() { return ['log', 'log2', 'leaves', 'leaves2'].some((b) => this.stat('stat.mineBlock.minecraft.' + b) > 0); }
+  // FindTreeTutorialStep.hasPunchedTreesPreviously: any of this release's TREE_BLOCKS mined
+  punchedTrees() { const stats = this.game.statsCounter; return !!stats && TREE_BLOCKS.some((b) => stats.get('mined', b) > 0); }
+
+  // CraftPlanksTutorialStep.hasCraftedPlanksPreviously: any #minecraft:planks item crafted
+  craftedPlanks() {
+    const stats = this.game.statsCounter; if (!stats) return false;
+    const tag = 'minecraft:planks', tags = this.game.world?.registryTags;
+    return (this.game.assets.data.items || []).some((it) => (tags?.contains ? tags.contains('items', tag, it.id) : (DEFAULT_TAGS.items[tag] || []).includes(it.id)) && stats.get('crafted', it.name) > 0);
+  }
 
   update() {
     if (this.step) {
@@ -180,7 +189,7 @@ function craftPlanksStep(t) {
     update() {
       waiting++;
       if (!t.survival()) { t.setStep('none'); return; }
-      if (waiting === 1 && (t.hasItem(new Set([PLANKS])) || t.stat('stat.craftItem.minecraft.planks') > 0)) { t.setStep('none'); return; }
+      if (waiting === 1 && (t.hasItem(new Set([PLANKS])) || t.craftedPlanks())) { t.setStep('none'); return; }
       if (waiting >= 1200 && !toast) toast = t.toast(new Toast('planks', tr('tutorial.craft_planks.title'), tr('tutorial.craft_planks.description'), false));
     },
     onStop() { if (toast) { toast.hide(); toast = null; } },

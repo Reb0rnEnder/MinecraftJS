@@ -35,7 +35,8 @@ const decoders = {
   0x07: (r) => {
     const n = r.varint();
     const entries = [];
-    for (let i = 0; i < n; i++) entries.push({ name: r.string(), value: r.varint() });
+    // SPacketStatistics (1.13): stat type registry id, value registry id, value; all VarInts
+    for (let i = 0; i < n; i++) entries.push({ categoryId: r.varint(), statisticId: r.varint(), value: r.varint() });
     return { name: 'statistics', entries };
   },
   0x08: (r) => ({ name: 'block_break_animation', entityId: r.varint(), location: r.position(), destroyStage: r.i8() }),
