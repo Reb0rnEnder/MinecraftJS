@@ -1136,8 +1136,11 @@ export class Game {
     if (e && name) this.sound.play(name,e.x,e.y,e.z,p.volume,p.pitch,{category:p.soundCategory,entity:e});
   }
 
+  // the title is the animal's display name (custom name, else its entity type)
   on_open_horse_window(p) {
-    this.on_open_window({...p,inventoryType:'EntityHorse',slotCount:p.nbSlots,windowTitle:JSON.stringify({translate:'entity.minecraft.horse'})});
+    const e=this.entities.get(p.entityId);
+    const title=e?.customName?JSON.stringify({text:e.customName}):JSON.stringify({translate:'entity.minecraft.'+(e?.entityName||'horse')});
+    this.on_open_window({...p,inventoryType:'EntityHorse',slotCount:p.nbSlots,windowTitle:title});
   }
 
   on_open_book(p) {
