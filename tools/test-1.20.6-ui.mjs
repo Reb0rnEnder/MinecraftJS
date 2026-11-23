@@ -76,3 +76,40 @@ test('15px title icons use native integer centering inside their 20px buttons',(
 });
 
 test('Controls uses the native option-list layout and routes its first row to mouse/key-bind screens',()=>{const g=game(),s=new ControlsScreen(g,null);s.init();assert.deepEqual(s.rows.flat().map(b=>b.optionKey),['options.mouse_settings','controls.keybinds','key.sneak','key.sprint','options.autoJump','options.operatorItemsTab']);assert.deepEqual([s.list.top,s.list.bottom],[33,g.gui.height-33]);assert.equal(s.buttons[0].y,g.gui.height-26);s.rows[0][0].onClick();assert.ok(g.screens.current instanceof MouseSettingsScreen);assert.equal(g.screens.current.parent,s);s.rows[0][1].onClick();assert.ok(g.screens.current instanceof KeyBindsScreen);assert.equal(g.screens.current.parent,s);});
+
+const uiState=JSON.parse(readFileSync(new URL('./fixtures/ui-state-1.20.6.json',import.meta.url)));
+test('GUI scale matches native Window.calculateScale, including Unicode rounding, and cycles over its dynamic range',async()=>{
+ const {calculateGuiScale,nextGuiScale}=await import('../client/js/gui/gui-scale.js');
+ assert.equal(uiState.clientJarSha1,VANILLA_UI.clientJarSha1);assert.equal(uiState.scales.length,72);
+ for(const c of uiState.scales)assert.equal(calculateGuiScale(c.size[0],c.size[1],c.requested,c.unicode),c.scale,JSON.stringify(c));
+ const max=calculateGuiScale(3840,2160);assert.ok(max>3);
+ const seen=[];let v=0;do{seen.push(v);v=nextGuiScale(3840,2160,v);}while(v!==0);assert.deepEqual(seen,[...Array(max+1).keys()]);
+ assert.equal(nextGuiScale(320,240,4),0);assert.equal(nextGuiScale(640,480,1,true),2);assert.equal(nextGuiScale(640,480,2,true),0);
+});
+test('title screen fades the panorama, then the widgets, over the native two seconds',async()=>{
+ const {titleFade}=await import('../client/js/gui/title-fade.js');
+ for(const f of uiState.titleFade){const s=titleFade(f.elapsed);assert.ok(Math.abs(s.panorama-f.panorama)<1e-6,'panorama '+f.elapsed);assert.ok(Math.abs(s.widgets-f.widgets)<1e-6,'widgets '+f.elapsed);assert.equal(s.fading,f.fading,'fading '+f.elapsed);}
+ const g=game(),first=new TitleScreen(g),second=new TitleScreen(g);assert.equal(first.fading,true);assert.equal(second.fading,false);
+});
+test('Language and Pause match native HeaderAndFooterLayout/GridLayout at all recorded sizes',async()=>{
+ const {LanguageScreen}=await import('../client/js/gui/screens/options.js'),{PauseScreen}=await import('../client/js/gui/screens/pause.js');
+ const box=b=>[b.x,b.y,b.w,b.h];
+ for(const expected of fixture.cases){
+  const g=game(...expected.size);g.assets.languages={en_us:{name:'English',region:'US'},pl_pl:{name:'Polski',region:'Polska'}};g.assets.language='en_us';
+  const l=new LanguageScreen(g,null);l.init();assert.deepEqual(box(l.buttons[0]),expected.language.font);assert.deepEqual(box(l.buttons[1]),expected.language.done);
+  assert.equal(l.list.top,33);assert.equal(l.list.bottom,g.gui.height-53);
+  const p=new PauseScreen(g);p.init();assert.deepEqual(p.buttons.map(box),expected.pause);
+  assert.deepEqual(p.buttons.map(b=>b.label),['menu.returnToGame','gui.advancements','gui.stats','menu.sendFeedback','menu.reportBugs','menu.options','menu.playerReporting','menu.disconnect']);
+ }
+});
+test('multiplayer warning uses the native centred WarningScreen layout and real checkbox sprites',async()=>{
+ const {warningLayout,MultiplayerSafetyScreen}=await import('../client/js/gui/screens/menus.js');
+ const w=s=>s.length*6,measure=Object.assign(w,{title:60});
+ const l=warningLayout(320,240,measure,['a'.repeat(20),'b'.repeat(30)],w('x'.repeat(10)));
+ // 9 title + 8 + (18 text + 24 padding) + 8 + (17 checkbox + 8 + 20 row) = 112, centred vertically: (240-112)/2.
+ assert.deepEqual(l.title,[130,64,60,9]);assert.deepEqual(l.text,[70,93,180,18]);assert.deepEqual(l.checkbox,[119,131,81,17]);
+ assert.deepEqual(l.proceed,[6,156,150,20]);assert.deepEqual(l.back,[164,156,150,20]);
+ const g=game(320,240);g.gui.font={wrap:s=>[s]};const s=new MultiplayerSafetyScreen(g,null);s.init();
+ const sprites=[];s.buttons[0].render({sprite:n=>sprites.push(n),text(){}},-1,-1);s.buttons[0].onClick();s.buttons[0].render({sprite:n=>sprites.push(n),text(){}},s.buttons[0].x,s.buttons[0].y);
+ assert.deepEqual(sprites,['widget/checkbox','widget/checkbox_selected_highlighted']);for(const n of sprites)assert.ok(jar.read('assets/minecraft/textures/gui/sprites/'+n+'.png'));
+});

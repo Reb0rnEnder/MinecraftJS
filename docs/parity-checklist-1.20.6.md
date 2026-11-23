@@ -1,6 +1,6 @@
 # Full-parity checklist — MinecraftJS 1.20.6
 
-Updated 2026-11-17. Audited source: `be2284d`. **Full multiplayer parity: no. Full Java-client parity: no.**
+Updated 2026-11-23. Audited source: `77c0ed2`. **Full multiplayer parity: no. Full Java-client parity: no.**
 
 Edit [docs/parity-checklist-1.20.6.json](parity-checklist-1.20.6.json), then run `node tools/port-1.20.6/parity-status.mjs --write`. This file is generated; `--check` catches stale counts, invalid evidence paths and false completion claims.
 
@@ -10,13 +10,13 @@ The native multiplayer foundation works. Substantial feature and acceptance work
 
 | Scope | Accepted checkpoints | Partial | Missing implementation | Needs verification | Total |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| Native multiplayer + enabled native experiments | 15 | 41 | 6 | 17 | 79 |
+| Native multiplayer + enabled native experiments | 15 | 42 | 6 | 16 | 79 |
 | Separate products / optional compatibility | 0 | 2 | 2 | 0 | 4 |
-| All tracked checkpoints | 15 | 43 | 8 | 17 | 83 |
+| All tracked checkpoints | 15 | 44 | 8 | 16 | 83 |
 
 These **checkpoints differ in size and do not enumerate every defect**. 64 required checkpoints are still open. An honest percentage or ETA is unavailable until release coverage is triaged. Accepted rows cover exactly their named scope, not an entire subsystem.
 
-Latest target gate: **492 tests**, zero failures/skips. See [docs/model-bundle-cache.md](model-bundle-cache.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
+Latest target gate: **496 tests**, zero failures/skips. See [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
 
 ## Completed implementation deliverables
 
@@ -33,6 +33,8 @@ These checked items describe completed work. A parent checkpoint can still have 
  - [x] Native decorated-pot geometry, sherd faces, item rendering, insertion consumption and wobble events; brush poses/dust/sounds, suspicious-block item emergence and completion consumers. [docs/archaeology-pot-parity.md](archaeology-pot-parity.md).
  - [x] Native 1.20.3+ bat hierarchy, flying/resting keyframes and full model scale; head-following shield poses for both arms. [docs/bat-shield-parity.md](bat-shield-parity.md).
  - [x] Native chiseled-bookshelf face/slot interaction, click consumption and tag-based eligibility; adapted experimental 1.19.4 implementation preserves its four books and hand/feature rules. [docs/bookshelf-parity.md](bookshelf-parity.md).
+ - [x] Native first-show title fade, Window.calculateScale GUI scale with Unicode rounding and dynamic cycling, and native Language layout. [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md).
+ - [x] Native Pause GridLayout with Player Reporting, and the centred WarningScreen multiplayer warning with real checkbox sprites. [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md).
 
 ## Current source findings
 
@@ -43,6 +45,7 @@ These checked items describe completed work. A parent checkpoint can still have 
 - Armadillo geometry/roll/peek and wolf variant/armor consumers now have native regressions. Remaining Paws animations/feedback and live acceptance are explicit in PAWS-01–04. Sidebar/tab scoreboard formats and per-score display text are implemented; below-name/hearts and wider acceptance remain.
 - Fabulous has an implementation; exact-target routing and scene validation remain open.
 - Resource-pack overlays and resource filters now have native-backed implementation. Advanced Java regex compatibility and atlas source/palette dispatch remain distinct open work.
+- World End portals/gateways on 1.17.1-1.20.6 still use the 1.12 16-pass texgen renderer instead of the native rendertype_end_portal shader (15/16 layers, GameTime drift). Porting it to the WebGL 2, WebGPU and software backends would also unlock the native End-poem background.
 
 ## Work order
 
@@ -100,11 +103,11 @@ A box is checked only for `accepted`. For each open row, implement/verify the co
 
 ### Menus and input
 
-- [ ] **UI-01 — Title initial fade and exceptional menu/loading backgrounds** (P1; Partial; P13). Native timing/background/focus for startup, join, dimension change, credits and all exceptional screens. Remaining: Main redesign landed; initial focus/fade, dimension and End-poem exceptions remain open. Evidence/start: [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md), [client/js/gui/screens/menus.js](../client/js/gui/screens/menus.js).
-- [ ] **UI-02 — Options, GUI scale, tooltips and native child-page layouts** (P1; Partial; P13). Every target option has native text/order/geometry, dynamic GUI-scale bounds and working behavior at multiple sizes. Remaining: Option order is extracted, but full tooltip/scale/fixed-versus-scroll behavior is not accepted. Evidence/start: [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md), [client/js/gui/screens/options.js](../client/js/gui/screens/options.js).
-- [ ] **UI-03 — Pause, multiplayer/safety, Controls, Chat and Accessibility screen matrix** (P2; Needs verification; P13). Native reference/layout scenarios cover all screens at multiple GUI scales and short/narrow windows. Remaining: Inherited screens have scoped fixes, not exact target-wide visual/input acceptance. Evidence/start: [client/js/gui/screens/options.js](../client/js/gui/screens/options.js), [client/js/gui/screens/menus.js](../client/js/gui/screens/menus.js).
+- [ ] **UI-01 — Title initial fade and exceptional menu/loading backgrounds** (P1; Partial; P13). Native timing/background/focus for startup, join, dimension change, credits and all exceptional screens. Remaining: Native first-show title fade and integer centring now match native TitleScreen frames. Initial keyboard focus, dimension/loading screen backgrounds and the End-poem portal background (UI-05) remain open. Evidence/start: [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md), [client/js/gui/screens/menus.js](../client/js/gui/screens/menus.js).
+- [ ] **UI-02 — Options, GUI scale, tooltips and native child-page layouts** (P1; Partial; P13). Every target option has native text/order/geometry, dynamic GUI-scale bounds and working behavior at multiple sizes. Remaining: Option order, native GUI-scale calculation/cycling and the native Language layout are implemented and fixture-checked. Every tooltip, fixed-versus-scrolled child pages and account-dependent controls still need acceptance. Evidence/start: [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md), [client/js/gui/screens/options.js](../client/js/gui/screens/options.js).
+- [ ] **UI-03 — Pause, multiplayer/safety, Controls, Chat and Accessibility screen matrix** (P2; Partial; P13). Native reference/layout scenarios cover all screens at multiple GUI scales and short/narrow windows. Remaining: Pause and the multiplayer warning now use native 1.20.6 layouts and sprites (fixture/regression checked). Controls, Chat and Accessibility still need a whole-screen visual/input matrix at multiple GUI scales and short/narrow windows. Evidence/start: [client/js/gui/screens/pause.js](../client/js/gui/screens/pause.js), [client/js/gui/screens/menus.js](../client/js/gui/screens/menus.js).
 - [ ] **UI-04 — Keyboard focus, narration, clipboard and touchscreen defaults** (P2; Needs verification; P13). Native traversal, validation, selection/clipboard, shortcut and narration scenarios pass for each editable screen. Remaining: Existing helpers do not establish target-wide tab traversal and narrated labels. Evidence/start: [client/js/gui/widgets.js](../client/js/gui/widgets.js), [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md).
-- [ ] **UI-05 — Credits interpolation and End-poem behavior** (P2; Partial; P13). Native poem/credits appearance, timing, skip/speed controls and return/respawn behavior. Remaining: JSON menu credits work; End-poem background and frame interpolation remain open. Evidence/start: [client/js/gui/screens/credits.js](../client/js/gui/screens/credits.js), [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md).
+- [ ] **UI-05 — Credits interpolation and End-poem behavior** (P2; Partial; P13). Native poem/credits appearance, timing, skip/speed controls and return/respawn behavior. Remaining: JSON menu credits work. Native WinScreen fills the poem background with RenderType.endPortal(); that needs the 1.17+ rendertype_end_portal shader, which no 1.17.1-1.20.6 branch implements yet, so the poem still draws black. Frame interpolation also remains open. Evidence/start: [client/js/gui/screens/credits.js](../client/js/gui/screens/credits.js), [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md).
 - [x] **UI-06 — Native jigsaw editor fields and packet values** (P1; Accepted scope; P13). Native 1.20.6 editor fields, validation, controls and outgoing update/generate values match the pinned client. Evidence/start: [client/js/gui/screens/jigsaw.js](../client/js/gui/screens/jigsaw.js), [client/js/net/packets.js](../client/js/net/packets.js).
 - [ ] **UI-07 — F3, HUD, bossbars, toast and advancement presentation acceptance** (P1; Partial; P13). Native target information and layouts remain correct across dimensions, effects, game modes and resource reloads. Remaining: Target identity/sprites are fixed; all content/states still need comparison. Native effect IDs/labels/order/blending and status-background sprites are corrected and regression-tested; remaining HUD/F3/advancement acceptance stays open. Evidence/start: [client/js/game/game.js](../client/js/game/game.js), [tools/test-1.20.6-presentation.mjs](../tools/test-1.20.6-presentation.mjs).
 - [ ] **UI-06-LIVE — Jigsaw live server edits and generation acceptance** (P2; Needs verification; P13). Verify field edits, cancellation and Generate against resulting native server block-entity data and generated structures. Remaining: Native editor/packet implementation UI-06 is complete; a live graphical native-server generation scenario has not been recorded. Evidence/start: [docs/jigsaw-parity-audit.md](jigsaw-parity-audit.md), [tools/test-jigsaw-parity.mjs](../tools/test-jigsaw-parity.mjs).

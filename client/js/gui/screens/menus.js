@@ -1,3 +1,4 @@
+import {titleFade} from '../title-fade.js';
 // Title, multiplayer, connecting, disconnected and loading screens.
 import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
@@ -19,6 +20,9 @@ export class TitleScreen extends Screen {
     this.background = 'none';
     this.panorama = true;
     this.splash = null;
+    this.fading = !game.titleScreenShown;
+    game.titleScreenShown = true;
+    this.fadeStart = null;
     this.reason = reason;
     this.minceraftRoll = Math.random(); // GuiMainMenu: rolled once per title screen
   }
@@ -35,7 +39,7 @@ export class TitleScreen extends Screen {
       else this.splash = splashes[Math.floor(Math.random() * splashes.length)];
     }
     const cx = Math.floor(this.width / 2);
-    const y = this.height / 4 + 48;
+    const y = Math.floor(this.height / 4) + 48;
     const sp = new Button(1, cx - 100, y, 200, 20, tr('menu.singleplayer'));
     sp.enabled = false;
     this.buttons.push(sp);
@@ -100,11 +104,23 @@ export class TitleScreen extends Screen {
     this.buttons.push(credits);
   }
 
+  presentation(now=platform().now()) {
+    if(!this.fading)return {panorama:1,widgets:1,fading:false};
+    this.fadeStart??=now;
+    const state=titleFade(now-this.fadeStart);
+    this.fading=state.fading;
+    return state;
+  }
+
   render(gui, mx, my, partial) {
+    const fade=this.presentation();
+    if(fade.panorama<1)gui.rect(0,0,this.width,this.height,(Math.round((1-fade.panorama)*255)<<24)>>>0);
+    if(Math.ceil(fade.widgets*255)<4)return;
+    gui.setAlpha(fade.widgets);
     const logo=this.minceraftRoll<1e-4?'gui/title/minceraft.png':'gui/title/minecraft.png';
     // Exact LogoRenderer virtual texture dimensions; the native PNGs are 4x.
-    gui.blit(logo,this.width/2-128,30,0,0,256,44,256,64);
-    gui.blit('gui/title/edition.png',this.width/2-64,67,0,0,128,14,128,16);
+    gui.blit(logo,Math.floor(this.width/2)-128,30,0,0,256,44,256,64);
+    gui.blit('gui/title/edition.png',Math.floor(this.width/2)-64,67,0,0,128,14,128,16);
     if (this.splash && !this.game.settings.hideSplashTexts) {
       gui.pushMatrix();
       gui.translate(this.width / 2 + 90, 70);
@@ -121,23 +137,43 @@ export class TitleScreen extends Screen {
     const multiplayer=this.buttons.find(b=>b.id===2);if(multiplayer){multiplayer.enabled=this.game.accountPrivileges?.multiplayerServer!==false;if(!multiplayer.enabled&&multiplayer.hovered(mx,my))this.hoverText=tr('title.multiplayer.disabled');}
     for (const b of this.buttons) b.render(gui, mx, my);
     if (this.hoverText) gui.tooltip([this.hoverText], mx, my);
+    gui.resetColor();
   }
 
   key(e) { return e.code === 'Escape' ? false : super.key(e); }
 }
 
-// Java 1.15.2 SafetyScreen, using the target translations and checkbox sheet.
+// Native 1.20.6 SafetyScreen/WarningScreen: a centred vertical LinearLayout (spacing 8) holding
+// the bold title, a bordered FocusableTextWidget (padding 12, max width = screen - 100) and a
+// nested layout with the Checkbox above the Proceed/Back row.
 export function openMultiplayer(game,parent){game.screens.open(game.settings.skipMultiplayerWarning?new MultiplayerScreen(game,parent):new MultiplayerSafetyScreen(game,parent));}
+export function warningLayout(width,height,textWidth,lines,checkLabelWidth){
+  const pad=12,box=17,textW=Math.min(width-100,Math.max(0,...lines.map(textWidth))),textH=lines.length*9;
+  const checkW=box+4+checkLabelWidth,innerW=Math.max(checkW,308),innerH=box+8+20;
+  const titleW=textWidth.title,layoutW=Math.max(titleW,textW+2*pad,innerW),layoutH=9+8+textH+2*pad+8+innerH;
+  const x=Math.floor((width-layoutW)/2),y=Math.floor((height-layoutH)/2),centre=w=>x+Math.floor((layoutW-w)/2);
+  const textY=y+9+8+pad,innerX=centre(innerW),innerY=textY+textH+pad+8,rowX=innerX+Math.floor((innerW-308)/2);
+  return {title:[centre(titleW),y,titleW,9],text:[centre(textW+2*pad)+pad,textY,textW,textH],checkbox:[innerX+Math.floor((innerW-checkW)/2),innerY,checkW,box],proceed:[rowX,innerY+box+8,150,20],back:[rowX+158,innerY+box+8,150,20]};
+}
 export class MultiplayerSafetyScreen extends Screen {
- constructor(game,parent){super(game);this.parent=parent;this.background='dirt';this.skip=false;}
+ constructor(game,parent){super(game);this.parent=parent;this.skip=false;}
  init(){
-  this.lines=this.gui.font.wrap(tr('multiplayerWarning.message'),this.width-50);const offset=(this.lines.length+1)*18,left=this.width/2-155;
-  this.buttons.push(new Button(0,left,100+offset,150,20,tr('gui.proceed'),()=>{if(this.skip){this.game.settings.skipMultiplayerWarning=true;this.game.settings.save();}this.game.screens.open(new MultiplayerScreen(this.game,this.parent));}));
-  this.buttons.push(new Button(1,left+160,100+offset,150,20,tr('gui.back'),()=>this.close()));
-  const checkbox=new Button(2,left+80,76+offset,150,20,tr('multiplayerWarning.check'),()=>{this.skip=!this.skip;});
-  checkbox.render=(gui)=>{gui.blit('gui/checkbox.png',checkbox.x,checkbox.y,checkbox.focused?20:0,this.skip?20:0,20,20,64,64);gui.text(tr('multiplayerWarning.check'),checkbox.x+24,checkbox.y+6,0xe0e0e0,true);};this.buttons.unshift(checkbox);
+  const gui=this.gui,title='\u00a7l'+tr('multiplayerWarning.header'),check=tr('multiplayerWarning.check');
+  this.title=title;this.lines=gui.font.wrap(tr('multiplayerWarning.message'),this.width-100);
+  const measure=Object.assign(s=>gui.textWidth(s),{title:gui.textWidth(title)});
+  const l=this.layout=warningLayout(this.width,this.height,measure,this.lines,gui.textWidth(check));
+  const checkbox=new Button(2,...l.checkbox,check,()=>{this.skip=!this.skip;});
+  checkbox.render=(gui,mx,my)=>{const active=checkbox.focused||checkbox.hovered(mx,my);gui.sprite('widget/checkbox'+(this.skip?'_selected':'')+(active?'_highlighted':''),checkbox.x,checkbox.y,17,17);gui.text(check,checkbox.x+21,checkbox.y+(17>>1)-4,0xe0e0e0,true);};
+  this.buttons.push(checkbox);
+  this.buttons.push(new Button(0,...l.proceed,tr('gui.proceed'),()=>{if(this.skip){this.game.settings.skipMultiplayerWarning=true;this.game.settings.save();}this.game.screens.open(new MultiplayerScreen(this.game,this.parent));}));
+  this.buttons.push(new Button(1,...l.back,tr('gui.back'),()=>this.close()));
  }
- renderContent(gui){gui.text('§l'+tr('multiplayerWarning.header'),25,30,0xffffff,true);this.lines.forEach((line,i)=>gui.text(line,25,70+i*18,0xffffff,true));}
+ renderContent(gui){
+  const [tx,ty]=this.layout.title,[x,y,w,h]=this.layout.text,p=12;gui.text(this.title,tx,ty,0xffffff,true);
+  // FocusableTextWidget(alwaysShowBorder): black fill offset by one pixel, then a grey outline.
+  gui.rect(x-p+1,y-p,x+w+p,y+h+p,0xff000000);const o=0xffa0a0a0;gui.rect(x-p,y-p,x+w+p,y-p+1,o);gui.rect(x-p,y+h+p-1,x+w+p,y+h+p,o);gui.rect(x-p,y-p+1,x-p+1,y+h+p-1,o);gui.rect(x+w+p-1,y-p+1,x+w+p,y+h+p-1,o);
+  this.lines.forEach((line,i)=>gui.text(line,x,y+i*9,0xffffff,true));
+ }
  close(){this.game.screens.open(this.parent);}
 }
 

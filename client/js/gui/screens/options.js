@@ -1,3 +1,4 @@
+import {nextGuiScale} from '../gui-scale.js';
 import {ConfirmLinkScreen} from './chat.js';
 import {chatOption} from '../chat-options.js';
 import {focusOptionWidgets} from '../option-focus.js';
@@ -156,24 +157,23 @@ export class MouseSettingsScreen extends NativeOptionsListScreen {
 // GuiLanguage + GuiLanguage.List (GuiSlot, 18 high, centred names, the current language selected)
 class LanguageScreen extends OptionsBase {
   constructor(game, parent) {
-    super(game, parent, 'options.language');
+    super(game, parent, 'options.language.title');
     this.busy = false;
   }
   get codes() {
-    const L = this.game.assets.languages;
-    return Object.keys(L).sort((a, b) => (L[a].name + L[a].region).localeCompare(L[b].name + L[b].region));
+    return Object.keys(this.game.assets.languages).sort();
   }
   init() {
-    const s = this.s, cx = this.width / 2;
-    this.buttons.push(new Button(100,cx-155,this.height-38,150,20,tr('options.font'),()=>this.game.screens.open(new FontOptionsScreen(this.game,this))));
-    this.buttons.push(new Button(6, cx - 155 + 160, this.height - 38, 150, 20, tr('gui.done'), () => this.done()));
+    const s = this.s, cx = Math.floor(this.width / 2);
+    this.buttons.push(new Button(100,cx-154,this.height-28,150,20,tr('options.font'),()=>this.game.screens.open(new FontOptionsScreen(this.game,this))));
+    this.buttons.push(new Button(6, cx + 4, this.height - 28, 150, 20, tr('gui.done'), () => this.done()));
     const codes = this.codes;
     const old = this.list;
-    this.list = new ListOf(this, 32, this.height - 65 + 4, 18, {
+    this.list = new ListOf(this, 33, this.height - 53, 18, {
       size: () => codes.length,
       selected: (i) => codes[i] === (this.pendingLanguage||this.game.assets.language),
       draw: (gui, i, x, y) => { const l = this.game.assets.languages[codes[i]]; gui.textCentered(l.name + ' (' + l.region + ')', this.width / 2, y + 1, 0xffffff, true); },
-      click: (i) => this._pick(codes[i]),
+      click: (i,dbl) => {this._pick(codes[i]);if(dbl)this.done();},
     });
     if (old) this.list.amountScrolled = old.amountScrolled;
     else this.list.amountScrolled = codes.indexOf(this.game.assets.language) * 18 - (this.list.bottom - this.list.top) / 2;
@@ -186,8 +186,8 @@ class LanguageScreen extends OptionsBase {
   close() {this.s.save();this.game.screens.open(this.parent);}
   render(gui, mx, my) {
     this.list.render(gui, mx, my);
-    gui.textCentered(tr('options.language'), this.width / 2, 16, 0xffffff);
-    gui.textCentered('(' + tr('options.languageWarning') + ')', this.width / 2, this.height - 56, 0x808080);
+    gui.textCentered(tr('options.language.title'), Math.floor(this.width / 2), 12, 0xffffff);
+    gui.textCentered('(' + tr('options.languageAccuracyWarning') + ')', Math.floor(this.width / 2), this.height - 45, 0x808080);
     for (const b of this.buttons) b.render(gui, mx, my);
   }
   mouseDown(mx, my, button, e) { return super.mouseDown(mx, my, button) || this.list.mouseDown(mx, my, button, e); }
@@ -224,7 +224,7 @@ class VideoScreen extends OptionsBase {
       { key: 'options.framerateLimit', slider: true, label: (v) => { const f = Math.round(1 + v * 25)*10; return trOption('options.framerateLimit', f >= 260 ? tr('options.framerateLimit.max') : f + ' fps'); }, value: () => (s.maxFps ? (s.maxFps - 10) / 250 : 1), set: (v) => { const f = Math.round(1 + v * 25)*10; s.maxFps = f >= 260 ? 0 : f; } },
       { key: 'options.anaglyph', label: () => trOption('options.anaglyph', onOff(false)), click: () => {} },
       { key: 'options.viewBobbing', label: () => trOption('options.viewBobbing', onOff(s.viewBobbing)), click: () => { s.viewBobbing = !s.viewBobbing; } },
-      { key: 'options.guiScale', label: () => trOption('options.guiScale', s.guiScale===0?tr('options.guiScale.auto'):String(s.guiScale)), click: () => { s.guiScale = (s.guiScale + 1) % 4; g.gui.guiScaleSetting = s.guiScale; g.gui.resize(); } },
+      { key: 'options.guiScale', label: () => trOption('options.guiScale', s.guiScale===0?tr('options.guiScale.auto'):String(s.guiScale)), click: () => { s.guiScale = nextGuiScale(platform().width,platform().height,s.guiScale,!!s.forceUnicodeFont); g.gui.guiScaleSetting = s.guiScale; g.gui.resize(); } },
       { key: 'options.attackIndicator', label: () => trOption('options.attackIndicator', tr(['options.off', 'options.attack.crosshair', 'options.attack.hotbar'][s.attackIndicator | 0])), click: () => { s.attackIndicator = ((s.attackIndicator | 0) + 1) % 3; } },
       { key: 'options.gamma', slider: true, label: (v) => trOption('options.gamma', v === 0 ? tr('options.gamma.min') : v === 1 ? tr('options.gamma.max') : '+' + Math.round(v * 100) + '%'), value: () => s.gamma, set: (v) => { s.gamma = v; g.renderer.gamma = v; } },
       { key: 'options.renderClouds', label: () => trOption('options.renderClouds', s.clouds === 0 ? tr('options.off') : tr(s.clouds === 1 ? 'options.graphics.fast' : 'options.graphics.fancy')), click: () => { s.clouds = ((s.clouds | 0) + 2) % 3; } },

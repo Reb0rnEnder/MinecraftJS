@@ -1,21 +1,21 @@
 {
   "schemaVersion": 1,
-  "updatedOn": "2026-11-17",
+  "updatedOn": "2026-11-23",
   "target": "1.20.6",
-  "auditedSourceCommit": "be2284d",
+  "auditedSourceCommit": "77c0ed2",
   "fullMultiplayerParity": false,
   "fullJavaClientParity": false,
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 492,
+    "targetTests": 496,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
-    "source": "docs/model-bundle-cache.md",
-    "note": "492 modern tests and exact native oracles pass, zero failures/skips. All ten targets pass model-cache provenance regressions and proxy/builder syntax checks. Modern development assets are rebuilt and their provenance stamp matches the pinned jar, extraction sources and complete 128-model bundle. Live acceptance remains open."
+    "source": "docs/ui-parity-1.20.6.md",
+    "note": "496 modern tests and exact native oracles pass, zero failures/skips, including the new native UI-state oracle (72 window scales, 12 title-fade frames) and Language/Pause layout fixtures. GUI-scale backport regressions pass on all nine older targets with no new failures in their touched suites; all ten browser bundles build. Live acceptance remains open."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {
@@ -613,11 +613,12 @@
       "phase": "P13",
       "scope": "multiplayer",
       "title": "Title initial fade and exceptional menu/loading backgrounds",
-      "reason": "Main redesign landed; initial focus/fade, dimension and End-poem exceptions remain open.",
+      "reason": "Native first-show title fade and integer centring now match native TitleScreen frames. Initial keyboard focus, dimension/loading screen backgrounds and the End-poem portal background (UI-05) remain open.",
       "evidence": [
         "docs/ui-parity-1.20.6.md",
         "client/js/gui/screens/menus.js",
-        "client/js/gui/screens/credits.js"
+        "client/js/gui/title-fade.js",
+        "tools/fixtures/ui-state-1.20.6.json"
       ],
       "acceptance": "Native timing/background/focus for startup, join, dimension change, credits and all exceptional screens."
     },
@@ -629,25 +630,28 @@
       "phase": "P13",
       "scope": "multiplayer",
       "title": "Options, GUI scale, tooltips and native child-page layouts",
-      "reason": "Option order is extracted, but full tooltip/scale/fixed-versus-scroll behavior is not accepted.",
+      "reason": "Option order, native GUI-scale calculation/cycling and the native Language layout are implemented and fixture-checked. Every tooltip, fixed-versus-scrolled child pages and account-dependent controls still need acceptance.",
       "evidence": [
         "docs/ui-parity-1.20.6.md",
-        "client/js/gui/screens/options.js"
+        "client/js/gui/screens/options.js",
+        "client/js/gui/gui-scale.js",
+        "tools/test-1.20.6-ui.mjs"
       ],
       "acceptance": "Every target option has native text/order/geometry, dynamic GUI-scale bounds and working behavior at multiple sizes."
     },
     {
       "id": "UI-03",
       "area": "Menus and input",
-      "status": "unverified",
+      "status": "partial",
       "priority": 2,
       "phase": "P13",
       "scope": "multiplayer",
       "title": "Pause, multiplayer/safety, Controls, Chat and Accessibility screen matrix",
-      "reason": "Inherited screens have scoped fixes, not exact target-wide visual/input acceptance.",
+      "reason": "Pause and the multiplayer warning now use native 1.20.6 layouts and sprites (fixture/regression checked). Controls, Chat and Accessibility still need a whole-screen visual/input matrix at multiple GUI scales and short/narrow windows.",
       "evidence": [
-        "client/js/gui/screens/options.js",
+        "client/js/gui/screens/pause.js",
         "client/js/gui/screens/menus.js",
+        "tools/test-1.20.6-ui.mjs",
         "docs/ui-parity-1.20.6.md"
       ],
       "acceptance": "Native reference/layout scenarios cover all screens at multiple GUI scales and short/narrow windows."
@@ -675,7 +679,7 @@
       "phase": "P13",
       "scope": "multiplayer",
       "title": "Credits interpolation and End-poem behavior",
-      "reason": "JSON menu credits work; End-poem background and frame interpolation remain open.",
+      "reason": "JSON menu credits work. Native WinScreen fills the poem background with RenderType.endPortal(); that needs the 1.17+ rendertype_end_portal shader, which no 1.17.1-1.20.6 branch implements yet, so the poem still draws black. Frame interpolation also remains open.",
       "evidence": [
         "client/js/gui/screens/credits.js",
         "docs/ui-parity-1.20.6.md"
@@ -1522,6 +1526,21 @@
         "CONTENT-04"
       ],
       "evidence": "docs/bookshelf-parity.md"
+    },
+    {
+      "title": "Native first-show title fade, Window.calculateScale GUI scale with Unicode rounding and dynamic cycling, and native Language layout",
+      "checkpoints": [
+        "UI-01",
+        "UI-02"
+      ],
+      "evidence": "docs/ui-parity-1.20.6.md"
+    },
+    {
+      "title": "Native Pause GridLayout with Player Reporting, and the centred WarningScreen multiplayer warning with real checkbox sprites",
+      "checkpoints": [
+        "UI-03"
+      ],
+      "evidence": "docs/ui-parity-1.20.6.md"
     }
   ],
   "sourceFindings": [
@@ -1531,6 +1550,7 @@
     "Hanging/two-sided signs, banners and Adventure tooltips have native regressions. Complete block-entity metadata, decorated pots, display entities and remaining sign editor acceptance still need work.",
     "Armadillo geometry/roll/peek and wolf variant/armor consumers now have native regressions. Remaining Paws animations/feedback and live acceptance are explicit in PAWS-01\u201304. Sidebar/tab scoreboard formats and per-score display text are implemented; below-name/hearts and wider acceptance remain.",
     "Fabulous has an implementation; exact-target routing and scene validation remain open.",
-    "Resource-pack overlays and resource filters now have native-backed implementation. Advanced Java regex compatibility and atlas source/palette dispatch remain distinct open work."
+    "Resource-pack overlays and resource filters now have native-backed implementation. Advanced Java regex compatibility and atlas source/palette dispatch remain distinct open work.",
+    "World End portals/gateways on 1.17.1-1.20.6 still use the 1.12 16-pass texgen renderer instead of the native rendertype_end_portal shader (15/16 layers, GameTime drift). Porting it to the WebGL 2, WebGPU and software backends would also unlock the native End-poem background."
   ]
 }

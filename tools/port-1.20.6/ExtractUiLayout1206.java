@@ -22,6 +22,8 @@ public class ExtractUiLayout1206 {
    Element packTitle=packHeader.a(new Element(40,9)),drop=packHeader.a(new Element(80,9));
    fkx footer=packs.b(fkx.e().a(8));Element folder=footer.a(new Element(150,20)),packDone=footer.a(new Element(150,20));packs.a();
    Map<String,Object> p=new LinkedHashMap<>();p.put("title",packTitle.box());p.put("drop",drop.box());p.put("folder",folder.box());p.put("done",packDone.box());r.put("packs",p);
+   fkt languages=new fkt(screen);languages.a(53);Element languageTitle=languages.a(new Element(40,9));fkx languageFooter=languages.b(fkx.d().a(8));languageFooter.c().b();Element warning=languageFooter.a(new Element(80,9));fkx languageRow=languageFooter.a(fkx.e().a(8));Element font=languageRow.a(new Element(150,20)),languageDone=languageRow.a(new Element(150,20));languages.a();Map<String,Object> language=new LinkedHashMap<>();language.put("title",languageTitle.box());language.put("warning",warning.box());language.put("font",font.box());language.put("done",languageDone.box());r.put("language",language);
+   fks pause=new fks();pause.c().a(4,4,4,0);fks.b pauseHelper=pause.d(2);List<Element> pauseButtons=new ArrayList<>();pauseButtons.add(pauseHelper.a(new Element(204,20),2,pause.b().c(50)));for(int i=0;i<6;i++)pauseButtons.add(pauseHelper.a(new Element(98,20)));pauseButtons.add(pauseHelper.a(new Element(204,20),2));pause.a();fkr.a(pause,0,0,size[0],size[1],.5f,.25f);r.put("pause",pauseButtons.stream().map(Element::box).toList());
    results.add(r);
   }
   System.out.println(new Gson().toJson(results));

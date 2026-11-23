@@ -1,26 +1,28 @@
 # Native UI acceptance — 1.20.6
 
-Updated 2026-11-14. This is an implementation ledger, not a full-parity declaration.
+Updated 2026-11-23. This is an implementation ledger, not a full-parity declaration.
 
 Native input: Mojang client SHA-1 `05b6f1c6b46a29d6ea82b4e0d42190e42402030f`, official mappings in `tools/port-1.20.6/target.json`.
 The [1.20.5 release notes](https://www.minecraft.net/en-us/article/minecraft-java-edition-1-20-5) describe the menu redesign inherited by this target. The exact target classes and assets determine behavior.
 
 | Area | Implemented and checked | Remaining acceptance |
 | --- | --- | --- |
-| Backgrounds | Panorama behind out-of-world menus; fixed 10-degree panorama pitch; native menu/list textures and separators, including in-world variants; six `box_blur` passes and native blur threshold/setting | Inspect every exceptional screen; native end-poem portal and dimension loading backgrounds |
-| Title | Native logo dimensions/sprites, clickable copyright/credits footer, Hide Splash Texts | Native initial fade, keyboard/controller focus and all title edge cases |
+| Backgrounds | Panorama behind out-of-world menus; fixed 10-degree panorama pitch; native menu/list textures and separators, including in-world variants; six `box_blur` passes and native blur threshold/setting | Inspect every exceptional screen; dimension loading backgrounds; the End poem's `RenderType.endPortal()` fill (needs the modern `rendertype_end_portal` shader, see UI-05) |
+| Title | Native logo dimensions/sprites, clickable copyright/credits footer, Hide Splash Texts; first-show fade (panorama over one second, then widgets, with widgets hidden below alpha 4/255) checked against 12 native `TitleScreen.render` frames; integer logo/button centring | Keyboard/controller focus and all title edge cases |
 | Options | Native 61/33 header/footer and ten body buttons, Online submenu, Credits & Attribution submenu, disabled unavailable telemetry | Native integrated-server/Realms product scope remains unimplemented |
-| Video/Accessibility | Extracted target option order; menu blur in both pages; hide-splash and narrator-shortcut controls; boolean AO; frame-limit increments | Every tooltip, dynamic GUI-scale limit, fixed/scrolled child pages and account-dependent controls |
+| Video/Accessibility | Extracted target option order; menu blur in both pages; hide-splash and narrator-shortcut controls; boolean AO; frame-limit increments | Every tooltip, fixed/scrolled child pages and account-dependent controls. GUI scale now uses native `Window.calculateScale` (Unicode rounding, framebuffer bound), checked against 72 native results, and cycles over 0..`calculateScale(0, forceUnicode)` |
 | Resource packs | Native 200-wide lists separated by 30 GUI pixels, 33-pixel header/footer, title/drop text, native sprites, keyboard select/reorder, native incompatible colors/text/prompts, `supported_formats` ranges, translated built-in names | Moving Default within the resource stack, native drag/drop confirmation/import flow, full keyboard focus transitions and pack filtering metadata |
 | Credits | Native JSON content, attribution/licenses link confirmation, menu return callback without respawn, native speed modifiers and reverse scrolling | End-poem portal background and frame-time interpolation |
-| Fonts/Language | Existing provider implementation retained; exact two Font Settings options extracted | Reference/filter/Unihex providers, Japanese glyph variants and native Language/Font Settings navigation |
-| Other screens | Existing implementations retained | Pause, multiplayer/safety, social, inventories/workstations, accessibility narration and all inherited UI findings still require target acceptance |
+| Fonts/Language | Existing provider implementation retained; exact two Font Settings options extracted; Language uses the native 33/53 header/footer, `options.language.title`, the accuracy warning, code-sorted entries and double-click to confirm | Reference/filter/Unihex providers, Japanese glyph variants |
+| Pause / multiplayer warning | Pause uses the native GridLayout (padding 4/4/4/0, 50 above the first row, aligned 0.5/0.25) and Player Reporting in place of Open to LAN on remote servers, matching native geometry at four sizes. The multiplayer warning uses the native centred WarningScreen layout: bold title, bordered FocusableTextWidget, 17-pixel Checkbox sprites, then Proceed/Back | Keyboard focus/narration on the warning text widget; full visual capture |
+| Other screens | Existing implementations retained | Social, inventories/workstations, accessibility narration and all inherited UI findings still require target acceptance |
 
 ## Reproducible evidence
 
 - `tools/port-1.20.6/gui-data.mjs --check` derives 25 Video, 24 Accessibility, 17 Chat, 5 Mouse and 2 Font options from mapped native getters.
 - `tools/port-1.20.6/ui-layout-fixtures.mjs --check` executes the native Java layout classes, using size-only widget stand-ins at four logical resolutions. It verifies geometry, not native text rasterization or whole-screen pixels.
-- `tools/test-1.20.6-ui.mjs` checks geometry, option construction, native blur definition, resource-pack sprites/compatibility/keyboard actions and menu-credits lifecycle.
+- `tools/port-1.20.6/ui-state-fixtures.mjs --check` runs native `Window.calculateScale` (6 sizes × 6 requests × Unicode) and `TitleScreen.render` fade state from the unmodified client classes.
+- `tools/test-1.20.6-ui.mjs` checks GUI scale/cycling, title fade, Language/Pause geometry, the warning layout and checkbox sprites, as well as option geometry/construction, native blur definition, resource-pack sprites/compatibility/keyboard actions and menu-credits lifecycle.
 - `PLAYWRIGHT_MODULE=... node --test tools/test-menu-blur-browser.mjs` executes WebGL 2, WebGPU and software rendering. The six-pass 31×19 test agrees with an independent box-filter reference within one RGBA channel value on WebGL and exactly on the other two backends. This is not a gameplay performance measurement.
 - Chrome smoke captures of Title, Options, Accessibility, Online, Credits & Attribution, and Resource Packs are in ignored `cache/port-1.20.6/ui-audit/`; no console/page errors or missing required textures were recorded.
 - UI/Creative checkpoint gate: 152 tests passed, zero skipped. The later foliage checkpoint raises the recorded target gate to 162; see the [current parity checklist](parity-checklist-1.20.6.md). These source batches do not rebuild published distributions.
@@ -36,3 +38,7 @@ The empty placeholder catalog caused the reported `background` crash. Native `Cr
 The native potion codec has no later-version `customName` field; the generated schema now explicitly corrects that upstream mismatch. Item mechanics, potion/effect metadata consumers, dynamic registry remapping and complete inventory interaction acceptance remain open.
 
 Shared native exception presentation was backported to all nine older targets; native saved-toolbar metadata/item limits were also corrected on 1.16.5–1.19.4. All 76 relevant old-target regressions passed. The 1.20.6 component catalog and sprites are target-specific and were not copied into older versions.
+
+## GUI-scale backport
+
+Every older target shared the same pre-1.13 loop with a cycle capped at 3 and no Unicode rounding. Each now follows its own decompiled client. In 1.8.9/1.12.2, `ScaledResolution` rounds odd Unicode-font scales down (except 1), recomputes after a language/Unicode change and keeps the `& 3` cycle. In 1.13.2–1.16.5, `calculateScale` rounds up and the option uses `remainderUnsigned(value + 1, max + 1)`. In 1.17.1–1.19.4, the option cycles over a 0..max list and toggling Force Unicode resizes the display. `tools/test-gui-scale.mjs` covers each branch. Language, Pause and warning layouts are 1.20.5+ designs and were not backported.

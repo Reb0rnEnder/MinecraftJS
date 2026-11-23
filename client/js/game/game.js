@@ -408,8 +408,10 @@ export class Game {
   applyLanguage() {
     const f = this.gui.font;
     const uniform=!!this.settings.forceUnicodeFont,jp=!!this.settings.japaneseGlyphVariants,bidi=!!this.assets.langBidi;
-    const changed=f.unicode!==uniform||f.bidi!==bidi||!!this.assets.fontOptions?.jp!==jp;
+    const unicodeChanged=f.unicode!==uniform,changed=unicodeChanged||f.bidi!==bidi||!!this.assets.fontOptions?.jp!==jp;
     this.assets.fontOptions={uniform,jp};f.unicode=uniform;f.bidi=bidi;
+    // Options.forceUnicodeFont: selectMainFont then resizeDisplay, since calculateScale reads the flag.
+    if(unicodeChanged)this.gui.resize?.();
     if(changed){
       f._widthBuckets=null;
       if(this.hud?.chat){this.hud.chatLines=[];for(let i=this.hud.chat.length-1;i>=0;i--)this.hud._wrapChatEntry(this.hud.chat[i]);this.hud.scrollChat(0);}
