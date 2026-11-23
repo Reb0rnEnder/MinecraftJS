@@ -7,7 +7,7 @@ const PARAMS=colorParams(1,1,1,1,.004,0),STATE={blend:'alpha',depthTest:false,de
 const vertices=quads=>new Float32Array(quads.flatMap(([x,y,w,h,u0,v0,u1,v1,c=[1,1,1,1]])=>[x,y,0,u0,v0,...c,x,y+h,0,u0,v1,...c,x+w,y+h,0,u1,v1,...c,x+w,y,0,u1,v0,...c]));
 export class Splash{
  constructor(device,settings={}){this.device=device;this.settings=settings;this.progress=0;this.target=0;this.mesh=device.createMesh(FORMAT.color,new Float32Array(0),{quads:true,dynamic:true});this.bar=device.createMesh(FORMAT.color,new Float32Array(0),{quads:true,dynamic:true});this.white=device.createTexture({width:1,height:1,data:new Uint8Array([255,255,255,255])});this.view=mat4.create();this.proj=mat4.create();}
- async load(bytes){if(bytes)try{const img=decodePng(bytes);this.tex=this.device.createTexture({width:img.width,height:img.height,data:img.data,filter:'nearest'});}catch{}}
+ async load(bytes){if(bytes)try{const img=decodePng(bytes);this.tex=this.device.createTexture({width:img.width,height:img.height,data:img.data,filter:'linear'});/* LoadingOverlay.LogoTexture: blur and clamp (1.16+) */}catch{}}
  setProgress(percent){this.target=Math.max(0,Math.min(1,percent/100));}
  start(){this.running=true;const frame=()=>{if(!this.running)return;this.draw();platform().requestFrame(frame);};frame();}
  stop(){this.running=false;for(const t of[this.tex,this.white])if(t)this.device.destroyTexture(t);this.device.destroyMesh(this.mesh);this.device.destroyMesh(this.bar);}
