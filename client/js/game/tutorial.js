@@ -1,13 +1,14 @@
-// Tutorial (1.12): the hint toasts for a new player (move, look, find a tree, punch it, open the inventory, craft
+// Tutorial (1.13+): the hint toasts for a new player (move, look, find a tree, punch it, open the inventory, craft
 // planks). The current step is the "tutorialStep" option, saved so the hints only ever run once. Only survival goes
-// past the movement step.
+// past the movement step. Trees, logs and planks are recognised the native way for this release: logs and planks by
+// their block/item tags, trees by the native TREE_BLOCKS set and their items.
 import { tr } from '../gui/i18n.js';
 import { DEFAULT_TAGS } from './default-tags.js';
+import { getBlock } from '../world/blocks.js';
 
-const LOGS = new Set([17, 162]);
-const TREES = new Set([17, 162, 18, 161]);
+// FindTreeTutorialStepInstance.TREE_BLOCKS (null: the completes_find_tree_tutorial tags decide)
 const TREE_BLOCKS = ["oak_log", "spruce_log", "birch_log", "jungle_log", "acacia_log", "dark_oak_log", "warped_stem", "crimson_stem", "oak_wood", "spruce_wood", "birch_wood", "jungle_wood", "acacia_wood", "dark_oak_wood", "warped_hyphae", "crimson_hyphae", "oak_leaves", "spruce_leaves", "birch_leaves", "jungle_leaves", "acacia_leaves", "dark_oak_leaves", "nether_wart_block", "warped_wart_block"];
-const PLANKS = 5;
+const FIND_TREE_TAG = 'minecraft:completes_find_tree_tutorial';
 
 // TutorialToast.Icons (column, row in toasts.png from u 176)
 const ICONS = { movement: [0, 0], mouse: [1, 0], tree: [2, 0], recipeBook: [0, 1], planks: [1, 1] };
@@ -51,22 +52,33 @@ export class Tutorial {
   survival() { return this.game.gameMode === 0; }
   toast(t) { this.game.hud.addToast(t); return t; }
 
-  // InventoryPlayer.hasItemStack(new ItemStack(block)): same item and damage 0
-  hasItem(ids) {
+  // Inventory.contains: any non-empty stack in the main, armour or offhand compartments matching the test
+  hasItem(test) {
     const inv = this.game.inventory;
-    const all = [...inv.main, ...inv.armor, inv.offhand];
-    return all.some((it) => it && ids.has(it.id) && (it.damage | 0) === 0);
+    return [...inv.main, ...inv.armor, inv.offhand].some((it) => it && it.id && test(it));
   }
+  tagged(kind, tag, id) {
+    const tags = this.game.world?.registryTags;
+    return tags?.contains ? tags.contains(kind, tag, id) : (DEFAULT_TAGS[kind]?.[tag] || []).includes(id);
+  }
+  itemName(item) { return this.game.items.def?.(item.id)?.name || this.game.assets.data.items.find((d) => d.id === item.id)?.name; }
+  isLog(item) { return this.tagged('items', 'minecraft:logs', item.id); }
+  isPlanks(item) { return this.tagged('items', 'minecraft:planks', item.id); }
+  isLogBlock(state) { const b = getBlock(state); return !!b && this.tagged('blocks', 'minecraft:logs', b.id); }
+  // the blocks/items that complete the find-tree step
+  isTreeBlock(state) { const b = getBlock(state); return !!b && b.id !== 0 && (TREE_BLOCKS ? TREE_BLOCKS.includes(b.name) : this.tagged('blocks', FIND_TREE_TAG, b.id)); }
+  isTreeItem(item) { return TREE_BLOCKS ? TREE_BLOCKS.includes(this.itemName(item)) : this.tagged('items', FIND_TREE_TAG, item.id); }
 
-  // The statistics the server has sent (from the stats screen)
-  // FindTreeTutorialStep.hasPunchedTreesPreviously: any of this release's TREE_BLOCKS mined
-  punchedTrees() { const stats = this.game.statsCounter; return !!stats && TREE_BLOCKS.some((b) => stats.get('mined', b) > 0); }
+  // FindTreeTutorialStepInstance.hasPunchedTreesPreviously: any tree block mined
+  punchedTrees() {
+    const stats = this.game.statsCounter; if (!stats) return false;
+    return (this.game.assets.data.blocks || []).some((b) => (TREE_BLOCKS ? TREE_BLOCKS.includes(b.name) : this.tagged('blocks', FIND_TREE_TAG, b.id)) && stats.get('mined', b.name) > 0);
+  }
 
   // CraftPlanksTutorialStep.hasCraftedPlanksPreviously: any #minecraft:planks item crafted
   craftedPlanks() {
     const stats = this.game.statsCounter; if (!stats) return false;
-    const tag = 'minecraft:planks', tags = this.game.world?.registryTags;
-    return (this.game.assets.data.items || []).some((it) => (tags?.contains ? tags.contains('items', tag, it.id) : (DEFAULT_TAGS.items[tag] || []).includes(it.id)) && stats.get('crafted', it.name) > 0);
+    return (this.game.assets.data.items || []).some((it) => this.tagged('items', 'minecraft:planks', it.id) && stats.get('crafted', it.name) > 0);
   }
 
   update() {
@@ -139,12 +151,12 @@ function findTreeStep(t) {
     update() {
       waiting++;
       if (!t.survival()) { t.setStep('none'); return; }
-      if (waiting === 1 && (t.hasItem(TREES) || t.punchedTrees())) { t.setStep('craft_planks'); return; }
+      if (waiting === 1 && (t.hasItem((it) => t.isTreeItem(it)) || t.punchedTrees())) { t.setStep('craft_planks'); return; }
       if (waiting >= 6000 && !toast) toast = t.toast(new Toast('tree', tr('tutorial.find_tree.title'), tr('tutorial.find_tree.description'), false));
     },
     onStop() { if (toast) { toast.hide(); toast = null; } },
-    onMouseHover(target) { if (target.type === 'block' && TREES.has(t.game.world.getState(target.x, target.y, target.z) >> 4)) t.setStep('punch_tree'); },
-    handleSetSlot(item) { if (TREES.has(item.id)) t.setStep('craft_planks'); },
+    onMouseHover(target) { if (target.type === 'block' && t.isTreeBlock(t.game.world.getState(target.x, target.y, target.z))) t.setStep('punch_tree'); },
+    handleSetSlot(item) { if (t.isTreeItem(item)) t.setStep('craft_planks'); },
   };
 }
 
@@ -154,19 +166,19 @@ function punchTreeStep(t) {
     update() {
       waiting++;
       if (!t.survival()) { t.setStep('none'); return; }
-      if (waiting === 1 && (t.hasItem(LOGS) || t.punchedTrees())) { t.setStep('craft_planks'); return; }
+      if (waiting === 1 && (t.hasItem((it) => t.isLog(it)) || t.punchedTrees())) { t.setStep('craft_planks'); return; }
       if ((waiting >= 600 || resets > 3) && !toast) toast = t.toast(new Toast('tree', tr('tutorial.punch_tree.title'), tr('tutorial.punch_tree.description', t.key('attack')), true));
     },
     onStop() { if (toast) { toast.hide(); toast = null; } },
     onHitBlock(state, f) {
-      const log = LOGS.has(state >> 4);
+      const log = t.isLogBlock(state);
       if (log && f > 0) {
         if (toast) toast.setProgress(f);
         if (f >= 1) t.setStep('open_inventory');
       } else if (toast) toast.setProgress(0);
       else if (log) resets++;
     },
-    handleSetSlot(item) { if (LOGS.has(item.id)) t.setStep('craft_planks'); },
+    handleSetSlot(item) { if (t.isLog(item)) t.setStep('craft_planks'); },
   };
 }
 
@@ -189,10 +201,10 @@ function craftPlanksStep(t) {
     update() {
       waiting++;
       if (!t.survival()) { t.setStep('none'); return; }
-      if (waiting === 1 && (t.hasItem(new Set([PLANKS])) || t.craftedPlanks())) { t.setStep('none'); return; }
+      if (waiting === 1 && (t.hasItem((it) => t.isPlanks(it)) || t.craftedPlanks())) { t.setStep('none'); return; }
       if (waiting >= 1200 && !toast) toast = t.toast(new Toast('planks', tr('tutorial.craft_planks.title'), tr('tutorial.craft_planks.description'), false));
     },
     onStop() { if (toast) { toast.hide(); toast = null; } },
-    handleSetSlot(item) { if (item.id === PLANKS) t.setStep('none'); },
+    handleSetSlot(item) { if (t.isPlanks(item)) t.setStep('none'); },
   };
 }
