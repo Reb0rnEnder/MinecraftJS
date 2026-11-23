@@ -358,6 +358,7 @@ export class Game {
     const f = this.gui.font;
     f.unicode = !!(this.assets.langUnicode || this.settings.forceUnicodeFont);
     f.bidi = !!this.assets.langBidi;
+    this.gui.resize(); // ScaledResolution reads the font's Unicode flag every frame
   }
 
   // Switch language (GuiLanguage): reload the strings, update the font and tell the server
