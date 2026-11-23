@@ -757,22 +757,37 @@ class BeaconScreen extends ContainerScreen {
   }
 }
 
+// Native 1.20.6 HorseInventoryMenu / HorseInventoryScreen. Window slots: 0 saddle (shown when the animal is
+// saddleable), 1 body armour (horses and llamas), then 3 rows of chest columns, then the player inventory.
+const HORSE_ARMOR = new Set(['horse', 'llama', 'trader_llama']);
+const CHESTED = new Set(['donkey', 'mule', 'llama', 'trader_llama']);
+export function horseInventoryLayout(entity, columns) {
+  const name = entity?.entityName || 'horse', llama = name === 'llama' || name === 'trader_llama';
+  const flags = entity?.horseFlags || 0;
+  // AbstractHorse.isSaddleable: alive, adult and tamed; llamas never take a saddle
+  const saddleable = !llama && !entity?.dead && !entity?.baby && !!(flags & 2);
+  const armor = HORSE_ARMOR.has(name);
+  const chest = CHESTED.has(name) && !!entity?.horseChest && columns > 0;
+  const slots = [[0, 8, 18], [1, 8, 36]];
+  if (chest) for (let i = 0; i < 3; i++) for (let j = 0; j < columns; j++) slots.push([2 + j + i * columns, 80 + j * 18, 18 + i * 18]);
+  slots.push(...playerInvSlots(2 + columns * 3, 8, 84, 142));
+  return { slots, saddleable, armor, llama, chest, columns, hidden: new Set([...(saddleable ? [] : [0]), ...(armor ? [] : [1])]) };
+}
 class HorseScreen extends ContainerScreen {
   constructor(game, win) {
     super(game, win);
-    const s = [[0, 8, 18], [1, 8, 36]];
-    const chest = win.size > 2;
-    if (chest) for (let i = 0; i < 3; i++) for (let j = 0; j < 5; j++) s.push([2 + j + i * 5, 80 + j * 18, 18 + i * 18]);
-    s.push(...playerInvSlots(win.size, 8, 84, 142));
-    this.slotPos = s;
-    this.chest = chest;
+    this.entity = game.entities.get?.(win.entityId) || null;
+    this.layout = horseInventoryLayout(this.entity, win.horseColumns || 0);
+    // inactive slots (Slot.isActive false) take no clicks and draw nothing
+    this.slotPos = this.layout.slots.filter(([i]) => !this.layout.hidden.has(i));
   }
-  drawBackground(gui) {
-    const t = 'gui/container/horse.png';
-    gui.blit(t, this.guiLeft, this.guiTop, 0, 0, this.xSize, this.ySize);
-    if (this.chest) gui.blit(t, this.guiLeft + 79, this.guiTop + 17, 0, this.ySize, 90, 54);
-    gui.blit(t, this.guiLeft + 7, this.guiTop + 35 - 18, 18, this.ySize + 54, 18, 18);
-    gui.blit(t, this.guiLeft + 7, this.guiTop + 35, 0, this.ySize + 54, 18, 18);
+  drawBackground(gui, mx, my) {
+    const L = this.guiLeft, T = this.guiTop, l = this.layout;
+    gui.blit('gui/container/horse.png', L, T, 0, 0, this.xSize, this.ySize);
+    if (l.chest) gui.spriteRegion('container/horse/chest_slots', 90, 54, 0, 0, L + 79, T + 17, l.columns * 18, 54);
+    if (l.saddleable) gui.sprite('container/horse/saddle_slot', L + 7, T + 35 - 18, 18, 18);
+    if (l.armor) gui.sprite(l.llama ? 'container/horse/llama_armor_slot' : 'container/horse/armor_slot', L + 7, T + 35, 18, 18);
+    this.game.entityRenderer?.drawMobInGui?.(gui, this.entity, L + 26, T + 18, L + 78, T + 70, 17, 0.25, mx ?? L, my ?? T);
   }
   drawForeground(gui) {
     this.title(gui, this.container.title, 8, 6);

@@ -1357,8 +1357,12 @@ export class Game {
     if (e && name) this.sound.play(name,e.x,e.y,e.z,p.volume,p.pitch,{category:p.soundCategory,entity:e,seed:p.seed});
   }
 
+  // ClientboundHorseScreenOpenPacket (1.20.5+): container id, inventory columns, entity id. The menu holds the
+  // saddle and body-armour slots plus 3 rows of chest columns; the title is the animal's display name.
   on_open_horse_window(p) {
-    this.on_open_window({...p,inventoryType:'EntityHorse',slotCount:p.nbSlots,windowTitle:JSON.stringify({translate:'entity.minecraft.horse'})});
+    const e=this.entities.get(p.entityId),columns=p.nbSlots|0;
+    const title=e?.customName?JSON.stringify({text:e.customName}):JSON.stringify({translate:'entity.minecraft.'+(e?.entityName||'horse')});
+    this.on_open_window({...p,inventoryType:'EntityHorse',slotCount:2+columns*3,windowTitle:title,horseColumns:columns});
   }
 
   on_open_book(p) {
@@ -1403,6 +1407,7 @@ export class Game {
       p={...p,inventoryType:menu.type,slotCount:menu.slotCount,registryMenu:menu.registryName};
     }
     const win = new ContainerWindow(this, p.windowId, p.inventoryType, chatToLegacy(p.windowTitle), p.slotCount, p.entityId);
+    if (p.horseColumns !== undefined) win.horseColumns = p.horseColumns;
     this.window = win;
     openContainerScreen(this, win);
   }

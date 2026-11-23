@@ -2025,6 +2025,32 @@ export class EntityRenderer {
 
   // ---------------------------------------------------------------- GUI player preview (GuiInventory.drawEntityOnScreen)
 
+  // InventoryScreen.renderEntityInInventoryFollowsMouse for a mob that already has a world visual: the box
+  // (x1, y1)-(x2, y2), the scale, the yOffset and the mouse decide the pose. The live model is re-posed for this
+  // GUI pass only; the next world frame sets its position, yaw and light again.
+  drawMobInGui(gui, e, x1, y1, x2, y2, scale, yOffset, mx, my) {
+    const v = e && this.visuals.get(e.id);
+    if (!v || !v.yawGroup || !v.root) return false;
+    const cx = (x1 + x2) / 2, cy = (y1 + y2) / 2, f = Math.atan((cx - mx) / 40), f1 = Math.atan((cy - my) / 40);
+    const body = 180 + f * 20, entityScale = e.scale || (e.baby ? 0.5 : 1), s = scale / entityScale;
+    const saved = { pos: [v.root.position.x, v.root.position.y, v.root.position.z], yaw: v.yawGroup.rotation.y, shadow: v.shadow?.visible, tag: v.tag?.visible };
+    v.root.position.set(0, 0, 0); v.yawGroup.rotation.y = (180 - body) * D2R;
+    if (v.shadow) v.shadow.visible = false; if (v.tag) v.tag.visible = false;
+    for (const m of v.materials || []) m.params.setLight(15, 15); // LightTexture.FULL_BRIGHT
+    const mm = mat4.create();
+    mat4.translate(mm, mm, cx, cy, 50);
+    mat4.scale(mm, mm, s, s, -s);
+    mat4.translate(mm, mm, 0, (e.height || 0) / 2 + yOffset * entityScale, 0);
+    mat4.rotateZ(mm, mm, Math.PI);
+    mat4.rotateX(mm, mm, f1 * 20 * D2R);
+    gui.scissor(x1, y1, x2 - x1, y2 - y1);
+    gui.drawNode(v.root, mm);
+    gui.clearScissor();
+    v.root.position.set(...saved.pos); v.yawGroup.rotation.y = saved.yaw;
+    if (v.shadow) v.shadow.visible = saved.shadow; if (v.tag) v.tag.visible = saved.tag;
+    return true;
+  }
+
   drawPlayerInGui(gui, x, y, scale, mouseDX, mouseDY) {
     const g = this.game;
     if (!this._guiModel) {
