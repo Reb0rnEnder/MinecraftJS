@@ -32,6 +32,8 @@ export class ResourcePacksScreen extends Screen {
     this.selected = active.map((id) => all.find((p) => p.id === id)).filter(Boolean);
     this.available = all.filter((p) => !active.includes(p.id));
     this.initial = this.selected.map((p) => p.id).join('\n');
+    // PackSelectionScreen reads the default pack.png synchronously; wait for it so the first frame is not a placeholder.
+    this._defaultIcon();await this.defaultIconLoad;
     this.loaded = true;
   }
 
@@ -100,10 +102,10 @@ export class ResourcePacksScreen extends Screen {
     const k = 'default@' + A.version;
     if (!this.icons.has(k)) {
       this.icons.set(k, null);
-      A.source.bytes('pack.png').then((bytes) => {
+      this.defaultIconLoad = Promise.resolve().then(() => A.source.bytes('pack.png')).then((bytes) => {
         if (!bytes) return;
         const img = decodePng(bytes);
-        this.icons.set(k, A.makeTexture('packicon:default', img.width, img.height, img.data, { filter: 'linear' }));
+        this.icons.set(k, A.makeTexture('packicon:default', img.width, img.height, img.data));
       }).catch(() => {});
     }
     return this.icons.get(k) || 'misc/unknown_pack.png';
@@ -114,7 +116,7 @@ export class ResourcePacksScreen extends Screen {
     if (!pack) return this._defaultIcon();
     const k = pack.id + '@' + A.version;
     if (!this.icons.has(k)) {
-      this.icons.set(k, pack.icon ? A.makeTexture('packicon:' + pack.id, pack.icon.width, pack.icon.height, pack.icon.data, { filter: 'linear' }) : null);
+      this.icons.set(k, pack.icon ? A.makeTexture('packicon:' + pack.id, pack.icon.width, pack.icon.height, pack.icon.data) : null);
     }
     return this.icons.get(k) || 'misc/unknown_pack.png';
   }

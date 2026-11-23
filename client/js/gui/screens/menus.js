@@ -305,7 +305,7 @@ export class MultiplayerScreen extends Screen {
 
 class ServerList extends SlotList {
   constructor(screen) {
-    super(screen, 32, screen.height - 64, 36, { listWidth: 220 + 85, scrollBarOffset: 30 });
+    super(screen, 32, screen.height - 64, 36, { listWidth: 305 });
   }
   size() { return this.screen.servers.length + 1; } // + the LAN scan row
   isSelected(i) { return i === this.screen.selected; }

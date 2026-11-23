@@ -56,7 +56,7 @@ class ShaderPackList extends SlotList {
  constructor(screen){const width=screen.width-140;super(screen,30,screen.height-50,16,{listWidth:width-20,left:0,width,scrollBarRight:true});}
  // Vanilla selection lists normally draw dirt in their entire area. The shader
  // list must preserve the world behind the screen while playing.
- _dirt(gui,y0,y1,tint,scroll){if(!this.screen.game.inWorld)super._dirt(gui,y0,y1,tint,scroll);}
+ _listBackground(gui,scroll){if(!this.screen.game.inWorld)super._listBackground(gui,scroll);}
  size(){return this.screen.library.entries.length+2;}
  isSelected(i){const library=this.screen.library;return i===0?!library.enabled:library.enabled&&(i===1?'(internal)':this.screen.library.entries[i-2]?.id)===library.selected;}
  drawSlot(gui,i,x,y){const label=i===0?'OFF':i===1?'(internal)':this.screen.library.entries[i-2]?.name;gui.textCentered(gui.font.trimToWidth(label||'',this.listWidth-8),Math.floor(this.width/2),y+1,0xe0e0e0,true);}

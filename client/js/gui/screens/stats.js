@@ -1,290 +1,198 @@
-// GuiStats (General / Blocks / Items / Mobs lists).
+// Native 1.20.6 StatsScreen: HeaderAndFooterLayout(33, 58), General / Items / Mobs ObjectSelectionLists
+// (280-wide rows) and the 1.20.2+ statistics sprites.
 import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
 import { Button } from '../widgets.js';
 import { SlotList } from '../slot-list.js';
 import { C } from '../../net/packets.js';
 import { platform } from '../../platform/platform.js';
-import { JavaRandom } from '../../util/jrandom.js';
+import { formatStat, customStatFormat, customStats, statItems, statMobs, itemBlock, BLOCK_COLUMNS, ITEM_COLUMNS } from '../../game/stats-counter.js';
 
-const LAN_DOTS = ['oooooo', 'Oooooo', 'oOoooo', 'ooOooo', 'oooOoo', 'ooooOo', 'oooooO'];
-const STATS_ICONS = 'gui/container/stats_icons.png';
-
-// StatList.BASIC_STATS (1.12) in registration order, with their IStatType
-const GENERAL = [
-  ['stat.leaveGame'], ['stat.playOneMinute', 'time'], ['stat.timeSinceDeath', 'time'], ['stat.sneakTime', 'time'],
-  ['stat.walkOneCm', 'distance'], ['stat.crouchOneCm', 'distance'], ['stat.sprintOneCm', 'distance'], ['stat.swimOneCm', 'distance'],
-  ['stat.fallOneCm', 'distance'], ['stat.climbOneCm', 'distance'], ['stat.flyOneCm', 'distance'], ['stat.diveOneCm', 'distance'],
-  ['stat.minecartOneCm', 'distance'], ['stat.boatOneCm', 'distance'], ['stat.pigOneCm', 'distance'], ['stat.horseOneCm', 'distance'],
-  ['stat.aviateOneCm', 'distance'],
-  ['stat.jump'], ['stat.drop'], ['stat.damageDealt', 'tenth'], ['stat.damageTaken', 'tenth'], ['stat.deaths'], ['stat.mobKills'],
-  ['stat.animalsBred'], ['stat.playerKills'], ['stat.fishCaught'],
-  ['stat.talkedToVillager'], ['stat.tradedWithVillager'], ['stat.cakeSlicesEaten'], ['stat.cauldronFilled'], ['stat.cauldronUsed'],
-  ['stat.armorCleaned'], ['stat.bannerCleaned'], ['stat.craftingTableInteraction'], ['stat.beaconInteraction'], ['stat.dropperInspected'],
-  ['stat.hopperInspected'], ['stat.dispenserInspected'], ['stat.noteblockPlayed'], ['stat.noteblockTuned'], ['stat.flowerPotted'],
-  ['stat.trappedChestTriggered'], ['stat.enderchestOpened'], ['stat.itemEnchanted'], ['stat.recordPlayed'], ['stat.furnaceInteraction'],
-  ['stat.brewingstandInteraction'], ['stat.chestOpened'], ['stat.sleepInBed'], ['stat.shulkerBoxOpened'],
-];
-
-// Entities with spawn eggs (EntityList.entityEggs), in registration order
-// EntityList.ENTITY_EGGS (1.12, registry order) -> translation name used by the kill stats and entity.<name>.name
-const EGG_MOBS = [
-  ['bat', 'Bat'], ['blaze', 'Blaze'], ['cave_spider', 'CaveSpider'], ['chicken', 'Chicken'], ['cow', 'Cow'], ['creeper', 'Creeper'],
-  ['donkey', 'Donkey'], ['elder_guardian', 'ElderGuardian'], ['enderman', 'Enderman'], ['endermite', 'Endermite'],
-  ['evocation_illager', 'EvocationIllager'], ['ghast', 'Ghast'], ['guardian', 'Guardian'], ['horse', 'Horse'], ['husk', 'Husk'],
-  ['llama', 'Llama'], ['magma_cube', 'LavaSlime'], ['mooshroom', 'MushroomCow'], ['mule', 'Mule'], ['ocelot', 'Ozelot'],
-  ['parrot', 'Parrot'], ['pig', 'Pig'], ['polar_bear', 'PolarBear'], ['rabbit', 'Rabbit'], ['sheep', 'Sheep'], ['shulker', 'Shulker'],
-  ['silverfish', 'Silverfish'], ['skeleton', 'Skeleton'], ['skeleton_horse', 'SkeletonHorse'], ['slime', 'Slime'], ['spider', 'Spider'],
-  ['squid', 'Squid'], ['stray', 'Stray'], ['vex', 'Vex'], ['villager', 'Villager'], ['vindication_illager', 'VindicationIllager'],
-  ['witch', 'Witch'], ['wither_skeleton', 'WitherSkeleton'], ['wolf', 'Wolf'], ['zombie', 'Zombie'], ['zombie_horse', 'ZombieHorse'],
-  ['zombie_pigman', 'PigZombie'], ['zombie_villager', 'ZombieVillager'],
-];
-
-// Java DecimalFormat("########0.00") and NumberFormat.getIntegerInstance(Locale.US)
-const df = (v) => (Math.round(v * 100) / 100).toFixed(2);
-const intFmt = (v) => Math.trunc(v).toLocaleString('en-US');
-const javaDouble = (v) => (Number.isInteger(v) ? v.toFixed(1) : String(v));
-
-export function formatStat(type, v) {
-  switch (type) {
-    case 'time': {
-      const s = v / 20, m = s / 60, h = m / 60, d = h / 24, y = d / 365;
-      return y > 0.5 ? df(y) + ' y' : d > 0.5 ? df(d) + ' d' : h > 0.5 ? df(h) + ' h' : m > 0.5 ? df(m) + ' m' : javaDouble(s) + ' s';
-    }
-    case 'distance': {
-      const m = v / 100, km = m / 1000;
-      return km > 0.5 ? df(km) + ' km' : m > 0.5 ? df(m) + ' m' : v + ' cm';
-    }
-    case 'tenth': return df(v * 0.1);
-    default: return intFmt(v);
-  }
-}
-
-// Statistics as received from the server (S37PacketStatistics), keyed by stat id
-function statMap(entries) {
-  const m = new Map();
-  for (const e of entries || []) m.set(e.name, e.value);
-  return m;
-}
-
-function loadingScreen(screen, gui) {
-  gui.textCentered(tr('multiplayer.downloadingStats'), screen.width / 2, screen.height / 2, 0xffffff, true);
-  gui.textCentered(LAN_DOTS[Math.floor(platform().now() / 150) % LAN_DOTS.length], screen.width / 2, screen.height / 2 + 18, 0xffffff, true);
-}
-
-// ---------------------------------------------------------------- GuiStats
+const HEADER = 33, FOOTER = 58, ROW_WIDTH = 280;
+// LoadingDotsText
+const DOTS = ['O o o', 'o O o', 'o o O', 'o O o'];
+export const loadingDots = (now) => DOTS[Math.floor(now / 300) % DOTS.length];
+const COLUMNS = [...BLOCK_COLUMNS, ...ITEM_COLUMNS];
+const COLUMN_SPRITES = ['statistics/block_mined', 'statistics/item_broken', 'statistics/item_crafted', 'statistics/item_used', 'statistics/item_picked_up', 'statistics/item_dropped'];
+const column = (i) => 75 + 40 * i;
+const ODD = 0xbababa;
 
 export class StatsScreen extends Screen {
   constructor(game, parent) {
     super(game);
     this.parent = parent;
-    this.background = 'dirt';
-    this.stats = null;
+    this.loading = true;
     this.mode = 'general';
     this.requested = false;
   }
+  // isPauseScreen: !isLoading
+  get pausesGame() { return !this.loading; }
+  set pausesGame(v) {}
+  get counter() { return this.game.statsCounter; }
 
   init() {
     if (!this.requested) { this.requested = true; this.game.send(C.clientCommand(1)); }
-    if (this.stats) this._build();
+    if (!this.loading) this._build();
   }
 
-  onStats(entries) {
-    this.stats = statMap(entries);
+  // onStatsUpdated: only the first update builds the lists
+  onStats() {
+    if (!this.loading) return;
+    this.loading = false;
     this.buttons = [];
     this._build();
   }
 
   _build() {
-    const cx = this.width / 2, H = this.height;
-    const g = this.game;
-    const lists = {
-      general: new GeneralList(this),
-      blocks: new CraftingList(this, 'blocks'),
-      items: new CraftingList(this, 'items'),
-      mobs: new MobsList(this),
-    };
-    this.lists = lists;
-    this.buttons.push(new Button(0, cx + 4, H - 28, 150, 20, tr('gui.done'), () => g.screens.open(this.parent)));
-    this.buttons.push(new Button(1, cx - 160, H - 52, 80, 20, tr('stat.generalButton'), () => { this.mode = 'general'; }));
-    const mk = (id, x, key, mode) => {
-      const b = new Button(id, x, H - 52, 80, 20, tr(key), () => { this.mode = mode; });
-      b.enabled = lists[mode].size() > 0;
-      this.buttons.push(b);
-    };
-    mk(2, cx - 80, 'stat.blocksButton', 'blocks');
-    mk(3, cx, 'stat.itemsButton', 'items');
-    mk(4, cx + 80, 'stat.mobsButton', 'mobs');
+    const g = this.game, W = this.width, H = this.height;
+    const keep = this.lists && Object.fromEntries(Object.entries(this.lists).map(([k, l]) => [k, l.amountScrolled]));
+    this.lists = { general: new GeneralList(this), items: new ItemList(this), mobs: new MobsList(this) };
+    if (keep) for (const [k, v] of Object.entries(keep)) { this.lists[k].amountScrolled = v; this.lists[k].clamp(); }
+    // Footer: vertical LinearLayout (spacing 5) holding a 3 x 120 row (spacing 5) and a 200-wide Done, centred.
+    const footerX = Math.max(0, Math.floor((W - 370) / 2)), rowY = H - 51;
+    const general = new Button(1, footerX, rowY, 120, 20, tr('stat.generalButton'), () => { this.mode = 'general'; });
+    const items = new Button(3, footerX + 125, rowY, 120, 20, tr('stat.itemsButton'), () => { this.mode = 'items'; });
+    const mobs = new Button(4, footerX + 250, rowY, 120, 20, tr('stat.mobsButton'), () => { this.mode = 'mobs'; });
+    items.enabled = this.lists.items.size() > 0;
+    mobs.enabled = this.lists.mobs.size() > 0;
+    this.buttons.push(general, items, mobs, new Button(0, footerX + 85, H - 26, 200, 20, tr('gui.done'), () => g.screens.open(this.parent)));
   }
 
-  read(name) { return (this.stats && this.stats.get(name)) || 0; }
   list() { return this.lists && this.lists[this.mode]; }
 
   render(gui, mx, my) {
-    gui.dirtBackground();
-    if (!this.stats) { loadingScreen(this, gui); return; }
+    gui.menuBackground(this.game.inWorld);
+    const cx = Math.floor(this.width / 2);
+    if (this.loading) {
+      // LoadingDotsWidget in the contents frame (top aligned, 30 below the header)
+      const msg = tr('multiplayer.downloadingStats'), mid = HEADER + 30 + 13;
+      gui.text(msg, cx - Math.floor(gui.textWidth(msg) / 2), mid - 9, 0xffffff, false);
+      const dots = loadingDots(platform().now());
+      gui.text(dots, cx - Math.floor(gui.textWidth(dots) / 2), mid + 9, 0x808080, false);
+      return;
+    }
     this.list().render(gui, mx, my);
-    gui.textCentered(tr('gui.stats'), this.width / 2, 20, 0xffffff, true);
+    gui.textCentered(tr('gui.stats'), cx, 12, 0xffffff);
     for (const b of this.buttons) b.render(gui, mx, my);
+    this.list().tooltip(gui, mx, my);
   }
 
   mouseDown(mx, my, button, e) {
     if (super.mouseDown(mx, my, button)) return true;
     return this.list() ? this.list().mouseDown(mx, my, button, e) : false;
   }
-  mouseUp(mx, my, button) { super.mouseUp(mx, my, button); if (this.list()) this.list().mouseUp(); }
-  mouseMove(mx, my) { if (this.list()) this.list().mouseMove(mx, my); }
-  wheel(d) { if (this.list()) this.list().wheel(d); }
+  mouseUp(mx, my, button) { super.mouseUp(mx, my, button); this.list()?.mouseUp(); }
+  mouseMove(mx, my) { this.list()?.mouseMove(mx, my); }
+  wheel(d) { this.list()?.wheel(d); }
   close() { this.game.screens.open(this.parent); }
-
-  // GuiStats.drawSprite (stats_icons.png is 128x128)
-  sprite(gui, x, y, u, v) { gui.blit(STATS_ICONS, x, y, u, v, 18, 18, 128, 128); }
-
-  // GuiStats.drawStatsScreen: slot background + item icon
-  itemSlot(gui, x, y, item) {
-    this.sprite(gui, x + 1, y + 1, 0, 0);
-    this.game.itemRenderer.drawItem(gui, { id: item.id, damage: 0, count: 1 }, x + 2, y + 2, false);
-  }
 }
 
-class GeneralList extends SlotList {
+class StatsList extends SlotList {
+  constructor(screen, rowHeight, opts = {}) {
+    super(screen, HEADER, screen.height - FOOTER, rowHeight, { selectionBox: false, listWidth: ROW_WIDTH, ...opts });
+  }
+  tooltip() {}
+}
+
+const statKey = (name) => 'stat.minecraft.' + name;
+
+class GeneralList extends StatsList {
   constructor(screen) {
-    super(screen, 32, screen.height - 64, 10, { selectionBox: false });
+    super(screen, 14);
+    // Comparator.comparing(I18n.get(...)): Java String order (UTF-16 code units)
+    this.stats = customStats().sort((a, b) => { const x = tr(statKey(a)), y = tr(statKey(b)); return x < y ? -1 : x > y ? 1 : 0; });
   }
-  size() { return GENERAL.length; }
-  drawSlot(gui, i, x, y) {
-    const [name, type] = GENERAL[i];
-    const c = i % 2 === 0 ? 0xffffff : 0x909090;
-    gui.text(tr(name), x + 2, y + 1, c, true);
-    const v = formatStat(type, this.screen.read(name));
-    gui.text(v, x + 2 + 213 - gui.textWidth(v), y + 1, c, true);
+  size() { return this.stats.length; }
+  drawSlot(gui, i, x, y, h) {
+    const name = this.stats[i], c = i % 2 === 0 ? 0xffffff : ODD, ty = y + Math.floor(h / 2) - 4;
+    gui.text(tr(statKey(name)), x + 2, ty, c, true);
+    const v = formatStat(customStatFormat(name), this.screen.counter.get('custom', name));
+    gui.text(v, x + ROW_WIDTH - gui.textWidth(v) - 4, ty, c, true);
   }
 }
 
-// GuiStats.StatsBlock / StatsItem: three sortable columns per item
-class CraftingList extends SlotList {
-  constructor(screen, kind) {
-    super(screen, 32, screen.height - 64, 20, { selectionBox: false, header: 20 });
-    this.kind = kind;
+// ItemStatisticsList: six sortable sprite columns (mined for block items, then the five item stats).
+class ItemList extends StatsList {
+  constructor(screen) {
+    super(screen, 22, { header: 22 });
+    const data = screen.game.assets.data;
+    this.blockNames = new Set((data.blocks || []).map((b) => b.name));
+    this.rows = statItems(screen.counter, data);
     this.pressed = -1;
-    this.sortCol = -1;
-    this.sortDir = 0;
-    const g = screen.game;
-    // Columns: blocks = crafted, used, mined; items = depleted, crafted, used
-    this.cols = kind === 'blocks'
-      ? [['stat.craftItem.', 'stat.crafted', 18], ['stat.useItem.', 'stat.used', 36], ['stat.mineBlock.', 'stat.mined', 54]]
-      : [['stat.breakItem.', 'stat.depleted', 72], ['stat.craftItem.', 'stat.crafted', 18], ['stat.useItem.', 'stat.used', 36]];
-    const names = new Set();
-    for (const k of screen.stats.keys()) {
-      const m = k.match(/^stat\.(mineBlock|useItem|craftItem|breakItem)\.minecraft\.(.+)$/);
-      if (m && screen.stats.get(k) > 0) names.add(m[2]);
-    }
-    this.rows = [];
-    for (const n of names) {
-      const item = g.items.byName.get(n);
-      if (!item) continue;
-      const isBlock = g.items.isBlockItem(item.id);
-      if ((kind === 'blocks') !== isBlock) continue;
-      this.rows.push({ item, name: n });
-    }
-    this.rows.sort((a, b) => a.item.id - b.item.id);
+    this.sortColumn = null;
+    this.sortOrder = 0;
   }
-
   size() { return this.rows.length; }
-  stat(row, col) { return this.cols[col][0] + 'minecraft.' + row.name; }
+  value(item, type) {
+    if (type === 'mined') { const block = itemBlock(item.name, this.blockNames); return block == null ? null : this.screen.counter.get('mined', block); }
+    return this.screen.counter.get(type, item.name);
+  }
 
-  drawHeader(gui, x, y, mx, my) {
-    const s = this.screen;
+  drawHeader(gui, x, y) {
     if (!this.mouseHeld) this.pressed = -1;
-    const xs = [115, 165, 215];
-    for (let c = 0; c < 3; c++) s.sprite(gui, x + xs[c] - 18, y + 1, 0, this.pressed === c ? 0 : 18);
-    if (this.sortCol !== -1) {
-      const i = this.sortCol === 1 ? 129 : this.sortCol === 2 ? 179 : 79;
-      s.sprite(gui, x + i, y + 1, this.sortDir === 1 ? 36 : 18, 0);
-    }
-    for (let c = 0; c < 3; c++) {
-      const d = this.pressed === c ? 1 : 0;
-      s.sprite(gui, x + xs[c] - 18 + d, y + 1 + d, this.cols[c][2], 18);
+    for (let i = 0; i < COLUMNS.length; i++) gui.sprite(this.pressed === i ? 'container/slot' : 'statistics/header', x + column(i) - 18, y + 1, 18, 18);
+    if (this.sortColumn) gui.sprite(this.sortOrder === 1 ? 'statistics/sort_up' : 'statistics/sort_down', x + column(COLUMNS.indexOf(this.sortColumn)) - 36, y + 1, 18, 18);
+    for (let i = 0; i < COLUMNS.length; i++) {
+      const d = this.pressed === i ? 1 : 0;
+      gui.sprite(COLUMN_SPRITES[i], x + column(i) - 18 + d, y + 1 + d, 18, 18);
     }
   }
 
-  drawSlot(gui, i, x, y) {
-    const s = this.screen, row = this.rows[i];
-    s.itemSlot(gui, x + 40, y, row.item);
-    const even = i % 2 === 0;
-    [115, 165, 215].forEach((cx, c) => {
-      const has = s.stats.has(this.stat(row, c));
-      const v = has ? formatStat(null, s.read(this.stat(row, c))) : '-';
-      gui.text(v, x + cx - gui.textWidth(v), y + 5, even ? 0xffffff : 0x909090, true);
+  drawSlot(gui, i, x, y, h) {
+    const item = this.rows[i], even = i % 2 === 0, ty = y + Math.floor(h / 2) - 4;
+    gui.sprite('container/slot', x, y, 18, 18);
+    this.screen.game.itemRenderer.drawItem(gui, { id: item.id, count: 1, damage: 0 }, x + 1, y + 1, false);
+    COLUMNS.forEach((type, c) => {
+      const v = this.value(item, type), text = v == null ? tr('stats.none') : formatStat('default', v);
+      gui.text(text, x + column(c) - gui.textWidth(text), ty, even ? 0xffffff : ODD, true);
     });
   }
 
-  // Stats.func_148132_a: header buttons sort by that column (descending, ascending, off)
   headerClicked(x) {
-    this.pressed = x >= 79 && x < 115 ? 0 : x >= 129 && x < 165 ? 1 : x >= 179 && x < 215 ? 2 : -1;
+    this.pressed = -1;
+    for (let i = 0; i < COLUMNS.length; i++) { const d = x - column(i); if (d >= -36 && d <= 0) { this.pressed = i; break; } }
     if (this.pressed < 0) return;
     this.mouseHeld = true;
-    const c = this.pressed;
-    if (c !== this.sortCol) { this.sortCol = c; this.sortDir = -1; }
-    else if (this.sortDir === -1) this.sortDir = 1;
-    else { this.sortCol = -1; this.sortDir = 0; }
-    const s = this.screen;
-    this.rows.sort((a, b) => {
-      if (this.sortCol >= 0) {
-        const ka = this.stat(a, this.sortCol), kb = this.stat(b, this.sortCol);
-        const ha = s.stats.has(ka), hb = s.stats.has(kb);
-        if (ha || hb) {
-          if (!ha) return 1;
-          if (!hb) return -1;
-          const l = s.read(ka), r = s.read(kb);
-          if (l !== r) return (l - r) * this.sortDir;
-        }
-      }
-      return a.item.id - b.item.id;
-    });
-    s.game.sound.playUi('ui.button.click', 1);
+    const type = COLUMNS[this.pressed];
+    if (type !== this.sortColumn) { this.sortColumn = type; this.sortOrder = -1; }
+    else if (this.sortOrder === -1) this.sortOrder = 1;
+    else { this.sortColumn = null; this.sortOrder = 0; }
+    // ItemRowComparator: by the column's value (missing mined values count as -1), then by item id; order 0 keeps the list
+    const key = (item) => { if (!this.sortColumn) return 0; const v = this.value(item, this.sortColumn); return v == null ? -1 : v; };
+    this.rows.sort((a, b) => { const l = key(a), r = key(b); return this.sortOrder * (l === r ? a.id - b.id : l - r); });
+    this.screen.game.sound.playUi('ui.button.click', 1);
   }
   mouseUp() { super.mouseUp(); this.mouseHeld = false; }
 
-  // Stats.func_148142_b: item name over the icon, column name over the header buttons
-  decorations(gui, mx, my) {
+  // renderDecorations: the item name over its slot, or the stat type name over a column header
+  tooltip(gui, mx, my) {
     if (my < this.top || my > this.bottom) return;
-    const i = this.slotAt(mx, my);
-    const j = this.screen.width / 2 - 92 - 16;
-    let text = '';
+    const i = this.slotAt(mx, my), left = this.slotLeft();
+    let text = null;
     if (i >= 0) {
-      if (mx < j + 40 || mx > j + 40 + 20) return;
-      text = this.screen.game.items.displayName({ id: this.rows[i].item.id, damage: 0, count: 1 });
+      if (mx < left || mx > left + 18) return;
+      text = this.screen.game.items.displayName({ id: this.rows[i].id, count: 1, damage: 0 });
     } else {
-      const xs = [115, 165, 215];
-      const c = xs.findIndex((cx) => mx >= j + cx - 18 && mx <= j + cx);
-      if (c < 0) return;
-      text = tr(this.cols[c][1]).trim();
+      const c = COLUMNS.findIndex((_, n) => mx - left >= column(n) - 18 && mx - left <= column(n));
+      if (c >= 0) text = tr('stat_type.minecraft.' + COLUMNS[c]);
     }
-    if (!text) return;
-    const k = mx + 12, l = my - 12, w = gui.textWidth(text);
-    gui.gradient(k - 3, l - 3, k + w + 3, l + 8 + 3, 0xc0000000, 0xc0000000);
-    gui.text(text, k, l, 0xffffff, true);
+    if (text) gui.tooltip([text], mx, my);
   }
 }
 
-class MobsList extends SlotList {
+class MobsList extends StatsList {
   constructor(screen) {
-    super(screen, 32, screen.height - 64, 9 * 4, { selectionBox: false });
-    this.rows = [];
-    for (const [, name] of EGG_MOBS) {
-      const kills = screen.read('stat.killEntity.' + name), killedBy = screen.read('stat.entityKilledBy.' + name);
-      if (kills > 0 || killedBy > 0) this.rows.push({ name, kills, killedBy });
-    }
+    super(screen, 9 * 4);
+    const c = screen.counter;
+    this.rows = statMobs(c, screen.game.assets.data).map((e) => ({ name: e.name, kills: c.get('killed', e.name), killedBy: c.get('killed_by', e.name) }));
   }
   size() { return this.rows.length; }
   drawSlot(gui, i, x, y) {
-    const r = this.rows[i];
-    const name = tr('entity.' + r.name + '.name');
-    const s1 = r.kills === 0 ? tr('stat_type.minecraft.killed.none', name) : tr('stat_type.minecraft.killed', r.kills, name);
-    const s2 = r.killedBy === 0 ? tr('stat_type.minecraft.killed_by.none', name) : tr('stat_type.minecraft.killed_by', name, r.killedBy);
-    gui.text(name, x + 2 - 10, y + 1, 0xffffff, true);
-    gui.text(s1, x + 2, y + 1 + 9, r.kills === 0 ? 0x606060 : 0x909090, true);
-    gui.text(s2, x + 2, y + 1 + 18, r.killedBy === 0 ? 0x606060 : 0x909090, true);
+    const r = this.rows[i], name = tr('entity.minecraft.' + r.name);
+    const killed = r.kills === 0 ? tr('stat_type.minecraft.killed.none', name) : tr('stat_type.minecraft.killed', r.kills, name);
+    const killedBy = r.killedBy === 0 ? tr('stat_type.minecraft.killed_by.none', name) : tr('stat_type.minecraft.killed_by', name, r.killedBy);
+    gui.text(name, x + 2, y + 1, 0xffffff, true);
+    gui.text(killed, x + 2 + 10, y + 1 + 9, r.kills === 0 ? 0x808080 : ODD, true);
+    gui.text(killedBy, x + 2 + 10, y + 1 + 18, r.killedBy === 0 ? 0x808080 : ODD, true);
   }
 }

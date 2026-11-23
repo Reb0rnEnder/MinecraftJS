@@ -8,14 +8,14 @@
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 496,
+    "targetTests": 502,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
     "source": "docs/ui-parity-1.20.6.md",
-    "note": "496 modern tests and exact native oracles pass, zero failures/skips, including the new native UI-state oracle (72 window scales, 12 title-fade frames) and Language/Pause layout fixtures. GUI-scale backport regressions pass on all nine older targets with no new failures in their touched suites; all ten browser bundles build. Live acceptance remains open."
+    "note": "502 modern tests and exact native oracles pass, zero failures/skips, including native stat registries/Block.asItem data, the extended UI layout oracle (Statistics, Key Binds, loading dots) and Java-verified stat formatters. Statistics regressions pass on all eight 1.13+ targets with no new failures in their touched suites; all bundles build. Live acceptance remains open."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {
@@ -630,7 +630,7 @@
       "phase": "P13",
       "scope": "multiplayer",
       "title": "Options, GUI scale, tooltips and native child-page layouts",
-      "reason": "Option order, native GUI-scale calculation/cycling and the native Language layout are implemented and fixture-checked. Every tooltip, fixed-versus-scrolled child pages and account-dependent controls still need acceptance.",
+      "reason": "Option order, native GUI-scale calculation/cycling, Language layout and native 1.20.5+ list geometry (no header/footer overlays, native scrollbar position and row widths) are implemented and fixture-checked. Every tooltip, fixed-versus-scrolled child pages and account-dependent controls still need acceptance.",
       "evidence": [
         "docs/ui-parity-1.20.6.md",
         "client/js/gui/screens/options.js",
@@ -647,7 +647,7 @@
       "phase": "P13",
       "scope": "multiplayer",
       "title": "Pause, multiplayer/safety, Controls, Chat and Accessibility screen matrix",
-      "reason": "Pause and the multiplayer warning now use native 1.20.6 layouts and sprites (fixture/regression checked). Controls, Chat and Accessibility still need a whole-screen visual/input matrix at multiple GUI scales and short/narrow windows.",
+      "reason": "Pause, multiplayer warning, Key Binds and Statistics now use native 1.20.6 layouts and sprites (fixture/regression and browser checked). Chat and Accessibility still need a whole-screen visual/input matrix at multiple GUI scales and short/narrow windows.",
       "evidence": [
         "client/js/gui/screens/pause.js",
         "client/js/gui/screens/menus.js",
@@ -1541,6 +1541,21 @@
         "UI-03"
       ],
       "evidence": "docs/ui-parity-1.20.6.md"
+    },
+    {
+      "title": "Native 1.20.5+ selection lists (no header/footer overlays, native background offset, scrollbar and row widths), native Key Binds rows and footer, and resource-pack icon filtering/first-frame Default icon",
+      "checkpoints": [
+        "UI-02",
+        "UI-03"
+      ],
+      "evidence": "docs/ui-parity-1.20.6.md"
+    },
+    {
+      "title": "Native Statistics screen and award-stats decoding through the native registries and Block.asItem pairs, fixing the Statistics crash; backported per release to 1.13.2-1.19.4",
+      "checkpoints": [
+        "UI-03"
+      ],
+      "evidence": "docs/ui-parity-1.20.6.md"
     }
   ],
   "sourceFindings": [
@@ -1551,6 +1566,7 @@
     "Armadillo geometry/roll/peek and wolf variant/armor consumers now have native regressions. Remaining Paws animations/feedback and live acceptance are explicit in PAWS-01\u201304. Sidebar/tab scoreboard formats and per-score display text are implemented; below-name/hearts and wider acceptance remain.",
     "Fabulous has an implementation; exact-target routing and scene validation remain open.",
     "Resource-pack overlays and resource filters now have native-backed implementation. Advanced Java regex compatibility and atlas source/palette dispatch remain distinct open work.",
-    "World End portals/gateways on 1.17.1-1.20.6 still use the 1.12 16-pass texgen renderer instead of the native rendertype_end_portal shader (15/16 layers, GameTime drift). Porting it to the WebGL 2, WebGPU and software backends would also unlock the native End-poem background."
+    "World End portals/gateways on 1.17.1-1.20.6 still use the 1.12 16-pass texgen renderer instead of the native rendertype_end_portal shader (15/16 layers, GameTime drift). Porting it to the WebGL 2, WebGPU and software backends would also unlock the native End-poem background.",
+    "The tutorial on every 1.13+ target still identifies trees, logs and planks by 1.12 numeric item ids and state >> 4 block ids, so its find-tree/punch-tree/craft-planks transitions only work through the stats counter. Inventory, hover and slot checks need native item/block tags."
   ]
 }

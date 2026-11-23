@@ -124,7 +124,7 @@ class NativeOptionsListScreen extends OptionsBase {
     this.rows=[];
     this.optionKeys().forEach((key,i)=>{const b=makeOption(i,Math.floor(this.width/2)-155+i%2*160,0,this.makeOption(key));b.optionKey=key;b.optionRow=i>>1;if(i%2===0)this.rows.push([]);this.rows.at(-1).push(b);});
     this.footer();const old=this.list;
-    this.list=new ListOf(this,33,this.height-33,25,{size:()=>this.rows.length,draw:(gui,i,x,y,h,mx,my,rawX)=>{for(const b of this.rows[i]){b.y=y;b.render(gui,b.dragging?rawX:mx,my);}},click:(i,dbl,mx,my)=>this.rows[i].some(b=>b.mouseDown(mx,my,this.game))},{listWidth:400,scrollBarOffset:32,selectionBox:false,scrollbarDragOnly:true});
+    this.list=new ListOf(this,33,this.height-33,25,{size:()=>this.rows.length,draw:(gui,i,x,y,h,mx,my,rawX)=>{for(const b of this.rows[i]){b.y=y;b.render(gui,b.dragging?rawX:mx,my);}},click:(i,dbl,mx,my)=>this.rows[i].some(b=>b.mouseDown(mx,my,this.game))},{listWidth:310,selectionBox:false,scrollbarDragOnly:true});
     if(old){this.list.amountScrolled=old.amountScrolled;this.list.clamp();}
   }
   render(gui,mx,my){this.list.render(gui,mx,my);gui.textCentered(tr(this.titleKey),Math.floor(this.width/2),12,0xffffff);for(const b of this.buttons)b.render(gui,mx,my);if(my>=33&&my<this.height-33){const b=this.rows.flat().find(b=>b.tip&&b.hovered(mx,my));if(b)gui.tooltip(gui.font.wrap(b.tip(),Math.min(300,this.width-20)),mx,my);}}
@@ -286,7 +286,7 @@ class VideoScreen extends OptionsBase {
       size: () => this.rows.length,
       draw: (gui, i, x, y, h, mx, my, rmx, rmy) => { for (const b of this.rows[i]) { b.y = y; b.render(gui, b.dragging ? rmx : mx, b.dragging ? rmy : my); } },
       click: (i, dbl, mx, my) => this.rows[i].some((b) => b.mouseDown(mx, my, this.game)),
-    }, { listWidth: 400, scrollBarOffset: 32, selectionBox: false, scrollbarDragOnly:true });
+    }, { listWidth: 310, selectionBox: false, scrollbarDragOnly:true });
     if (old) { this.list.amountScrolled = old.amountScrolled; this.list.clamp(); }
   }
   render(gui, mx, my) {
@@ -394,9 +394,10 @@ class KeyBindsScreen extends OptionsBase {
   init() {
     const s = this.s;
     const cx = Math.floor(this.width / 2);
-    this.resetAll = new Button(201, cx - 155, this.height - 29, 150, 20, tr('controls.resetAll'), () => { s.keys = { ...DEFAULT_KEYS }; });
+    // KeyBindsScreen (1.20.6): HeaderAndFooterLayout 33/33, footer row Reset All + Done (150, spacing 8).
+    this.resetAll = new Button(201, cx - 154, this.height - 26, 150, 20, tr('controls.resetAll'), () => { s.keys = { ...DEFAULT_KEYS }; });
     this.buttons.push(this.resetAll);
-    this.buttons.push(new Button(200, cx + 5, this.height - 29, 150, 20, tr('gui.done'), () => this.done()));
+    this.buttons.push(new Button(200, cx + 4, this.height - 26, 150, 20, tr('gui.done'), () => this.done()));
     const keys = Object.keys(KEY_BINDINGS).sort((a, b) => {
       const ca=KEY_BINDINGS[a][1], cb=KEY_BINDINGS[b][1];
       const order=VANILLA_UI.categoryOrder;
@@ -413,12 +414,12 @@ class KeyBindsScreen extends OptionsBase {
     const gui = this.game.gui;
     this.maxLabel = Math.max(...keys.map((k) => gui.textWidth(tr(KEY_BINDINGS[k][0]))));
     const old = this.list;
-    const layout=VANILLA_UI.controlsLayout;
-    this.list = new ListOf(this, layout.listTop, this.height - layout.bottomMargin, layout.rowHeight, {
+    // KeyBindsList: full-width list, 20-pixel rows, getRowWidth() 340, native scrollbar position.
+    this.list = new ListOf(this, 33, this.height - 33, 20, {
       size: () => this.entries.length,
       draw: (g2, i, x, y, h, mx, my) => this._drawEntry(g2, this.entries[i], x, y, h, mx, my),
       click: (i, dbl, mx, my) => this._clickEntry(this.entries[i], mx, my),
-    }, { left: 0, width: this.width + layout.extraWidth, listWidth: 252, scrollBarOffset: 15, selectionBox:false, scrollbarDragOnly:true });
+    }, { listWidth: 340, selectionBox:false, scrollbarDragOnly:true });
     if (old) { this.list.amountScrolled = old.amountScrolled; this.list.clamp(); }
     this.entries.forEach((entry,i)=>{
       if(entry.header)return;
@@ -441,21 +442,26 @@ class KeyBindsScreen extends OptionsBase {
       gui.text(label, Math.floor(this.width / 2) - Math.floor(gui.textWidth(label) / 2), y + h - 9 - 1, 0xffffff, false);
       return;
     }
+    // KeyBindsList.KeyEntry: Reset sits 10 left of the scrollbar, the key button 5 left of Reset.
     const k = e.key, s = this.s;
-    gui.text(tr(KEY_BINDINGS[k][0]), x + 90 - this.maxLabel, y + Math.floor(h / 2) - 4, 0xffffff, false);
     const code = s.keys[k];
-    const dup = !!code && Object.keys(KEY_BINDINGS).some((o) => o !== k && s.keys[o] === code);
+    const conflicts = code ? Object.keys(KEY_BINDINGS).filter((o) => o !== k && s.keys[o] === code) : [];
     let label = s.keyName(code);
-    if (this.binding === k) label = '§f> §e' + label + '§f <';
-    else if (dup) label = '§c' + label;
+    if (conflicts.length) label = '§c[ §f' + label + '§c ]';
+    if (this.binding === k) label = '§e> §f§n' + label.replace(/§./g, '') + '§r§e <';
     const isDefault = code === DEFAULT_KEYS[k];
-    e.kx = x + 105; e.rx = x + 190; e.y = y;
-    Object.assign(e.resetButton,{x:e.rx,y,enabled:!isDefault});
-    Object.assign(e.changeButton,{x:e.kx,y,label});
+    e.rx = this.list.scrollBarX() - 50 - 10; e.kx = e.rx - 5 - 75; e.y = y;
+    Object.assign(e.resetButton,{x:e.rx,y:y-2,enabled:!isDefault});
+    Object.assign(e.changeButton,{x:e.kx,y:y-2,label});
     e.resetButton.render(gui,mx,my);e.changeButton.render(gui,mx,my);
+    gui.text(tr(KEY_BINDINGS[k][0]), x, y + Math.floor(h / 2) - 4, 0xffffff, true);
+    if (conflicts.length) {
+      gui.rect(e.kx - 6, y - 1, e.kx - 3, y + h, 0xffff0000);
+      if (e.changeButton.hovered(mx, my)) this.conflictTooltip = tr('controls.keybinds.duplicateKeybinds', conflicts.map((o) => tr(KEY_BINDINGS[o][0])).join(', '));
+    }
   }
   _clickEntry(e, mx, my) {
-    if (!e || e.header || e.y === undefined || my < e.y || my >= e.y + 20) return false;
+    if (!e || e.header || e.y === undefined || my < e.y - 2 || my >= e.y + 18) return false;
     for(const b of [e.changeButton,e.resetButton])if(b.mouseDown(mx,my,this.game)){
       if(this.focusedWidget)this.focusedWidget.focused=false;
       this.focusedWidget=b;b.focused=true;this._updateResets();return true;
@@ -463,12 +469,14 @@ class KeyBindsScreen extends OptionsBase {
     return false;
   }
   render(gui, mx, my) {
-    if (this.background === 'world') gui.worldBackground(); else gui.dirtBackground();
+    gui.menuBackground(this.game.inWorld);
+    this.conflictTooltip = null;
     this.list.render(gui, mx, my);
-    gui.textCentered(tr(this.titleKey), this.width / 2, 8, 0xffffff);
-    // GuiControls.drawScreen: "Reset Keys" only while something differs from the defaults
+    gui.textCentered(tr(this.titleKey), Math.floor(this.width / 2), 12, 0xffffff);
+    // Reset All is active only while something differs from the defaults
     this._updateResets();
     for (const b of this.buttons) b.render(gui, mx, my);
+    if (this.conflictTooltip) gui.tooltip(this.conflictTooltip.split('\n').flatMap((line) => gui.font.wrap(line, 170)), mx, my);
   }
   mouseDown(mx, my, button, e) {
     if (this.binding) { this.s.keys[this.binding] = 'mouse' + button; this.binding = null; return true; }

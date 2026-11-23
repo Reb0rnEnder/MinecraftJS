@@ -127,7 +127,7 @@ export class ProxiesScreen extends Screen {
 
 class ProxyList extends SlotList {
   constructor(screen) {
-    super(screen, 32, screen.height - 64, 36, { listWidth: 220 + 85, scrollBarOffset: 30 });
+    super(screen, 32, screen.height - 64, 36, { listWidth: 305 });
   }
   size() { return this.screen.items.length; }
   isSelected(i) { return i === this.screen.selected; }

@@ -14,13 +14,16 @@ function fixture(width=420,height=300){
  const game={gui,settings:new Settings(),assets:{texture:()=>null},sound:{playUi(){}},narrator:{label:()=>'',active:false,cycle(){}},screens:{open(s){this.current=s;},close(){}},renderer:{},device:{name:'WebGL 2'},applyGraphicsSettings(){}};
  return {game,texts,buttons};
 }
-test('controls use extracted native geometry at narrow and wide GUI sizes',()=>{
+test('1.20.6 key binds use the native 33/33 layout, 340-wide rows and native button placement',()=>{
  for(const [w,h] of [[420,300],[427,301],[854,480]]){
   const {game,texts}=fixture(w,h),s=new ControlsScreen(game,null);s.init();
-  assert.equal(s.list.top,Options.KeyBindsScreen?20:43);assert.equal(s.list.bottom,h-32);assert.equal(s.list.slotHeight,20);
-  assert.equal(s.list.width,w+45);assert.equal(s.list.showSelectionBox,false);
-  assert.deepEqual(s.buttons.map(b=>[b.id,b.y]),Options.KeyBindsScreen?[[201,h-29],[200,h-29]]:[[202,18],[203,18],[201,h-29],[200,h-29]]);
+  assert.equal(s.list.top,33);assert.equal(s.list.bottom,h-33);assert.equal(s.list.slotHeight,20);
+  assert.equal(s.list.width,w);assert.equal(s.list.listWidth,340);assert.equal(s.list.showSelectionBox,false);
+  const cx=Math.floor(w/2);assert.equal(s.list.scrollBarX(),cx+180);
+  assert.deepEqual(s.buttons.map(b=>[b.id,b.x,b.y]),[[201,cx-154,h-26],[200,cx+4,h-26]]);
   s.render(game.gui,-1,-1);assert.ok(texts.every(t=>Number.isInteger(t[1])&&Number.isInteger(t[2])),'text lies on integer GUI pixels');
+  const e=s.entries.find(e=>e.key);assert.equal(e.resetButton.x,cx+120);assert.equal(e.changeButton.x,cx+40);assert.equal(e.resetButton.y,e.y-2);
+  assert.ok(texts.some(t=>t[1]===cx-168&&t[2]===e.y+4),'binding label at the native row left');
  }
 });
 test('binding, duplicate warnings, Escape unbinding, mouse binding and reset actions',()=>{
@@ -31,7 +34,7 @@ test('binding, duplicate warnings, Escape unbinding, mouse binding and reset act
  s.render(game.gui,-1,-1);assert.equal(e.resetButton.enabled,true);assert.equal(s.resetAll.enabled,true);
  e.resetButton.onClick();s._updateResets();assert.equal(game.settings.keys.forward,DEFAULT_KEYS.forward);assert.equal(s.resetAll.enabled,false);
  game.settings.keys.forward=game.settings.keys.back;s.render(game.gui,-1,-1);
- assert.ok(buttons.some(b=>typeof b[4]==='string'&&b[4].startsWith('§c')),'conflicts are red');
+ assert.ok(buttons.some(b=>typeof b[4]==='string'&&b[4].startsWith('§c[ §f')),'conflicts use the native red brackets');
  s.resetAll.onClick();assert.deepEqual(game.settings.keys,DEFAULT_KEYS);
 });
 test('Tab traverses row widgets, skips disabled Reset buttons, and scrolls focused bindings into view',()=>{
@@ -52,7 +55,7 @@ test('controls list drags only via the scrollbar; row controls still take clicks
 });
 test('mouse settings use native option rows and support focused slider keys',()=>{
  const {game}=fixture(420,180),s=new MouseSettingsScreen(game,null);s.init();
- assert.deepEqual([s.list.top,s.list.bottom,s.list.slotHeight,s.list.listWidth],[33,147,25,400]);
+ assert.deepEqual([s.list.top,s.list.bottom,s.list.slotHeight,s.list.listWidth],[33,147,25,310]);assert.equal(s.list.scrollBarX(),210+165);
  assert.equal(s.buttons[0].y,154);s.key({code:'Tab'});const slider=s.focusedWidget,value=game.settings.sensitivity;
  s.key({code:'ArrowRight'});assert.ok(game.settings.sensitivity>value);s.key({code:'ArrowLeft'});assert.ok(Math.abs(game.settings.sensitivity-value)<1e-9);
 });

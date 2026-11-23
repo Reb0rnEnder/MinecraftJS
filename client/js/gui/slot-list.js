@@ -45,7 +45,8 @@ export class SlotList {
 
   contentHeight() { return this.size() * this.slotHeight + this.headerPadding; }
   maxScroll() { return Math.max(0, this.contentHeight() - (this.bottom - this.top - 4)); }
-  scrollBarX() { return this.left + Math.floor(this.width / 2) + 124 + this.scrollBarOffset; }
+  // 1.20.5+ AbstractSelectionList.getScrollbarPosition: getRealRowLeft() + getRowWidth() + 10.
+  scrollBarX() { return this.left + Math.floor(this.width / 2) - Math.floor(this.listWidth / 2) + this.listWidth + 10 + this.scrollBarOffset; }
   slotLeft() { return this.left + Math.floor(this.width / 2) - Math.floor(this.listWidth / 2) + 2; }
   slotTop(i) { return this.top + 4 - Math.floor(this.amountScrolled) + i * this.slotHeight + this.headerPadding; }
   clamp() { this.amountScrolled = Math.max(0, Math.min(this.maxScroll(), this.amountScrolled)); }
@@ -58,14 +59,18 @@ export class SlotList {
     return x < this.scrollBarX() && x >= i0 && x <= i1 && l >= 0 && k >= 0 && l < this.size() ? l : -1;
   }
 
-  _dirt(gui, y0, y1, tint, scroll = 0, list = false) {
-    gui.menuBackground(this.screen.game.inWorld,this.left,y0,this.width,y1-y0,scroll,list);
+  // renderListBackground: blit(menu_list_background, x, y, getRight(), getBottom() + scroll, width, height, 32, 32)
+  _listBackground(gui, scroll) {
+    const t=this.screen.game.assets?.texture('gui/'+(this.screen.game.inWorld?'inworld_':'')+'menu_list_background.png',{wrap:'repeat'});
+    if(!t)return;
+    const u=this.right/32,v=(this.bottom+scroll)/32;
+    gui.quad(t,this.left,this.top,this.right,this.bottom,u,v,u+this.width/32,v+(this.bottom-this.top)/32,[1,1,1,1]);
   }
 
   render(gui, mx, my) {
     this.clamp();
     const sb = this.scrollBarX(), sbr = sb + 6;
-    this._dirt(gui, this.top, this.bottom, 32, Math.floor(this.amountScrolled),true);
+    this._listBackground(gui, Math.floor(this.amountScrolled));
     const x = this.slotLeft(), y = this.top + 4 - Math.floor(this.amountScrolled);
     gui.scissor(this.left, this.top, this.width, this.bottom - this.top);
     if (this.headerPadding) this.drawHeader(gui, x, y, mx, my);
@@ -75,14 +80,13 @@ export class SlotList {
       if (k1 > this.bottom || k1 + l1 < this.top) continue;
       if (this.showSelectionBox && (this.isSelected(i)||this.focused&&this.focusedIndex===i)) {
         const i1 = this.left + (Math.floor(this.width / 2) - Math.floor(lw / 2)), j1 = this.left + Math.floor(this.width / 2) + Math.floor(lw / 2);
-        gui.rect(i1, k1 - 2, j1, k1 + l1 + 2, 0xff808080);
+        gui.rect(i1, k1 - 2, j1, k1 + l1 + 2, this.focused ? 0xffffffff : 0xff808080);
         gui.rect(i1 + 1, k1 - 1, j1 - 1, k1 + l1 + 1, 0xff000000);
       }
       this.drawSlot(gui, i, x, k1, l1, mx, my);
     }
     gui.clearScissor();
-    this._dirt(gui, 0, this.top, 64);
-    this._dirt(gui, this.bottom, this.screen.height, 64);
+    // 1.20.5+ lists no longer cover the header and footer; only their separators are drawn.
     const prefix='gui/'+(this.screen.game.inWorld?'inworld_':'');
     for(const [name,y] of [['header_separator.png',this.top-2],['footer_separator.png',this.bottom]]){
       const tex=this.screen.game.assets.texture(prefix+name,{wrap:'repeat'});
