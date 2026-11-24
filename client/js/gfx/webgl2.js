@@ -173,7 +173,7 @@ void main() {
     vec2 st = uP[1].xy / inSize;
     vec4 b = (fetch(uTex0, tc - 2.0 * st) + fetch(uTex0, tc - st)) * 0.5 + (fetch(uTex0, tc) + fetch(uTex0, tc + st)) * 0.5 + fetch(uTex0, tc + 2.0 * st) * 0.5;
     o = vec4((b / 2.5).rgb, b.a);
-else if (m == 4) {
+  } else if (m == 4) {
     vec2 one = 1.0 / inSize;
     float R = uP[1].z;
     vec4 acc = vec4(0.0); float ta = 0.0;

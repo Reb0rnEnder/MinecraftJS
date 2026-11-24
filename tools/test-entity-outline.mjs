@@ -27,7 +27,9 @@ test('only entity layers without additive blending are outlined; the outline mat
  assert.equal(o._material({pipeline:'entity',tex:'x.png',params:p,state:{}},0xff5555)!==m,true);
 });
 test('the native entity_outline chain only uses programs the post pipeline implements',async()=>{
- const {ZipFile}=await import('../lib/zip.js');const jar=new ZipFile(new URL('../cache/port-1.20.6/client.jar',import.meta.url));
+ const {ZipFile}=await import('../lib/zip.js');const {readdirSync,existsSync}=await import('node:fs');
+ const cache=new URL('../cache/',import.meta.url),port=readdirSync(cache).find(n=>/^port-/.test(n)&&existsSync(new URL(n+'/client.jar',cache))),plain=readdirSync(cache).find(n=>/^1\.[0-9.]+\.jar$/.test(n));
+ const jar=new ZipFile(new URL(port?port+'/client.jar':plain,cache));
  const chain=JSON.parse(new TextDecoder().decode(jar.read('assets/minecraft/shaders/post/entity_outline.json')));
  const post=readFileSync(new URL('../client/js/render/post.js',import.meta.url),'utf8');
  for(const pass of chain.passes)assert.match(post,new RegExp('\\b'+pass.name+': \\{ mode'),pass.name);
