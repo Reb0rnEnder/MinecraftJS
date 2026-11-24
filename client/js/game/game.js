@@ -1,3 +1,4 @@
+import { EntityOutline } from '../render/entity-outline.js';
 import {bindingResolver} from './keybind-components.js';
 import {setKeybindResolver} from '../gui/chat.js';
 import {componentTemplate} from '../gui/component-translation.js';
@@ -2190,6 +2191,8 @@ export class Game {
     r.render(hand, post || packPost);
     if(packPost)packPost.render();
     if (post) post.render(r.lightmap, ((this.ticks + partial) % 20) / 20);
+    this.profiler.endStart('entityOutline');
+    (this.entityOutline ||= new EntityOutline(this)).render(); // RenderGlobal.renderEntityOutlineFramebuffer / LevelRenderer.doEntityOutline
     this.profiler.endStart('gui');
     gui.begin();
     this._drawSuperSecret(gui);
