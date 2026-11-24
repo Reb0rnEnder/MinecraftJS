@@ -28,6 +28,7 @@ export class Profiler {
   // Fold this frame's timings into the smoothed values
   endFrame() {
     if (!this.enabled) return;
+    if (this.onFrame) this.onFrame(this.frame); // MicroProfiler capture
     for (const [k, v] of this.times) this.times.set(k, v * 0.9 + (this.frame.get(k) || 0) * 0.1);
     for (const [k, v] of this.frame) if (!this.times.has(k)) this.times.set(k, v);
     this.frame.clear();
