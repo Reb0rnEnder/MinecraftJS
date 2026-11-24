@@ -202,13 +202,13 @@ test(version + ': deferred hand-skin resets occur at the next prepare boundary',
 test(version + ': ground rain uses the rain factory and precipitation scans skip empty sections', t => {
   const g = fixture(), weather = new Weather(g); g.dimension=0; g.world.rainStrength=1;
   let rain=0, splashes=0; g.particles.rain=()=>{rain++;}; g.particles.splash=()=>{splashes++;};
-  weather.precipHeight=()=>65; g.world.getState=()=>state('stone');
+  weather.precipHeight=()=>65; weather._rainsAt=()=>true; g.world.getState=()=>state('stone');
   t.mock.method(Math,'random',()=>0.5);
   weather._rainParticles(); assert.ok(rain>0); assert.equal(splashes,0);
   let reads=0;
   const section={ nonAir:1, get(x,y,z) { reads++; return y===0 ? state('stone') : 0; } };
   const sections=[]; sections[4]=section;
-  const scan=Object.create(Weather.prototype); scan.game={world:{getChunk:()=>({sections}),getState:()=>{throw Error('unnecessary world lookup');}}};
+  const scan=Object.create(Weather.prototype); scan.heights=new WeakMap(); scan.game={world:{getChunk:()=>({sections,getSection:i=>sections[i]}),getState:()=>{throw Error('unnecessary world lookup');}}};
   assert.equal(scan.precipHeight(1,1),65); assert.equal(reads,16,'only the populated section is scanned');
 });
 

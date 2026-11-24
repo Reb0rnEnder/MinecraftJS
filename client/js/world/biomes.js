@@ -1,4 +1,4 @@
-import {biomeInfoNoise} from './biome-info-noise.js';
+import {biomeInfoNoise,temperatureNoise} from './biome-info-noise.js';
 // Biome colour helpers (ColorizerGrass / ColorizerFoliage + per-biome overrides). Worker-safe.
 
 let biomeTable = [];
@@ -25,10 +25,14 @@ function sample(map, temp, rain) {
   return (map[k] << 16) | (map[k + 1] << 8) | map[k + 2];
 }
 
-function tempAt(b, y) {
-  let t = b.temperature;
-  if (y > 64) t -= (y - 64) * 0.05 / 30;
-  return t;
+// Biome height-adjusted temperature for this release: above y 64 the temperature drops with height plus
+// TEMPERATURE_NOISE (seed 1234), in float arithmetic like the native code. The 1.13+ FROZEN modifier is not modelled.
+const f32 = Math.fround;
+export function heightAdjustedTemperature(b, x, y, z) {
+  const t = f32(b.temperature);
+  if (y <= 64) return t;
+  const n = f32(temperatureNoise(f32(x / 8), f32(z / 8)) * 4);
+  return f32(t - f32(f32(f32(f32(n + y) - 64) * f32(0.05)) / 30));
 }
 
 const isSwamp = (n) => n === 'swamp' || n === 'swamp_hills';
@@ -40,17 +44,17 @@ export function grassColor(id, y, x=0, z=0) {
   const n = b.name;
   if (isSwamp(n)) return biomeInfoNoise(x*.0225,z*.0225)<-.1?0x4c763c:0x6a7039;
   if (isMesa(n)) return 0x90814d;
-  const c = sample(grassMap, tempAt(b, y), b.rainfall);
+  const c = sample(grassMap, heightAdjustedTemperature(b, x, y, z), b.rainfall);
   if (isRoofed(n)) return ((c & 0xfefefe) + 0x28340a) >> 1;
   return c;
 }
 
-export function foliageColor(id, y) {
+export function foliageColor(id, y, x = 0, z = 0) {
   const b = biomeInfo(id);
   const n = b.name;
   if (isSwamp(n)) return 0x6a7039;
   if (isMesa(n)) return 0x9e814d;
-  return sample(foliageMap, tempAt(b, y), b.rainfall);
+  return sample(foliageMap, heightAdjustedTemperature(b, x, y, z), b.rainfall);
 }
 
 export function waterColor(id) {
@@ -58,8 +62,9 @@ export function waterColor(id) {
   return isSwamp(b.name) ? 0xe0ffae : 0xffffff;
 }
 
-export function biomeRainType(id, y) {
+// Precipitation at a position: none where the biome has none, snow below temperature 0.15, else rain
+export function biomeRainType(id, y, x = 0, z = 0) {
   const b = biomeInfo(id);
-  if (b.precipitation === 'none' || b.rainfall === 0) return 'none';
-  return tempAt(b, y) < 0.15 ? 'snow' : 'rain';
+  if (b.precipitation === 'none' || b.has_precipitation === false) return 'none';
+  return heightAdjustedTemperature(b, x, y, z) < 0.15 ? 'snow' : 'rain';
 }
