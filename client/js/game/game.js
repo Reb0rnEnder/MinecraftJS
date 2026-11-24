@@ -116,6 +116,7 @@ import { buildSlice } from '../world/slice.js';
 import { setModelDevice } from '../render/boxmodel.js';
 import { encodePng } from '../util/png.js';
 import { DisplayPacer } from '../render/display-pacer.js';
+import { MicroProfiler } from './microprofiler.js';
 
 // IAttributeInstance.getAttributeValue: base, + op 0 amounts, x (1 + sum of op 1), x (1 + each op 2)
 function attributeValue(prop) {
@@ -834,6 +835,15 @@ export class Game {
   send(bytes) { if (this.conn) this.conn.send(bytes); }
 
   // ---------------------------------------------------------------- Packet handling
+
+  // MinecraftJS extra: the MicroProfiler follows its setting (created on first use)
+  ensureMicroProfiler() {
+    if (!this.microprofiler && !this.settings.microprofiler) return null;
+    this.microprofiler ||= new MicroProfiler(this);
+    if (this.settings.microprofilerOverlay) this.microprofiler.overlay = this.settings.microprofilerOverlay;
+    this.microprofiler.setEnabled(!!this.settings.microprofiler);
+    return this.microprofiler;
+  }
 
   handlePacket(p) {
     const h = this['on_' + p.name];
@@ -2066,7 +2076,8 @@ export class Game {
     platform().requestFrame((tt) => this.frame(tt));
     const now = platform().now();
     const P = this.profiler;
-    P.enabled = this.showDebug && this.showProfiler;
+    if (!!this.settings.microprofiler !== !!this.microprofiler?.enabled) this.ensureMicroProfiler();
+    P.enabled = (this.showDebug && this.showProfiler) || !!this.microprofiler?.enabled;
     P.start('root');
     let dt = now - this.lastFrame;
     this.lastFrame = now;
