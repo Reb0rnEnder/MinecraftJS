@@ -1,3 +1,4 @@
+import {applyNativeSymbols} from './metadata-symbols.js';
 import{applyWolfMetadata}from'./wolf.js';
 import {playPickupSound} from '../audio/client-sound-triggers.js';
 import { tickDroppedItem } from './dropped-item.js';
@@ -1062,3 +1063,13 @@ export class EntityManager {
 }
 
 export { MOB_NAMES };
+
+// Run the native-symbol pass after the legacy metadata decoder, over the full accumulated metadata.
+{
+  const legacyApplyMeta = EntityManager.prototype._applyMeta;
+  EntityManager.prototype._applyMeta = function (e, m = e.metadata) {
+    const result = legacyApplyMeta.call(this, e, m);
+    applyNativeSymbols(e, e.metadata || m);
+    return result;
+  };
+}
