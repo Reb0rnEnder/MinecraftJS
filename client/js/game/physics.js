@@ -645,6 +645,9 @@ export class LocalPlayer {
   }
 
   _moveWithHeading(world, strafe, forward, jumpMovementFactor) {
+    // LivingEntity.travel: d0 = 0.08, or 0.01 while falling with Slow Falling (which also clears the fall distance)
+    let gravity = 0.08;
+    if (this.motionY <= 0 && this.slowFalling) { gravity = 0.01; this.fallDistance = 0; }
     if (this.elytraFlying && !this.inWater && !this.inLava && !this.flying) {
       // EntityLivingBase.travel, elytra flying
       if (this.motionY > -0.5) this.fallDistance = 1;
@@ -655,7 +658,7 @@ export class LocalPlayer {
       const d1 = Math.sqrt(look[0] * look[0] + look[1] * look[1] + look[2] * look[2]);
       let f4 = mcCos(f);
       f4 = f32(f4 * f4 * Math.min(1, d1 / 0.4));
-      this.motionY += -0.08 + f4 * 0.06;
+      this.motionY += gravity * (-1 + f4 * 0.75);
       if (this.motionY < 0 && d6 > 0) {
         const d2 = this.motionY * -0.1 * f4;
         this.motionY += d2;
@@ -694,7 +697,6 @@ export class LocalPlayer {
       this.motionX *= f1; this.motionY *= 0.800000011920929; this.motionZ *= f1;
       // 1.13 water gravity is 0.08 / 16 and is skipped during sprint swimming.
       if(!this.noGravity&&!this.sprinting) {
-        const gravity=this.slowFalling&&this.motionY<=0?0.01:0.08;
         this.motionY=this.motionY<=0&&Math.abs(this.motionY-0.005)>=0.003&&Math.abs(this.motionY-gravity/16)<0.003?-0.003:this.motionY-gravity/16;
       }
       if (this.collidedH && this.isOffsetPositionInLiquid(world, this.motionX, this.motionY + 0.6000000238418579 - this.y + d0, this.motionZ)) this.motionY = 0.30000001192092896;
@@ -703,7 +705,7 @@ export class LocalPlayer {
       this.moveFlying(strafe, forward, F.p02);
       this.moveEntity(world, this.motionX, this.motionY, this.motionZ);
       this.motionX *= 0.5; this.motionY *= 0.5; this.motionZ *= 0.5;
-      this.motionY -= 0.02;
+      this.motionY -= gravity / 4;
       if (this.collidedH && this.isOffsetPositionInLiquid(world, this.motionX, this.motionY + 0.6000000238418579 - this.y + d1, this.motionZ)) this.motionY = 0.30000001192092896;
     } else {
       // slipperiness of the block under the box's minY, times 0.91F (float maths)
@@ -732,7 +734,7 @@ export class LocalPlayer {
       } else if (!world.isLoaded(Math.floor(this.x), Math.floor(this.z))) {
         this.motionY = this.y > 0 ? -0.1 : 0;
       } else {
-        this.motionY -= 0.08;
+        this.motionY -= gravity;
       }
       this.motionY *= 0.9800000190734863;
       this.motionX *= f4;
