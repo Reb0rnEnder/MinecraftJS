@@ -115,6 +115,7 @@ import { platform } from '../platform/platform.js';
 import { buildSlice } from '../world/slice.js';
 import { setModelDevice } from '../render/boxmodel.js';
 import { encodePng } from '../util/png.js';
+import { DisplayPacer } from '../render/display-pacer.js';
 
 // IAttributeInstance.getAttributeValue: base, + op 0 amounts, x (1 + sum of op 1), x (1 + each op 2)
 function attributeValue(prop) {
@@ -2112,6 +2113,12 @@ export class Game {
     // VSync off runs frames from a message loop; never queue more than ~2 frames on the GPU or the
     // browser can't present them (and input starves) - frames beyond that would never be seen anyway
     if (platform().vsync === false && this.device.busy && this.device.busy()) { P.end(); P.endFrame(); return; }
+    // MinecraftJS extra: frames the display cannot show are not rendered; the rest of this frame's work already ran
+    this.processedFrames = (this.processedFrames || 0) + 1;
+    if (platform().vsync === false && this.settings.skipUndisplayedFrames !== false) {
+      this.displayPacer ||= new DisplayPacer();
+      if (this.displayPacer.shouldSkip(now)) { P.end(); P.endFrame(); return; }
+    }
     // FrameTimer: time between rendered frames, for the lagometer
     if (this._lastRender) { this.frameTimes[this.frameTimeIndex] = now - this._lastRender; this.frameTimeIndex = (this.frameTimeIndex + 1) % this.frameTimes.length; }
     this._lastRender = now;
@@ -2124,6 +2131,7 @@ export class Game {
     this.frames++;
     if (now - this.fpsTimer >= 1000) {
       this.fps = this.frames;
+      this.processedFps = this.processedFrames || 0; this.processedFrames = 0;
       this.frames = 0;
       this.fpsTimer = now;
       this.chunkUpdates = this._chunkUpdatesCount || 0;
