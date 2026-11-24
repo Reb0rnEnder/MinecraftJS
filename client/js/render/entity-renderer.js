@@ -2007,6 +2007,28 @@ export class EntityRenderer {
 
   // ---------------------------------------------------------------- GUI player preview (GuiInventory.drawEntityOnScreen)
 
+  // InventoryScreen.renderEntityInInventory (pre-1.20.2): a mob that already has a world visual, feet at (x, y),
+  // looking along (lookX, lookY) like the player preview. The live model is re-posed for this GUI pass only; the next
+  // world frame sets its position, yaw and light again.
+  drawMobInGui(gui, e, x, y, scale, lookX, lookY) {
+    const v = e && this.visuals.get(e.id);
+    if (!v || !v.yawGroup || !v.root) return false;
+    const f = Math.atan(lookX / 40), f1 = Math.atan(lookY / 40), body = 180 + f * 20;
+    const saved = { pos: [v.root.position.x, v.root.position.y, v.root.position.z], yaw: v.yawGroup.rotation.y, shadow: v.shadow?.visible, tag: v.tag?.visible };
+    v.root.position.set(0, 0, 0); v.yawGroup.rotation.y = (180 - body) * D2R;
+    if (v.shadow) v.shadow.visible = false; if (v.tag) v.tag.visible = false;
+    for (const m of v.materials || []) m.params.setLight(15, 15);
+    const mm = mat4.create();
+    mat4.translate(mm, mm, x, y, 50);
+    mat4.scale(mm, mm, scale, scale, -scale);
+    mat4.rotateZ(mm, mm, Math.PI);
+    mat4.rotateX(mm, mm, f1 * 20 * D2R);
+    gui.drawNode(v.root, mm);
+    v.root.position.set(...saved.pos); v.yawGroup.rotation.y = saved.yaw;
+    if (v.shadow) v.shadow.visible = saved.shadow; if (v.tag) v.tag.visible = saved.tag;
+    return true;
+  }
+
   drawPlayerInGui(gui, x, y, scale, mouseDX, mouseDY) {
     const g = this.game;
     if (!this._guiModel) {
