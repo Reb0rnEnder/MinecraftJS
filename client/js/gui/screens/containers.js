@@ -299,8 +299,9 @@ function withRecipeBook(screen, opts) {
       b.x = screen.guiLeft + bx;
       rb.layout();
     });
-    // GuiButtonImage: hovered one row (19 px) down
-    b.render = (gui, mx, my) => gui.blit(tex, b.x, b.y, u, v + (b.hovered(mx, my) ? 19 : 0), 20, 18);
+    // ImageButton with RecipeBookComponent.RECIPE_BUTTON_SPRITES (1.20.2+); tex/u/v only describe the old sheets
+    void tex; void u; void v;
+    b.render = (gui, mx, my) => gui.sprite('recipe_book/button' + (b.focused || b.hovered(mx, my) ? '_highlighted' : ''), b.x, b.y, 20, 18);
     screen.buttons.push(b);
   };
   screen.render = (gui, mx, my, partial) => {

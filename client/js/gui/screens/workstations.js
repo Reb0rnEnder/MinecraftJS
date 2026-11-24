@@ -117,30 +117,40 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
         for(let i=0;i<27;i++)this.slotPos.push([3+i,108+i%9*18,84+Math.floor(i/9)*18]);
         for(let i=0;i<9;i++)this.slotPos.push([30+i,108+i*18,142]);}
       onTradeList(data){this.index=clamp(this.index,0,Math.max(0,data.trades.length-1));win.selectedTrade=this.index;this.row=clamp(this.row,0,Math.max(0,data.trades.length-7));}
+      // Native 1.20.6 MerchantScreen: villager.png background plus container/villager/* sprites
       drawBackground(gui,mx,my){
-        const tex='gui/container/villager2.png',x=this.guiLeft,y=this.guiTop,data=win.tradeData,trades=data?.trades||[];
-        gui.blit(tex,x,y,0,0,276,166,512,256);
-        if(trades[this.index]?.disabled)gui.blit(tex,x+182,y+35,311,0,28,21,512,256);
-        const max=Math.max(0,trades.length-7);this.row=clamp(this.row,0,max);
-        gui.blit(tex,x+94,y+18+(max?Math.floor(113*this.row/max):0),max?0:6,199,6,27,512,256);
+        const x=this.guiLeft,y=this.guiTop,data=win.tradeData,trades=data?.trades||[];
+        gui.blit('gui/container/villager.png',x,y,0,0,276,166,512,256);
+        if(trades[this.index]?.disabled)gui.sprite('container/villager/out_of_stock',x+83+99,y+35,28,21);
+        if(!trades.length)return;
+        // renderScroller: integer step math, the last page pinned to the bottom
+        const steps=trades.length+1-7;
+        if(steps>1){const rest=139-(27+(steps-1)*139/steps|0),step=1+(rest/steps|0)+(139/steps|0);this.row=clamp(this.row,0,steps-1);const off=this.row===steps-1?113:Math.min(113,this.row*step);gui.sprite('container/villager/scroller',x+94,y+18+off,6,27);}
+        else{this.row=0;gui.sprite('container/villager/scroller_disabled',x+94,y+18,6,27);}
         for(let j=0;j<7;j++){
           const t=trades[this.row+j];if(!t)break;
-          const ty=y+18+j*20;
-          gui.button(x+5,ty,89,20,'',inside(mx,my,x+5,ty,89,20),true);
+          const by=y+18+j*20,iy=y+17+j*20+2;
+          gui.button(x+5,by,88,20,'',inside(mx,my,x+5,by,88,20),true);
           const cost=tradeCost(t,game.items.maxStack(t.a));
-          game.itemRenderer.drawItem(gui,cost,x+10,ty+1);
-          if(t.b)game.itemRenderer.drawItem(gui,t.b,x+40,ty+1);
-          game.itemRenderer.drawItem(gui,t.out,x+73,ty+1);
-          gui.blit(tex,x+60,ty+4,t.disabled?25:15,171,10,9,512,256);
-          if(cost.count!==t.a.count){gui.text(String(t.a.count),x+10,ty+10,0xffffff,true);gui.blit(tex,x+17,ty+13,0,176,9,2,512,256);}
+          // renderAndDecorateCostA: the discounted cost, or the struck-through base count beside it
+          game.itemRenderer.drawItem(gui,cost,x+10,iy,false);
+          if(cost.count===t.a.count)game.itemRenderer.drawOverlay(gui,cost,x+10,iy);
+          else{game.itemRenderer.drawOverlay(gui,t.a,x+10,iy,t.a.count===1?'1':null);game.itemRenderer.drawOverlay(gui,cost,x+24,iy,cost.count===1?'1':null);gui.sprite('container/villager/discount_strikethrough',x+17,iy+12,9,2);}
+          if(t.b)game.itemRenderer.drawItem(gui,t.b,x+40,iy);
+          gui.sprite(t.disabled?'container/villager/trade_arrow_out_of_stock':'container/villager/trade_arrow',x+60,iy+3,10,9);
+          game.itemRenderer.drawItem(gui,t.out,x+73,iy);
         }
+        // renderProgressBar (VillagerData thresholds 0/10/70/150/250)
         const level=data?.villagerLevel||0;
-        if(data?.isRegularVillager&&level>0&&level<5){
-          const thresholds=[0,0,10,70,150,250],lo=thresholds[level],hi=thresholds[level+1],amount=clamp(Math.floor((data.experience-lo)*100/(hi-lo)),0,100);
-          gui.blit(tex,x+136,y+16,0,186,102,5,512,256);
-          gui.blit(tex,x+136,y+16,0,191,amount+1,5,512,256);
-          const xp=trades[this.index]?.xp||0,pending=Math.min(Math.ceil(xp*100/(hi-lo)),100-amount);
-          if(pending>0)gui.blit(tex,x+137+amount,y+17,2,182,pending,3,512,256);
+        if(data?.isRegularVillager&&level<5){
+          gui.sprite('container/villager/experience_bar_background',x+136,y+16,102,5);
+          const thresholds=[0,10,70,150,250],lo=level>=1?thresholds[level-1]:0,hi=thresholds[Math.max(1,level)]??250;
+          if(level>=1&&data.experience>=lo){
+            const per=102/(hi-lo),cur=Math.min(Math.floor(per*(data.experience-lo)),102);
+            gui.spriteRegion('container/villager/experience_bar_current',102,5,0,0,x+136,y+16,cur,5);
+            const xp=trades[this.index]?.xp||0;
+            if(xp>0){const add=Math.min(Math.floor(xp*per),102-cur);gui.spriteRegion('container/villager/experience_bar_result',102,5,cur,0,x+136+cur,y+16,add,5);}
+          }
         }
       }
       drawForeground(gui){
@@ -152,7 +162,7 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
       extraMouseDown(mx,my,button){
         if(button!==0)return false;
         const x=mx-this.guiLeft,y=my-this.guiTop,trades=win.tradeData?.trades||[];
-        if(inside(x,y,5,18,89,140)){const index=this.row+Math.floor((y-18)/20);if(index<trades.length){this.index=index;win.selectedTrade=index;game.send(C.selectTrade(index));}return true;}
+        if(inside(x,y,5,18,88,140)){const index=this.row+Math.floor((y-18)/20);if(index<trades.length){this.index=index;win.selectedTrade=index;game.send(C.selectTrade(index));}return true;}
         if(inside(x,y,94,18,6,139)&&trades.length>7){this.scrolling=true;this.mouseMove(mx,my);return true;}return false;
       }
       mouseMove(mx,my){if(this.scrolling){this.row=Math.round(clamp((my-this.guiTop-18-13.5)/112,0,1)*Math.max(0,(win.tradeData?.trades.length||0)-7));return;}super.mouseMove(mx,my);}
@@ -160,7 +170,7 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
       wheel(delta){this.row=clamp(this.row+delta,0,Math.max(0,(win.tradeData?.trades.length||0)-7));}
       renderExtraTooltip(gui,mx,my){
         if(game.inventory.cursor)return;
-        const x=mx-this.guiLeft,y=my-this.guiTop;if(!inside(x,y,5,18,89,140))return;
+        const x=mx-this.guiLeft,y=my-this.guiTop;if(!inside(x,y,5,18,88,140))return;
         const t=win.tradeData?.trades[this.row+Math.floor((y-18)/20)];if(!t)return;
         const item=x<35?tradeCost(t,game.items.maxStack(t.a)):x<60?t.b:t.out;
         if(item)gui.tooltip(game.items.tooltip(item,game.settings.advancedItemTooltips),mx,my);

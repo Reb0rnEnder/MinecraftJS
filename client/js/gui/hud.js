@@ -352,7 +352,7 @@ export class Hud {
       gui.rect(-4, y - lineHeight, w + 8, y, (Math.floor(255*(open?1:d)*(g.settings.textBackgroundOpacity??.5)) << 24) >>> 0);
       if(line.tag){
         gui.rect(-4,y-lineHeight,-2,y,((a<<24)|line.tag.color)>>>0);
-        if(line.tag.icon&&i+this.chatScroll===hoveredTag){gui.setAlpha(a/255);gui.blit('gui/chat_tags.png',gui.font.width(line.text)+4,Math.floor(y+textOffset)-1,0,0,9,9,32,32);gui.resetColor();}
+        if(line.tag.icon&&i+this.chatScroll===hoveredTag){gui.setAlpha(a/255);gui.sprite('icon/chat_modified',gui.font.width(line.text)+4,Math.floor(y+textOffset)-1,9,9);gui.resetColor();}
       }
       gui.font.draw(line.text, 0, Math.floor(y+textOffset), 0xffffff, true, a / 255);
       drawn++;

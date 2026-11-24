@@ -8,14 +8,14 @@
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 524,
+    "targetTests": 540,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
     "source": "docs/ui-parity-1.20.6.md",
-    "note": "524 modern tests and exact native oracles pass, zero failures/skips, including native horse inventory layout, packet and preview regressions. Horse inventory regressions pass on 1.13.2-1.19.4 with no new failures in touched suites; all bundles build. The horse preview is unit-tested only; live acceptance remains open."
+    "note": "540 modern tests and exact native oracles pass, zero failures/skips, adding native merchant, bundle tooltip and chat-tag sprite regressions; the browser build boots to the title screen without page errors. Live acceptance remains open."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {
@@ -1576,6 +1576,14 @@
       "title": "Native horse inventory: 1.20.5+ column count, saddle/armour slot activity, chest columns, slot sprites, animal title and the follow-mouse preview; slot/column/title fixes backported to 1.13.2-1.19.4",
       "checkpoints": [
         "UI-03"
+      ],
+      "evidence": "docs/ui-parity-1.20.6.md"
+    },
+    {
+      "title": "Sprite-era 1.20.6 replacements for textures that no longer exist: villager trading (villager.png + container/villager sprites, native scroller, discount and XP bar), bundle tooltip, recipe-book toggle and chat-modified icon",
+      "checkpoints": [
+        "UI-03",
+        "UI-07"
       ],
       "evidence": "docs/ui-parity-1.20.6.md"
     }
