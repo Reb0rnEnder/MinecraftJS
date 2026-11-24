@@ -1,6 +1,7 @@
 import{signTextItems}from'./sign-text-layout.js';
 import{buildSignFrame}from'./sign-model.js';
 import{isShulkerBox,shulkerTexture}from'./shulker-box.js';
+import { endPortalPasses17, updateEndPortalPasses17, shaderGameTime, PORTAL_LAYERS, GATEWAY_LAYERS } from './end-portal-17.js';
 import {DEFAULT_SKIN} from './default-skins.js';
 import { isScoping } from '../game/spyglass.js';
 // Tile entity (block entity) rendering: chests, signs, skulls, banners, enchanting book, beacon beam, end portal,
@@ -15,7 +16,6 @@ import { D2R, aabbInFrustum } from '../gfx/math.js';
 import { Node, material } from '../gfx/scene.js';
 import { resolveState } from '../world/blockstates.js';
 import { Pistons } from '../game/pistons.js';
-import { JavaRandom } from '../util/jrandom.js';
 import {isSign,isHangingSign,signWood,glowingSignStyle} from '../game/signs-1.14.4.js';
 import {chatToLegacy} from '../gui/chat.js';
 import {applyTransform} from './item-renderer.js';
@@ -35,17 +35,6 @@ const SKULL_TYPES = new Map(['skeleton_skull', 'wither_skeleton_skull', 'zombie_
 const skullType = (name) => SKULL_TYPES.get(name.replace('_wall_', '_'));
 // EnumFacing order: down, up, north, south, west, east
 const SHULKER_FACING = [[0, -1, 0], [0, 1, 0], [0, 0, -1], [0, 0, 1], [-1, 0, 0], [1, 0, 0]];
-
-// TileEntityEndPortalRenderer's layer colours: new Random(31100), three nextFloat()s per layer, times 0.15 for the sky
-// layer and 2 / (18 - i) for portal layer i
-const END_PORTAL_COLORS = (() => {
-  const r = new JavaRandom(31100), f32 = Math.fround, out = [];
-  for (let i = 0; i < 16; i++) {
-    const f = i === 0 ? f32(0.15) : f32(2 / (18 - i));
-    out.push([f32(f32(r.nextFloat() * 0.5 + 0.1) * f), f32(f32(r.nextFloat() * 0.5 + 0.4) * f), f32(f32(r.nextFloat() * 0.5 + 0.5) * f)]);
-  }
-  return out;
-})();
 
 export class TileEntityRenderer {
   constructor(game) {
@@ -557,37 +546,31 @@ export class TileEntityRenderer {
         break;
       }
       case 'endportal': {
-        // TileEntityEndPortalRenderer: the top face at 0.75 (end portal) or every face not against an opaque block
-        // (end gateway, offset 1); 16 layers, the first the end sky blended, the rest end_portal.png added
+        // TheEndPortalRenderer (1.17+): the down and up faces at 0.375 / 0.75 for end portals; end gateways draw
+        // every face at 0 / 1 that Block.shouldRenderFace allows. One rendertype_end_portal/gateway draw, here as
+        // its additive passes (end-portal-17.js).
         const gateway = getBlock(t.state).name === 'end_gateway';
         const w = this.game.world, v = [];
         const quad = (pts) => { for (const [x, y, z] of pts) v.push(x, y, z, 0, 0, 1, 1, 1, 1); };
-        const open = (dx, dy, dz) => {
-          if (!gateway) return false;
+        const show = (dx, dy, dz) => {
+          if (!gateway) return dy !== 0;
           const b = getBlock(w.getState(t.x + dx, t.y + dy, t.z + dz));
           return !(b && b.opaque) && !(b && b.name === 'end_gateway');
         };
-        const top = gateway ? 1 : 0.75;
-        if (open(0, 0, 1)) quad([[0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]]);
-        if (open(0, 0, -1)) quad([[0, 1, 0], [1, 1, 0], [1, 0, 0], [0, 0, 0]]);
-        if (open(1, 0, 0)) quad([[1, 1, 0], [1, 1, 1], [1, 0, 1], [1, 0, 0]]);
-        if (open(-1, 0, 0)) quad([[0, 0, 0], [0, 0, 1], [0, 1, 1], [0, 1, 0]]);
-        if (open(0, -1, 0)) quad([[0, 0, 0], [1, 0, 0], [1, 0, 1], [0, 0, 1]]);
-        if (!gateway || open(0, 1, 0)) quad([[0, top, 1], [1, top, 1], [1, top, 0], [0, top, 0]]);
+        const up = gateway ? 1 : 0.75, down = gateway ? 0 : 0.375;
+        if (show(0, 0, 1)) quad([[0, 0, 1], [1, 0, 1], [1, 1, 1], [0, 1, 1]]);
+        if (show(0, 0, -1)) quad([[0, 1, 0], [1, 1, 0], [1, 0, 0], [0, 0, 0]]);
+        if (show(1, 0, 0)) quad([[1, 1, 0], [1, 1, 1], [1, 0, 1], [1, 0, 0]]);
+        if (show(-1, 0, 0)) quad([[0, 0, 0], [0, 0, 1], [0, 1, 1], [0, 1, 0]]);
+        if (show(0, -1, 0)) quad([[0, down, 0], [1, down, 0], [1, down, 1], [0, down, 1]]);
+        if (show(0, 1, 0)) quad([[0, up, 1], [1, up, 1], [1, up, 0], [0, up, 0]]);
         if (!v.length) break;
         const mesh = this.device.createMesh(FORMAT.color, new Float32Array(v), { quads: true });
         t.ownMeshes.push(mesh);
         const A = this.game.assets;
-        t.portalLayers = END_PORTAL_COLORS.map((c, i) => {
-          const params = new Float32Array(16);
-          params[0] = c[0]; params[1] = c[1]; params[2] = c[2]; params[3] = i;
-          const n = i + 1;
-          params[4] = 4.5 - n / 4; params[5] = (n * n * 4321 + n * 9) * 2 * D2R; params[6] = 17 / n;
-          const tex = i === 0 ? () => A.texture('environment/end_sky.png') : () => A.texture('entity/end_portal.png');
-          const m = material('endportal', tex, params, { blend: i === 0 ? 'alpha' : 'add', depthWrite: true });
-          obj.addDrawable(mesh, m);
-          return { params, n, d: obj.drawables[obj.drawables.length - 1], m };
-        });
+        t.portalPasses = endPortalPasses17(gateway ? GATEWAY_LAYERS : PORTAL_LAYERS);
+        for (const P of t.portalPasses) obj.addDrawable(mesh, material('endportal', () => A.texture(P.texture, { wrap: 'repeat' }), P.params, { blend: P.blend, depthWrite: true }));
+        t.portalLayers = true;
         t.gateway = gateway;
         break;
       }
@@ -755,18 +738,8 @@ export class TileEntityRenderer {
         t.bannerSwing.rotation.x = bannerSwing(time);
       } else if (t.type === 'beacon' && t.beamNode) {
         this._buildBeam(t, partial);
-      } else if (t.type === 'endportal' && t.portalLayers) {
-        // getPasses: fewer layers with distance (squared, from the block corner); gateways one more
-        const cam = this.r.camPos || [0, 0, 0];
-        const dx = t.x - cam[0], dy = t.y - cam[1], dz = t.z - cam[2], d = dx * dx + dy * dy + dz * dz;
-        let passes = d > 36864 ? 1 : d > 25600 ? 3 : d > 16384 ? 5 : d > 9216 ? 7 : d > 4096 ? 9 : d > 1024 ? 11 : d > 576 ? 13 : d > 256 ? 14 : 15;
-        if (t.gateway) passes++;
-        const time = (performance.now() % 800000) / 800000; // Minecraft.getSystemTime() % 800000 / 800000
-        for (const [i, L] of t.portalLayers.entries()) {
-          L.d.visible = i < passes;
-          L.params[7] = (2 + L.n / 1.5) * time;
-          L.params[8] = this.device.width; L.params[9] = this.device.height;
-        }
+      } else if (t.type === 'endportal' && t.portalPasses) {
+        updateEndPortalPasses17(t.portalPasses, shaderGameTime(this.game.world.worldAge ?? this.ticks, partial), this.device.width, this.device.height);
       }
     }
   }
