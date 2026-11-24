@@ -161,7 +161,19 @@ void main() {
     vec4 acc = vec4(0.0);
     for (float a = -R + 0.5; a <= R; a += 2.0) acc += texture(uTex0, tc + stepDir * a);
     o = (acc + texture(uTex0, tc + stepDir * R) * 0.5) / (R + 0.5);
-  } else if (m == 4) {
+  } else if (m == 18) {
+    // entity_sobel: outline where the silhouette's alpha changes, coloured by its neighbours
+    vec2 one = 1.0 / inSize;
+    vec4 c = fetch(uTex0, tc), l = fetch(uTex0, tc - vec2(one.x, 0.0)), r = fetch(uTex0, tc + vec2(one.x, 0.0));
+    vec4 u = fetch(uTex0, tc - vec2(0.0, one.y)), d = fetch(uTex0, tc + vec2(0.0, one.y));
+    float total = clamp(abs(c.a - l.a) + abs(c.a - r.a) + abs(c.a - u.a) + abs(c.a - d.a), 0.0, 1.0);
+    o = vec4((c.rgb * c.a + l.rgb * l.a + r.rgb * r.a + u.rgb * u.a + d.rgb * d.a) * 0.2, total);
+  } else if (m == 19) {
+    // entity_outline_box_blur (radius 2, linear filter): samples at -1.5 and 0.5 texels average two texels each
+    vec2 st = uP[1].xy / inSize;
+    vec4 b = (fetch(uTex0, tc - 2.0 * st) + fetch(uTex0, tc - st)) * 0.5 + (fetch(uTex0, tc) + fetch(uTex0, tc + st)) * 0.5 + fetch(uTex0, tc + 2.0 * st) * 0.5;
+    o = vec4((b / 2.5).rgb, b.a);
+else if (m == 4) {
     vec2 one = 1.0 / inSize;
     float R = uP[1].z;
     vec4 acc = vec4(0.0); float ta = 0.0;

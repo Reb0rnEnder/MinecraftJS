@@ -24,6 +24,9 @@ const PROGRAMS = {
   wobble: { mode: 14, uniforms: { Time: [0], Frequency: [512, 288], WobbleAmount: [0.002, 0.002] } },
   outline_soft: { mode: 15, uniforms: { LumaRamp: [16], LumaLevel: [4] } },
   flip: { mode: 16, uniforms: { ColorModulate: [1, 1, 1, 1] } },
+  // entity_outline.json: the glowing-entity outline (entity_sobel fragment) and its radius-2 box blur
+  entity_outline: { mode: 18, uniforms: {} },
+  entity_outline_box_blur: { mode: 19, uniforms: { BlurDir: [1, 1] } },
 };
 
 // Where each uniform goes in the pipeline's params (see device.js)

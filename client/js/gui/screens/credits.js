@@ -1,5 +1,6 @@
 // Native 1.20.6 WinScreen content and navigation (menu credits skip the poem).
 import {Screen} from './manager.js';
+import {platform} from '../../platform/platform.js';
 import {C} from '../../net/packets.js';
 import {JavaRandom} from '../../util/jrandom.js';
 import {EndPortalFill} from '../end-portal-fill.js';
@@ -41,7 +42,8 @@ export class CreditsScreen extends Screen {
     if(this.poem)await read('texts/postcredits.txt',poem);
     this.lines=lines;this.totalHeight=lines.length*12;
   }
-  tick(){super.tick();if(!this.lines)return;this.scroll=Math.max(0,this.scroll+this.speed);if(this.scroll>this.totalHeight+this.height*2+24)this.finish();}
+  // WinScreen.tick only ends the credits; the scroll advances per frame in render
+  tick(){super.tick();if(!this.lines)return;if(this.scroll>this.totalHeight+this.height*2+24)this.finish();}
   finish(){if(this.finished)return;this.finished=true;if(this.onFinished)this.onFinished();else{this.game.send(C.clientCommand(0));this.game.screens.open(null);}}
   respawn(){this.finish();}
   _speed(){const controls=Number(this.held.has('ControlLeft'))+Number(this.held.has('ControlRight'));this.speed=this.baseSpeed*(this.held.has('Space')?5+controls*15:1)*(this.held.has('ArrowUp')?-1:1);}
@@ -52,7 +54,10 @@ export class CreditsScreen extends Screen {
   _portalBackground(gui,W,H,partial){(this.portalFill||=new EndPortalFill(this.game)).draw(gui,0,0,W,H,partial);}
   onClose(){this.portalFill?.destroy();}
   render(gui,mx,my,partial){
-    const W=this.width,H=this.height,scroll=Math.max(0,this.scroll+partial*this.speed);
+    // render(..., Minecraft.getDeltaFrameTime()): scroll += ticks since the last frame * speed
+    const now=platform().now(),delta=this.lastFrame===undefined?0:Math.min(10,Math.max(0,(now-this.lastFrame)/50));this.lastFrame=now;
+    if(this.lines)this.scroll=Math.max(0,this.scroll+delta*this.speed);
+    const W=this.width,H=this.height,scroll=this.scroll;
     if(!this.poem)gui.menuBackground(this.game.inWorld,0,0,W,H,scroll*.5);
     else this._portalBackground(gui,W,H,partial);
     if(!this.lines)return;

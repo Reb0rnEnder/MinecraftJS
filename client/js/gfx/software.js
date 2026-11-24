@@ -348,6 +348,16 @@ export class SoftwareDevice {
           }
           const n = R * 2 + 1;
           r = ar / n; g = ag / n; b = ab / n; a = mode === 17 ? ta / n : ta;
+        } else if (mode === 18) {
+          const c = T(tx, ty), l = T(tx - ox, ty), rr = T(tx + ox, ty), u = T(tx, ty - oy), dd = T(tx, ty + oy);
+          a = Math.min(1, Math.abs(c[3] - l[3]) + Math.abs(c[3] - rr[3]) + Math.abs(c[3] - u[3]) + Math.abs(c[3] - dd[3]));
+          r = (c[0] * c[3] + l[0] * l[3] + rr[0] * rr[3] + u[0] * u[3] + dd[0] * dd[3]) * 0.2;
+          g = (c[1] * c[3] + l[1] * l[3] + rr[1] * rr[3] + u[1] * u[3] + dd[1] * dd[3]) * 0.2;
+          b = (c[2] * c[3] + l[2] * l[3] + rr[2] * rr[3] + u[2] * u[3] + dd[2] * dd[3]) * 0.2;
+        } else if (mode === 19) {
+          const sx = P[4] / sw, sy = P[5] / sh, at = (k) => T(tx + k * sx, ty + k * sy), m2 = at(-2), m1 = at(-1), z0 = at(0), p1 = at(1), p2 = at(2);
+          const v = [0, 1, 2, 3].map((i) => (m2[i] + m1[i]) * 0.5 + (z0[i] + p1[i]) * 0.5 + p2[i] * 0.5);
+          r = v[0] / 2.5; g = v[1] / 2.5; b = v[2] / 2.5; a = v[3];
         } else if (mode >= 6 && mode <= 16) {
           const c = progs(mode, tx, ty);
           if (!c) continue; // discarded: the target keeps its clear colour
