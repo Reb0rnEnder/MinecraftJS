@@ -43,7 +43,7 @@ export class DebugLines {
     this.game = game;
     this.boxes = new LineBatch(game.device);
     const draw = (d) => this.boxes.draw(d, { blend: 'alpha', depthWrite: false, cull: false });
-    draw.order = 20;
+    draw.order = 20; draw.profileName = 'debugLines';
     game.renderer.extraDraws.push(draw);
   }
 

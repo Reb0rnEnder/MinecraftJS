@@ -32,7 +32,7 @@ export class Weather {
       };
     }
     const draw = (d) => this.draw(d);
-    draw.order = 12;
+    draw.order = 12; draw.profileName = 'weather';
     r.extraDraws.push(draw);
   }
 
