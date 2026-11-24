@@ -3,8 +3,9 @@
 import { FORMAT } from '../gfx/device.js';
 
 // items: [{ text, x, y, color, shadow, alpha }], rects: [{ x0, y0, x1, y1, color: [r,g,b,a] }] drawn first.
-// Returns [{ mesh, tex }] where tex null means the white texture.
-export function buildTextMeshes(device, font, items, rects = [], z = 0) {
+// Returns [{ mesh, tex }] where tex null means the white texture. With light = [sky, block] the meshes use
+// FORMAT.lit so the text is lightmapped (display entities); otherwise FORMAT.color.
+export function buildTextMeshes(device, font, items, rects = [], z = 0, light = null) {
   const groups = new Map();
   const push = (tex, x0, y0, x1, y1, u0, v0, u1, v1, c, skew, zz, origin = y0) => {
     let g = groups.get(tex);
@@ -37,11 +38,11 @@ export function buildTextMeshes(device, font, items, rects = [], z = 0) {
       push(q.tex || null, q.x0, q.y0, q.x1, q.y1, q.u0 || 0, q.v0 || 0, q.u1 || 1, q.v1 || 1, q.color, q.skew, zz, q.skewOrigin);
     }
   }
-  const out = [];
+  const out = [], stride = light ? 11 : 9;
   for (const [tex, verts] of groups) {
-    const data = new Float32Array(verts.length * 9);
-    verts.forEach((v, i) => data.set(v, i * 9));
-    out.push({ mesh: device.createMesh(FORMAT.color, data, { quads: true }), tex });
+    const data = new Float32Array(verts.length * stride);
+    verts.forEach((v, i) => { data.set(v, i * stride); if (light) { data[i * stride + 9] = light[0]; data[i * stride + 10] = light[1]; } });
+    out.push({ mesh: device.createMesh(light ? FORMAT.lit : FORMAT.color, data, { quads: true }), tex });
   }
   return out;
 }

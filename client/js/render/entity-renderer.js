@@ -25,6 +25,7 @@ const M_dragon = () => M.dragonParts();
 import { entityMaterial, entityMesh, modelDevice } from './boxmodel.js';
 import { applyTransform } from './item-renderer.js';
 import { buildTextMeshes, destroyTextMeshes } from './text-mesh.js';
+import { buildDisplay, renderDisplay, displayVisible, destroyDisplay } from './display-renderer.js';
 import { getBlock, findState, getStateProperties } from '../world/blocks.js';
 import { isPointInFluid } from '../world/fluids.js';
 import { resolveState } from '../world/blockstates.js';
@@ -150,6 +151,7 @@ export class EntityRenderer {
     if (v.line) this.group.remove(v.line);
     for (const m of v.ownMeshes || []) this.device.destroyMesh(m);
     destroyTextMeshes(this.device, v.tagMeshes);
+    if (v.kind === 'display') destroyDisplay(this, v);
     this.visuals.delete(e.id);
   }
 
@@ -873,6 +875,9 @@ export class EntityRenderer {
         v.root.add(sp);
         break;
       }
+      case 'display':
+        v = buildDisplay(this, e);
+        break;
       case 'area_effect_cloud':
         // The vanilla cloud is particle-only; do not invent a solid entity model.
         v = { root: new Node(), kind: 'area_effect_cloud', materials: [] };
@@ -1024,7 +1029,10 @@ export class EntityRenderer {
       const floatingTag = e.kind === 'armorstand' && e.customName && e.nameVisible;
       const living = e.kind === 'mob' && e.type !== 63 || e.kind === 'player' || e.kind === 'armorstand';
       const size=((e.width||.6)*2+(e.height||1.8))/3,far=(size*64*viewScale*(['arrow','spectral_arrow','trident'].includes(e.kind)?10:1))**2;
-      if (d2 > far || (e.invisible && !living)) { if (v) v.root.visible = false; continue; }
+      if (e.kind === 'display') {
+        // Display entities have their own view range and culling box, and draw only once they have a render state
+        if (!displayVisible(this, e, p, d2, viewScale)) { if (v) v.root.visible = false; continue; }
+      } else if (d2 > far || (e.invisible && !living)) { if (v) v.root.visible = false; continue; }
       // Entity culling: frustum + sections hidden behind terrain (never the camera's own entity)
       let tagOnly = false;
       if (CULLABLE.has(e.kind) && e.id !== -1 && !e.pickupVisual) {
@@ -1065,6 +1073,7 @@ export class EntityRenderer {
           case 'jar_projectile': this._renderJarProjectile(e, v, partial); break;
           case 'projectile': if (v.inner) v.inner.rotation.set(pitchAngle(e, partial) * D2R, yawAngle(e, partial) * D2R, 0); break;
           case 'area_effect_cloud': this._renderCloud(e, v, p); break;
+          case 'display': renderDisplay(this, e, v, p, partial); break;
           case 'falling': if (v.inner) { v.inner.position.set(0, 0.5, 0);v.inner.visible=g.world.getState(Math.floor(e.x),Math.floor(e.y),Math.floor(e.z))!==e.blockState; } break;
           case 'tnt': this._renderTnt(e, v, partial); break;
           case 'boat': case 'minecart': this._renderVehicle(e, v, p, partial); break;
@@ -1076,7 +1085,7 @@ export class EntityRenderer {
           default: break;
         }
       } catch (err) { console.warn('entity render', e.kind, err); }
-      if (v.shadow) this._updateShadow(e, v, p);
+      if (v.shadow && v.kind !== 'display') this._updateShadow(e, v, p); // displays size their own shadow
     }
     // RenderManager.playerViewY: the camera's yaw (front view looks back)
     let viewYaw = g.player.prevYaw + (g.player.yaw - g.player.prevYaw) * partial;
