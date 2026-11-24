@@ -48,6 +48,7 @@ export function debugLeft(hud){
  const g=hud.game,s=g.settings,r=g.renderer,pl=g.player,w=g.world,er=g.entityRenderer?.stats||{total:0,culled:0};
  const distance=s.renderDistance||0,loaded=w.chunks?.size||0,entities=g.entities.count?.()??g.entities.map?.size??0;
  let fps=`${g.fps} fps`;
+ if(g.processedFps>g.fps&&g.settings?.skipUndisplayedFrames!==false&&!g.settings?.enableVsync)fps+=` (${g.processedFps} processed)`;
  if(!since(15)){const n=g.chunkUpdates||0;fps+=` (${n} chunk update${n===1?'':'s'})`;}
  fps+=` T: ${s.maxFps||'inf'}${s.enableVsync?' vsync':''}`;
  fps+=since(16)?(s.fancyGraphics?' fancy':' fast'):(s.fancyGraphics?'':' fast');
