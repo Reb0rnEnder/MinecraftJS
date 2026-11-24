@@ -441,12 +441,13 @@ export function rabbit() {
 // type is fixed at construction: 0/horse, 1/donkey, 2/mule, 3/zombie_horse, 4/skeleton_horse.
 // The 1.13 base has NINE fields (two arrays), the donkey subclass ELEVEN; no detached shins/jaws.
 // Saddle and reins remain children of body/neck; chests remain children of the donkey's body.
-export function horse(type = 0) {
+// layer: 'horseArmor' builds the inflated native horse_armor layer with the same pose
+export function horse(type = 0, layer = null) {
   const types = ['horse', 'donkey', 'mule', 'zombie_horse', 'skeleton_horse'];
   const kind = typeof type === 'string' ? (types.includes(type) ? type : 'horse') : (types[type] || 'horse');
   const chested = kind === 'donkey' || kind === 'mule';
   const names = ['body', 'neck', 'leftHindLeg', 'rightHindLeg', 'leftFrontLeg', 'rightFrontLeg', 'tail', 'saddleParts', 'reins'];
-  const m = jarAdapter(chested ? 'donkey' : 'horse', [...names, ...(chested ? ['leftChest', 'rightChest'] : [])], (model, a) => {
+  const m = jarAdapter(layer || (chested ? 'donkey' : 'horse'), [...names, ...(chested ? ['leftChest', 'rightChest'] : [])], (model, a) => {
     const q = model.parts, rear = clamp(a.rearing), graze = clamp(a.grazing), mouth = clamp(a.mouthOpen);
     const neutral = 1 - Math.max(rear, graze), down = 1 - rear;
     const yaw = clamp(a.yaw, -20, 20) * D2R;

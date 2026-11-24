@@ -86,5 +86,28 @@
       "left_wing_tip",
       "feet"
     ]
+  },
+  "horseArmor": {
+    "layer": "minecraft:horse_armor#main",
+    "fields": [
+      "body",
+      "head_parts",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "tail",
+      [
+        "saddle",
+        "head_saddle",
+        "mouth_saddle_wrap",
+        "left_saddle_mouth",
+        "right_saddle_mouth"
+      ],
+      [
+        "left_saddle_line",
+        "right_saddle_line"
+      ]
+    ]
   }
 }

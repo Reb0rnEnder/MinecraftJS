@@ -16,7 +16,7 @@ The native multiplayer foundation works. Substantial feature and acceptance work
 
 These **checkpoints differ in size and do not enumerate every defect**. 64 required checkpoints are still open. An honest percentage or ETA is unavailable until release coverage is triaged. Accepted rows cover exactly their named scope, not an entire subsystem.
 
-Latest target gate: **540 tests**, zero failures/skips. See [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
+Latest target gate: **545 tests**, zero failures/skips. See [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md). The separately recorded earlier foliage backport audit has 81 passing checks; it is not a newly repeated run. This audit does not claim a new exhaustive gameplay, native FPS or physical-audio run.
 
 ## Completed implementation deliverables
 
@@ -41,6 +41,7 @@ These checked items describe completed work. A parent checkpoint can still have 
  - [x] Native experience-bar sprites (the legacy adapter had swapped them with the horse jump bar) and tutorial steps that recognise trees, logs and planks by each release's tags or TREE_BLOCKS set, with 1.20.6 toast sprites. [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md).
  - [x] Native horse inventory: 1.20.5+ column count, saddle/armour slot activity, chest columns, slot sprites, animal title and the follow-mouse preview; slot/column/title fixes backported to 1.13.2-1.19.4. [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md).
  - [x] Sprite-era 1.20.6 replacements for textures that no longer exist: villager trading (villager.png + container/villager sprites, native scroller, discount and XP bar), bundle tooltip, recipe-book toggle and chat-modified icon. [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md).
+ - [x] Native 1.20.6 entity metadata table (1.19.4 indexes were being read), with symbol-based effect particles, area-effect clouds, llama/horse/chest fields, zombie/skeleton aggression and conversion shaking, shulker and witch fields, llama carpets and horse armour from the body slot. [docs/ui-parity-1.20.6.md](ui-parity-1.20.6.md).
 
 ## Current source findings
 

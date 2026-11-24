@@ -11,7 +11,7 @@ import {detachRemovedEntities} from './riding-lifecycle.js';
 import {applyNetherMetadata} from './nether-metadata.js';
 import {applyFoxFlags,tickFox} from './fox.js';
 import {tickBeeSound,stopBeeSound} from './bee-sound.js';
-import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.19.4.js';
+import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.20.6.js';
 import {placeLeashKnot} from './leash-knot.js';
 import {NATIVE_METADATA} from './entity-metadata-1.14.4.js';
 import {playerPoseDimensions} from './player-poses-1.19.4.js';
@@ -34,6 +34,10 @@ const SNAP_KINDS = new Set(['item', 'xp', 'arrow', 'projectile', 'falling', 'tnt
 
 // EntityShulker's box: 1 x 1 at its position, grown towards the opening by 0.5 - sin((0.5 + peek) * PI) * 0.5
 // (attach face: 0 down .. 5 east; the shell opens away from it). Returns [minX, minY, minZ, maxX, maxY, maxZ].
+const CARPET_DYES=['white','orange','magenta','light_blue','yellow','lime','pink','gray','light_gray','cyan','purple','blue','brown','green','red','black'];
+// An entity_effect ParticleOptions' RGB, or null for other particles
+export function effectParticleColor(p){const type=String(p?.type??'').replace(/^minecraft:/,'');return type==='entity_effect'&&Number.isFinite(p.data)?p.data&0xffffff:null;}
+
 export function shulkerBox(e, peek = e.peek || 0) {
   const d = 0.5 - Math.sin((0.5 + peek) * Math.PI) * 0.5;
   const b = [e.x - 0.5, e.y, e.z - 0.5, e.x + 0.5, e.y + 1, e.z + 0.5];
@@ -373,7 +377,11 @@ export class EntityManager {
     if (slot === 0) e.equipment[0] = item;
     else if (slot === 1) e.offhand = item;
     else if (slot >= 2 && slot <= 5) e.equipment[slot - 1] = item;
-    else if(slot===6)e.bodyEquipment=item;
+    else if(slot===6){
+      e.bodyEquipment=item;
+      // Llamas wear their carpet in the body slot since 1.20.5
+      if(e.entityName==='llama'||e.entityName==='trader_llama'){const n=item?.id?this.game.items?.def?.(item.id)?.name:null,dye=n?.endsWith('_carpet')?n.slice(0,-7):null;e.llamaCarpet=dye?CARPET_DYES.indexOf(dye):-1;}
+    }
   }
 
   setMetadata(id, meta) {
@@ -471,7 +479,9 @@ export class EntityManager {
         e.health = m[7];
         if (e.health <= 0 && prev > 0) e.dead = true;
       }
-      set(8, 'potionColor'); set(9, 'potionAmbient'); set(10, 'arrowCount');
+      // LivingEntity.DATA_EFFECT_PARTICLES (1.20.5+): the particle options of the active effects, not a colour
+      { const id=WIRE_METADATA[name]?.DATA_EFFECT_PARTICLES; if(id!==undefined&&wire[id]!==undefined)e.effectParticles=Array.isArray(wire[id])?wire[id]:[]; }
+      set(9, 'potionAmbient'); set(10, 'arrowCount');
     }
     if (name === 'player' || e.kind === 'player') {
       set(11, 'absorption'); set(12, 'score'); set(13, 'skinFlags'); set(14, 'mainHand');
@@ -513,13 +523,18 @@ export class EntityManager {
         set(10, 'paddleLeft'); set(11, 'paddleRight'); set(12, 'bubbleTime'); break;
       case 'furnace_minecart': set(12, 'furnacePowered'); break;
       case 'command_block_minecart': set(12, 'command'); set(13, 'lastOutput'); break;
-      case 'area_effect_cloud':
-        if (m[6] !== undefined) { e.radius = m[6]; e.width = e.radius * 2; e.height = 0.5; }
-        set(7, 'cloudColor'); set(8, 'singlePoint'); set(9, 'particle'); break;
+      // AreaEffectCloud (1.20.5+): radius, waiting, particle; the colour rides inside an entity_effect particle
+      case 'area_effect_cloud': {
+        const own=WIRE_METADATA.area_effect_cloud;
+        if (wire[own.DATA_RADIUS] !== undefined) { e.radius = wire[own.DATA_RADIUS]; e.width = e.radius * 2; e.height = 0.5; }
+        if (wire[own.DATA_WAITING] !== undefined) e.singlePoint = !!wire[own.DATA_WAITING];
+        if (wire[own.DATA_PARTICLE] !== undefined) { e.cloudParticle = wire[own.DATA_PARTICLE]; e.cloudColor = effectParticleColor(e.cloudParticle) ?? 0; }
+        break;
+      }
       default: break; // no additional data parameters for other object classes
     }
     if (e.kind === 'mob') {
-      bit(11, 1, 'noAI'); bit(11, 2, 'leftHanded');
+      bit(11, 1, 'noAI'); bit(11, 2, 'leftHanded'); bit(11, 4, 'aggressive'); // Mob.DATA_MOB_FLAGS_ID
       if ((AGEABLE.has(name) || ZOMBIES.has(name)) && m[12] !== undefined) {
         e.child = !!m[12];
         const def = ENTITIES_BY_NAME[name], scale = e.child ? 0.5 : 1;
@@ -529,8 +544,11 @@ export class EntityManager {
         if (name === 'turtle' && e.child) { e.width = 0.36; e.height = 0.12; e.eyeHeight = 0.102; }
       }
       if (ZOMBIES.has(name)) {
-        set(13, 'zombieSpecialType'); set(14, 'armsRaised'); set(15, 'convertingToDrowned');
-        if (name === 'zombie_villager') { set(16, 'converting'); if(!e.villagerData)set(17, 'villagerProfession'); }
+        // Zombie (1.14+): arms follow Mob.isAggressive; DATA_DROWNED_CONVERSION_ID / DATA_CONVERTING_ID shake the model
+        set(13, 'zombieSpecialType'); e.armsRaised = !!e.aggressive;
+        assign('DATA_DROWNED_CONVERSION_ID', 'convertingToDrowned');
+        if (name === 'zombie_villager') assign('DATA_CONVERTING_ID', 'curing');
+        e.converting = !!(e.convertingToDrowned || e.curing);
       }
       if (FISH.has(name)) set(12, 'fromBucket'); // NOT EntityAgeable's baby flag
       if (name === 'wolf' || name === 'ocelot' || name === 'cat' || name === 'parrot') {
@@ -538,8 +556,8 @@ export class EntityManager {
       }
       if (HORSES.has(name)) {
         bit(13, 2, 'tamed'); bit(13, 4, 'saddled'); bit(13, 8, 'horseBred');
-        set(14, 'ownerUuid');
-        if (name === 'donkey' || name === 'mule' || name === 'llama' || name === 'trader_llama') set(15, 'horseChest');
+        // 1.19.4+ AbstractHorse has no owner field; chested horses keep DATA_ID_CHEST
+        if (name === 'donkey' || name === 'mule' || name === 'llama' || name === 'trader_llama') assign('DATA_ID_CHEST', 'horseChest');
         if (m[13] !== undefined || m[15] !== undefined) {
           const f = native[15] || 0;
           // Preserve the existing renderer's horse flag layout at this boundary.
@@ -550,7 +568,8 @@ export class EntityManager {
         case 'bat': bit(12, 1, 'hanging'); break;
         case 'blaze': bit(12, 1, 'blazeOnFire'); break;
         case 'creeper': set(12, 'creeperState'); set(13, 'powered'); set(14, 'ignited'); break;
-        case 'skeleton': case 'wither_skeleton': case 'stray': set(12, 'armsRaised'); break;
+        // AbstractSkeleton: the aim pose follows Mob.isAggressive; Skeleton.DATA_STRAY_CONVERSION_ID shakes the model
+        case 'skeleton': case 'wither_skeleton': case 'stray': e.armsRaised = !!e.aggressive; assign('DATA_STRAY_CONVERSION_ID', 'strayConverting'); e.converting = !!e.strayConverting; break;
         case 'spider': case 'cave_spider': bit(12, 1, 'climbing'); break;
         case 'slime': case 'magma_cube':
           if (m[12] !== undefined) {
@@ -563,11 +582,11 @@ export class EntityManager {
         case 'ghast': set(12, 'attacking'); break;
         case 'guardian': case 'elder_guardian': set(12, 'guardianMoving'); if (m[13] !== undefined && e.guardianTarget !== m[13]) { e.guardianTarget = m[13]; e.guardianBeamTicks = 0; } break;
         case 'shulker':
-          set(12, 'attachFace'); set(13, 'attachPosition'); set(14, 'peekTick'); set(15, 'shulkerColor'); break;
+          assign('DATA_ATTACH_FACE_ID', 'attachFace'); assign('DATA_PEEK_ID', 'peekTick'); assign('DATA_COLOR_ID', 'shulkerColor'); break;
         case 'wither':
           if ([12, 13, 14].some(i => m[i] !== undefined)) e.witherTargets = [14, 15, 16].map(i => e.metadata[i] || 0);
           set(15, 'invulTime'); break;
-        case 'witch': set(12, 'witchAggressive'); break;
+        case 'witch': assign('DATA_USING_ITEM', 'witchAggressive'); break; // Witch.isDrinkingPotion
         case 'evoker': case 'illusioner': set(13, 'spell'); // fall through: AbstractIllager flags
         case 'vindicator': bit(12, 1, 'armsRaised'); set(12, 'illagerFlags'); break;
         case 'vex': bit(12, 1, 'charging'); break;
@@ -578,8 +597,9 @@ export class EntityManager {
         case 'parrot': set(15, 'parrotVariant'); break;
         case 'rabbit': set(13, 'rabbitType'); break;
         case 'villager': if(!e.villagerData)set(13, 'profession'); break;
-        case 'horse': set(15, 'horseVariant'); set(16, 'horseArmor'); break;
-        case 'llama': case 'trader_llama': set(16, 'llamaStrength'); set(17, 'llamaCarpet'); set(18, 'llamaVariant'); break;
+        case 'horse': assign('DATA_ID_TYPE_VARIANT', 'horseVariant'); break; // armour is BODY equipment since 1.20.5
+        // by native symbol: 1.20.5 removed DATA_SWAG_ID (the carpet is body equipment now)
+        case 'llama': case 'trader_llama': assign('DATA_ID_CHEST','horseChest'); assign('DATA_STRENGTH_ID','llamaStrength'); assign('DATA_VARIANT_ID','llamaVariant'); break;
         case 'polar_bear': set(13, 'standing'); break;
         case 'snow_golem': bit(12, 16, 'hasPumpkin'); break;
         case 'iron_golem': bit(12, 1, 'playerCreated'); break;
@@ -1071,14 +1091,15 @@ export class EntityManager {
       if(e.entityName==='glow_squid')g.particles.nativeParticle('glow',e.x+(Math.random()-.5)*e.width*.6,e.y+Math.random()*e.height,e.z+(Math.random()-.5)*e.width*.6);
       if (e.kind === 'player') this._updateCape(e);
       if (e.onFire && Math.random() < 0.3) g.particles.entityFire && g.particles.entityFire(e);
-      // EntityLivingBase.updatePotionEffects (1.9+): colour in metadata 8, "ambient" (beacon) in 9
+      // LivingEntity.tickEffects (1.20.5+): one of the effect particles, 1 in (invisible ? 15 : 4) * (ambient ? 5 : 1)
       const living = e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand';
-      const color = living ? e.potionColor | 0 : 0;
-      if (color > 0) {
+      const list = living ? e.effectParticles || [] : [];
+      if (list.length) {
         const ambient = !!e.potionAmbient;
-        let spawn = e.invisible ? Math.random() < 1 / 15 : Math.random() < 0.5;
-        if (ambient) spawn = spawn && Math.random() < 0.2;
-        if (spawn) g.particles.potionSwirl && g.particles.potionSwirl(e, color, ambient);
+        if (Math.floor(Math.random() * (e.invisible ? 15 : 4) * (ambient ? 5 : 1)) === 0) {
+          const particle = list[Math.floor(Math.random() * list.length)], color = effectParticleColor(particle);
+          if (color !== null && g.particles.potionSwirl) g.particles.potionSwirl(e, color, ambient);
+        }
       }
     }
     // Entity.updatePassenger: riders sit on their vehicle's new position (getMountedYOffset + the rider's getYOffset)

@@ -8,14 +8,14 @@
   "measurement": "Checkpoint counts are an inventory, not equal-sized work units or a completion percentage. Unknown release coverage prevents an honest percent/ETA.",
   "scope": "Exact native 1.20.6 multiplayer behavior and explicitly enabled native experiments. Server generation/AI/loot stay authoritative; their client-visible results require acceptance. Singleplayer/Realms and optional extensions are separately visible.",
   "lastRecordedValidation": {
-    "targetTests": 540,
+    "targetTests": 545,
     "targetFailures": 0,
     "targetSkipped": 0,
     "backportFoliageTests": 81,
     "backportFailures": 0,
     "backportSkipped": 0,
     "source": "docs/ui-parity-1.20.6.md",
-    "note": "540 modern tests and exact native oracles pass, zero failures/skips, adding native merchant, bundle tooltip and chat-tag sprite regressions; the browser build boots to the title screen without page errors. Live acceptance remains open."
+    "note": "545 modern tests and exact native oracles pass, zero failures/skips, including the generated native 1.20.6 entity metadata table and its consumers. Touched entity suites gain two passes and no new failures; the browser build boots without page errors. Live acceptance remains open."
   },
   "sourceInventory": "docs/transition-1.20.6.release-index.json",
   "releaseReview": {
@@ -1584,6 +1584,14 @@
       "checkpoints": [
         "UI-03",
         "UI-07"
+      ],
+      "evidence": "docs/ui-parity-1.20.6.md"
+    },
+    {
+      "title": "Native 1.20.6 entity metadata table (1.19.4 indexes were being read), with symbol-based effect particles, area-effect clouds, llama/horse/chest fields, zombie/skeleton aggression and conversion shaking, shulker and witch fields, llama carpets and horse armour from the body slot",
+      "checkpoints": [
+        "NET-01",
+        "PAWS-04"
       ],
       "evidence": "docs/ui-parity-1.20.6.md"
     }

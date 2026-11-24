@@ -1,3 +1,4 @@
+import {horseArmor766} from './horse-armor-1.20.6.js';
 import{PAWS_DATA_766}from'../game/paws-data-1.20.6.js';
 import{wolfTexture766,wolfArmor766}from'./wolf-1.20.6.js';
 import{wolfTailAngle766}from'../game/paws-1.20.6.js';
@@ -539,6 +540,8 @@ export class EntityRenderer {
       if (e.type === 100) {
         const markings = ['', 'white', 'whitefield', 'whitedots', 'blackdots'][((e.horseVariant || 0) >> 8) & 0xff];
         if (markings && (e.horseType || 0) === 0) addLayer(M.horse(), 'entity/horse/horse_markings_' + markings + '.png');
+        // HorseRenderer adds HorseArmorLayer (horses only; donkeys, mules and undead horses have none)
+        if ((e.horseType || 0) === 0) { try { v.horseArmor = addLayer(M.horse(0, 'horseArmor'), 'entity/horse/armor/horse_armor_iron.png'); } catch { v.horseArmor = null; /* bundle built before the horse_armor layer */ } }
       }
       if (e.stray) addLayer(M.biped('strayOverlay'), 'entity/skeleton/stray_overlay.png');
       if (e.type === 'drowned') addLayer(M.drowned(true), 'entity/zombie/drowned_outer_layer.png', { cull: false });
@@ -1329,6 +1332,7 @@ export class EntityRenderer {
     }
     // Health and invisibility changes must apply even when distant poses are throttled.
     if (v.golemCracks) updateGolemCracks(e, v.golemCracks);
+    if(v.horseArmor){const armor=horseArmor766(g.items,e.bodyEquipment);v.horseArmor.obj.visible=!!armor&&!e.invisible;if(armor){v.horseArmor.mat.tex=armor.texture;v.horseArmor.mat.params.setTint(...armor.color,1);}}
     if(v.wolfCollar){const armor=wolfArmor766(g.items,e.bodyEquipment),color=PAWS_DATA_766.dyes[e.collar??14]??PAWS_DATA_766.dyes[14];v.wolfCollar.obj.visible=!!e.tamed&&!armor&&!e.invisible;v.wolfCollar.mat.params.setTint(...color,1);v.wolfArmor.obj.visible=!!armor;v.wolfArmorDye.obj.visible=!!armor?.color;v.wolfArmorCracks.obj.visible=!!armor?.crack;if(armor?.color)v.wolfArmorDye.mat.params.setTint(...armor.color,1);if(armor?.crack)v.wolfArmorCracks.mat.tex='entity/wolf/wolf_armor_crackiness_'+armor.crack+'.png';}
     if (v.lodSkip && v.posed && v.wasInvisible === !!e.invisible) {
       // Keep the previous pose; only the transforms above were updated
