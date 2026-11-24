@@ -1034,7 +1034,8 @@ export class EntityRenderer {
       let tagOnly = false;
       if (CULLABLE.has(e.kind) && e.id !== -1 && !e.pickupVisual) {
         const hw = (e.width || 0.6) / 2 + 0.5, h = (e.height || 1.8) * (e.type === 56 ? 4.5 : 1) + 0.5;
-        const visible = this.r.boxVisible(p.x - hw, p.y - 0.5, p.z - hw, p.x + hw, p.y + h, p.z + hw);
+        // Native entity culling is frustum-only; keep glowing entities (their outlines show through walls)
+        const visible = e.glowing ? aabbInFrustum(this.r.frustum, p.x - hw, p.y - 0.5, p.z - hw, p.x + hw, p.y + h, p.z + hw) : this.r.boxVisible(p.x - hw, p.y - 0.5, p.z - hw, p.x + hw, p.y + h, p.z + hw);
         if (!visible) {
           // Vanilla draws player name tags through walls; keep those when only occluded
           const inFrustum = aabbInFrustum(this.r.frustum, p.x - hw, p.y, p.z - hw, p.x + hw, p.y + h + 0.6, p.z + hw);
