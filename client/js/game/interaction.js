@@ -98,19 +98,20 @@ export class Interaction {
 
   reach() { return this.player.blockInteractionRange ?? (this.game.gameMode === 1 ? 5 : 4.5); }
 
-  // Minecraft.getMouseOver
+  // GameRenderer.pick (1.20.5+): cast to the larger of the block and entity interaction ranges, take the nearer of
+  // the block and entity hits, then filterHitResult drops it (a miss, not whatever is behind) unless it is strictly
+  // within its own range
   updateTarget(partial = 1, entityRangeOverride) {
     const g = this.game;
     const eye = g.eyePosition(partial);
     const look = g.lookVector(partial);
-    const reach = this.reach();
-    let hit = g.world.raycast(eye[0], eye[1], eye[2], look[0], look[1], look[2], reach);
-    let blockDist = hit ? hit.dist : reach;
-    let entityReach = entityRangeOverride ?? this.player.entityInteractionRange ?? (g.gameMode === 1 ? 6 : 3);
-    if (g.gameMode !== 1 && blockDist > 3) blockDist = blockDist;
-    // Entities
+    const blockRange = this.reach();
+    const entityRange = entityRangeOverride ?? this.player.entityInteractionRange ?? (g.gameMode === 1 ? 5 : 3);
+    const range = Math.max(blockRange, entityRange);
+    const hit = g.world.raycast(eye[0], eye[1], eye[2], look[0], look[1], look[2], range);
+    const blockDist = hit ? hit.dist : range;
     let best = null;
-    let bestDist = hit ? hit.dist : entityReach;
+    let bestDist = blockDist;
     for (const e of g.entities.pickable()) {
       if (!e.pickable || e.id === g.entityId || e.id === g.ridingEntityId) continue;
       const border = entityPickRadius(e);
@@ -125,11 +126,9 @@ export class Interaction {
       }
       if (r && r.t < bestDist) { bestDist = r.t; best = { e, r }; }
     }
-    if (best && best.r.t <= entityReach) {
-      this.target = { type: 'entity', entity: best.e, hit: [eye[0] + look[0] * best.r.t, eye[1] + look[1] * best.r.t, eye[2] + look[2] * best.r.t] };
-    } else if (hit) {
-      this.target = { type: 'block', ...hit };
-    } else this.target = null;
+    if (best && best.r.t < blockDist) {
+      this.target = best.r.t < entityRange ? { type: 'entity', entity: best.e, hit: [eye[0] + look[0] * best.r.t, eye[1] + look[1] * best.r.t, eye[2] + look[2] * best.r.t] } : null;
+    } else this.target = hit && hit.dist < blockRange ? { type: 'block', ...hit } : null;
     return this.target;
   }
 

@@ -477,10 +477,11 @@ export class LocalPlayer {
     // bed: half)
     if (this.onGround) {
       if (this.fallDistance > 0 && this.onFall && !this.allowFlying) {
-        // EntityLivingBase.fall(distance, multiplier): ceil((distance - 3 - jump boost) * multiplier); beds halve the distance
+        // LivingEntity.calculateFallDamage (1.20.5+): ceil((distance - safe_fall_distance) * multiplier * fall_damage_multiplier).
+        // Jump Boost raises safe_fall_distance through an attribute modifier the server sends; beds halve the distance
         const mult = lb && lb.name === 'slime_block' && !this.sneaking ? 0 : lb && lb.name === 'hay_block' ? 0.2 : honeyFallMultiplier(lb?.name);
         const dist = lb && lb.name ?.endsWith('_bed') ? this.fallDistance * 0.5 : this.fallDistance;
-        const dmg = Math.ceil((dist - this.safeFallDistance - (this.jumpBoost >= 0 ? this.jumpBoost + 1 : 0)) * mult * this.fallDamageMultiplier);
+        const dmg = Math.ceil(f32(f32(dist - f32(this.safeFallDistance)) * mult) * this.fallDamageMultiplier);
         if (dmg > 0) this.onFall(dmg, lst);
       }
       this.fallDistance = 0;
@@ -626,8 +627,12 @@ export class LocalPlayer {
 
   jump(world) {
     const at=world&&getBlock(world.getState(Math.floor(this.x),Math.floor(this.y),Math.floor(this.z))),under=world&&getBlock(world.getState(Math.floor(this.x),Math.floor(this.y-.5000001),Math.floor(this.z)));
-    this.motionY = Math.fround(this.jumpStrength*honeyJumpFactor(at?.name==='honey_block'?at.name:under?.name)); // getJumpUpwardsMotion() = 0.42F
-    if (this.jumpBoost >= 0) this.motionY += Math.fround((this.jumpBoost + 1) * F.p01);
+    // LivingEntity.getJumpPower: jump_strength * block jump factor + 0.1 * (Jump Boost amplifier + 1), in float.
+    // jumpFromGround does nothing at all (no sprint boost either) when the power is at most 1e-5.
+    const boost = this.jumpBoost >= 0 ? f32(0.1 * f32(this.jumpBoost + 1)) : 0;
+    const power = f32(f32(f32(this.jumpStrength) * honeyJumpFactor(at?.name==='honey_block'?at.name:under?.name)) + boost);
+    if (power <= 1e-5) return;
+    this.motionY = power;
     if (this.sprinting) {
       const f = Math.fround(Math.fround(this.yaw) * F.deg);
       this.motionX -= Math.fround(mcSin(f) * F.p02b);
