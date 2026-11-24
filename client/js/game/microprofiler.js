@@ -37,6 +37,7 @@ export class MicroProfiler {
     this.pending = new Map(); this.pendingIterations = 0;
     this.heap = new Float32Array(CAPACITY); this.entityCount = new Uint32Array(CAPACITY); this.chunkCount = new Uint32Array(CAPACITY);
     this.paths = []; this.pathIndex = new Map(); this.series = [];
+    this.drawPaths = new Map(); this.drawSeries = new Map(); // section path -> draw calls issued directly inside it
     this.packets = new Map(); // name -> { count, ms, max }
     this.packetFrame = 0; this.drawFrame = 0; this.lastStamp = 0;
   }
@@ -82,7 +83,18 @@ export class MicroProfiler {
     });
     // Menus outside a world have no HUD pass: draw the overlay after the screen there
     if (g.screens) this._wrap(g.screens, 'render', (original) => function (gui, ...rest) { let r; P.start('screen'); try { r = original.call(this, gui, ...rest); } finally { P.end(); } if (!g.inWorld && self.overlay !== 'off') self.drawOverlay(gui); return r; });
-    if (g.device) this._wrap(g.device, 'draw', (original) => function (...args) { self.drawFrame++; return original.apply(this, args); });
+    if (g.device) this._wrap(g.device, 'draw', (original) => function (...args) {
+      self.drawFrame++;
+      const top = P.stack[P.stack.length - 1], path = top ? top[0] : 'root';
+      self.drawPaths.set(path, (self.drawPaths.get(path) || 0) + 1);
+      return original.apply(this, args);
+    });
+    // Batched terrain layers issue one draw call per section with geometry
+    if (g.device) this._wrap(g.device, 'drawSections', (original) => function (...args) {
+      const n = original.apply(this, args), top = P.stack[P.stack.length - 1], path = top ? top[0] : 'root';
+      self.drawFrame += n; self.drawPaths.set(path, (self.drawPaths.get(path) || 0) + n);
+      return n;
+    });
     // HUD time is measured as 'hud'; the overlay draws after it, outside the measurement
     if (g.hud) this._wrap(g.hud, 'render', (original) => function (gui, ...rest) { let r; P.start('hud'); try { r = original.call(this, gui, ...rest); } finally { P.end(); } if (self.overlay !== 'off') self.drawOverlay(gui); return r; });
   }
@@ -100,7 +112,7 @@ export class MicroProfiler {
   // Profiler.endFrame hands over this frame's section times
   record(frame) {
     const now = platform().now(), g = this.game;
-    if (this.paused) { this.packetFrame = 0; this.drawFrame = 0; this.lastStamp = now; this.pending.clear(); this.pendingIterations = 0; return; }
+    if (this.paused) { this.packetFrame = 0; this.drawFrame = 0; this.drawPaths.clear(); this.lastStamp = now; this.pending.clear(); this.pendingIterations = 0; return; }
     const rendered = frame.has('root.gameRenderer');
     // Fold this iteration's sections into the pending entry; only a rendered frame (or a stalled loop) writes one
     for (const [path, ms] of frame) this.pending.set(path, (this.pending.get(path) || 0) + ms);
@@ -117,6 +129,9 @@ export class MicroProfiler {
     this.chunkCount[i] = g.world?.chunks?.size ?? 0;
     for (const s of this.series) s[i] = 0;
     for (const [path, ms] of this.pending) this._series(path)[i] = ms;
+    for (const d of this.drawSeries.values()) d[i] = 0;
+    for (const [path, n] of this.drawPaths) { let d = this.drawSeries.get(path); if (!d) this.drawSeries.set(path, d = new Uint32Array(CAPACITY)); d[i] = n; }
+    this.drawPaths.clear();
     this.pending.clear(); this.pendingIterations = 0;
     this._series('packets')[i] = this.packetFrame; this.packetFrame = 0;
     this.head = (i + 1) % CAPACITY;
@@ -138,7 +153,9 @@ export class MicroProfiler {
     const rows = this.paths.map((path, p) => {
       let sum = 0, max = 0; const s = this.series[p];
       for (const i of idx) { sum += s[i]; if (s[i] > max) max = s[i]; }
-      return { path, name: path.replace(/^root\./, ''), avg: sum / frames, max, share: frameAvg > 0 ? sum / frames / frameAvg : 0 };
+      const d = this.drawSeries.get(path); let draws = 0;
+      if (d) { for (const i of idx) draws += d[i]; draws /= frames; }
+      return { path, name: path.replace(/^root\./, ''), avg: sum / frames, max, share: frameAvg > 0 ? sum / frames / frameAvg : 0, draws };
     });
     // Time between frame ends that no game-loop section covers: GPU work the browser waits on, compositing,
     // garbage collection, other tabs and idle time between loop iterations.
@@ -167,7 +184,7 @@ export class MicroProfiler {
     const idx = this.recent();
     return {
       format: 'minecraftjs-microprofiler', version: 2, capturedAt: new Date().toISOString(),
-      note: 'One frame per rendered frame; loopIterations counts the game-loop iterations folded into it. Browser timers are often limited to 0.1 ms.',
+      note: 'One frame per rendered frame; loopIterations counts the game-loop iterations folded into it. sectionDraws counts draw calls issued directly inside each section (not its children). Browser timers are often limited to 0.1 ms.',
       userAgent: globalThis.navigator?.userAgent || null,
       settings: (({ renderDistance, maxFps, enableVsync, fancyGraphics, fabulousGraphics, skipUndisplayedFrames, simulationDistance, graphicsApi }) =>
         ({ renderDistance, maxFps, enableVsync, fancyGraphics, fabulousGraphics, skipUndisplayedFrames, simulationDistance, graphicsApi }))(this.game.settings || {}),
@@ -178,6 +195,7 @@ export class MicroProfiler {
         t: +this.time[i].toFixed(3), ms: +this.frameMs[i].toFixed(3), rendered: !!this.rendered[i], loopIterations: this.iterations[i], draws: this.draws[i],
         heapMB: +this.heap[i].toFixed(1), entities: this.entityCount[i], chunks: this.chunkCount[i],
         sections: Object.fromEntries(this.paths.map((p, k) => [p, +this.series[k][i].toFixed(3)]).filter(([, v]) => v > 0)),
+        sectionDraws: Object.fromEntries([...this.drawSeries].map(([p, d]) => [p, d[i]]).filter(([, v]) => v > 0)),
       })),
     };
   }
@@ -195,7 +213,7 @@ export class MicroProfiler {
       for (const [path, ms] of present) {
         const parent = path.includes('.') ? path.slice(0, path.lastIndexOf('.')) : '';
         const ts = cursor.get(parent) ?? start;
-        events.push({ name: path.slice(path.lastIndexOf('.') + 1), ph: 'X', pid: 1, tid: 1, ts, dur: ms * 1000, args: { path } });
+        events.push({ name: path.slice(path.lastIndexOf('.') + 1), ph: 'X', pid: 1, tid: 1, ts, dur: ms * 1000, args: { path, draws: this.drawSeries.get(path)?.[i] || 0 } });
         cursor.set(parent, ts + ms * 1000); cursor.set(path, ts);
       }
       events.push({ name: 'frame ms', ph: 'C', pid: 1, ts: end, args: { ms: this.frameMs[i] } });
@@ -247,7 +265,7 @@ export class MicroProfiler {
       const depth = r.path === 'outside' ? 0 : r.path.split('.').length - 2, c = r.path === 'outside' ? 0x505050 : profilerColor(r.name.slice(r.name.lastIndexOf('.') + 1));
       gui.rect(x + 3 + depth * 4, y + 1, x + 9 + depth * 4, y + 7, (0xff000000 | c) >>> 0);
       gui.text(r.path === 'outside' ? 'outside game loop' : r.name.slice(r.name.lastIndexOf('.') + 1), x + 12 + depth * 4, y, r.path === 'outside' ? 0xffd080 : 0xe0e0e0);
-      const right = `${fmt(r.avg)}  ${fmt(r.max)}  ${Math.round(r.share * 100)}%`;
+      const right = `${detailed && r.draws >= 1 ? Math.round(r.draws) + 'd  ' : ''}${fmt(r.avg)}  ${fmt(r.max)}  ${Math.round(r.share * 100)}%`;
       gui.text(right, x + W - 3 - gui.textWidth(right), y, 0xe0e0e0); y += lineH;
     }
     if (packets.length) {

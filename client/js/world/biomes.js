@@ -1,5 +1,5 @@
 import {registryEntries} from '../net/registry-codec.js';
-import {biomeInfoNoise} from './biome-info-noise.js';
+import {biomeInfoNoise,temperatureNoise} from './biome-info-noise.js';
 import { WATER_BIOMES } from './water-biomes.js';
 // Biome colour helpers (ColorizerGrass / ColorizerFoliage + per-biome overrides). Worker-safe.
 
@@ -39,10 +39,14 @@ function sample(map, temp, rain) {
   return (map[k] << 16) | (map[k + 1] << 8) | map[k + 2];
 }
 
-function tempAt(b, y) {
-  let t = b.temperature;
-  if (y > 64) t -= (y - 64) * 0.05 / 30;
-  return t;
+// Biome.getHeightAdjustedTemperature (1.18+): above y 80 the temperature drops with height plus TEMPERATURE_NOISE,
+// in float arithmetic like the native code. The FROZEN temperature modifier (frozen oceans) is not modelled.
+const f32 = Math.fround;
+export function heightAdjustedTemperature(b, x, y, z) {
+  const t = f32(b.temperature);
+  if (y <= 80) return t;
+  const n = f32(temperatureNoise(f32(x / 8), f32(z / 8)) * 8);
+  return f32(t - f32(f32(f32(f32(n + y) - 80) * f32(0.05)) / 40));
 }
 
 const isSwamp = (n) => n === 'swamp' || n === 'swamp_hills';
@@ -71,8 +75,9 @@ export function waterColor(id) {
   return isSwamp(b.name) ? 0x617b64 : 0x3f76e4;
 }
 
-export function biomeRainType(id, y) {
+// Biome.getPrecipitationAt: none without precipitation, snow when coldEnoughToSnow (temperature < 0.15), else rain
+export function biomeRainType(id, y, x = 0, z = 0) {
   const b = biomeInfo(id);
-  if (b.precipitation === 'none' || b.rainfall === 0) return 'none';
-  return tempAt(b, y) < 0.15 ? 'snow' : 'rain';
+  if (b.precipitation === 'none' || b.has_precipitation === false) return 'none';
+  return heightAdjustedTemperature(b, x, y, z) < 0.15 ? 'snow' : 'rain';
 }

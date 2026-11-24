@@ -700,6 +700,55 @@ vec3 mcjsWave(vec3 p){
     }
   }
 
+  // Batched terrain pass: one call per layer instead of one draw() per section. Program, textures, lightmap and
+  // state are bound once; each section then only uploads its model matrix (when it differs), binds its VAO and
+  // draws. Shader-pack terrain animation keeps the general path. Returns the number of draw calls issued.
+  drawSections(sections, layer, params, lodParams, state, textures, reverse = false) {
+    const n = sections.length;
+    if (this.terrainAnimation) {
+      let c = 0;
+      for (let k = 0; k < n; k++) {
+        const s = sections[reverse ? n - 1 - k : k], m = s[layer];
+        if (m && m.vertexCount) { this.draw({ mesh: m, pipeline: 'terrain', textures, params: s.lod ? lodParams : params, model: s.model, state }); c++; }
+      }
+      return c;
+    }
+    const gl = this.gl, prog = this.programs.terrain;
+    let first = true, c = 0, lastParams = null;
+    for (let k = 0; k < n; k++) {
+      const s = sections[reverse ? n - 1 - k : k], m = s[layer];
+      if (!m || !m.vertexCount || ((m.quads || m.ibo) && !m.indexCount)) continue;
+      if (first) {
+        first = false;
+        if (this.curProgram !== prog) { gl.useProgram(prog.p); this.curProgram = prog; }
+        if (prog.globalsVersion !== this.globalsVersion) {
+          const G = this.globals;
+          gl.uniformMatrix4fv(prog.uView, false, G.view); gl.uniformMatrix4fv(prog.uProj, false, G.proj);
+          gl.uniform4fv(prog.uFog, G.fog); gl.uniform3fv(prog.uFogColor, G.fogColor);
+          gl.uniform1i(prog.uTex0, 0); gl.uniform1i(prog.uLightmap, 1); gl.uniform4fv(prog.uDynamicLights, G.dynamicLights);
+          prog.globalsVersion = this.globalsVersion;
+        }
+        const t0 = ((textures && textures[0]) || this.white).tex;
+        if (this.boundTex[0] !== t0) { gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, t0); this.boundTex[0] = t0; }
+        const lm = (this.globals.lightmap || this.white).tex;
+        if (this.boundTex[1] !== lm) { gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, lm); gl.activeTexture(gl.TEXTURE0); this.boundTex[1] = lm; }
+        this._applyState(state || EMPTY_STATE);
+      }
+      const p = s.lod ? lodParams : params;
+      if (p !== lastParams) { if (!same16(prog.lastParams, p)) { gl.uniform4fv(prog.uP, p); prog.lastParams.set(p); } lastParams = p; }
+      const model = s.model || IDENTITY;
+      if (!same16(prog.lastModel, model)) { gl.uniformMatrix4fv(prog.uModel, false, model); prog.lastModel.set(model); }
+      if (this.curVao !== m.vao) { gl.bindVertexArray(m.vao); this.curVao = m.vao; }
+      if (m.quads) {
+        if (m.quadGen !== this.quadGen) { gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.quadBuffer); m.quadGen = this.quadGen; }
+        gl.drawElements(gl.TRIANGLES, m.indexCount, gl.UNSIGNED_INT, 0);
+      } else if (m.ibo) gl.drawElements(gl.TRIANGLES, m.indexCount, gl.UNSIGNED_INT, 0);
+      else { gl.drawArrays(gl.TRIANGLES, 0, m.vertexCount); }
+      c++;
+    }
+    return c;
+  }
+
   endFrame() {
     if (this.captureWaiters && this.captureWaiters.length) {
       const px = this._readPixels();
