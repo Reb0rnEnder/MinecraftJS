@@ -15,7 +15,7 @@ export class EntityFire {
     const draw = (d) => {
       if (this.count) d.draw({ mesh: this.mesh, pipeline: 'color', textures: [game.assets.atlasTexture], params: PARAMS, state: STATE, count: this.count * 6 });
     };
-    draw.order = 2;
+    draw.order = 2; draw.profileName = 'entityFire';
     game.renderer.extraDraws.push(draw);
   }
 

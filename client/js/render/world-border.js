@@ -37,7 +37,7 @@ export function borderGeometry(border,camera,distance,now,{mode='modern',fadePos
 export class BorderRenderer {
   constructor(game,{mode='modern',fadeAtEntity=false}={}){
     this.game=game;this.mode=mode;this.fadeAtEntity=fadeAtEntity;this.mesh=null;this.model=mat4.create();
-    const draw=d=>this.draw(d);draw.order=13;game.renderer.extraDraws.push(draw);
+    const draw=d=>this.draw(d);draw.order=13;draw.profileName='worldBorder';game.renderer.extraDraws.push(draw);
   }
   draw(device){
     const g=this.game,r=g.renderer;if(!g.inWorld)return;
