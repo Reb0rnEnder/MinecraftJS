@@ -33,6 +33,9 @@ export function colorMesh(device, quads, opts = {}) {
   return device.createMesh(FORMAT.color, data, { quads: true, ...opts });
 }
 
+const NO_PROFILER = { start() {}, end() {}, endStart() {} };
+const SOLID_STATE = { blend: 'none', cull: true }, TRANSLUCENT_STATE = { blend: 'alpha', cull: true, depthWrite: true };
+
 export class Renderer {
   constructor(device, assets) {
     this.device = device;
@@ -452,12 +455,16 @@ export class Renderer {
   // (post.js) to draw into instead of the screen; the caller runs it afterwards
   render(hand, post = null) {
     const d = this.device;
+    // Profiler sections per pass (no-ops unless the F3 pie chart or MicroProfiler is on)
+    const P = this.profiler || NO_PROFILER;
+    P.start('sky');
     d.beginFrame(this.fog.color);
     if (post) post.begin(this.fog.color);
     const fabulous=this.fabulousEnabled?(this.fabulous||=new Fabulous(d)):null;
     if(!fabulous&&this.fabulous){this.fabulous.destroy();this.fabulous=null;}
     if(fabulous)fabulous.begin(this.fog.color);
     this._drawSky();
+    P.endStart('terrain');
     d.clearDepth();
     this._globals(this.view, this.proj);
     const atlas = [this.atlasTexture];
@@ -466,14 +473,19 @@ export class Renderer {
     const vis = this.visibleList || this.cull();
     this.visibleList = null;
     this.visibleSections = vis.length;
-    const solidState = { blend: 'none', cull: true };
-    for (const s of vis) if (s.solid) d.draw({ mesh: s.solid, pipeline: 'terrain', textures: atlas, params: s.lod ? P_SOLID_LOD : P_SOLID, model: s.model, state: solidState });
-    const cutState = { blend: 'none', cull: true };
-    for (const s of vis) if (s.cutout) d.draw({ mesh: s.cutout, pipeline: 'terrain', textures: atlas, params: s.lod ? P_CUTOUT_LOD : P_CUTOUT, model: s.model, state: cutState });
+    const solidState = SOLID_STATE;
+    P.start('solid');
+    this._drawLayer(d, vis, 'solid', P_SOLID, P_SOLID_LOD, solidState, atlas, false);
+    const cutState = SOLID_STATE;
+    P.endStart('cutout');
+    this._drawLayer(d, vis, 'cutout', P_CUTOUT, P_CUTOUT_LOD, cutState, atlas, false);
+    P.end();
+    P.endStart('entities');
     // Entities + tile entities
     if (this.drawEntities) this.drawEntities(fabulous?fabulous.entityDevice:d, this.camRot);
     else drawTree(d, this.entityRoot, { camRot: this.camRot });
     // Selection outline + break progress
+    P.endStart('outline');
     if (this.outlineBox) d.draw({ mesh: this.outlineMesh, pipeline: 'color', params: P_WHITE, primitive: 'lines', state: { blend: 'alpha', depthWrite: false } });
     for (const breaking of this.breakStates || []) {
       const t = this.assets.texture(breaking.tex,{wrap:'repeat'});
@@ -484,19 +496,20 @@ export class Renderer {
         d.draw({ mesh: breaking.mesh, pipeline: 'color', textures: [t], params: P_BREAK, model: breaking.model, state: { blend: 'multiply', depthWrite: false, polygonOffset: true } });
       }
     }
-    const extras = [...this.extraDraws].sort((a, b) => (a.order || 0) - (b.order || 0));
-    for (const e of extras) if ((e.order || 0) < 10) e(d);
+    P.end();
+    const extras = this._sortedExtras();
+    for (const e of extras) if ((e.order || 0) < 10) { P.start(e.profileName || 'extra'); e(d); P.end(); }
+    P.start('translucent');
     post?.captureOpaque?.(this.proj,this.env.skyColor||this.fog.color.slice(0,3));
     if(fabulous){fabulous.prepare();d.setRenderTarget(fabulous.targets.translucent);}
     // Translucent terrain, far to near
-    const transState = { blend: 'alpha', cull: true, depthWrite: true };
-    for (let i = vis.length - 1; i >= 0; i--) {
-      const s = vis[i];
-      if (s.translucent) d.draw({ mesh: s.translucent, pipeline: 'terrain', textures: atlas, params: s.lod ? P_TRANSLUCENT_LOD : P_TRANSLUCENT, model: s.model, state: transState });
-    }
+    const transState = TRANSLUCENT_STATE;
+    this._drawLayer(d, vis, 'translucent', P_TRANSLUCENT, P_TRANSLUCENT_LOD, transState, atlas, true);
     // RenderType.tripwire targets weather in Fabulous and main otherwise.
+    P.endStart('tripwire');
     if(fabulous)d.setRenderTarget(fabulous.targets.weather);
-    for(let i=vis.length-1;i>=0;i--){const s=vis[i];if(s.tripwire)d.draw({mesh:s.tripwire,pipeline:'terrain',textures:atlas,params:P_CUTOUT,model:s.model,state:transState});}
+    this._drawLayer(d, vis, 'tripwire', P_CUTOUT, P_CUTOUT, transState, atlas, true);
+    P.endStart('clouds');
     if(fabulous)d.setRenderTarget(fabulous.targets.clouds);
     // Clouds
     if (this.env.cloudsVisible) {
@@ -509,19 +522,43 @@ export class Renderer {
         d.draw({ mesh: fc.mesh, pipeline: 'color', textures: [ct], params: p, model: fc.model, state: { blend: 'alpha', depthWrite: false, cull: false } });
       } else if (ct) d.draw({ mesh: this.cloudMesh, pipeline: 'color', textures: [ct], params: colorParams(cc[0], cc[1], cc[2], 0.8, 0.004, 1), state: { blend: 'alpha', depthWrite: !!fabulous } });
     }
+    P.end();
     for (const e of extras) if ((e.order || 0) >= 10 && (e.order||0)<20) {
+      P.start(e.profileName || 'extra');
       if(fabulous)fabulous.layer(e.order===11?'particles':e.order===12?'weather':'main',e,true);else e(d);
+      P.end();
     }
     if(fabulous)d.setRenderTarget(fabulous.targets.main);
-    for(const e of extras)if((e.order||0)>=20)e(d);
+    for(const e of extras)if((e.order||0)>=20){P.start(e.profileName||'extra');e(d);P.end();}
+    P.start('composite');
     if(fabulous)fabulous.finish();
     post?.captureDepth?.(fabulous?.targets.translucent);
+    P.endStart('hand');
     // EntityRenderer.renderWorldPass: clear depth, renderHand, then renderWorldDirections
     if (hand || this.afterHand.some((f) => f.active && f.active())) {
       d.clearDepth();
       if (hand) hand.draw(d);
       for (const f of this.afterHand) if (!f.active || f.active()) f(d);
     }
+    P.end();
+  }
+
+  // One terrain layer over the visible sections (near to far, or far to near for blended layers)
+  _drawLayer(d, vis, layer, params, lodParams, state, atlas, reverse) {
+    if (d.drawSections) { d.drawSections(vis, layer, params, lodParams, state, atlas, reverse); return; }
+    for (let k = 0, n = vis.length; k < n; k++) {
+      const s = vis[reverse ? n - 1 - k : k], m = s[layer];
+      if (m) d.draw({ mesh: m, pipeline: 'terrain', textures: atlas, params: s.lod ? lodParams : params, model: s.model, state });
+    }
+  }
+
+  // extraDraws sorted by order; re-sorted only when the list changes
+  _sortedExtras() {
+    const list = this.extraDraws, c = this._extrasCache;
+    if (c && c.length === list.length && c.source === list && list.every((e, i) => c.input[i] === e)) return c.sorted;
+    const sorted = [...list].sort((a, b) => (a.order || 0) - (b.order || 0));
+    this._extrasCache = { source: list, length: list.length, input: list.slice(), sorted };
+    return sorted;
   }
 
   // Native 1.14 CubeMap/PanoramaRenderer: full-resolution cube, four jitter
