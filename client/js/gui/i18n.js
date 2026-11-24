@@ -14,6 +14,8 @@ export const onOff = (v) => tr(v ? 'options.on' : 'options.off');
 
 export const MINECRAFTJS_EN = {
   'minecraftjs.extras.title':'MinecraftJS Extras',
+  'minecraftjs.extras.skipUndisplayedFrames':'Skip Undisplayable Frames',
+  'minecraftjs.extras.skipUndisplayedFrames.tooltip':"With VSync off, frames finished faster than your monitor refreshes are never seen. Keep running the game every frame but only draw the ones your display can show, for higher real frame rates. Not VSync: nothing is capped.",
   'minecraftjs.extras.preloadTextures':'Preload World Textures',
   'minecraftjs.extras.functionKeys':'F + Number Function Keys',
   'minecraftjs.extras.zoom':'Zoom',
