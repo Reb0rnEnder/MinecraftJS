@@ -1,3 +1,4 @@
+import {EndPortalFill} from '../end-portal-fill.js';
 import {titleFade} from '../title-fade.js';
 // Title, multiplayer, connecting, disconnected and loading screens.
 import { tr } from '../i18n.js';
@@ -536,10 +537,23 @@ export class DisconnectedScreen extends Screen {
   key(e) { return true; }
 }
 
+// ReceivingLevelScreen (1.20.5+): the background follows the reason the level is loading - the nether portal
+// sprite stretched over the screen, the end portal shader, or the panorama with blur and the menu background.
+// Closes once the level is ready or after 30 seconds; Escape does nothing.
+// ClientPacketListener.determineLevelLoadingReason: alive players moving to or from the Nether or the End
+export function levelLoadingReason(dead, newLevel, oldLevel) {
+  if (dead) return 'other';
+  if (newLevel === 'minecraft:the_nether' || oldLevel === 'minecraft:the_nether') return 'nether';
+  if (newLevel === 'minecraft:the_end' || oldLevel === 'minecraft:the_end') return 'end';
+  return 'other';
+}
+
 export class DownloadingTerrainScreen extends Screen {
-  constructor(game) {
+  constructor(game, reason = 'other') {
     super(game);
-    this.background = 'dirt';
+    this.reason = reason;
+    this.background = reason === 'other' ? 'world' : 'none';
+    this.panoramaBackground = reason === 'other';
     this.terrainReady = false;
     this.ticks = 0;
   }
@@ -549,11 +563,18 @@ export class DownloadingTerrainScreen extends Screen {
     if (this.terrainReady) {
       // Wait until the chunk the player stands in exists (vanilla closes as soon as position is received)
       const loaded = g.world.isLoaded(Math.floor(g.player.x), Math.floor(g.player.z));
-      if (loaded || this.ticks > 200) g.screens.close();
+      if (loaded) { g.screens.close(); return; }
     }
+    if (this.ticks > 600) g.screens.close();
   }
-  renderContent(gui) {
+  renderContent(gui, mx, my, partial) {
+    if (this.reason === 'nether') {
+      const A = this.game.assets, e = A.atlas?.entries.get('block/nether_portal');
+      // blitted without blending: the translucent sprite covers everything drawn before it
+      if (e) { gui.setBlend('none'); gui.quad(A.atlasTexture, 0, 0, gui.width, gui.height, e.uv[0], e.uv[1], e.uv[2], e.uv[3], [1, 1, 1, 1]); gui.setBlend('alpha'); }
+    } else if (this.reason === 'end') (this.portalFill ||= new EndPortalFill(this.game)).draw(gui, 0, 0, this.width, this.height, partial);
     gui.textCentered(tr('multiplayer.downloadingTerrain'), this.width / 2, this.height / 2 - 50, 0xffffff);
   }
+  onClose() { this.portalFill?.destroy(); }
   key(e) { return true; }
 }

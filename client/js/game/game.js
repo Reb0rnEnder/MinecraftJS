@@ -86,7 +86,7 @@ import { Hud } from '../gui/hud.js';
 import { Narrator } from '../gui/narrator.js';
 import { Tutorial } from './tutorial.js';
 import { ScreenManager } from '../gui/screens/manager.js';
-import { DownloadingTerrainScreen, DisconnectedScreen, ConnectingScreen } from '../gui/screens/menus.js';
+import { DownloadingTerrainScreen, levelLoadingReason, DisconnectedScreen, ConnectingScreen } from '../gui/screens/menus.js';
 import { ChatScreen } from '../gui/screens/chat.js';
 import { PauseScreen,InvisiblePauseScreen } from '../gui/screens/pause.js';
 import { DeathScreen } from '../gui/screens/death.js';
@@ -1075,7 +1075,7 @@ export class Game {
       this.tileRenderer.clear();
     this.pistons.clear();
       this.doneLoadingTerrain = false;
-      this.screens.open(new DownloadingTerrainScreen(this));
+      this.screens.open(new DownloadingTerrainScreen(this, levelLoadingReason(this.dead, p.worldName, this.worldName)));
     }
     this.dimension = p.dimension;
     this.worldName=p.worldName;this.dimensionData=p.dimensionData;this.lastDeathLocation=p.death;
@@ -1393,7 +1393,7 @@ export class Game {
       case 3: { const gm = Math.floor(p.value + 0.5); if (gm !== this.gameMode) this.previousGameMode = this.gameMode; this.gameMode = gm; this.applyGameMode(); break; }
       case 4: {
         const value=Math.floor(p.value+.5);
-        if(value===0){this.send(C.clientCommand(0));this.screens.open(new DownloadingTerrainScreen(this));}
+        if(value===0){this.send(C.clientCommand(0));this.screens.open(new DownloadingTerrainScreen(this,'end'));}
         else if(value===1){const conn=this.conn;import('../gui/screens/credits.js').then(m=>{if(this.conn===conn&&this.inWorld)this.screens.open(new m.CreditsScreen(this));});}
         break;
       }
@@ -2184,7 +2184,7 @@ export class Game {
     const partial = this.partial;
     const gui = this.gui;
     if (!this.inWorld || !this.doneLoadingTerrain) {
-      if (this.screens.current && !this.inWorld) r.renderPanorama(platform().now(),this.settings.panoramaSpeed);
+      if (this.screens.current && (!this.inWorld || this.screens.current.panoramaBackground)) r.renderPanorama(platform().now(),this.settings.panoramaSpeed);
       else r.renderBlank();
       gui.begin();
       const overlay=gui.tex('gui/title/background/panorama_overlay.png');
