@@ -137,6 +137,8 @@ export class ContainerScreen extends Screen {
   }
 
   handleClick(slot, slotId, button, mode) {
+    // AbstractContainerScreen.slotClicked tells the tutorial about plain left/right clicks on a slot
+    if (mode === 0 && (button === 0 || button === 1) && slotId >= 0) this.game.tutorial?.onInventoryAction?.(this.game.inventory.cursor, this.container.get?.(slotId) ?? null, button);
     this.container.click(slotId, button, mode);
   }
 
