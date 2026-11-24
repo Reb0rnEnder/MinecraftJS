@@ -11,7 +11,7 @@ const TREE_BLOCKS = ["oak_log", "spruce_log", "birch_log", "jungle_log", "acacia
 const FIND_TREE_TAG = 'minecraft:completes_find_tree_tutorial';
 
 // TutorialToast.Icons (column, row in toasts.png from u 176)
-const ICONS = { movement: [0, 0], mouse: [1, 0], tree: [2, 0], recipeBook: [0, 1], planks: [1, 1] };
+const ICONS = { movement: [0, 0], mouse: [1, 0], tree: [2, 0], recipeBook: [0, 1], planks: [1, 1], rightClick: [3, 1] };
 
 class Toast {
   constructor(icon, title, subtitle, progressBar) {
@@ -81,7 +81,36 @@ export class Tutorial {
     return (this.game.assets.data.items || []).some((it) => this.tagged('items', 'minecraft:planks', it.id) && stats.get('crafted', it.name) > 0);
   }
 
+  // Tutorial.TimedToast: shown for a fixed number of ticks with a filling progress bar
+  addTimedToast(toast, ticks) { (this.timedToasts ||= []).push({ toast, ticks, age: 0 }); this.toast(toast); }
+  removeTimedToast(toast) { if (this.timedToasts) this.timedToasts = this.timedToasts.filter((t) => t.toast !== toast); toast.hide(); }
+  tickTimedToasts() {
+    if (!this.timedToasts?.length) return;
+    this.timedToasts = this.timedToasts.filter((t) => { t.toast.setProgress(Math.min(++t.age / t.ticks, 1)); if (t.age > t.ticks) { t.toast.hide(); return false; } return true; });
+  }
+
+  // BundleTutorial.onInventoryAction (button 0 = ClickAction.PRIMARY, 1 = SECONDARY): left-clicking a bundle while
+  // carrying something shows how to insert; right-clicking to insert or take out finishes it for good
+  onInventoryAction(carried, slotItem, button) {
+    const s = this.game.settings;
+    if (s.hideBundleTutorial) return;
+    const filled = (it) => !!(it && it.id && it.count !== 0), bundle = (it) => filled(it) && this.itemName(it) === 'bundle';
+    if (filled(carried) && bundle(slotItem)) {
+      if (button === 0) {
+        if (this.bundleToast) this.removeTimedToast(this.bundleToast);
+        this.bundleToast = new Toast('rightClick', tr('tutorial.bundleInsert.title'), tr('tutorial.bundleInsert.description'), true);
+        this.addTimedToast(this.bundleToast, 160);
+      } else if (button === 1) this.finishBundleTutorial();
+    } else if (bundle(carried) && filled(slotItem) && button === 1) this.finishBundleTutorial();
+  }
+  finishBundleTutorial() {
+    if (this.bundleToast) { this.removeTimedToast(this.bundleToast); this.bundleToast = null; }
+    const s = this.game.settings;
+    if (!s.hideBundleTutorial) { s.hideBundleTutorial = true; s.save(); }
+  }
+
   update() {
+    this.tickTimedToasts();
     if (this.step) {
       if (this.game.inWorld) this.step.update(); else this.stop();
     } else if (this.game.inWorld) this.reload();
