@@ -102,6 +102,7 @@ const SHADERS = {
   let t = textureSample(tex0, samp0, fract(0.5 + 0.5 * r));
   let col = t.rgb * D.p[0].rgb;
   let f = fogFactor(i.depth);
+  if (D.p[0].w > 1.5) { return vec4f(col, 1.0); } // 1.17+ rendertype_end_portal passes: opaque, no fog
   if (D.p[0].w < 0.5) { return vec4f(mix(col, G.fogColor.rgb, f), t.a); }
   return vec4f(col * (1.0 - f), 1.0);
 }`,

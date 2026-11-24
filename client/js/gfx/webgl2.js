@@ -124,7 +124,8 @@ void main() {
   vec3 col = t.rgb * uP[0].rgb;
   float f = fogFactor(vDepth);
   // the sky pass blends with the scene; the portal passes add up, fogging towards black (setupFogColor(true))
-  o = uP[0].w < 0.5 ? vec4(mix(col, uFogColor, f), t.a) : vec4(col * (1.0 - f), 1.0);
+  // uP[0].w = 2: 1.17+ rendertype_end_portal passes, opaque and without fog
+  o = uP[0].w > 1.5 ? vec4(col, 1.0) : uP[0].w < 0.5 ? vec4(mix(col, uFogColor, f), t.a) : vec4(col * (1.0 - f), 1.0);
 }`,
   },
   // Vanilla post-processing programs (see device.js); texCoord is vanilla's (origin bottom left), and render targets are

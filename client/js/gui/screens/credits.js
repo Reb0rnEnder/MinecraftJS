@@ -2,6 +2,9 @@
 import {Screen} from './manager.js';
 import {C} from '../../net/packets.js';
 import {JavaRandom} from '../../util/jrandom.js';
+import {FORMAT} from '../../gfx/device.js';
+import {mat4} from '../../gfx/math.js';
+import {endPortalPasses17,updateEndPortalPasses17,shaderGameTime,PORTAL_LAYERS} from '../../render/end-portal-17.js';
 
 export function creditLines(sections){
   const lines=[];
@@ -47,11 +50,25 @@ export class CreditsScreen extends Screen {
   key(e){if(e.code==='Escape'){this.finish();return true;}this.held.add(e.code);this._speed();return true;}
   keyUp(e){this.held.delete(e.code);this._speed();}
   close(){this.finish();}
+  // WinScreen.renderBackground: during the poem the whole screen is filled with RenderType.endPortal()
+  _portalBackground(gui,W,H,partial){
+    const g=this.game,d=g.device;
+    if(!this.portalMesh||this.portalSize!==W+'x'+H){
+      if(this.portalMesh)d.destroyMesh(this.portalMesh);
+      this.portalMesh=d.createMesh(FORMAT.color,new Float32Array([0,0,0,0,0,1,1,1,1, 0,H,0,0,1,1,1,1,1, W,H,0,1,1,1,1,1,1, W,0,0,1,0,1,1,1,1]),{quads:true});
+      this.portalSize=W+'x'+H;this.portalPasses||=endPortalPasses17(PORTAL_LAYERS);
+    }
+    updateEndPortalPasses17(this.portalPasses,shaderGameTime(g.world?.worldAge??0,partial),d.width,d.height);
+    for(const P of this.portalPasses){
+      const tex=g.assets.texture(P.texture,{wrap:'repeat'});
+      if(tex)gui.drawMesh({mesh:this.portalMesh,pipeline:'endportal',textures:[tex],params:P.params,state:{blend:P.blend,depthTest:false,depthWrite:false,cull:false}},mat4.create());
+    }
+  }
+  onClose(){if(this.portalMesh){this.game.device.destroyMesh(this.portalMesh);this.portalMesh=null;}}
   render(gui,mx,my,partial){
     const W=this.width,H=this.height,scroll=Math.max(0,this.scroll+partial*this.speed);
     if(!this.poem)gui.menuBackground(this.game.inWorld,0,0,W,H,scroll*.5);
-    // End-poem portal background remains tracked in P10; no legacy dirt asset.
-    else gui.rect(0,0,W,H,0xff000000);
+    else this._portalBackground(gui,W,H,partial);
     if(!this.lines)return;
     const x=Math.floor(W/2)-128,k=H+50,off=-scroll;
     gui.pushMatrix();gui.translate(0,off);
