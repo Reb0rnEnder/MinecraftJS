@@ -23,6 +23,7 @@ import { getBlock } from '../world/blocks.js';
 import { isPointInFluid } from '../world/fluids.js';
 import { mcSin, mcCos } from './physics.js';
 import { chatToLegacy } from '../gui/chat.js';
+import { initDisplay, applyDisplayMeta, tickDisplay } from './display-entity.js';
 import { ENTITY_TYPES, ENTITIES_BY_NAME, MOB_FAMILIES, OBJECT_TYPES, MINECART_NAMES, PAINTINGS,
   ANIMALS, AGEABLE, HORSES, ZOMBIES, FISH, ARROWS, FIREBALLS } from './entity-types.js';
 
@@ -220,6 +221,7 @@ export class EntityManager {
     e.pickable = ['boat', 'minecart', 'crystal', 'itemframe', 'leash', 'armorstand', 'shulker_bullet'].includes(e.kind) || e.entityName === 'fireball';
     // Interaction defines its own dimensions, independent of EntityType's zero
     // registration size. Native bfs defaults to 1x1 and is always pickable.
+    if (e.kind === 'display') { initDisplay(e, WIRE_METADATA[e.entityName]); e.noPhysics = true; }
     if (e.kind === 'interaction') {
       // Interaction changes its AABB without refreshing the zero registered eye height.
       e.width = e.height = 1; e.eyeHeight = 0;
@@ -329,6 +331,8 @@ export class EntityManager {
     // EntityBoat.setPositionAndRotationDirect: lerpSteps = 10; EntityMinecart: turnProgress = increments + 2
     if (e.kind === 'boat') e.inc = 10;
     else if (e.kind === 'minecart') e.inc = inc + 2;
+    // Display.lerpTo: posRotInterpolationDuration steps (0 applies on the next tick)
+    else if (e.kind === 'display') { e.inc = Math.max(1, e.display?.posRotDuration || 0); return; }
     if (SNAP_KINDS.has(e.kind)) {
       // Non-living entities snap like vanilla's setPositionAndRotation for these
       e.inc = 1;
@@ -422,6 +426,7 @@ export class EntityManager {
     const name = e.entityName;
     if(name==='painting'&&wire[PAINTING_VARIANT_INDEX_762]!==undefined)configurePainting762(e,wire[PAINTING_VARIANT_INDEX_762]);
     const own=WIRE_METADATA[name]||{},assign=(symbol,key)=>{const id=own[symbol];if(id!==undefined&&wire[id]!==undefined){if(['snifferState','dashing'].includes(key)&&e[key]!==wire[id])e.wildAnimationStart=e.ticks;e[key]=wire[id];}};
+    if (e.kind === 'display') applyDisplayMeta(e, wire, own);
     if (name === 'interaction') {
       assign('DATA_WIDTH_ID', 'width'); assign('DATA_HEIGHT_ID', 'height');
       assign('DATA_RESPONSE_ID', 'response');
@@ -991,6 +996,7 @@ export class EntityManager {
       e.prevLimbSwingAmount = e.limbSwingAmount;
       e.prevSwingProgress = e.swingProgress;
       e.ticks++;
+      if (e.display) tickDisplay(e);
       if (e.id !== g.entityId) g.particles?.sprint?.(e);
       if(e.entityName==='goat') e.goatRammingTicks = Math.max(0, Math.min(20, (e.goatRammingTicks || 0) + (e.goatRamming ? 1 : -2)));
       if(e.entityName==='glow_squid'&&e.darkTicks>0)e.darkTicks--;

@@ -367,6 +367,7 @@ export class Renderer {
   // bobbing, which are GL ops issued before orientCamera)
   setCamera(x, y, z, yawDeg, pitchDeg, rollDeg, fov, pre = null, projectionWarp = null) {
     this.camPos = [x, y, z];
+    this.camYaw = yawDeg; this.camPitch = pitchDeg; // Camera.getYRot / getXRot (display billboards)
     this.fov = fov;
     this.aspect = platform().width / platform().height;
     // view = Rz(-roll) * Rx(pitch) * Ry(yaw - 180) * T(-pos)
