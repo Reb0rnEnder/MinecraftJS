@@ -136,15 +136,49 @@ class LanguageScreen extends OptionsBase {
 }
 
 // GuiVideoSettings: GuiOptionsRowList (two columns, scrolling) with GameSettings.Options in 1.8.9 order
+// MinecraftJS extras, grouped: a landing page of categories, each opening its own page.
+const EXTRA_CATEGORIES=['graphics','performance','lighting','controls','debug'];
+const EXTRA_CATEGORY_OF={lodFastLeaves:'performance',reduceDistantAnimations:'performance',animateDistantTextures:'performance',preloadTextures:'performance',skipUndisplayedFrames:'performance',functionKeyChords:'controls',zoomEnabled:'controls',dynamicLights:'lighting',dynamicLightsOthers:'lighting',fullBright:'lighting',microprofiler:'debug'};
 export class MinecraftJSExtrasScreen extends OptionsBase{
-  constructor(game,parent,options){super(game,parent,'minecraftjs.extras.title');this.options=options||[];}
-  init(){const g=this.game,s=this.s,toggle=(key,field)=>({label:()=>trOption(key,onOff(!!s[field])),click:()=>{s[field]=!s[field];}});
-    const items=this.options.map(it=>it.extra==='shaders'?{...it,click:()=>import('./shaders.js').then(m=>g.screens.open(new m.ShaderPacksScreen(g,this)))}:it);
+  constructor(game,parent,options,category=null){super(game,parent,category?'minecraftjs.extras.category.'+category:'minecraftjs.extras.title');this.options=options||[];this.category=category;}
+  items(){const g=this.game,s=this.s,toggle=(key,field)=>({cat:EXTRA_CATEGORY_OF[field]||'graphics',label:()=>trOption(key,onOff(!!s[field])),click:()=>{s[field]=!s[field];}});
+    const items=this.options.map(it=>({cat:'graphics',...(it.extra==='shaders'?{...it,click:()=>import('./shaders.js').then(m=>g.screens.open(new m.ShaderPacksScreen(g,this)))}:it)}));
     items.push(toggle('minecraftjs.extras.lodFastLeaves','lodFastLeaves'),toggle('minecraftjs.extras.reduceDistantAnimations','reduceDistantAnimations'),toggle('minecraftjs.extras.animateDistantTextures','animateDistantTextures'),toggle('minecraftjs.extras.preloadTextures','preloadTextures'),{...toggle('minecraftjs.extras.skipUndisplayedFrames','skipUndisplayedFrames'),tip:()=>tr('minecraftjs.extras.skipUndisplayedFrames.tooltip')},toggle('minecraftjs.extras.functionKeys','functionKeyChords'),toggle('minecraftjs.extras.zoom','zoomEnabled'),toggle('minecraftjs.extras.dynamicLights','dynamicLights'),toggle('minecraftjs.extras.otherLights','dynamicLightsOthers'),toggle('minecraftjs.extras.fullBright','fullBright'));
-    this.grid(items);this.doneButton();
+    items.push({...toggle('minecraftjs.extras.microprofiler','microprofiler'),tip:()=>tr('minecraftjs.extras.microprofiler.tooltip')},{cat:'debug',label:()=>tr('minecraftjs.extras.microprofiler.open')+'…',click:()=>g.screens.open(new MicroProfilerScreen(g,this))});
+    return items;}
+  init(){const g=this.game,all=this.items();
+    if(this.category){this.grid(all.filter(it=>it.cat===this.category));this.doneButton();return;}
+    this.grid(EXTRA_CATEGORIES.filter(c=>all.some(it=>it.cat===c)).map(c=>({label:()=>tr('minecraftjs.extras.category.'+c)+'…',click:()=>g.screens.open(new MinecraftJSExtrasScreen(g,this,this.options,c))})));
+    this.doneButton();
   }
   done(){this.game.applyGraphicsSettings?.();super.done();}
 }
+
+// MicroProfiler controls: overlay detail, capture, reset and export (JSON or a Chrome/Perfetto trace)
+export class MicroProfilerScreen extends OptionsBase{
+  constructor(game,parent){super(game,parent,'minecraftjs.extras.microprofiler.title');}
+  get mp(){const g=this.game;return g.microprofiler;}
+  init(){const g=this.game,s=this.s,mp=()=>g.ensureMicroProfiler?.();
+    this.grid([
+      {label:()=>trOption('minecraftjs.extras.microprofiler',onOff(!!s.microprofiler)),click:()=>{s.microprofiler=!s.microprofiler;g.ensureMicroProfiler?.();}},
+      {label:()=>trOption('minecraftjs.extras.microprofiler.overlay',tr('minecraftjs.extras.microprofiler.overlay.'+(this.mp?.overlay||'compact'))),click:()=>{const m=mp();if(m){const modes=['compact','detailed','off'];m.overlay=modes[(modes.indexOf(m.overlay)+1)%3];s.microprofilerOverlay=m.overlay;}}},
+      {label:()=>tr(this.mp?.paused?'minecraftjs.extras.microprofiler.resume':'minecraftjs.extras.microprofiler.pause'),click:()=>{const m=mp();if(m)m.paused=!m.paused;}},
+      {label:()=>tr('minecraftjs.extras.microprofiler.reset'),click:()=>{mp()?.reset();}},
+      {label:()=>tr('minecraftjs.extras.microprofiler.exportJson'),click:()=>{const m=mp();if(m){this.message=tr('minecraftjs.extras.microprofiler.exported',[Math.round(m.export('json')/1024)]);}}},
+      {label:()=>tr('minecraftjs.extras.microprofiler.exportTrace'),click:()=>{const m=mp();if(m){this.message=tr('minecraftjs.extras.microprofiler.exported',[Math.round(m.export('trace')/1024)]);}}},
+    ]);
+    this.doneButton();
+  }
+  render(gui,mx,my,partial){super.render(gui,mx,my,partial);
+    const m=this.mp,y=Math.floor(this.height/6)+24*3+8;
+    if(!m||!m.enabled){gui.textCentered('§7'+tr('minecraftjs.extras.microprofiler.disabled'),Math.floor(this.width/2),y,0xffffff);return;}
+    const st=m.stats(m.count),f=v=>v.toFixed(2);
+    const lines=[tr('minecraftjs.extras.microprofiler.summary',[st.frames,f(st.frameAvg),f(st.p95),f(st.p99),f(st.max)]),tr('minecraftjs.extras.microprofiler.rates',[Math.round(st.renderedFps),Math.round(st.processedFps),Math.round(st.draws)])];
+    if(this.message)lines.push('§a'+this.message);
+    lines.forEach((l,i)=>gui.textCentered(l,Math.floor(this.width/2),y+i*11,0xe0e0e0));
+  }
+}
+
 
 class VideoScreen extends OptionsBase {
   constructor(game, parent) { super(game, parent, 'options.videoTitle'); }
