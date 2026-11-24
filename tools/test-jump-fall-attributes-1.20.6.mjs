@@ -25,3 +25,16 @@ test('fall damage subtracts safe_fall_distance only (Jump Boost arrives as its m
   assert.equal(damage,expected,'safe '+safe+' boost '+boost);
  }
 });
+
+test('LivingEntity.getEffectiveGravity: Slow Falling caps the gravity attribute at 0.01 while falling, on land too',()=>{
+ const step=(gravity,slow,motionY)=>{const world=floor(),p=new LocalPlayer();p.setPosition(5.5,10,5.5);p.gravity=gravity;p.slowFalling=slow;p.motionY=motionY;p.motionX=p.motionZ=0;p._moveWithHeading(world,0,0,0.02);return p.motionY;};
+ const drag=0.98;
+ assert.ok(Math.abs(step(0.08,true,-0.2)-(-0.2-0.01)*drag)<1e-6,'slow falling');
+ assert.ok(Math.abs(step(0.005,true,-0.2)-(-0.2-0.005)*drag)<1e-6,'a lower gravity attribute stays');
+ assert.ok(Math.abs(step(0.08,true,0.2)-(0.2-0.08)*drag)<1e-6,'rising is not capped');
+ assert.ok(Math.abs(step(0.16,false,-0.2)-(-0.2-0.16)*drag)<1e-6,'gravity attribute');
+});
+
+test('Slow Falling and Levitation clear the fall distance every tick',()=>{
+ for(const [slow,lev] of [[true,-1],[false,0]]){const world=floor(),p=new LocalPlayer();p.setPosition(5.5,10,5.5);p.slowFalling=slow;p.levitation=lev;p.fallDistance=12;p.motionY=-0.3;p._moveWithHeading(world,0,0,0.02);assert.ok(p.fallDistance<0.5,"only this tick's drop remains: "+p.fallDistance);}
+});

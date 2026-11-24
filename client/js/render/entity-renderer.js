@@ -1135,6 +1135,8 @@ export class EntityRenderer {
 
   _renderLiving(e, v, p, partial) {
     const g = this.game;
+    // LivingEntityRenderer.render: poseStack.scale(getScale()) before the body rotations
+    if (v.yawGroup) v.yawGroup.scale.setScalar(e.attrScale ?? 1);
     const lerpAngle = (a, b) => { let d = b - a; while (d < -180) d += 360; while (d >= 180) d -= 360; return a + d * partial; };
     let body = e.kind === 'mob' && e.type === 69 ? 180 : lerpAngle(e.prevBodyYaw, e.bodyYaw); // EntityShulker keeps its body at 180
     const head = lerpAngle(e.prevHeadYaw, e.headYaw);

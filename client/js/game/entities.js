@@ -24,6 +24,7 @@ import { isPointInFluid } from '../world/fluids.js';
 import { mcSin, mcCos } from './physics.js';
 import { chatToLegacy } from '../gui/chat.js';
 import { initDisplay, applyDisplayMeta, tickDisplay } from './display-entity.js';
+import { applyEntityScale, setScaleAttribute } from './entity-scale.js';
 import { ENTITY_TYPES, ENTITIES_BY_NAME, MOB_FAMILIES, OBJECT_TYPES, MINECART_NAMES, PAINTINGS,
   ANIMALS, AGEABLE, HORSES, ZOMBIES, FISH, ARROWS, FIREBALLS } from './entity-types.js';
 
@@ -393,6 +394,7 @@ export class EntityManager {
     if (!e) return;
     Object.assign(e.metadata, meta);
     this._applyMeta(e, meta);
+    applyEntityScale(e);
   }
 
   // 1.13.2 data parameters, audited through each class's superclass chain in the
@@ -639,6 +641,7 @@ export class EntityManager {
     e.attributes = e.attributes || {};
     for (const prop of p.properties) {
       if (prop.key === 'generic.maxHealth') e.maxHealth = prop.value;
+      if (prop.key === 'generic.scale') setScaleAttribute(e, prop);
       e.attributes[prop.key] = prop; // movement speed and jump strength drive a ridden horse
     }
   }
@@ -806,7 +809,7 @@ export class EntityManager {
     s.x = pl.x; s.y = pl.y; s.z = pl.z;
     s.yaw = pl.yaw; s.pitch = pl.pitch; s.headYaw = pl.yaw;
     s.sleeping=!!pl.sleeping;s.bedPos=g.bedPos;s.sleepingPosition=g.bedPos;
-    s.width=pl.width;s.height=pl.height;s.eyeHeight=pl.eyeHeight();
+    s.width=pl.width;s.height=pl.height;s.eyeHeight=pl.eyeHeight();s.attrScale=pl.scale||1; // the local player already applies generic.scale to its own size
     s.sneaking = !!pl.crouching; s.swimming = pl.swimming; s.visuallySwimming = pl.pose === 'swimming'; s.pose = pl.pose;
     s.inWater = !!pl.inWater; s.onGround = pl.onGround;
     s.usingItem = pl.usingItem; s.riptide = !!pl.riptide;
