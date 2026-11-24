@@ -94,11 +94,9 @@ export class Interaction {
     const reach = this.reach();
     let hit = g.world.raycast(eye[0], eye[1], eye[2], look[0], look[1], look[2], reach);
     let blockDist = hit ? hit.dist : reach;
-    let entityReach = g.gameMode === 1 ? 6 : reach;
-    if (g.gameMode !== 1 && blockDist > 3) blockDist = blockDist;
-    // Entities
+    // Entities: the search stops at the block pick result, which is a miss at block reach when nothing is hit
     let best = null;
-    let bestDist = hit ? hit.dist : entityReach;
+    let bestDist = blockDist;
     for (const e of g.entities.pickable()) {
       if (!e.pickable || e.id === g.entityId || e.id === g.ridingEntityId) continue;
       const border = entityPickRadius(e);
@@ -113,8 +111,10 @@ export class Interaction {
       }
       if (r && r.t < bestDist) { bestDist = r.t; best = { e, r }; }
     }
-    if (best && (g.gameMode === 1 || best.r.t <= 3)) {
-      this.target = { type: 'entity', entity: best.e, hit: [eye[0] + look[0] * best.r.t, eye[1] + look[1] * best.r.t, eye[2] + look[2] * best.r.t] };
+    if (best) {
+      // getMouseOver / GameRenderer.pick: outside Creative an entity more than 3 blocks away becomes a miss at the
+      // entity, not the block behind it
+      this.target = g.gameMode === 1 || best.r.t <= 3 ? { type: 'entity', entity: best.e, hit: [eye[0] + look[0] * best.r.t, eye[1] + look[1] * best.r.t, eye[2] + look[2] * best.r.t] } : null;
     } else if (hit) {
       this.target = { type: 'block', ...hit };
     } else this.target = null;
