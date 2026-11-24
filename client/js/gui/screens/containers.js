@@ -836,12 +836,14 @@ class HorseScreen extends ContainerScreen {
     // inactive slots (Slot.isActive false) take no clicks and draw nothing
     this.slotPos = this.layout.slots.filter(([i]) => !this.layout.hidden.has(i));
   }
-  drawBackground(gui) {
+  drawBackground(gui, mx, my) {
     const t = 'gui/container/horse.png', L = this.guiLeft, T = this.guiTop, l = this.layout;
     gui.blit(t, L, T, 0, 0, this.xSize, this.ySize);
     if (l.chest) gui.blit(t, L + 79, T + 17, 0, this.ySize, l.columns * 18, 54);
     if (l.saddleable) gui.blit(t, L + 7, T + 35 - 18, 18, this.ySize + 54, 18, 18);
     if (l.armor) gui.blit(t, L + 7, T + 35, l.llama ? 36 : 0, this.ySize + 54, 18, 18);
+    // GuiScreenHorseInventory: the animal at (51, 60), scale 17, looking toward the mouse
+    this.game.entityRenderer?.drawMobInGui?.(gui, this.entity, L + 51, T + 60, 17, L + 51 - (mx ?? L), T + 75 - 50 - (my ?? T));
   }
   drawForeground(gui) {
     this.title(gui, this.container.title, 8, 6);
