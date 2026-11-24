@@ -20,11 +20,13 @@ test('enabling wraps subsystems into nested sections; disabling restores the ori
   const g=fakeGame(),proto=Renderer.prototype.render,ownTick=g.tick,mp=new MicroProfiler(g);g.profiler.enabled=true;
   mp.setEnabled(true);assert.notEqual(g.renderer.render,proto);
   for(let i=0;i<10;i++)g.frame(i%2===0);
-  const st=mp.stats();assert.equal(st.frames,10);
+  const st=mp.stats();assert.equal(st.frames,5,'one entry per rendered frame');
+  assert.equal(Array.from(mp.iterations.slice(0,5)).reduce((a,b)=>a+b,0)+mp.pendingIterations,10,'skipped iterations fold into the next rendered frame');
+  assert.ok(st.processedFps>st.renderedFps*1.5,'processed rate counts every loop iteration');
   const row=p=>st.rows.find(r=>r.path===p);
   assert.ok(row('root.gameRenderer.frame.world').avg>0,'renderer.render nested under the wrapped renderFrame');
   assert.ok(row('root.tick.gameTick.entities'),'entities.tick nested under the game tick');
-  assert.equal(mp.rendered.slice(0,10).reduce((a,b)=>a+b,0),5);assert.equal(mp.draws[0],2);assert.equal(mp.chunkCount[0],2);
+  assert.equal(mp.rendered.slice(0,5).reduce((a,b)=>a+b,0),5);assert.equal(mp.draws[0],2);assert.equal(mp.chunkCount[0],2);
   mp.setEnabled(false);assert.equal(g.renderer.render,proto);assert.ok(!Object.hasOwn(g.renderer,'render'),'prototype method restored by removing the wrapper');assert.equal(g.tick,ownTick);assert.equal(g.profiler.onFrame,null);
 });
 test('packets are timed by name; the ring buffer keeps the newest frames',()=>{
