@@ -13,7 +13,7 @@ export const DEFAULT_KEYS = {
 };
 
 const DEFAULTS = {
-  preloadTextures:false,skipUndisplayedFrames:true,functionKeyChords:true,zoomEnabled:true,dynamicLights:false,dynamicLightsOthers:true,fullBright:false,
+  preloadTextures:false,microprofiler:false,microprofilerOverlay:'compact',skipUndisplayedFrames:true,functionKeyChords:true,zoomEnabled:true,dynamicLights:false,dynamicLightsOthers:true,fullBright:false,
   skipMultiplayerWarning: false,
   fov: 70,
   fovEffectScale:1,screenEffectScale:1,entityDistanceScaling:1,chatLineSpacing:0,chatDelay:0,hideMatchedNames:true,
