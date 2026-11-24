@@ -688,6 +688,7 @@ export class Game {
   // Connect as the active account (or as an explicit offline username)
   async connect(host, port, username = null, transfer = null) {
     this.disconnect(true);
+    this.serverBrand = null;
     const attempt=this.connectAttempt=(this.connectAttempt||0)+1;
     this.reset();
     this.serverAddress = { host, port };
@@ -735,6 +736,8 @@ export class Game {
         this.hud.clearChat();
         this.hud.sentHistory = [];
       }
+      // ClientConfigurationPacketListener: minecraft:brand is the server brand shown by F3
+      if (packet.name === 'custom_payload') this.on_custom_payload(packet);
     });
     try {
       await conn.connect(host, port, username, auth, transfer);
@@ -914,7 +917,8 @@ export class Game {
     }
     if(p.blockStateRegistrySize)this.world.blockStateRegistrySize=p.blockStateRegistrySize;
     if(p.airStates)this.world.airStates=p.airStates.slice();
-    this.serverBrand=null;this.serverViewDistance=p.viewDistance??this.settings.renderDistance;
+    // 1.20.2+: the server brand arrives during configuration and carries into play (CommonListenerCookie)
+    this.serverViewDistance=p.viewDistance??this.settings.renderDistance;
     resetServerRecipes(this);this.nbtQueries?.clear();
     this.eaglerTextures?.clear();
     this.interaction?.predictedBlocks?.clear();
