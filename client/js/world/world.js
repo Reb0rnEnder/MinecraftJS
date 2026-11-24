@@ -121,6 +121,7 @@ export class World {
     const old = c.getState(x & 15, y, z & 15);
     if (old === state) return;
     c.setState(x & 15, y, z & 15, state);
+    c.blockRevision = (c.blockRevision || 0) + 1; // invalidates per-column caches (weather heights)
     this._updateHeight(c, x & 15, y, z & 15, state);
     const change = [x, y, z, old, state];
     if (this._batch) { this._batch.push(change); return; }

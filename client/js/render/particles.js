@@ -53,7 +53,7 @@ export class Particles {
     this.batchE = new Batch(dev, 'entity/explosion.png');
     const resolve = (t) => (typeof t === 'function' ? t() : game.assets.texture(t));
     const draw = (d) => { for (const b of [this.batchP, this.batchA, this.batchE]) b.draw(d, resolve); };
-    draw.order = 11;
+    draw.order = 11; draw.profileName = 'particles';
     r.extraDraws.push(draw);
   }
 

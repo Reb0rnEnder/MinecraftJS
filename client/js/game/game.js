@@ -154,6 +154,7 @@ export class Game {
     this.input.on('move', () => this.screens.onMove());
 
     this.profiler = new Profiler();
+    this.renderer.profiler = this.profiler;
     this.frameTimes = new Float32Array(240); // lagometer (FrameTimer)
     this.frameTimeIndex = 0;
     this.showHitboxes = false;
@@ -1784,7 +1785,9 @@ export class Game {
     this.debugLines.update(partial);
     this.profiler.endStart('particles');
     this.particles.render(partial, ex, ey, ez);
+    this.profiler.endStart('weather');
     this.weather.render(partial, ex, ey, ez);
+    this.profiler.endStart('selection');
     this.interaction.renderSelection(partial);
     const hand = this.thirdPerson === 0 && !this.hideGui && this.gameMode !== 3 ? this.handRenderer.prepare(partial, fov) : null;
     this.profiler.endStart('level');

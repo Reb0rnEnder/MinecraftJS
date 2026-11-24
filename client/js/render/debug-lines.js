@@ -45,7 +45,7 @@ export class DebugLines {
     this.axes = new LineBatch(game.device);
     this.axesAt = null; // [x, y, z] in world space, or null
     const draw = (d) => this.boxes.draw(d, { blend: 'alpha', depthWrite: false, cull: false });
-    draw.order = 20;
+    draw.order = 20; draw.profileName = 'debugLines';
     game.renderer.extraDraws.push(draw);
     // EntityRenderer.renderWorldDirections: after the hand, with the hand's projection and an unbobbed camera
     this.axesCam = null; // { view, proj } set by the game each frame, or null
