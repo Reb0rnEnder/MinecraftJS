@@ -6,7 +6,9 @@
 import { platform } from '../platform/platform.js';
 import { profilerColor } from './profiler.js';
 
-export const CAPACITY = 1200; // frames kept (about 10-20 s)
+// Entries kept. One entry is one rendered frame; loop iterations that did not render (Skip Undisplayable Frames,
+// FPS limit) are folded into the next rendered frame, so the buffer covers real seconds even at 30k loop/s.
+export const CAPACITY = 1200;
 // [object path on the game, method, section name]. Missing objects/methods are skipped, so every release works.
 const TARGETS = [
   ['', 'tick', 'gameTick'], ['', 'renderFrame', 'frame'],
@@ -31,7 +33,8 @@ export class MicroProfiler {
   reset() {
     this.count = 0; this.head = 0;
     this.time = new Float64Array(CAPACITY); this.frameMs = new Float32Array(CAPACITY);
-    this.rendered = new Uint8Array(CAPACITY); this.draws = new Uint32Array(CAPACITY);
+    this.rendered = new Uint8Array(CAPACITY); this.draws = new Uint32Array(CAPACITY); this.iterations = new Uint32Array(CAPACITY);
+    this.pending = new Map(); this.pendingIterations = 0;
     this.heap = new Float32Array(CAPACITY); this.entityCount = new Uint32Array(CAPACITY); this.chunkCount = new Uint32Array(CAPACITY);
     this.paths = []; this.pathIndex = new Map(); this.series = [];
     this.packets = new Map(); // name -> { count, ms, max }
@@ -97,18 +100,24 @@ export class MicroProfiler {
   // Profiler.endFrame hands over this frame's section times
   record(frame) {
     const now = platform().now(), g = this.game;
-    if (this.paused) { this.packetFrame = 0; this.drawFrame = 0; this.lastStamp = now; return; }
+    if (this.paused) { this.packetFrame = 0; this.drawFrame = 0; this.lastStamp = now; this.pending.clear(); this.pendingIterations = 0; return; }
+    const rendered = frame.has('root.gameRenderer');
+    // Fold this iteration's sections into the pending entry; only a rendered frame (or a stalled loop) writes one
+    for (const [path, ms] of frame) this.pending.set(path, (this.pending.get(path) || 0) + ms);
+    this.pendingIterations++;
+    if (!rendered && (!this.lastStamp || now - this.lastStamp < 250)) { if (!this.lastStamp) this.lastStamp = now; return; }
     const i = this.head;
     this.time[i] = now;
     this.frameMs[i] = this.lastStamp ? now - this.lastStamp : 0;
     this.lastStamp = now;
-    this.rendered[i] = frame.has('root.gameRenderer') || frame.has('root.gameRenderer.frame') ? 1 : 0;
+    this.rendered[i] = rendered ? 1 : 0; this.iterations[i] = this.pendingIterations;
     this.draws[i] = this.drawFrame; this.drawFrame = 0;
     this.heap[i] = (globalThis.performance?.memory?.usedJSHeapSize || 0) / 1048576;
     this.entityCount[i] = g.entities?.map?.size ?? 0;
     this.chunkCount[i] = g.world?.chunks?.size ?? 0;
     for (const s of this.series) s[i] = 0;
-    for (const [path, ms] of frame) this._series(path)[i] = ms;
+    for (const [path, ms] of this.pending) this._series(path)[i] = ms;
+    this.pending.clear(); this.pendingIterations = 0;
     this._series('packets')[i] = this.packetFrame; this.packetFrame = 0;
     this.head = (i + 1) % CAPACITY;
     if (this.count < CAPACITY) this.count++;
@@ -142,7 +151,7 @@ export class MicroProfiler {
     const renderedCount = idx.reduce((a, i) => a + this.rendered[i], 0);
     return {
       frames: idx.length, frameAvg, p50: pct(.5), p95: pct(.95), p99: pct(.99), max: sorted[sorted.length - 1] || 0,
-      processedFps: span > 0 ? (idx.length - 1) / span : 0, renderedFps: span > 0 ? renderedCount / span : 0,
+      processedFps: span > 0 ? (idx.slice(1).reduce((a, i) => a + this.iterations[i], 0)) / span : 0, renderedFps: span > 0 ? (renderedCount - this.rendered[idx[0]]) / span : 0,
       draws: idx.length ? idx.reduce((a, i) => a + this.draws[i], 0) / idx.length : 0,
       heap: idx.length ? this.heap[idx[idx.length - 1]] : 0, rows,
     };
@@ -157,7 +166,8 @@ export class MicroProfiler {
   toJSON() {
     const idx = this.recent();
     return {
-      format: 'minecraftjs-microprofiler', version: 1, capturedAt: new Date().toISOString(),
+      format: 'minecraftjs-microprofiler', version: 2, capturedAt: new Date().toISOString(),
+      note: 'One frame per rendered frame; loopIterations counts the game-loop iterations folded into it. Browser timers are often limited to 0.1 ms.',
       userAgent: globalThis.navigator?.userAgent || null,
       settings: (({ renderDistance, maxFps, enableVsync, fancyGraphics, fabulousGraphics, skipUndisplayedFrames, simulationDistance, graphicsApi }) =>
         ({ renderDistance, maxFps, enableVsync, fancyGraphics, fabulousGraphics, skipUndisplayedFrames, simulationDistance, graphicsApi }))(this.game.settings || {}),
@@ -165,7 +175,7 @@ export class MicroProfiler {
       summary: this.stats(this.count),
       packets: this.packetStats(),
       frames: idx.map((i) => ({
-        t: +this.time[i].toFixed(3), ms: +this.frameMs[i].toFixed(3), rendered: !!this.rendered[i], draws: this.draws[i],
+        t: +this.time[i].toFixed(3), ms: +this.frameMs[i].toFixed(3), rendered: !!this.rendered[i], loopIterations: this.iterations[i], draws: this.draws[i],
         heapMB: +this.heap[i].toFixed(1), entities: this.entityCount[i], chunks: this.chunkCount[i],
         sections: Object.fromEntries(this.paths.map((p, k) => [p, +this.series[k][i].toFixed(3)]).filter(([, v]) => v > 0)),
       })),
