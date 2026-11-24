@@ -137,6 +137,18 @@ fn fetchAux(c: vec2f) -> vec4f {
     let l = dot(f, vec3f(0.3, 0.59, 0.11));
     return vec4f(l + (f - l) * D.p[0].z, 1.0);
   }
+  if (m == 18) {
+    let one = 1.0 / inSize;
+    let c = fetchIn(tc); let l = fetchIn(tc - vec2f(one.x, 0.0)); let r = fetchIn(tc + vec2f(one.x, 0.0));
+    let u = fetchIn(tc - vec2f(0.0, one.y)); let d = fetchIn(tc + vec2f(0.0, one.y));
+    let total = clamp(abs(c.a - l.a) + abs(c.a - r.a) + abs(c.a - u.a) + abs(c.a - d.a), 0.0, 1.0);
+    return vec4f((c.rgb * c.a + l.rgb * l.a + r.rgb * r.a + u.rgb * u.a + d.rgb * d.a) * 0.2, total);
+  }
+  if (m == 19) {
+    let st = D.p[1].xy / inSize;
+    let b = (fetchIn(tc - 2.0 * st) + fetchIn(tc - st)) * 0.5 + (fetchIn(tc) + fetchIn(tc + st)) * 0.5 + fetchIn(tc + 2.0 * st) * 0.5;
+    return vec4f((b / 2.5).rgb, b.a);
+  }
   if (m == 4) {
     let one = 1.0 / inSize;
     let R = D.p[1].z;
