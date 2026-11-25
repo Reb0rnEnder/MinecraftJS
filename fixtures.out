@@ -1,0 +1,29 @@
+(node:14776) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///C:/Users/Nicholas/.config/freebuff-desktop/local-projects/c4265ae4-548d-46d4-9b68-787f620a134f/MinecraftJS/client/js/net/buffer.js is not specified and it doesn't parse as CommonJS.
+Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+To eliminate this warning, add "type": "module" to C:\Users\Nicholas\.config\freebuff-desktop\local-projects\c4265ae4-548d-46d4-9b68-787f620a134f\MinecraftJS\package.json.
+(Use `node --trace-warnings ...` to show where the warning was created)
+{
+  "protocol": 777,
+  "compressionThreshold": 256,
+  "uuid": "f760d74c-502f-39a8-89dc-0a414a06d037",
+  "name": "Probe26_3",
+  "sessionId": "085cf48d-b694-4ed1-99f5-69310cd4352d",
+  "properties": 0,
+  "configIds": [
+    1,
+    13,
+    15
+  ],
+  "brand": "vanilla",
+  "enabledFeatures": [
+    "minecraft:vanilla"
+  ],
+  "packs": [
+    {
+      "namespace": "minecraft",
+      "id": "core",
+      "version": "26.3"
+    }
+  ]
+}
+Native 26.3 byte fixtures passed: 5 frames decoded and Login Success round-tripped

@@ -2,6 +2,9 @@
 // This asserts the protocol we ported to is the protocol Mojang's own jar speaks.
 import net from 'node:net';
 import zlib from 'node:zlib';
+import {mkdir,writeFile} from 'node:fs/promises';
+import {join} from 'node:path';
+import {root} from './prepare.mjs';
 
 const HOST=process.env.PROBE_HOST||'127.0.0.1';
 const PORT=Number(process.env.PROBE_PORT||25568);
@@ -56,7 +59,7 @@ async function login(){
   socket.write(packet(0x00,Buffer.concat([writeString('Probe26_3'),uuid])));
   const seen=[];
   const loginPackets=[],configPackets=[];
-  const loginResult={loginPackets,configPackets};
+  const loginResult={loginPackets,configPackets,frames:[]};
   let phase='login';
   const deadline=Date.now()+20000;
   try{
@@ -65,11 +68,13 @@ async function login(){
       const [id]=packetId(payload);
       if(phase==='login'){
         loginPackets.push(id);
+        loginResult.frames.push({phase,id,hex:Buffer.from(payload).toString('hex')});
         if(id===0x03){const [threshold]=readVarint(payload,1);reader.threshold=threshold;continue;}
         if(id===0x02){socket.write(frame(0x03,Buffer.alloc(0),reader.threshold));phase='configuration';continue;}
         if(id===0x00){loginResult.disconnectReason=payload.subarray(1).toString('utf8').slice(0,300);loginResult.hex=payload.toString('hex').slice(0,200);break;}
       }else{
         configPackets.push(id);
+        if(configPackets.length<=4)loginResult.frames.push({phase,id,hex:Buffer.from(payload).toString('hex')});
         if(id===0x03)break; // finish_configuration
       }
       seen.push(phase+':'+id);
@@ -95,4 +100,9 @@ console.log(JSON.stringify({
   configPackets:loginResult.configPackets.slice(0,8),
   reachedConfiguration:loginResult.configPackets.length>0
 },null,2));
+if(process.argv.includes('--write-fixtures')){
+  const dir=join(root,'tools/port-26.3/fixtures');await mkdir(dir,{recursive:true});
+  await writeFile(join(dir,'login-config-26.3.json'),JSON.stringify({target:'26.3',protocol:777,recordedOn:'2026-11-25',note:'Captured from a disposable native 26.3 server on 127.0.0.1; payload hex includes the packet id.',frames:loginResult.frames},null,2)+'\n');
+  console.log('Wrote '+loginResult.frames.length+' native frames to tools/port-26.3/fixtures/login-config-26.3.json');
+}
 console.log('Native 26.3 probe passed: status protocol 777, login+configuration packets received');

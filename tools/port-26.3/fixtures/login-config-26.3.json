@@ -1,0 +1,33 @@
+{
+  "target": "26.3",
+  "protocol": 777,
+  "recordedOn": "2026-11-25",
+  "note": "Captured from a disposable native 26.3 server on 127.0.0.1; payload hex includes the packet id.",
+  "frames": [
+    {
+      "phase": "login",
+      "id": 3,
+      "hex": "038002"
+    },
+    {
+      "phase": "login",
+      "id": 2,
+      "hex": "02f760d74c502f39a889dc0a414a06d0370950726f626532365f3300085cf48db6944ed199f569310cd4352d"
+    },
+    {
+      "phase": "configuration",
+      "id": 1,
+      "hex": "010f6d696e6563726166743a6272616e640776616e696c6c61"
+    },
+    {
+      "phase": "configuration",
+      "id": 13,
+      "hex": "0d01116d696e6563726166743a76616e696c6c61"
+    },
+    {
+      "phase": "configuration",
+      "id": 15,
+      "hex": "0f01096d696e65637261667404636f72650432362e33"
+    }
+  ]
+}

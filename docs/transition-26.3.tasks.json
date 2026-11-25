@@ -54,11 +54,17 @@
     {
       "id": "P03",
       "title": "Binary primitives, text and component codecs",
-      "status": "todo",
+      "status": "partial",
       "dependsOn": ["P02"],
       "releaseRefs": ["1.21.2", "1.21.5", "26.3"],
       "acceptance": "Byte fixtures round-trip against native codecs, including the 26.3 component and dialog/waypoint families; complete packet consumption is asserted.",
-      "evidence": []
+      "evidence": [
+        "Native frames captured on 2026-11-25 from a disposable 26.3 server into tools/port-26.3/fixtures/login-config-26.3.json (5 frames, payload hex including the packet id).",
+        "byte-fixtures.mjs decodes them with the client's own Reader: compression threshold 256, Login Success uuid/name/properties, brand 'minecraft:brand'='vanilla', Update Enabled Features ['minecraft:vanilla'], Select Known Packs [minecraft:core:26.3]; every packet must be fully consumed.",
+        "Login Success re-encodes through the client's Writer to the exact native bytes.",
+        "Native change found by javap, not guessed: 26.3 renames the class to ClientboundLoginFinishedPacket and its STREAM_CODEC is composite(GAME_PROFILE, UUIDUtil.STREAM_CODEC), so Login Success carries a session UUID after the profile. The fixture asserts it (085cf48d-...).",
+        "Open: no Play packet codecs, no component/dialog/waypoint codecs, and the client's net layer still speaks 766."
+      ]
     },
     {
       "id": "P04",
