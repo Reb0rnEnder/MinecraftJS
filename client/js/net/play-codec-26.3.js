@@ -107,6 +107,12 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     return {centerX:r.f64(),centerZ:r.f64(),oldSize:r.f64(),newSize:r.f64(),lerpTime:String(r.varlong()),maxSize:r.varint(),warningBlocks:r.varint(),warningTime:r.varint()};
   },
   block_update(r){return {position:r.position(),state:r.varint()};},
+  ticking_state(r){return {tickRate:r.f32(),frozen:r.bool()};},
+  ticking_step(r){return {tickSteps:r.varint()};},
+  rotate_head(r){return {entityId:r.varint(),yHeadRot:r.i8()};},
+  // 26.3 move packets take VecDelta (three shorts) plus an onGround flag.
+  move_entity_pos(r){return {entityId:r.varint(),dx:r.i16(),dy:r.i16(),dz:r.i16(),onGround:r.bool()};},
+  bundle_delimiter(){return {};},
   // SectionBlocksUpdate packs each change as VarLong(stateId << 12 | section-local position).
   section_blocks_update(r){
     const section=r.i64();
