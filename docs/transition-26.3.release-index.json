@@ -1,0 +1,160 @@
+{
+  "target": "26.3",
+  "recordedOn": "2026-11-25",
+  "method": "direct curl with a descriptive user agent",
+  "releases": [
+    {
+      "release": "1.21",
+      "url": "https://minecraft.wiki/w/Java_Edition_1.21",
+      "retrieval": "curl",
+      "status": "200",
+      "bytes": 954712,
+      "sha256": "b12b530e901baee338acb200c38f70295b0a311eb0511cb4c3e11d6d7c1ce9fb",
+      "treatedAsArticle": true
+    },
+    {
+      "release": "1.21.1",
+      "url": "https://minecraft.wiki/w/Java_Edition_1.21.1",
+      "retrieval": "curl",
+      "status": "200",
+      "bytes": 280024,
+      "sha256": "b4923fed6cc8492d15cf70f1365b9420ca5b9fa0f7edea5595413bfe389f690f",
+      "treatedAsArticle": true
+    },
+    {
+      "release": "1.21.2",
+      "url": "https://minecraft.wiki/w/Java_Edition_1.21.2",
+      "retrieval": "curl",
+      "status": "200",
+      "bytes": 593709,
+      "sha256": "d4adb0af8c23f6e36698ee8df7acec8fb4c526733cb27a1eebc6b455c209a304",
+      "treatedAsArticle": true
+    },
+    {
+      "release": "1.21.3",
+      "url": "https://minecraft.wiki/w/Java_Edition_1.21.3",
+      "retrieval": "curl",
+      "status": "200",
+      "bytes": 278844,
+      "sha256": "b476a09c78b5fc600d2b42a1f371cb0a37940eb3eb2b8cfdc41f99684a28d582",
+      "treatedAsArticle": true
+    },
+    {
+      "release": "1.21.4",
+      "url": "https://minecraft.wiki/w/Java_Edition_1.21.4",
+      "retrieval": "curl",
+      "status": "200",
+      "bytes": 449180,
+      "sha256": "db704cf82d4ebb96a06d5f8321ffeea9e11f4fbbba53e7258e9851ee015ad012",
+      "treatedAsArticle": true
+    },
+    {
+      "release": "1.21.5",
+      "url": "https://minecraft.wiki/w/Java_Edition_1.21.5",
+      "retrieval": "curl",
+      "status": "200",
+      "bytes": 620505,
+      "sha256": "bc2a1fd2140f4274a41d27e1f539625565a83a69b3b36ff21ff15d95d3a3695b",
+      "treatedAsArticle": true
+    },
+    {
+      "release": "1.21.6",
+      "url": "https://minecraft.wiki/w/Java_Edition_1.21.6",
+      "retrieval": "curl",
+      "status": "200",
+      "bytes": 492124,
+      "sha256": "fe0f5b724275b67158a60e588c2013d452650be172a4cfe7bd30157631081288",
+      "treatedAsArticle": true
+    },
+    {
+      "release": "1.21.7",
+      "url": "https://minecraft.wiki/w/Java_Edition_1.21.7",
+      "retrieval": "curl",
+      "status": "200",
+      "bytes": 290528,
+      "sha256": "00db40c2a8c64213e945916d4d1c50f9eb21a35c7aa130dddf2e3c0b1695e5a8",
+      "treatedAsArticle": true
+    },
+    {
+      "release": "1.21.8",
+      "url": "https://minecraft.wiki/w/Java_Edition_1.21.8",
+      "retrieval": "curl",
+      "status": "200",
+      "bytes": 279917,
+      "sha256": "be243e9b86ba2a836aa83ec9da02015f11aaa8325aba44270767d7b827a4a256",
+      "treatedAsArticle": true
+    },
+    {
+      "release": "1.21.9",
+      "url": "https://minecraft.wiki/w/Java_Edition_1.21.9",
+      "retrieval": "curl",
+      "status": "200",
+      "bytes": 568992,
+      "sha256": "04c48e12623105b56b0dedbb643e8830b578fa1249b760f5d6b2a431fb800153",
+      "treatedAsArticle": true
+    },
+    {
+      "release": "1.21.10",
+      "url": "https://minecraft.wiki/w/Java_Edition_1.21.10",
+      "retrieval": "curl",
+      "status": "200",
+      "bytes": 279082,
+      "sha256": "f62ce68c3ff9b61b6032e997c132b66123a8309ce21b8fb71653fb24181e5fba",
+      "treatedAsArticle": true
+    },
+    {
+      "release": "1.21.11",
+      "url": "https://minecraft.wiki/w/Java_Edition_1.21.11",
+      "retrieval": "curl",
+      "status": "200",
+      "bytes": 492473,
+      "sha256": "bda624e3f61980b137e84c787d0dbf92b30eb5a95f4229d11f976588b64867db",
+      "treatedAsArticle": true
+    },
+    {
+      "release": "26.1",
+      "url": "https://minecraft.wiki/w/Java_Edition_26.1",
+      "retrieval": "curl",
+      "status": "200",
+      "bytes": 572048,
+      "sha256": "962ceeed504d8d7753b92e9a1cab5b3f2c7f02f1addf83c9d10567e5dc8f64ac",
+      "treatedAsArticle": true
+    },
+    {
+      "release": "26.1.1",
+      "url": "https://minecraft.wiki/w/Java_Edition_26.1.1",
+      "retrieval": "curl",
+      "status": "200",
+      "bytes": 277902,
+      "sha256": "caabc74b07ad983db0b7b2676fefc1bd497b0c38f525b8ab333da960c77b5a03",
+      "treatedAsArticle": true
+    },
+    {
+      "release": "26.1.2",
+      "url": "https://minecraft.wiki/w/Java_Edition_26.1.2",
+      "retrieval": "curl",
+      "status": "200",
+      "bytes": 279464,
+      "sha256": "23b2c32b829046de207188dc273008d96b98c5069e5b0a1877b682e436d9042d",
+      "treatedAsArticle": true
+    },
+    {
+      "release": "26.2",
+      "url": "https://minecraft.wiki/w/Java_Edition_26.2",
+      "retrieval": "curl",
+      "status": "200",
+      "bytes": 425491,
+      "sha256": "34dce632f502bfd343abd221e58538fa5e4522c4734a667de27fb4312c6c0779",
+      "treatedAsArticle": true
+    },
+    {
+      "release": "26.3",
+      "url": "https://minecraft.wiki/w/Java_Edition_26.3",
+      "retrieval": "curl",
+      "status": "200",
+      "bytes": 841199,
+      "sha256": "e33f16468399cbe8fd19a6a4a6e5c6bd8fa48cee4854b81ccb08c41ddae52c11",
+      "treatedAsArticle": true
+    }
+  ]
+}

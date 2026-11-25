@@ -28,11 +28,15 @@
     {
       "id": "P01",
       "title": "Triage all 17 release histories between 1.20.6 and 26.3",
-      "status": "todo",
+      "status": "partial",
       "dependsOn": ["P00"],
       "releaseRefs": ["1.21", "1.21.1", "1.21.2", "1.21.3", "1.21.4", "1.21.5", "1.21.6", "1.21.7", "1.21.8", "1.21.9", "1.21.10", "1.21.11", "26.1", "26.1.1", "26.1.2", "26.2", "26.3"],
       "acceptance": "Every release topic/fix has a native-client, server-owned, experiment, product-outside-scope or experiment-gated disposition; sources record URL, retrieval method and SHA-256; challenge pages are never treated as articles.",
-      "evidence": []
+      "evidence": [
+        "All 17 crosswalk articles fetched with direct curl on 2026-11-25: HTTP 200, 277,902-954,712 bytes each, treated as articles after an mw-content-text check; URL, status, bytes and SHA-256 recorded in docs/transition-26.3.release-index.json.",
+        "First-pass additions read from each article and summarised in the crosswalk table (1.21 copper/tuff/crafter; 1.21.2 bundles; 1.21.4 creaking heart; 1.21.5 leaf litter/firefly bush; 1.21.6 dried ghast/harness; 1.21.9 copper bars/chains/chest; 26.1 golden dandelion; 26.2 cinnabar/sulfur caves; 26.3 poplar/dappled forest/straw bed/abandoned camps/cushion).",
+        "Open: per-topic disposition counts and the official-notes cross-check are not recorded yet, so this task stays partial."
+      ]
     },
     {
       "id": "P02",

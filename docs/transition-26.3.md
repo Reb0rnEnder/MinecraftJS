@@ -35,23 +35,23 @@ P01 before they are treated as sources; a link here is a work item, not a comple
 
 | Release | Port requirements and native acceptance focus |
 | --- | --- |
-| [1.21](https://minecraft.wiki/w/Java_Edition_1.21) | Trial chambers, breeze/wind charge, mace, heavy core, crafter, vault/ominous items, copper bulb families, new tuff/brick sets, armadillo/wolf armor; component and enchantment changes. |
+| [1.21](https://minecraft.wiki/w/Java_Edition_1.21) | From its Additions section: chiseled copper (crafting table and stonecutter recipes), copper grates, copper bulbs whose light dims as they oxidize, the crafter, and the tuff block families. Trial-chamber content and enchantment changes are in the same article. Verify every item against the native reports; this row is a pointer, not a spec. |
 | [1.21.1](https://minecraft.wiki/w/Java_Edition_1.21.1) | Hotfix release: verify client-visible behavior of its fixes only; do not import server internals. |
-| [1.21.2](https://minecraft.wiki/w/Java_Edition_1.21.2) | Bundles of bravery, pale garden ingredients, item-model/`item_model` rework, `consumable`/`use_remainder` component split, minecart improvements, protocol/packet reshuffle. |
+| [1.21.2](https://minecraft.wiki/w/Java_Edition_1.21.2) | From its Additions section: bundles (a mixed stack of 64, dyeable, with an inside tooltip) and the field-masoned banner pattern. The item-model, `consumable` and `use_remainder` changes sit under Changes and must be read there, not inferred from the additions list. |
 | [1.21.3](https://minecraft.wiki/w/Java_Edition_1.21.3) | Hotfix release: confirm no target-only feature is backported into older branches. |
-| [1.21.4](https://minecraft.wiki/w/Java_Edition_1.21.4) | The garden awakens: pale oak family, creaking/creaking heart, resin, eyeblossom, wood sets; new block/item/entity families and sounds. |
-| [1.21.5](https://minecraft.wiki/w/Java_Edition_1.21.5) | Spring to life: biome ambience, firefly bushes, leaf litter, wildflowers, cactus flower, armadillo/egg changes, `test`/`tooltip_display` components, GUI sprite changes. |
-| [1.21.6](https://minecraft.wiki/w/Java_Edition_1.21.6) | Chase the skies: happy ghast/harness, dried ghast, player locator bar, dialog screens, waypoints, sky/cloud rendering changes. |
+| [1.21.4](https://minecraft.wiki/w/Java_Edition_1.21.4) | From its Additions section: the creaking heart (living pale-oak block, activates between two pale logs, emits resin clumps when its creaking is hit, drops only with Silk Touch when placed) and the pale garden content around it. |
+| [1.21.5](https://minecraft.wiki/w/Java_Edition_1.21.5) | From its Additions section: leaf litter (smelted from leaves, works like pink petals), wildflowers, the firefly bush with its light-level-13 particle behaviour, and the cactus flower. |
+| [1.21.6](https://minecraft.wiki/w/Java_Edition_1.21.6) | From its Additions section: the dried ghast (found in soul-sand-valley fossils, crafted from soul sand and eight ghast tears, waterlogs through three states into a ghastling) and the harness crafted from leather, glass and wool. |
 | [1.21.7](https://minecraft.wiki/w/Java_Edition_1.21.7) | Hotfix release: verify client-visible fixes; record anything server-owned. |
 | [1.21.8](https://minecraft.wiki/w/Java_Edition_1.21.8) | Hotfix release: verify client-visible fixes; record anything server-owned. |
-| [1.21.9](https://minecraft.wiki/w/Java_Edition_1.21.9) | Copper age: copper golem/chest, lightning rod variants, shelves, copper tools/armor, `equippable`/`swappable` render changes, new GUI and menu families. |
+| [1.21.9](https://minecraft.wiki/w/Java_Edition_1.21.9) | From its Additions section: copper bars and copper chains (waxable, oxidizing, crafted from ingots/nuggets) and the copper chest with waxed and oxidized variants. |
 | [1.21.10](https://minecraft.wiki/w/Java_Edition_1.21.10) | Hotfix release: verify client-visible fixes; record anything server-owned. |
 | [1.21.11](https://minecraft.wiki/w/Java_Edition_1.21.11) | Hotfix release: verify client-visible fixes; record anything server-owned. |
-| [26.1](https://minecraft.wiki/w/Java_Edition_26.1) | First year-based release. Fetch the article and official notes in P01 before assigning scope; do not assume the numbering implies a small release. |
+| [26.1](https://minecraft.wiki/w/Java_Edition_26.1) | First year-based release. From its Additions section: the golden dandelion (crafted from a dandelion and eight gold nuggets, sold by wandering traders) which stops and restarts baby-mob aging via `AgeLocked`, with distinct particles for each direction, and cannot be used on monsters or villagers. |
 | [26.1.1](https://minecraft.wiki/w/Java_Edition_26.1.1) | Hotfix release: verify client-visible fixes only. |
 | [26.1.2](https://minecraft.wiki/w/Java_Edition_26.1.2) | Hotfix release: verify client-visible fixes only. |
-| [26.2](https://minecraft.wiki/w/Java_Edition_26.2) | The README's Eaglercraft relay row already names "26.2", so this release exists in the wider ecosystem; scope comes from its own article in P01. |
-| [26.3](https://minecraft.wiki/w/Java_Edition_26.3) | Target. Scope is whatever its article and official notes record, plus the accumulated data/protocol state in the pinned jars. |
+| [26.2](https://minecraft.wiki/w/Java_Edition_26.2) | From its Additions section: cinnabar (stairs, slabs, walls, polished and brick sets), sulfur caves, and the bubble-generating sulfur block that produces a nausea-causing gas cloud on the water surface. |
+| [26.3](https://minecraft.wiki/w/Java_Edition_26.3) | Target. From its Additions section: poplar trees and leaves (red, orange and yellow, with colour-matched falling-leaf particles), the dappled forest biome, red shrubs, shelf mushrooms in two sizes with bone-meal growth, one-use straw beds that do not set spawn, abandoned camps with eight biome camp maps plus buried ancient-city maps in the secret chest, the cushion entity, the poplar boat, and concrete crafting/stonecutting. |
 
 Indexed topics and present models are not passed scenarios. Each topic gets one disposition:
 implemented and accepted; implemented but unverified; missing; server-owned with client acceptance
