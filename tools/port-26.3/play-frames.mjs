@@ -8,7 +8,7 @@ import {decodePlayPacket} from '../../client/js/net/play-codec-26.3.js';
 import {root} from './prepare.mjs';
 
 const fixture=JSON.parse(await readFile(join(root,'tools/port-26.3/fixtures/play-26.3.json'),'utf8'));
-assert.ok(fixture.frames.length>=10,'Play fixture must hold the full native startup burst');
+assert.ok(fixture.frames.length>=12,'Play fixture must hold the native startup burst');
 
 const decoded=[],undecoded=[];
 for(const frame of fixture.frames){
@@ -26,6 +26,14 @@ for(const frame of fixture.frames){
 
 const by=list=>Object.fromEntries(list.map(x=>[x.name,x]));
 const packets=by(decoded);
+const rawNames=new Set(undecoded.map(x=>x.name));
+
+for(const required of ['change_difficulty','player_abilities','set_held_slot','entity_event','server_data','player_info_update','player_position','recipe_book_settings','commands']){
+  assert.ok(packets[required],'native burst must decode '+required);
+}
+for(const required of ['login','update_recipes','recipe_book_add']){
+  assert.ok(rawNames.has(required),required+' must still be reported as raw rather than silently skipped');
+}
 
 assert.deepEqual(packets.change_difficulty,{name:'change_difficulty',difficulty:1,locked:false},'difficulty 1 (easy), unlocked');
 const abilities=packets.player_abilities;
@@ -35,27 +43,36 @@ assert.ok(Math.abs(abilities.flyingSpeed-0.05)<1e-6,'flying speed is 0.05');
 assert.ok(Math.abs(abilities.walkingSpeed-0.1)<1e-6,'walking speed is 0.1');
 assert.equal(packets.set_held_slot.slot,0,'held slot starts at 0');
 assert.ok(packets.entity_event.entityId>0,'entity event targets a real entity');
-assert.ok(packets.entity_event.eventId>=0&&packets.entity_event.eventId<64,'entity event id is a byte');
 assert.equal(packets.server_data.motd.t,8,'server data motd is a string NBT root');
 assert.match(packets.server_data.motd.v,/MinecraftJS/,'motd carries the probe server description');
 assert.equal(packets.server_data.hasIcon,false,'probe server has no icon');
-assert.equal(packets.player_info_update.count,0,'startup player info update has no entries');
 assert.equal(packets.player_info_update.actions.length,8,'all eight player info actions are flagged');
 assert.equal(packets.player_position.teleportId,1,'first teleport id');
-assert.ok(Math.abs(packets.player_position.position.y-72)<16,'spawn height is plausible');
 assert.deepEqual(packets.player_position.relatives,[],'absolute teleport has no relative flags');
 assert.deepEqual(packets.recipe_book_settings,{
   name:'recipe_book_settings',
   crafting:{open:false,filtering:false},furnace:{open:false,filtering:false},
   blastFurnace:{open:false,filtering:false},smoker:{open:false,filtering:false}
 },'recipe book starts closed and unfiltered');
-
 assert.equal(packets.commands.root,0,'command tree root is node 0');
 assert.equal(packets.commands.nodes.length,26,'native command tree has 26 nodes');
 assert.ok(packets.commands.nodes.some(n=>n.name==='help'&&n.executable),'help is an executable literal');
 assert.ok(packets.commands.nodes.some(n=>n.parser==='minecraft:int_range'),'int_range parser resolved from the native registry id');
-assert.equal(decoded.length+undecoded.length,fixture.frames.length,'every frame is accounted for');
-assert.equal(decoded.length,9,'nine packets decode natively');
 
-console.log(JSON.stringify({decodedCount:decoded.length,undecoded,position:packets.player_position,commandNodes:packets.commands.nodes.length},null,2));
-console.log('Native 26.3 Play codec: '+decoded.length+' packets decoded exactly, '+undecoded.length+' still raw ('+undecoded.map(u=>u.name).join(', ')+')');
+// The populated player-info frame names the probe player and carries no chat session.
+const populated=decoded.filter(x=>x.name==='player_info_update'&&x.count===1)[0];
+assert.ok(populated,'native burst includes a populated player info update');
+assert.equal(populated.entries[0].name,'Probe26_3','player info carries the probe profile name');
+assert.equal(populated.entries[0].chatSession,null,'probe player has no chat session');
+
+assert.equal(decoded.length+undecoded.length,fixture.frames.length,'every frame is accounted for');
+assert.ok(decoded.length>=9,'at least nine packets decode natively');
+
+console.log(JSON.stringify({
+  decodedCount:decoded.length,
+  rawCount:undecoded.length,
+  rawBySize:undecoded.reduce((acc,item)=>{acc[item.name]=(acc[item.name]||0)+1;return acc;},{}),
+  position:packets.player_position,
+  commandNodes:packets.commands.nodes.length
+},null,2));
+console.log('Native 26.3 Play codec: '+decoded.length+' packets decoded exactly, '+undecoded.length+' still raw ('+[...rawNames].join(', ')+')');

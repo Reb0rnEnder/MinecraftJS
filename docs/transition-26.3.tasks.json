@@ -101,7 +101,10 @@
         "26.3 redesign found in the commands packet: argument types are a registry id into minecraft:command_argument_type (0-61, read from the native registries report) followed by ArgumentTypeInfo.deserializeFromNetwork properties, not the 1.20.6 parser name string. A new restricted flag (bit 32) exists. The captured 26-node tree decodes to zero leftover and resolves int_range, message, string, entity, objective and integer parsers.",
         "26.3 network NBT confirmed from NbtIo.writeAnyTag bytecode: tag id only, no root name. Reading server_data with the named-root reader underflowed; the anonymous reader consumes it exactly.",
         "Player info update actions are a fixed 1-byte bitset over the eight actions (FriendlyByteBuf.writeFixedBitSet), not a VarInt mask.",
-        "Open: 9 of 144 inbound Play IDs decoded. No Play handlers, no chunk/entity/registry consumers."
+        "Chunk path landed: level_chunk_with_light decodes all 9 captured native chunks with zero leftover (24 sections, heightmaps, block entities, light byte-array layers). Validated against the jar's own registry: every section nonEmptyBlockCount equals the number of non-air states unpacked, and all state ids are below the native 35,723.",
+        "26.3 chunk findings from bytecode: a section now carries two shorts (nonEmptyBlockCount, fluidCount); BitStorage packs floor(64/bits) values per long, so 5-bit sections are 342 longs and not 320; biome containers hold 64 entries; BIT_SET is a byte array, not a long array. Name mapping shows 26.2 cinnabar and sulfur in the caves at y=0.",
+        "Live-world layer added: set_time (26.3 clock map), game_event, chunk batch start/finished, chunk cache center, spawn position, health, experience, border (now includes warningTime), block_update, section_blocks_update (VarLong state<<12|pos). Thirty captured frames decode with zero leftover across 20 distinct packet types.",
+        "Open: 20 of 144 inbound Play IDs decoded. No Play handlers, no chunk/entity/registry consumers."
       ]
     },
     {

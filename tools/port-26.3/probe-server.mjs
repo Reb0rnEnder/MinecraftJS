@@ -152,8 +152,10 @@ if(process.argv.includes('--write-fixtures')){
   const dir=join(root,'tools/port-26.3/fixtures');await mkdir(dir,{recursive:true});
   await writeFile(join(dir,'login-config-26.3.json'),JSON.stringify({target:'26.3',protocol:777,recordedOn:'2026-11-25',note:'Captured from a disposable native 26.3 server on 127.0.0.1; payload hex includes the packet id.',frames:loginResult.frames},null,2)+'\n');
   if(loginResult.playFrames.length>1){
-    await writeFile(join(dir,'play-26.3.json'),JSON.stringify({target:'26.3',protocol:777,recordedOn:'2026-11-25',note:'Captured immediately after Play Login from a disposable native 26.3 server on 127.0.0.1; payload hex includes the packet id.',frames:loginResult.playFrames},null,2)+'\n');
-    console.log('Wrote '+loginResult.playFrames.length+' native Play frames to tools/port-26.3/fixtures/play-26.3.json');
+    const small=loginResult.playFrames.filter(frame=>frame.hex.length/2<=4096);
+    await writeFile(join(dir,'play-26.3.json'),JSON.stringify({target:'26.3',protocol:777,recordedOn:'2026-11-25',note:'Captured immediately after Play Login from a disposable native 26.3 server on 127.0.0.1; payload hex includes the packet id. Frames above 4 KiB live in cache/port-26.3/play-burst.json.',frames:small},null,2)+'\n');
+    await writeFile(join(root,'cache/port-26.3/play-burst.json'),JSON.stringify({target:'26.3',protocol:777,recordedOn:'2026-11-25',frames:loginResult.playFrames.map(frame=>({id:frame.id,bytes:frame.hex.length/2,hex:frame.hex}))},null,2)+'\n');
+    console.log('Wrote '+loginResult.playFrames.length+' native Play frames ('+small.length+' small to fixtures, all to cache/port-26.3/play-burst.json)');
   }
   console.log('Wrote '+loginResult.frames.length+' native frames to tools/port-26.3/fixtures/login-config-26.3.json');
 }

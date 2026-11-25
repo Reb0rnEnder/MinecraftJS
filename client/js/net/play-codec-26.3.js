@@ -43,8 +43,29 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     const actions=fixedBitSet(r,8);
     const count=r.varint();
     const entries=[];
-    // Entries carry one field per set action; with no set actions only the UUID is read.
-    for(let i=0;i<count;i++)entries.push({uuid:r.uuid()});
+    const has=index=>actions.includes(index);
+    for(let i=0;i<count;i++){
+      const entry={uuid:r.uuid()};
+      if(has(0)){
+        entry.name=r.string();
+        const propertyCount=r.varint();
+        entry.properties=[];
+        for(let j=0;j<propertyCount;j++){
+          const name=r.string(),value=r.string();
+          entry.properties.push({name,value,signature:r.bool()?r.string():null});
+        }
+      }
+      if(has(1)){
+        entry.chatSession=r.bool()?{sessionId:r.uuid(),expiresAt:String(r.i64()),key:r.bytesN(r.varint()).slice(),signature:r.bytesN(r.varint()).slice()}:null;
+      }
+      if(has(2))entry.gameMode=r.varint();
+      if(has(3))entry.listed=r.bool();
+      if(has(4))entry.latency=r.varint();
+      if(has(5))entry.displayName=r.bool()?readAnonymousNbt(r):null;
+      if(has(6))entry.listOrder=r.varint();
+      if(has(7))entry.showHat=r.bool();
+      entries.push(entry);
+    }
     return {actions,count,entries};
   },
   player_position(r){
@@ -61,7 +82,42 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     return {crafting:read(),furnace:read(),blastFurnace:read(),smoker:read()};
   },
   // Brigadier: 26.3 sends argument types as registry ids plus per-type properties, not names.
-  commands(r){return readCommands26_3(r);}
+  commands(r){return readCommands26_3(r);},
+  // 26.3 set_time carries a world clock map: VarInt count, then (clock holder id, {totalTicks VarLong, partialTick f32, rate f32}).
+  set_time(r){
+    const gameTime=String(r.i64());
+    const count=r.varint();
+    const clocks={};
+    for(let i=0;i<count;i++){
+      const clock=r.varint();
+      clocks[clock]={totalTicks:String(r.varlong()),partialTick:r.f32(),rate:r.f32()};
+    }
+    return {gameTime,clocks};
+  },
+  game_event(r){return {event:r.u8(),param:r.f32()};},
+  set_chunk_cache_center(r){return {x:r.varint(),z:r.varint()};},
+  chunk_batch_start(){return {};},
+  chunk_batch_finished(r){return {batchSize:r.varint()};},
+  set_default_spawn_position(r){
+    return {dimension:r.string(),position:r.position(),yaw:r.f32(),pitch:r.f32()};
+  },
+  set_health(r){return {health:r.f32(),food:r.varint(),saturation:r.f32()};},
+  set_experience(r){return {progress:r.f32(),level:r.varint(),total:r.varint()};},
+  initialize_border(r){
+    return {centerX:r.f64(),centerZ:r.f64(),oldSize:r.f64(),newSize:r.f64(),lerpTime:String(r.varlong()),maxSize:r.varint(),warningBlocks:r.varint(),warningTime:r.varint()};
+  },
+  block_update(r){return {position:r.position(),state:r.varint()};},
+  // SectionBlocksUpdate packs each change as VarLong(stateId << 12 | section-local position).
+  section_blocks_update(r){
+    const section=r.i64();
+    const count=r.varint();
+    const changes=[];
+    for(let i=0;i<count;i++){
+      const packed=r.varlong();
+      changes.push({position:Number(packed&0xfffn),state:Number(packed>>12n)});
+    }
+    return {section:String(section),changes};
+  }
 });
 
 export const PLAY_DECODED_26_3=Object.freeze(Object.keys(PLAY_DECODERS_26_3));
