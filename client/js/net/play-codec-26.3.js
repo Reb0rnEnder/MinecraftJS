@@ -7,6 +7,12 @@ import {readCommands26_3} from './commands-26.3.js';
 
 const NAME_BY_ID=new Map(Object.entries(PLAY_CLIENTBOUND_26_3).map(([name,id])=>[id,name]));
 
+function readItemStack(r){
+  const count=r.varint();
+  if(count===0)return null;
+  throw Error('26.3 item stacks with components are not decoded yet');
+}
+
 function bitmask(value){const bits=[];for(let i=0;i<32;i++)if(value&(1<<i))bits.push(i);return bits;}
 // FriendlyByteBuf.writeFixedBitSet writes ceil(size/8) bytes, least significant bit first.
 function fixedBitSet(r,size){const bytes=r.bytesN(Math.ceil(size/8));const bits=[];for(let i=0;i<size;i++)if(bytes[i>>3]&(1<<(i&7)))bits.push(i);return bits;}
@@ -107,12 +113,44 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     return {centerX:r.f64(),centerZ:r.f64(),oldSize:r.f64(),newSize:r.f64(),lerpTime:String(r.varlong()),maxSize:r.varint(),warningBlocks:r.varint(),warningTime:r.varint()};
   },
   block_update(r){return {position:r.position(),state:r.varint()};},
+  // AttributeSnapshot: attribute holder id VarInt, base double, modifier list (Identifier, amount double, operation id).
+  update_attributes(r){
+    const entityId=r.varint();
+    const count=r.varint();
+    const attributes=[];
+    for(let i=0;i<count;i++){
+      const attribute=r.varint();
+      const base=r.f64();
+      const modifierCount=r.varint();
+      const modifiers=[];
+      for(let j=0;j<modifierCount;j++)modifiers.push({id:r.string(),amount:r.f64(),operation:r.varint()});
+      attributes.push({attribute,base,modifiers});
+    }
+    return {entityId,attributes};
+  },
   ticking_state(r){return {tickRate:r.f32(),frozen:r.bool()};},
   ticking_step(r){return {tickSteps:r.varint()};},
   rotate_head(r){return {entityId:r.varint(),yHeadRot:r.i8()};},
   // 26.3 move packets take VecDelta (three shorts) plus an onGround flag.
   move_entity_pos(r){return {entityId:r.varint(),dx:r.i16(),dy:r.i16(),dz:r.i16(),onGround:r.bool()};},
   bundle_delimiter(){return {};},
+  // 26.3 post effects are a list of identifiers (was a single effect in 1.20.6).
+  post_effects(r){
+    const count=r.varint();
+    const effects=[];
+    for(let i=0;i<count;i++)effects.push(r.string());
+    return {effects};
+  },
+  // Empty slots are a zero VarInt count. Item stacks with components are not decoded yet;
+  // they throw instead of silently consuming the wrong number of bytes.
+  container_set_content(r){
+    const containerId=r.varint();
+    const stateId=r.varint();
+    const count=r.varint();
+    const items=[];
+    for(let i=0;i<count;i++)items.push(readItemStack(r));
+    return {containerId,stateId,items,carried:readItemStack(r)};
+  },
   // SectionBlocksUpdate packs each change as VarLong(stateId << 12 | section-local position).
   section_blocks_update(r){
     const section=r.i64();

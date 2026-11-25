@@ -103,8 +103,8 @@
         "Player info update actions are a fixed 1-byte bitset over the eight actions (FriendlyByteBuf.writeFixedBitSet), not a VarInt mask.",
         "Chunk path landed: level_chunk_with_light decodes all 9 captured native chunks with zero leftover (24 sections, heightmaps, block entities, light byte-array layers). Validated against the jar's own registry: every section nonEmptyBlockCount equals the number of non-air states unpacked, and all state ids are below the native 35,723.",
         "26.3 chunk findings from bytecode: a section now carries two shorts (nonEmptyBlockCount, fluidCount); BitStorage packs floor(64/bits) values per long, so 5-bit sections are 342 longs and not 320; biome containers hold 64 entries; BIT_SET is a byte array, not a long array. Name mapping shows 26.2 cinnabar and sulfur in the caves at y=0.",
-        "Live-world layer added: set_time (26.3 clock map), game_event, chunk batch start/finished, chunk cache center, spawn position, health, experience, border (now includes warningTime), block_update, section_blocks_update (VarLong state<<12|pos). Thirty captured frames decode with zero leftover across 25 distinct packet types.",
-        "Open: 25 of 144 inbound Play IDs decoded; entity spawn/sync, container content, metadata, attributes, advancements and recipes remain raw. No Play handlers, no chunk/entity/registry consumers."
+        "Live-world layer added: set_time (26.3 clock map), game_event, chunk batch start/finished, chunk cache center, spawn position, health, experience, border (now includes warningTime), block_update, section_blocks_update (VarLong state<<12|pos). Thirty captured frames decode with zero leftover across 28 distinct packet types.",
+        "Open: 28 of 144 inbound Play IDs decoded; entity spawn/sync, item-stack components, metadata, advancements and the redesigned recipes remain raw. No Play handlers, no chunk/entity/registry consumers."
       ]
     },
     {
