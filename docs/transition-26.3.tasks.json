@@ -91,10 +91,14 @@
     {
       "id": "P06",
       "title": "Complete essential Play path",
-      "status": "todo",
+      "status": "partial",
       "dependsOn": ["P04", "P05"],
       "acceptance": "Every one of the 144 inbound Play IDs has a body and handler, and each of the 69 outbound IDs has a real sender or a recorded scope decision.",
-      "evidence": []
+      "evidence": [
+        "Play Login (id 50) decoded from the native fixture with zero trailing bytes on 2026-11-25: playerId 62, hardcore false, levels [overworld, the_end, the_nether], maxPlayers 5, chunkRadius 3, simulationDistance 3, showDeathScreen true, spawn dimension minecraft:overworld, seed 3819442548323920269, gamemode 0, isFlat false, portalCooldown 0, seaLevel 63, onlineMode false, enforcesSecureChat false.",
+        "Field order taken from javap on the native ClientboundLoginPacket, not from an older protocol schema; the seaLevel field is 26.3-era and is asserted.",
+        "Open: 1 of 144 inbound Play IDs decoded. No Play handlers, no chunk/entity/registry consumers."
+      ]
     },
     {
       "id": "P07",
