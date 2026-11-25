@@ -80,8 +80,9 @@ async function login(){
   const uuid=Buffer.alloc(16);for(let i=0;i<16;i++)uuid[i]=i*7+1;
   socket.write(packet(0x00,Buffer.concat([writeString('Probe26_3'),uuid])));
   const seen=[];
-  const loginPackets=[],configPackets=[];
-  const loginResult={loginPackets,configPackets,frames:[]};
+  const loginPackets=[],configPackets=[],playPackets=[];
+  const PLAY_FRAMES=Number(process.env.PROBE_PLAY_FRAMES||10);
+  const loginResult={loginPackets,configPackets,frames:[],playFrames:[]};
   let phase='login';
   const deadline=Date.now()+20000;
   try{
@@ -94,7 +95,7 @@ async function login(){
         if(id===0x03){const [threshold]=readVarint(payload,1);reader.threshold=threshold;continue;}
         if(id===0x02){socket.write(frame(0x03,Buffer.alloc(0),reader.threshold));phase='configuration';continue;}
         if(id===0x00){loginResult.disconnectReason=payload.subarray(1).toString('utf8').slice(0,300);loginResult.hex=payload.toString('hex').slice(0,200);break;}
-      }else{
+      }else if(phase==='configuration'){
         configPackets.push(id);
         if(process.env.PROBE_TRACE)console.log('config id',id,'name',Object.entries(CONFIGURATION_CLIENTBOUND_26_3).find(([,v])=>v===id)?.[0],'len',payload.length);
         if(configPackets.length<=4)loginResult.frames.push({phase,id,hex:Buffer.from(payload).toString('hex')});
@@ -110,16 +111,23 @@ async function login(){
           continue;
         }
         if(loginResult.sentFinish&&id===PLAY_CLIENTBOUND_26_3.login){
+          phase='play';
+          playPackets.push(id);
           loginResult.frames.push({phase:'play',id,hex:Buffer.from(payload).toString('hex')});
-          loginResult.playFrames=1;
-          break;
+          loginResult.playFrames.push({id,hex:Buffer.from(payload).toString('hex')});
+          continue;
         }
+      }else{
+        playPackets.push(id);
+        loginResult.playFrames.push({id,hex:Buffer.from(payload).toString('hex')});
+        if(process.env.PROBE_TRACE)console.log('play id',id,'name',Object.entries(PLAY_CLIENTBOUND_26_3).find(([,v])=>v===id)?.[0],'len',payload.length);
+        if(playPackets.length>=PLAY_FRAMES)break;
       }
       seen.push(phase+':'+id);
     }
   }catch(e){if(!/timeout/.test(String(e.message)))throw e;}
   socket.destroy();
-  return Object.assign(loginResult,{seen});
+  return Object.assign(loginResult,{seen,playPackets});
 }
 
 const statusResult=await status();
@@ -137,11 +145,16 @@ console.log(JSON.stringify({
   status:{name:version.name,protocol:version.protocol,players:statusResult.json.players},
   loginPackets:loginResult.loginPackets,
   configPackets:loginResult.configPackets.slice(0,8),
+  playPackets:loginResult.playPackets,
   reachedConfiguration:loginResult.configPackets.length>0
 },null,2));
 if(process.argv.includes('--write-fixtures')){
   const dir=join(root,'tools/port-26.3/fixtures');await mkdir(dir,{recursive:true});
   await writeFile(join(dir,'login-config-26.3.json'),JSON.stringify({target:'26.3',protocol:777,recordedOn:'2026-11-25',note:'Captured from a disposable native 26.3 server on 127.0.0.1; payload hex includes the packet id.',frames:loginResult.frames},null,2)+'\n');
+  if(loginResult.playFrames.length>1){
+    await writeFile(join(dir,'play-26.3.json'),JSON.stringify({target:'26.3',protocol:777,recordedOn:'2026-11-25',note:'Captured immediately after Play Login from a disposable native 26.3 server on 127.0.0.1; payload hex includes the packet id.',frames:loginResult.playFrames},null,2)+'\n');
+    console.log('Wrote '+loginResult.playFrames.length+' native Play frames to tools/port-26.3/fixtures/play-26.3.json');
+  }
   console.log('Wrote '+loginResult.frames.length+' native frames to tools/port-26.3/fixtures/login-config-26.3.json');
 }
 console.log('Native 26.3 probe passed: status protocol 777, login+configuration packets received');

@@ -97,7 +97,11 @@
       "evidence": [
         "Play Login (id 50) decoded from the native fixture with zero trailing bytes on 2026-11-25: playerId 62, hardcore false, levels [overworld, the_end, the_nether], maxPlayers 5, chunkRadius 3, simulationDistance 3, showDeathScreen true, spawn dimension minecraft:overworld, seed 3819442548323920269, gamemode 0, isFlat false, portalCooldown 0, seaLevel 63, onlineMode false, enforcesSecureChat false.",
         "Field order taken from javap on the native ClientboundLoginPacket, not from an older protocol schema; the seaLevel field is 26.3-era and is asserted.",
-        "Open: 1 of 144 inbound Play IDs decoded. No Play handlers, no chunk/entity/registry consumers."
+        "Nine of the twelve captured Play frames now decode with exact consumption: change_difficulty, player_abilities, set_held_slot, entity_event, server_data, player_info_update, player_position, recipe_book_settings, commands. Still raw: update_recipes, recipe_book_add and the separately decoded login.",
+        "26.3 redesign found in the commands packet: argument types are a registry id into minecraft:command_argument_type (0-61, read from the native registries report) followed by ArgumentTypeInfo.deserializeFromNetwork properties, not the 1.20.6 parser name string. A new restricted flag (bit 32) exists. The captured 26-node tree decodes to zero leftover and resolves int_range, message, string, entity, objective and integer parsers.",
+        "26.3 network NBT confirmed from NbtIo.writeAnyTag bytecode: tag id only, no root name. Reading server_data with the named-root reader underflowed; the anonymous reader consumes it exactly.",
+        "Player info update actions are a fixed 1-byte bitset over the eight actions (FriendlyByteBuf.writeFixedBitSet), not a VarInt mask.",
+        "Open: 9 of 144 inbound Play IDs decoded. No Play handlers, no chunk/entity/registry consumers."
       ]
     },
     {

@@ -10,7 +10,7 @@
     "prepare:1.20.6": "node tools/port-1.20.6/prepare.mjs",
     "prepare:26.3": "node tools/port-26.3/prepare.mjs",
     "reports:26.3": "node tools/port-26.3/reports.mjs",
-    "test:26.3": "node tools/port-26.3/generate-ids.mjs --check && node tools/port-26.3/reports.mjs --check && node tools/port-26.3/byte-fixtures.mjs && node tools/port-26.3/play-login.mjs",
+    "test:26.3": "node tools/port-26.3/generate-ids.mjs --check && node tools/port-26.3/reports.mjs --check && node tools/port-26.3/byte-fixtures.mjs && node tools/port-26.3/play-login.mjs && node tools/port-26.3/play-frames.mjs",
     "probe:26.3": "node tools/port-26.3/probe-server.mjs",
     "reports:1.20.6": "node tools/port-1.20.6/reports.mjs",
     "component-fixtures:1.20.6": "node tools/port-1.20.6/component-fixtures.mjs",
