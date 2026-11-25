@@ -72,9 +72,14 @@
     {
       "id": "P05",
       "title": "Login and Configuration lifecycle at protocol 777",
-      "status": "todo",
+      "status": "partial",
       "dependsOn": ["P03"],
-      "evidence": [],
+      "evidence": [
+        "Native probe on 2026-11-25 against a disposable 26.3 server (server.jar 33680f5f, 127.0.0.1:25568, offline mode, own EULA): status ping reports name 26.3 and protocol 777.",
+        "Login sequence observed: 0x03 Set Compression (threshold 256), 0x02 Login Success; Login Acknowledged sent with compressed framing; Configuration entered and packets 0x01, 0x0d, 0x0f received.",
+        "Server log records the probe UUID and a clean disconnect; a bad frame is rejected with 'Badly compressed packet - size of 3 is below server threshold of 256', proving the framing gate is real.",
+        "Open: this is a standalone probe, not the browser client. The JS login/configuration codec still speaks 766 and is not yet switched to 777."
+      ],
       "acceptance": "A disposable native 26.3 server accepts the offline join and completes Configuration with no mixed-version identity."
     },
     {
