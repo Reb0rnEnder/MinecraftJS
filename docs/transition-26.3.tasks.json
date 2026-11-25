@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "updatedOn": "2026-11-25",
+  "target": "26.3",
+  "branch": "26.3",
+  "baselineVersion": "1.20.6",
+  "baselineCommit": "761970ed38eedd69effb38a1bfedf912cb26e30c",
+  "fullParity": false,
+  "nativeGraphicalGameplayAccepted": false,
+  "nextTask": "P01",
+  "authorization": "Port 26.3 from the public 1.20.6 branch using the creator's pinned-input, gated-task method.",
+  "executionRule": "Follow dependency order; native evidence and gate completion are required before marking done. Push validated batches and review shared backports as they land, not only at P16.",
+  "tasks": [
+    {
+      "id": "P00",
+      "title": "Verify pinned inputs and preserve the forwarded baseline",
+      "status": "done",
+      "dependsOn": [],
+      "releaseRefs": ["26.3"],
+      "acceptance": "Every native input hash and embedded version field matches; the jar layout is native and unobfuscated; existing worktrees and local inputs remain intact.",
+      "evidence": [
+        "prepare:26.3 on 2026-11-25: metadata 8696584e, client e877b6a0 (41,483,720 bytes), server 33680f5f (62,294,556 bytes), asset index 7b1c46ec (id 34).",
+        "Native version.json: id 26.3, protocol 777, world_version 5023, pack 97.1/121.0, java 25, stable true, build 2026-09-15.",
+        "Layout 10,737 classes / 11,604 assets / 9,884 data entries; net/minecraft/client/main/Main.class resolves, so the jar is unobfuscated.",
+        "User-supplied client(2).jar is byte-identical to Mojang's pinned client object; no repack."
+      ]
+    },
+    {
+      "id": "P01",
+      "title": "Triage all 17 release histories between 1.20.6 and 26.3",
+      "status": "todo",
+      "dependsOn": ["P00"],
+      "releaseRefs": ["1.21", "1.21.1", "1.21.2", "1.21.3", "1.21.4", "1.21.5", "1.21.6", "1.21.7", "1.21.8", "1.21.9", "1.21.10", "1.21.11", "26.1", "26.1.1", "26.1.2", "26.2", "26.3"],
+      "acceptance": "Every release topic/fix has a native-client, server-owned, experiment, product-outside-scope or experiment-gated disposition; sources record URL, retrieval method and SHA-256; challenge pages are never treated as articles.",
+      "evidence": []
+    },
+    {
+      "id": "P02",
+      "title": "Extract native reports, registries, packets and resource inventory",
+      "status": "partial",
+      "dependsOn": ["P00"],
+      "releaseRefs": ["26.3"],
+      "acceptance": "Reproducible reports and hashes reject mixed-version data; client data tables are regenerated from them; resource inventory resolves from the jar without an external asset download.",
+      "evidence": [
+        "reports:26.3 on 2026-11-25: 1,286 blocks / 35,723 states, 1,658 items / 122 component types and 8,891 default component entries, 95 registries, 94 commands.",
+        "Native packets.json: configuration 21/10, handshake 0/1, login 6/5, play 144/69, status 2/2; every phase contiguous from zero; ids recorded in cache/port-26.3/packet-ids.json.",
+        "Jar resources: 4,182 textures, 4,192 models, 1,288 blockstates, 2 languages; assets and data pack ship inside the client jar, so no asset objects are fetched."
+      ]
+    },
+    {
+      "id": "P03",
+      "title": "Binary primitives, text and component codecs",
+      "status": "todo",
+      "dependsOn": ["P02"],
+      "releaseRefs": ["1.21.2", "1.21.5", "26.3"],
+      "acceptance": "Byte fixtures round-trip against native codecs, including the 26.3 component and dialog/waypoint families; complete packet consumption is asserted.",
+      "evidence": []
+    },
+    {
+      "id": "P04",
+      "title": "Item components and stacks",
+      "status": "todo",
+      "dependsOn": ["P03"],
+      "releaseRefs": ["1.21.2", "1.21.5", "1.21.9", "26.3"],
+      "acceptance": "All 122 component types have a codec; patches and removals are preserved; defaults come from the native component reports.",
+      "evidence": []
+    },
+    {
+      "id": "P05",
+      "title": "Login and Configuration lifecycle at protocol 777",
+      "status": "todo",
+      "dependsOn": ["P03"],
+      "evidence": [],
+      "acceptance": "A disposable native 26.3 server accepts the offline join and completes Configuration with no mixed-version identity."
+    },
+    {
+      "id": "P06",
+      "title": "Complete essential Play path",
+      "status": "todo",
+      "dependsOn": ["P04", "P05"],
+      "acceptance": "Every one of the 144 inbound Play IDs has a body and handler, and each of the 69 outbound IDs has a real sender or a recorded scope decision.",
+      "evidence": []
+    },
+    {
+      "id": "P07",
+      "title": "Graphical join on a disposable 26.3 server",
+      "status": "todo",
+      "dependsOn": ["P06"],
+      "acceptance": "Terrain, entities, HUD, movement, death/respawn and reconnect in a real Chrome client against 26.3 only.",
+      "evidence": []
+    },
+    {
+      "id": "P08",
+      "title": "Inventory and interaction",
+      "status": "todo",
+      "dependsOn": ["P07"],
+      "acceptance": "Click, state-id and rejection sequences pass against the native server, including the newer container/menu families.",
+      "evidence": []
+    },
+    {
+      "id": "P09",
+      "title": "Authenticated lifecycle, transfer and packs",
+      "status": "todo",
+      "dependsOn": ["P07"],
+      "acceptance": "Evidence only with a real account; transfer, cookies and dialog flows are exercised end to end.",
+      "evidence": []
+    },
+    {
+      "id": "P10",
+      "title": "Resources, fonts, atlases and item models",
+      "status": "todo",
+      "dependsOn": ["P07"],
+      "acceptance": "Default jar resources resolve with no custom pack, including the reworked item-model and GUI sprite systems.",
+      "evidence": []
+    },
+    {
+      "id": "P11",
+      "title": "New content families from the release crosswalk",
+      "status": "todo",
+      "dependsOn": ["P08", "P10"],
+      "acceptance": "Per-family live/visual scenario; a registry entry or present model is not acceptance.",
+      "evidence": []
+    },
+    {
+      "id": "P12",
+      "title": "Content effects: particles, sounds, animations",
+      "status": "todo",
+      "dependsOn": ["P11"],
+      "acceptance": "Behavior acceptance with real triggers, not registry equality.",
+      "evidence": []
+    },
+    {
+      "id": "P13",
+      "title": "GUI, dialogs, chat and commands",
+      "status": "todo",
+      "dependsOn": ["P09", "P10"],
+      "acceptance": "Screens and option rows match native 26.3, including dialog and waypoint UI.",
+      "evidence": []
+    },
+    {
+      "id": "P14",
+      "title": "Inherited 1.20.6 parity repairs",
+      "status": "todo",
+      "dependsOn": ["P13"],
+      "acceptance": "Every inherited finding has an explicit disposition; nothing is silently dropped by the version jump.",
+      "evidence": []
+    },
+    {
+      "id": "P15",
+      "title": "Whole-target acceptance",
+      "status": "todo",
+      "dependsOn": ["P11", "P12", "P14"],
+      "acceptance": "Open findings accounted for; no mixed-version data; honest partial/unverified list published.",
+      "evidence": []
+    },
+    {
+      "id": "P16",
+      "title": "Backports and distributions",
+      "status": "todo",
+      "dependsOn": ["P15"],
+      "acceptance": "Source SHAs, manifest and checksums match builds; no Mojang jars or built assets are published.",
+      "evidence": []
+    }
+  ]
+}
