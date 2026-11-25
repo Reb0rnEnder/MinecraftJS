@@ -26,7 +26,8 @@ function clientInformation(){
     varint(0)                          // particle status: all
   ]);
 }
-function knownPacks(){return Buffer.concat([varint(1),writeString('minecraft'),writeString('core'),writeString('26.3')]);}
+// The client ships no 26.3 core pack, so it claims none; the server must then send full registry payloads.
+function knownPacks(){return varint(0);}
 
 const HOST=process.env.PROBE_HOST||'127.0.0.1';
 const PORT=Number(process.env.PROBE_PORT||25568);
@@ -98,7 +99,8 @@ async function login(){
       }else if(phase==='configuration'){
         configPackets.push(id);
         if(process.env.PROBE_TRACE)console.log('config id',id,'name',Object.entries(CONFIGURATION_CLIENTBOUND_26_3).find(([,v])=>v===id)?.[0],'len',payload.length);
-        if(configPackets.length<=4)loginResult.frames.push({phase,id,hex:Buffer.from(payload).toString('hex')});
+        // The Play Login frame is recorded by the play branch below; do not also label it configuration.
+        if(id!==PLAY_CLIENTBOUND_26_3.login&&(payload.length<=4096||id===CONFIGURATION_CLIENTBOUND_26_3.finish_configuration))loginResult.frames.push({phase,id,hex:Buffer.from(payload).toString('hex')});
         if(id===CONFIGURATION_CLIENTBOUND_SELECT_KNOWN_PACKS&&!loginResult.sentPacks){
           socket.write(frame(CONFIGURATION_SERVERBOUND_26_3.client_information,clientInformation(),reader.threshold));
           socket.write(frame(CONFIGURATION_SERVERBOUND_26_3.select_known_packs,knownPacks(),reader.threshold));

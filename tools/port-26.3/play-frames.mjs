@@ -28,12 +28,17 @@ const by=list=>Object.fromEntries(list.map(x=>[x.name,x]));
 const packets=by(decoded);
 const rawNames=new Set(undecoded.map(x=>x.name));
 
-for(const required of ['change_difficulty','player_abilities','set_held_slot','entity_event','server_data','player_info_update','player_position','recipe_book_settings','commands']){
+for(const required of ['login','change_difficulty','player_abilities','set_held_slot','entity_event','server_data','player_info_update','player_position','recipe_book_settings','commands']){
   assert.ok(packets[required],'native burst must decode '+required);
 }
-for(const required of ['login','update_recipes','recipe_book_add']){
+for(const required of ['update_recipes','recipe_book_add']){
   assert.ok(rawNames.has(required),required+' must still be reported as raw rather than silently skipped');
 }
+assert.ok(packets.login.playerId>0,'Play Login carries the local entity id');
+assert.equal(packets.login.levels.length,3,'Play Login lists three levels');
+assert.ok(packets.login.levels.includes('minecraft:overworld'),'Play Login level set contains the overworld');
+assert.equal(packets.login.spawn.dimension,'minecraft:overworld','Play Login spawns in the overworld');
+assert.ok(packets.login.spawn.seaLevel>=0&&packets.login.spawn.seaLevel<=512,'Play Login carries a plausible sea level');
 
 assert.deepEqual(packets.change_difficulty,{name:'change_difficulty',difficulty:1,locked:false},'difficulty 1 (easy), unlocked');
 const abilities=packets.player_abilities;

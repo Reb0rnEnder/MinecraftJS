@@ -4,6 +4,7 @@
 import {PLAY_CLIENTBOUND_26_3} from './protocol-26.3-ids.js';
 import {readAnonymousNbt} from './nbt-anonymous.js';
 import {readCommands26_3} from './commands-26.3.js';
+import {decodeLevelChunkWithLight} from './chunk-26.3.js';
 
 const NAME_BY_ID=new Map(Object.entries(PLAY_CLIENTBOUND_26_3).map(([name,id])=>[id,name]));
 
@@ -28,6 +29,42 @@ function fixedBitSet(r,size){const bytes=r.bytesN(Math.ceil(size/8));const bits=
 // PlayerPositionPacket(int id, PositionMoveRotation, Set<Relative>): VarInt, pos(3 doubles), delta(3 doubles), yRot f32, xRot f32, relatives int bitmask.
 // RecipeBookSettingsPacket(RecipeBookSettings): crafting, furnace, blastFurnace, smoker, each (open bool, filtering bool).
 export const PLAY_DECODERS_26_3=Object.freeze({
+  // ClientboundLoginPacket: playerId, hardcore, level set, maxPlayers, chunkRadius,
+  // simulationDistance, reducedDebugInfo, showDeathScreen, doLimitedCrafting, spawn info, onlineMode, enforcesSecureChat.
+  // CommonPlayerSpawnInfo appends seaLevel after portalCooldown in 26.3.
+  login(r){
+    const playerId=r.i32(),hardcore=r.bool();
+    const levels=Array.from({length:r.varint()},()=>r.string());
+    const maxPlayers=r.varint(),chunkRadius=r.varint(),simulationDistance=r.varint();
+    const reducedDebugInfo=r.bool(),showDeathScreen=r.bool(),doLimitedCrafting=r.bool();
+    const dimensionType=r.varint(),dimension=r.string(),seed=String(r.i64());
+    const gameMode=r.i8(),previousGameMode=r.i8();
+    const isDebug=r.bool(),isFlat=r.bool();
+    const lastDeath=r.bool()?{dimension:r.string(),position:r.position()}:null;
+    const portalCooldown=r.varint(),seaLevel=r.varint();
+    const onlineMode=r.bool(),enforcesSecureChat=r.bool();
+    return {
+      playerId,hardcore,levels,maxPlayers,chunkRadius,simulationDistance,
+      reducedDebugInfo,showDeathScreen,doLimitedCrafting,
+      spawn:{dimensionType,dimension,seed,gameMode,previousGameMode,isDebug,isFlat,lastDeath,portalCooldown,seaLevel},
+      onlineMode,enforcesSecureChat
+    };
+  },
+  level_chunk_with_light(r){return decodeLevelChunkWithLight(r);},
+  // Shared common packets in the Play state.
+  disconnect(r){return {reason:readAnonymousNbt(r)};},
+  keep_alive(r){return {keepAliveId:String(r.i64())};},
+  ping(r){return {id32:r.i32()};},
+  cookie_request(r){return {key:r.string()};},
+  store_cookie(r){const key=r.string();return {key,value:r.bytesN(r.varint()).slice()};},
+  transfer(r){return {host:r.string(),port:r.varint()};},
+  custom_payload(r){const channel=r.string();return {channel,data:r.rest()};},
+  resource_pack_pop(r){return {uuid:r.bool()?r.uuid():null};},
+  resource_pack_push(r){
+    const uuid=r.uuid(),url=r.string(),hash=r.string(),forced=r.bool();
+    return {uuid,url,hash,forced,prompt:r.bool()?readAnonymousNbt(r):null};
+  },
+  start_configuration(){return {};},
   change_difficulty(r){return {difficulty:r.u8(),locked:r.bool()};},
   player_abilities(r){
     const flags=r.u8();
