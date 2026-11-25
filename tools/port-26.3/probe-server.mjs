@@ -5,6 +5,28 @@ import zlib from 'node:zlib';
 import {mkdir,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {root} from './prepare.mjs';
+import {CONFIGURATION_CLIENTBOUND_26_3,CONFIGURATION_SERVERBOUND_26_3,PLAY_CLIENTBOUND_26_3} from '../../client/js/net/protocol-26.3-ids.js';
+const CONFIGURATION_CLIENTBOUND_SELECT_KNOWN_PACKS=CONFIGURATION_CLIENTBOUND_26_3.select_known_packs;
+const CONFIGURATION_CLIENTBOUND_UPDATE_TAGS=CONFIGURATION_CLIENTBOUND_26_3.update_tags;
+
+// ServerboundClientInformation fields, in the native write() order verified with javap:
+// language, viewDistance(byte), chatVisibility(VarInt), chatColors(bool), modelCustomisation(byte),
+// mainHand(VarInt), textFilteringEnabled(bool), allowsListing(bool), particleStatus(VarInt).
+function clientInformation(){
+  const text=Buffer.from('en_us','utf8');
+  return Buffer.concat([
+    varint(text.length),text,          // language
+    Buffer.from([3]),                  // view distance
+    varint(0),                         // chat visibility: full
+    Buffer.from([1]),                  // chat colours: true
+    Buffer.from([0x7f]),               // skin parts: all
+    varint(1),                         // main hand: right
+    Buffer.from([0]),                  // text filtering: false
+    Buffer.from([1]),                  // allows listing: true
+    varint(0)                          // particle status: all
+  ]);
+}
+function knownPacks(){return Buffer.concat([varint(1),writeString('minecraft'),writeString('core'),writeString('26.3')]);}
 
 const HOST=process.env.PROBE_HOST||'127.0.0.1';
 const PORT=Number(process.env.PROBE_PORT||25568);
@@ -74,8 +96,24 @@ async function login(){
         if(id===0x00){loginResult.disconnectReason=payload.subarray(1).toString('utf8').slice(0,300);loginResult.hex=payload.toString('hex').slice(0,200);break;}
       }else{
         configPackets.push(id);
+        if(process.env.PROBE_TRACE)console.log('config id',id,'name',Object.entries(CONFIGURATION_CLIENTBOUND_26_3).find(([,v])=>v===id)?.[0],'len',payload.length);
         if(configPackets.length<=4)loginResult.frames.push({phase,id,hex:Buffer.from(payload).toString('hex')});
-        if(id===0x03)break; // finish_configuration
+        if(id===CONFIGURATION_CLIENTBOUND_SELECT_KNOWN_PACKS&&!loginResult.sentPacks){
+          socket.write(frame(CONFIGURATION_SERVERBOUND_26_3.client_information,clientInformation(),reader.threshold));
+          socket.write(frame(CONFIGURATION_SERVERBOUND_26_3.select_known_packs,knownPacks(),reader.threshold));
+          loginResult.sentPacks=true;
+          continue;
+        }
+        if(id===CONFIGURATION_CLIENTBOUND_26_3.finish_configuration&&!loginResult.sentFinish){
+          socket.write(frame(CONFIGURATION_SERVERBOUND_26_3.finish_configuration,Buffer.alloc(0),reader.threshold));
+          loginResult.sentFinish=true;
+          continue;
+        }
+        if(loginResult.sentFinish&&id===PLAY_CLIENTBOUND_26_3.login){
+          loginResult.frames.push({phase:'play',id,hex:Buffer.from(payload).toString('hex')});
+          loginResult.playFrames=1;
+          break;
+        }
       }
       seen.push(phase+':'+id);
     }
@@ -94,6 +132,7 @@ if(loginResult.disconnectReason!==undefined){
   throw Error('Native server rejected the probe login');
 }
 if(!loginResult.configPackets.length)throw Error('Login completed but Configuration was never entered');
+if(loginResult.sentFinish&&!loginResult.playFrames)throw Error('Finish Configuration sent but Play never started');
 console.log(JSON.stringify({
   status:{name:version.name,protocol:version.protocol,players:statusResult.json.players},
   loginPackets:loginResult.loginPackets,

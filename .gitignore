@@ -44,3 +44,6 @@ server1206/
 # Native 26.3 local probe server and transient probe output
 server2603/
 probe.out
+
+# transient port logs
+*.out

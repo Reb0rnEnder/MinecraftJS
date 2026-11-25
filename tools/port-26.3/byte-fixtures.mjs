@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
 import {Reader,Writer} from '../../client/js/net/buffer.js';
-import {CONFIGURATION_CLIENTBOUND_26_3} from '../../client/js/net/protocol-26.3-ids.js';
+import {CONFIGURATION_CLIENTBOUND_26_3,PLAY_CLIENTBOUND_26_3} from '../../client/js/net/protocol-26.3-ids.js';
 import {root} from './prepare.mjs';
 
 const fixture=JSON.parse(await readFile(join(root,'tools/port-26.3/fixtures/login-config-26.3.json'),'utf8'));
@@ -77,5 +77,15 @@ for(let i=0;i<packCount;i++)packs.push({namespace:knownPacks.reader.string(),id:
 assert.deepEqual(packs,[{namespace:'minecraft',id:'core',version:'26.3'}],'native 26.3 must announce exactly the core 26.3 pack');
 assert.equal(knownPacks.reader.remaining(),0,'known pack list must be fully consumed');
 
-console.log(JSON.stringify({protocol:777,compressionThreshold:threshold,uuid,name,sessionId,properties:properties.length,configIds:configIds.slice(0,3),brand:'vanilla',enabledFeatures,packs},null,2));
+// 6. Play Login is received after Finish Configuration. Its body is captured but not decoded yet:
+// decoding it needs the 26.3 world/registry shapes, which is the next P03 slice.
+const play=fixture.frames.find(entry=>entry.phase==='play');
+assert.ok(play,'Play Login frame must be captured after Finish Configuration');
+assert.equal(play.id,PLAY_CLIENTBOUND_26_3.login,'server must enter Play with the Login packet');
+const playBytes=Buffer.from(play.hex,'hex');
+assert.ok(playBytes.length>80,'Play Login must carry a world payload');
+assert.match(play.hex,/6d696e6563726166743a6f766572776f726c64/,'Play Login must name minecraft:overworld');
+assert.match(play.hex,/6d696e6563726166743a7468655f656e64/,'Play Login must list minecraft:the_end as a dimension');
+
+console.log(JSON.stringify({protocol:777,compressionThreshold:threshold,uuid,name,sessionId,properties:properties.length,configIds:configIds.slice(0,3),brand:'vanilla',enabledFeatures,packs,playLoginBytes:Buffer.from(play.hex,'hex').length},null,2));
 console.log('Native 26.3 byte fixtures passed: '+fixture.frames.length+' frames decoded and Login Success round-tripped');
