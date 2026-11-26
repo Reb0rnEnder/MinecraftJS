@@ -756,7 +756,7 @@ export class Particles {
         }
       }
     };
-    const type = this.game.assets.data.particles[p.particleId]?.name;
+    const type = p.particleName || this.game.assets.data.particles[p.particleId]?.name;
     if(type==='shriek'){emit((x,y,z)=>shriekParticle762(this,x,y,z,p.data));return;}
     if (CAVES_PARTICLES.has(type)) { emit((x,y,z,mx,my,mz)=>this.nativeParticle(type,x,y,z,mx,my,mz,p.data)); return; }
     switch (type) {

@@ -3,6 +3,7 @@
 // empty list); the rest pin each data codec against the option class layout read by javap.
 import {Reader26_3} from '../../client/js/net/configuration-26.3.js';
 import {decodePlayPacket} from '../../client/js/net/play-codec-26.3.js';
+import {PLAY_CLIENTBOUND_26_3} from '../../client/js/net/protocol-26.3-ids.js';
 import {readParticleOptions26_3, readParticles26_3} from '../../client/js/net/particles-26.3.js';
 
 let failures = 0;
@@ -92,6 +93,37 @@ check('particle list reads count then entries', () => {
   const list = readParticles26_3(r);
   eq(list.map(p => p.name), ['angry_villager', 'block']);
   eq(r.remaining(), 0);
+});
+
+check('level_particles carries the native 26.3 field list', () => {
+  const varint = value => {
+    const out = [];
+    do { let byte = value & 0x7f; value >>>= 7; if (value) byte |= 0x80; out.push(byte); } while (value);
+    return out;
+  };
+  const dbl = value => {
+    const view = new DataView(new ArrayBuffer(8));
+    view.setFloat64(0, value);
+    return [...new Uint8Array(view.buffer)];
+  };
+  const body = [
+    ...varint(21), ...i32(0x112233), ...fl(2.0), // dust particle
+    0, 1,                                           // overrideLimiter, alwaysShow
+    ...dbl(1.5), ...dbl(2.5), ...dbl(3.5),          // position
+    ...fl(0.1), ...fl(0.2), ...fl(0.3),            // spread
+    ...fl(0.01), ...fl(0.02), ...fl(0.03),         // per-axis max speed
+    ...varint(5), ...varint(2),                    // count, randomization
+  ];
+  const packet = decodePlayPacket(new Reader26_3(Uint8Array.from([...varint(PLAY_CLIENTBOUND_26_3.level_particles), ...body])));
+  eq(packet.name, 'level_particles');
+  const p = packet.data;
+  eq([p.particleName, p.particle.color, p.particle.scale], ['dust', 0x112233, 2]);
+  eq([p.longDistance, p.alwaysShow], [false, true]);
+  eq([p.x, p.y, p.z], [1.5, 2.5, 3.5]);
+  eq([p.offsetX, p.offsetY, p.offsetZ], [0.1, 0.2, 0.30000001192092896].map(v => Math.fround(v)));
+  eq([p.xMaxSpeed, p.yMaxSpeed, p.zMaxSpeed], [0.01, 0.02, 0.03].map(v => Math.fround(v)));
+  eq([p.particles, p.count, p.randomization], [5, 5, 2]);
+  eq(p.data.colorArgb, 0x112233);
 });
 
 check('unknown particle id fails closed', () => {

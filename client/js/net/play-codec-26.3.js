@@ -126,6 +126,27 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     };
   },
   level_chunk_with_light(r){return decodeLevelChunkWithLight(r);},
+  // ClientboundLevelParticlesPacket: ParticleOptions, overrideLimiter, alwaysShow, position
+  // (3 doubles), spread (3 floats), per-axis max speeds (3 floats), count VarInt and the 26.3
+  // RandomizationType (VarInt enum: default, alternative, alternative_with_speed).
+  level_particles(r){
+    const particle=readParticleOptions26_3(r);
+    const overrideLimiter=r.bool(),alwaysShow=r.bool();
+    const x=r.f64(),y=r.f64(),z=r.f64();
+    const offsetX=r.f32(),offsetY=r.f32(),offsetZ=r.f32();
+    const xMaxSpeed=r.f32(),yMaxSpeed=r.f32(),zMaxSpeed=r.f32();
+    const count=r.varint(),randomization=r.varint();
+    const data={};
+    if(particle.color!==undefined)data.colorArgb=particle.color;
+    if(particle.fromColor!==undefined)data.fromColor=particle.fromColor,data.toColor=particle.toColor,data.scale=particle.scale;
+    if(particle.blockState!==undefined)data.blockState=particle.blockState;
+    if(particle.item)data.itemId=particle.item.itemId;
+    return {
+      particle,particleName:particle.name,longDistance:overrideLimiter,alwaysShow,
+      x,y,z,offsetX,offsetY,offsetZ,xMaxSpeed,yMaxSpeed,zMaxSpeed,
+      particleData:xMaxSpeed,particles:count,count,randomization,data
+    };
+  },
   // Shared common packets in the Play state.
   disconnect(r){return {reason:readAnonymousNbt(r)};},
   keep_alive(r){return {keepAliveId:String(r.i64())};},
