@@ -185,6 +185,43 @@ const ADAPTERS={
   player_combat_end(packet){return {duration:packet.duration};},
   set_simulation_distance(packet){return {distance:packet.distance};},
   set_chunk_cache_radius(packet){return {viewDistance:packet.viewDistance};},
+  set_chunk_cache_center(packet){return {chunkX:packet.x,chunkZ:packet.z};},
+  // WorldBorder.apply speaks the 766 action vocabulary; its packet sizes are diameters.
+  initialize_border(packet){return {action:3,x:packet.centerX,z:packet.centerZ,
+    oldRadius:packet.oldSize/2,newRadius:packet.newSize/2,speed:Number(packet.lerpTime),
+    portalBoundary:packet.maxSize,warningTime:packet.warningTime,warningBlocks:packet.warningBlocks};},
+  change_difficulty(packet){return {difficulty:packet.difficulty};},
+  entity_event(packet){return {entityId:packet.entityId,entityStatus:packet.eventId};},
+  commands(packet){return {nodes:packet.nodes,root:packet.root};},
+  ticking_state(packet){return {tickRate:packet.tickRate,isFrozen:packet.frozen};},
+  ticking_step(packet){return {tickSteps:packet.tickSteps};},
+  level_particles(packet){return {...packet,particleData:packet.xMaxSpeed};},
+  server_data(packet){return {motd:componentJson(packet.motd),iconBytes:packet.icon||null};},
+  player_info_update(packet){
+    const actions=packet.actions.reduce((mask,index)=>mask|(1<<index),0);
+    const data=packet.entries.map(entry=>({
+      uuid:entry.uuid,name:entry.name,properties:entry.properties,
+      chatSession:entry.chatSession?{
+        uuid:entry.chatSession.sessionId,expireTime:Number(entry.chatSession.expiresAt),
+        keyBytes:entry.chatSession.key,keySignature:entry.chatSession.signature
+      }:null,
+      gamemode:entry.gameMode,listed:entry.listed,ping:entry.latency,
+      displayName:entry.displayName==null?null:componentJson(entry.displayName)
+    }));
+    return {actions,data};
+  },
+  // SectionPos packs x(22) low, z(22) next, y(20) high; each change packs local
+  // x(4) | z(4)<<4 | y(4)<<8 under the 12-bit state shift.
+  section_blocks_update(packet){
+    const section=BigInt(packet.section);
+    const chunkX=Number(BigInt.asIntN(22,section&0x3fffffn));
+    const chunkZ=Number(BigInt.asIntN(22,(section>>22n)&0x3fffffn));
+    const sectionY=Number(BigInt.asIntN(20,section>>44n));
+    const records=packet.changes.map(({position,state})=>({
+      x:(position>>8)&15,y:sectionY*16+(position&15),z:(position>>4)&15,state
+    }));
+    return {chunkX,chunkZ,records};
+  },
   set_camera(packet){return {cameraId:packet.cameraId};},
   block_changed_ack(packet){return {sequenceId:packet.sequenceId};},
   block_destruction(packet){return {entityId:packet.entityId,location:packet.location,destroyStage:packet.destroyStage};},

@@ -18,6 +18,12 @@ const eq = (actual, expected) => {
   const a = JSON.stringify(actual), b = JSON.stringify(expected);
   if (a !== b) throw Error('expected ' + b + ', got ' + a);
 };
+const varlong = value => {
+  const out = [];
+  let v = BigInt(value);
+  do { let byte = Number(v & 0x7fn); v >>= 7n; if (v) byte |= 0x80; out.push(byte); } while (v);
+  return out;
+};
 const varint = value => {
   const out = [];
   let v = value >>> 0;
@@ -63,6 +69,43 @@ function adapt(name, body, expected) {
 check('animate decodes and adapts to animation', () => {
   const adapted = adapt('animate', [...varint(5), 3], {name: 'animation'});
   eq([adapted.entityId, adapted.animation], [5, 3]);
+});
+
+check('initialize_border adapts to the world_border action vocabulary', () => {
+  const adapted = adapt('initialize_border', [...f64(8), ...f64(-4), ...f64(100), ...f64(50), ...varlong(2500), ...varint(29999984), ...varint(5), ...varint(15)], {name: 'initialize_world_border'});
+  eq([adapted.action, adapted.x, adapted.z, adapted.oldRadius, adapted.newRadius, adapted.speed, adapted.portalBoundary, adapted.warningBlocks, adapted.warningTime], [3, 8, -4, 50, 25, 2500, 29999984, 5, 15]);
+});
+
+check('change_difficulty, entity_event and ticking frames adapt', () => {
+  const difficulty = adapt('change_difficulty', [2, 1], {name: 'difficulty'});
+  eq(difficulty.difficulty, 2);
+  const event = adapt('entity_event', [...i32(9), 2], {name: 'entity_status'});
+  eq([event.entityId, event.entityStatus], [9, 2]);
+  const ticking = adapt('ticking_state', [...f32(20), 1], {name: 'set_ticking_state'});
+  eq([ticking.tickRate, ticking.isFrozen], [20, true]);
+  const step = adapt('ticking_step', [...varint(3)], {name: 'step_tick'});
+  eq(step.tickSteps, 3);
+});
+
+check('view center, commands and server data adapt', () => {
+  const center = adapt('set_chunk_cache_center', [...varint(12), ...varint(-3)], {name: 'update_view_position'});
+  eq([center.chunkX, center.chunkZ], [12, -3]);
+  const commands = adapt('commands', [...varint(1), 0, ...varint(0), 0], {name: 'declare_commands'});
+  eq([commands.root, commands.nodes.length, commands.nodes[0].type], [0, 1, 0]);
+  const server = adapt('server_data', [...nbtString('MOTD'), 0], {name: 'server_data'});
+  eq([JSON.parse(server.motd), server.iconBytes], ['MOTD', null]);
+});
+
+check('player_info_update maps actions and fields', () => {
+  const adapted = adapt('player_info_update', [0x10, ...varint(1), ...uuid(4), ...varint(37)], {name: 'player_info'});
+  eq([adapted.actions, adapted.data[0].ping, adapted.data[0].uuid.slice(0, 2)], [16, 37, '04']);
+});
+
+check('section_blocks_update unpacks SectionPos and local positions', () => {
+  const section = (3n << 44n) | (2n << 22n) | 1n;
+  const change = (42n << 12n) | (4n << 8n) | (5n << 4n) | 6n;
+  const adapted = adapt('section_blocks_update', [...i64(section), ...varint(1), ...varlong(change)], {name: 'multi_block_change'});
+  eq([adapted.chunkX, adapted.chunkZ, adapted.records], [1, 2, [{x: 4, y: 54, z: 5, state: 42}]]);
 });
 
 check('custom_payload carries brand and opaque payload bytes', () => {

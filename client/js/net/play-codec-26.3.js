@@ -397,7 +397,7 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     const hasIcon=r.bool();
     let icon=null;
     if(hasIcon){const length=r.varint();icon=r.bytesN(length).slice();}
-    return {motd,hasIcon,iconLength:icon?icon.length:0};
+    return {motd,hasIcon,icon,iconLength:icon?icon.length:0};
   },
   player_info_update(r){
     const actions=fixedBitSet(r,8);
