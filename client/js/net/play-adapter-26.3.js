@@ -3,8 +3,21 @@
 // packet is only adapted when the fields it needs are known; anything else is skipped
 // (never guessed) and reported by the adapter gate.
 import {HANDLED_PLAY_CLIENTBOUND_26_3} from './game-names-26.3.js';
+import {lightTo758} from '../world/light-26.3.js';
 
 const DEG=180/Math.PI;
+
+// Native rotations travel as either a byte (1/256 turn) or a radians float; the entity layer
+// stores degrees.
+const byteAngle=value=>value*360/256;
+
+// A stepped VecDelta is a list of per-tick deltas; the game's relMove consumes one short triple.
+function moveTotals(move){
+  if(move.delta.type==='linear')return move.delta;
+  const total={dx:0,dy:0,dz:0};
+  for(const step of move.delta.steps){total.dx+=step.dx;total.dy+=step.dy;total.dz+=step.dz;}
+  return total;
+}
 
 function positionFlags(relatives){
   let flags=0;
@@ -91,6 +104,30 @@ const ADAPTERS={
     return {location:packet.position,angle:packet.yaw*DEG};
   },
   block_update(packet){return {location:packet.position,state:packet.state};},
+  move_entity_pos(packet){
+    const move=moveTotals(packet);
+    return {entityId:packet.entityId,dX:move.dx,dY:move.dy,dZ:move.dz,onGround:packet.onGround};
+  },
+  move_entity_pos_rot(packet){
+    const move=moveTotals(packet);
+    return {entityId:packet.entityId,dX:move.dx,dY:move.dy,dZ:move.dz,yaw:byteAngle(packet.yRot),pitch:byteAngle(packet.xRot),onGround:packet.onGround};
+  },
+  move_entity_rot(packet){
+    return {entityId:packet.entityId,yaw:byteAngle(packet.yRot),pitch:byteAngle(packet.xRot),onGround:packet.onGround};
+  },
+  rotate_head(packet){return {entityId:packet.entityId,headYaw:byteAngle(packet.yHeadRot)};},
+  entity_position_sync(packet){
+    const end=packet.path.type==='stepped'?packet.path.end:{x:packet.path.end.x,y:packet.path.end.y,z:packet.path.end.z};
+    return {entityId:packet.id,x:end.x,y:end.y,z:end.z,yaw:packet.yRot*DEG,pitch:packet.xRot*DEG,onGround:packet.onGround};
+  },
+  set_entity_motion(packet){
+    // The entity layer stores velocity in 1/8000 blocks per tick.
+    return {entityId:packet.id,velocity:{x:packet.movement.x*8000,y:packet.movement.y*8000,z:packet.movement.z*8000}};
+  },
+  remove_entities(packet){return {entityIds:packet.entityIds};},
+  light_update(packet){
+    return {chunkX:packet.x,chunkZ:packet.z,...lightTo758(packet)};
+  },
   chunk_batch_start(){return {};},
   chunk_batch_finished(packet){return {batchSize:packet.batchSize};},
   custom_payload(packet){return {channel:packet.channel,data:packet.data};},
