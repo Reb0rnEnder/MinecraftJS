@@ -5,6 +5,9 @@ import {Reader26_3} from '../../client/js/net/configuration-26.3.js';
 import {decodePlayPacket} from '../../client/js/net/play-codec-26.3.js';
 import {adaptPlay26_3} from '../../client/js/net/play-adapter-26.3.js';
 import {PLAY_CLIENTBOUND_26_3} from '../../client/js/net/protocol-26.3-ids.js';
+import {SOUND_NAMES_26_3,MOB_EFFECT_NAMES_26_3} from '../../client/js/net/registry-names-26.3.js';
+import {EFFECT_766} from '../../client/js/game/effects-1.20.6.js';
+import {ITEM_NAMES_26_3} from '../../client/js/net/items-26.3.js';
 
 let failures = 0;
 const check = (name, fn) => {
@@ -38,6 +41,8 @@ const nbtString = text => {
   return [8, (bytes.length >> 8) & 0xff, bytes.length & 0xff, ...bytes];
 };
 const uuid = seed => Array.from({ length: 16 }, (_, i) => (seed + i) & 0xff);
+const str = text => { const bytes = [...Buffer.from(text, 'utf8')]; return [...varint(bytes.length), ...bytes]; };
+const holder = id => varint(id + 1);
 
 function decode(name, body) {
   const frame = Uint8Array.from([...varint(PLAY_CLIENTBOUND_26_3[name]), ...body]);
@@ -163,6 +168,41 @@ check('boss_event decodes all six operations', () => {
   const styled = adapt('boss_event', [...id, ...varint(4), ...varint(2), ...varint(3)], {name: 'boss_bar'});
   eq([styled.color, styled.dividers], [2, 3]);
   eq(adapt('boss_event', [...id, ...varint(5), 5], {name: 'boss_bar'}).flags, 5);
+});
+
+check('sound, sound_entity and stop_sound decode and adapt', () => {
+  const sound = adapt('sound', [...holder(1), ...varint(4), ...i32(8), ...i32(-16), ...i32(64), ...f32(0.5), ...f32(1.25), ...i64(7)], {name: 'sound_effect'});
+  eq([sound.soundName, sound.x, sound.y, sound.z, sound.volume, sound.pitch], ['entity.allay.ambient_without_item', 1, -2, 8, 0.5, 1.25]);
+  eq(Number(sound.seed), 7);
+  const inline = adapt('sound', [...varint(0), ...str('minecraft:custom.sound'), ...f32(16), ...varint(9), ...i32(0), ...i32(0), ...i32(0), ...f32(1), ...f32(1), ...i64(0)], {name: 'sound_effect'});
+  eq(inline.soundName, 'minecraft:custom.sound');
+  const entity = adapt('sound_entity', [...holder(1), ...varint(7), ...varint(12), ...f32(1), ...f32(0.8), ...i64(9)], {name: 'entity_sound_effect'});
+  eq([entity.soundName, entity.entityId, entity.soundCategory], [SOUND_NAMES_26_3[1], 12, 7]);
+  const stopped = adapt('stop_sound', [3, ...varint(4), ...str('minecraft:block.note_block.pling')], {name: 'stop_sound'});
+  eq([stopped.source, stopped.sound], [4, 'minecraft:block.note_block.pling']);
+  eq(adapt('stop_sound', [0], {name: 'stop_sound'}), {name: 'stop_sound', source: null, sound: null});
+});
+
+check('cooldown, update and remove mob effect decode and adapt', () => {
+  const cooldown = adapt('cooldown', [...str('minecraft:ender_pearl'), ...varint(40)], {name: 'set_cooldown'});
+  eq([cooldown.itemId, cooldown.cooldownTicks], [ITEM_NAMES_26_3.indexOf('ender_pearl'), 40]);
+  const speedWire = MOB_EFFECT_NAMES_26_3.indexOf('speed') + 1;
+  const updated = adapt('update_mob_effect', [...varint(3), ...varint(speedWire), ...varint(1), ...varint(200), 8 | 2 | 1], {name: 'entity_effect'});
+  eq([updated.entityId, updated.effectId, updated.amplifier, updated.duration], [3, EFFECT_766.speed, 1, 200]);
+  eq([updated.ambient, updated.hideParticles, updated.showIcon, updated.shouldBlend], [true, false, false, true]);
+  eq(adapt('remove_mob_effect', [...varint(3), ...varint(speedWire)], {name: 'remove_entity_effect'}), {name: 'remove_entity_effect', entityId: 3, effectId: EFFECT_766.speed});
+});
+
+check('chunk unload, block entity, sign editor and advancement tab decode', () => {
+  const packed = (BigInt(3) & 0xffffffffn) | ((BigInt(-2) & 0xffffffffn) << 32n);
+  const unloaded = adapt('forget_level_chunk', i64(packed), {name: 'unload_chunk'});
+  eq([unloaded.chunkX, unloaded.chunkZ], [3, -2]);
+  const entity = adapt('block_entity_data', [...packPos(1, 64, -3), ...varint(5), 10, 0], {name: 'tile_entity_data'});
+  eq([entity.location, entity.nbtData.t], [{x: 1, y: 64, z: -3}, 10]);
+  eq(adapt('open_sign_editor', [...packPos(4, 70, 5), ...varint(1)], {name: 'open_sign_entity'}), {name: 'open_sign_entity', location: {x: 4, y: 70, z: 5}, isFrontText: true});
+  eq(adapt('open_sign_editor', [...packPos(4, 70, 5), ...varint(0)], {name: 'open_sign_entity'}).isFrontText, false);
+  eq(adapt('select_advancements_tab', [1, ...str('minecraft:story/root')], {name: 'select_advancement_tab'}).id, 'minecraft:story/root');
+  eq(adapt('select_advancements_tab', [0], {name: 'select_advancement_tab'}).id, null);
 });
 
 check('pong and the combat pair decode', () => {

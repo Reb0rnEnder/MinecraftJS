@@ -7,6 +7,12 @@ import {ENTITY_TYPES_26_3} from './entity-data-26.3.js';
 import {ITEM_NAMES_26_3} from './items-26.3.js';
 import {lightTo758} from '../world/light-26.3.js';
 import {componentFromNbt} from './component-nbt-1.20.6.js';
+import {EFFECT_766} from '../game/effects-1.20.6.js';
+
+// Reverse the native item table so a 26.3 cooldown group (an item identifier by default) can be
+// expressed as the item id the existing CooldownTracker is keyed by.
+const ITEM_ID_BY_NAME_26_3=Object.freeze(Object.fromEntries(ITEM_NAMES_26_3.map((name,id)=>[name,id])));
+const effectId26_3=effect=>EFFECT_766[effect.name.replace(/^minecraft:/,'')];
 
 const DEG=180/Math.PI;
 
@@ -125,6 +131,35 @@ const ADAPTERS={
     else if(packet.action===5)out.flags=packet.flags;
     return out;
   },
+  // The sound handler accepts a registry name directly, so the native holder never has to be
+  // renumbered; positions travel in eighths of a block, exactly as the 766 handler expects.
+  sound(packet){return {soundName:packet.sound.name,x:packet.x/8,y:packet.y/8,z:packet.z/8,volume:packet.volume,pitch:packet.pitch,seed:packet.seed,soundCategory:packet.source};},
+  sound_entity(packet){return {soundName:packet.sound.name,entityId:packet.entityId,volume:packet.volume,pitch:packet.pitch,seed:packet.seed,soundCategory:packet.source};},
+  stop_sound(packet){return {source:packet.source,sound:packet.sound};},
+  cooldown(packet){
+    const itemId=ITEM_ID_BY_NAME_26_3[packet.group.replace(/^minecraft:/,'')];
+    // A custom cooldown group has no item identity in the current UI; leave it unadapted.
+    if(itemId===undefined)return null;
+    return {itemId,cooldownTicks:packet.duration};
+  },
+  update_mob_effect(packet){
+    const effectId=effectId26_3(packet.effect);
+    if(effectId===undefined)return null;
+    const flags=packet.flags;
+    return {entityId:packet.entityId,effectId,amplifier:packet.amplifier,duration:packet.duration,flags,
+      ambient:!!(flags&1),hideParticles:!(flags&2),showIcon:!!(flags&4),shouldBlend:!!(flags&8)};
+  },
+  remove_mob_effect(packet){
+    const effectId=effectId26_3(packet.effect);
+    if(effectId===undefined)return null;
+    return {entityId:packet.entityId,effectId};
+  },
+  forget_level_chunk(packet){return {chunkX:packet.pos.x,chunkZ:packet.pos.z};},
+  // The 766 handler applies the block entity NBT directly; the 26.3 type id is only a
+  // registry hint and the NBT already carries id/x/y/z.
+  block_entity_data(packet){return {location:packet.pos,nbtData:packet.tag};},
+  open_sign_editor(packet){return {location:packet.pos,isFrontText:packet.slot===1};},
+  select_advancements_tab(packet){return {id:packet.tab};},
   pong_response(packet){return {id:packet.id};},
   player_combat_enter(packet){return {};},
   player_combat_end(packet){return {duration:packet.duration};},

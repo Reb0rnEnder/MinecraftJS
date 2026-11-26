@@ -9,6 +9,7 @@ import {ENTITY_DATA_SERIALIZERS_26_3} from './entity-data-26.3.js';
 import {readItemStack26_3} from './item-components-26.3.js';
 import {readLpVec3} from './lp-vec3-26.3.js';
 import {readParticleOptions26_3,readParticles26_3} from './particles-26.3.js';
+import {SOUND_NAMES_26_3,MOB_EFFECT_NAMES_26_3} from './registry-names-26.3.js';
 
 const NAME_BY_ID=new Map(Object.entries(PLAY_CLIENTBOUND_26_3).map(([name,id])=>[id,name]));
 const readItemStack=readItemStack26_3;
@@ -207,6 +208,55 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     else if(action!==1)throw Error('Unknown 26.3 boss event action '+action);
     return out;
   },
+  // ByteBufCodecs.holder writes protocol id + 1 and reserves 0 for an inline value; a sound's
+  // inline form is SoundEvent.createFixedRangeEvent(Identifier, float), verified from its codec.
+  sound(r){
+    const id=r.varint();
+    const sound=id===0?{name:r.string(),fixedRange:r.f32()}:{id:id-1,name:SOUND_NAMES_26_3[id-1]};
+    if(!sound.name)throw Error('Unknown 26.3 sound event '+(id-1));
+    return {sound,source:r.varint(),x:r.i32(),y:r.i32(),z:r.i32(),volume:r.f32(),pitch:r.f32(),seed:r.i64()};
+  },
+  sound_entity(r){
+    const id=r.varint();
+    const sound=id===0?{name:r.string(),fixedRange:r.f32()}:{id:id-1,name:SOUND_NAMES_26_3[id-1]};
+    if(!sound.name)throw Error('Unknown 26.3 sound event '+(id-1));
+    return {sound,source:r.varint(),entityId:r.varint(),volume:r.f32(),pitch:r.f32(),seed:r.i64()};
+  },
+  // ClientboundStopSoundPacket: flags byte, then the source enum for bit 1 and the sound
+  // identifier for bit 2 (either, both or neither).
+  stop_sound(r){
+    const flags=r.i8();
+    return {flags,source:flags&1?r.varint():null,sound:flags&2?r.string():null};
+  },
+  // ClientboundCooldownPacket(Identifier cooldownGroup, int duration).
+  cooldown(r){return {group:r.string(),duration:r.varint()};},
+  // Mob effects are holders too: wire id = native mob-effect protocol id + 1.
+  update_mob_effect(r){
+    const entityId=r.varint(), id=r.varint();
+    if(id===0)throw Error('Inline 26.3 mob effects are not implemented');
+    const name=MOB_EFFECT_NAMES_26_3[id-1];
+    if(!name)throw Error('Unknown 26.3 mob effect '+(id-1));
+    return {entityId,effect:{id:id-1,name},amplifier:r.varint(),duration:r.varint(),flags:r.i8()};
+  },
+  remove_mob_effect(r){
+    const entityId=r.varint(), id=r.varint();
+    if(id===0)throw Error('Inline 26.3 mob effects are not implemented');
+    const name=MOB_EFFECT_NAMES_26_3[id-1];
+    if(!name)throw Error('Unknown 26.3 mob effect '+(id-1));
+    return {entityId,effect:{id:id-1,name}};
+  },
+  // ClientboundForgetLevelChunkPacket: ChunkPos is one packed long, x in the low 32 bits and
+  // z in the high 32 bits (ChunkPos.pack/unpack).
+  forget_level_chunk(r){
+    const packed=r.i64();
+    return {pos:{x:Number(BigInt.asIntN(32,packed)),z:Number(BigInt.asIntN(32,packed>>32n))}};
+  },
+  // ClientboundBlockEntityDataPacket(BlockPos, BlockEntityType registry id, CompoundTag).
+  block_entity_data(r){return {pos:r.position(),type:r.varint(),tag:readAnonymousNbt(r)};},
+  // ClientboundOpenSignEditorPacket: BlockPos + SignTextSlot (0 BACK, 1 FRONT).
+  open_sign_editor(r){return {pos:r.position(),slot:r.varint()};},
+  // ClientboundSelectAdvancementsTabPacket: a nullable Identifier.
+  select_advancements_tab(r){return {tab:r.bool()?r.string():null};},
   // ClientboundPongResponsePacket(long time): the original send timestamp as an i64.
   pong_response(r){return {id:r.i64()};},
   // ClientboundPlayerCombatEnterPacket(): no payload.

@@ -119,8 +119,20 @@ const registrySource=[
 ].join('\n')+'\n';
 const registryPath=join(root,'client/js/net/items-26.3.js');
 
+// Sound events and mob effects are sent as registry holders (wire id = protocol id + 1), so the
+// adapter needs the native name tables to map a 26.3 holder back onto the game's sound names and
+// the 1.20.6 effect ids the HUD still uses.
+const soundNames=denseNames('minecraft:sound_event','Sound event');
+const effectNames=denseNames('minecraft:mob_effect','Mob effect');
+const registryNamesSource=[
+  '// Generated from the native 26.3 sound event and mob effect registries; do not hand-edit.',
+  'export const SOUND_NAMES_26_3=Object.freeze('+JSON.stringify(soundNames)+');',
+  'export const MOB_EFFECT_NAMES_26_3=Object.freeze('+JSON.stringify(effectNames)+');'
+].join('\n')+'\n';
+const registryNamesPath=join(root,'client/js/net/registry-names-26.3.js');
+
 if(process.argv.includes('--check')){
-  for(const [file,text,label] of [[path,source,'Protocol IDs'],[blocksPath,blocksSource,'Block-state table'],[gameNamesPath,gameNamesSource,'Game packet names'],[entityDataPath,entityDataSource,'Entity type and data serializer tables'],[registryPath,registrySource,'Item and data component registries']]){
+  for(const [file,text,label] of [[path,source,'Protocol IDs'],[blocksPath,blocksSource,'Block-state table'],[gameNamesPath,gameNamesSource,'Game packet names'],[entityDataPath,entityDataSource,'Entity type and data serializer tables'],[registryPath,registrySource,'Item and data component registries'],[registryNamesPath,registryNamesSource,'Sound and mob effect registries']]){
     let current;
     try{current=await readFile(file,'utf8');}catch(e){if(e.code==='ENOENT')throw Error(label+' need generation: run node tools/port-26.3/generate-ids.mjs');throw e;}
     if(current!==text)throw Error(label+' need regeneration');
@@ -132,9 +144,11 @@ if(process.argv.includes('--check')){
   await writeFile(gameNamesPath,gameNamesSource);
   await writeFile(entityDataPath,entityDataSource);
   await writeFile(registryPath,registrySource);
+  await writeFile(registryNamesPath,registryNamesSource);
   const play=Object.keys(report.play.clientbound).length+'/'+Object.keys(report.play.serverbound).length;
   console.log('Generated '+path+' (play '+play+')');
   console.log('Generated '+blocksPath+' ('+stateCount+' states, air '+airStates.join(',')+')');
   console.log('Generated '+entityDataPath+' ('+entityTypes.length+' entity types, '+serializerIds.length+' serializers)');
   console.log('Generated '+registryPath+' ('+itemNames.length+' items, '+componentNames.length+' data components)');
+  console.log('Generated '+registryNamesPath+' ('+soundNames.length+' sound events, '+effectNames.length+' mob effects)');
 }
