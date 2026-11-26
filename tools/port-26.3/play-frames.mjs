@@ -3,7 +3,7 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
-import {Reader} from '../../client/js/net/buffer.js';
+import {Reader26_3} from '../../client/js/net/configuration-26.3.js';
 import {decodePlayPacket} from '../../client/js/net/play-codec-26.3.js';
 import {root} from './prepare.mjs';
 
@@ -12,7 +12,7 @@ assert.ok(fixture.frames.length>=12,'Play fixture must hold the native startup b
 
 const decoded=[],undecoded=[];
 for(const frame of fixture.frames){
-  const reader=new Reader(Buffer.from(frame.hex,'hex'));
+  const reader=new Reader26_3(Buffer.from(frame.hex,'hex'));
   const result=decodePlayPacket(reader);
   assert.equal(result.id,frame.id,'fixture frame id must match its payload');
   if(result.decoded){

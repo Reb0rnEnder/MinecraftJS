@@ -61,6 +61,7 @@ try{
   await wait(()=>state.chunks.length>=2,'two level_chunk_with_light frames');
   // Let the keep-alive/chunk-batch exchange run once so an unacked frame closes the socket.
   await new Promise(resolve=>setTimeout(resolve,400));
+  if(state.failures.length)console.error('socket failures:',state.failures);
   assert.equal(state.failures.length,0,'the native server keeps the connection open');
   assert.ok(!socket.closed,'the socket stays open after join');
 

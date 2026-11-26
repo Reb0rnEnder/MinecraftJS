@@ -59,11 +59,12 @@
       "releaseRefs": ["1.21.2", "1.21.5", "26.3"],
       "acceptance": "Byte fixtures round-trip against native codecs, including the 26.3 component and dialog/waypoint families; complete packet consumption is asserted.",
       "evidence": [
-        "Native frames captured on 2026-11-25 from a disposable 26.3 server into tools/port-26.3/fixtures/login-config-26.3.json (5 frames, payload hex including the packet id).",
+        "Native frames captured on 2026-11-25 from a disposable 26.3 server into tools/port-26.3/fixtures/login-config-26.3.json (30 frames, payload hex including the packet id).",
         "byte-fixtures.mjs decodes them with the client's own Reader: compression threshold 256, Login Success uuid/name/properties, brand 'minecraft:brand'='vanilla', Update Enabled Features ['minecraft:vanilla'], Select Known Packs [minecraft:core:26.3]; every packet must be fully consumed.",
         "Login Success re-encodes through the client's Writer to the exact native bytes.",
         "Native change found by javap, not guessed: 26.3 renames the class to ClientboundLoginFinishedPacket and its STREAM_CODEC is composite(GAME_PROFILE, UUIDUtil.STREAM_CODEC), so Login Success carries a session UUID after the profile. The fixture asserts it (085cf48d-...).",
-        "Open: no Play packet codecs, no component/dialog/waypoint codecs, and the client's net layer still speaks 766."
+        "Play codecs now cover Play Login, level_chunk_with_light, LpVec3 movement (add_entity, set_entity_motion), VecDelta movement (move_entity_pos/rot), PositionPath (entity_position_sync), light_update and the shared common packets.",
+        "Configuration codecs decode registry_data (Identifier + Optional anonymous NBT), update_tags (VarInt id lists), store_cookie, transfer, resource packs and code_of_conduct. Open: no item-stack/component codec, no dialog/waypoint/entity-metadata codecs, and component serialization is read-only."
       ]
     },
     {
@@ -78,13 +79,13 @@
     {
       "id": "P05",
       "title": "Login and Configuration lifecycle at protocol 777",
-      "status": "partial",
+      "status": "done",
       "dependsOn": ["P03"],
       "evidence": [
-        "Native probe on 2026-11-25 against a disposable 26.3 server (server.jar 33680f5f, 127.0.0.1:25568, offline mode, own EULA): status ping reports name 26.3 and protocol 777.",
-        "Login sequence observed: 0x03 Set Compression (threshold 256), 0x02 Login Success; Login Acknowledged sent with compressed framing; Configuration entered and packets 0x01, 0x0d, 0x0f received.",
-        "Server log records the probe UUID and a clean disconnect; a bad frame is rejected with 'Badly compressed packet - size of 3 is below server threshold of 256', proving the framing gate is real.",
-        "Open: this is a standalone probe, not the browser client. The JS login/configuration codec still speaks 766 and is not yet switched to 777."
+        "The client's own socket (client/js/net/tcp-26.3.js + configuration-26.3.js) joins a disposable native 26.3 server on 2026-11-25: Hello/Login Finished, Login Acknowledged, Configuration (brand, update_enabled_features, select_known_packs, 30+ registry_data frames with anonymous-NBT payloads, update_tags, finish_configuration) and Play Login.",
+        "client-net.mjs drives VanillaSocket26_3 over Node TCP against 127.0.0.1:25568 and asserts the profile UUID, the 26.3 session UUID, 30+ registries with no elided payloads, 100+ tags, Play Login fields and byte-exact consumption of every decoded frame; login-config-frames.mjs replays 30 committed native frames through the same codecs, 23 of them registry_data.",
+        "Native behaviour proven, not assumed: claiming minecraft:core/26.3 without owning the pack makes the server omit every registry payload, so the client claims no packs and receives full data. A bad frame is still rejected with 'Badly compressed packet - size of 3 is below server threshold of 256'.",
+        "Open: the browser build still selects 766 through PROTOCOL_VERSION until the Play layer and client data are rebuilt."
       ],
       "acceptance": "A disposable native 26.3 server accepts the offline join and completes Configuration with no mixed-version identity."
     },
@@ -103,8 +104,9 @@
         "Player info update actions are a fixed 1-byte bitset over the eight actions (FriendlyByteBuf.writeFixedBitSet), not a VarInt mask.",
         "Chunk path landed: level_chunk_with_light decodes all 9 captured native chunks with zero leftover (24 sections, heightmaps, block entities, light byte-array layers). Validated against the jar's own registry: every section nonEmptyBlockCount equals the number of non-air states unpacked, and all state ids are below the native 35,723.",
         "26.3 chunk findings from bytecode: a section now carries two shorts (nonEmptyBlockCount, fluidCount); BitStorage packs floor(64/bits) values per long, so 5-bit sections are 342 longs and not 320; biome containers hold 64 entries; BIT_SET is a byte array, not a long array. Name mapping shows 26.2 cinnabar and sulfur in the caves at y=0.",
-        "Live-world layer added: set_time (26.3 clock map), game_event, chunk batch start/finished, chunk cache center, spawn position, health, experience, border (now includes warningTime), block_update, section_blocks_update (VarLong state<<12|pos). Thirty captured frames decode with zero leftover across 28 distinct packet types.",
-        "Open: 28 of 144 inbound Play IDs decoded; entity spawn/sync, item-stack components, metadata, advancements and the redesigned recipes remain raw. No Play handlers, no chunk/entity/registry consumers."
+        "Live-world layer added: set_time (26.3 clock map), game_event, chunk batch start/finished, chunk cache center, spawn position, health, experience, border (now includes warningTime), block_update, section_blocks_update (VarLong state<<12|pos). Forty-three of 51 captured startup frames decode with zero leftover and a live join decodes 100+ Play frames across 30+ types; 46 inbound IDs have javap-verified decoders.",
+        "Native redesigns recorded from the jar: LpVec3 (48-bit packed vector), VecDelta packed as (stepCount<<1)|onGround with Linear/Stepped steps, PositionPath stepped paths carrying only steps, 26.3 serverbound accept_teleportation echoing position and rotation, and horizontalCollision on move packets.",
+        "Open: 46 of 144 inbound Play IDs decoded; entity metadata/equipment, item-stack components, advancements and the redesigned recipes remain raw. No Play handlers, no chunk/entity/registry consumers, and entity_position_sync's stepped path was proven by a 39-byte native frame."
       ]
     },
     {

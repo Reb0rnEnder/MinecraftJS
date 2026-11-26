@@ -14,6 +14,7 @@ import {
 // Z_OFFSET=PACKED_Y_LENGTH(12), X_OFFSET=Y+PACKED_HORIZONTAL_LENGTH(38).
 export class Reader26_3 extends Reader{
   _check(n){if(!Number.isSafeInteger(n)||n<0)throw Error('Invalid packet length');super._check(n);}
+  u32(){this._check(4);const v=this.view.getUint32(this.offset);this.offset+=4;return v;}
   position(){
     const v=this.i64();
     return {

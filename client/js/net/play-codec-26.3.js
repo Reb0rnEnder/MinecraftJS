@@ -4,7 +4,7 @@
 import {PLAY_CLIENTBOUND_26_3} from './protocol-26.3-ids.js';
 import {readAnonymousNbt} from './nbt-anonymous.js';
 import {readCommands26_3} from './commands-26.3.js';
-import {decodeLevelChunkWithLight} from './chunk-26.3.js';
+import {decodeLevelChunkWithLight,readLightData} from './chunk-26.3.js';
 
 const NAME_BY_ID=new Map(Object.entries(PLAY_CLIENTBOUND_26_3).map(([name,id])=>[id,name]));
 
@@ -12,6 +12,41 @@ function readItemStack(r){
   const count=r.varint();
   if(count===0)return null;
   throw Error('26.3 item stacks with components are not decoded yet');
+}
+
+// LpVec3 (26.3 low-precision vector): header byte 0 means zero, else one more byte and an
+// unsigned int form a 48-bit payload; header bit 2 extends the scale with a VarInt. Axes are
+// 15-bit signed values at bit offsets 3/18/33, unpacked as 2q/32766-1 and multiplied by scale.
+function readLpVec3(r){
+  const header=r.u8();
+  if(header===0)return {x:0,y:0,z:0};
+  const second=r.u8(),high=r.i32()>>>0;
+  const packed=(BigInt(high)<<16n)|(BigInt(second)<<8n)|BigInt(header);
+  let scale=BigInt(header&3);
+  if(header&4)scale|=BigInt(r.varint())<<2n;
+  const factor=Number(scale);
+  const unpack=shift=>{
+    const q=Math.min(Number((packed>>BigInt(shift))&0x7fffn),32766);
+    return (q*2/32766-1)*factor;
+  };
+  return {x:unpack(3),y:unpack(18),z:unpack(33)};
+}
+const readVec3=r=>({x:r.f64(),y:r.f64(),z:r.f64()});
+
+function readVecDelta(r,stepCount){
+  if(stepCount>0){
+    const steps=[];
+    for(let i=0;i<stepCount;i++){
+      const tickOffset=r.varint();
+      steps.push({tickOffset,dx:r.i16(),dy:r.i16(),dz:r.i16()});
+    }
+    return {type:'stepped',steps};
+  }
+  return {type:'linear',dx:r.i16(),dy:r.i16(),dz:r.i16()};
+}
+function readMoveDelta(r){
+  const properties=r.varint(),stepCount=properties>>>1;
+  return {onGround:!!(properties&1),stepCount,delta:readVecDelta(r,stepCount)};
 }
 
 function bitmask(value){const bits=[];for(let i=0;i<32;i++)if(value&(1<<i))bits.push(i);return bits;}
@@ -65,6 +100,34 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     return {uuid,url,hash,forced,prompt:r.bool()?readAnonymousNbt(r):null};
   },
   start_configuration(){return {};},
+  // ClientboundAddEntityPacket(int id, UUID, EntityType registry id, double x/y/z, Vec3.LP movement,
+  // byte xRot/yRot/yHeadRot, VarInt data).
+  add_entity(r){
+    const id=r.varint(),uuid=r.uuid(),type=r.varint();
+    const x=r.f64(),y=r.f64(),z=r.f64(),movement=readLpVec3(r);
+    return {id,uuid,type,x,y,z,movement,xRot:r.i8(),yRot:r.i8(),yHeadRot:r.i8(),data:r.varint()};
+  },
+  // ClientboundSetEntityMotionPacket(int id, Vec3.LP movement).
+  set_entity_motion(r){return {id:r.varint(),movement:readLpVec3(r)};},
+  // ClientboundRemoveEntitiesPacket(IntList): VarInt count then VarInt entity ids.
+  remove_entities(r){return {entityIds:Array.from({length:r.varint()},()=>r.varint())};},
+  // ClientboundLightUpdatePacket(VarInt x, VarInt z, ClientboundLightUpdatePacketData).
+  light_update(r){const x=r.varint(),z=r.varint();return {x,z,...readLightData(r)};},
+  // ClientboundEntityPositionSyncPacket(int id, PositionPath, float yRot, xRot, boolean onGround).
+  // PositionPath dispatches on Type.STREAM_CODEC: LINEAR(0) is one Vec3; STEPPED(1) is a VarInt
+  // step count then (Vec3 position, VarInt tickOffset) per step. The native frame is 39 bytes for
+  // one step, which proves the stepped path does not also carry an end position.
+  entity_position_sync(r){
+    const id=r.varint(),type=r.varint();
+    let path;
+    if(type===1){
+      const steps=Array.from({length:r.varint()},()=>({position:readVec3(r),tickOffset:r.varint()}));
+      path={type:'stepped',steps,end:steps.length?steps[steps.length-1].position:{x:0,y:0,z:0}};
+    }else{
+      path={type:'linear',end:readVec3(r)};
+    }
+    return {id,path,yRot:r.f32(),xRot:r.f32(),onGround:r.bool()};
+  },
   change_difficulty(r){return {difficulty:r.u8(),locked:r.bool()};},
   player_abilities(r){
     const flags=r.u8();
@@ -168,8 +231,15 @@ export const PLAY_DECODERS_26_3=Object.freeze({
   ticking_state(r){return {tickRate:r.f32(),frozen:r.bool()};},
   ticking_step(r){return {tickSteps:r.varint()};},
   rotate_head(r){return {entityId:r.varint(),yHeadRot:r.i8()};},
-  // 26.3 move packets take VecDelta (three shorts) plus an onGround flag.
-  move_entity_pos(r){return {entityId:r.varint(),dx:r.i16(),dy:r.i16(),dz:r.i16(),onGround:r.bool()};},
+  // 26.3 entity movement packs onGround and VecDelta.stepCount into one VarInt
+  // ((stepCount<<1)|onGround). stepCount 0 is a Linear 3-short delta; a positive count is
+  // that many Stepped entries of (VarInt tickOffset, short dx, dy, dz).
+  move_entity_pos(r){const entityId=r.varint();return {entityId,...readMoveDelta(r)};},
+  move_entity_pos_rot(r){
+    const entityId=r.varint(),move=readMoveDelta(r);
+    return {entityId,...move,yRot:r.i8(),xRot:r.i8()};
+  },
+  move_entity_rot(r){return {entityId:r.varint(),onGround:r.bool(),yRot:r.i8(),xRot:r.i8()};},
   bundle_delimiter(){return {};},
   // 26.3 post effects are a list of identifiers (was a single effect in 1.20.6).
   post_effects(r){
@@ -208,6 +278,7 @@ export function decodePlayPacket(reader){
   const name=NAME_BY_ID.get(id)||null;
   const decoder=name?PLAY_DECODERS_26_3[name]:undefined;
   if(!decoder)return {id,name,decoded:false,raw:reader.bytes.subarray(reader.offset)};
-  const data=decoder(reader);
+  let data;
+  try{data=decoder(reader);}catch(error){error.message='['+name+'#'+id+'] '+error.message;throw error;}
   return {id,name,decoded:true,data};
 }

@@ -89,6 +89,7 @@ export class VanillaSocket26_3 extends VanillaSocket{
     }
 
     if(this.state==='play'){
+      this.lastPlayFrame=data;
       const reader=new Reader26_3(data);
       const packet=decodePlayPacket(reader);
       if(packet.decoded&&reader.remaining()){
