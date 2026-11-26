@@ -7,7 +7,7 @@ import {adaptPlay26_3} from '../../client/js/net/play-adapter-26.3.js';
 import {PLAY_CLIENTBOUND_26_3} from '../../client/js/net/protocol-26.3-ids.js';
 import {SOUND_NAMES_26_3,MOB_EFFECT_NAMES_26_3} from '../../client/js/net/registry-names-26.3.js';
 import {EFFECT_766} from '../../client/js/game/effects-1.20.6.js';
-import {ITEM_NAMES_26_3} from '../../client/js/net/items-26.3.js';
+import {ITEM_NAMES_26_3,DATA_COMPONENT_NAMES_26_3} from '../../client/js/net/items-26.3.js';
 
 let failures = 0;
 const check = (name, fn) => {
@@ -368,6 +368,27 @@ check('block_changed_ack decodes the sequence', () => {
 check('block_destruction decodes entity, pos and stage', () => {
   const adapted = adapt('block_destruction', [...varint(7), ...packPos(1, 67, 16), 4], {name: 'block_break_animation'});
   eq([adapted.entityId, adapted.location, adapted.destroyStage], [7, {x: 1, y: 67, z: 16}, 4]);
+});
+
+check('merchant_offers decodes costs, offer counters and villager data', () => {
+  const damageId = DATA_COMPONENT_NAMES_26_3.indexOf('damage');
+  if (damageId < 0) throw Error('native component table has no damage component');
+  const cost = (itemId, count, components = []) =>
+    [...varint(itemId), ...varint(count), ...varint(components.length), ...components.flat()];
+  const body = [
+    ...varint(3), ...varint(1),
+    ...cost(5, 3, [[...varint(damageId), ...varint(7)]]),
+    ...varint(1), ...varint(9), ...varint(0), ...varint(0),
+    0, 0,
+    ...i32(4), ...i32(12), ...i32(5), ...i32(-1), ...f32(0.05), ...i32(2),
+    ...varint(2), ...varint(15), 1, 1
+  ];
+  const adapted = adapt('merchant_offers', body, {name: 'trade_list'});
+  const trade = adapted.trades[0];
+  eq([adapted.windowId, adapted.trades.length, trade.a.itemKey, trade.a.count, trade.a.components.damage], [3, 1, ITEM_NAMES_26_3[5], 3, 7]);
+  eq([trade.out.count, trade.b, trade.disabled, trade.uses, trade.max, trade.xp, trade.specialPrice, trade.demand], [1, null, false, 4, 12, 5, -1, 2]);
+  if (Math.abs(trade.priceMultiplier - 0.05) > 1e-6) throw Error('price multiplier decoded as ' + trade.priceMultiplier);
+  eq([adapted.villagerLevel, adapted.experience, adapted.isRegularVillager, adapted.canRestock], [2, 15, true, true]);
 });
 
 if (failures) {

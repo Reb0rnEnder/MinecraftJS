@@ -227,6 +227,22 @@ export function readItemStack26_3(r){
   return readItemPatch(r,itemId,count);
 }
 
+// ItemCost.STREAM_CODEC (javap on 26.3 ItemCost): Item.STREAM_CODEC (VarInt holder id),
+// ByteBufCodecs.VAR_INT count, then DataComponentExactPredicate.STREAM_CODEC. The predicate
+// is a VarInt-prefixed list of TypedDataComponent (VarInt type id, then that type's stream
+// codec), which is the same typed-component pair an ItemStack patch carries. 26.3 trading
+// costs therefore ship exact-match components instead of the 766 loose component list.
+export function readItemCost26_3(r){
+  const itemId=r.varint(),count=r.varint(),addedCount=r.varint();
+  const added=[];
+  for(let i=0;i<addedCount;i++){
+    const typeId=r.varint();
+    const {name,value}=readComponentValue(r,typeId);
+    added.push({type:typeId,name,value});
+  }
+  return {itemId,count,added};
+}
+
 // Item source for outbound packets. Accepts either a decoded stack or the game's decorated
 // slot shape. Component values are not re-encoded yet, so only stacks whose patch is empty can
 // be written: that is exactly what creative inventory hands out, and it fails loudly rather

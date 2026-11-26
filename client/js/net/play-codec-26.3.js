@@ -6,7 +6,7 @@ import {readAnonymousNbt} from './nbt-anonymous.js';
 import {readCommands26_3} from './commands-26.3.js';
 import {decodeLevelChunkWithLight,readLightData} from './chunk-26.3.js';
 import {ENTITY_DATA_SERIALIZERS_26_3} from './entity-data-26.3.js';
-import {readItemStack26_3} from './item-components-26.3.js';
+import {readItemStack26_3,readItemCost26_3} from './item-components-26.3.js';
 import {readLpVec3} from './lp-vec3-26.3.js';
 import {readParticleOptions26_3,readParticles26_3} from './particles-26.3.js';
 import {SOUND_NAMES_26_3,MOB_EFFECT_NAMES_26_3} from './registry-names-26.3.js';
@@ -613,6 +613,26 @@ export const PLAY_DECODERS_26_3=Object.freeze({
   container_close(r){return {containerId:r.varint()};},
   // ClientboundContainerSetDataPacket(int containerId, int id, int value): VarInt, short, short.
   container_set_data(r){return {containerId:r.varint(),id:r.i16(),value:r.i16()};},
+  // ClientboundMerchantOffersPacket (javap): writeContainerId (VarInt), the MerchantOffers
+  // list, then VarInt villagerLevel, VarInt villagerXp, boolean showProgress, boolean
+  // canRestock. MerchantOffer.writeToStream is ItemCost, ItemStack, optional ItemCost,
+  // boolean isOutOfStock, then uses/maxUses/xp/specialPriceDiff as writeInt (a 26.3 change
+  // from the 766 VarInts), float priceMultiplier and a final writeInt demand.
+  merchant_offers(r){
+    const containerId=r.varint();
+    const count=r.varint();
+    const offers=[];
+    for(let i=0;i<count;i++){
+      const costA=readItemCost26_3(r);
+      const result=readItemStack(r);
+      const costB=r.bool()?readItemCost26_3(r):null;
+      const outOfStock=r.bool();
+      const uses=r.i32(),maxUses=r.i32(),xp=r.i32(),specialPriceDiff=r.i32();
+      const priceMultiplier=r.f32(),demand=r.i32();
+      offers.push({costA,result,costB,outOfStock,uses,maxUses,xp,specialPriceDiff,priceMultiplier,demand});
+    }
+    return {containerId,offers,villagerLevel:r.varint(),villagerXp:r.varint(),showProgress:r.bool(),canRestock:r.bool()};
+  },
   // SectionBlocksUpdate packs each change as VarLong(stateId << 12 | section-local position).
   section_blocks_update(r){
     const section=r.i64();

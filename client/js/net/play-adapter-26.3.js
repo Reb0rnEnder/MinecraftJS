@@ -311,6 +311,31 @@ const ADAPTERS={
   set_player_inventory(packet){return {windowId:-2,stateId:0,slot:packet.slot,item:itemStack(packet.item)};},
   container_close(packet){return {windowId:packet.containerId};},
   container_set_data(packet){return {windowId:packet.containerId,property:packet.id,value:packet.value};},
+  // The 766 trade_list shape: windowId, trades with a/out/b plus the price counters, then
+  // villagerLevel, experience, isRegularVillager and canRestock. 26.3 calls the same two
+  // booleans showProgress/canRestock and the counters specialPriceDiff/villagerXp.
+  merchant_offers(packet){
+    const cost=c=>c?{...itemStack(c),count:c.count}:null;
+    return {
+      windowId:packet.containerId,
+      trades:packet.offers.map(offer=>({
+        a:cost(offer.costA),
+        out:itemStack(offer.result),
+        b:cost(offer.costB),
+        disabled:offer.outOfStock,
+        uses:offer.uses,
+        max:offer.maxUses,
+        xp:offer.xp,
+        specialPrice:offer.specialPriceDiff,
+        priceMultiplier:offer.priceMultiplier,
+        demand:offer.demand
+      })),
+      villagerLevel:packet.villagerLevel,
+      experience:packet.villagerXp,
+      isRegularVillager:packet.showProgress,
+      canRestock:packet.canRestock
+    };
+  },
   move_entity_pos(packet){
     const move=moveTotals(packet);
     return {entityId:packet.entityId,dX:move.dx,dY:move.dy,dZ:move.dz,onGround:packet.onGround};
