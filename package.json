@@ -43,7 +43,8 @@
     "test:model-cache": "node --test tools/test-model-bundle-signature.mjs",
     "blocks:26.3": "node tools/port-26.3/build-blocks.mjs",
     "adapter:26.3": "node tools/port-26.3/adapter-gate.mjs",
-    "items:26.3": "node tools/port-26.3/build-items.mjs"
+    "items:26.3": "node tools/port-26.3/build-items.mjs",
+    "runtime:26.3": "node tools/port-26.3/build-runtime.mjs"
   },
   "dependencies": {
     "express": "^4.18.2",

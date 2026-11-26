@@ -131,6 +131,8 @@ const ADAPTERS={
   chunk_batch_start(){return {};},
   chunk_batch_finished(packet){return {batchSize:packet.batchSize};},
   custom_payload(packet){return {channel:packet.channel,data:packet.data};},
+  keep_alive(packet){return {keepAliveId:String(packet.keepAliveId)};},
+  ping(packet){return {pingId:packet.id32};},
   disconnect(packet){return {reason:packet.reason};}
 };
 

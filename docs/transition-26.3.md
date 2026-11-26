@@ -1,6 +1,6 @@
 # Transition plan: Java 26.3
 
-Updated 2026-11-25. Work in the **existing `26.3` branch**, created from `1.20.6` at `761970e`. The
+Updated 2026-11-26. Work in the **existing `26.3` branch**, created from `1.20.6` at `761970e`. The
 milestone order is in [transition-26.3.tasks.json](transition-26.3.tasks.json); a task is complete only
 when its acceptance evidence exists. Full parity is not claimed at any point in this plan.
 
@@ -56,6 +56,21 @@ P01 before they are treated as sources; a link here is a work item, not a comple
 Indexed topics and present models are not passed scenarios. Each topic gets one disposition:
 implemented and accepted; implemented but unverified; missing; server-owned with client acceptance
 pending; product outside current scope; or experiment-gated.
+
+## Current checkpoint (2026-11-26)
+
+- The native 26.3 runtime tables are installed: 1,286 blocks / 35,723 states with selection shape,
+  collision boxes, render/suffocation/light/sound/occlusion values, 338 collision shapes, 418 selection
+  boxes and 39 native offset policies, plus 1,658 items. `npm run runtime:26.3` reproduces them from the
+  pinned client jar.
+- The browser client reaches Play, spawns and renders a native 26.3 world: 81 chunks, terrain, sky, tall
+  grass and the full HUD. `client-net:26.3` and `adapter:26.3` remain green.
+- Serverbound bodies are bytecode-verified for the join path: accept_teleportation echoes position and
+  rotation, movement packets use the packed flags byte, every tick ends with client_tick_end, and
+  keep_alive/ping are adapted. The live session no longer desynchronises or times out.
+- Open at this checkpoint: entity rendering, movement/death/respawn/reconnect acceptance, the remaining
+  outbound families (chat, interact, container clicks, creative slots), native support/placement rules and
+  the 26.3 model/texture bake. The task ledger is at 29.4% (2 done, 6 partial, 9 todo).
 
 ## Implementation order
 

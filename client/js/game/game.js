@@ -1120,8 +1120,12 @@ export class Game {
     pl.prevX = x; pl.prevY = y; pl.prevZ = z;
     pl.prevYaw = yaw; pl.prevPitch = pitch;
     pl.yaw = Math.fround(yaw % 360); pl.pitch = Math.fround(pitch % 360);
-    this.send(C.teleportConfirm(p.teleportId));
-    this.send(C.positionLook(pl.x, pl.y, pl.z, pl.yaw, pl.pitch, false));
+    // 26.3's acknowledgement carries the accepted position itself; sending a second
+    // position packet in the same tick makes the server reject the duplicate.
+    this.send(C.teleportConfirm(p.teleportId, pl.x, pl.y, pl.z, pl.yaw, pl.pitch));
+    const lr = this.lastReported;
+    lr.x = pl.x; lr.y = pl.y; lr.z = pl.z; lr.yaw = pl.yaw; lr.pitch = pl.pitch; lr.onGround = false;
+    this.positionUpdateTicks = 0;
     // the last reported position stays: the next tick reports the new position again (onUpdateWalkingPlayer)
     if (!this.doneLoadingTerrain) {
       this.doneLoadingTerrain = true;
@@ -1937,6 +1941,7 @@ export class Game {
       if (e.duration > 0) e.duration--;
       tickEffectBlend766(e);
     }
+    this.send(C.clientTickEnd());
   }
 
   portalTick() { tickPortal(this); }

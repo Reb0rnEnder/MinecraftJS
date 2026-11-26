@@ -1,6 +1,6 @@
 # Full-parity checklist: 26.3
 
-Generated from [transition-26.3.tasks.json](transition-26.3.tasks.json). Updated 2026-11-25.
+Generated from [transition-26.3.tasks.json](transition-26.3.tasks.json). Updated 2026-11-26.
 
 Full parity is **not** claimed. This checklist starts empty on purpose: a milestone enters it only with
 acceptance evidence from a native run, not because a table or model exists.
@@ -19,8 +19,8 @@ acceptance evidence from a native run, not because a table or model exists.
 
 | Area | Open part |
 | --- | --- |
-| P02 extraction | Reports exist; client data tables (`client/data/*.json`) are still the 1.20.6 generation and are not yet rebuilt from 26.3. |
-| Everything from P03 on | Not started in this branch. |
+| P02 extraction | Native blocks, items, collision/selection shapes and block offsets are installed from the 26.3 jar. The remaining client tables (biomes, effects, enchantments, entities, foods, particles, sounds, recipes, creative) are still the older generation. |
+| P07 graphical join | Terrain, 81 chunks, sky, tall grass and the full HUD render in Chrome against a disposable 26.3 server, and the session survives the keepalive window. Entity rendering, movement, death/respawn and reconnect are still unverified. |
 
 ## Missing (inherited from 1.20.6)
 
@@ -30,8 +30,9 @@ not closed by the version jump.
 
 ## Unverified
 
-- Nothing in this branch has been exercised against a live 26.3 server or in a browser yet.
-- No 26.3 client build, join, render or interaction test has run.
+- Entity rendering: `add_entity` and entity metadata are not adapted yet, so no mob or item entity has been drawn.
+- Movement input, death/respawn, reconnect and inventory interaction in the browser.
+- The browser still loads 1.20.6 model/texture bundles, so 26.3-only blocks have no baked models yet (P10).
 
 ## Out of scope
 
