@@ -416,8 +416,11 @@ export function wolf() {
       }
       q.head.rx = a.pitch * PI / 180; q.head.ry = a.yaw * PI / 180;
       q.head.rz = 0;
+      // WolfModel.prepareMobModel: the roll goes on real_head / real_tail, children of the look-rotated head and tail
+      q.head.children[0].rz = a.headRoll || 0; q.mane.rz = a.maneRoll || 0; q.body.rz = a.bodyRoll || 0;
       q.tail.rx = a.tailRotation !== undefined ? a.tailRotation : PI / 5;
       q.tail.ry = a.angry ? 0 : cos(a.ls * 0.6662) * 1.4 * a.lsa;
+      q.tail.children[0].rz = a.tailRoll || 0;
     },
   };
 }
