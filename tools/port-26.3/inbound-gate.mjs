@@ -65,6 +65,26 @@ check('animate decodes and adapts to animation', () => {
   eq([adapted.entityId, adapted.animation], [5, 3]);
 });
 
+check('custom_payload carries brand and opaque payload bytes', () => {
+  const brand = adapt('custom_payload', [...str('minecraft:brand'), ...str('vanilla')], {name: 'custom_payload'});
+  eq([brand.channel, new Reader26_3(Uint8Array.from(brand.data)).string()], ['minecraft:brand', 'vanilla']);
+  const other = adapt('custom_payload', [...str('example:probe'), 1, 2, 3], {name: 'custom_payload'});
+  eq([other.channel, Array.from(other.data)], ['example:probe', [1, 2, 3]]);
+});
+
+check('delete_chat decodes packed ids and full signatures', () => {
+  const indexed = adapt('delete_chat', [...varint(6)], {name: 'hide_message'});
+  eq([indexed.signatureId, indexed.signature], [6, null]);
+  const full = Array.from({length: 256}, (_, i) => i & 0xff);
+  const complete = adapt('delete_chat', [...varint(0), ...full], {name: 'hide_message'});
+  eq([complete.signatureId, complete.signature.length, complete.signature[255]], [0, 256, 255]);
+});
+
+check('open_screen decodes and adapts to open_window', () => {
+  const adapted = adapt('open_screen', [...varint(3), ...varint(12), ...nbtString('Crafting')], {name: 'open_window'});
+  eq([adapted.windowId, adapted.inventoryType, JSON.parse(adapted.windowTitle)], [3, 12, 'Crafting']);
+});
+
 check('take_item_entity decodes and adapts to collect', () => {
   const adapted = adapt('take_item_entity', [...varint(7), ...varint(9), ...varint(2)], {name: 'collect'});
   eq([adapted.collectedEntityId, adapted.collectorEntityId, adapted.amount], [7, 9, 2]);

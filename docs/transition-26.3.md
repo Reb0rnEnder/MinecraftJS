@@ -91,8 +91,13 @@ pending; product outside current scope; or experiment-gated.
   A fresh join now loads 81 chunks and 26 entities with zero skipped frames. Vibration stays fail-closed.
 - Open at this checkpoint: patched-item HashedPatchMap hashing, creative slots (needs the P10 item table),
   remaining container/menu families, the 32 fail-closed component readers (attribute_modifiers, profile and
-  item-modifier records), native support/placement rules, the 44 inbound IDs that are still raw
-  (recipes, advancements, maps, boss bars, dialogs) and the 26.3 model/texture bake. The task ledger is at 41.2% (3 done, 8 partial, 6 todo); next task P08.
+  item-modifier records), native support/placement rules, the 42 inbound IDs that are still raw
+  (recipes, advancements, maps, dialogs) and the 26.3 model/texture bake. The task ledger is at 41.2% (3 done, 8 partial, 6 todo); next task P08.
+- The 26.3 asset jar is now inventoried: 11,603 `assets/minecraft/` entries (4,371 textures) against 8,431
+  (3,145 textures) in 1.20.6, with sounds moved out of the jar into 4,961 indexed objects. It has no
+  `assets/minecraft/entity/*.json`: entity models are Java code in 26.3, and `assets.load` requires the
+  entity-model bundle, so the texture switch needs a native model dumper first. Serving 26.3 textures on the
+  1.20.6 model bundle would be mixed-version data and is not done.
 
 ## Implementation order
 

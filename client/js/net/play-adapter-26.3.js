@@ -169,6 +169,13 @@ const ADAPTERS={
   },
   player_look_at(packet){return {isEntity:packet.atEntity,entityId:packet.entity,x:packet.x,y:packet.y,z:packet.z,fromAnchor:packet.fromAnchor,toAnchor:packet.toAnchor};},
   open_book(packet){return {hand:packet.hand};},
+  // MessageSignatureCache762 is 1-based with 0 reserved for a full signature, so the native
+  // 0-based packed index shifts by one and the full-signature form becomes id 0.
+  delete_chat(packet){return packet.signature?{signatureId:0,signature:packet.signature}:{signatureId:packet.signatureId+1,signature:null};},
+  custom_payload(packet){return {channel:packet.channel,data:packet.data};},
+  // The 26.3 menu registry is byte-for-byte the protocol-766 order by name (native report), so the
+  // registry id is also the menuInfo766 id and on_open_window resolves the slot count from it.
+  open_screen(packet){return {windowId:packet.containerId,inventoryType:packet.type,windowTitle:componentJson(packet.title)};},
   command_suggestions(packet){return {transactionId:packet.id,start:packet.start,length:packet.length,matches:packet.matches};},
   custom_chat_completions(packet){return {action:packet.action,entries:packet.entries};},
   tag_query(packet){return {transactionId:packet.transactionId,nbt:packet.nbt};},

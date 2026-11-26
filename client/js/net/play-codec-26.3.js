@@ -276,6 +276,17 @@ export const PLAY_DECODERS_26_3=Object.freeze({
   },
   // ClientboundOpenBookPacket: InteractionHand (VarInt id).
   open_book(r){return {hand:r.varint()};},
+  // ClientboundDeleteChatPacket(MessageSignature.Packed): the packed codec reads VarInt id+1 and
+  // treats 0 as a full 256-byte MessageSignature (MessageSignature$Packed.read subtracts one and
+  // compares with -1), so no signature table is guessed here.
+  delete_chat(r){
+    const id=r.varint()-1;
+    return id===-1?{signatureId:-1,signature:Array.from(r.bytesN(256))}:{signatureId:id,signature:null};
+  },
+  // ClientboundOpenScreenPacket(int containerId, MenuType<?> type, Component title):
+  // ByteBufCodecs.CONTAINER_ID (VarInt), registry(Registries.MENU) (VarInt id; the 26.3 order is
+  // identical to protocol 766 by name), and ComponentSerialization.TRUSTED_STREAM_CODEC (network NBT).
+  open_screen(r){return {containerId:r.varint(),type:r.varint(),title:readAnonymousNbt(r)};},
   // ClientboundCommandSuggestionsPacket: id/start/length VarInts, then (String text,
   // optional Component tooltip) entries.
   command_suggestions(r){
