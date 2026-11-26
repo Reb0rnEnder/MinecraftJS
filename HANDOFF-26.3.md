@@ -1,7 +1,8 @@
 # MinecraftJS 26.3 — agent handoff
 
 **Repository:** https://github.com/Reb0rnEnder/MinecraftJS
-**Branch:** `26.3` (last commit `88fd7a6`, "Decode 26.3 map data and swing animation.")
+**Branch:** `26.3` (last commit `1724099`, "Decode every 26.3 world border packet.")
+**GitHub:** https://github.com/Reb0rnEnder/MinecraftJS/tree/26.3
 **Branch contains:** all 26.3 protocol work, reports, gates and tools. The handoff zip excludes `.git`, so clone the repo and check out `26.3`, or copy this tree over a clean clone.
 
 ## Read first
@@ -14,7 +15,7 @@
 
 ## State at handoff
 
-- **P06 coverage: 110/144 inbound IDs decoded, 99 with adapters, 34 raw.**
+- **P06 coverage: 116/144 inbound IDs decoded, 105 with adapters, 28 raw.**
 - Ledger: **41.2%** (3 done, 8 partial, 6 todo; done=1, partial=0.5).
 - Last full run: `test:26.3`, `adapter:26.3`, `client-net:26.3` and `inbound-gate.mjs` all exit 0.
 - Real 26.3 server socket test passes (`client-net`, 27 chunks); graphical browser verification is unreliable on this machine (low disk, join stalls). Do not claim visual verification you did not do.
@@ -24,7 +25,8 @@
 ## Required environment
 
 - Node.js (repo uses ESM scripts), Java JDK with `javap`.
-- Restore pinned native inputs with `npm run prepare:26.3` (script downloads and SHA-verifies the 26.3 client jar and libraries into `cache/port-26.3/`). The `cache/` directory is deliberately excluded from the zip.
+- Restore pinned native inputs with `npm run prepare:26.3` (script downloads and SHA-verifies the 26.3 client jar and libraries into `cache/port-26.3/`). The `cache/` directory is deliberately excluded from the zip and git.
+- **Native jar in this workspace:** `MinecraftJS/cache/port-26.3/client.jar` (40 MB). SHA-1: `e877b6a07acd633fb3bb475002175cec036e7b87`. If it is missing, `npm run prepare:26.3` restores the exact pinned artifact; never substitute a different build. The official version manifest is https://piston-meta.mojang.com/mc/game/version_manifest_v2.json. The jar is Mojang code and is not redistributed in the handoff zip or repository.
 - `npm install` for tooling.
 
 Classpath used for every layout check:
@@ -58,13 +60,13 @@ After adding a `Game` handler, run `node tools/port-26.3/generate-ids.mjs` first
 
 ## Next sections, in order
 
-1. **`player_chat` (id 66)** — verified 26.3 field order: `VarInt globalIndex`, sender `UUID`, `VarInt index`, optional `MessageSignature`, `SignedMessageBody.Packed`, optional unsigned `Component`, `FilterMask`, `ChatType.Bound`. Still to verify with `javap`: `MessageSignature.STREAM_CODEC`, `SignedMessageBody$Packed.STREAM_CODEC`, `FilterMask.STREAM_CODEC`, `ChatType$Bound.STREAM_CODEC`. Then map to the existing `on_chat` shape. Do not guess these four.
-2. `merchant_offers` (53) / 766 `trade_list` — container id, offers list, villager level/XP/regular/restock; use existing 26.3 item-stack codec.
-3. `update_tags` (137), `update_recipes` (136), `update_advancements` (133) — reuse native registries and existing 766 handler shapes.
-4. `explode` (36), `damage_event` (25), `award_stats` (3), `game_rule_values` (40), `projectile_power` (138).
-5. Borders: `initialize_border`, `set_border_center/lerp_size/size/warning_delay/warning_distance` (the 1.20.6 handler vocabulary is 0–5).
-6. `waypoint` / dialogs, `mount_screen_open`, `add_transient_block`, `move_minecart_along_track`, `place_ghost_recipe`, recipe-book add/remove/settings, debug/test packets.
-7. **P10** `ExtractModels26_3.java` — biggest unlock/risk: dump 26.3 `ModelLayers`/`ModelPart` into `bundles/entity-models.json`, then evaluate a 26.3 asset target (pack format 97, jar-first textures, indexed sounds).
+1. `merchant_offers` (53) / 766 `trade_list` — container id, offers list, villager level/XP/regular/restock; use existing 26.3 item-stack codec.
+2. `update_tags` (137), `update_recipes` (136), `update_advancements` (133) — reuse native registries and existing 766 handler shapes.
+3. `explode` (36), `damage_event` (25), `award_stats` (3), `game_rule_values` (40), `projectile_power` (138).
+4. `waypoint` / dialogs, `mount_screen_open`, `add_transient_block`, `move_minecart_along_track`, `place_ghost_recipe`, recipe-book add/remove/settings, debug/test packets.
+5. **P10** `ExtractModels26_3.java` — biggest unlock/risk: dump 26.3 `ModelLayers`/`ModelPart` into `bundles/entity-models.json`, then evaluate a 26.3 asset target (pack format 97, jar-first textures, indexed sounds).
+
+Already closed: scoreboard/teams, biomes, maps, swing animation, player chat, and the full world-border family (initialize plus all five setters, 0–5 action vocabulary).
 
 ## Known blockers
 
