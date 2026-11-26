@@ -1284,7 +1284,9 @@ export class Game {
   }
 
   on_map_chunk(p) {
-    this.world.loadChunk762(p);
+    // 26.3 chunks arrive with their sections already decoded by the native chunk reader.
+    if(p.sections)this.world.loadChunk26_3(p);
+    else this.world.loadChunk762(p);
     for (const nbt of p.blockEntities) this.applyBlockEntity(nbt);
   }
 

@@ -53,11 +53,28 @@ function gameNames(phase,direction,vocabulary){
   }
   return out;
 }
+// The game's own handler table is the final word: a translated name is only usable when
+// game.js implements on_<name>. Where 26.3 renamed a packet past the 1.20.6 vocabulary,
+// the alias is recorded here instead of being guessed at call time.
+const ALIASES_26_3={set_held_slot:'held_item_slot'};
+const gameSource=await readFile(join(root,'client/js/game/game.js'),'utf8');
+const handlers=new Set([...gameSource.matchAll(/^  on_([a-z0-9_]+)\(/gm)].map(match=>match[1]));
+function handledNames(phase,direction,vocabulary){
+  const out={};
+  for(const name of Object.keys(report[phase][direction])){
+    const key=short(name);
+    const candidates=[ALIASES_26_3[key],vocabulary.get(key),key];
+    const handled=candidates.find(candidate=>candidate&&handlers.has(candidate));
+    if(handled)out[key]=handled;
+  }
+  return out;
+}
 const gameNamesSource=[
   '// Generated mapping from native 26.3 packet names to the names the game handlers use.',
   '// Names absent from 1.20.6 keep their native spelling and have no handler yet.',
   'export const GAME_PLAY_CLIENTBOUND_26_3=Object.freeze('+JSON.stringify(gameNames('play','clientbound',clientVocabulary))+');',
-  'export const GAME_PLAY_SERVERBOUND_26_3=Object.freeze('+JSON.stringify(gameNames('play','serverbound',serverVocabulary))+');'
+  'export const GAME_PLAY_SERVERBOUND_26_3=Object.freeze('+JSON.stringify(gameNames('play','serverbound',serverVocabulary))+');',
+  'export const HANDLED_PLAY_CLIENTBOUND_26_3=Object.freeze('+JSON.stringify(handledNames('play','clientbound',clientVocabulary))+');'
 ].join('\n')+'\n';
 const gameNamesPath=join(root,'client/js/net/game-names-26.3.js');
 
