@@ -1,4 +1,5 @@
 import{updateWolfCollar,wolfTailAngle}from'./wolf-collar.js';
+import{wolfHeadRoll,wolfBodyRoll,wolfWetShade,wolfBrightness}from'../game/wolf-shake.js';
 import{updateGuiEquipment,guiHandPoses}from'./gui-player-equipment.js';
 import{paintingTiles,paintingTileLight}from'./painting.js';
 import {isSquid,squidTentacle,squidMatrix} from '../game/squid-animation.js';
@@ -1124,6 +1125,11 @@ export class EntityRenderer {
       onGround: e.onGround, eatingGrass: e.eatingGrass || 0, sitting: e.sitting, angry: e.angry, hanging: e.hanging,
       carrying: !!e.carried, screaming: e.screaming, horseType: e.horseType, saddled: !!(e.horseFlags & 4) || e.saddled,
       tailRotation: wolfTailAngle(e),
+      // ModelWolf / WolfModel: begging head tilt plus the wet shake rolling head, mane, body and tail
+      headRoll: e.type === 95 ? wolfHeadRoll(e, partial) + wolfBodyRoll(e, partial, 0) : 0,
+      maneRoll: e.type === 95 ? wolfBodyRoll(e, partial, -0.08) : 0,
+      bodyRoll: e.type === 95 ? wolfBodyRoll(e, partial, -0.16) : 0,
+      tailRoll: e.type === 95 ? wolfBodyRoll(e, partial, -0.2) : 0,
       witchDrinking: e.kind === 'mob' && e.type === 66 && e.usingItem,
       squish: 0, tentacleAngle:isSquid(e)?squidTentacle(e,partial):undefined,
       peek: e.type === 69 ? (e.prevPeek || 0) + ((e.peek || 0) - (e.prevPeek || 0)) * partial : 0,
@@ -1135,7 +1141,11 @@ export class EntityRenderer {
       args.showArms = !!(m[11] & 4); args.noBasePlate = !!(m[11] & 8);
       if (m[11] & 1) v.scaleGroup.scale.multiplyScalar(0.5);
     }
-    if(v.wolfCollar)updateWolfCollar(e,v.wolfCollar);
+    if(v.wolfCollar){
+      updateWolfCollar(e,v.wolfCollar);
+      // RenderWolf: a wet wolf is darkened by getShadingWhileWet/getWetShade times getBrightness; the collar layer sets its own colour
+      const s=wolfWetShade(e,partial,e.isWet&&wolfBrightness(this.game,e,(st)=>blocks[st>>4]));v.mainMat.params.setTint(s,s,s,1);
+    }
     if (v.lodSkip && v.posed && v.wasInvisible === !!e.invisible) {
       // Keep the previous pose; only the transforms above were updated
       this._updateHeld(e, v, held, args);

@@ -9,6 +9,8 @@ import { tickEntityEffects, tickDragonDeath, isDragon } from '../render/entity-e
 // Client-side entity tracking (positions, interpolation, metadata, animation state).
 import { simplify } from '../net/nbt.js';
 import { blocks } from '../world/blocks.js';
+import { tickWolfShake, wolfShakeEvent } from './wolf-shake.js';
+import { biomeRainType } from '../world/biomes.js';
 import { mcSin, mcCos } from './physics.js';
 
 // EntityAnimal subclasses by entity type id (pig, sheep, cow, chicken, wolf, mooshroom, ocelot, horses, rabbit, polar
@@ -410,6 +412,7 @@ export class EntityManager {
         case 95:
           if (m[13] !== undefined) { e.sitting = !!(m[13] & 1); e.angry = !!(m[13] & 2); e.tamed = !!(m[13] & 4); }
           if (m[15] !== undefined) e.wolfHealth = m[15];
+          if (m[16] !== undefined) e.begging = !!m[16];
           if (m[17] !== undefined) e.collar = m[17]; // dye damage
           break;
         case 98: if (m[13] !== undefined) { e.sitting = !!(m[13] & 1); e.tamed = !!(m[13] & 4); } if (m[15] !== undefined) e.catType = m[15]; break;
@@ -465,10 +468,41 @@ export class EntityManager {
     }
   }
 
+  // EntityWolf.isWet: Entity.isWet for a remote wolf, water as World.handleMaterialAcceleration finds it in the
+  // box shrunk by 0.4 vertically, or World.canLightningStrike at its feet or head
+  _wolfWet(e) {
+    const w = this.game.world, f32 = Math.fround, hw = (e.width || 0.6) / 2, h = e.height || 0.85;
+    const lo = [e.x - hw + 0.001, e.y + 0.4000000059604645 + 0.001, e.z - hw + 0.001], top = [e.x + hw - 0.001, e.y + h - 0.4000000059604645 - 0.001, e.z + hw - 0.001];
+    const end = (v) => Math.ceil(v);
+    const x0 = Math.floor(lo[0]), x1 = end(top[0]), y0 = Math.floor(lo[1]), y1 = end(top[1]), z0 = Math.floor(lo[2]), z1 = end(top[2]);
+    let loaded = true;
+    for (let x = x0; x < x1; x++) for (let z = z0; z < z1; z++) if (!w.isLoaded(x, z)) loaded = false;
+    if (loaded) for (let x = x0; x < x1; x++) for (let y = y0; y < y1; y++) for (let z = z0; z < z1; z++) {
+      const s = w.getState(x, y, z), b = blocks[s >> 4];
+      if (!b || !b.isWater) continue;
+      const lvl = s & 15;
+      if (y1 >= f32(f32(y + 1) - f32(((lvl >= 8 ? 0 : lvl) + 1) / 9))) return true;
+    }
+    return this._lightningCanStrike(e.x, e.y, e.z) || this._lightningCanStrike(e.x, e.y + h, e.z);
+  }
+
+  // World.canLightningStrike: raining, open to the sky and the precipitation height, in a biome where it rains
+  _lightningCanStrike(x, y, z) {
+    const w = this.game.world;
+    x = Math.floor(x); y = Math.floor(y); z = Math.floor(z);
+    if (!w.hasSky || !(w.rainStrength > 0.2) || !w.isLoaded(x, z)) return false;
+    for (let above = Math.max(0, y); above < 256; above++) {
+      const b = blocks[w.getState(x, above, z) >> 4];
+      if (b && b.id !== 0 && (b.filterLight > 0 || b.boundingBox !== 'empty' || b.isLiquid)) return false;
+    }
+    return biomeRainType(w.getBiome(x, z), y, x, z) === 'rain';
+  }
+
   onStatus(p) {
     const e = this.map.get(p.entityId);
     const g = this.game;
     if (!e) return;
+    if (e.type === 95 && e.kind === 'mob' && wolfShakeEvent(e, p.entityStatus)) return;
     switch (p.entityStatus) {
       case 19: if(isSquid(e)){if(!e.squid)initSquid(e);e.squid.phase=0;}break;
       case 2: e.hurtTime = 10; g.sound.playEntityHurt(e); break;
@@ -850,6 +884,7 @@ export class EntityManager {
         }
         e.bodyYaw = e.prevBodyYaw = 180;
       }
+      if (e.type === 95 && e.kind === 'mob') tickWolfShake(e, this._wolfWet(e), (dx, dz) => this.game.particles?.splash?.(e.x + dx, e.y + 0.8, e.z + dz, e.motionX || 0, e.motionY || 0, e.motionZ || 0));
       if (e.hurtTime > 0) e.hurtTime--;
       if (e.dead) {
         e.deathTime++;
