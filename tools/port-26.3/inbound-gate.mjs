@@ -395,6 +395,14 @@ check('transient block, debug sample and test frames decode', () => {
   eq([status.status.v, status.size], ['ok', {x: 3, y: 4, z: 5}]);
 });
 
+check('server_links decodes both either branches', () => {
+  const known = decode('server_links', [...varint(1), 1, ...varint(2), ...str('https://example.com/support')]);
+  eq([known.data.links[0].type, known.data.links[0].name, known.data.links[0].link], [2, null, 'https://example.com/support']);
+  const custom = decode('server_links', [...varint(1), 0, ...nbtString('Report'), ...str('https://example.com/report')]);
+  eq([custom.data.links[0].type, custom.data.links[0].name.v, custom.data.links[0].link], [null, 'Report', 'https://example.com/report']);
+  eq(decode('clear_dialog', []).data, {});
+});
+
 check('damage_event decodes the holder, optional ids and position', () => {
   const adapted = adapt('damage_event', [...varint(7), ...varint(3), ...varint(6), ...varint(0), 1, ...f64(1), ...f64(2), ...f64(3)], {name: 'damage_event'});
   eq([adapted.entityId, adapted.sourceTypeId, adapted.sourceCauseId, adapted.sourceDirectId, adapted.sourcePosition], [7, 3, 5, -1, {x: 1, y: 2, z: 3}]);

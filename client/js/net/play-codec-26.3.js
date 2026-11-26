@@ -688,6 +688,22 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     const size=r.bool()?{x:r.varint(),y:r.varint(),z:r.varint()}:null;
     return {status,size};
   },
+  // ClientboundServerLinksPacket: a list of UntrustedEntry. Each entry's type is
+  // ByteBufCodecs.either (a boolean, then that side): true is a KnownLinkType id (idMapper),
+  // false is a trusted context-free component. The URL string follows either side.
+  server_links(r){
+    const count=r.varint();
+    const links=[];
+    for(let i=0;i<count;i++){
+      const known=r.bool();
+      const type=known?r.varint():null;
+      const name=known?null:readAnonymousNbt(r);
+      links.push({type,name,link:r.string()});
+    }
+    return {links};
+  },
+  // ClientboundClearDialogPacket: StreamCodec.unit, so the body is empty.
+  clear_dialog(){return {};},
   // ClientboundMerchantOffersPacket (javap): writeContainerId (VarInt), the MerchantOffers
   // list, then VarInt villagerLevel, VarInt villagerXp, boolean showProgress, boolean
   // canRestock. MerchantOffer.writeToStream is ItemCost, ItemStack, optional ItemCost,

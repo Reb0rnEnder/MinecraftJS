@@ -8,14 +8,14 @@
 ## Read first
 
 1. `AGENTS.md` — multi-version rules; never force one release's layout onto another.
-2. `docs/transition-26.3.md` — the ender-style transition plan and the current raw-packet inventory (16 IDs).
+2. `docs/transition-26.3.md` — the ender-style transition plan and the current raw-packet inventory (14 IDs).
 3. `docs/parity-checklist-26.3.md` — 17-task ledger and P06 evidence.
 4. `docs/transition-26.3.tasks.json` — machine-readable task state and chronological evidence.
 5. `tools/port-26.3/` — pinned inputs, generators, byte gates and live-server harness.
 
 ## State at handoff
 
-- **P06 coverage: 128/144 inbound IDs decoded, 109 with adapters, 16 raw.**
+- **P06 coverage: 130/144 inbound IDs decoded, 109 with adapters, 14 raw.**
 - Ledger: **41.2%** (3 done, 8 partial, 6 todo; done=1, partial=0.5).
 - Last full run: `test:26.3`, `adapter:26.3`, `client-net:26.3` and `inbound-gate.mjs` all exit 0.
 - Real 26.3 server socket test passes (`client-net`, 23–31 chunks depending on spawn); graphical browser verification is unreliable on this machine (low disk, join stalls). Do not claim visual verification you did not do.
@@ -62,10 +62,10 @@ After adding a `Game` handler, run `node tools/port-26.3/generate-ids.mjs` first
 
 1. `update_recipes` (136), `update_advancements` (133) — reuse native registries and existing 766 handler shapes.
 2. `explode` (36), `award_stats` (3).
-3. `waypoint` / dialogs, `move_minecart_along_track`, `place_ghost_recipe`, recipe-book add/remove, `server_links`, the debug value/event packets.
+3. `waypoint` / `show_dialog`, `move_minecart_along_track`, `place_ghost_recipe`, recipe-book add/remove, the debug value/event packets.
 4. **P10** `ExtractModels26_3.java` — biggest unlock/risk: dump 26.3 `ModelLayers`/`ModelPart` into `bundles/entity-models.json`, then evaluate a 26.3 asset target (pack format 97, jar-first textures, indexed sounds).
 
-Already closed: scoreboard/teams, biomes, maps, swing animation, player chat, merchant offers, damage events, projectile power (decoded only — 26.3's scalar has no 766 adapter), the full world-border family (initialize plus all five setters, 0–5 action vocabulary), tags, game-rule values, report details, the disk-space warning, transient blocks, mount screens, debug samples and the test-instance/highlight frames.
+Already closed: scoreboard/teams, biomes, maps, swing animation, player chat, merchant offers, damage events, projectile power (decoded only — 26.3's scalar has no 766 adapter), the full world-border family (initialize plus all five setters, 0–5 action vocabulary), tags, game-rule values, report details, the disk-space warning, transient blocks, mount screens, debug samples, the test-instance/highlight frames, server links and clear-dialog.
 
 ## Known blockers
 
