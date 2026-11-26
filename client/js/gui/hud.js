@@ -1,3 +1,4 @@
+import { renderLegacyTabHearts } from './tab-hearts-legacy.js';
 import{textBackgroundColor}from'./text-background.js';
 import{renderBlockOverlay}from'../render/block-overlay.js';
 import {debugLeft,packetRates} from './debug-overlay.js';
@@ -865,6 +866,12 @@ export class Hud {
       nameW = Math.max(nameW, gui.textWidth(sb.tabName(p)));
       if (listObj && listObj.type !== 'hearts') scoreW = Math.max(scoreW, gui.textWidth(' ' + (listObj.scores.get(p.name) || 0)));
     }
+    // a hearts objective reserves a 90-pixel score column
+    if (listObj && listObj.type === 'hearts') scoreW = 90;
+    // lastTimeOpened: the hearts' state starts over each time the list is shown again
+    const nowMs = performanceNow();
+    if (!(nowMs - (this.tabLastRender ?? -Infinity) < 250)) this.tabOpenedAt = nowMs;
+    this.tabLastRender = nowMs;
     const n = players.length;
     let rowsPerCol = n;
     let cols = 1;
@@ -901,10 +908,12 @@ export class Hud {
       }
       const name = sb.tabName(p);
       gui.text(p.gamemode === 3 ? '§o' + stripCodes(name) : name, tx, yy, p.gamemode === 3 ? 0x90ffffff : 0xffffff, true);
-      if (listObj) {
+      // drawScoreboardValues: not for spectators, and only when the score column is wider than 5
+      const scoreLeft = tx + nameW + 1, scoreRight = scoreLeft + scoreW;
+      if (listObj && p.gamemode !== 3 && scoreRight - scoreLeft > 5) {
         const v = listObj.scores.get(p.name) || 0;
-        const s = '§e' + v;
-        if (listObj.type !== 'hearts') gui.text(s, x + colW - 12 - gui.textWidth(s), yy, 0xffffff, true);
+        if (listObj.type === 'hearts') renderLegacyTabHearts(gui, this.tabHealth ||= new Map(), this.tabOpenedAt, yy, scoreLeft, scoreRight, p.uuid, v, this.updateCounter, nowMs);
+        else { const s = '§e' + v; gui.text(s, scoreRight - gui.textWidth(s), yy, 0xffffff, true); }
       }
       // ping icon
       const ping = p.ping;
