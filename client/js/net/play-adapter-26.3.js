@@ -173,6 +173,7 @@ const ADAPTERS={
   player_look_at(packet){return {isEntity:packet.atEntity,entityId:packet.entity,x:packet.x,y:packet.y,z:packet.z,fromAnchor:packet.fromAnchor,toAnchor:packet.toAnchor};},
   open_book(packet){return {hand:packet.hand};},
   player_combat_kill(packet){return {playerId:packet.playerId,message:componentJson(packet.message)};},
+  chunks_biomes(packet){return {biomes:packet.chunks};},
   set_score(packet){return {action:0,itemName:packet.owner,scoreName:packet.objectiveName,value:packet.value,
     displayName:packet.display?componentJson(packet.display):null,numberFormat:scoreNumberFormat(packet.numberFormat)};},
   reset_score(packet){return {action:1,itemName:packet.owner,scoreName:packet.objectiveName};},

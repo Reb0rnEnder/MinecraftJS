@@ -71,6 +71,13 @@ check('animate decodes and adapts to animation', () => {
   eq([adapted.entityId, adapted.animation], [5, 3]);
 });
 
+check('chunks_biomes carries packed positions and section palettes', () => {
+  const section = [...Array(24)].flatMap(() => [0, 1]);
+  const body = [...varint(1), ...i64((4n << 32n) | 3n), ...varint(section.length), ...section];
+  const adapted = adapt('chunks_biomes', body, {name: 'chunk_biomes'});
+  eq([adapted.biomes.length, adapted.biomes[0].x, adapted.biomes[0].z, adapted.biomes[0].data.length], [1, 3, 4, 48]);
+});
+
 check('set_player_team decodes parameters and players', () => {
   const body=[0, ...str('red'), 1, ...nbtString('Red Team'), ...nbtString('[R]'), ...nbtString(''), ...varint(0), ...varint(2), 0, 1, ...varint(1), ...str('Steve')];
   const adapted = adapt('set_player_team', body, {name: 'teams'});

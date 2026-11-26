@@ -297,6 +297,21 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     return {owner:r.string(),objectiveName:r.string(),value:r.varint(),
       display:r.bool()?readAnonymousNbt(r):null,numberFormat:readNumberFormat26_3(r)};
   },
+  // ClientboundChunksBiomesPacket: list of (ChunkPos packed long, VarInt-length biome buffer).
+  // Each buffer holds one PalettedContainerRO<Holder<Biome>> per section, same wire shape the
+  // existing 762 palette reader consumes.
+  chunks_biomes(r){
+    const count=r.varint(),chunks=[];
+    for(let i=0;i<count;i++){
+      const packed=r.i64(),length=r.varint();
+      chunks.push({
+        x:Number(BigInt.asIntN(32,packed)),
+        z:Number(BigInt.asIntN(32,packed>>32n)),
+        data:r.bytesN(length).slice()
+      });
+    }
+    return {chunks};
+  },
   set_objective(r){
     const objectiveName=r.string(),method=r.i8();
     if(method!==0&&method!==2)return {objectiveName,method,displayName:null,renderType:0,numberFormat:null};
