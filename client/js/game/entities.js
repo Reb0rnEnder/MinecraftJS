@@ -8,6 +8,8 @@ import { tickEntityEffects, tickDragonDeath, isDragon } from '../render/entity-e
 // Client-side entity tracking (positions, interpolation, metadata, animation state).
 import { simplify } from '../net/nbt.js';
 import { blocks } from '../world/blocks.js';
+import { tickWolfShake, wolfShakeEvent } from './wolf-shake.js';
+import { biomeRainType } from '../world/biomes.js';
 
 const MOB_SIZES = {
   50: [0.6, 1.8, 1.62], 51: [0.6, 1.95, 1.74], 52: [1.4, 0.9, 0.65], 53: [3.6, 10.8, 10.44], 54: [0.6, 1.95, 1.74], 55: [0.51, 0.51, 0.31],
@@ -331,7 +333,7 @@ export class EntityManager {
         case 91: if (m[16] !== undefined) { e.fleece = m[16] & 15; e.sheared = !!(m[16] & 16); } break;
         case 90: if (m[16] !== undefined) e.saddled = !!m[16]; break;
         case 95: if (m[16] !== undefined) { e.sitting = !!(m[16] & 1); e.angry = !!(m[16] & 2); e.tamed = !!(m[16] & 4); }
-          if (m[18] !== undefined) e.wolfHealth = m[18]; if (m[20] !== undefined) e.collar = m[20]; break;
+          if (m[18] !== undefined) e.wolfHealth = m[18]; if (m[19] !== undefined) e.begging = m[19] === 1; if (m[20] !== undefined) e.collar = m[20]; break;
         case 98: if (m[16] !== undefined) { e.sitting = !!(m[16] & 1); e.tamed = !!(m[16] & 4); } if (m[18] !== undefined) e.catType = m[18]; break;
         case 120: if (m[16] !== undefined) e.profession = m[16]; break;
         case 58: if (m[16] !== undefined) e.carried = m[16]; if (m[17] !== undefined) e.carriedMeta = m[17]; if (m[18] !== undefined) e.screaming = !!m[18]; break;
@@ -374,10 +376,41 @@ export class EntityManager {
     }
   }
 
+  // EntityWolf.isWet: Entity.isWet for a remote wolf, water as World.handleMaterialAcceleration finds it in the
+  // box shrunk by 0.4 vertically, or World.canLightningStrike at its feet or head
+  _wolfWet(e) {
+    const w = this.game.world, f32 = Math.fround, hw = (e.width || 0.6) / 2, h = e.height || 0.85;
+    const lo = [e.x - hw + 0.001, e.y + 0.4000000059604645 + 0.001, e.z - hw + 0.001], top = [e.x + hw - 0.001, e.y + h - 0.4000000059604645 - 0.001, e.z + hw - 0.001];
+    const end = (v) => Math.floor(v + 1);
+    const x0 = Math.floor(lo[0]), x1 = end(top[0]), y0 = Math.floor(lo[1]), y1 = end(top[1]), z0 = Math.floor(lo[2]), z1 = end(top[2]);
+    let loaded = true;
+    for (let x = x0; x < x1; x++) for (let z = z0; z < z1; z++) if (!w.isLoaded(x, z)) loaded = false;
+    if (loaded) for (let x = x0; x < x1; x++) for (let y = y0; y < y1; y++) for (let z = z0; z < z1; z++) {
+      const s = w.getState(x, y, z), b = blocks[s >> 4];
+      if (!b || !b.isWater) continue;
+      const lvl = s & 15;
+      if (y1 >= f32(f32(y + 1) - f32(((lvl >= 8 ? 0 : lvl) + 1) / 9))) return true;
+    }
+    return this._lightningCanStrike(e.x, e.y, e.z) || this._lightningCanStrike(e.x, e.y + h, e.z);
+  }
+
+  // World.canLightningStrike: raining, open to the sky and the precipitation height, in a biome where it rains
+  _lightningCanStrike(x, y, z) {
+    const w = this.game.world;
+    x = Math.floor(x); y = Math.floor(y); z = Math.floor(z);
+    if (!w.hasSky || !(w.rainStrength > 0.2) || !w.isLoaded(x, z)) return false;
+    for (let above = Math.max(0, y); above < 256; above++) {
+      const b = blocks[w.getState(x, above, z) >> 4];
+      if (b && b.id !== 0 && (b.filterLight > 0 || b.boundingBox !== 'empty' || b.isLiquid)) return false;
+    }
+    return biomeRainType(w.getBiome(x, z), y, x, z) === 'rain';
+  }
+
   onStatus(p) {
     const e = this.map.get(p.entityId);
     const g = this.game;
     if (!e) return;
+    if (e.type === 95 && e.kind === 'mob' && wolfShakeEvent(e, p.entityStatus)) return;
     switch (p.entityStatus) {
       case 19: if(isSquid(e)){if(!e.squid)initSquid(e);e.squid.phase=0;}break;
       case 2: e.hurtTime = 10; g.sound.playEntityHurt(e); break;
@@ -688,6 +721,7 @@ export class EntityManager {
         if (e.rollingAmplitude > 0) e.rollingAmplitude--;
         if (e.cartDamage > 0) e.cartDamage = Math.max(0, e.cartDamage - 1);
       }
+      if (e.type === 95 && e.kind === 'mob') tickWolfShake(e, this._wolfWet(e), (dx, dz) => this.game.particles?.splash?.(e.x + dx, e.y + 0.8, e.z + dz, e.motionX || 0, e.motionY || 0, e.motionZ || 0));
       if (e.hurtTime > 0) e.hurtTime--;
       if (e.dead) {
         e.deathTime++;
