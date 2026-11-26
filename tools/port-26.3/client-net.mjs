@@ -5,6 +5,8 @@ import assert from 'node:assert/strict';
 import net from 'node:net';
 import {once} from 'node:events';
 import {VanillaSocket26_3} from '../../client/js/net/tcp-26.3.js';
+import {loginContext26_3} from '../../client/js/net/session-26.3.js';
+import {GAME_PLAY_CLIENTBOUND_26_3} from '../../client/js/net/game-names-26.3.js';
 
 const HOST=process.env.PROBE_HOST||'127.0.0.1';
 const PORT=Number(process.env.PROBE_PORT||25568);
@@ -88,6 +90,17 @@ try{
   assert.ok(tagCount>=100,'native 26.3 sends at least 100 tags, got '+tagCount);
 
   const login=state.login;
+  const context=loginContext26_3(configuration,login);
+  assert.equal(context.blockStateRegistrySize,35723,'the native block-state registry size');
+  assert.deepEqual([...context.airStates],[0,18649,18650],'canonical air states from the native block report');
+  assert.ok(context.biomeRegistrySize>=60,'biome registry size '+context.biomeRegistrySize);
+  assert.equal(context.dimensionData.key,'minecraft:overworld','spawn dimension type');
+  assert.equal(context.dimensionData.min_y,-64,'overworld min_y');
+  assert.equal(context.dimensionData.height,384,'overworld height');
+  assert.equal(context.dimensionData.has_skylight,true,'overworld skylight');
+  assert.equal(context.dimensionData.effects,'minecraft:overworld','overworld effects id');
+  assert.ok(context.enabledFeatures.includes('minecraft:vanilla'),'enabled features carried into Play');
+  assert.ok(Object.keys(context.registryTags).length>=10,'tag registries carried into Play');
   assert.ok(login.levels.includes('minecraft:overworld')&&login.levels.includes('minecraft:the_nether')&&login.levels.includes('minecraft:the_end'),'level set');
   assert.equal(login.spawn.dimension,'minecraft:overworld','spawn dimension');
   assert.ok(login.spawn.seaLevel>=0&&login.spawn.seaLevel<=512,'spawn sea level '+login.spawn.seaLevel);
@@ -102,6 +115,10 @@ try{
 
   const decoded=state.play.filter(packet=>packet.decoded),undecoded=state.play.filter(packet=>!packet.decoded);
   const names=new Set(decoded.map(packet=>packet.name));
+  const gameNames=new Set(decoded.map(packet=>GAME_PLAY_CLIENTBOUND_26_3[packet.name]));
+  for(const name of ['map_chunk','spawn_entity','login','update_time']){
+    assert.ok(gameNames.has(name),'the join maps a native packet onto the game handler '+name);
+  }
   for(const name of ['login','chunk_batch_start','level_chunk_with_light','chunk_batch_finished','player_position']){
     assert.ok(names.has(name),'Play decode must cover '+name);
   }
@@ -110,9 +127,12 @@ try{
     host:HOST,port:PORT,
     profile:{uuid:profile.uuid,username:profile.username,sessionId:profile.sessionId},
     configuration:{packets:state.configNames.length,registries:configuration.registries.size,tags:tagCount,elided:configuration.elidedRegistryValues},
+    joinContext:{blockStates:context.blockStateRegistrySize,airStates:context.airStates,biomes:context.biomeRegistrySize,
+      dimension:context.dimensionData.key,bounds:[context.dimensionData.min_y,context.dimensionData.height],
+      features:context.enabledFeatures,tagRegistries:Object.keys(context.registryTags).length},
     playLogin:{playerId:login.playerId,levels:login.levels,spawn:login.spawn},
     chunks:state.chunks.length,
-    playFrames:{decoded:decoded.length,undecoded:undecoded.length,types:[...names].sort(),raw:[...new Set(undecoded.map(packet=>packet.name))].sort()}
+    playFrames:{decoded:decoded.length,undecoded:undecoded.length,types:[...names].sort(),raw:[...new Set(undecoded.map(packet=>packet.name))].sort(),gameNames:[...gameNames].sort()}
   },null,2));
   console.log('Native 26.3 client net gate passed: protocol 777 login, configuration, Play Login and '+state.chunks.length+' chunks decoded by the client socket');
 }finally{
