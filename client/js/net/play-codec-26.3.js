@@ -257,6 +257,32 @@ export const PLAY_DECODERS_26_3=Object.freeze({
   open_sign_editor(r){return {pos:r.position(),slot:r.varint()};},
   // ClientboundSelectAdvancementsTabPacket: a nullable Identifier.
   select_advancements_tab(r){return {tab:r.bool()?r.string():null};},
+  // ClientboundRespawnPacket: CommonPlayerSpawnInfo then a dataToKeep byte. GameType is a
+  // VarInt and the previous type is OPTIONAL_VAR_INT (0 = none), verified from GameType's codec.
+  respawn(r){
+    const dimensionType=r.varint(),dimension=r.string(),seed=r.i64();
+    const gameMode=r.varint(),previous=r.varint();
+    const isDebug=r.bool(),isFlat=r.bool();
+    const lastDeath=r.bool()?{dimension:r.string(),position:r.position()}:null;
+    const portalCooldown=r.varint(),seaLevel=r.varint();
+    return {spawn:{dimensionType,dimension,seed,gameMode,previousGameMode:previous===0?null:previous-1,isDebug,isFlat,lastDeath,portalCooldown,seaLevel},dataToKeep:r.i8()};
+  },
+  // ClientboundPlayerLookAtPacket: fromAnchor, x/y/z, then the entity id and toAnchor only
+  // when the look target is an entity.
+  player_look_at(r){
+    const fromAnchor=r.varint(),x=r.f64(),y=r.f64(),z=r.f64(),atEntity=r.bool();
+    const entity=atEntity?r.varint():0,toAnchor=atEntity?r.varint():0;
+    return {fromAnchor,x,y,z,atEntity,entity,toAnchor};
+  },
+  // ClientboundOpenBookPacket: InteractionHand (VarInt id).
+  open_book(r){return {hand:r.varint()};},
+  // ClientboundCommandSuggestionsPacket: id/start/length VarInts, then (String text,
+  // optional Component tooltip) entries.
+  command_suggestions(r){
+    const id=r.varint(),start=r.varint(),length=r.varint();
+    const matches=Array.from({length:r.varint()},()=>({match:r.string(),tooltip:r.bool()?readAnonymousNbt(r):null}));
+    return {id,start,length,matches};
+  },
   // ClientboundPongResponsePacket(long time): the original send timestamp as an i64.
   pong_response(r){return {id:r.i64()};},
   // ClientboundPlayerCombatEnterPacket(): no payload.

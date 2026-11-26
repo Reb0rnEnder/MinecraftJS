@@ -205,6 +205,19 @@ check('chunk unload, block entity, sign editor and advancement tab decode', () =
   eq(adapt('select_advancements_tab', [0], {name: 'select_advancement_tab'}).id, null);
 });
 
+check('respawn, look_at, open_book and suggestions decode', () => {
+  const respawned = adapt('respawn', [...varint(1), ...str('minecraft:overworld'), ...i64(42), ...varint(1), ...varint(0), 1, 0, 0, ...varint(0), ...varint(63), 3], {name: 'respawn'});
+  eq([respawned.worldType, respawned.worldName, respawned.hashedSeed, respawned.gameMode, respawned.previousGameMode, respawned.isDebug, respawned.isFlat, respawned.portalCooldown, respawned.seaLevel, respawned.dataToKeep], [1, 'minecraft:overworld', 42, 1, -1, true, false, 0, 63, 3]);
+  const look = adapt('player_look_at', [...varint(0), ...f64(1.5), ...f64(64), ...f64(-2.5), 0], {name: 'face_player'});
+  eq([look.isEntity, look.x, look.y, look.z, look.entityId], [false, 1.5, 64, -2.5, 0]);
+  const lookEntity = adapt('player_look_at', [...varint(1), ...f64(0), ...f64(0), ...f64(0), 1, ...varint(9), ...varint(1)], {name: 'face_player'});
+  eq([lookEntity.isEntity, lookEntity.entityId, lookEntity.toAnchor], [true, 9, 1]);
+  eq(adapt('open_book', [...varint(1)], {name: 'open_book'}), {name: 'open_book', hand: 1});
+  const suggestions = adapt('command_suggestions', [...varint(3), ...varint(1), ...varint(4), ...varint(2), ...str('/say'), 0, ...str('/time'), 1, ...nbtString('t')], {name: 'tab_complete'});
+  eq([suggestions.transactionId, suggestions.start, suggestions.length, suggestions.matches.map(m => m.match)], [3, 1, 4, ['/say', '/time']]);
+  eq(suggestions.matches[1].tooltip.t, 8);
+});
+
 check('pong and the combat pair decode', () => {
   eq(Number(adapt('pong_response', [...i64(1234)], {name: 'ping_response'}).id), 1234);
   eq(adapt('player_combat_enter', [], {name: 'enter_combat_event'}), {name: 'enter_combat_event'});

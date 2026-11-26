@@ -160,6 +160,16 @@ const ADAPTERS={
   block_entity_data(packet){return {location:packet.pos,nbtData:packet.tag};},
   open_sign_editor(packet){return {location:packet.pos,isFrontText:packet.slot===1};},
   select_advancements_tab(packet){return {id:packet.tab};},
+  // Respawn keeps the 766 spawn-info vocabulary and resolves the dimension from worldType.
+  respawn(packet){
+    const {spawn}=packet;
+    return {worldType:spawn.dimensionType,worldName:spawn.dimension,hashedSeed:Number(spawn.seed),gameMode:spawn.gameMode,
+      previousGameMode:spawn.previousGameMode??-1,isDebug:spawn.isDebug,isFlat:spawn.isFlat,death:spawn.lastDeath,
+      portalCooldown:spawn.portalCooldown,seaLevel:spawn.seaLevel,dataToKeep:packet.dataToKeep};
+  },
+  player_look_at(packet){return {isEntity:packet.atEntity,entityId:packet.entity,x:packet.x,y:packet.y,z:packet.z,fromAnchor:packet.fromAnchor,toAnchor:packet.toAnchor};},
+  open_book(packet){return {hand:packet.hand};},
+  command_suggestions(packet){return {transactionId:packet.id,start:packet.start,length:packet.length,matches:packet.matches};},
   pong_response(packet){return {id:packet.id};},
   player_combat_enter(packet){return {};},
   player_combat_end(packet){return {duration:packet.duration};},
