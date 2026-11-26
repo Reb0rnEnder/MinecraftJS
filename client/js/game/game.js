@@ -1147,6 +1147,8 @@ export class Game {
     this.entities.onBed(p);
   }
 
+  on_swing_animation(p) { this.on_animation(p); }
+
   on_animation(p) {
     if (p.entityId === this.entityId && p.animation === 2) {
       stopSleeping(this);

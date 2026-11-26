@@ -300,6 +300,23 @@ export const PLAY_DECODERS_26_3=Object.freeze({
   // ClientboundChunksBiomesPacket: list of (ChunkPos packed long, VarInt-length biome buffer).
   // Each buffer holds one PalettedContainerRO<Holder<Biome>> per section, same wire shape the
   // existing 762 palette reader consumes.
+  // ClientboundMapItemDataPacket: map id, scale byte, locked bool, optional decorations
+  // (VarInt type, three bytes, optional component NBT), optional MapPatch (four bytes + byte array).
+  // ClientboundAnimatePacket: VarInt entity id, unsigned byte action.
+  swing_animation(r){return {entityId:r.varint(),animation:r.u8()};},
+  map_item_data(r){
+    const mapId=r.varint(),scale=r.i8(),locked=r.bool();
+    let decorations=null;
+    if(r.bool()){
+      decorations=Array.from({length:r.varint()},()=>({
+        type:r.varint(),x:r.i8(),y:r.i8(),rot:r.i8(),name:r.bool()?readAnonymousNbt(r):null
+      }));
+    }
+    let patch=null;
+    if(r.bool())patch={startX:r.u8(),startY:r.u8(),width:r.u8(),height:r.u8(),
+      colors:r.bytesN(r.varint()).slice()};
+    return {mapId,scale,locked,decorations,patch};
+  },
   chunks_biomes(r){
     const count=r.varint(),chunks=[];
     for(let i=0;i<count;i++){

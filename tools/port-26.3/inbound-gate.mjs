@@ -71,6 +71,18 @@ check('animate decodes and adapts to animation', () => {
   eq([adapted.entityId, adapted.animation], [5, 3]);
 });
 
+check('swing_animation reads id and action', () => {
+  const adapted = adapt('swing_animation', [...varint(42), 3], {name: 'swing_animation'});
+  eq([adapted.entityId, adapted.animation], [42, 3]);
+});
+
+check('map_item_data decodes optional decorations and patch', () => {
+  const body=[...varint(5), 2, 1, 1, ...varint(1), ...varint(3), 1, 2, 4, 1, ...nbtString('Steve'),
+    1, 1, 2, 3, 4, ...varint(12), ...Array.from({length:12},(_,i)=>i)];
+  const adapted = adapt('map_item_data', body, {name: 'map'});
+  eq([adapted.itemDamage, adapted.scale, adapted.locked, adapted.icons[0].type, adapted.icons[0].rot, adapted.x, adapted.y, adapted.columns, adapted.rows, adapted.data.length], [5, 2, true, 3, 4, 1, 2, 3, 4, 12]);
+});
+
 check('chunks_biomes carries packed positions and section palettes', () => {
   const section = [...Array(24)].flatMap(() => [0, 1]);
   const body = [...varint(1), ...i64((4n << 32n) | 3n), ...varint(section.length), ...section];

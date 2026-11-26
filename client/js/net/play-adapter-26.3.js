@@ -173,6 +173,15 @@ const ADAPTERS={
   player_look_at(packet){return {isEntity:packet.atEntity,entityId:packet.entity,x:packet.x,y:packet.y,z:packet.z,fromAnchor:packet.fromAnchor,toAnchor:packet.toAnchor};},
   open_book(packet){return {hand:packet.hand};},
   player_combat_kill(packet){return {playerId:packet.playerId,message:componentJson(packet.message)};},
+  swing_animation(packet){return {entityId:packet.entityId,animation:packet.animation};},
+  map_item_data(packet){
+    const patch=packet.patch;
+    return {itemDamage:packet.mapId,scale:packet.scale,locked:packet.locked,
+      icons:packet.decorations?packet.decorations.map(d=>({type:d.type,x:d.x,y:d.y,rot:d.rot,
+        name:d.name?componentJson(d.name):null})):null,
+      x:patch?patch.startX:0,y:patch?patch.startY:0,columns:patch?patch.width:0,
+      rows:patch?patch.height:0,data:patch?patch.colors:null};
+  },
   chunks_biomes(packet){return {biomes:packet.chunks};},
   set_score(packet){return {action:0,itemName:packet.owner,scoreName:packet.objectiveName,value:packet.value,
     displayName:packet.display?componentJson(packet.display):null,numberFormat:scoreNumberFormat(packet.numberFormat)};},
