@@ -3,6 +3,8 @@ import { ChatState766 } from "./chat-state-1.20.6.js";
 import { Writer766 } from "./configuration-1.20.6.js";
 import { decodePlayPacket766 } from "./play-codec-1.20.6.js";
 import { PLAY_SERVERBOUND_26_3 as OUT } from "./protocol-26.3-ids.js";
+import { writeLpVec3 } from "./lp-vec3-26.3.js";
+import { writeItemStack26_3, writeHashedStack26_3 } from "./item-components-26.3.js";
 
 export const chatState762 = new ChatState766();
 export const PROTOCOL_VERSION = 777;
@@ -103,7 +105,8 @@ export const C = {
   clientCommand: (action) => packet("client_command").varint(action).build(),
   tabComplete: (text, _position = null, transactionId = 0) =>
     packet("tab_complete").varint(transactionId).string(text).build(),
-  closeWindow: (windowId) => packet("close_window").u8(windowId).build(),
+  // ServerboundContainerClosePacket(containerId): writeContainerId is a VarInt in 26.3.
+  closeWindow: (windowId) => packet("close_window").varint(windowId).build(),
 
   // 26.3 packs onGround (bit 0) and horizontalCollision (bit 1) into one flags byte
   // written after the position/rotation fields in every movement packet.
@@ -131,14 +134,20 @@ export const C = {
   armAnimation: () => packet("arm_animation").build(),
   spectate: (uuid) => packet("spectate").uuid(uuid).build(),
 
+  // 26.3 ServerboundInteractPacket(int entityId, InteractionHand, Vec3.LP location, boolean
+  // usingSecondaryAction): attacking is a separate packet, so mouse 1 goes to attack.
   useEntity: (target, mouse, x, y, z, hand = 0, sneaking = false) => {
-    const writer = packet("use_entity").varint(target).varint(mouse);
-    if (mouse === 2) writer.f32(x).f32(y).f32(z);
-    if (mouse === 0 || mouse === 2) writer.varint(hand);
+    if (mouse === 1) return packet("attack").varint(target).build();
+    const writer = packet("use_entity").varint(target).varint(hand);
+    writeLpVec3(writer, mouse === 2 ? {x, y, z} : {});
     return writer.bool(sneaking).build();
   },
+  // ServerboundPlayerActionPacket: action enum (VarInt), packed position, Direction 3D value
+  // as one byte, then the sequence VarInt.
   blockDig: (status, x, y, z, face, sequence = 0) =>
-    packet("block_dig").varint(status).position(x, y, z).varint(face).varint(sequence).build(),
+    packet("block_dig").varint(status).position(x, y, z).u8(face).varint(sequence).build(),
+  // BlockHitResult.STREAM_CODEC: BlockPos, Direction (VarInt), three cursor floats, then
+  // insideBlock and worldBorderHit booleans. ServerboundUseItemOnPacket appends the sequence.
   blockPlace: (x, y, z, face, hand, cursorX, cursorY, cursorZ, insideBlock = false, sequence = 0) =>
     packet("block_place")
       .varint(hand)
@@ -146,6 +155,7 @@ export const C = {
       .varint(face)
       .f32(cursorX).f32(cursorY).f32(cursorZ)
       .bool(insideBlock)
+      .bool(false)
       .varint(sequence)
       .build(),
   useItem: (hand = 0, sequence = 0, yaw = 0, pitch = 0) =>
@@ -164,20 +174,32 @@ export const C = {
   recipeInfoSettings: (open, filtering) =>
     packet("recipe_book").varint(0).bool(open).bool(filtering).build(),
 
-  creativeSlot: (slot, item) => packet("set_creative_slot").i16(slot).slot(item).build(),
+  // ServerboundSetCreativeModeSlotPacket: short slot then ItemStack.OPTIONAL_UNTRUSTED_STREAM_CODEC,
+  // which is the 26.3 stack with components.
+  creativeSlot: (slot, item) => {
+    const writer = packet("set_creative_slot").i16(slot);
+    writeItemStack26_3(writer, item);
+    return writer.build();
+  },
 
+  // ServerboundContainerClickPacket: container id VarInt, state id VarInt, short slot, byte
+  // button, ContainerInput id VarInt, then (short slot, HashedStack) per changed slot and the
+  // carried HashedStack. HashedStack carries component hashes, so only empty patches are sent
+  // until the component hash encoder lands.
   windowClick: (windowId, slot, mouseButton, stateId, mode, changedSlots, cursorItem) => {
     const writer = packet("window_click")
-      .u8(windowId)
+      .varint(windowId)
       .varint(stateId)
       .i16(slot)
       .i8(mouseButton)
       .varint(mode)
       .varint(changedSlots.length);
     for (const changed of changedSlots) {
-      writer.i16(changed.slot).slot(changed.item);
+      writer.i16(changed.slot);
+      writeHashedStack26_3(writer, changed.item);
     }
-    return writer.slot(cursorItem).build();
+    writeHashedStack26_3(writer, cursorItem);
+    return writer.build();
   },
 
   chat: (message, options = undefined) => chatState762.encode(String(message), options),

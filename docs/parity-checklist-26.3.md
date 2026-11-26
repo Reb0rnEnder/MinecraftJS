@@ -21,8 +21,10 @@ acceptance evidence from a native run, not because a table or model exists.
 | Area | Open part |
 | --- | --- |
 | P02 extraction | Native blocks, items, collision/selection shapes and block offsets are installed from the 26.3 jar. The remaining client tables (biomes, effects, enchantments, entities, foods, particles, sounds, recipes, creative) are still the older generation. |
-| P06 Play path | 49 of 144 inbound IDs decode with bytecode-verified bodies, the adapter covers 30 pinned frames across 19 handlers, and the live session holds; several container and world-update families and most outbound senders remain. |
-| P04 items | ItemStack/Template/patch decode from the javap layout and 83 of 115 wire components have verified readers. Live: damaged and custom-named gear, enchantments, potions, chest and bundle contents. Open: 32 fail-closed component readers (attribute_modifiers, profile, item-modifier records) and the outbound item writers (window_click HashedStack, creative slot). |
+| P06 Play path | 49 of 144 inbound IDs decode with bytecode-verified bodies, the adapter covers 30 pinned frames across 19 handlers, and a live join decodes 81 chunks and 26 entities with zero skipped frames; several container and world-update families remain raw. |
+| P08 inventory/interaction | Serverbound bodies are native and live-accepted (click state id 1 -> 2 with the stack moved, attack removes a pig after 8 hits). Open: patched-item HashedPatchMap hashing, creative slots, merchant/enchanting/stonecutter/loom menus. |
+| P12 particles | All 128 particle types and their 22 data StreamCodecs decode in entity metadata; the join decode-error count went 56 -> 0. Open: particle rendering and `level_particles` consumers; vibration stays fail-closed. |
+| P04 items | ItemStack/Template/patch decode from the javap layout and 83 of 115 wire components have verified readers. Live: damaged and custom-named gear, enchantments, potions, chest and bundle contents. Open: 32 fail-closed component readers (attribute_modifiers, profile, item-modifier records) and click hashing for patched stacks (only empty HashedPatchMap patches are writable). |
 
 ## Missing (inherited from 1.20.6)
 
@@ -32,7 +34,8 @@ not closed by the version jump.
 
 ## Unverified
 
-- Inventory interaction and the remaining outbound Play families.
+- The remaining outbound Play families (chat, commands, recipe book) and inventory edge cases such as
+  shift-click into a full container and patched stacks in a click.
 - Entity identities new to 26.3 (for example `minecraft:sulfur_cube`) spawn but fall back to an unknown-object
   identity because the entity table and models are still the 1.20.6 generation (P10).
 - The browser still loads 1.20.6 model/texture bundles, so 26.3-only blocks have no baked models yet (P10).

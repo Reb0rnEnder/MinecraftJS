@@ -227,6 +227,39 @@ export function readItemStack26_3(r){
   return readItemPatch(r,itemId,count);
 }
 
+// Item source for outbound packets. Accepts either a decoded stack or the game's decorated
+// slot shape. Component values are not re-encoded yet, so only stacks whose patch is empty can
+// be written: that is exactly what creative inventory hands out, and it fails loudly rather
+// than sending a patch the server would misread.
+function patchOf(stack){
+  return {
+    itemId:stack.itemId??stack.id,
+    count:stack.count,
+    added:stack.added??stack.componentPatch?.added??[],
+    removed:stack.removed??stack.componentPatch?.removed??[]
+  };
+}
+
+export function writeItemStack26_3(w,stack){
+  if(!stack||!(stack.count>0)){w.varint(0);return w;}
+  const {itemId,count,added,removed}=patchOf(stack);
+  if(!Number.isInteger(itemId)||itemId<0)throw Error('26.3 item stack needs a native item id');
+  if(added.length||removed.length)throw Error('26.3 item writer has no component encoders yet (item '+itemId+')');
+  w.varint(count).varint(itemId).varint(0).varint(0);
+  return w;
+}
+
+// HashedStack.STREAM_CODEC: optional ActualItem(item holder, count, HashedPatchMap).
+// HashedPatchMap is (VarInt type, INT hash)* then VarInt removed ids; an empty patch is two
+// zero counts, which is the only patch this writer can prove without component hashing.
+export function writeHashedStack26_3(w,stack){
+  if(!stack||!(stack.count>0)){w.bool(false);return w;}
+  const {itemId,count,added,removed}=patchOf(stack);
+  if(added.length||removed.length)throw Error('26.3 HashedStack needs component hashes; only empty patches are supported yet (item '+itemId+')');
+  w.bool(true).varint(itemId).varint(count).varint(0).varint(0);
+  return w;
+}
+
 export function supportedComponentCount(){
   return Object.keys(READERS).length;
 }

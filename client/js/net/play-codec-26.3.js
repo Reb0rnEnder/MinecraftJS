@@ -7,27 +7,12 @@ import {readCommands26_3} from './commands-26.3.js';
 import {decodeLevelChunkWithLight,readLightData} from './chunk-26.3.js';
 import {ENTITY_DATA_SERIALIZERS_26_3} from './entity-data-26.3.js';
 import {readItemStack26_3} from './item-components-26.3.js';
+import {readLpVec3} from './lp-vec3-26.3.js';
+import {readParticleOptions26_3,readParticles26_3} from './particles-26.3.js';
 
 const NAME_BY_ID=new Map(Object.entries(PLAY_CLIENTBOUND_26_3).map(([name,id])=>[id,name]));
 const readItemStack=readItemStack26_3;
 
-// LpVec3 (26.3 low-precision vector): header byte 0 means zero, else one more byte and an
-// unsigned int form a 48-bit payload; header bit 2 extends the scale with a VarInt. Axes are
-// 15-bit signed values at bit offsets 3/18/33, unpacked as 2q/32766-1 and multiplied by scale.
-function readLpVec3(r){
-  const header=r.u8();
-  if(header===0)return {x:0,y:0,z:0};
-  const second=r.u8(),high=r.i32()>>>0;
-  const packed=(BigInt(high)<<16n)|(BigInt(second)<<8n)|BigInt(header);
-  let scale=BigInt(header&3);
-  if(header&4)scale|=BigInt(r.varint())<<2n;
-  const factor=Number(scale);
-  const unpack=shift=>{
-    const q=Math.min(Number((packed>>BigInt(shift))&0x7fffn),32766);
-    return (q*2/32766-1)*factor;
-  };
-  return {x:unpack(3),y:unpack(18),z:unpack(33)};
-}
 const readVec3=r=>({x:r.f64(),y:r.f64(),z:r.f64()});
 
 function readVecDelta(r,stepCount){
@@ -49,7 +34,7 @@ function readMoveDelta(r){
 // 26.3 set_entity_data: VarInt entity id, then (index byte, serializer VarInt, value) until
 // 0xff. The serializer ids are the native EntityDataSerializers registration order; values
 // follow each serializer's StreamCodec. Serializers whose codec is not implemented yet
-// (item stacks with components, particles, game profiles) throw so the frame is skipped
+// (game profiles, the vibration particle's PositionSource) throw so the frame is skipped
 // instead of corrupting the stream.
 function readEntityDataValue(r,type){
   const serializer=ENTITY_DATA_SERIALIZERS_26_3[type];
@@ -68,6 +53,8 @@ function readEntityDataValue(r,type){
     case 'OPTIONAL_BLOCK_POS':return r.bool()?r.position():null;
     case 'DIRECTION':return r.varint();
     case 'OPTIONAL_LIVING_ENTITY_REFERENCE':return r.bool()?r.uuid():null;
+    case 'PARTICLE':return readParticleOptions26_3(r);
+    case 'PARTICLES':return readParticles26_3(r);
     case 'BLOCK_STATE':return r.varint();
     case 'OPTIONAL_BLOCK_STATE':{
       // EntityDataSerializers$2 writes Block.getId, with 0 meaning absent.

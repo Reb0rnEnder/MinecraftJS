@@ -97,7 +97,12 @@ export class VanillaSocket26_3 extends VanillaSocket{
         // A Play frame whose layout is not implemented yet is surfaced and skipped, exactly
         // like the 1.20.6 decoder: one unknown packet must never close the connection.
         this.decodeErrors=(this.decodeErrors||0)+1;
-        this.emit('decode_error',{message:String(error?.message||error),bytes:data.length});
+        let hex='';
+        for(let i=0;i<Math.min(data.length,96);i++)hex+=(data[i]<16?'0':'')+data[i].toString(16);
+        const event={message:String(error?.message||error),bytes:data.length,hex};
+        this.decodeErrorLog||=[ ];
+        if(this.decodeErrorLog.length<48)this.decodeErrorLog.push(event);
+        this.emit('decode_error',event);
         return;
       }
       if(packet.decoded&&reader.remaining()){

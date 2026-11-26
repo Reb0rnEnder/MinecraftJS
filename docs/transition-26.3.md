@@ -80,10 +80,19 @@ pending; product outside current scope; or experiment-gated.
   enchanted pickaxe, potions, a chest containing [apple x5, null, null, diamond x2] and a bundle containing
   [apple x3, stick x8] with zero decode errors. `component-codecs:26.3` pins all 122 component codecs and the
   seven server-only types; the remaining readers fail closed instead of consuming the wrong bytes.
-- Open at this checkpoint: the remaining outbound families (chat, interact, container clicks, creative
-  slots), the 32 fail-closed component readers (attribute_modifiers, profile and item-modifier records),
-  native support/placement rules, remaining inbound families and the 26.3 model/texture bake. The task
-  ledger is at 35.3% (3 done, 6 partial, 8 todo).
+- Serverbound is live (P08 partial): every rewritten body comes from 26.3 bytecode - LpVec3 read/write,
+  HashedStack/HashedPatchMap, `container_click`/`container_close`, `player_action` with its direction byte,
+  `use_item_on` with the insideBlock/worldBorderHit booleans and the native attack. `serverbound:26.3` pins
+  each body as bytes. A live server accepted a pickup+place click (menu state id 1 -> 2, dirt moved 43 -> 44
+  and stayed) and an attack (summoned pig removed after 8 hits).
+- Particle metadata is closed (P12 partial): the 56 frames each join used to skip were all
+  `[set_entity_data#101]` serializer 17. `ParticleTypes` BootstrapMethods pin all 128 particle types and the
+  22 data StreamCodecs; `particle-codecs:26.3` decodes the live-captured frame and every codec byte layout.
+  A fresh join now loads 81 chunks and 26 entities with zero skipped frames. Vibration stays fail-closed.
+- Open at this checkpoint: patched-item HashedPatchMap hashing, creative slots (needs the P10 item table),
+  remaining container/menu families, the 32 fail-closed component readers (attribute_modifiers, profile and
+  item-modifier records), native support/placement rules, remaining inbound families and the 26.3
+  model/texture bake. The task ledger is at 41.2% (3 done, 8 partial, 6 todo); next task P08.
 
 ## Implementation order
 

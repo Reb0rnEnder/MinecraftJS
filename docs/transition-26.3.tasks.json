@@ -1,277 +1,288 @@
 {
- "schemaVersion": 1,
- "updatedOn": "2026-11-26",
- "target": "26.3",
- "branch": "26.3",
- "baselineVersion": "1.20.6",
- "baselineCommit": "761970ed38eedd69effb38a1bfedf912cb26e30c",
- "fullParity": false,
- "nativeGraphicalGameplayAccepted": false,
- "nextTask": "P06",
- "authorization": "Port 26.3 from the public 1.20.6 branch using the creator's pinned-input, gated-task method.",
- "executionRule": "Follow dependency order; native evidence and gate completion are required before marking done. Push validated batches and review shared backports as they land, not only at P16.",
- "tasks": [
-  {
-   "id": "P00",
-   "title": "Verify pinned inputs and preserve the forwarded baseline",
-   "status": "done",
-   "dependsOn": [],
-   "releaseRefs": [
-    "26.3"
-   ],
-   "acceptance": "Every native input hash and embedded version field matches; the jar layout is native and unobfuscated; existing worktrees and local inputs remain intact.",
-   "evidence": [
-    "prepare:26.3 on 2026-11-25: metadata 8696584e, client e877b6a0 (41,483,720 bytes), server 33680f5f (62,294,556 bytes), asset index 7b1c46ec (id 34).",
-    "Native version.json: id 26.3, protocol 777, world_version 5023, pack 97.1/121.0, java 25, stable true, build 2026-09-15.",
-    "Layout 10,737 classes / 11,604 assets / 9,884 data entries; net/minecraft/client/main/Main.class resolves, so the jar is unobfuscated.",
-    "User-supplied client(2).jar is byte-identical to Mojang's pinned client object; no repack."
-   ]
-  },
-  {
-   "id": "P01",
-   "title": "Triage all 17 release histories between 1.20.6 and 26.3",
-   "status": "partial",
-   "dependsOn": [
-    "P00"
-   ],
-   "releaseRefs": [
-    "1.21",
-    "1.21.1",
-    "1.21.2",
-    "1.21.3",
-    "1.21.4",
-    "1.21.5",
-    "1.21.6",
-    "1.21.7",
-    "1.21.8",
-    "1.21.9",
-    "1.21.10",
-    "1.21.11",
-    "26.1",
-    "26.1.1",
-    "26.1.2",
-    "26.2",
-    "26.3"
-   ],
-   "acceptance": "Every release topic/fix has a native-client, server-owned, experiment, product-outside-scope or experiment-gated disposition; sources record URL, retrieval method and SHA-256; challenge pages are never treated as articles.",
-   "evidence": [
-    "All 17 crosswalk articles fetched with direct curl on 2026-11-25: HTTP 200, 277,902-954,712 bytes each, treated as articles after an mw-content-text check; URL, status, bytes and SHA-256 recorded in docs/transition-26.3.release-index.json.",
-    "First-pass additions read from each article and summarised in the crosswalk table (1.21 copper/tuff/crafter; 1.21.2 bundles; 1.21.4 creaking heart; 1.21.5 leaf litter/firefly bush; 1.21.6 dried ghast/harness; 1.21.9 copper bars/chains/chest; 26.1 golden dandelion; 26.2 cinnabar/sulfur caves; 26.3 poplar/dappled forest/straw bed/abandoned camps/cushion).",
-    "Open: per-topic disposition counts and the official-notes cross-check are not recorded yet, so this task stays partial."
-   ]
-  },
-  {
-   "id": "P02",
-   "title": "Extract native reports, registries, packets and resource inventory",
-   "status": "partial",
-   "dependsOn": [
-    "P00"
-   ],
-   "releaseRefs": [
-    "26.3"
-   ],
-   "acceptance": "Reproducible reports and hashes reject mixed-version data; client data tables are regenerated from them; resource inventory resolves from the jar without an external asset download.",
-   "evidence": [
-    "Client block table rebuilt from the 26.3 client jar itself (tools/port-26.3/ExtractBlocks26_3.java): 1,286 blocks / 35,723 states, every state id owned by exactly one block, and every property set, state count and default state cross-checked against the native blocks report by blocks:26.3. Item stack sizes fall back to 64 for 1,129 blocks until the data-pack reload supplies item components."
-   ]
-  },
-  {
-   "id": "P03",
-   "title": "Binary primitives, text and component codecs",
-   "status": "partial",
-   "dependsOn": [
-    "P02"
-   ],
-   "releaseRefs": [
-    "1.21.2",
-    "1.21.5",
-    "26.3"
-   ],
-   "acceptance": "Byte fixtures round-trip against native codecs, including the 26.3 component and dialog/waypoint families; complete packet consumption is asserted.",
-   "evidence": [
-    "Native frames captured on 2026-11-25 from a disposable 26.3 server into tools/port-26.3/fixtures/login-config-26.3.json (30 frames, payload hex including the packet id).",
-    "byte-fixtures.mjs decodes them with the client's own Reader: compression threshold 256, Login Success uuid/name/properties, brand 'minecraft:brand'='vanilla', Update Enabled Features ['minecraft:vanilla'], Select Known Packs [minecraft:core:26.3]; every packet must be fully consumed.",
-    "Login Success re-encodes through the client's Writer to the exact native bytes.",
-    "Native change found by javap, not guessed: 26.3 renames the class to ClientboundLoginFinishedPacket and its STREAM_CODEC is composite(GAME_PROFILE, UUIDUtil.STREAM_CODEC), so Login Success carries a session UUID after the profile. The fixture asserts it (085cf48d-...).",
-    "Play codecs now cover Play Login, level_chunk_with_light, LpVec3 movement (add_entity, set_entity_motion), VecDelta movement (move_entity_pos/rot), PositionPath (entity_position_sync), light_update and the shared common packets.",
-    "Configuration codecs decode registry_data (Identifier + Optional anonymous NBT), update_tags (VarInt id lists), store_cookie, transfer, resource packs and code_of_conduct. Open: no item-stack/component codec, no dialog/waypoint/entity-metadata codecs, and component serialization is read-only."
-   ]
-  },
-  {
-   "id": "P04",
-   "title": "Item components and stacks",
-   "status": "partial",
-   "dependsOn": [
-    "P03"
-   ],
-   "releaseRefs": [
-    "1.21.2",
-    "1.21.5",
-    "1.21.9",
-    "26.3"
-   ],
-   "acceptance": "All 122 component types have a codec; patches and removals are preserved; defaults come from the native component reports.",
-   "evidence": [
-    "Native codec manifest: component-codecs:26.3 runs javap on DataComponents and pins the networkSynchronized expression of all 122 registered component types; 7 are server-only (custom_data, intangible_projectile, map_decorations, debug_stick_state, recipes, lock, container_loot) and cannot appear in a patch.",
-    "ItemStack, ItemStackTemplate and DataComponentPatch decode from the javap layouts: VarInt count, VarInt item id, VarInt added/removed counts, values then removed ids. 83 of the 115 wire components have verified readers; the rest fail closed by name (attribute_modifiers, profile and the item-modifier records are the notable runtime ones).",
-    "Live 26.3 server, zero decode errors: a diamond_sword with damage=10 and a custom name, a diamond_pickaxe with enchantments [{enchantment:33,level:3}], two potions with potion_contents potion 13, a chest whose container component is [apple x5, null, null, diamond x2], and a bundle with [apple x3, stick x8] all landed in the player inventory with the native component values.",
-    "window_items, set_slot and the 26.3-only set_player_inventory packet (aliased onto the existing windowId -2 path), close_window and craft_progress_bar are decoded and adapted; the pinned native window_items frame is consumed exactly by adapter:26.3."
-   ]
-  },
-  {
-   "id": "P05",
-   "title": "Login and Configuration lifecycle at protocol 777",
-   "status": "done",
-   "dependsOn": [
-    "P03"
-   ],
-   "evidence": [
-    "The client's own socket (client/js/net/tcp-26.3.js + configuration-26.3.js) joins a disposable native 26.3 server on 2026-11-25: Hello/Login Finished, Login Acknowledged, Configuration (brand, update_enabled_features, select_known_packs, 30+ registry_data frames with anonymous-NBT payloads, update_tags, finish_configuration) and Play Login.",
-    "client-net.mjs drives VanillaSocket26_3 over Node TCP against 127.0.0.1:25568 and asserts the profile UUID, the 26.3 session UUID, 30+ registries with no elided payloads, 100+ tags, Play Login fields and byte-exact consumption of every decoded frame; login-config-frames.mjs replays 30 committed native frames through the same codecs, 23 of them registry_data.",
-    "Native behaviour proven, not assumed: claiming minecraft:core/26.3 without owning the pack makes the server omit every registry payload, so the client claims no packs and receives full data. A bad frame is still rejected with 'Badly compressed packet - size of 3 is below server threshold of 256'.",
-    "Open: the browser build still selects 766 through PROTOCOL_VERSION until the Play layer and client data are rebuilt."
-   ],
-   "acceptance": "A disposable native 26.3 server accepts the offline join and completes Configuration with no mixed-version identity."
-  },
-  {
-   "id": "P06",
-   "title": "Complete essential Play path",
-   "status": "partial",
-   "dependsOn": [
-    "P04",
-    "P05"
-   ],
-   "acceptance": "Every one of the 144 inbound Play IDs has a body and handler, and each of the 69 outbound IDs has a real sender or a recorded scope decision.",
-   "evidence": [
-    "Play Login (id 50) decoded from the native fixture with zero trailing bytes on 2026-11-25: playerId 62, hardcore false, levels [overworld, the_end, the_nether], maxPlayers 5, chunkRadius 3, simulationDistance 3, showDeathScreen true, spawn dimension minecraft:overworld, seed 3819442548323920269, gamemode 0, isFlat false, portalCooldown 0, seaLevel 63, onlineMode false, enforcesSecureChat false.",
-    "Field order taken from javap on the native ClientboundLoginPacket, not from an older protocol schema; the seaLevel field is 26.3-era and is asserted.",
-    "Nine of the twelve captured Play frames now decode with exact consumption: change_difficulty, player_abilities, set_held_slot, entity_event, server_data, player_info_update, player_position, recipe_book_settings, commands. Still raw: update_recipes, recipe_book_add and the separately decoded login.",
-    "26.3 redesign found in the commands packet: argument types are a registry id into minecraft:command_argument_type (0-61, read from the native registries report) followed by ArgumentTypeInfo.deserializeFromNetwork properties, not the 1.20.6 parser name string. A new restricted flag (bit 32) exists. The captured 26-node tree decodes to zero leftover and resolves int_range, message, string, entity, objective and integer parsers.",
-    "26.3 network NBT confirmed from NbtIo.writeAnyTag bytecode: tag id only, no root name. Reading server_data with the named-root reader underflowed; the anonymous reader consumes it exactly.",
-    "Player info update actions are a fixed 1-byte bitset over the eight actions (FriendlyByteBuf.writeFixedBitSet), not a VarInt mask.",
-    "Chunk path landed: level_chunk_with_light decodes all 9 captured native chunks with zero leftover (24 sections, heightmaps, block entities, light byte-array layers). Validated against the jar's own registry: every section nonEmptyBlockCount equals the number of non-air states unpacked, and all state ids are below the native 35,723.",
-    "26.3 chunk findings from bytecode: a section now carries two shorts (nonEmptyBlockCount, fluidCount); BitStorage packs floor(64/bits) values per long, so 5-bit sections are 342 longs and not 320; biome containers hold 64 entries; BIT_SET is a byte array, not a long array. Name mapping shows 26.2 cinnabar and sulfur in the caves at y=0.",
-    "Live-world layer added: set_time (26.3 clock map), game_event, chunk batch start/finished, chunk cache center, spawn position, health, experience, border (now includes warningTime), block_update, section_blocks_update (VarLong state<<12|pos). Forty-three of 51 captured startup frames decode with zero leftover and a live join decodes 100+ Play frames across 30+ types; 46 inbound IDs have javap-verified decoders.",
-    "Native redesigns recorded from the jar: LpVec3 (48-bit packed vector), VecDelta packed as (stepCount<<1)|onGround with Linear/Stepped steps, PositionPath stepped paths carrying only steps, 26.3 serverbound accept_teleportation echoing position and rotation, and horizontalCollision on move packets.",
-    "Join context is built from native configuration data (session-26.3.js): 35,723 block states and the air set from the block report, biome holder ids, dimension types decoded from registry NBT with 26.3's Skybox/attributes replacing effects, feature flags and tag registries. client-net.mjs asserts the overworld type is min_y -64 / height 384 / skylight.",
-    "Open: 46 of 144 inbound Play IDs decoded; entity metadata/equipment, item-stack components, advancements and the redesigned recipes remain raw. No Play handlers, no chunk/entity/registry consumers, and entity_position_sync's stepped path was proven by a 39-byte native frame.",
-    "Play adapter (play-adapter-26.3.js) maps decoded 26.3 packets onto real on_<handler> names from game.js; adapter:26.3 replays 53 pinned native frames and asserts 22 packets across 16 handlers, including two 24-section chunks loaded through world.loadChunk26_3 and native light masks.",
-    "Live 26.3 server session: the native server accepted the client after the serverbound bodies were corrected from bytecode - accept_teleportation now echoes position and rotation, movement packets carry the packed onGround/horizontalCollision flags byte, every client tick ends with client_tick_end (which clears the server's per-tick position flag), and keep_alive/ping are adapted back to the game handlers. The session stayed connected past the keepalive timeout with no invalid-packet disconnect.",
-    "Entity Play path landed on 2026-11-26: add_entity resolves the native minecraft:entity_type registry (161 dense ids) to names, set_entity_data decodes the native EntityDataSerializers table (44 ids dumped from getSerializedId after Bootstrap) and set_equipment reads the continuation-bit slot list. 49 of 144 inbound Play IDs now have bytecode-verified decoders; adapter:26.3 replays 53 pinned frames, adapting 29 packets across 18 handlers and asserting both native bats plus five metadata frames."
-   ]
-  },
-  {
-   "id": "P07",
-   "title": "Graphical join on a disposable 26.3 server",
-   "status": "done",
-   "dependsOn": [
-    "P06"
-   ],
-   "acceptance": "Terrain, entities, HUD, movement, death/respawn and reconnect in a real Chrome client against 26.3 only.",
-   "evidence": [
-    "Connection opens VanillaSocket26_3 for protocol 777, builds the join context on play_login and adapts every Play packet before the game sees it. The browser build still selects 766 until the 26.3 model/shape data lands.",
-    "Native graphical join in Chrome on 2026-11-26: the 26.3 client built its join context from the native registry report, spawned at (4.4747, 70.0, 5.1511), streamed and rendered 81 chunks with terrain, tall grass and sky, and showed the full HUD (10 hearts, hunger bar, hotbar). The server logged the join with no movement or keepalive disconnect, and the client reported inWorld=true, doneLoadingTerrain=true and crashed=false.",
-    "P07 acceptance is complete: terrain, entities, HUD, movement, death/respawn and reconnect were all exercised live. The browser still renders 1.20.6 model/texture bundles against 26.3 block data, so new 26.3 blocks have no baked models (P10).",
-    "Live 26.3 entity rendering verified in Chrome on 2026-11-26: the client tracked 83 entities with sane coordinates (max |x|/|z| = 56), including pigs, sheep, cows, chickens, bats, villagers, glow squid and the 26.3 sulfur_cube (raw identity, no 1.20.6 model). Cow, sheep, pig and chicken models rendered in-world; health and bat flags decoded from native set_entity_data frames.",
-    "Movement verified against the 26.3 server: holding forward for 1.6 s moved the player 6.9 blocks (+Z 1.56 -> 8.46) and the server accepted every move packet. The embedded preview webview cannot grant pointer lock (WrongDocumentError), so input state was driven directly instead of through a locked mouse.",
-    "Death/respawn and reconnect verified: a summoned zombie killed the player (server logged \"was slain by Zombie\"), the DeathScreen respawn round-tripped client_command and restored health 20 in creative, and repeated disconnect/reconnect joins all reached Play."
-   ]
-  },
-  {
-   "id": "P08",
-   "title": "Inventory and interaction",
-   "status": "todo",
-   "dependsOn": [
-    "P07"
-   ],
-   "acceptance": "Click, state-id and rejection sequences pass against the native server, including the newer container/menu families.",
-   "evidence": []
-  },
-  {
-   "id": "P09",
-   "title": "Authenticated lifecycle, transfer and packs",
-   "status": "todo",
-   "dependsOn": [
-    "P07"
-   ],
-   "acceptance": "Evidence only with a real account; transfer, cookies and dialog flows are exercised end to end.",
-   "evidence": []
-  },
-  {
-   "id": "P10",
-   "title": "Resources, fonts, atlases and item models",
-   "status": "partial",
-   "dependsOn": [
-    "P07"
-   ],
-   "acceptance": "Default jar resources resolve with no custom pack, including the reworked item-model and GUI sprite systems.",
-   "evidence": [
-    "Native client tables built from the jar without minecraft-data: blocks:26.3 (1,286 blocks / 35,723 states, partition-checked) and items:26.3 (1,658 items, contiguous protocol ids, stack sizes from the item component reports, names from the jar en_us.json)."
-   ]
-  },
-  {
-   "id": "P11",
-   "title": "New content families from the release crosswalk",
-   "status": "todo",
-   "dependsOn": [
-    "P08",
-    "P10"
-   ],
-   "acceptance": "Per-family live/visual scenario; a registry entry or present model is not acceptance.",
-   "evidence": []
-  },
-  {
-   "id": "P12",
-   "title": "Content effects: particles, sounds, animations",
-   "status": "todo",
-   "dependsOn": [
-    "P11"
-   ],
-   "acceptance": "Behavior acceptance with real triggers, not registry equality.",
-   "evidence": []
-  },
-  {
-   "id": "P13",
-   "title": "GUI, dialogs, chat and commands",
-   "status": "todo",
-   "dependsOn": [
-    "P09",
-    "P10"
-   ],
-   "acceptance": "Screens and option rows match native 26.3, including dialog and waypoint UI.",
-   "evidence": []
-  },
-  {
-   "id": "P14",
-   "title": "Inherited 1.20.6 parity repairs",
-   "status": "todo",
-   "dependsOn": [
-    "P13"
-   ],
-   "acceptance": "Every inherited finding has an explicit disposition; nothing is silently dropped by the version jump.",
-   "evidence": []
-  },
-  {
-   "id": "P15",
-   "title": "Whole-target acceptance",
-   "status": "todo",
-   "dependsOn": [
-    "P11",
-    "P12",
-    "P14"
-   ],
-   "acceptance": "Open findings accounted for; no mixed-version data; honest partial/unverified list published.",
-   "evidence": []
-  },
-  {
-   "id": "P16",
-   "title": "Backports and distributions",
-   "status": "todo",
-   "dependsOn": [
-    "P15"
-   ],
-   "acceptance": "Source SHAs, manifest and checksums match builds; no Mojang jars or built assets are published.",
-   "evidence": []
-  }
- ]
+  "schemaVersion": 1,
+  "updatedOn": "2026-11-26",
+  "target": "26.3",
+  "branch": "26.3",
+  "baselineVersion": "1.20.6",
+  "baselineCommit": "761970ed38eedd69effb38a1bfedf912cb26e30c",
+  "fullParity": false,
+  "nativeGraphicalGameplayAccepted": false,
+  "nextTask": "P08",
+  "authorization": "Port 26.3 from the public 1.20.6 branch using the creator's pinned-input, gated-task method.",
+  "executionRule": "Follow dependency order; native evidence and gate completion are required before marking done. Push validated batches and review shared backports as they land, not only at P16.",
+  "tasks": [
+    {
+      "id": "P00",
+      "title": "Verify pinned inputs and preserve the forwarded baseline",
+      "status": "done",
+      "dependsOn": [],
+      "releaseRefs": [
+        "26.3"
+      ],
+      "acceptance": "Every native input hash and embedded version field matches; the jar layout is native and unobfuscated; existing worktrees and local inputs remain intact.",
+      "evidence": [
+        "prepare:26.3 on 2026-11-25: metadata 8696584e, client e877b6a0 (41,483,720 bytes), server 33680f5f (62,294,556 bytes), asset index 7b1c46ec (id 34).",
+        "Native version.json: id 26.3, protocol 777, world_version 5023, pack 97.1/121.0, java 25, stable true, build 2026-09-15.",
+        "Layout 10,737 classes / 11,604 assets / 9,884 data entries; net/minecraft/client/main/Main.class resolves, so the jar is unobfuscated.",
+        "User-supplied client(2).jar is byte-identical to Mojang's pinned client object; no repack."
+      ]
+    },
+    {
+      "id": "P01",
+      "title": "Triage all 17 release histories between 1.20.6 and 26.3",
+      "status": "partial",
+      "dependsOn": [
+        "P00"
+      ],
+      "releaseRefs": [
+        "1.21",
+        "1.21.1",
+        "1.21.2",
+        "1.21.3",
+        "1.21.4",
+        "1.21.5",
+        "1.21.6",
+        "1.21.7",
+        "1.21.8",
+        "1.21.9",
+        "1.21.10",
+        "1.21.11",
+        "26.1",
+        "26.1.1",
+        "26.1.2",
+        "26.2",
+        "26.3"
+      ],
+      "acceptance": "Every release topic/fix has a native-client, server-owned, experiment, product-outside-scope or experiment-gated disposition; sources record URL, retrieval method and SHA-256; challenge pages are never treated as articles.",
+      "evidence": [
+        "All 17 crosswalk articles fetched with direct curl on 2026-11-25: HTTP 200, 277,902-954,712 bytes each, treated as articles after an mw-content-text check; URL, status, bytes and SHA-256 recorded in docs/transition-26.3.release-index.json.",
+        "First-pass additions read from each article and summarised in the crosswalk table (1.21 copper/tuff/crafter; 1.21.2 bundles; 1.21.4 creaking heart; 1.21.5 leaf litter/firefly bush; 1.21.6 dried ghast/harness; 1.21.9 copper bars/chains/chest; 26.1 golden dandelion; 26.2 cinnabar/sulfur caves; 26.3 poplar/dappled forest/straw bed/abandoned camps/cushion).",
+        "Open: per-topic disposition counts and the official-notes cross-check are not recorded yet, so this task stays partial."
+      ]
+    },
+    {
+      "id": "P02",
+      "title": "Extract native reports, registries, packets and resource inventory",
+      "status": "partial",
+      "dependsOn": [
+        "P00"
+      ],
+      "releaseRefs": [
+        "26.3"
+      ],
+      "acceptance": "Reproducible reports and hashes reject mixed-version data; client data tables are regenerated from them; resource inventory resolves from the jar without an external asset download.",
+      "evidence": [
+        "Client block table rebuilt from the 26.3 client jar itself (tools/port-26.3/ExtractBlocks26_3.java): 1,286 blocks / 35,723 states, every state id owned by exactly one block, and every property set, state count and default state cross-checked against the native blocks report by blocks:26.3. Item stack sizes fall back to 64 for 1,129 blocks until the data-pack reload supplies item components."
+      ]
+    },
+    {
+      "id": "P03",
+      "title": "Binary primitives, text and component codecs",
+      "status": "partial",
+      "dependsOn": [
+        "P02"
+      ],
+      "releaseRefs": [
+        "1.21.2",
+        "1.21.5",
+        "26.3"
+      ],
+      "acceptance": "Byte fixtures round-trip against native codecs, including the 26.3 component and dialog/waypoint families; complete packet consumption is asserted.",
+      "evidence": [
+        "Native frames captured on 2026-11-25 from a disposable 26.3 server into tools/port-26.3/fixtures/login-config-26.3.json (30 frames, payload hex including the packet id).",
+        "byte-fixtures.mjs decodes them with the client's own Reader: compression threshold 256, Login Success uuid/name/properties, brand 'minecraft:brand'='vanilla', Update Enabled Features ['minecraft:vanilla'], Select Known Packs [minecraft:core:26.3]; every packet must be fully consumed.",
+        "Login Success re-encodes through the client's Writer to the exact native bytes.",
+        "Native change found by javap, not guessed: 26.3 renames the class to ClientboundLoginFinishedPacket and its STREAM_CODEC is composite(GAME_PROFILE, UUIDUtil.STREAM_CODEC), so Login Success carries a session UUID after the profile. The fixture asserts it (085cf48d-...).",
+        "Play codecs now cover Play Login, level_chunk_with_light, LpVec3 movement (add_entity, set_entity_motion), VecDelta movement (move_entity_pos/rot), PositionPath (entity_position_sync), light_update and the shared common packets.",
+        "Configuration codecs decode registry_data (Identifier + Optional anonymous NBT), update_tags (VarInt id lists), store_cookie, transfer, resource packs and code_of_conduct. Open: no item-stack/component codec, no dialog/waypoint/entity-metadata codecs, and component serialization is read-only."
+      ]
+    },
+    {
+      "id": "P04",
+      "title": "Item components and stacks",
+      "status": "partial",
+      "dependsOn": [
+        "P03"
+      ],
+      "releaseRefs": [
+        "1.21.2",
+        "1.21.5",
+        "1.21.9",
+        "26.3"
+      ],
+      "acceptance": "All 122 component types have a codec; patches and removals are preserved; defaults come from the native component reports.",
+      "evidence": [
+        "Native codec manifest: component-codecs:26.3 runs javap on DataComponents and pins the networkSynchronized expression of all 122 registered component types; 7 are server-only (custom_data, intangible_projectile, map_decorations, debug_stick_state, recipes, lock, container_loot) and cannot appear in a patch.",
+        "ItemStack, ItemStackTemplate and DataComponentPatch decode from the javap layouts: VarInt count, VarInt item id, VarInt added/removed counts, values then removed ids. 83 of the 115 wire components have verified readers; the rest fail closed by name (attribute_modifiers, profile and the item-modifier records are the notable runtime ones).",
+        "Live 26.3 server, zero decode errors: a diamond_sword with damage=10 and a custom name, a diamond_pickaxe with enchantments [{enchantment:33,level:3}], two potions with potion_contents potion 13, a chest whose container component is [apple x5, null, null, diamond x2], and a bundle with [apple x3, stick x8] all landed in the player inventory with the native component values.",
+        "window_items, set_slot and the 26.3-only set_player_inventory packet (aliased onto the existing windowId -2 path), close_window and craft_progress_bar are decoded and adapted; the pinned native window_items frame is consumed exactly by adapter:26.3."
+      ]
+    },
+    {
+      "id": "P05",
+      "title": "Login and Configuration lifecycle at protocol 777",
+      "status": "done",
+      "dependsOn": [
+        "P03"
+      ],
+      "evidence": [
+        "The client's own socket (client/js/net/tcp-26.3.js + configuration-26.3.js) joins a disposable native 26.3 server on 2026-11-25: Hello/Login Finished, Login Acknowledged, Configuration (brand, update_enabled_features, select_known_packs, 30+ registry_data frames with anonymous-NBT payloads, update_tags, finish_configuration) and Play Login.",
+        "client-net.mjs drives VanillaSocket26_3 over Node TCP against 127.0.0.1:25568 and asserts the profile UUID, the 26.3 session UUID, 30+ registries with no elided payloads, 100+ tags, Play Login fields and byte-exact consumption of every decoded frame; login-config-frames.mjs replays 30 committed native frames through the same codecs, 23 of them registry_data.",
+        "Native behaviour proven, not assumed: claiming minecraft:core/26.3 without owning the pack makes the server omit every registry payload, so the client claims no packs and receives full data. A bad frame is still rejected with 'Badly compressed packet - size of 3 is below server threshold of 256'.",
+        "Open: the browser build still selects 766 through PROTOCOL_VERSION until the Play layer and client data are rebuilt."
+      ],
+      "acceptance": "A disposable native 26.3 server accepts the offline join and completes Configuration with no mixed-version identity."
+    },
+    {
+      "id": "P06",
+      "title": "Complete essential Play path",
+      "status": "partial",
+      "dependsOn": [
+        "P04",
+        "P05"
+      ],
+      "acceptance": "Every one of the 144 inbound Play IDs has a body and handler, and each of the 69 outbound IDs has a real sender or a recorded scope decision.",
+      "evidence": [
+        "Play Login (id 50) decoded from the native fixture with zero trailing bytes on 2026-11-25: playerId 62, hardcore false, levels [overworld, the_end, the_nether], maxPlayers 5, chunkRadius 3, simulationDistance 3, showDeathScreen true, spawn dimension minecraft:overworld, seed 3819442548323920269, gamemode 0, isFlat false, portalCooldown 0, seaLevel 63, onlineMode false, enforcesSecureChat false.",
+        "Field order taken from javap on the native ClientboundLoginPacket, not from an older protocol schema; the seaLevel field is 26.3-era and is asserted.",
+        "Nine of the twelve captured Play frames now decode with exact consumption: change_difficulty, player_abilities, set_held_slot, entity_event, server_data, player_info_update, player_position, recipe_book_settings, commands. Still raw: update_recipes, recipe_book_add and the separately decoded login.",
+        "26.3 redesign found in the commands packet: argument types are a registry id into minecraft:command_argument_type (0-61, read from the native registries report) followed by ArgumentTypeInfo.deserializeFromNetwork properties, not the 1.20.6 parser name string. A new restricted flag (bit 32) exists. The captured 26-node tree decodes to zero leftover and resolves int_range, message, string, entity, objective and integer parsers.",
+        "26.3 network NBT confirmed from NbtIo.writeAnyTag bytecode: tag id only, no root name. Reading server_data with the named-root reader underflowed; the anonymous reader consumes it exactly.",
+        "Player info update actions are a fixed 1-byte bitset over the eight actions (FriendlyByteBuf.writeFixedBitSet), not a VarInt mask.",
+        "Chunk path landed: level_chunk_with_light decodes all 9 captured native chunks with zero leftover (24 sections, heightmaps, block entities, light byte-array layers). Validated against the jar's own registry: every section nonEmptyBlockCount equals the number of non-air states unpacked, and all state ids are below the native 35,723.",
+        "26.3 chunk findings from bytecode: a section now carries two shorts (nonEmptyBlockCount, fluidCount); BitStorage packs floor(64/bits) values per long, so 5-bit sections are 342 longs and not 320; biome containers hold 64 entries; BIT_SET is a byte array, not a long array. Name mapping shows 26.2 cinnabar and sulfur in the caves at y=0.",
+        "Live-world layer added: set_time (26.3 clock map), game_event, chunk batch start/finished, chunk cache center, spawn position, health, experience, border (now includes warningTime), block_update, section_blocks_update (VarLong state<<12|pos). Forty-three of 51 captured startup frames decode with zero leftover and a live join decodes 100+ Play frames across 30+ types; 46 inbound IDs have javap-verified decoders.",
+        "Native redesigns recorded from the jar: LpVec3 (48-bit packed vector), VecDelta packed as (stepCount<<1)|onGround with Linear/Stepped steps, PositionPath stepped paths carrying only steps, 26.3 serverbound accept_teleportation echoing position and rotation, and horizontalCollision on move packets.",
+        "Join context is built from native configuration data (session-26.3.js): 35,723 block states and the air set from the block report, biome holder ids, dimension types decoded from registry NBT with 26.3's Skybox/attributes replacing effects, feature flags and tag registries. client-net.mjs asserts the overworld type is min_y -64 / height 384 / skylight.",
+        "Open: 46 of 144 inbound Play IDs decoded; entity metadata/equipment, item-stack components, advancements and the redesigned recipes remain raw. No Play handlers, no chunk/entity/registry consumers, and entity_position_sync's stepped path was proven by a 39-byte native frame.",
+        "Play adapter (play-adapter-26.3.js) maps decoded 26.3 packets onto real on_<handler> names from game.js; adapter:26.3 replays 53 pinned native frames and asserts 22 packets across 16 handlers, including two 24-section chunks loaded through world.loadChunk26_3 and native light masks.",
+        "Live 26.3 server session: the native server accepted the client after the serverbound bodies were corrected from bytecode - accept_teleportation now echoes position and rotation, movement packets carry the packed onGround/horizontalCollision flags byte, every client tick ends with client_tick_end (which clears the server's per-tick position flag), and keep_alive/ping are adapted back to the game handlers. The session stayed connected past the keepalive timeout with no invalid-packet disconnect.",
+        "Entity Play path landed on 2026-11-26: add_entity resolves the native minecraft:entity_type registry (161 dense ids) to names, set_entity_data decodes the native EntityDataSerializers table (44 ids dumped from getSerializedId after Bootstrap) and set_equipment reads the continuation-bit slot list. 49 of 144 inbound Play IDs now have bytecode-verified decoders; adapter:26.3 replays 53 pinned frames, adapting 29 packets across 18 handlers and asserting both native bats plus five metadata frames.",
+        "Particle metadata closed the last live join decode gap: entity metadata serializer 17 (PARTICLES) decodes all 128 registered particle types through their native StreamCodecs, so a fresh 26.3 join loads 81 chunks and 26 entities with zero skipped frames (the same join previously skipped 56 frames, all [set_entity_data#101] serializer 17).",
+        "Outbound click and attack are live-accepted: container_click round-trips the menu state id (1 -> 2) and moves a stack, and the native attack body removes a summoned pig after 8 hits."
+      ]
+    },
+    {
+      "id": "P07",
+      "title": "Graphical join on a disposable 26.3 server",
+      "status": "done",
+      "dependsOn": [
+        "P06"
+      ],
+      "acceptance": "Terrain, entities, HUD, movement, death/respawn and reconnect in a real Chrome client against 26.3 only.",
+      "evidence": [
+        "Connection opens VanillaSocket26_3 for protocol 777, builds the join context on play_login and adapts every Play packet before the game sees it. The browser build still selects 766 until the 26.3 model/shape data lands.",
+        "Native graphical join in Chrome on 2026-11-26: the 26.3 client built its join context from the native registry report, spawned at (4.4747, 70.0, 5.1511), streamed and rendered 81 chunks with terrain, tall grass and sky, and showed the full HUD (10 hearts, hunger bar, hotbar). The server logged the join with no movement or keepalive disconnect, and the client reported inWorld=true, doneLoadingTerrain=true and crashed=false.",
+        "P07 acceptance is complete: terrain, entities, HUD, movement, death/respawn and reconnect were all exercised live. The browser still renders 1.20.6 model/texture bundles against 26.3 block data, so new 26.3 blocks have no baked models (P10).",
+        "Live 26.3 entity rendering verified in Chrome on 2026-11-26: the client tracked 83 entities with sane coordinates (max |x|/|z| = 56), including pigs, sheep, cows, chickens, bats, villagers, glow squid and the 26.3 sulfur_cube (raw identity, no 1.20.6 model). Cow, sheep, pig and chicken models rendered in-world; health and bat flags decoded from native set_entity_data frames.",
+        "Movement verified against the 26.3 server: holding forward for 1.6 s moved the player 6.9 blocks (+Z 1.56 -> 8.46) and the server accepted every move packet. The embedded preview webview cannot grant pointer lock (WrongDocumentError), so input state was driven directly instead of through a locked mouse.",
+        "Death/respawn and reconnect verified: a summoned zombie killed the player (server logged \"was slain by Zombie\"), the DeathScreen respawn round-tripped client_command and restored health 20 in creative, and repeated disconnect/reconnect joins all reached Play."
+      ]
+    },
+    {
+      "id": "P08",
+      "title": "Inventory and interaction",
+      "status": "partial",
+      "dependsOn": [
+        "P07"
+      ],
+      "acceptance": "Click, state-id and rejection sequences pass against the native server, including the newer container/menu families.",
+      "evidence": [
+        "Serverbound bodies rewritten from 26.3 bytecode: lp-vec3-26.3.js read/write (extended scale 4*ceil(max/4)), HashedStack/HashedPatchMap writers, container_click/container_close, player_action direction byte, use_item_on with insideBlock and worldBorderHit booleans, attack. serverbound:26.3 pins every body as bytes.",
+        "Live 26.3 server accepted a pickup+place click: inventory state id went 1 -> 2 and dirt moved from slot 43 to 44 and stayed there; the server sent no rejection or resync.",
+        "Live attack verified: interaction.attackEntity sent the native attack body and the summoned pig (id 2500, 1.85 blocks away) left the entity map after 8 hits.",
+        "Open: HashedPatchMap component hashing for patched stacks (only empty patches are writable), creative-slot packets still need the 26.3 item table from P10, and the remaining container/menu families (merchant, enchanting, stonecutter, loom) are not ported."
+      ]
+    },
+    {
+      "id": "P09",
+      "title": "Authenticated lifecycle, transfer and packs",
+      "status": "todo",
+      "dependsOn": [
+        "P07"
+      ],
+      "acceptance": "Evidence only with a real account; transfer, cookies and dialog flows are exercised end to end.",
+      "evidence": []
+    },
+    {
+      "id": "P10",
+      "title": "Resources, fonts, atlases and item models",
+      "status": "partial",
+      "dependsOn": [
+        "P07"
+      ],
+      "acceptance": "Default jar resources resolve with no custom pack, including the reworked item-model and GUI sprite systems.",
+      "evidence": [
+        "Native client tables built from the jar without minecraft-data: blocks:26.3 (1,286 blocks / 35,723 states, partition-checked) and items:26.3 (1,658 items, contiguous protocol ids, stack sizes from the item component reports, names from the jar en_us.json)."
+      ]
+    },
+    {
+      "id": "P11",
+      "title": "New content families from the release crosswalk",
+      "status": "todo",
+      "dependsOn": [
+        "P08",
+        "P10"
+      ],
+      "acceptance": "Per-family live/visual scenario; a registry entry or present model is not acceptance.",
+      "evidence": []
+    },
+    {
+      "id": "P12",
+      "title": "Content effects: particles, sounds, animations",
+      "status": "partial",
+      "dependsOn": [
+        "P11"
+      ],
+      "acceptance": "Behavior acceptance with real triggers, not registry equality.",
+      "evidence": [
+        "All 128 26.3 particle types and the 22 data-carrying StreamCodecs pinned from ParticleTypes BootstrapMethods and the option classes with javap: block states, geyser INT, geyser_base INT+FLOAT, power FLOAT, spell INT+FLOAT, color INT, item ItemStackTemplate, dust INT+FLOAT, dust_color_transition INT+INT+FLOAT, sculk_charge FLOAT, shriek VarInt, trail Vec3+INT+VarInt.",
+        "Entity metadata serializers PARTICLE and PARTICLES decode through particles-26.3.js; particle-types-26.3.js is generated by tools/port-26.3/particle-codecs.mjs and particle-codecs-gate.mjs pins the byte layouts, including a live-captured set_entity_data frame.",
+        "vibration stays fail-closed because its PositionSource codec is not ported yet; level_particles and particle rendering/consumers are still open."
+      ]
+    },
+    {
+      "id": "P13",
+      "title": "GUI, dialogs, chat and commands",
+      "status": "todo",
+      "dependsOn": [
+        "P09",
+        "P10"
+      ],
+      "acceptance": "Screens and option rows match native 26.3, including dialog and waypoint UI.",
+      "evidence": []
+    },
+    {
+      "id": "P14",
+      "title": "Inherited 1.20.6 parity repairs",
+      "status": "todo",
+      "dependsOn": [
+        "P13"
+      ],
+      "acceptance": "Every inherited finding has an explicit disposition; nothing is silently dropped by the version jump.",
+      "evidence": []
+    },
+    {
+      "id": "P15",
+      "title": "Whole-target acceptance",
+      "status": "todo",
+      "dependsOn": [
+        "P11",
+        "P12",
+        "P14"
+      ],
+      "acceptance": "Open findings accounted for; no mixed-version data; honest partial/unverified list published.",
+      "evidence": []
+    },
+    {
+      "id": "P16",
+      "title": "Backports and distributions",
+      "status": "todo",
+      "dependsOn": [
+        "P15"
+      ],
+      "acceptance": "Source SHAs, manifest and checksums match builds; no Mojang jars or built assets are published.",
+      "evidence": []
+    }
+  ]
 }
