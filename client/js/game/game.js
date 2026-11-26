@@ -1453,6 +1453,10 @@ export class Game {
     }
   }
 
+  // ClientboundSetCursorItemPacket: 26.3 sends the carried stack as its own packet instead
+  // of a set_slot with window -1 / slot -1.
+  on_set_cursor_item(p) { this.inventory.cursor = p.item; }
+
   on_set_slot(p) {
     if(p.windowId===0)this.inventory.stateId=p.stateId;
     else if(this.window?.id===p.windowId)this.window.stateId=p.stateId;

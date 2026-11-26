@@ -10,7 +10,7 @@
     "prepare:1.20.6": "node tools/port-1.20.6/prepare.mjs",
     "prepare:26.3": "node tools/port-26.3/prepare.mjs",
     "reports:26.3": "node tools/port-26.3/reports.mjs",
-    "test:26.3": "node tools/port-26.3/generate-ids.mjs --check && node tools/port-26.3/reports.mjs --check && node tools/port-26.3/component-codecs.mjs --check && node tools/port-26.3/particle-codecs.mjs --check && node tools/port-26.3/item-codec-gate.mjs && node tools/port-26.3/particle-codecs-gate.mjs && node tools/port-26.3/serverbound-gate.mjs && node tools/port-26.3/byte-fixtures.mjs && node tools/port-26.3/play-login.mjs && node tools/port-26.3/play-frames.mjs && node tools/port-26.3/chunk-frames.mjs && node tools/port-26.3/login-config-frames.mjs",
+    "test:26.3": "node tools/port-26.3/generate-ids.mjs --check && node tools/port-26.3/reports.mjs --check && node tools/port-26.3/component-codecs.mjs --check && node tools/port-26.3/particle-codecs.mjs --check && node tools/port-26.3/item-codec-gate.mjs && node tools/port-26.3/particle-codecs-gate.mjs && node tools/port-26.3/inbound-gate.mjs && node tools/port-26.3/serverbound-gate.mjs && node tools/port-26.3/byte-fixtures.mjs && node tools/port-26.3/play-login.mjs && node tools/port-26.3/play-frames.mjs && node tools/port-26.3/chunk-frames.mjs && node tools/port-26.3/login-config-frames.mjs",
     "probe:26.3": "node tools/port-26.3/probe-server.mjs",
     "client-net:26.3": "node tools/port-26.3/client-net.mjs",
     "reports:1.20.6": "node tools/port-1.20.6/reports.mjs",

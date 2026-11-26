@@ -91,8 +91,8 @@ pending; product outside current scope; or experiment-gated.
   A fresh join now loads 81 chunks and 26 entities with zero skipped frames. Vibration stays fail-closed.
 - Open at this checkpoint: patched-item HashedPatchMap hashing, creative slots (needs the P10 item table),
   remaining container/menu families, the 32 fail-closed component readers (attribute_modifiers, profile and
-  item-modifier records), native support/placement rules, remaining inbound families and the 26.3
-  model/texture bake. The task ledger is at 41.2% (3 done, 8 partial, 6 todo); next task P08.
+  item-modifier records), native support/placement rules, the 71 inbound IDs that are still raw
+  (recipes, advancements, maps, boss bars, dialogs) and the 26.3 model/texture bake. The task ledger is at 41.2% (3 done, 8 partial, 6 todo); next task P08.
 
 ## Implementation order
 

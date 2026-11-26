@@ -159,7 +159,9 @@
         "Live 26.3 server session: the native server accepted the client after the serverbound bodies were corrected from bytecode - accept_teleportation now echoes position and rotation, movement packets carry the packed onGround/horizontalCollision flags byte, every client tick ends with client_tick_end (which clears the server's per-tick position flag), and keep_alive/ping are adapted back to the game handlers. The session stayed connected past the keepalive timeout with no invalid-packet disconnect.",
         "Entity Play path landed on 2026-11-26: add_entity resolves the native minecraft:entity_type registry (161 dense ids) to names, set_entity_data decodes the native EntityDataSerializers table (44 ids dumped from getSerializedId after Bootstrap) and set_equipment reads the continuation-bit slot list. 49 of 144 inbound Play IDs now have bytecode-verified decoders; adapter:26.3 replays 53 pinned frames, adapting 29 packets across 18 handlers and asserting both native bats plus five metadata frames.",
         "Particle metadata closed the last live join decode gap: entity metadata serializer 17 (PARTICLES) decodes all 128 registered particle types through their native StreamCodecs, so a fresh 26.3 join loads 81 chunks and 26 entities with zero skipped frames (the same join previously skipped 56 frames, all [set_entity_data#101] serializer 17).",
-        "Outbound click and attack are live-accepted: container_click round-trips the menu state id (1 -> 2) and moves a stack, and the native attack body removes a summoned pig after 8 hits."
+        "Outbound click and attack are live-accepted: container_click round-trips the menu state id (1 -> 2) and moves a stack, and the native attack body removes a summoned pig after 8 hits.",
+        "Inbound batch on 2026-11-26: 73 of 144 Play IDs now decode with bytecode-verified bodies and 51 have adapters. Added animate, take_item_entity, hurt_animation, block_event, level_event, player_rotation, set_title_text/subtitle/action bar, set_titles_animation, clear_titles, system_chat, disguised_chat, tab_list, set_passengers, set_entity_link, player_info_remove, set_cursor_item and teleport_entity; inbound-gate.mjs pins each byte layout and the adapted handler fields.",
+        "Live 26.3 checks: server /say arrived as disguised_chat and rendered in chat, /title rendered the gold component in the HUD, an item summoned at the player was collected through take_item_entity (stone 8 -> 9), and the session stayed at zero skipped frames."
       ]
     },
     {
@@ -191,7 +193,8 @@
         "Serverbound bodies rewritten from 26.3 bytecode: lp-vec3-26.3.js read/write (extended scale 4*ceil(max/4)), HashedStack/HashedPatchMap writers, container_click/container_close, player_action direction byte, use_item_on with insideBlock and worldBorderHit booleans, attack. serverbound:26.3 pins every body as bytes.",
         "Live 26.3 server accepted a pickup+place click: inventory state id went 1 -> 2 and dirt moved from slot 43 to 44 and stayed there; the server sent no rejection or resync.",
         "Live attack verified: interaction.attackEntity sent the native attack body and the summoned pig (id 2500, 1.85 blocks away) left the entity map after 8 hits.",
-        "Open: HashedPatchMap component hashing for patched stacks (only empty patches are writable), creative-slot packets still need the 26.3 item table from P10, and the remaining container/menu families (merchant, enchanting, stonecutter, loom) are not ported."
+        "Open: HashedPatchMap component hashing for patched stacks (only empty patches are writable), creative-slot packets still need the 26.3 item table from P10, and the remaining container/menu families (merchant, enchanting, stonecutter, loom) are not ported.",
+        "Live block break and place verified: player_action removed the ground block server-side (execute if block reported air) and use_item_on placed stone on the clicked face (target state became stone)."
       ]
     },
     {

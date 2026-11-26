@@ -56,7 +56,10 @@ function gameNames(phase,direction,vocabulary){
 // The game's own handler table is the final word: a translated name is only usable when
 // game.js implements on_<name>. Where 26.3 renamed a packet past the 1.20.6 vocabulary,
 // the alias is recorded here instead of being guessed at call time.
-const ALIASES_26_3={set_held_slot:'held_item_slot',entity_position_sync:'entity_teleport',set_player_inventory:'set_slot'};
+// 26.3 title packets keep native names but share the game's single on_title handler, and the
+// carried-stack packet has its own handler instead of the old set_slot -1/-1 form.
+const ALIASES_26_3={set_held_slot:'held_item_slot',entity_position_sync:'entity_teleport',set_player_inventory:'set_slot',
+ set_title_text:'title',set_subtitle_text:'title',set_action_bar_text:'title',set_titles_animation:'title',clear_titles:'title'};
 const gameSource=await readFile(join(root,'client/js/game/game.js'),'utf8');
 const handlers=new Set([...gameSource.matchAll(/^  on_([a-z0-9_]+)\(/gm)].map(match=>match[1]));
 function handledNames(phase,direction,vocabulary){

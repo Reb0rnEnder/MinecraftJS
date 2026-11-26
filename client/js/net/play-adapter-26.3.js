@@ -6,6 +6,7 @@ import {HANDLED_PLAY_CLIENTBOUND_26_3} from './game-names-26.3.js';
 import {ENTITY_TYPES_26_3} from './entity-data-26.3.js';
 import {ITEM_NAMES_26_3} from './items-26.3.js';
 import {lightTo758} from '../world/light-26.3.js';
+import {componentFromNbt} from './component-nbt-1.20.6.js';
 
 const DEG=180/Math.PI;
 
@@ -55,6 +56,8 @@ function itemStack(stack){
     components
   };
 }
+
+const componentJson=value=>value==null?null:JSON.stringify(componentFromNbt(value));
 
 const ADAPTERS={
   login(login,context){
@@ -189,7 +192,33 @@ const ADAPTERS={
   custom_payload(packet){return {channel:packet.channel,data:packet.data};},
   keep_alive(packet){return {keepAliveId:String(packet.keepAliveId)};},
   ping(packet){return {pingId:packet.id32};},
-  disconnect(packet){return {reason:packet.reason};}
+  disconnect(packet){return {reason:packet.reason};},
+  animate(packet){return {entityId:packet.entityId,animation:packet.animation};},
+  take_item_entity(packet){return {collectedEntityId:packet.itemId,collectorEntityId:packet.playerId,amount:packet.amount};},
+  hurt_animation(packet){return {entityId:packet.entityId,yaw:packet.yaw};},
+  block_event(packet){return {location:packet.location,byte1:packet.b0,byte2:packet.b1,blockId:packet.blockId};},
+  level_event(packet){return {type:packet.type,location:packet.location,data:packet.data,global:packet.globalEvent};},
+  // Titles share one handler: action 0/1/2 text, 3 times, 4/5 clear (5 also resets times).
+  set_title_text(packet){return {name:'title',action:0,text:componentJson(packet.content)};},
+  set_subtitle_text(packet){return {name:'title',action:1,text:componentJson(packet.content)};},
+  set_action_bar_text(packet){return {name:'title',action:2,text:componentJson(packet.content)};},
+  set_titles_animation(packet){return {name:'title',action:3,fadeIn:packet.fadeIn,stay:packet.stay,fadeOut:packet.fadeOut};},
+  clear_titles(packet){return {name:'title',action:packet.resetTimes?5:4};},
+  system_chat(packet){return {content:componentJson(packet.content),isActionBar:packet.overlay};},
+  disguised_chat(packet){return {message:componentJson(packet.message),networkName:componentJson(packet.name),networkTargetName:componentJson(packet.target)};},
+  tab_list(packet){return {header:componentJson(packet.header),footer:componentJson(packet.footer)};},
+  set_passengers(packet){return {entityId:packet.entityId,passengers:packet.passengers};},
+  set_entity_link(packet){return {entityId:packet.entityId,vehicleId:packet.vehicleId};},
+  player_info_remove(packet){return {players:packet.players};},
+  set_cursor_item(packet){return {item:itemStack(packet.item)};},
+  // Relative teleports need the entity's current position, which the adapter does not have;
+  // they stay skipped instead of teleporting to a delta as if it were absolute.
+  teleport_entity(packet){
+    if(packet.relatives)return null;
+    const {position,yRot,xRot}=packet.change;
+    // PositionMoveRotation stores rotations in degrees, so they pass through unchanged.
+    return {entityId:packet.id,x:position.x,y:position.y,z:position.z,yaw:yRot,pitch:xRot,onGround:packet.onGround};
+  }
 };
 
 export function adaptPlay26_3(packet,context){

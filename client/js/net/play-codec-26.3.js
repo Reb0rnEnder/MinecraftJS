@@ -147,6 +147,60 @@ export const PLAY_DECODERS_26_3=Object.freeze({
       particleData:xMaxSpeed,particles:count,count,randomization,data
     };
   },
+  // ClientboundAnimatePacket(int id, int action): VarInt id, unsigned byte action.
+  animate(r){return {entityId:r.varint(),animation:r.u8()};},
+  // ClientboundTakeItemEntityPacket(int itemId, int playerId, int amount): three VarInts.
+  take_item_entity(r){return {itemId:r.varint(),playerId:r.varint(),amount:r.varint()};},
+  // ClientboundHurtAnimationPacket(int id, float yaw).
+  hurt_animation(r){return {entityId:r.varint(),yaw:r.f32()};},
+  // ClientboundBlockEventPacket(BlockPos pos, int b0, int b1, Block block): position, two
+  // unsigned bytes, then the block registry id (ByteBufCodecs.registry).
+  block_event(r){return {location:r.position(),b0:r.u8(),b1:r.u8(),blockId:r.varint()};},
+  // ClientboundLevelEventPacket(int type, BlockPos pos, int data, boolean globalEvent).
+  level_event(r){return {type:r.i32(),location:r.position(),data:r.i32(),globalEvent:r.bool()};},
+  // ClientboundPlayerRotationPacket(float yRot, boolean relativeY, float xRot, boolean relativeX).
+  player_rotation(r){return {yRot:r.f32(),relativeY:r.bool(),xRot:r.f32(),relativeX:r.bool()};},
+  // ClientboundSetTitlesAnimationPacket(int fadeIn, int stay, int fadeOut): three fixed ints.
+  set_titles_animation(r){return {fadeIn:r.i32(),stay:r.i32(),fadeOut:r.i32()};},
+  // ClientboundClearTitlesPacket(boolean resetTimes).
+  clear_titles(r){return {resetTimes:r.bool()};},
+  // Component fields use ComponentSerialization.TRUSTED_STREAM_CODEC, which writes the unnamed
+  // network NBT tag (NbtIo.writeAnyTag) the anonymous reader consumes.
+  system_chat(r){return {content:readAnonymousNbt(r),overlay:r.bool()};},
+  // ClientboundDisguisedChatPacket(Component message, ChatType.Bound chatType): the bound chat
+  // type is a ChatType holder (VarInt; 0 means an inline datapack type, which is not implemented),
+  // a name component and an optional target component. Servers send /say and similar messages here.
+  disguised_chat(r){
+    const message=readAnonymousNbt(r);
+    const chatTypeId=r.varint();
+    if(chatTypeId===0)throw Error('Inline 26.3 chat type is not implemented');
+    const name=readAnonymousNbt(r);
+    const target=r.bool()?readAnonymousNbt(r):null;
+    return {message,chatTypeId,name,target};
+  },
+  tab_list(r){return {header:readAnonymousNbt(r),footer:readAnonymousNbt(r)};},
+  set_title_text(r){return {content:readAnonymousNbt(r)};},
+  set_subtitle_text(r){return {content:readAnonymousNbt(r)};},
+  set_action_bar_text(r){return {content:readAnonymousNbt(r)};},
+  // ClientboundSetPassengersPacket(int vehicle, int[] passengers): VarInt, VarInt count, ids.
+  set_passengers(r){return {entityId:r.varint(),passengers:Array.from({length:r.varint()},()=>r.varint())};},
+  // ClientboundSetEntityLinkPacket(int sourceId, int destId).
+  set_entity_link(r){return {entityId:r.varint(),vehicleId:r.varint()};},
+  // ClientboundPlayerInfoRemovePacket(List<UUID>): VarInt count then UUIDs.
+  player_info_remove(r){return {players:Array.from({length:r.varint()},()=>r.uuid())};},
+  // ClientboundSetCursorItemPacket(ItemStack contents).
+  set_cursor_item(r){return {item:readItemStack(r)};},
+  // ClientboundTeleportEntityPacket(int id, PositionMoveRotation, Set<Relative>, boolean):
+  // PositionMoveRotation is position Vec3, delta Vec3, yRot f32, xRot f32; Relative.SET is a
+  // VarInt bitmask (ByteBufCodecs.INT mapped over the enum ordinals).
+  teleport_entity(r){
+    const id=r.varint();
+    const position={x:r.f64(),y:r.f64(),z:r.f64()};
+    const delta={x:r.f64(),y:r.f64(),z:r.f64()};
+    const yRot=r.f32(),xRot=r.f32();
+    const relatives=r.varint();
+    return {id,change:{position,delta,yRot,xRot},relatives,onGround:r.bool()};
+  },
   // Shared common packets in the Play state.
   disconnect(r){return {reason:readAnonymousNbt(r)};},
   keep_alive(r){return {keepAliveId:String(r.i64())};},
