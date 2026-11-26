@@ -169,6 +169,7 @@ const ADAPTERS={
   },
   player_look_at(packet){return {isEntity:packet.atEntity,entityId:packet.entity,x:packet.x,y:packet.y,z:packet.z,fromAnchor:packet.fromAnchor,toAnchor:packet.toAnchor};},
   open_book(packet){return {hand:packet.hand};},
+  player_combat_kill(packet){return {playerId:packet.playerId,message:componentJson(packet.message)};},
   // MessageSignatureCache762 is 1-based with 0 reserved for a full signature, so the native
   // 0-based packed index shifts by one and the full-signature form becomes id 0.
   delete_chat(packet){return packet.signature?{signatureId:0,signature:packet.signature}:{signatureId:packet.signatureId+1,signature:null};},

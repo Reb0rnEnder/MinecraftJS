@@ -1574,6 +1574,7 @@ export class Game {
     this.cameraEntity = p.cameraId === this.entityId ? null : p.cameraId;
   }
 
+  on_death_combat_event(p) { this.on_combat_event({event:2,playerId:p.playerId,message:p.message}); }
   on_world_border(p) { this.worldBorder.apply(p); }
   // 26.3 initializes the border with centre, both sizes and the transition timer in one packet;
   // WorldBorder.apply takes the same fields under its action-3 vocabulary.

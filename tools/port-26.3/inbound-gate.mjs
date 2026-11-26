@@ -71,6 +71,11 @@ check('animate decodes and adapts to animation', () => {
   eq([adapted.entityId, adapted.animation], [5, 3]);
 });
 
+check('player_combat_kill decodes the death screen message', () => {
+  const adapted = adapt('player_combat_kill', [...varint(7), ...nbtString('slain by a zombie')], {name: 'death_combat_event'});
+  eq([adapted.playerId, JSON.parse(adapted.message)], [7, 'slain by a zombie']);
+});
+
 check('initialize_border adapts to the world_border action vocabulary', () => {
   const adapted = adapt('initialize_border', [...f64(8), ...f64(-4), ...f64(100), ...f64(50), ...varlong(2500), ...varint(29999984), ...varint(5), ...varint(15)], {name: 'initialize_world_border'});
   eq([adapted.action, adapted.x, adapted.z, adapted.oldRadius, adapted.newRadius, adapted.speed, adapted.portalBoundary, adapted.warningBlocks, adapted.warningTime], [3, 8, -4, 50, 25, 2500, 29999984, 5, 15]);

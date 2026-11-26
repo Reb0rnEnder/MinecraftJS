@@ -283,6 +283,8 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     const id=r.varint()-1;
     return id===-1?{signatureId:-1,signature:Array.from(r.bytesN(256))}:{signatureId:id,signature:null};
   },
+  // ClientboundPlayerCombatKillPacket(int playerId, Component message): the death screen message.
+  player_combat_kill(r){return {playerId:r.varint(),message:readAnonymousNbt(r)};},
   // ClientboundOpenScreenPacket(int containerId, MenuType<?> type, Component title):
   // ByteBufCodecs.CONTAINER_ID (VarInt), registry(Registries.MENU) (VarInt id; the 26.3 order is
   // identical to protocol 766 by name), and ComponentSerialization.TRUSTED_STREAM_CODEC (network NBT).
