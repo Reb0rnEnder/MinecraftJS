@@ -399,9 +399,11 @@ export function wolf() {
         q.leg3.rx = cos(a.ls * 0.6662 + PI) * 1.4 * a.lsa; q.leg4.rx = cos(a.ls * 0.6662) * 1.4 * a.lsa;
       }
       q.head.rx = a.pitch * PI / 180; q.head.ry = a.yaw * PI / 180;
-      q.head.rz = 0;
+      // ModelWolf.setLivingAnimations: begging/shake roll on the head, mane, body and tail
+      q.head.rz = a.headRoll || 0; q.mane.rz = a.maneRoll || 0; q.body.rz = a.bodyRoll || 0;
       q.tail.rx = a.tailRotation !== undefined ? a.tailRotation : PI / 5;
       q.tail.ry = a.angry ? 0 : cos(a.ls * 0.6662) * 1.4 * a.lsa;
+      q.tail.rz = a.tailRoll || 0;
     },
   };
 }
