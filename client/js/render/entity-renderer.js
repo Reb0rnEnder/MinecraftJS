@@ -3,7 +3,7 @@ import { armorType } from '../game/container.js';
 import {horseArmor766} from './horse-armor-1.20.6.js';
 import{PAWS_DATA_766}from'../game/paws-data-1.20.6.js';
 import{wolfTexture766,wolfArmor766}from'./wolf-1.20.6.js';
-import{wolfTailAngle766}from'../game/paws-1.20.6.js';
+import{wolfTailAngle766,wolfHeadRoll766,wolfBodyRoll766,wolfWetShade766}from'../game/paws-1.20.6.js';
 import {updateGolemCracks} from './iron-golem-cracks.js';
 import{updateGuiEquipment,guiHandPoses}from'./gui-player-equipment.js';
 import{paintingTiles,paintingTileLight}from'./painting.js';
@@ -1334,6 +1334,11 @@ export class EntityRenderer {
       onGround: e.onGround, eatingGrass: e.eatingGrass || 0, sitting: e.sitting, angry: e.angry, hanging: e.hanging,
       carrying: !!e.carried, screaming: e.screaming, horseType: e.horseType, saddled: !!(e.horseFlags & 4) || e.saddled,
       tailRotation: wolfTailAngle766(e),
+      // WolfModel.prepareMobModel: begging head tilt plus the wet shake rolling head, upper body, body and tail
+      headRoll: e.entityName === 'wolf' ? wolfHeadRoll766(e, partial) + wolfBodyRoll766(e, partial, 0) : undefined,
+      maneRoll: e.entityName === 'wolf' ? wolfBodyRoll766(e, partial, -0.08) : undefined,
+      bodyRoll: e.entityName === 'wolf' ? wolfBodyRoll766(e, partial, -0.16) : undefined,
+      tailRoll: e.entityName === 'wolf' ? wolfBodyRoll766(e, partial, -0.2) : undefined,
       witchDrinking: e.kind === 'mob' && e.type === 66 && e.usingItem,
       squish: 0, tentacleAngle:isSquid(e)?squidTentacle(e,partial):undefined,
       peek: e.type === 69 ? (e.prevPeek || 0) + ((e.peek || 0) - (e.prevPeek || 0)) * partial : 0,
@@ -1362,6 +1367,8 @@ export class EntityRenderer {
     if (v.golemCracks) updateGolemCracks(e, v.golemCracks);
     if(v.horseArmor){const armor=horseArmor766(g.items,e.bodyEquipment);v.horseArmor.obj.visible=!!armor&&!e.invisible;if(armor){v.horseArmor.mat.tex=armor.texture;v.horseArmor.mat.params.setTint(...armor.color,1);}}
     if(v.wolfCollar){const armor=wolfArmor766(g.items,e.bodyEquipment),color=PAWS_DATA_766.dyes[e.collar??14]??PAWS_DATA_766.dyes[14];v.wolfCollar.obj.visible=!!e.tamed&&!armor&&!e.invisible;v.wolfCollar.mat.params.setTint(...color,1);v.wolfArmor.obj.visible=!!armor;v.wolfArmorDye.obj.visible=!!armor?.color;v.wolfArmorCracks.obj.visible=!!armor?.crack;if(armor?.color)v.wolfArmorDye.mat.params.setTint(...armor.color,1);if(armor?.crack)v.wolfArmorCracks.mat.tex='entity/wolf/wolf_armor_crackiness_'+armor.crack+'.png';}
+    // WolfRenderer: a wet wolf's model (and the layers drawn through it) is darkened by getWetShade
+    if(v.wolfCollar){const shade=wolfWetShade766(e,partial),dye=PAWS_DATA_766.dyes[e.collar??14]??PAWS_DATA_766.dyes[14];v.mainMat.params.setTint(shade,shade,shade,1);v.wolfCollar.mat.params.setTint(dye[0]*shade,dye[1]*shade,dye[2]*shade,1);}
     if (v.lodSkip && v.posed && v.wasInvisible === !!e.invisible) {
       // Keep the previous pose; only the transforms above were updated
       this._updateHeld(e, v, held, args);

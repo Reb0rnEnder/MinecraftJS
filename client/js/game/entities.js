@@ -1,5 +1,5 @@
 import{tickBat766}from'../render/bat-1.20.6.js';
-import {applyPawsMetadata,tickArmadillo766} from './paws-1.20.6.js';
+import {applyPawsMetadata,tickArmadillo766,tickWolf766,wolfEvent766} from './paws-1.20.6.js';
 import {EFFECT_766} from './effects-1.20.6.js';
 import {encodeEntityPosition,relativeEntityPosition} from './entity-position.js';
 import {playPickupSound} from '../audio/client-sound-triggers.js';
@@ -673,6 +673,7 @@ export class EntityManager {
     const g = this.game;
     if (!e) return;
     if(e.entityName==='warden'){if(p.entityStatus===4)e.wildAttackStart=e.ticks;if(p.entityStatus===62)e.sonicBoomStart=e.ticks;if(p.entityStatus===61)e.tendrilStart=e.ticks;}
+    if(e.entityName==='wolf'&&wolfEvent766(e,p.entityStatus))return;
     if(e.entityName==='armadillo'&&p.entityStatus===64){e.armadilloPeekReceived=true;g.sound.play('entity.armadillo.peek',e.x,e.y,e.z,1,1,{category:'neutral'});}
     switch (p.entityStatus) {
       case 2: e.hurtTime = 10; g.sound.playEntityHurt(e); break;
@@ -720,6 +721,15 @@ export class EntityManager {
     if (id === this.game.entityId && vehicleId < 0) {
       // Dismounted: vanilla keeps position; nothing else to do
     }
+  }
+
+  // Entity.isInWaterRainOrBubble for a remote entity: fluid at its feet or middle, or rain at its feet or head
+  _wetAt(e) {
+    const w = this.game.world;
+    if (isPointInFluid(w, e.x, e.y, e.z) || isPointInFluid(w, e.x, e.y + (e.height || 0) / 2, e.z)) return true;
+    const b = getBlock(w.getState(Math.floor(e.x), Math.floor(e.y), Math.floor(e.z)));
+    if (b?.name === 'bubble_column') return true;
+    return !!(w.isRainingAt?.(e.x, e.y, e.z) || w.isRainingAt?.(e.x, e.y + (e.height || 0), e.z));
   }
 
   // Entity.countPlayerPassengers > 0: a player anywhere among the (indirect) passengers
@@ -1018,6 +1028,7 @@ export class EntityManager {
       if(e.entityName==='goat') e.goatRammingTicks = Math.max(0, Math.min(20, (e.goatRammingTicks || 0) + (e.goatRamming ? 1 : -2)));
       if(e.entityName==='glow_squid'&&e.darkTicks>0)e.darkTicks--;
       if(e.entityName==='armadillo')tickArmadillo766(e);
+      if(e.entityName==='wolf')tickWolf766(e,this._wetAt(e),(dx,dz)=>g.particles?.nativeParticle?.('splash',e.x+dx,e.y+0.8,e.z+dz,e.motionX||0,e.motionY||0,e.motionZ||0));
       if(e.entityName==='bat')tickBat766(e);
       if(e.entityName==='fox')tickFox(e);
       if(e.entityName==='bee'){tickBeeSound(this,e);e.prevBeeRoll=e.beeRoll||0;e.beeRoll=Math.fround(e.beeRolling?Math.min(1,Math.fround(e.prevBeeRoll+Math.fround(.2))):Math.max(0,Math.fround(e.prevBeeRoll-Math.fround(.24))));}
