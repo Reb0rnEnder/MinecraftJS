@@ -218,6 +218,14 @@ check('respawn, look_at, open_book and suggestions decode', () => {
   eq(suggestions.matches[1].tooltip.t, 8);
 });
 
+check('chat completions, tag query and display objective decode', () => {
+  const completions = adapt('custom_chat_completions', [...varint(0), ...varint(2), ...str('one'), ...str('two')], {name: 'chat_suggestions'});
+  eq([completions.action, completions.entries], [0, ['one', 'two']]);
+  const query = adapt('tag_query', [...varint(5), ...nbtString('hello')], {name: 'nbt_query_response'});
+  eq([query.transactionId, query.nbt.t, query.nbt.v], [5, 8, 'hello']);
+  eq(adapt('set_display_objective', [...varint(1), ...str('myscore')], {name: 'scoreboard_display_objective'}), {name: 'scoreboard_display_objective', position: 1, objective: 'myscore'});
+});
+
 check('pong and the combat pair decode', () => {
   eq(Number(adapt('pong_response', [...i64(1234)], {name: 'ping_response'}).id), 1234);
   eq(adapt('player_combat_enter', [], {name: 'enter_combat_event'}), {name: 'enter_combat_event'});

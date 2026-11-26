@@ -283,6 +283,12 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     const matches=Array.from({length:r.varint()},()=>({match:r.string(),tooltip:r.bool()?readAnonymousNbt(r):null}));
     return {id,start,length,matches};
   },
+  // ClientboundCustomChatCompletionsPacket: Action enum VarInt (ADD/REMOVE/SET) + strings.
+  custom_chat_completions(r){return {action:r.varint(),entries:Array.from({length:r.varint()},()=>r.string())};},
+  // ClientboundTagQueryPacket: transaction id and the queried compound as network NBT.
+  tag_query(r){return {transactionId:r.varint(),nbt:readAnonymousNbt(r)};},
+  // ClientboundSetDisplayObjectivePacket: DisplaySlot id VarInt + objective name.
+  set_display_objective(r){return {slot:r.varint(),objective:r.string()};},
   // ClientboundPongResponsePacket(long time): the original send timestamp as an i64.
   pong_response(r){return {id:r.i64()};},
   // ClientboundPlayerCombatEnterPacket(): no payload.
