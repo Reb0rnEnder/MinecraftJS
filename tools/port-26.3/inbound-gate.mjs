@@ -370,6 +370,18 @@ check('block_destruction decodes entity, pos and stage', () => {
   eq([adapted.entityId, adapted.location, adapted.destroyStage], [7, {x: 1, y: 67, z: 16}, 4]);
 });
 
+check('damage_event decodes the holder, optional ids and position', () => {
+  const adapted = adapt('damage_event', [...varint(7), ...varint(3), ...varint(6), ...varint(0), 1, ...f64(1), ...f64(2), ...f64(3)], {name: 'damage_event'});
+  eq([adapted.entityId, adapted.sourceTypeId, adapted.sourceCauseId, adapted.sourceDirectId, adapted.sourcePosition], [7, 3, 5, -1, {x: 1, y: 2, z: 3}]);
+  const absent = adapt('damage_event', [...varint(8), ...varint(4), ...varint(0), ...varint(0), 0], {name: 'damage_event'});
+  eq([absent.sourceCauseId, absent.sourceDirectId, absent.sourcePosition], [-1, -1, null]);
+});
+
+check('projectile_power decodes the scalar acceleration', () => {
+  const packet = decode('projectile_power', [...varint(11), ...f64(0.5)]);
+  eq([packet.data.id, packet.data.accelerationPower], [11, 0.5]);
+});
+
 check('merchant_offers decodes costs, offer counters and villager data', () => {
   const damageId = DATA_COMPONENT_NAMES_26_3.indexOf('damage');
   if (damageId < 0) throw Error('native component table has no damage component');

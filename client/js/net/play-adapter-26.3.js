@@ -311,6 +311,11 @@ const ADAPTERS={
   set_player_inventory(packet){return {windowId:-2,stateId:0,slot:packet.slot,item:itemStack(packet.item)};},
   container_close(packet){return {windowId:packet.containerId};},
   container_set_data(packet){return {windowId:packet.containerId,property:packet.id,value:packet.value};},
+  damage_event(packet){
+    return {entityId:packet.entityId,sourceTypeId:packet.sourceTypeId,
+      sourceCauseId:packet.sourceCauseId-1,sourceDirectId:packet.sourceDirectId-1,
+      sourcePosition:packet.sourcePosition};
+  },
   // The 766 trade_list shape: windowId, trades with a/out/b plus the price counters, then
   // villagerLevel, experience, isRegularVillager and canRestock. 26.3 calls the same two
   // booleans showProgress/canRestock and the counters specialPriceDiff/villagerXp.

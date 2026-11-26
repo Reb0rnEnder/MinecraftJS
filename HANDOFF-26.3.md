@@ -8,17 +8,17 @@
 ## Read first
 
 1. `AGENTS.md` — multi-version rules; never force one release's layout onto another.
-2. `docs/transition-26.3.md` — the ender-style transition plan and the current raw-packet inventory (27 IDs).
+2. `docs/transition-26.3.md` — the ender-style transition plan and the current raw-packet inventory (25 IDs).
 3. `docs/parity-checklist-26.3.md` — 17-task ledger and P06 evidence.
 4. `docs/transition-26.3.tasks.json` — machine-readable task state and chronological evidence.
 5. `tools/port-26.3/` — pinned inputs, generators, byte gates and live-server harness.
 
 ## State at handoff
 
-- **P06 coverage: 117/144 inbound IDs decoded, 106 with adapters, 27 raw.**
+- **P06 coverage: 119/144 inbound IDs decoded, 107 with adapters, 25 raw.**
 - Ledger: **41.2%** (3 done, 8 partial, 6 todo; done=1, partial=0.5).
 - Last full run: `test:26.3`, `adapter:26.3`, `client-net:26.3` and `inbound-gate.mjs` all exit 0.
-- Real 26.3 server socket test passes (`client-net`, 27 chunks); graphical browser verification is unreliable on this machine (low disk, join stalls). Do not claim visual verification you did not do.
+- Real 26.3 server socket test passes (`client-net`, 23–31 chunks depending on spawn); graphical browser verification is unreliable on this machine (low disk, join stalls). Do not claim visual verification you did not do.
 - Uncommitted in the source workspace: three `docs/checkpoint-26.3-entities*.png` screenshots (not part of the port; leave or add deliberately).
 - No Mojang jars, derived large artifacts or credentials are in the zip or repo.
 
@@ -61,11 +61,11 @@ After adding a `Game` handler, run `node tools/port-26.3/generate-ids.mjs` first
 ## Next sections, in order
 
 1. `update_tags` (137), `update_recipes` (136), `update_advancements` (133) — reuse native registries and existing 766 handler shapes.
-2. `explode` (36), `damage_event` (25), `award_stats` (3), `game_rule_values` (40), `projectile_power` (138).
+2. `explode` (36), `award_stats` (3), `game_rule_values` (40).
 3. `waypoint` / dialogs, `mount_screen_open`, `add_transient_block`, `move_minecart_along_track`, `place_ghost_recipe`, recipe-book add/remove/settings, debug/test packets.
 4. **P10** `ExtractModels26_3.java` — biggest unlock/risk: dump 26.3 `ModelLayers`/`ModelPart` into `bundles/entity-models.json`, then evaluate a 26.3 asset target (pack format 97, jar-first textures, indexed sounds).
 
-Already closed: scoreboard/teams, biomes, maps, swing animation, player chat, merchant offers, and the full world-border family (initialize plus all five setters, 0–5 action vocabulary).
+Already closed: scoreboard/teams, biomes, maps, swing animation, player chat, merchant offers, damage events, projectile power (decoded only — 26.3's scalar has no 766 adapter), and the full world-border family (initialize plus all five setters, 0–5 action vocabulary).
 
 ## Known blockers
 

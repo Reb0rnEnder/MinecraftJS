@@ -613,6 +613,21 @@ export const PLAY_DECODERS_26_3=Object.freeze({
   container_close(r){return {containerId:r.varint()};},
   // ClientboundContainerSetDataPacket(int containerId, int id, int value): VarInt, short, short.
   container_set_data(r){return {containerId:r.varint(),id:r.i16(),value:r.i16()};},
+  // ClientboundDamageEventPacket: VarInt entityId, DamageType holder (VarInt id), then the
+  // cause and direct entity ids as id+1 (0 means absent), then an optional Vec3 position.
+  // The +1 is kept raw here and undone by the adapter, exactly like the 766 normalization.
+  damage_event(r){
+    const entityId=r.varint();
+    const sourceTypeId=r.varint();
+    const sourceCauseId=r.varint();
+    const sourceDirectId=r.varint();
+    const sourcePosition=r.bool()?{x:r.f64(),y:r.f64(),z:r.f64()}:null;
+    return {entityId,sourceTypeId,sourceCauseId,sourceDirectId,sourcePosition};
+  },
+  // ClientboundProjectilePowerPacket: VarInt entity id, then a double accelerationPower.
+  // 766 sent a Vec3; there is no direction to give the 766 fireball path, so the frame is
+  // decoded and left unadapted rather than inventing one.
+  projectile_power(r){return {id:r.varint(),accelerationPower:r.f64()};},
   // ClientboundMerchantOffersPacket (javap): writeContainerId (VarInt), the MerchantOffers
   // list, then VarInt villagerLevel, VarInt villagerXp, boolean showProgress, boolean
   // canRestock. MerchantOffer.writeToStream is ItemCost, ItemStack, optional ItemCost,
