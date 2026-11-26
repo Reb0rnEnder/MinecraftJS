@@ -316,6 +316,12 @@ const ADAPTERS={
       sourceCauseId:packet.sourceCauseId-1,sourceDirectId:packet.sourceDirectId-1,
       sourcePosition:packet.sourcePosition};
   },
+  // The 766 tags handler reads a flat list of registries, each with its tag names and ids.
+  update_tags(packet){
+    return {tags:packet.registries.map(registry=>({tagType:registry.registry,
+      tags:registry.tags.map(tag=>({tagName:tag.tag,entries:tag.entries}))}))};
+  },
+  debug_sample(packet){return {type:packet.type,sample:packet.sample};},
   // The 766 trade_list shape: windowId, trades with a/out/b plus the price counters, then
   // villagerLevel, experience, isRegularVillager and canRestock. 26.3 calls the same two
   // booleans showProgress/canRestock and the counters specialPriceDiff/villagerXp.

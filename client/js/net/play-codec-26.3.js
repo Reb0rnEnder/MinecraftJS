@@ -628,6 +628,66 @@ export const PLAY_DECODERS_26_3=Object.freeze({
   // 766 sent a Vec3; there is no direction to give the 766 fireball path, so the frame is
   // decoded and left unadapted rather than inventing one.
   projectile_power(r){return {id:r.varint(),accelerationPower:r.f64()};},
+  // ClientboundUpdateTagsPacket (protocol.common): a VarInt-counted map of registry
+  // ResourceKey (an Identifier string) to TagNetworkSerialization.NetworkPayload, which is
+  // itself a VarInt-counted map of tag Identifier to an IntList of VarInt entry ids.
+  update_tags(r){
+    const registryCount=r.varint();
+    const registries=[];
+    for(let i=0;i<registryCount;i++){
+      const registry=r.string();
+      const tagCount=r.varint();
+      const tags=[];
+      for(let j=0;j<tagCount;j++){
+        const tag=r.string();
+        const entryCount=r.varint();
+        const entries=[];
+        for(let k=0;k<entryCount;k++)entries.push(r.varint());
+        tags.push({tag,entries});
+      }
+      registries.push({registry,tags});
+    }
+    return {registries};
+  },
+  // ClientboundGameRuleValuesPacket: map<ResourceKey<GameRule>, String>; the key is an
+  // Identifier string and the value is UTF-8.
+  game_rule_values(r){
+    const count=r.varint();
+    const values={};
+    for(let i=0;i<count;i++)values[r.string()]=r.string();
+    return {values};
+  },
+  // ClientboundCustomReportDetailsPacket: map<String, String>, still a VarInt count followed
+  // by the key/value strings.
+  custom_report_details(r){
+    const count=r.varint();
+    const details={};
+    for(let i=0;i<count;i++)details[r.string()]=r.string();
+    return {details};
+  },
+  // ClientboundLowDiskSpaceWarningPacket: StreamCodec.unit, so the body is empty.
+  low_disk_space_warning(){return {};},
+  // ClientboundAddTransientBlockPacket: BlockPos (packed long) then the block-state id.
+  add_transient_block(r){return {position:r.position(),state:r.varint()};},
+  // ClientboundMountScreenOpenPacket: writeContainerId (VarInt), VarInt inventoryColumns,
+  // then a full writeInt entityId.
+  mount_screen_open(r){return {containerId:r.varint(),inventoryColumns:r.varint(),entityId:r.i32()};},
+  // ClientboundDebugSamplePacket: readLongArray (VarInt length, then longs) and readEnum
+  // (VarInt ordinal; RemoteDebugSampleType.TICK_TIME is 0).
+  debug_sample(r){
+    const count=r.varint();
+    const sample=[];
+    for(let i=0;i<count;i++)sample.push(Number(r.i64()));
+    return {sample,type:r.varint()};
+  },
+  // ClientboundGameTestHighlightPosPacket: a composite of two BlockPos codecs.
+  game_test_highlight_pos(r){return {absolutePos:r.position(),relativePos:r.position()};},
+  // ClientboundTestInstanceBlockStatus: component plus optional Vec3i (three VarInts).
+  test_instance_block_status(r){
+    const status=readAnonymousNbt(r);
+    const size=r.bool()?{x:r.varint(),y:r.varint(),z:r.varint()}:null;
+    return {status,size};
+  },
   // ClientboundMerchantOffersPacket (javap): writeContainerId (VarInt), the MerchantOffers
   // list, then VarInt villagerLevel, VarInt villagerXp, boolean showProgress, boolean
   // canRestock. MerchantOffer.writeToStream is ItemCost, ItemStack, optional ItemCost,

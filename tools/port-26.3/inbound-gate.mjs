@@ -370,6 +370,31 @@ check('block_destruction decodes entity, pos and stage', () => {
   eq([adapted.entityId, adapted.location, adapted.destroyStage], [7, {x: 1, y: 67, z: 16}, 4]);
 });
 
+check('update_tags decodes the registry map and adapts to the 766 tag list', () => {
+  const body = [...varint(1), ...str('minecraft:block'), ...varint(1), ...str('minecraft:logs'), ...varint(2), ...varint(5), ...varint(9)];
+  const adapted = adapt('update_tags', body, {name: 'tags'});
+  eq([adapted.tags.length, adapted.tags[0].tagType, adapted.tags[0].tags[0].tagName, adapted.tags[0].tags[0].entries], [1, 'minecraft:block', 'minecraft:logs', [5, 9]]);
+});
+
+check('game_rule_values decodes the identifier/string map', () => {
+  const packet = decode('game_rule_values', [...varint(1), ...str('minecraft:doFireTick'), ...str('false')]);
+  eq(packet.data.values, {'minecraft:doFireTick': 'false'});
+});
+
+check('report details, disk warning and mount screens decode', () => {
+  eq(decode('custom_report_details', [...varint(1), ...str('contact'), ...str('mail@example.com')]).data.details, {contact: 'mail@example.com'});
+  eq(decode('low_disk_space_warning', []).data, {});
+  eq(decode('mount_screen_open', [...varint(3), ...varint(9), ...i32(44)]).data, {containerId: 3, inventoryColumns: 9, entityId: 44});
+});
+
+check('transient block, debug sample and test frames decode', () => {
+  eq(decode('add_transient_block', [...packPos(1, 64, 2), ...varint(100)]).data, {position: {x: 1, y: 64, z: 2}, state: 100});
+  eq(adapt('debug_sample', [...varint(2), ...i64(10n), ...i64(20n), ...varint(0)], {name: 'debug_sample'}).sample, [10, 20]);
+  eq(decode('game_test_highlight_pos', [...packPos(1, 2, 3), ...packPos(4, 5, 6)]).data, {absolutePos: {x: 1, y: 2, z: 3}, relativePos: {x: 4, y: 5, z: 6}});
+  const status = decode('test_instance_block_status', [...nbtString('ok'), 1, ...varint(3), ...varint(4), ...varint(5)]).data;
+  eq([status.status.v, status.size], ['ok', {x: 3, y: 4, z: 5}]);
+});
+
 check('damage_event decodes the holder, optional ids and position', () => {
   const adapted = adapt('damage_event', [...varint(7), ...varint(3), ...varint(6), ...varint(0), 1, ...f64(1), ...f64(2), ...f64(3)], {name: 'damage_event'});
   eq([adapted.entityId, adapted.sourceTypeId, adapted.sourceCauseId, adapted.sourceDirectId, adapted.sourcePosition], [7, 3, 5, -1, {x: 1, y: 2, z: 3}]);
