@@ -190,6 +190,12 @@ export const PLAY_DECODERS_26_3=Object.freeze({
   player_info_remove(r){return {players:Array.from({length:r.varint()},()=>r.uuid())};},
   // ClientboundSetCursorItemPacket(ItemStack contents).
   set_cursor_item(r){return {item:readItemStack(r)};},
+  // ClientboundMoveVehiclePacket(PositionAndRotation): position Vec3 (3 doubles) + yRot/xRot floats.
+  move_vehicle(r){return {x:r.f64(),y:r.f64(),z:r.f64(),yRot:r.f32(),xRot:r.f32()};},
+  // ClientboundBlockChangedAckPacket(int sequence): VarInt sequence.
+  block_changed_ack(r){return {sequenceId:r.varint()};},
+  // ClientboundBlockDestructionPacket(int id, BlockPos pos, int progress).
+  block_destruction(r){return {entityId:r.varint(),location:r.position(),destroyStage:r.u8()};},
   // ClientboundTeleportEntityPacket(int id, PositionMoveRotation, Set<Relative>, boolean):
   // PositionMoveRotation is position Vec3, delta Vec3, yRot f32, xRot f32; Relative.SET is a
   // VarInt bitmask (ByteBufCodecs.INT mapped over the enum ordinals).

@@ -115,6 +115,9 @@ const ADAPTERS={
     return {age:packet.gameTime,time:clock?clock.totalTicks:packet.gameTime};
   },
   game_event(packet){return {reason:packet.event,value:packet.param};},
+  move_vehicle(packet){return {x:packet.x,y:packet.y,z:packet.z,yaw:packet.yRot};},
+  block_changed_ack(packet){return {sequenceId:packet.sequenceId};},
+  block_destruction(packet){return {entityId:packet.entityId,location:packet.location,destroyStage:packet.destroyStage};},
   player_abilities(packet){
     return {
       flags:(packet.invulnerable?1:0)|(packet.flying?2:0)|(packet.canFly?4:0)|(packet.instabuild?8:0),

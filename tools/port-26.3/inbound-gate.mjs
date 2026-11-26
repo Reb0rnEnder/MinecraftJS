@@ -152,6 +152,21 @@ check('relative teleports are skipped instead of misapplied', () => {
   eq(adaptPlay26_3(packet, null), null);
 });
 
+check('move_vehicle decodes PositionAndRotation', () => {
+  const adapted = adapt('move_vehicle', [...f64(1.5), ...f64(64), ...f64(-2.25), ...f32(90), ...f32(15)], {name: 'vehicle_move'});
+  eq([adapted.x, adapted.y, adapted.z, adapted.yaw], [1.5, 64, -2.25, 90]);
+});
+
+check('block_changed_ack decodes the sequence', () => {
+  const adapted = adapt('block_changed_ack', [...varint(300)], {name: 'acknowledge_player_digging'});
+  eq(adapted.sequenceId, 300);
+});
+
+check('block_destruction decodes entity, pos and stage', () => {
+  const adapted = adapt('block_destruction', [...varint(7), ...packPos(1, 67, 16), 4], {name: 'block_break_animation'});
+  eq([adapted.entityId, adapted.location, adapted.destroyStage], [7, {x: 1, y: 67, z: 16}, 4]);
+});
+
 if (failures) {
   console.error(failures + ' inbound checks failed');
   process.exit(1);
