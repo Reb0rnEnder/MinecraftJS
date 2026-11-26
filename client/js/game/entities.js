@@ -18,6 +18,7 @@ import { tickEntityEffects, tickDragonDeath, isDragon } from '../render/entity-e
 // Client-side entity tracking (positions, interpolation, metadata, animation state).
 import { simplify } from '../net/nbt.js';
 import { getBlock } from '../world/blocks.js';
+import { tickWolfShake, wolfShakeEvent } from './wolf-shake.js';
 import { isPointInFluid } from '../world/fluids.js';
 import { mcSin, mcCos } from './physics.js';
 import { chatToLegacy } from '../gui/chat.js';
@@ -591,10 +592,20 @@ export class EntityManager {
     }
   }
 
+  // Entity.isInWaterRainOrBubble(Column) for a remote wolf: fluid at its feet or middle, a bubble column, or rain at
+  // its feet or head
+  _wolfWet(e) {
+    const w = this.game.world, h = e.height || 0.85;
+    if (isPointInFluid(w, e.x, e.y, e.z) || isPointInFluid(w, e.x, e.y + h / 2, e.z)) return true;
+    if (getBlock(w.getState(Math.floor(e.x), Math.floor(e.y), Math.floor(e.z)))?.name === 'bubble_column') return true;
+    return !!(w.isRainingAt?.(e.x, e.y, e.z) || w.isRainingAt?.(e.x, e.y + h, e.z));
+  }
+
   onStatus(p) {
     const e = this.map.get(p.entityId);
     const g = this.game;
     if (!e) return;
+    if (e.type === 95 && e.kind === 'mob' && wolfShakeEvent(e, p.entityStatus)) return;
     switch (p.entityStatus) {
       case 19: if(isSquid(e)){if(!e.squid)initSquid(e);e.squid.phase=0;}break;
       case 2: e.hurtTime = 10; g.sound.playEntityHurt(e); break;
@@ -996,6 +1007,7 @@ export class EntityManager {
       }
       if(e.attackTicks>0)e.attackTicks--;
       if(e.boosting&&++e.boostTicks>e.boostDuration)e.boosting=false;
+      if (e.type === 95 && e.kind === 'mob') tickWolfShake(e, this._wolfWet(e), (dx, dz) => this.game.particles?.splash?.(e.x + dx, e.y + 0.8, e.z + dz, e.motionX || 0, e.motionY || 0, e.motionZ || 0));
       if (e.hurtTime > 0) e.hurtTime--;
       if (e.dead) {
         e.deathTime++;
