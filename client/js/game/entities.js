@@ -1028,7 +1028,7 @@ export class EntityManager {
       if(e.entityName==='goat') e.goatRammingTicks = Math.max(0, Math.min(20, (e.goatRammingTicks || 0) + (e.goatRamming ? 1 : -2)));
       if(e.entityName==='glow_squid'&&e.darkTicks>0)e.darkTicks--;
       if(e.entityName==='armadillo')tickArmadillo766(e);
-      if(e.entityName==='wolf')tickWolf766(e,this._wetAt(e),(dx,dz)=>g.particles?.nativeParticle?.('splash',e.x+dx,e.y+0.8,e.z+dz,e.motionX||0,e.motionY||0,e.motionZ||0));
+      if(e.entityName==='wolf')tickWolf766(e,this._wetAt(e),(dx,dz)=>g.particles?.splash?.(e.x+dx,e.y+0.8,e.z+dz,e.motionX||0,e.motionY||0,e.motionZ||0));
       if(e.entityName==='bat')tickBat766(e);
       if(e.entityName==='fox')tickFox(e);
       if(e.entityName==='bee'){tickBeeSound(this,e);e.prevBeeRoll=e.beeRoll||0;e.beeRoll=Math.fround(e.beeRolling?Math.min(1,Math.fround(e.prevBeeRoll+Math.fround(.2))):Math.max(0,Math.fround(e.prevBeeRoll-Math.fround(.24))));}
