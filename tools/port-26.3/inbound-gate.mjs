@@ -395,6 +395,18 @@ check('transient block, debug sample and test frames decode', () => {
   eq([status.status.v, status.size], ['ok', {x: 3, y: 4, z: 5}]);
 });
 
+check('recipe family decodes the native display graph', () => {
+  const key = str('minecraft:test');
+  // one property set (items 1,2) and one stonecutter entry (ingredient item 3, option item 5)
+  const recipes = decode('update_recipes', [...varint(1), ...key, ...varint(2), ...varint(1), ...varint(2), ...varint(1), ...varint(2), ...varint(3), ...varint(4), ...varint(5)]);
+  eq(recipes.data, { itemSets: { 'minecraft:test': [1, 2] }, stonecutter: [{ input: { items: [3] }, option: { type: 'item', item: 5 } }] });
+  const display = [...varint(3), ...varint(0), ...varint(4), ...varint(9), ...varint(0)];
+  const add = decode('recipe_book_add', [...varint(1), ...varint(7), ...display, ...varint(0), ...varint(10), 0, 3, 1]);
+  eq(add.data, { entries: [{ contents: { id: 7, display: { type: 'stonecutter', input: { type: 'empty' }, result: { type: 'item', item: 9 }, craftingStation: { type: 'empty' } }, group: null, category: 10, requirements: null }, flags: 3 }], replace: true });
+  eq(decode('recipe_book_remove', [...varint(2), ...varint(7), ...varint(8)]).data, { recipes: [7, 8] });
+  eq(decode('place_ghost_recipe', [...varint(3), ...display]).data, { containerId: 3, display: { type: 'stonecutter', input: { type: 'empty' }, result: { type: 'item', item: 9 }, craftingStation: { type: 'empty' } } });
+});
+
 check('server_links decodes both either branches', () => {
   const known = decode('server_links', [...varint(1), 1, ...varint(2), ...str('https://example.com/support')]);
   eq([known.data.links[0].type, known.data.links[0].name, known.data.links[0].link], [2, null, 'https://example.com/support']);

@@ -6,7 +6,7 @@ import {readAnonymousNbt} from './nbt-anonymous.js';
 import {readCommands26_3} from './commands-26.3.js';
 import {decodeLevelChunkWithLight,readLightData} from './chunk-26.3.js';
 import {ENTITY_DATA_SERIALIZERS_26_3} from './entity-data-26.3.js';
-import {readItemStack26_3,readItemCost26_3} from './item-components-26.3.js';
+import {readItemStack26_3,readItemCost26_3,readItemStackTemplate26_3} from './item-components-26.3.js';
 import {readLpVec3} from './lp-vec3-26.3.js';
 import {readParticleOptions26_3,readParticles26_3} from './particles-26.3.js';
 import {SOUND_NAMES_26_3,MOB_EFFECT_NAMES_26_3} from './registry-names-26.3.js';
@@ -111,6 +111,94 @@ function fixedBitSet(r,size){const bytes=r.bytesN(Math.ceil(size/8));const bits=
 // PlayerInfoUpdatePacket(EnumSet<Action> actions as a fixed 1-byte bitset over 8 actions, List<Entry>).
 // PlayerPositionPacket(int id, PositionMoveRotation, Set<Relative>): VarInt, pos(3 doubles), delta(3 doubles), yRot f32, xRot f32, relatives int bitmask.
 // RecipeBookSettingsPacket(RecipeBookSettings): crafting, furnace, blastFurnace, smoker, each (open bool, filtering bool).
+// Ingredient.CONTENTS_STREAM_CODEC is ByteBufCodecs.holderSet: a VarInt size, where 0 means a
+// tag Identifier follows, otherwise size-1 item registry ids (an empty set is size 1).
+function readIngredient26_3(r){
+  const size=r.varint();
+  if(size===0)return {tag:r.string()};
+  const items=[];
+  for(let i=0;i<size-1;i++)items.push(r.varint());
+  return {items};
+}
+
+// SlotDisplay dispatches on the SLOT_DISPLAY registry id (registries.json: empty 0, any_fuel 1,
+// with_any_potion 2, only_with_component 3, item 4, item_stack 5, tag 6, dyed 7,
+// smithing_trim 8, with_remainder 9, composite 10), then the type's own fields.
+function readSlotDisplay26_3(r){
+  const type=r.varint();
+  switch(type){
+    case 0:return {type:'empty'};
+    case 1:return {type:'any_fuel'};
+    case 2:return {type:'with_any_potion',display:readSlotDisplay26_3(r)};
+    case 3:return {type:'only_with_component',source:readSlotDisplay26_3(r),component:r.varint()};
+    case 4:return {type:'item',item:r.varint()};
+    case 5:return {type:'item_stack',stack:readItemStackTemplate26_3(r)};
+    case 6:return {type:'tag',tag:readIngredient26_3(r)};
+    case 7:return {type:'dyed',dye:readSlotDisplay26_3(r),target:readSlotDisplay26_3(r)};
+    case 8:return {type:'smithing_trim',base:readSlotDisplay26_3(r),material:readSlotDisplay26_3(r),pattern:r.varint()};
+    case 9:return {type:'with_remainder',input:readSlotDisplay26_3(r),remainder:readSlotDisplay26_3(r)};
+    case 10:{
+      const count=r.varint();
+      const contents=[];
+      for(let i=0;i<count;i++)contents.push(readSlotDisplay26_3(r));
+      return {type:'composite',contents};
+    }
+    default:throw new Error('unknown slot display type '+type);
+  }
+}
+
+// RecipeDisplay dispatches on the RECIPE_DISPLAY registry id (registries.json: crafting_shapeless 0,
+// crafting_shaped 1, furnace 2, stonecutter 3, smithing 4). Field order matches each record's
+// STREAM_CODEC composite order in the jar.
+function readRecipeDisplay26_3(r){
+  const slots=()=>{
+    const count=r.varint();
+    const list=[];
+    for(let i=0;i<count;i++)list.push(readSlotDisplay26_3(r));
+    return list;
+  };
+  const type=r.varint();
+  switch(type){
+    case 0:{
+      const ingredients=slots(),result=readSlotDisplay26_3(r),craftingStation=readSlotDisplay26_3(r);
+      return {type:'crafting_shapeless',ingredients,result,craftingStation};
+    }
+    case 1:{
+      const width=r.varint(),height=r.varint(),ingredients=slots();
+      const result=readSlotDisplay26_3(r),craftingStation=readSlotDisplay26_3(r);
+      return {type:'crafting_shaped',width,height,ingredients,result,craftingStation};
+    }
+    case 2:{
+      const ingredient=readSlotDisplay26_3(r),fuel=readSlotDisplay26_3(r);
+      const result=readSlotDisplay26_3(r),craftingStation=readSlotDisplay26_3(r);
+      return {type:'furnace',ingredient,fuel,result,craftingStation,duration:r.varint(),experience:r.f32()};
+    }
+    case 3:{
+      const input=readSlotDisplay26_3(r),result=readSlotDisplay26_3(r),craftingStation=readSlotDisplay26_3(r);
+      return {type:'stonecutter',input,result,craftingStation};
+    }
+    case 4:{
+      const template=readSlotDisplay26_3(r),base=readSlotDisplay26_3(r),addition=readSlotDisplay26_3(r);
+      const result=readSlotDisplay26_3(r),craftingStation=readSlotDisplay26_3(r);
+      return {type:'smithing',template,base,addition,result,craftingStation};
+    }
+    default:throw new Error('unknown recipe display type '+type);
+  }
+}
+
+// RecipeDisplayEntry: VarInt display id, RecipeDisplay, OptionalInt group (0 means absent,
+// otherwise value+1), RecipeBookCategory registry id, then an optional list of
+// Ingredient.CONTENTS_STREAM_CODEC (bool, VarInt count, entries).
+function readRecipeDisplayEntry26_3(r){
+  const id=r.varint();
+  const display=readRecipeDisplay26_3(r);
+  const packedGroup=r.varint();
+  const group=packedGroup===0?null:packedGroup-1;
+  const category=r.varint();
+  const requirements=r.bool()?Array.from({length:r.varint()},()=>readIngredient26_3(r)):null;
+  return {id,display,group,category,requirements};
+}
+
 export const PLAY_DECODERS_26_3=Object.freeze({
   // ClientboundLoginPacket: playerId, hardcore, level set, maxPlayers, chunkRadius,
   // simulationDistance, reducedDebugInfo, showDeathScreen, doLimitedCrafting, spawn info, onlineMode, enforcesSecureChat.
@@ -724,6 +812,44 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     }
     return {containerId,offers,villagerLevel:r.varint(),villagerXp:r.varint(),showProgress:r.bool(),canRestock:r.bool()};
   },
+  // ClientboundUpdateRecipesPacket: a VarInt map of RecipePropertySet keys (Identifier) to
+  // RecipePropertySet (a list of item ids), then the stonecutter SingleInputSet.noRecipeCodec:
+  // a list of (Ingredient, SlotDisplay option).
+  update_recipes(r){
+    const setCount=r.varint();
+    const itemSets={};
+    for(let i=0;i<setCount;i++){
+      const key=r.string();
+      const count=r.varint();
+      const items=[];
+      for(let j=0;j<count;j++)items.push(r.varint());
+      itemSets[key]=items;
+    }
+    const entryCount=r.varint();
+    const stonecutter=[];
+    for(let i=0;i<entryCount;i++){
+      const input=readIngredient26_3(r);
+      stonecutter.push({input,option:readSlotDisplay26_3(r)});
+    }
+    return {itemSets,stonecutter};
+  },
+  // ClientboundRecipeBookAddPacket: a VarInt list of Entry (RecipeDisplayEntry plus a flags
+  // byte) then the replace boolean.
+  recipe_book_add(r){
+    const count=r.varint();
+    const entries=[];
+    for(let i=0;i<count;i++)entries.push({contents:readRecipeDisplayEntry26_3(r),flags:r.u8()});
+    return {entries,replace:r.bool()};
+  },
+  // ClientboundRecipeBookRemovePacket: a VarInt list of RecipeDisplayId (VarInt each).
+  recipe_book_remove(r){
+    const count=r.varint();
+    const recipes=[];
+    for(let i=0;i<count;i++)recipes.push(r.varint());
+    return {recipes};
+  },
+  // ClientboundPlaceGhostRecipePacket: writeContainerId (VarInt) then the RecipeDisplay.
+  place_ghost_recipe(r){return {containerId:r.varint(),display:readRecipeDisplay26_3(r)};},
   // SectionBlocksUpdate packs each change as VarLong(stateId << 12 | section-local position).
   section_blocks_update(r){
     const section=r.i64();

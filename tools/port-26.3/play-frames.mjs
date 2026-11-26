@@ -31,9 +31,14 @@ const rawNames=new Set(undecoded.map(x=>x.name));
 for(const required of ['login','change_difficulty','player_abilities','set_held_slot','entity_event','server_data','player_info_update','player_position','recipe_book_settings','commands']){
   assert.ok(packets[required],'native burst must decode '+required);
 }
+// The startup burst carries the native recipe display graph; both frames must decode exactly.
 for(const required of ['update_recipes','recipe_book_add']){
-  assert.ok(rawNames.has(required),required+' must still be reported as raw rather than silently skipped');
+  assert.ok(packets[required],'native burst must decode '+required);
 }
+assert.ok(Object.keys(packets.update_recipes.itemSets).length>0,'update_recipes carries property sets');
+assert.ok(packets.update_recipes.stonecutter.length>0,'update_recipes carries stonecutter options');
+assert.ok(packets.recipe_book_add.entries.length>0,'recipe_book_add carries display entries');
+assert.equal(typeof packets.recipe_book_add.replace,'boolean','recipe_book_add carries the replace flag');
 assert.ok(packets.login.playerId>0,'Play Login carries the local entity id');
 assert.equal(packets.login.levels.length,3,'Play Login lists three levels');
 assert.ok(packets.login.levels.includes('minecraft:overworld'),'Play Login level set contains the overworld');

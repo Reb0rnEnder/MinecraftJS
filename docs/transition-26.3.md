@@ -91,8 +91,8 @@ pending; product outside current scope; or experiment-gated.
   A fresh join now loads 81 chunks and 26 entities with zero skipped frames. Vibration stays fail-closed.
 - Open at this checkpoint: patched-item HashedPatchMap hashing, creative slots (needs the P10 item table),
   remaining container/menu families, the 32 fail-closed component readers (attribute_modifiers, profile and
-  item-modifier records), native support/placement rules, the 14 inbound IDs that are still raw
-  (recipes, advancements, show-dialog/waypoints, explosion/stats, debug) and the renderer rigs 26.3 restructured. The task ledger is at 41.2% (3 done, 8 partial, 6 todo); next task P08.
+  item-modifier records), native support/placement rules, the 10 inbound IDs that are still raw
+  (advancements, show-dialog/waypoints, explosion/stats, debug) and the renderer rigs 26.3 restructured. The task ledger is at 41.2% (3 done, 8 partial, 6 todo); next task P08.
 - The asset target is 26.3: `lib/mcassets.js` defaults this tree to 26.3 (pack format 97) and the proxy serves
   the jar first and the index for indexed objects. `tools/port-26.3/ExtractLayers26_3.java` bakes all 361
   native layers and `lib/model-extract-26.3.js` produces a complete 129-model bundle (native composites for the

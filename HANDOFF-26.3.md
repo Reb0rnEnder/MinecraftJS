@@ -15,7 +15,7 @@
 
 ## State at handoff
 
-- **P06 coverage: 130/144 inbound IDs decoded, 109 with adapters, 14 raw.**
+- **P06 coverage: 134/144 inbound IDs decoded, 109 with adapters, 10 raw.**
 - Ledger: **41.2%** (3 done, 8 partial, 6 todo; done=1, partial=0.5).
 - Last full run: `test:26.3`, `adapter:26.3`, `client-net:26.3` and `inbound-gate.mjs` all exit 0.
 - Real 26.3 server socket test passes (`client-net`, 23–31 chunks depending on spawn); graphical browser verification is unreliable on this machine (low disk, join stalls). Do not claim visual verification you did not do.
@@ -60,12 +60,12 @@ After adding a `Game` handler, run `node tools/port-26.3/generate-ids.mjs` first
 
 ## Next sections, in order
 
-1. `update_recipes` (136), `update_advancements` (133) — reuse native registries and existing 766 handler shapes.
+1. `update_advancements` (133) — the holder tree and its display/criteria codecs.
 2. `explode` (36), `award_stats` (3).
 3. `waypoint` / `show_dialog`, `move_minecart_along_track`, `place_ghost_recipe`, recipe-book add/remove, the debug value/event packets.
 4. **P10** started: `tools/port-26.3/ExtractLayers26_3.java` dumps all 361 native layers and `lib/model-extract-26.3.js` bakes a complete 129-model bundle for the 26.3 asset target. Remaining: port the renderer rigs for the families 26.3 restructured so their geometry can drop the 1.20.6 fallback.
 
-Already closed: scoreboard/teams, biomes, maps, swing animation, player chat, merchant offers, damage events, projectile power (decoded only — 26.3's scalar has no 766 adapter), the full world-border family (initialize plus all five setters, 0–5 action vocabulary), tags, game-rule values, report details, the disk-space warning, transient blocks, mount screens, debug samples, the test-instance/highlight frames, server links and clear-dialog.
+Already closed: scoreboard/teams, biomes, maps, swing animation, player chat, merchant offers, damage events, projectile power (decoded only — 26.3's scalar has no 766 adapter), the full world-border family (initialize plus all five setters, 0–5 action vocabulary), tags, game-rule values, report details, the disk-space warning, transient blocks, mount screens, debug samples, the test-instance/highlight frames, server links, clear-dialog and the recipe family (native RecipeDisplay/SlotDisplay graph, live-capture verified; no 766 adapter because 766 has no display graph).
 
 ## Known blockers
 
