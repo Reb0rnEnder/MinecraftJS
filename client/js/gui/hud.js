@@ -1,3 +1,4 @@
+import { renderTabHearts } from './tab-hearts.js';
 import{textBackgroundColor}from'./text-background.js';
 import {EFFECT_766,compareEffects766} from '../game/effects-1.20.6.js';
 import { SYSTEM_CHAT_TAG } from './chat-tags.js';
@@ -932,6 +933,8 @@ export class Hud {
       nameW = Math.max(nameW, gui.textWidth(sb.tabName(p)));
       if(listObj&&listObj.type!=='hearts'){const width=gui.textWidth(sb.scoreText(listObj,p.name,'list'));scoreW=Math.max(scoreW,width>0?gui.textWidth(' ')+width:0);}
     }
+    // PlayerTabOverlay: a hearts objective reserves a 90-pixel score column
+    if (listObj && listObj.type === 'hearts') scoreW = 90;
     const n = players.length;
     let rowsPerCol = n;
     let cols = 1;
@@ -968,14 +971,15 @@ export class Hud {
       }
       const name = sb.tabName(p);
       gui.text(p.gamemode === 3 ? '§o' + stripCodes(name) : name, tx, yy, p.gamemode === 3 ? 0x90ffffff : 0xffffff, true);
-      if (listObj) {
-        const s=sb.scoreText(listObj,p.name,'list');
-        if (listObj.type !== 'hearts') gui.text(s, x + colW - 12 - gui.textWidth(s), yy, 0xffffff, true);
+      // renderTablistScore: not for spectators, and only when the score column is wider than 5
+      const scoreLeft = tx + nameW + 1, scoreRight = scoreLeft + scoreW;
+      if (listObj && p.gamemode !== 3 && scoreRight - scoreLeft > 5) {
+        if (listObj.type === 'hearts') renderTabHearts(gui, this.tabHealth ||= new Map(), yy, scoreLeft, scoreRight, p.uuid, listObj.scores.get(p.name) ?? 0, this.updateCounter);
+        else { const s = sb.scoreText(listObj, p.name, 'list'); gui.text(s, scoreRight - gui.textWidth(s), yy, 0xffffff, true); }
       }
-      // ping icon
+      // renderPingIcon: icon/ping_* sprites
       const ping = p.ping;
-      const icon = ping < 0 ? 5 : ping < 150 ? 0 : ping < 300 ? 1 : ping < 600 ? 2 : ping < 1000 ? 3 : 4;
-      gui.blit(ICONS, x + colW - 11, yy, 0, 176 + icon * 8, 10, 8);
+      gui.sprite(ping < 0 ? 'icon/ping_unknown' : ping < 150 ? 'icon/ping_5' : ping < 300 ? 'icon/ping_4' : ping < 600 ? 'icon/ping_3' : ping < 1000 ? 'icon/ping_2' : 'icon/ping_1', x + colW - 11, yy, 10, 8);
     }
     y += rowsPerCol * 9;
     if (footerLines.length) {
