@@ -162,7 +162,8 @@
         "Outbound click and attack are live-accepted: container_click round-trips the menu state id (1 -> 2) and moves a stack, and the native attack body removes a summoned pig after 8 hits.",
         "Inbound batch on 2026-11-26: 73 of 144 Play IDs now decode with bytecode-verified bodies and 51 have adapters. Added animate, take_item_entity, hurt_animation, block_event, level_event, player_rotation, set_title_text/subtitle/action bar, set_titles_animation, clear_titles, system_chat, disguised_chat, tab_list, set_passengers, set_entity_link, player_info_remove, set_cursor_item and teleport_entity; inbound-gate.mjs pins each byte layout and the adapted handler fields.",
         "Live 26.3 checks: server /say arrived as disguised_chat and rendered in chat, /title rendered the gold component in the HUD, an item summoned at the player was collected through take_item_entity (stone 8 -> 9), and the session stayed at zero skipped frames.",
-        "Vehicle movement (PositionAndRotation), block-change acknowledgements and remote block destruction joined the inbound set (76 of 144 decode). Live /gamemode survival arrived as game_event id 3 and switched the client from creative to survival with zero skipped frames."
+        "Vehicle movement (PositionAndRotation), block-change acknowledgements and remote block destruction joined the inbound set (76 of 144 decode). Live /gamemode survival arrived as game_event id 3 and switched the client from creative to survival with zero skipped frames.",
+        "Distance, camera, pong and combat-event frames followed (82 of 144 decode, 60 adapters). The local 26.3 server reports view-distance=3 and simulation-distance=3, and a fresh join now sets both client values from the decoded packets with zero skipped frames."
       ]
     },
     {

@@ -24,6 +24,7 @@ const varint = value => {
 const f32 = value => { const v = new DataView(new ArrayBuffer(4)); v.setFloat32(0, value); return [...new Uint8Array(v.buffer)]; };
 const f64 = value => { const v = new DataView(new ArrayBuffer(8)); v.setFloat64(0, value); return [...new Uint8Array(v.buffer)]; };
 const i32 = value => { const v = new DataView(new ArrayBuffer(4)); v.setInt32(0, value); return [...new Uint8Array(v.buffer)]; };
+const i64 = value => { const v = new DataView(new ArrayBuffer(8)); v.setBigInt64(0, BigInt(value)); return [...new Uint8Array(v.buffer)]; };
 const packPos = (x, y, z) => {
   const v = (BigInt(x) & 0x3ffffffn) << 38n | (BigInt(z) & 0x3ffffffn) << 12n | (BigInt(y) & 0xfffn);
   const out = new DataView(new ArrayBuffer(8));
@@ -150,6 +151,18 @@ check('relative teleports are skipped instead of misapplied', () => {
   ]);
   eq(packet.data.relatives, 1);
   eq(adaptPlay26_3(packet, null), null);
+});
+
+check('pong and the combat pair decode', () => {
+  eq(Number(adapt('pong_response', [...i64(1234)], {name: 'ping_response'}).id), 1234);
+  eq(adapt('player_combat_enter', [], {name: 'enter_combat_event'}), {name: 'enter_combat_event'});
+  eq(adapt('player_combat_end', [...varint(300)], {name: 'end_combat_event'}).duration, 300);
+});
+
+check('distance, camera and radius decode their VarInts', () => {
+  eq(adapt('set_simulation_distance', [...varint(12)], {name: 'simulation_distance'}).distance, 12);
+  eq(adapt('set_chunk_cache_radius', [...varint(10)], {name: 'update_view_distance'}).viewDistance, 10);
+  eq(adapt('set_camera', [...varint(44)], {name: 'camera'}).cameraId, 44);
 });
 
 check('move_vehicle decodes PositionAndRotation', () => {

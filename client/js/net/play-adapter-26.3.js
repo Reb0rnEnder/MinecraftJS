@@ -116,6 +116,12 @@ const ADAPTERS={
   },
   game_event(packet){return {reason:packet.event,value:packet.param};},
   move_vehicle(packet){return {x:packet.x,y:packet.y,z:packet.z,yaw:packet.yRot};},
+  pong_response(packet){return {id:packet.id};},
+  player_combat_enter(packet){return {};},
+  player_combat_end(packet){return {duration:packet.duration};},
+  set_simulation_distance(packet){return {distance:packet.distance};},
+  set_chunk_cache_radius(packet){return {viewDistance:packet.viewDistance};},
+  set_camera(packet){return {cameraId:packet.cameraId};},
   block_changed_ack(packet){return {sequenceId:packet.sequenceId};},
   block_destruction(packet){return {entityId:packet.entityId,location:packet.location,destroyStage:packet.destroyStage};},
   player_abilities(packet){

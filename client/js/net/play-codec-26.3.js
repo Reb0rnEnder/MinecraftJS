@@ -192,6 +192,18 @@ export const PLAY_DECODERS_26_3=Object.freeze({
   set_cursor_item(r){return {item:readItemStack(r)};},
   // ClientboundMoveVehiclePacket(PositionAndRotation): position Vec3 (3 doubles) + yRot/xRot floats.
   move_vehicle(r){return {x:r.f64(),y:r.f64(),z:r.f64(),yRot:r.f32(),xRot:r.f32()};},
+  // ClientboundPongResponsePacket(long time): the original send timestamp as an i64.
+  pong_response(r){return {id:r.i64()};},
+  // ClientboundPlayerCombatEnterPacket(): no payload.
+  player_combat_enter(){return {};},
+  // ClientboundPlayerCombatEndPacket(int duration): VarInt combat duration.
+  player_combat_end(r){return {duration:r.varint()};},
+  // ClientboundSetSimulationDistancePacket(int simulationDistance): VarInt.
+  set_simulation_distance(r){return {distance:r.varint()};},
+  // ClientboundSetChunkCacheRadiusPacket(int radius): VarInt.
+  set_chunk_cache_radius(r){return {viewDistance:r.varint()};},
+  // ClientboundSetCameraPacket(int cameraId): VarInt entity id.
+  set_camera(r){return {cameraId:r.varint()};},
   // ClientboundBlockChangedAckPacket(int sequence): VarInt sequence.
   block_changed_ack(r){return {sequenceId:r.varint()};},
   // ClientboundBlockDestructionPacket(int id, BlockPos pos, int progress).
