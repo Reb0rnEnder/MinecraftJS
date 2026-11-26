@@ -302,6 +302,27 @@ export const PLAY_DECODERS_26_3=Object.freeze({
   // existing 762 palette reader consumes.
   // ClientboundMapItemDataPacket: map id, scale byte, locked bool, optional decorations
   // (VarInt type, three bytes, optional component NBT), optional MapPatch (four bytes + byte array).
+  // ClientboundPlayerChatPacket: global index, sender, index, optional 256-byte signature,
+  // packed body (content, timestamp, salt, last-seen signature ids), optional unsigned
+  // component, filter mask, then the bound chat type (holder id, name, optional target).
+  player_chat(r){
+    const globalIndex=r.varint(),sender=r.uuid(),index=r.varint();
+    const signature=r.bool()?r.bytesN(256).slice():null;
+    const body={
+      content:r.string(),timestamp:r.i64(),salt:r.i64(),
+      lastSeen:Array.from({length:r.varint()},()=>{
+        const id=r.varint()-1;
+        return id===-1?r.bytesN(256).slice():id;
+      })
+    };
+    const unsignedContent=r.bool()?readAnonymousNbt(r):null;
+    const filterType=r.varint();
+    let filterMask=null;
+    if(filterType===2)filterMask=r.bytesN(r.varint()).slice();
+    else if(filterType!==0&&filterType!==1)throw Error('Invalid 26.3 chat filter');
+    const chatType=r.varint(),name=readAnonymousNbt(r),targetName=r.bool()?readAnonymousNbt(r):null;
+    return {globalIndex,sender,index,signature,body,unsignedContent,filterType,filterMask,chatType,name,targetName};
+  },
   // ClientboundAnimatePacket: VarInt entity id, unsigned byte action.
   swing_animation(r){return {entityId:r.varint(),animation:r.u8()};},
   map_item_data(r){

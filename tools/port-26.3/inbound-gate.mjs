@@ -71,6 +71,14 @@ check('animate decodes and adapts to animation', () => {
   eq([adapted.entityId, adapted.animation], [5, 3]);
 });
 
+check('player_chat decodes body, last-seen ids and bound type', () => {
+  const body=[...varint(9), ...uuid(0), ...varint(2), 0,
+    ...str('hello'), ...i64(1234n), ...i64(7n), ...varint(1), ...varint(1),
+    0, ...varint(0), ...varint(0), ...nbtString('Steve'), 0];
+  const adapted = adapt('player_chat', body, {name: 'player_chat'});
+  eq([adapted.sender, adapted.index, JSON.parse(adapted.message).text, JSON.parse(adapted.networkName), adapted.chatType], ['00010203-0405-0607-0809-0a0b0c0d0e0f', 2, 'hello', 'Steve', 0]);
+});
+
 check('swing_animation reads id and action', () => {
   const adapted = adapt('swing_animation', [...varint(42), 3], {name: 'swing_animation'});
   eq([adapted.entityId, adapted.animation], [42, 3]);
