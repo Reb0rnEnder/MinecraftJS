@@ -71,6 +71,21 @@ check('animate decodes and adapts to animation', () => {
   eq([adapted.entityId, adapted.animation], [5, 3]);
 });
 
+check('set_player_team decodes parameters and players', () => {
+  const body=[0, ...str('red'), 1, ...nbtString('Red Team'), ...nbtString('[R]'), ...nbtString(''), ...varint(0), ...varint(2), 0, 1, ...varint(1), ...str('Steve')];
+  const adapted = adapt('set_player_team', body, {name: 'teams'});
+  eq([adapted.team, adapted.mode, adapted.players, JSON.parse(adapted.displayName), adapted.color, adapted.friendlyFire, adapted.nameTagVisibility, adapted.collisionRule], ['red', 0, ['Steve'], 'Red Team', 15, true, 'always', 'pushOtherTeams']);
+});
+
+check('scoreboard score, reset and objective adapt', () => {
+  const score = adapt('set_score', [...str('Steve'), ...str('obj'), ...varint(7), 1, ...nbtString('Steve'), 1, ...varint(0)], {name: 'scoreboard_score'});
+  eq([score.action, score.itemName, score.scoreName, score.value, JSON.parse(score.displayName), score.numberFormat], [0, 'Steve', 'obj', 7, 'Steve', {type: 'blank'}]);
+  const reset = adapt('reset_score', [...str('Steve'), 1, ...str('obj')], {name: 'reset_score'});
+  eq([reset.action, reset.itemName, reset.scoreName], [1, 'Steve', 'obj']);
+  const objective = adapt('set_objective', [...str('obj'), 0, ...nbtString('Objective'), ...varint(1), 0], {name: 'scoreboard_objective'});
+  eq([objective.action, objective.objective, JSON.parse(objective.displayText), objective.type, objective.numberFormat], [0, 'obj', 'Objective', 'hearts', null]);
+});
+
 check('player_combat_kill decodes the death screen message', () => {
   const adapted = adapt('player_combat_kill', [...varint(7), ...nbtString('slain by a zombie')], {name: 'death_combat_event'});
   eq([adapted.playerId, JSON.parse(adapted.message)], [7, 'slain by a zombie']);

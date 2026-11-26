@@ -92,6 +92,13 @@ function readEntityData(r){
 
 function bitmask(value){const bits=[];for(let i=0;i<32;i++)if(value&(1<<i))bits.push(i);return bits;}
 // FriendlyByteBuf.writeFixedBitSet writes ceil(size/8) bytes, least significant bit first.
+function readNumberFormat26_3(r){
+  if(!r.bool())return null;
+  const type=r.varint();
+  if(type===0)return {type:'blank'};
+  if(type===2)return {type:'fixed',value:readAnonymousNbt(r)};
+  throw Error('Unsupported 26.3 number format type '+type);
+}
 function fixedBitSet(r,size){const bytes=r.bytesN(Math.ceil(size/8));const bits=[];for(let i=0;i<size;i++)if(bytes[i>>3]&(1<<(i&7)))bits.push(i);return bits;}
 
 // 26.3 field lists, verified with javap:
@@ -282,6 +289,29 @@ export const PLAY_DECODERS_26_3=Object.freeze({
   delete_chat(r){
     const id=r.varint()-1;
     return id===-1?{signatureId:-1,signature:Array.from(r.bytesN(256))}:{signatureId:id,signature:null};
+  },
+  // NumberFormatTypes: optional dispatch on the number_format_type registry id (0 blank, 1 styled,
+  // 2 fixed). blank has no payload and fixed carries one trusted component; the styled form is
+  // fail-closed until the Style stream codec is ported.
+  set_score(r){
+    return {owner:r.string(),objectiveName:r.string(),value:r.varint(),
+      display:r.bool()?readAnonymousNbt(r):null,numberFormat:readNumberFormat26_3(r)};
+  },
+  set_objective(r){
+    const objectiveName=r.string(),method=r.i8();
+    if(method!==0&&method!==2)return {objectiveName,method,displayName:null,renderType:0,numberFormat:null};
+    return {objectiveName,method,displayName:readAnonymousNbt(r),renderType:r.varint(),numberFormat:readNumberFormat26_3(r)};
+  },
+  reset_score(r){return {owner:r.string(),objectiveName:r.bool()?r.string():null};},
+  // ClientboundSetPlayerTeamPacket: method byte, name, optional Parameters (3 components, two
+  // VarInt enums, optional TeamColor, friendly-fire byte), then the player list.
+  set_player_team(r){
+    const method=r.i8(),name=r.string();
+    let parameters=null;
+    if(r.bool())parameters={displayName:readAnonymousNbt(r),prefix:readAnonymousNbt(r),suffix:readAnonymousNbt(r),
+      visibility:r.varint(),collision:r.varint(),color:r.bool()?r.varint():15,friendlyFire:r.i8()};
+    const players=Array.from({length:r.varint()},()=>r.string());
+    return {method,name,parameters,players};
   },
   // ClientboundPlayerCombatKillPacket(int playerId, Component message): the death screen message.
   player_combat_kill(r){return {playerId:r.varint(),message:readAnonymousNbt(r)};},

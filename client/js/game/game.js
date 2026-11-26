@@ -1548,8 +1548,10 @@ export class Game {
 
   on_scoreboard_objective(p) { this.scoreboard.onObjective(p); }
   on_scoreboard_score(p) { this.scoreboard.onScore(p); }
+  on_reset_score(p) { this.scoreboard.onScore({...p,action:1}); }
   on_scoreboard_display_objective(p) { this.scoreboard.onDisplay(p); }
   on_scoreboard_team(p) { this.scoreboard.onTeam(p); }
+  on_teams(p) { this.on_scoreboard_team(p); }
 
   on_stop_sound(p) {
     const category = p.source === null || p.source === undefined ? null : SOUND_CATEGORIES[p.source] || null;
