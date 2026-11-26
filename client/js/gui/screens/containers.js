@@ -387,7 +387,7 @@ export function drawModernEffects(game, gui, screen, mx, my) {
  for(const[id,e]of entries){
   gui.blit('gui/container/inventory.png',x,y,0,wide?166:198,wide?120:32,32);
   drawEffectIcon(game,gui,id,x+(wide?6:7),y+7);
-  const name=effectLabel766(game,id,e.amplifier),duration=effectDuration766(e.duration,k=>game.assets.translate(k),game.serverTickRate??20);
+  const name=effectLabel766(game,id,e.amplifier),duration=effectDuration766(e.duration,k=>game.assets.translate(k),game.tickRate?.tickrate??20);
   if(wide){gui.text(name,x+28,y+6,0xffffff,true);gui.text(duration,x+28,y+16,0x7f7f7f,true);}
   else if(mx>=x&&mx<=x+33&&my>=y&&my<=y+dy)gui.tooltip([name,duration],mx,my);
   y+=dy;

@@ -722,6 +722,17 @@ export class EntityManager {
     }
   }
 
+  // Entity.countPlayerPassengers > 0: a player anywhere among the (indirect) passengers
+  carriesPlayer(e, depth = 0) {
+    if (depth > 8) return false;
+    for (const id of this.passengersOf(e.id)) {
+      if (id === this.game.entityId) return true;
+      const p = this.map.get(id);
+      if (p && (p.kind === 'player' || this.carriesPlayer(p, depth + 1))) return true;
+    }
+    return false;
+  }
+
   // The vehicle's passengers in the server's order (SPacketSetPassengers; the first one steers)
   passengersOf(vehicleId) {
     const v = this.map.get(vehicleId);
@@ -987,7 +998,10 @@ export class EntityManager {
     this.updateSelf();
     this._minecartSounds();
     tickPickupVisuals(this);
+    const rate = g.tickRate;
     for (const e of [...this.map.values()]) {
+      // ClientLevel.tickEntities: a frozen server leaves everything but players and their mounts untouched
+      if (rate && !rate.runsNormally() && rate.isEntityFrozen(e, this.carriesPlayer(e))) continue;
       // the vehicle we steer was already moved this tick (Game._tickRiding set its previous position)
       if (!e.controlled) {
         e.prevX = e.x; e.prevY = e.y; e.prevZ = e.z;

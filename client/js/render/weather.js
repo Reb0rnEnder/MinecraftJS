@@ -144,11 +144,14 @@ export class Weather {
   }
 
   tick() {
-    this.updateCount++;
     const g = this.game;
+    // LevelRenderer.tick counts and ClientLevel.animateTick runs only while the server runs normally (1.20.3+);
+    // tickRain is driven by GameRenderer.tick and keeps going
+    const runs = g.tickRate?.runsNormally?.() ?? true;
+    if (runs) this.updateCount++;
     if (!g.inWorld) return;
     this._rainParticles();
-    this._ambience();
+    if (runs) this._ambience();
   }
 
   _tickOrigin() {

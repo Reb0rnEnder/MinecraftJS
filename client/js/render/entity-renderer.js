@@ -1013,9 +1013,11 @@ export class EntityRenderer {
 
   // ---------------------------------------------------------------- per-frame
 
-  render(partial) {
+  render(framePartial) {
+    const partial = framePartial;
     const g = this.game;
     const camPos = this.r.camPos;
+    const rate = g.tickRate, frozenWorld = !!rate && !rate.runsNormally();
     const list = [...g.entities.all()];
     const self = g.entities.self;
     if (self) {
@@ -1028,6 +1030,8 @@ export class EntityRenderer {
     this.stats = { total: list.length-(g.entities.pickups?.length||0), culled: 0, lod: 0 };
     const burning = [];
     for (const e of list) {
+      // LevelRenderer.renderLevel: entities frozen by the server render at partial tick 1
+      const partial = frozenWorld && rate.isEntityFrozen(e, g.entities.carriesPlayer(e)) ? 1 : framePartial;
       let v = this.visuals.get(e.id);
       if (v && this._visualKey(e) !== v.visualKey) { this.remove(e); v = null; }
       const p = g.entities.interp(e, partial);
