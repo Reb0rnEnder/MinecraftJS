@@ -109,6 +109,9 @@ function spriteMesh(device, u0, v0, u1, v1, w = 1, h = 1) {
   return device.createMesh(FORMAT.color, data, { quads: true });
 }
 
+// Name tag scale and sneaking drop for this release (1.8-1.13: 1.6/60 with the sneak drop)
+const NAME_TAG = { scale: 0.016666668 * 1.6, sneakOffset: true };
+
 export class EntityRenderer {
   constructor(game) {
     this.game = game;
@@ -148,6 +151,7 @@ export class EntityRenderer {
     if (v.line) this.group.remove(v.line);
     for (const m of v.ownMeshes || []) this.device.destroyMesh(m);
     destroyTextMeshes(this.device, v.tagMeshes);
+    destroyTextMeshes(this.device, v.tagBelowMeshes);
     this.visuals.delete(e.id);
   }
 
@@ -1491,8 +1495,21 @@ export class EntityRenderer {
     if (e.id === -1 || e.id === g.entityId || g.hideGui || (e.kind !== 'armorstand' && e.passenger !== undefined && e.passenger >= 0)) name = null;
     const cam = this.r.camPos;
     const dist = Math.hypot(cam[0] - p.x, cam[1] - p.y, cam[2] - p.z);
-    if (!name || dist >= 64) { if (v.tag) v.tag.visible = false; return; }
+    if (!name || dist >= 64) { if (v.tag) v.tag.visible = false; if (v.tagBelow) v.tagBelow.visible = false; return; }
     const sneak = !!e.sneaking;
+    // PlayerRenderer.renderNameTag: within 10 blocks the below-name objective's "<score> <objective>" label takes the
+    // tag position and the name moves up by 9 * 1.15 font pixels
+    const below = e.kind === 'player' && dist < 10 ? this._belowNameText(e) : null;
+    if (below !== null) {
+      if (!v.tagBelow || v.tagBelowText !== below || v.tagBelowSneak !== sneak) {
+        if (v.tagBelow) v.root.remove(v.tagBelow);
+        destroyTextMeshes(this.device, v.tagBelowMeshes);
+        const { node, meshes } = this.makeLabel(below, sneak);
+        v.tagBelow = node; v.tagBelowMeshes = meshes; v.tagBelowText = below; v.tagBelowSneak = sneak;
+        v.root.add(node);
+      }
+      v.tagBelow.visible = true;
+    } else if (v.tagBelow) v.tagBelow.visible = false;
     if (!v.tag || v.tagText !== name || v.tagSneak !== sneak) {
       if (v.tag) v.root.remove(v.tag);
       destroyTextMeshes(this.device, v.tagMeshes);
@@ -1502,7 +1519,15 @@ export class EntityRenderer {
       v.root.add(v.tag);
     }
     v.tag.visible = true;
-    v.tag.position.set(0, e.height + 0.5 - (sneak ? 0.25 : 0) - (v.root.position.y - p.y), 0);
+    const base = e.height + 0.5 - (NAME_TAG.sneakOffset && sneak ? 0.25 : 0) - (v.root.position.y - p.y);
+    if (below !== null) v.tagBelow.position.set(0, base, 0);
+    v.tag.position.set(0, base + (below !== null ? 9 * 1.15 * NAME_TAG.scale : 0), 0);
+  }
+
+  _belowNameText(e) {
+    const sb = this.game.scoreboard, objective = sb?.belowName ? sb.objectives.get(sb.belowName) : null;
+    if (!objective) return null;
+    return String(objective.scores.get(e.name) ?? 0) + ' ' + (objective.displayName ?? '');
   }
 
   // Render.renderLivingLabel: billboard text with a translucent background; non-sneaking labels are also
@@ -1511,11 +1536,13 @@ export class EntityRenderer {
     const font = this.game.gui.font;
     const w = font.width(text);
     const half = w / 2;
-    const bg = { x0: -half - 1, y0: -1, x1: half + 1, y1: 8, color: [0, 0, 0, 0.25] };
-    const meshes = buildTextMeshes(this.device, font, [{ text, x: -half, y: 0, color: 0xffffff }], [bg]);
+    // "deadmau5" is drawn 10 pixels higher
+    const dy = text === 'deadmau5' ? -10 : 0;
+    const bg = { x0: -half - 1, y0: -1 + dy, x1: half + 1, y1: 8 + dy, color: [0, 0, 0, 0.25] };
+    const meshes = buildTextMeshes(this.device, font, [{ text, x: -half, y: dy, color: 0xffffff }], [bg]);
     const node = new Node();
     node.billboard = true;
-    const s = 0.016666668 * 1.6;
+    const s = NAME_TAG.scale;
     node.scale.set(s, -s, s);
     const white = this.game.gui.white;
     for (const m of meshes) {
