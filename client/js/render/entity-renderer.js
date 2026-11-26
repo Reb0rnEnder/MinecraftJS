@@ -1,3 +1,5 @@
+import { itemTrim, trimTextureName, armorTrimTexture } from './armor-trims-1.20.6.js';
+import { armorType } from '../game/container.js';
 import {horseArmor766} from './horse-armor-1.20.6.js';
 import{PAWS_DATA_766}from'../game/paws-data-1.20.6.js';
 import{wolfTexture766,wolfArmor766}from'./wolf-1.20.6.js';
@@ -752,7 +754,13 @@ export class EntityRenderer {
       const obj2 = this._makeModelObject(m2, overlayMat);
       obj2.visible = false;
       v.modelGroup.add(obj2);
-      v.armor[slot] = { model: m, obj, mat, slot, inner, overlay: { model: m2, obj: obj2, mat: overlayMat }, key: null };
+      // HumanoidArmorLayer.renderTrim: the same model again with the armor_trims sprite, untinted
+      const trimMat = this._mat(v, 'models/armor/iron_layer_1.png', { alphaTest: 0.1 });
+      const m3 = piglin&&!inner?M.biped('piglinArmorOuter'):M.armorModel(inner ? 0.5 : 1.0);m3.piglinAgeable=piglin;
+      const obj3 = this._makeModelObject(m3, trimMat);
+      obj3.visible = false;
+      v.modelGroup.add(obj3);
+      v.armor[slot] = { model: m, obj, mat, slot, inner, overlay: { model: m2, obj: obj2, mat: overlayMat }, trim: { model: m3, obj: obj3, mat: trimMat }, key: null };
     }
     void e;
   }
@@ -1453,6 +1461,7 @@ export class EntityRenderer {
       const visible = idx >= 0;
       A.obj.visible = visible;
       A.overlay.obj.visible = visible && idx === 0;
+      if (A.trim) A.trim.obj.visible = false;
       if (!visible) continue;
       const key = idx + ':' + slot;
       if (A.key !== key) {
@@ -1462,11 +1471,15 @@ export class EntityRenderer {
         A.overlay.mat.tex = `models/armor/leather_layer_${layer}_overlay.png`;
       }
       if (idx === 0) {
-        const tag = this.game.items.nbt(item);
-        const c = tag && tag.display && tag.display.color !== undefined ? tag.display.color : 10511680;
+        // DyedItemColor.getOrDefault(stack, 0xA06540)
+        const dye = this.game.items.component?.(item, 'dyed_color'), c = dye ? (dye.rgb ?? dye.color ?? 0) >>> 0 : 10511680;
         A.mat.params.setTint(((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255, 1);
       } else A.mat.params.setTint(1, 1, 1, 1);
-      for (const M2 of idx===0?[A.model,A.overlay.model]:[A.model]) {
+      // the trim layer, once its sprite has been generated
+      const trimName = trimTextureName(this.game, item, A.inner), trimTex = trimName ? armorTrimTexture(this.game, trimName) : null;
+      A.trim.obj.visible = !!trimTex;
+      if (trimTex) { A.trim.mat.tex = trimTex; A.trim.mat.state = { ...A.trim.mat.state, polygonOffset: !!itemTrim(this.game, item)?.pattern.decal }; }
+      for (const M2 of [A.model, ...(idx === 0 ? [A.overlay.model] : []), ...(trimTex ? [A.trim.model] : [])]) {
         if(M2.piglinAgeable)scalePiglinChild(M2.childGroups,!!e.child);
         M2.animate(M2, args);
         copyPose(model, M2);
@@ -2095,6 +2108,40 @@ export class EntityRenderer {
     gui.clearScissor();
     v.root.position.set(...saved.pos); v.yawGroup.rotation.y = saved.yaw;
     if (v.shadow) v.shadow.visible = saved.shadow; if (v.tag) v.tag.visible = saved.tag;
+    return true;
+  }
+
+  // SmithingScreen's armor stand (1.20+): arms shown, no base plate, body yaw 210, pitch 25, wearing the result
+  // (armor in its slot, anything else in the off hand), drawn by InventoryScreen.renderEntityInInventory at
+  // (x, y) with scale 25 and rotationXYZ(25 degrees, 0, 180 degrees)
+  drawArmorStandPreview(gui, x, y, scale, item, partial = 0) {
+    const g = this.game;
+    if (!this._smithingStand) {
+      const e = g.entities._base(-1001, 0, 0, 0, 0, 25);
+      Object.assign(e, { kind: 'armorstand', entityName: 'armor_stand', typeName: 'armor_stand', showArms: true, noBasePlate: true, armorFlags: 4 | 8,
+        width: 0.5, height: 1.975, bodyYaw: 210, prevBodyYaw: 210, headYaw: 0, prevHeadYaw: 0, pitch: 25, prevPitch: 25 });
+      const v = this._build(e);
+      if (!v) return false;
+      this.group.remove(v.root); this.visuals.delete(e.id);
+      this._smithingStand = { e, v };
+    }
+    const { e, v } = this._smithingStand;
+    e.equipment = [null, null, null, null, null]; e.offhand = null;
+    if (item && item.id) {
+      const slot = armorType(item, g.items);
+      if (slot >= 0 && slot <= 3) e.equipment[4 - slot] = item; else e.offhand = item;
+    }
+    this._renderLiving(e, v, { x: 0, y: 0, z: 0 }, partial);
+    v.root.position.set(0, 0, 0);
+    if (v.shadow) v.shadow.visible = false;
+    if (v.tag) v.tag.visible = false;
+    for (const m of v.materials || []) m.params.setLight(15, 15);
+    const mm = mat4.create();
+    mat4.translate(mm, mm, x, y, 50);
+    mat4.scale(mm, mm, scale, scale, -scale);
+    mat4.rotateX(mm, mm, 0.43633232);
+    mat4.rotateZ(mm, mm, Math.PI);
+    gui.drawNode(v.root, mm);
     return true;
   }
 

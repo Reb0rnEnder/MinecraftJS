@@ -1,6 +1,7 @@
 import{buildPot766,itemPotDecorations766}from'./decorated-pot-1.20.6.js';
 import{itemBannerLayers766}from'./banner-1.20.6.js';
 import{bundleBar,bundleContentWeight}from'../game/bundle.js';
+import { trimTypePredicate } from './armor-trims-1.20.6.js';
 import {DEFAULT_SKIN} from './default-skins.js';
 import {blocksByName} from '../world/blocks.js';
 import {compassProperty} from './compass.js';
@@ -137,6 +138,7 @@ export class ItemRenderer {
       default: break;
     }
     pv.cooldown = local && g.cooldowns ? g.cooldownFraction(item.id, 0) : 0;
+    pv.trim_type = trimTypePredicate(g, item); // ItemProperties trim_type (1.20+)
     return pv;
   }
 

@@ -1,3 +1,4 @@
+import { palettedPermutationSprites } from './render/paletted-permutations.js';
 import {OverlayZip,overlayDirectories,resourceFilter,readResourceStack,readResourceBytes,resourceMetadata,resourceNamespaces,resourceBlockedAbove} from './resource-layers.js';
 import{preloadTextures}from'./render/texture-preload.js';
 import {applyPackModels,applyPackTextures} from './resource-models.js';
@@ -248,6 +249,12 @@ export class Assets {
     for (const [name, get] of files) {
       try { textures.push({ name, image: decodePng(get()) }); } catch (e) { /* undecodable texture */ }
     }
+    // atlases/blocks.json paletted_permutations (armor trim item sprites), merged across the pack stack
+    try {
+      const definitions = (await this.readResourceStack('minecraft:atlases/blocks.json')).reverse().map((r) => { try { return JSON.parse(decodeUtf8(r.bytes)); } catch { return null; } });
+      const have = new Set(textures.map((t) => t.name));
+      for (const sprite of await palettedPermutationSprites(definitions, (p) => this.imageAsync(p + '.png').catch(() => null))) if (!have.has(sprite.name)) textures.push(sprite);
+    } catch (e) { /* an unreadable atlas definition leaves the directory sprites */ }
     this.atlas = new Atlas();
     this.atlas.build(textures, mcmeta);
     if (this.atlasTexture) this.device.destroyTexture(this.atlasTexture);
