@@ -91,7 +91,15 @@ export class VanillaSocket26_3 extends VanillaSocket{
     if(this.state==='play'){
       this.lastPlayFrame=data;
       const reader=new Reader26_3(data);
-      const packet=decodePlayPacket(reader);
+      let packet;
+      try{packet=decodePlayPacket(reader);}
+      catch(error){
+        // A Play frame whose layout is not implemented yet is surfaced and skipped, exactly
+        // like the 1.20.6 decoder: one unknown packet must never close the connection.
+        this.decodeErrors=(this.decodeErrors||0)+1;
+        this.emit('decode_error',{message:String(error?.message||error),bytes:data.length});
+        return;
+      }
       if(packet.decoded&&reader.remaining()){
         throw Error('Trailing '+packet.name+' data: '+reader.remaining()+' bytes');
       }

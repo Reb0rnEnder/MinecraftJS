@@ -64,13 +64,20 @@ pending; product outside current scope; or experiment-gated.
   boxes and 39 native offset policies, plus 1,658 items. `npm run runtime:26.3` reproduces them from the
   pinned client jar.
 - The browser client reaches Play, spawns and renders a native 26.3 world: 81 chunks, terrain, sky, tall
-  grass and the full HUD. `client-net:26.3` and `adapter:26.3` remain green.
+  grass, the full HUD, and live entities from the native `add_entity`/`set_entity_data` path. A real
+  session tracked 83 entities (pigs, sheep, cows, chickens, bats, villagers, glow squid and the 26.3
+  sulfur_cube) and drew them in-world; health and bat flags come from native metadata frames.
+  `client-net:26.3` and `adapter:26.3` remain green.
 - Serverbound bodies are bytecode-verified for the join path: accept_teleportation echoes position and
   rotation, movement packets use the packed flags byte, every tick ends with client_tick_end, and
   keep_alive/ping are adapted. The live session no longer desynchronises or times out.
-- Open at this checkpoint: entity rendering, movement/death/respawn/reconnect acceptance, the remaining
-  outbound families (chat, interact, container clicks, creative slots), native support/placement rules and
-  the 26.3 model/texture bake. The task ledger is at 29.4% (2 done, 6 partial, 9 todo).
+- P07 acceptance is closed: movement was accepted by the 26.3 server (6.9 blocks in 1.6 s), a zombie
+  killed the player and the respawn round-trip restored health, and repeated disconnects rejoined Play.
+  The preview webview cannot grant pointer lock, so input state was driven directly for that check.
+- Open at this checkpoint: 26.3 item stacks/components (P04, which also unblocks equipment and container
+  contents), the remaining outbound families (chat, interact, container clicks, creative slots), native
+  support/placement rules, remaining inbound families and the 26.3 model/texture bake. The task ledger is
+  at 32.4% (3 done, 5 partial, 9 todo).
 
 ## Implementation order
 

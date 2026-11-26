@@ -14,13 +14,14 @@ acceptance evidence from a native run, not because a table or model exists.
 | Native protocol probe (P05) | A real 26.3 server reports protocol 777 and accepts the offline login → Set Compression → Login Success → Login Acknowledged → Configuration sequence with correct compressed framing (`npm run probe:26.3`). |
 | Native login/configuration bytes (P03) | Seven captured native frames decode with the client's Reader and Login Success round-trips exactly; 26.3's added session UUID is asserted rather than ignored. |
 | Play Login decode (P06) | The captured Play Login (id 50) parses to typed fields with zero trailing bytes and a plausible spawn: three levels, overworld dimension, sea level 63. |
+| Graphical join (P07) | Chrome reached a disposable 26.3 server, rendered terrain, 81 chunks, sky, grass, the full HUD and live mobs (pigs, sheep, cows, chickens, bats, villagers, glow squid) at sane coordinates. Movement was server-accepted, a zombie kill led to a working respawn, and repeated reconnects returned to Play. |
 
 ## Partial
 
 | Area | Open part |
 | --- | --- |
 | P02 extraction | Native blocks, items, collision/selection shapes and block offsets are installed from the 26.3 jar. The remaining client tables (biomes, effects, enchantments, entities, foods, particles, sounds, recipes, creative) are still the older generation. |
-| P07 graphical join | Terrain, 81 chunks, sky, tall grass and the full HUD render in Chrome against a disposable 26.3 server, and the session survives the keepalive window. Entity rendering, movement, death/respawn and reconnect are still unverified. |
+| P06 Play path | 49 of 144 inbound IDs decode with bytecode-verified bodies, the adapter covers 29 pinned frames across 18 handlers, and the live session holds; item stacks/components, several container and world-update families, and most outbound senders remain. |
 
 ## Missing (inherited from 1.20.6)
 
@@ -30,8 +31,9 @@ not closed by the version jump.
 
 ## Unverified
 
-- Entity rendering: `add_entity` and entity metadata are not adapted yet, so no mob or item entity has been drawn.
-- Movement input, death/respawn, reconnect and inventory interaction in the browser.
+- Inventory interaction, item stacks with 26.3 components, and the remaining outbound Play families.
+- Entity identities new to 26.3 (for example `minecraft:sulfur_cube`) spawn but fall back to an unknown-object
+  identity because the entity table and models are still the 1.20.6 generation (P10).
 - The browser still loads 1.20.6 model/texture bundles, so 26.3-only blocks have no baked models yet (P10).
 
 ## Out of scope

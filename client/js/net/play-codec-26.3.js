@@ -5,6 +5,7 @@ import {PLAY_CLIENTBOUND_26_3} from './protocol-26.3-ids.js';
 import {readAnonymousNbt} from './nbt-anonymous.js';
 import {readCommands26_3} from './commands-26.3.js';
 import {decodeLevelChunkWithLight,readLightData} from './chunk-26.3.js';
+import {ENTITY_DATA_SERIALIZERS_26_3} from './entity-data-26.3.js';
 
 const NAME_BY_ID=new Map(Object.entries(PLAY_CLIENTBOUND_26_3).map(([name,id])=>[id,name]));
 
@@ -47,6 +48,62 @@ function readVecDelta(r,stepCount){
 function readMoveDelta(r){
   const properties=r.varint(),stepCount=properties>>>1;
   return {onGround:!!(properties&1),stepCount,delta:readVecDelta(r,stepCount)};
+}
+
+// 26.3 set_entity_data: VarInt entity id, then (index byte, serializer VarInt, value) until
+// 0xff. The serializer ids are the native EntityDataSerializers registration order; values
+// follow each serializer's StreamCodec. Serializers whose codec is not implemented yet
+// (item stacks with components, particles, game profiles) throw so the frame is skipped
+// instead of corrupting the stream.
+function readEntityDataValue(r,type){
+  const serializer=ENTITY_DATA_SERIALIZERS_26_3[type];
+  switch(serializer){
+    case 'BYTE':return r.i8();
+    case 'INT':return r.varint();
+    case 'LONG':return String(r.varlong());
+    case 'FLOAT':return r.f32();
+    case 'STRING':return r.string();
+    case 'COMPONENT':return readAnonymousNbt(r);
+    case 'OPTIONAL_COMPONENT':return r.bool()?readAnonymousNbt(r):null;
+    case 'ITEM_STACK':return readItemStack(r);
+    case 'BOOLEAN':return r.bool();
+    case 'ROTATIONS':return {pitch:r.f32(),yaw:r.f32(),roll:r.f32()};
+    case 'BLOCK_POS':return r.position();
+    case 'OPTIONAL_BLOCK_POS':return r.bool()?r.position():null;
+    case 'DIRECTION':return r.varint();
+    case 'OPTIONAL_LIVING_ENTITY_REFERENCE':return r.bool()?r.uuid():null;
+    case 'BLOCK_STATE':return r.varint();
+    case 'OPTIONAL_BLOCK_STATE':{
+      // EntityDataSerializers$2 writes Block.getId, with 0 meaning absent.
+      const id=r.varint();
+      return id===0?null:id;
+    }
+    case 'VILLAGER_DATA':return {villagerType:r.varint(),villagerProfession:r.varint(),level:r.varint()};
+    case 'OPTIONAL_UNSIGNED_INT':{
+      // EntityDataSerializers$3 stores value+1, 0 meaning absent.
+      const value=r.varint();
+      return value===0?null:value-1;
+    }
+    case 'POSE':return r.varint();
+    case 'CAT_VARIANT':case 'CAT_SOUND_VARIANT':case 'COW_VARIANT':case 'COW_SOUND_VARIANT':
+    case 'WOLF_VARIANT':case 'WOLF_SOUND_VARIANT':case 'FROG_VARIANT':case 'PIG_VARIANT':
+    case 'PIG_SOUND_VARIANT':case 'CHICKEN_VARIANT':case 'CHICKEN_SOUND_VARIANT':
+    case 'ZOMBIE_NAUTILUS_VARIANT':case 'PAINTING_VARIANT':case 'SNIFFER_STATE':
+    case 'ARMADILLO_STATE':case 'COPPER_GOLEM_STATE':case 'WEATHERING_COPPER_STATE':
+    case 'HUMANOID_ARM':case 'DYE_COLOR':return r.varint();
+    case 'OPTIONAL_GLOBAL_POS':return r.bool()?{dimension:r.string(),position:r.position()}:null;
+    case 'VECTOR3':return {x:r.f32(),y:r.f32(),z:r.f32()};
+    case 'QUATERNION':return {x:r.f32(),y:r.f32(),z:r.f32(),w:r.f32()};
+  }
+  throw Error('Unsupported 26.3 entity data serializer '+type+(serializer?' '+serializer:''));
+}
+function readEntityData(r){
+  const metadata={};
+  for(;;){
+    const index=r.u8();
+    if(index===0xff)return metadata;
+    metadata[index]=readEntityDataValue(r,r.varint());
+  }
 }
 
 function bitmask(value){const bits=[];for(let i=0;i<32;i++)if(value&(1<<i))bits.push(i);return bits;}
@@ -106,6 +163,19 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     const id=r.varint(),uuid=r.uuid(),type=r.varint();
     const x=r.f64(),y=r.f64(),z=r.f64(),movement=readLpVec3(r);
     return {id,uuid,type,x,y,z,movement,xRot:r.i8(),yRot:r.i8(),yHeadRot:r.i8(),data:r.varint()};
+  },
+  // ClientboundSetEntityDataPacket(int id, List<DataValue> packedItems).
+  set_entity_data(r){const entityId=r.varint();return {entityId,metadata:readEntityData(r)};},
+  // ClientboundSetEquipmentPacket(int entity, List<Pair<EquipmentSlot, ItemStack>>): each
+  // slot is one byte whose high bit continues the list, low seven bits are the enum ordinal.
+  set_equipment(r){
+    const entityId=r.varint(),equipments=[];
+    for(;;){
+      const slot=r.u8();
+      equipments.push({slot:slot&0x7f,item:readItemStack(r)});
+      if(!(slot&0x80))break;
+    }
+    return {entityId,equipments};
   },
   // ClientboundSetEntityMotionPacket(int id, Vec3.LP movement).
   set_entity_motion(r){return {id:r.varint(),movement:readLpVec3(r)};},

@@ -44,7 +44,8 @@
     "blocks:26.3": "node tools/port-26.3/build-blocks.mjs",
     "adapter:26.3": "node tools/port-26.3/adapter-gate.mjs",
     "items:26.3": "node tools/port-26.3/build-items.mjs",
-    "runtime:26.3": "node tools/port-26.3/build-runtime.mjs"
+    "runtime:26.3": "node tools/port-26.3/build-runtime.mjs",
+    "entity-data:26.3": "node tools/port-26.3/entity-data.mjs"
   },
   "dependencies": {
     "express": "^4.18.2",

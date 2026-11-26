@@ -3,6 +3,7 @@
 // packet is only adapted when the fields it needs are known; anything else is skipped
 // (never guessed) and reported by the adapter gate.
 import {HANDLED_PLAY_CLIENTBOUND_26_3} from './game-names-26.3.js';
+import {ENTITY_TYPES_26_3} from './entity-data-26.3.js';
 import {lightTo758} from '../world/light-26.3.js';
 
 const DEG=180/Math.PI;
@@ -11,12 +12,12 @@ const DEG=180/Math.PI;
 // stores degrees.
 const byteAngle=value=>value*360/256;
 
-// A stepped VecDelta is a list of per-tick deltas; the game's relMove consumes one short triple.
+// VecDelta shorts are 1/4096 block units (VecDeltaCodec); the game's relMove consumes blocks.
 function moveTotals(move){
-  if(move.delta.type==='linear')return move.delta;
+  if(move.delta.type==='linear')return {dx:move.delta.dx/4096,dy:move.delta.dy/4096,dz:move.delta.dz/4096};
   const total={dx:0,dy:0,dz:0};
   for(const step of move.delta.steps){total.dx+=step.dx;total.dy+=step.dy;total.dz+=step.dz;}
-  return total;
+  return {dx:total.dx/4096,dy:total.dy/4096,dz:total.dz/4096};
 }
 
 function positionFlags(relatives){
@@ -104,6 +105,27 @@ const ADAPTERS={
     return {location:packet.position,angle:packet.yaw*DEG};
   },
   block_update(packet){return {location:packet.position,state:packet.state};},
+  // 26.3 add_entity carries every entity type (there is no separate living-entity packet),
+  // a Vec3.LP movement instead of three velocity shorts, and VarInt object data.
+  add_entity(packet){
+    const entityTypeName=ENTITY_TYPES_26_3[packet.type];
+    if(!entityTypeName)return null;
+    return {
+      entityId:packet.id,
+      objectUUID:packet.uuid,
+      type:packet.type,
+      wireType:packet.type,
+      entityTypeName,
+      x:packet.x,y:packet.y,z:packet.z,
+      pitch:byteAngle(packet.xRot),
+      yaw:byteAngle(packet.yRot),
+      headPitch:byteAngle(packet.yHeadRot),
+      objectData:packet.data,
+      velocity:{x:packet.movement.x*8000,y:packet.movement.y*8000,z:packet.movement.z*8000}
+    };
+  },
+  set_entity_data(packet){return {entityId:packet.entityId,metadata:packet.metadata};},
+  set_equipment(packet){return {entityId:packet.entityId,equipments:packet.equipments};},
   move_entity_pos(packet){
     const move=moveTotals(packet);
     return {entityId:packet.entityId,dX:move.dx,dY:move.dy,dZ:move.dz,onGround:packet.onGround};
@@ -141,7 +163,9 @@ export function adaptPlay26_3(packet,context){
   const name=HANDLED_PLAY_CLIENTBOUND_26_3[packet.name];
   const adapt=ADAPTERS[packet.name];
   if(!name||!adapt)return null;
-  return {name,...adapt(packet.data,context)};
+  const data=adapt(packet.data,context);
+  if(!data)return null;
+  return {name,...data};
 }
 
 export const ADAPTED_26_3=Object.freeze(Object.keys(ADAPTERS));

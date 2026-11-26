@@ -56,7 +56,7 @@ function gameNames(phase,direction,vocabulary){
 // The game's own handler table is the final word: a translated name is only usable when
 // game.js implements on_<name>. Where 26.3 renamed a packet past the 1.20.6 vocabulary,
 // the alias is recorded here instead of being guessed at call time.
-const ALIASES_26_3={set_held_slot:'held_item_slot'};
+const ALIASES_26_3={set_held_slot:'held_item_slot',entity_position_sync:'entity_teleport'};
 const gameSource=await readFile(join(root,'client/js/game/game.js'),'utf8');
 const handlers=new Set([...gameSource.matchAll(/^  on_([a-z0-9_]+)\(/gm)].map(match=>match[1]));
 function handledNames(phase,direction,vocabulary){
@@ -78,8 +78,26 @@ const gameNamesSource=[
 ].join('\n')+'\n';
 const gameNamesPath=join(root,'client/js/net/game-names-26.3.js');
 
+// Native entity type registry, dense protocol ids 0..160, plus the native serializer ids.
+// The adapter needs the registry to turn add_entity's VarInt into a name the entity layer
+// can render, and the codec needs the serializer table to consume set_entity_data exactly.
+const registries=JSON.parse(await readFile(join(cache,'generated','reports','registries.json'),'utf8'));
+const entityEntries=registries['minecraft:entity_type'].entries;
+const entityTypes=[];
+for(const [name,entry] of Object.entries(entityEntries))entityTypes[entry.protocol_id]=short(name);
+if(entityTypes.some(name=>!name))throw Error('Native entity type ids are not dense');
+const serializers=JSON.parse(await readFile(join(root,'tools/port-26.3/fixtures/entity-data-serializers-26.3.json'),'utf8'));
+const serializerIds=Object.keys(serializers).map(Number);
+if(!serializerIds.every((id,index)=>id===index))throw Error('Entity data serializer ids are not dense');
+const entityDataSource=[
+  '// Generated from the native 26.3 entity type registry and serializer dump; do not hand-edit.',
+  'export const ENTITY_TYPES_26_3=Object.freeze('+JSON.stringify(entityTypes)+');',
+  'export const ENTITY_DATA_SERIALIZERS_26_3=Object.freeze('+JSON.stringify(serializers)+');'
+].join('\n')+'\n';
+const entityDataPath=join(root,'client/js/net/entity-data-26.3.js');
+
 if(process.argv.includes('--check')){
-  for(const [file,text,label] of [[path,source,'Protocol IDs'],[blocksPath,blocksSource,'Block-state table'],[gameNamesPath,gameNamesSource,'Game packet names']]){
+  for(const [file,text,label] of [[path,source,'Protocol IDs'],[blocksPath,blocksSource,'Block-state table'],[gameNamesPath,gameNamesSource,'Game packet names'],[entityDataPath,entityDataSource,'Entity type and data serializer tables']]){
     let current;
     try{current=await readFile(file,'utf8');}catch(e){if(e.code==='ENOENT')throw Error(label+' need generation: run node tools/port-26.3/generate-ids.mjs');throw e;}
     if(current!==text)throw Error(label+' need regeneration');
@@ -89,7 +107,9 @@ if(process.argv.includes('--check')){
   await writeFile(path,source);
   await writeFile(blocksPath,blocksSource);
   await writeFile(gameNamesPath,gameNamesSource);
+  await writeFile(entityDataPath,entityDataSource);
   const play=Object.keys(report.play.clientbound).length+'/'+Object.keys(report.play.serverbound).length;
   console.log('Generated '+path+' (play '+play+')');
   console.log('Generated '+blocksPath+' ('+stateCount+' states, air '+airStates.join(',')+')');
+  console.log('Generated '+entityDataPath+' ('+entityTypes.length+' entity types, '+serializerIds.length+' serializers)');
 }

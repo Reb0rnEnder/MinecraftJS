@@ -40,6 +40,19 @@ for(const frame of playFixture.frames){
   adapted.push(packet);
 }
 
+// Entity path: two native add_entity frames resolve through the 26.3 entity_type registry,
+// and every pinned set_entity_data frame decodes through the native serializer table.
+const bats=adapted.filter(packet=>packet.name==='spawn_entity'&&packet.entityTypeName==='bat');
+assert.equal(bats.length,2,'the native add_entity frames resolve to bats');
+assert.deepEqual(bats.map(bat=>bat.type),[10,10],'both bats carry the native entity type id');
+assert.ok(bats.every(bat=>bat.objectUUID&&Number.isFinite(bat.x)&&Number.isFinite(bat.z)),'spawn carries uuid and coordinates');
+assert.equal(bats[0].objectData,0,'native object data');
+const metadata=adapted.filter(packet=>packet.name==='entity_metadata').map(packet=>packet.metadata);
+assert.equal(metadata.length,5,'every pinned set_entity_data frame adapts');
+assert.equal(metadata[0][9],20,'float health at index 9 from the native frame');
+assert.equal(metadata[1][9],6,'second native health value');
+assert.equal(metadata[2][16],1,'native bat hanging flag is the byte 1 at index 16');
+
 const login=adapted.find(packet=>packet.name==='login');
 assert.ok(login,'Play Login adapts');
 assert.equal(login.dimension,'minecraft:overworld','login dimension');
