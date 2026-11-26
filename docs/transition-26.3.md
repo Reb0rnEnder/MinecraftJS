@@ -74,10 +74,16 @@ pending; product outside current scope; or experiment-gated.
 - P07 acceptance is closed: movement was accepted by the 26.3 server (6.9 blocks in 1.6 s), a zombie
   killed the player and the respawn round-trip restored health, and repeated disconnects rejoined Play.
   The preview webview cannot grant pointer lock, so input state was driven directly for that check.
-- Open at this checkpoint: 26.3 item stacks/components (P04, which also unblocks equipment and container
-  contents), the remaining outbound families (chat, interact, container clicks, creative slots), native
-  support/placement rules, remaining inbound families and the 26.3 model/texture bake. The task ledger is
-  at 32.4% (3 done, 5 partial, 9 todo).
+- Item stacks and component patches are live (P04 partial): `ItemStack`/`ItemStackTemplate` decode exactly
+  as `VarInt count, VarInt item id, VarInt added, VarInt removed, values, removed ids`, and 83 of the 115
+  wire components have verified readers. A real 26.3 session received a damaged custom-named sword, an
+  enchanted pickaxe, potions, a chest containing [apple x5, null, null, diamond x2] and a bundle containing
+  [apple x3, stick x8] with zero decode errors. `component-codecs:26.3` pins all 122 component codecs and the
+  seven server-only types; the remaining readers fail closed instead of consuming the wrong bytes.
+- Open at this checkpoint: the remaining outbound families (chat, interact, container clicks, creative
+  slots), the 32 fail-closed component readers (attribute_modifiers, profile and item-modifier records),
+  native support/placement rules, remaining inbound families and the 26.3 model/texture bake. The task
+  ledger is at 35.3% (3 done, 6 partial, 8 todo).
 
 ## Implementation order
 

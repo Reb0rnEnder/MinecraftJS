@@ -4,6 +4,7 @@
 // (never guessed) and reported by the adapter gate.
 import {HANDLED_PLAY_CLIENTBOUND_26_3} from './game-names-26.3.js';
 import {ENTITY_TYPES_26_3} from './entity-data-26.3.js';
+import {ITEM_NAMES_26_3} from './items-26.3.js';
 import {lightTo758} from '../world/light-26.3.js';
 
 const DEG=180/Math.PI;
@@ -33,6 +34,26 @@ function positionFlags(relatives){
 // The overworld clock is clock holder 0 (minecraft:overworld); set_time always carries it.
 function worldClock(clocks){
   return clocks[0]??Object.values(clocks)[0]??null;
+}
+
+// A decoded 26.3 component patch becomes the slot shape the game already reads: numeric id,
+// count, and the effective components the UI needs. Defaults live in the item prototype, so a
+// value is only present when the patch added it; nothing is synthesized.
+function itemStack(stack){
+  if(!stack)return null;
+  const components=Object.fromEntries(stack.added.map(component=>[component.name,component.value]));
+  return {
+    id:stack.itemId,
+    itemId:stack.itemId,
+    itemKey:ITEM_NAMES_26_3[stack.itemId],
+    count:stack.count,
+    damage:Number(components.damage||0),
+    maxDamage:components.max_damage??null,
+    maxStackSize:components.max_stack_size??null,
+    customName:components.custom_name??null,
+    componentPatch:{added:stack.added,removed:stack.removed},
+    components
+  };
 }
 
 const ADAPTERS={
@@ -125,7 +146,20 @@ const ADAPTERS={
     };
   },
   set_entity_data(packet){return {entityId:packet.entityId,metadata:packet.metadata};},
-  set_equipment(packet){return {entityId:packet.entityId,equipments:packet.equipments};},
+  set_equipment(packet){
+    return {entityId:packet.entityId,equipments:packet.equipments.map(equipment=>({slot:equipment.slot,item:itemStack(equipment.item)}))};
+  },
+  container_set_content(packet){
+    return {windowId:packet.containerId,stateId:packet.stateId,items:packet.items.map(itemStack),carriedItem:itemStack(packet.carried)};
+  },
+  container_set_slot(packet){
+    return {windowId:packet.containerId,stateId:packet.stateId,slot:packet.slot,item:itemStack(packet.item)};
+  },
+  // 26.3 splits player-inventory writes out of set_slot; the game's handler already treats
+  // windowId -2 as "player inventory, direct index".
+  set_player_inventory(packet){return {windowId:-2,stateId:0,slot:packet.slot,item:itemStack(packet.item)};},
+  container_close(packet){return {windowId:packet.containerId};},
+  container_set_data(packet){return {windowId:packet.containerId,property:packet.id,value:packet.value};},
   move_entity_pos(packet){
     const move=moveTotals(packet);
     return {entityId:packet.entityId,dX:move.dx,dY:move.dy,dZ:move.dz,onGround:packet.onGround};

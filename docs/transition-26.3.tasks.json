@@ -7,7 +7,7 @@
  "baselineCommit": "761970ed38eedd69effb38a1bfedf912cb26e30c",
  "fullParity": false,
  "nativeGraphicalGameplayAccepted": false,
- "nextTask": "P04",
+ "nextTask": "P06",
  "authorization": "Port 26.3 from the public 1.20.6 branch using the creator's pinned-input, gated-task method.",
  "executionRule": "Follow dependency order; native evidence and gate completion are required before marking done. Push validated batches and review shared backports as they land, not only at P16.",
  "tasks": [
@@ -100,7 +100,7 @@
   {
    "id": "P04",
    "title": "Item components and stacks",
-   "status": "todo",
+   "status": "partial",
    "dependsOn": [
     "P03"
    ],
@@ -111,7 +111,12 @@
     "26.3"
    ],
    "acceptance": "All 122 component types have a codec; patches and removals are preserved; defaults come from the native component reports.",
-   "evidence": []
+   "evidence": [
+    "Native codec manifest: component-codecs:26.3 runs javap on DataComponents and pins the networkSynchronized expression of all 122 registered component types; 7 are server-only (custom_data, intangible_projectile, map_decorations, debug_stick_state, recipes, lock, container_loot) and cannot appear in a patch.",
+    "ItemStack, ItemStackTemplate and DataComponentPatch decode from the javap layouts: VarInt count, VarInt item id, VarInt added/removed counts, values then removed ids. 83 of the 115 wire components have verified readers; the rest fail closed by name (attribute_modifiers, profile and the item-modifier records are the notable runtime ones).",
+    "Live 26.3 server, zero decode errors: a diamond_sword with damage=10 and a custom name, a diamond_pickaxe with enchantments [{enchantment:33,level:3}], two potions with potion_contents potion 13, a chest whose container component is [apple x5, null, null, diamond x2], and a bundle with [apple x3, stick x8] all landed in the player inventory with the native component values.",
+    "window_items, set_slot and the 26.3-only set_player_inventory packet (aliased onto the existing windowId -2 path), close_window and craft_progress_bar are decoded and adapted; the pinned native window_items frame is consumed exactly by adapter:26.3."
+   ]
   },
   {
    "id": "P05",

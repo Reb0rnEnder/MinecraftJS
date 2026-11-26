@@ -21,7 +21,8 @@ acceptance evidence from a native run, not because a table or model exists.
 | Area | Open part |
 | --- | --- |
 | P02 extraction | Native blocks, items, collision/selection shapes and block offsets are installed from the 26.3 jar. The remaining client tables (biomes, effects, enchantments, entities, foods, particles, sounds, recipes, creative) are still the older generation. |
-| P06 Play path | 49 of 144 inbound IDs decode with bytecode-verified bodies, the adapter covers 29 pinned frames across 18 handlers, and the live session holds; item stacks/components, several container and world-update families, and most outbound senders remain. |
+| P06 Play path | 49 of 144 inbound IDs decode with bytecode-verified bodies, the adapter covers 30 pinned frames across 19 handlers, and the live session holds; several container and world-update families and most outbound senders remain. |
+| P04 items | ItemStack/Template/patch decode from the javap layout and 83 of 115 wire components have verified readers. Live: damaged and custom-named gear, enchantments, potions, chest and bundle contents. Open: 32 fail-closed component readers (attribute_modifiers, profile, item-modifier records) and the outbound item writers (window_click HashedStack, creative slot). |
 
 ## Missing (inherited from 1.20.6)
 
@@ -31,7 +32,7 @@ not closed by the version jump.
 
 ## Unverified
 
-- Inventory interaction, item stacks with 26.3 components, and the remaining outbound Play families.
+- Inventory interaction and the remaining outbound Play families.
 - Entity identities new to 26.3 (for example `minecraft:sulfur_cube`) spawn but fall back to an unknown-object
   identity because the entity table and models are still the 1.20.6 generation (P10).
 - The browser still loads 1.20.6 model/texture bundles, so 26.3-only blocks have no baked models yet (P10).

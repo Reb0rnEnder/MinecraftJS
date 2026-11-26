@@ -6,14 +6,10 @@ import {readAnonymousNbt} from './nbt-anonymous.js';
 import {readCommands26_3} from './commands-26.3.js';
 import {decodeLevelChunkWithLight,readLightData} from './chunk-26.3.js';
 import {ENTITY_DATA_SERIALIZERS_26_3} from './entity-data-26.3.js';
+import {readItemStack26_3} from './item-components-26.3.js';
 
 const NAME_BY_ID=new Map(Object.entries(PLAY_CLIENTBOUND_26_3).map(([name,id])=>[id,name]));
-
-function readItemStack(r){
-  const count=r.varint();
-  if(count===0)return null;
-  throw Error('26.3 item stacks with components are not decoded yet');
-}
+const readItemStack=readItemStack26_3;
 
 // LpVec3 (26.3 low-precision vector): header byte 0 means zero, else one more byte and an
 // unsigned int form a 48-bit payload; header bit 2 extends the scale with a VarInt. Axes are
@@ -318,8 +314,7 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     for(let i=0;i<count;i++)effects.push(r.string());
     return {effects};
   },
-  // Empty slots are a zero VarInt count. Item stacks with components are not decoded yet;
-  // they throw instead of silently consuming the wrong number of bytes.
+  // Empty slots are a zero VarInt count; a non-empty stack is a 26.3 component patch.
   container_set_content(r){
     const containerId=r.varint();
     const stateId=r.varint();
@@ -328,6 +323,18 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     for(let i=0;i<count;i++)items.push(readItemStack(r));
     return {containerId,stateId,items,carried:readItemStack(r)};
   },
+  // ClientboundContainerSetSlotPacket: writeContainerId (VarInt), VarInt stateId, short slot,
+  // ItemStack.OPTIONAL_STREAM_CODEC. Verified with javap on writeContainerId.
+  container_set_slot(r){
+    return {containerId:r.varint(),stateId:r.varint(),slot:r.i16(),item:readItemStack(r)};
+  },
+  // ClientboundSetPlayerInventoryPacket(int slot, ItemStack): VarInt slot, VarInt item id,
+  // then the component patch (a VarInt count of 0 is the empty stack).
+  set_player_inventory(r){return {slot:r.varint(),item:readItemStack(r)};},
+  // ClientboundContainerClosePacket(int containerId): VarInt id.
+  container_close(r){return {containerId:r.varint()};},
+  // ClientboundContainerSetDataPacket(int containerId, int id, int value): VarInt, short, short.
+  container_set_data(r){return {containerId:r.varint(),id:r.i16(),value:r.i16()};},
   // SectionBlocksUpdate packs each change as VarLong(stateId << 12 | section-local position).
   section_blocks_update(r){
     const section=r.i64();

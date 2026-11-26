@@ -56,7 +56,7 @@ function gameNames(phase,direction,vocabulary){
 // The game's own handler table is the final word: a translated name is only usable when
 // game.js implements on_<name>. Where 26.3 renamed a packet past the 1.20.6 vocabulary,
 // the alias is recorded here instead of being guessed at call time.
-const ALIASES_26_3={set_held_slot:'held_item_slot',entity_position_sync:'entity_teleport'};
+const ALIASES_26_3={set_held_slot:'held_item_slot',entity_position_sync:'entity_teleport',set_player_inventory:'set_slot'};
 const gameSource=await readFile(join(root,'client/js/game/game.js'),'utf8');
 const handlers=new Set([...gameSource.matchAll(/^  on_([a-z0-9_]+)\(/gm)].map(match=>match[1]));
 function handledNames(phase,direction,vocabulary){
@@ -96,8 +96,28 @@ const entityDataSource=[
 ].join('\n')+'\n';
 const entityDataPath=join(root,'client/js/net/entity-data-26.3.js');
 
+// Item and data component registries, dense protocol ids, straight from the native report.
+// The item table feeds the adapter's itemKey and the component table is what the item codec
+// resolves a patch id through; both are asserted dense so a missing entry can never be read
+// as a neighbour's id.
+function denseNames(registry,label){
+  const entries=registries[registry].entries;
+  const names=[];
+  for(const [name,entry] of Object.entries(entries))names[entry.protocol_id]=short(name);
+  if(names.some(name=>!name))throw Error(label+' ids are not dense');
+  return names;
+}
+const itemNames=denseNames('minecraft:item','Item');
+const componentNames=denseNames('minecraft:data_component_type','Data component');
+const registrySource=[
+  '// Generated from the native 26.3 item and data component registries; do not hand-edit.',
+  'export const ITEM_NAMES_26_3=Object.freeze('+JSON.stringify(itemNames)+');',
+  'export const DATA_COMPONENT_NAMES_26_3=Object.freeze('+JSON.stringify(componentNames)+');'
+].join('\n')+'\n';
+const registryPath=join(root,'client/js/net/items-26.3.js');
+
 if(process.argv.includes('--check')){
-  for(const [file,text,label] of [[path,source,'Protocol IDs'],[blocksPath,blocksSource,'Block-state table'],[gameNamesPath,gameNamesSource,'Game packet names'],[entityDataPath,entityDataSource,'Entity type and data serializer tables']]){
+  for(const [file,text,label] of [[path,source,'Protocol IDs'],[blocksPath,blocksSource,'Block-state table'],[gameNamesPath,gameNamesSource,'Game packet names'],[entityDataPath,entityDataSource,'Entity type and data serializer tables'],[registryPath,registrySource,'Item and data component registries']]){
     let current;
     try{current=await readFile(file,'utf8');}catch(e){if(e.code==='ENOENT')throw Error(label+' need generation: run node tools/port-26.3/generate-ids.mjs');throw e;}
     if(current!==text)throw Error(label+' need regeneration');
@@ -108,8 +128,10 @@ if(process.argv.includes('--check')){
   await writeFile(blocksPath,blocksSource);
   await writeFile(gameNamesPath,gameNamesSource);
   await writeFile(entityDataPath,entityDataSource);
+  await writeFile(registryPath,registrySource);
   const play=Object.keys(report.play.clientbound).length+'/'+Object.keys(report.play.serverbound).length;
   console.log('Generated '+path+' (play '+play+')');
   console.log('Generated '+blocksPath+' ('+stateCount+' states, air '+airStates.join(',')+')');
   console.log('Generated '+entityDataPath+' ('+entityTypes.length+' entity types, '+serializerIds.length+' serializers)');
+  console.log('Generated '+registryPath+' ('+itemNames.length+' items, '+componentNames.length+' data components)');
 }
