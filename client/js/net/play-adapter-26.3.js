@@ -173,6 +173,11 @@ const ADAPTERS={
   player_look_at(packet){return {isEntity:packet.atEntity,entityId:packet.entity,x:packet.x,y:packet.y,z:packet.z,fromAnchor:packet.fromAnchor,toAnchor:packet.toAnchor};},
   open_book(packet){return {hand:packet.hand};},
   player_combat_kill(packet){return {playerId:packet.playerId,message:componentJson(packet.message)};},
+  set_border_center(p){return {action:2,x:p.x,z:p.z};},
+  set_border_lerp_size(p){return {action:1,oldRadius:p.oldSize,newRadius:p.newSize,speed:p.lerpTime};},
+  set_border_size(p){return {action:0,radius:p.size};},
+  set_border_warning_delay(p){return {action:4,warningTime:p.warningDelay};},
+  set_border_warning_distance(p){return {action:5,warningBlocks:p.warningBlocks};},
   player_chat(packet){
     return {sender:packet.sender,message:packet.unsignedContent?componentJson(packet.unsignedContent):JSON.stringify({text:packet.body.content}),
       position:0,trust:null,signature:packet.signature,globalIndex:packet.globalIndex,index:packet.index,

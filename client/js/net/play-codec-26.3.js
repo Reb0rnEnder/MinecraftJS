@@ -302,6 +302,11 @@ export const PLAY_DECODERS_26_3=Object.freeze({
   // existing 762 palette reader consumes.
   // ClientboundMapItemDataPacket: map id, scale byte, locked bool, optional decorations
   // (VarInt type, three bytes, optional component NBT), optional MapPatch (four bytes + byte array).
+  set_border_center(r){return {x:r.f64(),z:r.f64()};},
+  set_border_lerp_size(r){return {oldSize:r.f64(),newSize:r.f64(),lerpTime:r.varlong()};},
+  set_border_size(r){return {size:r.f64()};},
+  set_border_warning_delay(r){return {warningDelay:r.varint()};},
+  set_border_warning_distance(r){return {warningBlocks:r.varint()};},
   // ClientboundPlayerChatPacket: global index, sender, index, optional 256-byte signature,
   // packed body (content, timestamp, salt, last-seen signature ids), optional unsigned
   // component, filter mask, then the bound chat type (holder id, name, optional target).

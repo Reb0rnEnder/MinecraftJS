@@ -1583,6 +1583,11 @@ export class Game {
   // 26.3 initializes the border with centre, both sizes and the transition timer in one packet;
   // WorldBorder.apply takes the same fields under its action-3 vocabulary.
   on_initialize_world_border(p) { this.worldBorder.apply(p); }
+  on_world_border_center(p) { this.on_world_border(p); }
+  on_world_border_lerp_size(p) { this.on_world_border(p); }
+  on_world_border_size(p) { this.on_world_border(p); }
+  on_world_border_warning_delay(p) { this.on_world_border(p); }
+  on_world_border_warning_reach(p) { this.on_world_border(p); }
 
   on_face_player(p) { applyLookAt(this,p); }
 

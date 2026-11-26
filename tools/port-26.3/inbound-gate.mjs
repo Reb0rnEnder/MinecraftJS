@@ -71,6 +71,13 @@ check('animate decodes and adapts to animation', () => {
   eq([adapted.entityId, adapted.animation], [5, 3]);
 });
 
+check('border packets decode native fields', () => {
+  const init = adapt('initialize_border', [...f64(1), ...f64(2), ...f64(100), ...f64(200), ...varlong(50n), ...varint(29999984), ...varint(5), ...varint(15)], {name: 'initialize_world_border'});
+  const center = adapt('set_border_center', [...f64(3), ...f64(4)], {name: 'world_border_center'});
+  const lerp = adapt('set_border_lerp_size', [...f64(10), ...f64(20), ...varlong(7n)], {name: 'world_border_lerp_size'});
+  eq([init.action, init.x, init.newRadius, init.portalBoundary, center.action, center.z, lerp.action, lerp.newRadius, Number(lerp.speed)], [3, 1, 100, 29999984, 2, 4, 1, 20, 7]);
+});
+
 check('player_chat decodes body, last-seen ids and bound type', () => {
   const body=[...varint(9), ...uuid(0), ...varint(2), 0,
     ...str('hello'), ...i64(1234n), ...i64(7n), ...varint(1), ...varint(1),
