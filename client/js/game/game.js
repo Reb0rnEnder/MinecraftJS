@@ -1489,8 +1489,9 @@ export class Game {
   // CooldownTracker (ender pearls, chorus fruit, shields disabled by an axe)
   on_set_cooldown(p) {
     if (!this.cooldowns) this.cooldowns = new Map();
-    if (p.cooldownTicks > 0) this.cooldowns.set(p.itemId, { start: this.ticks, end: this.ticks + p.cooldownTicks });
-    else this.cooldowns.delete(p.itemId);
+    const item = p.itemID ?? p.itemId; // the 766 schema names it itemID
+    if (p.cooldownTicks > 0) this.cooldowns.set(item, { start: this.ticks, end: this.ticks + p.cooldownTicks });
+    else this.cooldowns.delete(item);
   }
 
   // CooldownTracker.getCooldown: fraction of the cooldown left (0 = ready)
