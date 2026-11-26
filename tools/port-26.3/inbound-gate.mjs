@@ -153,6 +153,18 @@ check('relative teleports are skipped instead of misapplied', () => {
   eq(adaptPlay26_3(packet, null), null);
 });
 
+check('boss_event decodes all six operations', () => {
+  const id = uuid(3);
+  const added = adapt('boss_event', [...id, ...varint(0), ...nbtString('Boss'), ...f32(0.5), ...varint(1), ...varint(0), 3], {name: 'boss_bar'});
+  eq([JSON.parse(added.title), added.health, added.color, added.dividers, added.flags], ['Boss', 0.5, 1, 0, 3]);
+  eq(adapt('boss_event', [...id, ...varint(1)], {name: 'boss_bar'}).action, 1);
+  eq(adapt('boss_event', [...id, ...varint(2), ...f32(0.75)], {name: 'boss_bar'}).health, 0.75);
+  eq(JSON.parse(adapt('boss_event', [...id, ...varint(3), ...nbtString('Renamed')], {name: 'boss_bar'}).title), 'Renamed');
+  const styled = adapt('boss_event', [...id, ...varint(4), ...varint(2), ...varint(3)], {name: 'boss_bar'});
+  eq([styled.color, styled.dividers], [2, 3]);
+  eq(adapt('boss_event', [...id, ...varint(5), 5], {name: 'boss_bar'}).flags, 5);
+});
+
 check('pong and the combat pair decode', () => {
   eq(Number(adapt('pong_response', [...i64(1234)], {name: 'ping_response'}).id), 1234);
   eq(adapt('player_combat_enter', [], {name: 'enter_combat_event'}), {name: 'enter_combat_event'});

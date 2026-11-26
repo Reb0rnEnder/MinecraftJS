@@ -192,6 +192,21 @@ export const PLAY_DECODERS_26_3=Object.freeze({
   set_cursor_item(r){return {item:readItemStack(r)};},
   // ClientboundMoveVehiclePacket(PositionAndRotation): position Vec3 (3 doubles) + yRot/xRot floats.
   move_vehicle(r){return {x:r.f64(),y:r.f64(),z:r.f64(),yRot:r.f32(),xRot:r.f32()};},
+  // ClientboundBossEventPacket(UUID id, Operation operation): OperationType is a VarInt 0..5
+  // (ADD, REMOVE, UPDATE_PROGRESS, UPDATE_NAME, UPDATE_STYLE, UPDATE_PROPERTIES) and each
+  // operation reads its own fields (Component name, float progress, colour/overlay enums, flags byte).
+  boss_event(r){
+    const uuid=r.uuid();
+    const action=r.varint();
+    const out={uuid,action};
+    if(action===0){out.name=readAnonymousNbt(r);out.progress=r.f32();out.color=r.varint();out.overlay=r.varint();out.flags=r.u8();}
+    else if(action===2)out.progress=r.f32();
+    else if(action===3)out.name=readAnonymousNbt(r);
+    else if(action===4){out.color=r.varint();out.overlay=r.varint();}
+    else if(action===5)out.flags=r.u8();
+    else if(action!==1)throw Error('Unknown 26.3 boss event action '+action);
+    return out;
+  },
   // ClientboundPongResponsePacket(long time): the original send timestamp as an i64.
   pong_response(r){return {id:r.i64()};},
   // ClientboundPlayerCombatEnterPacket(): no payload.

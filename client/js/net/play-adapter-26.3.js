@@ -116,6 +116,15 @@ const ADAPTERS={
   },
   game_event(packet){return {reason:packet.event,value:packet.param};},
   move_vehicle(packet){return {x:packet.x,y:packet.y,z:packet.z,yaw:packet.yRot};},
+  boss_event(packet){
+    const out={uuid:packet.uuid,action:packet.action};
+    if(packet.action===0){out.title=componentJson(packet.name);out.health=packet.progress;out.color=packet.color;out.dividers=packet.overlay;out.flags=packet.flags;}
+    else if(packet.action===2)out.health=packet.progress;
+    else if(packet.action===3)out.title=componentJson(packet.name);
+    else if(packet.action===4){out.color=packet.color;out.dividers=packet.overlay;}
+    else if(packet.action===5)out.flags=packet.flags;
+    return out;
+  },
   pong_response(packet){return {id:packet.id};},
   player_combat_enter(packet){return {};},
   player_combat_end(packet){return {duration:packet.duration};},
