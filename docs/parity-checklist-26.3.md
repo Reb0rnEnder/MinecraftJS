@@ -38,7 +38,7 @@ not closed by the version jump.
   shift-click into a full container and patched stacks in a click.
 - Entity identities new to 26.3 (for example `minecraft:sulfur_cube`) spawn but fall back to an unknown-object
   identity because the entity table and models are still the 1.20.6 generation (P10).
-- The browser still loads 1.20.6 model/texture bundles, so 26.3-only blocks have no baked models yet (P10).
+- The browser serves 26.3 assets (jar first, then the index) and bakes 26.3 block models, textures and the 26.3 panorama. Entity rigs for the families 26.3 restructured still come from 1.20.6 (P10).
 
 ## Out of scope
 

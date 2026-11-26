@@ -92,12 +92,15 @@ pending; product outside current scope; or experiment-gated.
 - Open at this checkpoint: patched-item HashedPatchMap hashing, creative slots (needs the P10 item table),
   remaining container/menu families, the 32 fail-closed component readers (attribute_modifiers, profile and
   item-modifier records), native support/placement rules, the 14 inbound IDs that are still raw
-  (recipes, advancements, show-dialog/waypoints, explosion/stats, debug) and the 26.3 model/texture bake. The task ledger is at 41.2% (3 done, 8 partial, 6 todo); next task P08.
-- The 26.3 asset jar is now inventoried: 11,603 `assets/minecraft/` entries (4,371 textures) against 8,431
-  (3,145 textures) in 1.20.6, with sounds moved out of the jar into 4,961 indexed objects. It has no
-  `assets/minecraft/entity/*.json`: entity models are Java code in 26.3, and `assets.load` requires the
-  entity-model bundle, so the texture switch needs a native model dumper first. Serving 26.3 textures on the
-  1.20.6 model bundle would be mixed-version data and is not done.
+  (recipes, advancements, show-dialog/waypoints, explosion/stats, debug) and the renderer rigs 26.3 restructured. The task ledger is at 41.2% (3 done, 8 partial, 6 todo); next task P08.
+- The asset target is 26.3: `lib/mcassets.js` defaults this tree to 26.3 (pack format 97) and the proxy serves
+  the jar first and the index for indexed objects. `tools/port-26.3/ExtractLayers26_3.java` bakes all 361
+  native layers and `lib/model-extract-26.3.js` produces a complete 129-model bundle (native composites for the
+  per-slot armor and split banners; the 1.20.6 rig only where 26.3 restructured the part tree the renderer
+  animates). 26.3 has 3,964 textures against 3,048 in 1.20.6: 2,302 shared paths changed, 1,165 are new, and
+  the 249 paths 26.3 dropped fall back to the pinned 1.20.6 file so the 1.20.6 UI still boots. The title
+  panorama is the 26.3 index image (599 KB against the 69-byte jar stub). Live check: the title screen and an
+  81-chunk join render with the new art, no missing-texture crash and no decode error.
 
 ## Implementation order
 

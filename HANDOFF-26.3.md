@@ -53,7 +53,7 @@ After adding a `Game` handler, run `node tools/port-26.3/generate-ids.mjs` first
 
 - Decode only against 26.3 bytecode (`javap`) or live 26.3 bytes. Never guess a layout.
 - Unknown packets stay raw and fail closed. A decode error must not close the socket.
-- Do not mix versions: menus are native 26.3, number formats are decoded natively, styled formats remain fail-closed until the Style codec is ported, and textures stay 1.20.6 because 26.3 models are Java code, not entity JSON.
+- Do not mix versions: menus are native 26.3, number formats are decoded natively, styled formats remain fail-closed until the Style codec is ported. Assets target 26.3 (pack format 97, jar-first textures, indexed sounds): `ExtractLayers26_3` bakes the native layers, and only the families whose part trees 26.3 restructured (horse/donkey, rabbit, dragon, boats, camel, sniffer, player, end crystal) keep the 1.20.6 rig the renderer animates. Only sprite paths 26.3 dropped fall back to the pinned 1.20.6 file.
 - No mixed-version data; no committed Mojang jars; preserve GPL-3.0 provenance.
 - Stage files explicitly; never commit user screenshots, servers/worlds or session files.
 - Update the three docs counts and evidence in the same commit as the code.
@@ -63,7 +63,7 @@ After adding a `Game` handler, run `node tools/port-26.3/generate-ids.mjs` first
 1. `update_recipes` (136), `update_advancements` (133) — reuse native registries and existing 766 handler shapes.
 2. `explode` (36), `award_stats` (3).
 3. `waypoint` / `show_dialog`, `move_minecart_along_track`, `place_ghost_recipe`, recipe-book add/remove, the debug value/event packets.
-4. **P10** `ExtractModels26_3.java` — biggest unlock/risk: dump 26.3 `ModelLayers`/`ModelPart` into `bundles/entity-models.json`, then evaluate a 26.3 asset target (pack format 97, jar-first textures, indexed sounds).
+4. **P10** started: `tools/port-26.3/ExtractLayers26_3.java` dumps all 361 native layers and `lib/model-extract-26.3.js` bakes a complete 129-model bundle for the 26.3 asset target. Remaining: port the renderer rigs for the families 26.3 restructured so their geometry can drop the 1.20.6 fallback.
 
 Already closed: scoreboard/teams, biomes, maps, swing animation, player chat, merchant offers, damage events, projectile power (decoded only — 26.3's scalar has no 766 adapter), the full world-border family (initialize plus all five setters, 0–5 action vocabulary), tags, game-rule values, report details, the disk-space warning, transient blocks, mount screens, debug samples, the test-instance/highlight frames, server links and clear-dialog.
 
@@ -71,7 +71,7 @@ Already closed: scoreboard/teams, biomes, maps, swing animation, player chat, me
 
 - P09 auth requires a real Microsoft account; do not fabricate session tests.
 - P13 visual parity needs user review.
-- Entity-model extraction feasibility unknown; there is no JSON oracle in the 26.3 jar.
+- Horse/donkey, rabbit, dragon, boats, camel, sniffer, player and end-crystal rigs still animate the 1.20.6 part trees; their 26.3 geometry waits on renderer updates.
 - Full live browser verification is unreliable here; use the byte gates and headless `client-net` harness.
 
 ## Definition of done for one section

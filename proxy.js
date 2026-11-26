@@ -34,6 +34,12 @@ let validBuiltAssets=false;
 let assetIndex = null; // mcassets.loadAssetIndex(): { objects, read(name) }
 const bundleCache = new Map();
 
+// This tree targets 26.3 assets, but the client UI is still 1.20.6-era and asks for
+// sprite/model paths 26.3 reorganised. Serve the 26.3 file when it exists and fall
+// back to the pinned 1.20.6 file only for paths 26.3 dropped, so the new textures
+// are used wherever both versions share a path.
+let fallbackJar = null, fallbackIndex = null;
+
 function jarJson(name) {
   const b = jar.read(name);
   return b ? JSON.parse(b.toString('utf8')) : null;
@@ -108,7 +114,9 @@ async function readAsset(rel) {
   if (rel === 'pack.mcmeta') return defaultPackMeta();
   if (rel === 'pack.png') return jar.read('pack.png');
   if (rel.startsWith('minecraft/')) {
-    return readDefaultAsset(jar,assetIndex,rel);
+    const own = await readDefaultAsset(jar,assetIndex,rel);
+    if (own || !fallbackJar) return own;
+    return readDefaultAsset(fallbackJar,fallbackIndex,rel);
   }
   return null;
 }
@@ -553,6 +561,18 @@ wss.on('connection', (ws) => {
   } catch (e) {
     console.error('Could not load game assets:', e.message);
     console.error('Set MC_JAR to the location of the 1.19.4 client if it is installed somewhere unusual.');
+  }
+  if (mcassets.MC_VERSION !== '1.20.6') {
+    try {
+      fallbackJar = new ZipFile(path.join(__dirname,'cache','port-1.20.6','client.jar'));
+      fallbackIndex = JSON.parse(fs.readFileSync(path.join(__dirname,'cache','port-1.20.6','assets-16.json'),'utf8'));
+      fallbackIndex.read = async (name) => {
+        const object = fallbackIndex.objects[name];
+        if (!object) return null;
+        const file = path.join(__dirname,'cache','port-1.20.6','objects',object.hash.slice(0,2),object.hash);
+        return fs.existsSync(file) ? fs.readFileSync(file) : null;
+      };
+    } catch (e) { console.error('1.20.6 asset fallback unavailable:', e.message); fallbackJar = null; }
   }
   try {
     assetIndex = await mcassets.loadAssetIndex();

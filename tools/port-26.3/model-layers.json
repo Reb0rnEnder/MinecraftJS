@@ -1,0 +1,22 @@
+{
+  "sheepWool": {
+    "layer": "minecraft:sheep#wool",
+    "fields": ["head", "body", "right_hind_leg", "left_hind_leg", "right_front_leg", "left_front_leg"]
+  },
+  "armorInner": {
+    "combine": ["minecraft:player#leggings", "minecraft:player#boots"],
+    "fields": ["head", "hat", "body", "right_arm", "left_arm", "right_leg", "left_leg"]
+  },
+  "armorOuter": {
+    "combine": ["minecraft:player#helmet", "minecraft:player#chestplate"],
+    "fields": ["head", "hat", "body", "right_arm", "left_arm", "right_leg", "left_leg"]
+  },
+  "piglinArmorOuter": {
+    "combine": ["minecraft:piglin#helmet", "minecraft:piglin#chestplate"],
+    "fields": ["head", "hat", "body", "right_arm", "left_arm", "right_leg", "left_leg"]
+  },
+  "banner": {
+    "append": ["minecraft:standing_banner#main", "minecraft:standing_banner#flag"],
+    "fields": ["flag", "pole", "bar"]
+  }
+}
