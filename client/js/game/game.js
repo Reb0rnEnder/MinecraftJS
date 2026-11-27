@@ -1659,6 +1659,20 @@ export class Game {
 
   on_face_player(p) { applyLookAt(this,p); }
 
+  // ClientboundPlayerRotationPacket: absolute or relative yaw/pitch without a position change.
+  on_player_rotation(p) {
+    const pl = this.player;
+    const yaw = Math.fround(p.relativeYaw ? pl.yaw + p.yaw : p.yaw);
+    const pitch = Math.max(-90, Math.min(90, Math.fround(p.relativePitch ? pl.pitch + p.pitch : p.pitch)));
+    pl.prevYaw = pl.yaw; pl.prevPitch = pl.pitch;
+    pl.yaw = Math.fround(yaw % 360); pl.pitch = Math.fround(pitch % 360);
+  }
+
+  // Packet boundaries only matter to bundles; the client already dispatches each frame in order.
+  on_bundle_delimiter() {}
+  on_post_effects(p) { this.postEffects = p.effects || []; }
+  on_game_rule_values(p) { Object.assign(this.gameRules ??= {}, p.values || {}); }
+
   on_title(p) { this.hud.onTitle(p); }
 
   on_boss_bar(p) { this.hud.onBossBar(p); }

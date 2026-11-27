@@ -137,7 +137,11 @@ pending; product outside current scope; or experiment-gated.
   (Creative catalogue stacks now carry native hashes), live acceptance of the remaining container/menu
   families, `can_place_on`/`can_break` (adventure-predicate graph), native support/placement rules, dialog
   input widgets, and the renderer rigs 26.3 restructured. All 144 inbound Play IDs
-  and all 16 native debug subscription entries decode; 120 have adapters. The native Creative catalogue now
+  and all 16 native debug subscription entries decode; 130 have generated adapters and two more reuse shared
+  handlers (mount_screen_open -> open_horse_window, move_minecart_along_track -> entity_teleport). Four IDs are
+  consumed by the connection layer before adaptation; the other eight are explicit scope decisions (three native
+  recipe-display packets, update_recipes, add_transient_block, custom_report_details, low_disk_space_warning and the
+  two game-test frames). The native Creative catalogue now
   comes from the pinned client for all eight feature masks (2034 stacks, 405 component patches), so creative
   slots no longer wait on the item table. The task ledger remains partial; next tasks P08/P10.
 - The asset target is 26.3: `lib/mcassets.js` defaults this tree to 26.3 (pack format 97) and the proxy serves

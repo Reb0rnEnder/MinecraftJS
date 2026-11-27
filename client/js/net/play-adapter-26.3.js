@@ -10,11 +10,23 @@ import {lightTo758} from '../world/light-26.3.js';
 import {componentFromNbt} from './component-nbt-1.20.6.js';
 import {parseDialog263} from './dialog-26.3.js';
 import {EFFECT_766} from '../game/effects-1.20.6.js';
+import {ITEM_DEFAULTS_26_3} from './item-defaults-26.3.js';
 
 // Reverse the native item table so a 26.3 cooldown group (an item identifier by default) can be
 // expressed as the item id the existing CooldownTracker is keyed by.
 const ITEM_ID_BY_NAME_26_3=Object.freeze(Object.fromEntries(ITEM_NAMES_26_3.map((name,id)=>[name,id])));
 const effectId26_3=effect=>EFFECT_766[effect.name.replace(/^minecraft:/,'')];
+
+// Native attributes are registry ids; the entity layer keys them by the 766 name. Player-only
+// attributes keep their player. prefix, everything else is generic.
+const PLAYER_ATTRIBUTES=new Set(['block_break_speed','block_interaction_range','entity_interaction_range','mining_efficiency','sneaking_speed','submerged_mining_speed','sweeping_damage_ratio']);
+const attributeName26_3=id=>{
+  const name=ITEM_DEFAULTS_26_3.attributeNames[id];
+  if(!name)return null;
+  const key=name.replace(/^minecraft:/,'');
+  const camel=key.replace(/_([a-z])/g,(_,c)=>c.toUpperCase());
+  return (PLAYER_ATTRIBUTES.has(key)?'player.':'generic.')+camel;
+};
 
 const DEG=180/Math.PI;
 
@@ -70,6 +82,13 @@ const componentJson=value=>value==null?null:JSON.stringify(componentFromNbt(valu
 const scoreNumberFormat=format=>format?.type==='fixed'?{type:'fixed',value:componentFromNbt(format.value)}:format;
 const TEAM_VISIBILITY=['always','never','hideForOtherTeams','hideForOwnTeam'];
 const TEAM_COLLISION=['always','never','pushOtherTeams','pushOwnTeam'];
+
+// Native packets whose game handler is shared with an older packet and therefore is not picked
+// up by the generated one-to-one handler table.
+const NATIVE_HANDLED=Object.freeze({
+  mount_screen_open:'open_horse_window',
+  move_minecart_along_track:'entity_teleport'
+});
 
 const ADAPTERS={
   login(login,context){
@@ -440,6 +459,26 @@ const ADAPTERS={
     const end=packet.path.type==='stepped'?packet.path.end:{x:packet.path.end.x,y:packet.path.end.y,z:packet.path.end.z};
     return {entityId:packet.id,x:end.x,y:end.y,z:end.z,yaw:packet.yRot*DEG,pitch:packet.xRot*DEG,onGround:packet.onGround};
   },
+  update_attributes(packet){
+    const properties=[];
+    for(const attribute of packet.attributes){
+      const key=attributeName26_3(attribute.attribute);
+      if(!key)return null;
+      properties.push({key,value:attribute.base,base:attribute.base,modifiers:attribute.modifiers.map(m=>({uuid:m.id,name:m.id,amount:m.amount,operation:m.operation}))});
+    }
+    return {entityId:packet.entityId,properties};
+  },
+  bundle_delimiter(){return {};},
+  post_effects(packet){return {effects:packet.effects};},
+  game_rule_values(packet){return {values:packet.values};},
+  mount_screen_open(packet){return {containerId:packet.containerId,nbSlots:packet.inventoryColumns,entityId:packet.entityId};},
+  player_rotation(packet){return {yaw:packet.yRot,relativeYaw:packet.relativeY,pitch:packet.xRot,relativePitch:packet.relativeX};},
+  // The client walks the weighted steps; the entity layer extrapolates from the last one.
+  move_minecart_along_track(packet){
+    const step=packet.steps[packet.steps.length-1];
+    if(!step)return null;
+    return {entityId:packet.entityId,x:step.position.x,y:step.position.y,z:step.position.z,yaw:byteAngle(step.yRot),pitch:byteAngle(step.xRot),onGround:true};
+  },
   set_entity_motion(packet){
     // The entity layer stores velocity in 1/8000 blocks per tick.
     return {entityId:packet.id,velocity:{x:packet.movement.x*8000,y:packet.movement.y*8000,z:packet.movement.z*8000}};
@@ -484,7 +523,7 @@ const ADAPTERS={
 
 export function adaptPlay26_3(packet,context){
   if(!packet?.decoded)return null;
-  const name=HANDLED_PLAY_CLIENTBOUND_26_3[packet.name];
+  const name=HANDLED_PLAY_CLIENTBOUND_26_3[packet.name]||NATIVE_HANDLED[packet.name];
   const adapt=ADAPTERS[packet.name];
   if(!name||!adapt)return null;
   const data=adapt(packet.data,context);

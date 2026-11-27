@@ -81,6 +81,30 @@ check('animate decodes and adapts to animation', () => {
   eq([adapted.entityId, adapted.animation], [5, 3]);
 });
 
+check('update_attributes maps registry ids and modifier operations', () => {
+  const body=[...varint(7), ...varint(2),
+    ...varint(26), ...f64(0.1), ...varint(1), ...str('test:boost'), ...f64(0.2), ...varint(1),
+    ...varint(23), ...f64(20), ...varint(0)];
+  const adapted = adapt('update_attributes', body, {name: 'update_attributes'});
+  eq([adapted.entityId, adapted.properties[0].key, adapted.properties[0].value, adapted.properties[0].modifiers[0].operation, adapted.properties[0].modifiers[0].amount, adapted.properties[1].key, adapted.properties[1].value], [7, 'generic.movementSpeed', 0.1, 1, 0.2, 'generic.maxHealth', 20]);
+});
+
+check('mount_screen_open reuses the horse window handler', () => {
+  const adapted = adapt('mount_screen_open', [...varint(3), ...varint(9), ...i32(-12)], {name: 'open_horse_window'});
+  eq([adapted.containerId, adapted.nbSlots, adapted.entityId], [3, 9, -12]);
+});
+
+check('player_rotation keeps absolute and relative axes', () => {
+  const adapted = adapt('player_rotation', [...f32(90), 1, ...f32(-10), 0], {name: 'player_rotation'});
+  eq([adapted.yaw, adapted.relativeYaw, adapted.pitch, adapted.relativePitch], [90, true, -10, false]);
+});
+
+check('move_minecart_along_track adapts the last native step', () => {
+  const body=[...varint(9), ...varint(1), ...f64(1), ...f64(2), ...f64(3), ...f64(0.1), ...f64(0.2), ...f64(0.3), 64, 0, ...f32(1)];
+  const adapted = adapt('move_minecart_along_track', body, {name: 'entity_teleport'});
+  eq([adapted.entityId, adapted.x, adapted.y, adapted.z, adapted.yaw, adapted.pitch], [9, 1, 2, 3, 90, 0]);
+});
+
 check('border packets decode native fields', () => {
   const init = adapt('initialize_border', [...f64(1), ...f64(2), ...f64(100), ...f64(200), ...varlong(50n), ...varint(29999984), ...varint(5), ...varint(15)], {name: 'initialize_world_border'});
   const center = adapt('set_border_center', [...f64(3), ...f64(4)], {name: 'world_border_center'});
