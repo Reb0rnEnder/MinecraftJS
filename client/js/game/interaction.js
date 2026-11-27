@@ -160,6 +160,8 @@ export class Interaction {
     this.swingLength = len;
   }
 
+  // ItemRenderer renders itemToRender: the old stack until the lowered hand takes the new one
+  shownHandStacks() { const held = this.game.inventory.held(); return [this._equipped !== undefined ? this._equipped : held, null]; }
   updateEquip() {
     // ItemRenderer.updateEquippedItem
     this.prevEquipProgress = this.equipProgress;

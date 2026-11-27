@@ -199,7 +199,7 @@ export class HandRenderer {
     if (this.skinDirty) this.reset();
     // Vanilla renders first-person hand/item with a fixed 70-degree FOV independent of game FOV
     mat4.perspective(this.proj, 70 * D2R, platform().width / platform().height, 0.05, 10);
-    const held = g.inventory.held();
+    const held = g.interaction?.shownHandStacks?.()[0] ?? g.inventory.held();
     const key = held ? held.id + ':' + held.damage + ':' + (held.id === 261 ? g.itemRenderer.modelFor(held).name : '') : null;
     if (held && held.id === 358) return this._prepareMap(partial, held);
     if (this.mapMode) { this.mapMode = false; this.itemKey = undefined; this.content.matrix = null; }
