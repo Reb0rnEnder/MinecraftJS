@@ -7,7 +7,10 @@ import { writeLpVec3 } from "./lp-vec3-26.3.js";
 import { writeItemStack26_3, writeHashedStack26_3 } from "./item-components-26.3.js";
 import { writeAnonymousNbt } from "./nbt-anonymous.js";
 
-export const chatState762 = new ChatState766();
+// The 26.3 table renames chat_message -> chat and appends the LastSeenMessages.Update
+// checksum byte. Keep the historical export name for the game's chat tracking.
+export const chatState263 = new ChatState766({out: OUT, checksum: true});
+export const chatState762 = chatState263;
 export const PROTOCOL_VERSION = 777;
 export const decodePacket = (data) => decodePlayPacket766(data);
 
@@ -52,9 +55,31 @@ function payloadChannel(channel) {
 
 export const C = {
   ...technicalPackets(packet),
+  // Packets this client intentionally never originates because no screen or behavior owns
+  // them. Every other Protocol 777 serverbound id has a sender below.
+  outboundScope: Object.freeze({
+    test_instance_block_action: 'gametest block editor; no client screen and server command path owns it'
+  }),
   // 26.3 splits one client tick across several movement packets; the server only
   // clears its per-tick "position received" flag when this packet ends the tick.
   clientTickEnd: () => packet('client_tick_end').build(),
+  configurationAcknowledged: () => packet('configuration_acknowledged').build(),
+  playerLoaded: () => packet('player_loaded').build(),
+  bundleItemSelected: (slotId, selectedItemIndex) =>
+    packet('bundle_item_selected').varint(slotId).varint(selectedItemIndex).build(),
+  chatAck: (offset) => packet('message_acknowledgement').varint(offset).build(),
+  changeGameMode: (mode) => packet('change_game_mode').varint(mode).build(),
+  pickItemFromEntity: (entityId, includeData = false) =>
+    packet('pick_item_from_entity').varint(entityId).bool(includeData).build(),
+  spectatorAction: (entityId = null) =>
+    packet('spectator_action').varint(entityId == null ? 0 : entityId + 1).build(),
+  setGameRule: (entries) => {
+    const w = packet('set_game_rule').varint(entries.length);
+    for (const {name, value} of entries) w.string(String(name)).string(String(value));
+    return w.build();
+  },
+  setTestBlock: (pos, mode, message = '') =>
+    packet('set_test_block').position(pos.x, pos.y, pos.z).varint(mode).string(String(message)).build(),
   setDifficulty: value => packet('set_difficulty').u8(value).build(),
   lockDifficulty: value => packet('lock_difficulty').bool(value).build(),
   pickItem: slot => packet('pick_item').varint(slot).build(),
@@ -77,7 +102,7 @@ export const C = {
       if (!(signature instanceof Uint8Array) || signature.length !== 256) throw Error('Chat argument signature must be 256 bytes');
       w.string(argumentName).raw(signature);
     }
-    return w.varint(messageCount).raw(acknowledged).build();
+    return w.varint(messageCount).raw(acknowledged).u8(0).build();
   },
   // 26.3 echoes the accepted position and rotations in the acknowledgement itself.
   teleportConfirm: (id, x = 0, y = 0, z = 0, yaw = 0, pitch = 0) =>
@@ -111,6 +136,11 @@ export const C = {
   },
 
   clientCommand: (action) => packet("client_command").varint(action).build(),
+  cookieResponse: (key, value) => {
+    const w = packet('cookie_response').string(String(key)).bool(value != null);
+    if (value != null) w.raw(value instanceof Uint8Array ? value : new Uint8Array(value));
+    return w.build();
+  },
   tabComplete: (text, _position = null, transactionId = 0) =>
     packet("tab_complete").varint(transactionId).string(text).build(),
   // ServerboundContainerClosePacket(containerId): writeContainerId is a VarInt in 26.3.
@@ -210,7 +240,7 @@ export const C = {
     return writer.build();
   },
 
-  chat: (message, options = undefined) => chatState762.encode(String(message), options),
+  chat: (message, options = undefined) => chatState263.encode(String(message), options),
   resourcePackStatus: (uuid, result) => packet("resource_pack_receive").uuid(uuid).varint(result).build(),
   enchantItem: (windowId, enchantment) => packet("enchant_item").i8(windowId).i8(enchantment).build(),
   menuButton: (windowId, button) => packet("enchant_item").i8(windowId).i8(button).build(),

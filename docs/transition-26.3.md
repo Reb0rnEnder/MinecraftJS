@@ -128,6 +128,10 @@ pending; product outside current scope; or experiment-gated.
   sniffer, horse-armor and player rigs now bind native 26.3 layers too, including merged player
   cape/ears and horse/camel saddle layers. The ender dragon and end crystal still use their
   1.20.6 fallback because their native part chains differ from the renderer.
+- All 69 serverbound Play IDs now have a sender or an explicit scope decision. The 26.3 chat
+  family uses `chat`/`chat_command`/`chat_ack` ids and appends the LastSeenMessages checksum
+  byte; bundle, game-mode, game-rule, entity-pick, spectator, player-loaded and test-block
+  senders were added. Only the gametest block editor is intentionally out of scope.
 - Open at this checkpoint: general HashedPatchMap hashing for arbitrary server-provided component values
   (Creative catalogue stacks now carry native hashes), live acceptance of the remaining container/menu
   families, `can_place_on`/`can_break` (adventure-predicate graph), native support/placement rules, dialog

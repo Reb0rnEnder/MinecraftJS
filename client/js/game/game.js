@@ -1172,6 +1172,8 @@ export class Game {
     // the last reported position stays: the next tick reports the new position again (onUpdateWalkingPlayer)
     if (!this.doneLoadingTerrain) {
       this.doneLoadingTerrain = true;
+      // 26.3 ServerboundPlayerLoadedPacket: the terrain/chunk batch is ready.
+      this.send(C.playerLoaded());
       pl.prevX = pl.x; pl.prevY = pl.y; pl.prevZ = pl.z;
       if (this.screens.current instanceof DownloadingTerrainScreen) this.screens.current.terrainReady = true;
     }
