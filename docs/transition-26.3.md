@@ -104,13 +104,19 @@ pending; product outside current scope; or experiment-gated.
 - Dialog screens (P13 partial): `show_dialog` and `clear_dialog` are now adapted. The screen parses the
   native Dialog dispatch graph for notice, confirmation, multi_action, dialog_list and server_links,
   resolves either holder branch through the configuration `minecraft:dialog` registry, renders compact
-  plain-message and item-description bodies, and executes static click actions plus custom click actions.
-  `test-dialog-26.3.mjs` covers the parser, registry resolution, adapter pair and screen action semantics.
+  plain-message and item-description bodies, executes static click actions plus custom click actions, and
+  builds server-link buttons from the last `server_links` packet. `test-dialog-26.3.mjs` covers the parser,
+  registry resolution, adapter pair, server-link buttons and screen action semantics.
+- The entity table is native for this target (P02 partial): the client's EntityType registry now supplies
+  all 161 wire ids with native dimensions, eye heights and MobCategory, so spawn packets can no longer
+  index 26.3 ids through the 1.20.6 order. The generated display table and stats names use the same dump,
+  and the 26.3 wood boats/rafts, split potions and wind charges map to their existing object kinds.
+  `test-entity-registry-26.3.mjs` and `entity-registry:26.3 --check` pin the native order.
 - Open at this checkpoint: general HashedPatchMap hashing for arbitrary server-provided component values
   (Creative catalogue stacks now carry native hashes), live acceptance of the remaining container/menu
   families, `can_place_on`/`can_break` (adventure-predicate graph), native support/placement rules, dialog
-  input widgets and server-link buttons, and the renderer rigs 26.3 restructured. All 144 inbound Play IDs
-  and all 16 native debug subscription entries decode; 119 have adapters. The native Creative catalogue now
+  input widgets, and the renderer rigs 26.3 restructured. All 144 inbound Play IDs
+  and all 16 native debug subscription entries decode; 120 have adapters. The native Creative catalogue now
   comes from the pinned client for all eight feature masks (2034 stacks, 405 component patches), so creative
   slots no longer wait on the item table. The task ledger remains partial; next tasks P08/P10.
 - The asset target is 26.3: `lib/mcassets.js` defaults this tree to 26.3 (pack format 97) and the proxy serves

@@ -145,6 +145,39 @@ test('show_dialog and clear_dialog adapt through the 26.3 packet bridge', () => 
   assert.deepEqual(cleared, {name: 'clear_dialog'});
 });
 
+test('server_links packet supplies the dialog buttons', () => {
+  const packet = adaptPlay26_3({
+    name: 'server_links', decoded: true, data: {links: [
+      {type: 0, name: null, link: 'https://example.invalid/bugs'},
+      {type: null, name: C({text: S('Custom link')}), link: 'https://example.invalid/custom'}
+    ]}
+  }, {});
+  assert.equal(packet.name, 'server_links');
+  assert.equal(packet.links[0].type, 0);
+  assert.equal(packet.links[1].name.text, 'Custom link');
+
+  const dialog = parseDialog263(C({
+    type: S('minecraft:server_links'),
+    title: text('Links'),
+    columns: I(2),
+    button_width: I(120),
+    exit_action: button('Back', command('back'))
+  }));
+  const screen = new DialogScreen263({
+    gui: {width: 320, height: 240, font: {wrap: (text) => [text]}},
+    serverLinks: packet.links,
+    screens: {close: () => {}, open: () => {}},
+    send: () => {}
+  }, dialog);
+  screen.init();
+  assert.equal(screen.buttons.length, 3); // two links plus the exit button
+  assert.equal(screen.buttons[0].label, 'known_server_link.report_bug');
+  assert.equal(screen.buttons[1].label, 'Custom link');
+  assert.equal(screen.buttons[0].w, 120);
+  assert.equal(screen.buttons[2].label, 'Back');
+  assert.deepEqual(screen.dialog.buttons[0].action, {type: 'open_url', url: 'https://example.invalid/bugs'});
+});
+
 test('dialog screen presents native buttons and runs a notice action', () => {
   const sent = [];
   let closed = 0;

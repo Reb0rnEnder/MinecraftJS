@@ -207,6 +207,7 @@ export class Game {
     this.player.onSwim = (vol) => this.sound.playAtPlayer('entity.player.swim', vol, 1 + (Math.random() - Math.random()) * 0.4);
     this.entities = new EntityManager(this);
     this.waypoints = new WaypointManager26_3(this);
+    this.serverLinks = [];
     this.scoreboard = new Scoreboard(this);
     this.advancements = new Advancements(this);
     this.recipeBook = new RecipeBook(this);
@@ -1314,6 +1315,7 @@ export class Game {
 
   on_waypoint(p) { this.waypoints.accept(p); }
   on_show_dialog(p) { this.screens.open(new DialogScreen263(this, p.dialog)); }
+  on_server_links(p) { this.serverLinks = p.links || []; }
   on_clear_dialog() { if (this.screens.current?.isDialog263) this.screens.close(); }
 
   on_update_attributes(p) {

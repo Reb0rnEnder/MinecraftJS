@@ -16,6 +16,15 @@ function componentText(component) {
   return component == null ? '' : chatToLegacy(component, {parsed: true});
 }
 
+// ServerLinks.KnownLinkType enum order; the packet sends the enum id for a known link.
+const SERVER_LINK_TYPES = ['report_bug', 'community_guidelines', 'support', 'status', 'feedback', 'community', 'website', 'forums', 'news', 'announcements'];
+
+function serverLinkLabel(link) {
+  if (link.name) return link.name;
+  const type = SERVER_LINK_TYPES[link.type];
+  return type ? {translate: 'known_server_link.' + type} : {text: link.link || ''};
+}
+
 export {parseDialog263, parseDialogRegistry263};
 
 export class DialogScreen263 extends Screen {
@@ -41,6 +50,16 @@ export class DialogScreen263 extends Screen {
     if (!this.dialog) {
       this.buttons.push(new Button(0, this.width / 2 - 75, this.height - 28, 150, 20, tr('gui.ok'), () => this.game.screens.close()));
       return;
+    }
+    // ServerLinksDialogScreen builds its buttons from the last server-links packet, not from
+    // the dialog graph.
+    if (this.dialog.type === 'server_links') {
+      this.dialog.buttons = (this.game.serverLinks || []).map(link => ({
+        label: serverLinkLabel(link),
+        tooltip: null,
+        width: this.dialog.buttonWidth || 150,
+        action: {type: 'open_url', url: link.link}
+      }));
     }
     this.lines = this.layoutBody();
     this.placeButtons();

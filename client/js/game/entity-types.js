@@ -1,8 +1,8 @@
-import{PAWS_DATA_766}from'./paws-data-1.20.6.js';
-import { ENTITY_REGISTRY_1206 } from './entity-registry-1.20.6.js';
-// Native 1.20.6 entity registry and dimensions, generated from the pinned reports.
+import { ENTITY_REGISTRY_26_3 } from './entity-registry-26.3.js';
+// Native 26.3 entity registry, dimensions, eye heights and MobCategory from the pinned client.
 // Numeric MOB_FAMILIES selectors below are internal renderer identities, not wire IDs.
-const REGISTRY = ENTITY_REGISTRY_1206;
+const REGISTRY = ENTITY_REGISTRY_26_3;
+const MOB_CATEGORIES = new Set(['monster','creature','ambient','axolotls','underground_water_creature','water_creature','water_ambient']);
 
 // INTERNAL renderer selectors, never protocol IDs. Only families already selected
 // by the renderer use numbers. A new family keeps its canonical string as e.type.
@@ -25,20 +25,10 @@ export const AGEABLE = new Set([...ANIMALS, 'villager','wandering_trader']);
 export const HORSES = new Set(('horse donkey mule zombie_horse skeleton_horse llama trader_llama').split(' '));
 export const ZOMBIES = new Set(('zombie husk zombie_villager zombie_pigman drowned').split(' '));
 export const FISH = new Set(('cod salmon pufferfish tropical_fish').split(' '));
-const NEW_MOBS = new Set(('bogged breeze armadillo allay frog tadpole warden camel sniffer axolotl goat glow_squid hoglin piglin piglin_brute strider zoglin zombified_piglin bee cat fox panda pillager ravager wandering_trader trader_llama cod dolphin drowned evoker illusioner llama parrot polar_bear pufferfish salmon tropical_fish turtle vex vindicator phantom').split(' '));
-const EYES = { armadillo:PAWS_DATA_766.armadilloDimensions.adult[2], armor_stand: 1.7775, bat: 0.45, cave_spider: 0.45, enderman: 2.55, endermite: 0.1,
-  ghast: 2.6, giant: 10.44, guardian: 0.425, elder_guardian: 0.99875, shulker: 0.5, silverfish: 0.1,
-  skeleton: 1.74, stray: 1.74, wither_skeleton: 2.1, spider: 0.65, squid: 0.4,
-  zombie: 1.74, husk: 1.74, drowned: 1.74, zombie_pigman: 1.74, zombie_villager: 1.74,
-  player: 1.62, parrot: 0.54, wolf: 0.68, chicken: 0.7, cow: 1.3, mooshroom: 1.3,
-  cod: 0.195, salmon: 0.26, tropical_fish: 0.26, pufferfish: 0.455, dolphin: 0.3,
-  horse: 1.6, donkey: 1.6, mule: 1.6, zombie_horse: 1.6, skeleton_horse: 1.6, llama: 1.87,
-  sheep: 1.235, snow_golem: 1.7, villager: 1.62, witch: 1.62, phantom: 0.175,
-  slime: 0.51000005 * 0.625, magma_cube: 0.51000005 * 0.625,
-  arrow: 0, spectral_arrow: 0, trident: 0, item_frame: 0, leash_knot: -0.0625, tnt: 0 };
-export const ENTITY_TYPES = REGISTRY.map(([name, width, height], id) => ({
-  id, name, width, height, eyeHeight: EYES[name] ?? height * 0.85,
-  mob: Object.hasOwn(MOB_FAMILIES, name) || NEW_MOBS.has(name),
+const NEW_MOBS = new Set(('bogged breeze armadillo allay frog tadpole warden camel sniffer axolotl goat glow_squid hoglin piglin piglin_brute strider zoglin zombified_piglin bee cat fox panda pillager ravager wandering_trader trader_llama cod dolphin drowned evoker illusioner llama parrot polar_bear pufferfish salmon tropical_fish turtle vex vindicator phantom copper_golem').split(' '));
+export const ENTITY_TYPES = REGISTRY.map(([name, width, height, eyeHeight, category], id) => ({
+  id, name, width, height, eyeHeight, category,
+  mob: Object.hasOwn(MOB_FAMILIES, name) || NEW_MOBS.has(name) || MOB_CATEGORIES.has(category),
 }));
 export const ENTITIES_BY_NAME = Object.fromEntries(ENTITY_TYPES.map(e => [e.name, e]));
 
@@ -71,5 +61,9 @@ export const PAINTINGS = [
   ['skeleton', 'Skeleton', 64, 48], ['donkey_kong', 'DonkeyKong', 64, 48],
 ];
 
-// Since 1.14 Spawn Entity and Spawn Mob use the same entity registry.
-export const OBJECT_TYPES=Object.fromEntries(ENTITY_TYPES.map(def=>[def.id,{...def,kind:({'glow_item_frame':'itemframe','chest_boat':'boat','block_display':'display','item_display':'display','text_display':'display','interaction':'interaction','painting':'painting'})[def.name]||Object.values(LEGACY_OBJECT_TYPES).find(o=>o.name===def.name)?.kind||(MINECART_NAMES.includes(def.name)?'minecart':def.name)}]));
+// Since 1.14 Spawn Entity and Spawn Mob use the same entity registry. 26.3 split the generic
+// potion entity into splash/lingering ids and renamed boats by wood, so map those names before
+// falling back to the legacy table.
+const boatKind=name=>/_chest_(boat|raft)$/.test(name)||/_(boat|raft)$/.test(name)?'boat':null;
+const OBJECT_KINDS={splash_potion:'projectile',lingering_potion:'projectile',wind_charge:'projectile',breeze_wind_charge:'projectile'};
+export const OBJECT_TYPES=Object.fromEntries(ENTITY_TYPES.map(def=>[def.id,{...def,kind:boatKind(def.name)||OBJECT_KINDS[def.name]||({'glow_item_frame':'itemframe','chest_boat':'boat','block_display':'display','item_display':'display','text_display':'display','interaction':'interaction','painting':'painting'})[def.name]||Object.values(LEGACY_OBJECT_TYPES).find(o=>o.name===def.name)?.kind||(MINECART_NAMES.includes(def.name)?'minecart':def.name)}]));

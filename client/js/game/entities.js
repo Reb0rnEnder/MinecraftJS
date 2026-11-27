@@ -64,26 +64,16 @@ const MOB_NAMES = {
   97: 'SnowMan', 98: 'Ozelot', 99: 'VillagerGolem', 100: 'EntityHorse', 101: 'Rabbit', 120: 'Villager',
 };
 
-// Resolve wire identities from the target registry; retain its special eye heights.
+// Resolve wire identities from the native 26.3 registry; the display table is generated from
+// the same dump, so it must not override these dimensions through an older entity id order.
 export function nativeEntityDefinition(game, id) {
-  const definition=ENTITY_TYPES[id],supplied=game?.assets?.data?.entities?.find(e=>e.id===id);
-  if(supplied&&definition&&supplied.name!==definition.name)throw Error('Entity registry does not match runtime: '+id);
-  return definition;
+  return ENTITY_TYPES[id];
 }
 
 export function nativeEntityDefinitionByName(game,name){
   const canonical=String(name||"").replace(/^minecraft:/,"");
   const renderer=ENTITIES_BY_NAME[canonical];
-  const supplied=game?.assets?.data?.entities?.find(e=>e.name===canonical);
-  if(!renderer&&!supplied)return null;
-  const height=supplied?.height??renderer?.height??0;
-  return{
-    ...renderer,
-    ...supplied,
-    name:canonical,
-    eyeHeight:renderer?.eyeHeight??height*0.85,
-    mob:renderer?.mob??false
-  };
+  return renderer ? {...renderer, name:canonical} : null;
 }
 
 const wrap = (a) => { a %= 360; if (a >= 180) a -= 360; if (a < -180) a += 360; return a; };
@@ -216,7 +206,7 @@ export class EntityManager {
     e.type = p.type;
     e.typeName = e.entityName || 'Unknown object';
     e.objectData = p.objectData;
-    if(e.entityName==='chest_boat')e.chestBoat=true;
+    if(/_chest_(boat|raft)$/.test(e.entityName||''))e.chestBoat=true;
     if(e.kind==='minecart')e.cartType=Math.max(0,MINECART_NAMES.indexOf(e.entityName));
     e.width = def ? def.width : 0; e.height = def ? def.height : 0; e.eyeHeight = def ? def.eyeHeight : 0;
     e.pickable = ['boat', 'minecart', 'crystal', 'itemframe', 'leash', 'armorstand', 'shulker_bullet'].includes(e.kind) || e.entityName === 'fireball';

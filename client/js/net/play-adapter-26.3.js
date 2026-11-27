@@ -227,6 +227,12 @@ const ADAPTERS={
   // SwingAnimationType.NONE (0) must not start a swing.
   swing_animation(packet){const type=packet.animation?.type??0;return {entityId:packet.entityId,animation:type===0?-1:(packet.hand===1?3:0),hand:packet.hand,swing:packet.animation};},
   waypoint(packet){return packet;},
+  // ClientboundServerLinksPacket carries ServerLinks.UntrustedEntry(type, link); the known link
+  // type is an id, while a custom name is a component. Keep both so the dialog can label the
+  // buttons without depending on a particular server link.
+  server_links(packet){
+    return {links:packet.links.map(link=>({type:link.type,name:link.name?componentFromNbt(link.name):null,link:link.link}))};
+  },
   // ClientboundShowDialogPacket: inline NBT for holder 0, otherwise id-1 into the synchronized
   // minecraft:dialog registry. A registry value the configuration did not carry cannot be
   // resolved, so it is reported as unported instead of opening an empty screen.
