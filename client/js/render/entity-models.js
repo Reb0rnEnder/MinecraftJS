@@ -41,7 +41,15 @@ export function J(name, names) {
     p.rx = q.r[0]; p.ry = q.r[1]; p.rz = q.r[2];
     if(q.s)[p.sx,p.sy,p.sz]=q.s;
     made.set(i, p);
-    for (const c of q.children) { const cp = mk(c); if (cp) p.add(cp); }
+    const byName = {};
+    Object.defineProperty(p, 'namedChildren', { value: byName, enumerable: false });
+    for (const [name, c] of Object.entries(q.namedChildren || {})) {
+      const cp = mk(c);
+      if (cp) { p.add(cp); byName[name] = cp; }
+    }
+    for (const c of q.children) {
+      if (!Object.values(byName).some((part) => made.get(c) === part)) { const cp = mk(c); if (cp) p.add(cp); }
+    }
     return p;
   };
   const out = {};
@@ -206,7 +214,7 @@ export function animateBiped(m, a) {
     }else{main.ry=-.3*sign+p.head.ry;off.ry=.6*sign+p.head.ry;main.rx=-PI/2+p.head.rx+.1;off.rx=-1.5+p.head.rx;}
   }
   if (swim > 0) animateSwim(p, a, swim);
-  p.headwear.copyAngles(p.head);
+  if (!p.head.children.includes(p.headwear)) p.headwear.copyAngles(p.head);
 }
 
 // ModelBiped (cot): a 26-tick breaststroke with pulls at 0..14,
@@ -248,18 +256,28 @@ export function playerModel(slim, tw = 64, th = 64) {
     m.slim = false;
     return m;
   }
-  const p = J(slim ? 'playerSlim' : 'player', [...BIPED, 'leftArmwear', 'rightArmwear', 'leftLegwear', 'rightLegwear', 'bodywear', 'cape', 'ears']);
+  const p = J(slim ? 'playerSlim' : 'player', [...BIPED, 'leftArmwear', 'rightArmwear', 'leftLegwear', 'rightLegwear', 'bodywear', 'cape']);
+  const attachedLayers = p.rightArm.children.includes(p.rightArmwear);
+  // The native cape is a child of the body, but the renderer owns its sway as a separate
+  // holder. Detach it so it is not drawn twice, then render it from p.cape.
+  if (attachedLayers && p.cape) p.body.children = p.body.children.filter((part) => part !== p.cape);
+  const roots = [p.head, p.body, p.rightArm, p.leftArm, p.rightLeg, p.leftLeg];
+  if (!attachedLayers) roots.push(p.leftLegwear, p.rightLegwear, p.leftArmwear, p.rightArmwear, p.bodywear, p.cape);
   const m = {
     parts: p, slim,
-    roots: [p.head, p.headwear, p.body, p.rightArm, p.leftArm, p.rightLeg, p.leftLeg, p.leftLegwear, p.rightLegwear, p.leftArmwear, p.rightArmwear, p.bodywear],
+    roots,
   };
   m.animate = (mm, a) => {
     animateBiped(mm, a);
     const q = mm.parts;
-    q.leftLegwear.copyAngles(q.leftLeg); q.rightLegwear.copyAngles(q.rightLeg);
-    q.leftArmwear.copyAngles(q.leftArm); q.rightArmwear.copyAngles(q.rightArm);
-    q.bodywear.copyAngles(q.body);
-    if (slim) { q.rightArm.py = 2.5; q.leftArm.py = 2.5; q.rightArmwear.py = 2.5; q.leftArmwear.py = 2.5; }
+    // 26.3 keeps the sleeve/pant/jacket layers as children of their limbs, so they inherit the
+    // pose. The 1.20.6 fallback kept them as separate parts and copied the angles once.
+    if (!attachedLayers) {
+      q.leftLegwear.copyAngles(q.leftLeg); q.rightLegwear.copyAngles(q.rightLeg);
+      q.leftArmwear.copyAngles(q.leftArm); q.rightArmwear.copyAngles(q.rightArm);
+      q.bodywear.copyAngles(q.body);
+      if (slim) { q.rightArm.py = 2.5; q.leftArm.py = 2.5; q.rightArmwear.py = 2.5; q.leftArmwear.py = 2.5; }
+    }
   };
   return m;
 }
@@ -422,13 +440,14 @@ export function ocelot() {
 }
 
 export function rabbit() {
-  const p = J('rabbit', ['leftFoot', 'rightFoot', 'leftThigh', 'rightThigh', 'body', 'leftArm', 'rightArm', 'head', 'rightEar', 'leftEar', 'tail', 'nose']);
+  // 26.3's rabbit rig names the hind foot "haunch" and has no separate nose part.
+  const p = J('rabbit', ['leftFoot', 'rightFoot', 'leftThigh', 'rightThigh', 'body', 'leftArm', 'rightArm', 'head', 'rightEar', 'leftEar', 'tail']);
   return {
     parts: p, roots: Object.values(p), modelScale: 0.6, modelTranslateY: 16 * 0.0625 * (1 / 0.6 - 1) * 0.6,
     animate: (m, a) => {
       const q = m.parts;
       const yaw = a.yaw * PI / 180, pitch = a.pitch * PI / 180;
-      for (const k of ['head', 'nose', 'rightEar', 'leftEar']) { q[k].rx = pitch; q[k].ry = yaw; }
+      for (const k of ['head', 'rightEar', 'leftEar']) { q[k].rx = pitch; q[k].ry = yaw; }
       q.rightEar.ry = yaw - 0.2617994; q.leftEar.ry = yaw + 0.2617994;
       const jump = a.onGround ? 0 : sin(a.age * 0.5) * 0.5 + 0.5;
       q.leftThigh.rx = (jump * 50 - 21) * PI / 180; q.rightThigh.rx = q.leftThigh.rx;
@@ -469,17 +488,24 @@ export function horse(type = 0, layer = null) {
     q.tail.rx = PI / 6 + a.lsa * 0.75;
     q.tail.py = -5 + a.lsa; q.tail.pz = 2 + a.lsa * 2;
     q.tail.ry = a.tailWag ? cos(a.age * 0.7) : 0;
-    q.saddleParts.forEach((part) => { part.visible = !!a.saddled; });
-    q.reins.forEach((part) => { part.visible = !!a.saddled && !!a.hasRider; });
+    if (q.saddleParts) q.saddleParts.forEach((part) => { part.visible = !!a.saddled; });
+    if (q.reins) q.reins.forEach((part) => { part.visible = !!a.saddled && !!a.hasRider; });
     if (chested) q.leftChest.visible = q.rightChest.visible = !!a.chested && !a.child;
   }, {
     horseType: kind, modelScale: kind === 'donkey' ? 0.87 : kind === 'mule' ? 0.92 : 1,
     texture: 'entity/horse/' + ({ horse: 'horse_white', zombie_horse: 'horse_zombie', skeleton_horse: 'horse_skeleton' }[kind] || kind) + '.png',
   });
   const p = m.parts;
-  [p.head, p.mane, p.muzzle, p.leftEar, p.rightEar] = p.neck.children;
-  [p.saddle, p.leftBit, p.rightBit, p.faceRopes, p.noseBand] = p.saddleParts;
-  [p.leftRein, p.rightRein] = p.reins;
+  // Native 26.3 hangs the head/mane/mouth from head_parts by name and adds the saddle
+  // children there; the 1.20.6 fallback used positional children.
+  const hc = p.neck.namedChildren || {};
+  p.head = hc.head || p.neck.children[0];
+  p.mane = hc.mane || p.neck.children[1];
+  p.muzzle = hc.upper_mouth || hc.muzzle || p.neck.children[2];
+  p.leftEar = hc.left_ear || p.neck.children[3];
+  p.rightEar = hc.right_ear || p.neck.children[4];
+  if (p.saddleParts) [p.saddle, p.leftBit, p.rightBit, p.faceRopes, p.noseBand] = p.saddleParts;
+  if (p.reins) [p.leftRein, p.rightRein] = p.reins;
   return m;
 }
 

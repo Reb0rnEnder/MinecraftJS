@@ -508,5 +508,190 @@
       ],
       "water_patch"
     ]
+  },
+  "rabbit": {
+    "layer": "minecraft:rabbit#main",
+    "fields": [
+      "left_haunch",
+      "right_haunch",
+      "left_hind_leg",
+      "right_hind_leg",
+      "body",
+      "left_front_leg",
+      "right_front_leg",
+      "head",
+      "right_ear",
+      "left_ear",
+      "tail"
+    ]
+  },
+  "rabbitBaby": {
+    "layer": "minecraft:rabbit_baby#main",
+    "fields": [
+      "left_haunch",
+      "right_haunch",
+      "left_hind_leg",
+      "right_hind_leg",
+      "body",
+      "left_front_leg",
+      "right_front_leg",
+      "head",
+      "right_ear",
+      "left_ear",
+      "tail"
+    ]
+  },
+  "camel": {
+    "merge": [
+      "minecraft:camel#main",
+      "minecraft:camel#saddle"
+    ],
+    "fields": [
+      "$root",
+      "right_front_leg",
+      "right_hind_leg",
+      "left_hind_leg",
+      "body",
+      "left_front_leg",
+      "head",
+      "hump",
+      "saddle",
+      "tail",
+      "bridle",
+      "right_ear",
+      "reins",
+      "left_ear"
+    ]
+  },
+  "sniffer": {
+    "layer": "minecraft:sniffer#main",
+    "fields": [
+      "$root",
+      "bone",
+      "right_front_leg",
+      "right_hind_leg",
+      "right_mid_leg",
+      "left_hind_leg",
+      "body",
+      "left_mid_leg",
+      "left_front_leg",
+      "head",
+      "nose",
+      "lower_beak",
+      "right_ear",
+      "left_ear"
+    ]
+  },
+  "horse": {
+    "merge": [
+      "minecraft:horse#main",
+      "minecraft:horse#saddle"
+    ],
+    "fields": [
+      "body",
+      "head_parts",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "tail",
+      [
+        "saddle",
+        "head_saddle",
+        "mouth_saddle_wrap",
+        "left_saddle_mouth",
+        "right_saddle_mouth"
+      ],
+      [
+        "left_saddle_line",
+        "right_saddle_line"
+      ]
+    ]
+  },
+  "donkey": {
+    "merge": [
+      "minecraft:donkey#main",
+      "minecraft:donkey#saddle"
+    ],
+    "fields": [
+      "body",
+      "head_parts",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "tail",
+      [
+        "saddle",
+        "head_saddle",
+        "mouth_saddle_wrap",
+        "left_saddle_mouth",
+        "right_saddle_mouth"
+      ],
+      [
+        "left_saddle_line",
+        "right_saddle_line"
+      ],
+      "left_chest",
+      "right_chest"
+    ]
+  },
+  "player": {
+    "merge": [
+      "minecraft:player#main",
+      "minecraft:player#cape",
+      "minecraft:player#ears"
+    ],
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg",
+      "left_sleeve",
+      "right_sleeve",
+      "left_pants",
+      "right_pants",
+      "jacket",
+      "cape"
+    ]
+  },
+  "playerSlim": {
+    "merge": [
+      "minecraft:player_slim#main",
+      "minecraft:player#cape",
+      "minecraft:player#ears"
+    ],
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg",
+      "left_sleeve",
+      "right_sleeve",
+      "left_pants",
+      "right_pants",
+      "jacket",
+      "cape"
+    ]
+  },
+  "horseArmor": {
+    "layer": "minecraft:horse_armor#main",
+    "fields": [
+      "body",
+      "head_parts",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "tail",
+      [],
+      []
+    ]
   }
 }

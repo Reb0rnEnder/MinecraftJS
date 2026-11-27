@@ -124,8 +124,10 @@ pending; product outside current scope; or experiment-gated.
 - 26.3 boats are one entity type per wood (including pale_oak and poplar) with no Boat.Type
   metadata index. The client resolves `boatWood` from the native entity name, reads the native
   AbstractBoat paddle/bubble accessors, picks the matching item, and extracts all 22 native boat
-  and chest-boat models (with the separate water-patch layer). Horse, rabbit, dragon and player
-  rigs still use their 1.20.6 fallback.
+  and chest-boat models (with the separate water-patch layer). Rabbit, horse/donkey, camel,
+  sniffer, horse-armor and player rigs now bind native 26.3 layers too, including merged player
+  cape/ears and horse/camel saddle layers. The ender dragon and end crystal still use their
+  1.20.6 fallback because their native part chains differ from the renderer.
 - Open at this checkpoint: general HashedPatchMap hashing for arbitrary server-provided component values
   (Creative catalogue stacks now carry native hashes), live acceptance of the remaining container/menu
   families, `can_place_on`/`can_break` (adventure-predicate graph), native support/placement rules, dialog
