@@ -1,5 +1,6 @@
 import {effectLabel766,effectDuration766,compareEffects766} from '../../game/effects-1.20.6.js';
 import {nativeCreativeRows766,creativeStack766} from '../creative-data-1.20.6.js';
+import {nativeCreativeRows263,creativeStack263} from '../creative-data-26.3.js';
 import {Writer766} from '../../net/configuration-1.20.6.js';
 import {ITEM_DEFAULTS_766} from '../../net/item-components-1.20.6-defaults.js';
 const creativeTabIconStacks = new WeakMap();
@@ -846,13 +847,13 @@ export function openContainerScreen(game, win) {
 
 // Native Java 1.14.4 creative tabs, extracted from the pinned client jar by tools/creative-dump.
 // The middle tuple field is retained for the data format only; flattened variants have distinct IDs.
-const stackOf = tuple => tuple?.[3] ? creativeStack766(tuple) : (([id,,tag])=>({id,count:1,damage:0,nbt:tag?{t:10,name:'',v:structuredClone(tag)}:null}))(tuple);
+const stackOf = tuple => tuple?.stack?.version==='26.3' ? creativeStack263(tuple) : tuple?.[3] ? creativeStack766(tuple) : (([id,,tag])=>({id,count:1,damage:0,nbt:tag?{t:10,name:'',v:structuredClone(tag)}:null}))(tuple);
 // Creative templates/snapshots must never share mutable NBT with player stacks. Prefer
 // the structured tag over an older raw buffer when a caller has changed NBT in place.
 const creativeCopy = copy;
 const creativeLocked = (it) => !!(it && (it.locked || it.nbt?.v?.CustomCreativeLock));
 const sendCreativeSlot = (game, slot, it) => game.send(C.creativeSlot(slot, creativeCopy(it)));
-export function creativeRows(game){const native=nativeCreativeRows766(game);if(native)return native;const data=game.assets.data.creative,enabled=game.enabledFeatures,mask=(enabled?.has('minecraft:update_1_20')?1:0)|(enabled?.has('minecraft:bundle')?2:0),catalog=data.featureCatalogs?.find(c=>c.mask===mask)||data;return game.settings.operatorItemsTab&&game.canUseCommandBlock()?catalog.operatorTabs:catalog.tabs;}
+export function creativeRows(game){const native=nativeCreativeRows263(game)||nativeCreativeRows766(game);if(native)return native;const data=game.assets.data.creative,enabled=game.enabledFeatures,mask=(enabled?.has('minecraft:update_1_20')?1:0)|(enabled?.has('minecraft:bundle')?2:0),catalog=data.featureCatalogs?.find(c=>c.mask===mask)||data;return game.settings.operatorItemsTab&&game.canUseCommandBlock()?catalog.operatorTabs:catalog.tabs;}
 const tabData = game=>creativeRows(game).filter(t=>t.type!=='category'||t.items.length>0);
 const tabInfo = (game, i) => tabData(game).find((t) => t.index === i);
 const label = (game, i) => (tabInfo(game, i) || {}).label;

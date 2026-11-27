@@ -538,11 +538,21 @@ function patchOf(stack){
   };
 }
 
+function base64Bytes(text){
+  const binary=globalThis.atob(text);
+  return Uint8Array.from(binary,char=>char.charCodeAt(0));
+}
+
 export function writeItemStack26_3(w,stack){
   if(!stack||!(stack.count>0)){w.varint(0);return w;}
   const {itemId,count,added,removed}=patchOf(stack);
   if(!Number.isInteger(itemId)||itemId<0)throw Error('26.3 item stack needs a native item id');
-  if(added.length||removed.length)throw Error('26.3 item writer has no component encoders yet (item '+itemId+')');
+  if(added.length||removed.length){
+    // Native Creative catalog entries keep the exact patch emitted by the pinned client.
+    // Re-encoding arbitrary components is separate work; a missing patch must fail loudly.
+    if(!stack.creativePatch||stack.creativePatchItem!==itemId)throw Error('26.3 item writer has no component encoders for item '+itemId);
+    return w.varint(count).varint(itemId).raw(base64Bytes(stack.creativePatch));
+  }
   w.varint(count).varint(itemId).varint(0).varint(0);
   return w;
 }

@@ -101,10 +101,12 @@ pending; product outside current scope; or experiment-gated.
   `[set_entity_data#101]` serializer 17. `ParticleTypes` BootstrapMethods pin all 128 particle types and the
   22 data StreamCodecs; `particle-codecs:26.3` decodes the live-captured frame and every codec byte layout.
   A fresh join now loads 81 chunks and 26 entities with zero skipped frames. Vibration stays fail-closed.
-- Open at this checkpoint: patched-item HashedPatchMap hashing, creative slots (needs the P10 item table),
-  remaining container/menu families, `can_place_on`/`can_break` (adventure-predicate graph), native
-  support/placement rules, the 6 inbound IDs that are still raw
-  (show-dialog/waypoints, debug) and the renderer rigs 26.3 restructured. The task ledger is at 41.2% (3 done, 8 partial, 6 todo); next task P08.
+- Open at this checkpoint: patched-item HashedPatchMap hashing, live acceptance of the remaining container/menu
+  families, `can_place_on`/`can_break` (adventure-predicate graph), native support/placement rules, the dialog
+  screen for the decoded show_dialog holder, and the renderer rigs 26.3 restructured. All 144 inbound Play IDs
+  and all 16 native debug subscription entries decode; 117 have adapters. The native Creative catalogue now
+  comes from the pinned client for all eight feature masks (2034 stacks, 405 component patches), so creative
+  slots no longer wait on the item table. The task ledger remains partial; next task P08.
 - The asset target is 26.3: `lib/mcassets.js` defaults this tree to 26.3 (pack format 97) and the proxy serves
   the jar first and the index for indexed objects. `tools/port-26.3/ExtractLayers26_3.java` bakes all 361
   native layers and `lib/model-extract-26.3.js` produces a complete 129-model bundle (native composites for the

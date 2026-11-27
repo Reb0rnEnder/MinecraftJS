@@ -442,6 +442,48 @@ check('show_dialog decodes both holder branches', () => {
   eq(inline.dialog.t, 10);
 });
 
+check('debug subscriptions decode every native value codec', () => {
+  const update=(subscription,body)=>[...varint(subscription),1,...body];
+  const bees=decode('debug/block_value',[...packPos(1,64,2),...update(1,[0,1,...packPos(3,65,4),...varint(7),...varint(1),...packPos(5,66,6)])]).data;
+  eq([bees.position,bees.subscription,bees.value.travelTicks,bees.value.flowerPos,bees.value.blacklistedHives.length],[{x:1,y:64,z:2},1,7,{x:3,y:65,z:4},1]);
+  const brains=decode('debug/entity_value',[...varint(9),...update(2,[...str('Steve'),...str('minecraft:farmer'),...i32(12),...f32(20),...f32(20),...str(''),1,...i32(-1),0,0,0,0,0,0])]).data;
+  eq([brains.entityId,brains.subscriptionName,brains.value.name,brains.value.xp],[9,'brains','Steve',12]);
+  const breezes=decode('debug/entity_value',[...varint(9),...update(3,[1,...varint(44),0])]).data;
+  eq([breezes.value.attackTarget,breezes.value.jumpTarget],[44,null]);
+  const goals=decode('debug/entity_value',[...varint(9),...update(4,[1,...varint(2),1,...str('minecraft:melee_attack')])]).data;
+  eq(goals.value.goals,[{priority:2,isRunning:true,name:'minecraft:melee_attack'}]);
+  const paths=decode('debug/entity_value',[...varint(9),...update(5,[1,...i32(1),...packPos(1,2,3),0,0,0,0,...f32(2.5)])]).data;
+  eq([paths.value.path.reached,paths.value.path.nextNodeIndex,paths.value.maxNodeDistance],[true,1,2.5]);
+  const intersection=decode('debug/entity_value',[...varint(9),...update(6,[1])]).data;
+  eq(intersection.value,'IN_FLUID');
+  const hive=decode('debug/chunk_value',[...i64(0x0000000200000001n),...update(7,[...varint(5),...varint(2),...varint(3),1])]).data;
+  eq([Number(hive.chunk),hive.value.blockId,hive.value.occupantCount,hive.value.honeyLevel,hive.value.sedated],[0x0000000200000001,5,2,3,true]);
+  const poi=decode('debug/block_value',[...packPos(1,64,2),...update(8,[...packPos(3,65,4),...varint(6),...varint(2)])]).data;
+  eq([poi.value.position,poi.value.poiTypeId,poi.value.freeTicketCount],[{x:3,y:65,z:4},5,2]);
+  const orientation=decode('debug/block_value',[...packPos(1,64,2),...update(9,[...varint(12)])]).data;
+  eq(orientation.value.index,12);
+  const village=decode('debug/chunk_value',[...i64(0n),...varint(10),1]).data;
+  eq(village.value,null);
+  const raids=decode('debug/chunk_value',[...i64(0n),...update(11,[...varint(1),...packPos(7,70,8)])]).data;
+  eq(raids.value,[{x:7,y:70,z:8}]);
+  const structures=decode('debug/chunk_value',[...i64(0n),...update(12,[...varint(1),...packPos(1,2,3),...packPos(4,5,6),...varint(1),...packPos(7,8,9),...packPos(10,11,12),1])]).data;
+  eq([structures.value[0].boundingBox.maxX,structures.value[0].pieces[0].isStart],[4,true]);
+  const listeners=decode('debug/block_value',[...packPos(1,64,2),...update(13,[...varint(16)])]).data;
+  eq(listeners.value.listenerRadius,16);
+  const neighbor=decode('debug/block_value',[...packPos(1,64,2),...update(14,[...packPos(9,10,11)])]).data;
+  eq(neighbor.value,{x:9,y:10,z:11});
+  const event=decode('debug/event',[...varint(15),...varint(3),...f64(1.5),...f64(2.5),...f64(3.5)]).data;
+  eq([event.subscriptionName,event.value.eventId,event.value.position],['game_events',2,{x:1.5,y:2.5,z:3.5}]);
+  const cleared=decode('debug/entity_value',[...varint(9),...varint(5),0]).data;
+  eq([cleared.subscription,cleared.value],[5,null]);
+  const adapted=adapt('debug/block_value',[...packPos(1,2,3),...update(14,[...packPos(4,5,6)])],{name:'debug_block_value'});
+  eq([adapted.position,adapted.subscription,adapted.value],[{x:1,y:2,z:3},14,{x:4,y:5,z:6}]);
+  const adaptedChunk=adapt('debug/chunk_value',[...i64(0x0000000200000001n),...varint(10),1],{name:'debug_chunk_value'});
+  eq([adaptedChunk.chunkX,adaptedChunk.chunkZ,adaptedChunk.value],[1,2,null]);
+  const adaptedEvent=adapt('debug/event',[...varint(15),...varint(3),...f64(1.5),...f64(2.5),...f64(3.5)],{name:'debug_event'});
+  eq([adaptedEvent.subscriptionName,adaptedEvent.value.eventId,adaptedEvent.value.position],['game_events',2,{x:1.5,y:2.5,z:3.5}]);
+});
+
 check('recipe family decodes the native display graph', () => {
   const key = str('minecraft:test');
   // one property set (items 1,2) and one stonecutter entry (ingredient item 3, option item 5)

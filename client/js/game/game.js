@@ -892,6 +892,29 @@ export class Game {
     samples.push(p.sample.slice());
     if (samples.length > 240) samples.shift();
   }
+  // ClientboundDebug*ValuePacket / ClientboundDebugEventPacket. These only arrive after a
+  // debug_subscription_request; keep the values keyed by subscription so the optional update
+  // can also clear one entry, and cap the event stream instead of growing without bound.
+  resetDebugValues() {
+    this.debugValues = {block:new Map(),chunk:new Map(),entity:new Map(),events:[]};
+  }
+  recordDebugValue(scope,key,p) {
+    const values = (this.debugValues ??= {block:new Map(),chunk:new Map(),entity:new Map(),events:[]});
+    if (scope === 'event') {
+      values.events.push({subscription:p.subscription,subscriptionName:p.subscriptionName,value:p.value});
+      if (values.events.length > 256) values.events.shift();
+      return;
+    }
+    const id = p.subscription + ':' + key;
+    if (p.value === null) values[scope].delete(id);
+    else values[scope].set(id,{subscription:p.subscription,subscriptionName:p.subscriptionName,value:p.value});
+  }
+  on_debug_block_value(p) {
+    this.recordDebugValue('block',p.position.x + ',' + p.position.y + ',' + p.position.z,p);
+  }
+  on_debug_chunk_value(p) { this.recordDebugValue('chunk',p.chunkX + ',' + p.chunkZ,p); }
+  on_debug_entity_value(p) { this.recordDebugValue('entity',p.entityId,p); }
+  on_debug_event(p) { this.recordDebugValue('event',null,p); }
 
   on_simulation_distance(p) { this.serverSimulationDistance=p.distance; }
 
@@ -914,6 +937,7 @@ export class Game {
 
   on_login(p) {
     this.customChatCompletions=new Set();
+    this.resetDebugValues();
     this.chunkBatch = null;
     this.pingSamples = []; this.serverTickSamples = [];
     this.spawnPos=null;this.spawnAngle=0;

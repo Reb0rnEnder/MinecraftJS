@@ -15,7 +15,8 @@
 
 ## State at handoff
 
-- **P06 coverage: 140/144 inbound IDs decoded, 113 with adapters, 4 raw.** Configuration `show_dialog` and `server_links` now decode through the same native common codecs as Play; the four raw Play packets are the debug value/event family.
+- **P06 coverage: 144/144 inbound IDs decoded, 117 with adapters, 0 raw.** The final four are the debug value/event packets; debug-subscriptions-26.3.js ports the native 16-entry subscription registry and 15 value codecs (dedicated_server_tick_time has a null value codec and stays fail-closed). Configuration `show_dialog` and `server_links` decode through the same native common codecs as Play.
+- **Native Creative catalogue:** `creative-data:26.3` rebuilds the pinned client's CreativeModeTabs for all eight feature masks (2034 unique stacks, 405 component-patched, 14 tabs) and verifies every stack and raw component patch through the JavaScript codec. `test-creative-26.3.mjs` covers the consumer; creative slots now send the native untrusted-stack patch.
 - Ledger: **44.1%** (4 done, 7 partial, 6 todo; done=1, partial=0.5).
 - P04 item work now also applies adapted slot patches on re-read, adapts nested ItemStackTemplates (bundles, containers, charged projectiles), mirrors native use animations/durations, skips the 766 id-indexed use/attribute fallbacks for 26.3 stacks, and exercises occupied component samples in the oracle.
 - Last full run: `test:26.3`, `adapter:26.3`, `client-net:26.3` and `inbound-gate.mjs` all exit 0.
@@ -69,9 +70,8 @@ java -jar cache/tools/cfr.jar cache/port-26.3/client.jar --jarfilter '^net\.mine
 
 ## Next sections, in order
 
-1. `waypoint` / `show_dialog` — both need their new UI surfaces, not just decoders; the dialog holder and server-link envelopes are decoded.
-2. The four debug value/event packets — they only arrive after a `debug_subscription_request` the client does not send yet, and their 16 subscription codecs are not ported.
-4. **P10** started: `tools/port-26.3/ExtractLayers26_3.java` dumps all 361 native layers and `lib/model-extract-26.3.js` bakes a complete 129-model bundle for the 26.3 asset target. Remaining: port the renderer rigs for the families 26.3 restructured so their geometry can drop the 1.20.6 fallback.
+1. `waypoint` / `show_dialog` — both need their new UI surfaces, not just decoders; the dialog holder and server-link envelopes are decoded. The debug value/event packets are decoded but still need a native debug renderer.
+2. **P10** started: `tools/port-26.3/ExtractLayers26_3.java` dumps all 361 native layers and `lib/model-extract-26.3.js` bakes a complete 129-model bundle for the 26.3 asset target. Remaining: port the renderer rigs for the families 26.3 restructured so their geometry can drop the 1.20.6 fallback.
 
 Already closed: scoreboard/teams, biomes, maps, swing animation, player chat, merchant offers, damage events, advancements, explosions (Mojang-codec fixtures; `ClientExplosionTracker` ported), statistics (native 26.3 stat registry), minecart steps, projectile power (decoded only — 26.3's scalar has no 766 adapter), the full world-border family (initialize plus all five setters, 0–5 action vocabulary), tags, game-rule values, report details, the disk-space warning, transient blocks, mount screens, debug samples, the test-instance/highlight frames, server links, clear-dialog, native item defaults (all 1658 reports → `itemComponentValues26_3`) and the recipe family (native RecipeDisplay/SlotDisplay graph, live-capture verified; no 766 adapter because 766 has no display graph).
 

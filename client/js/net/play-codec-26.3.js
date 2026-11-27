@@ -10,6 +10,7 @@ import {readItemStack26_3,readItemCost26_3,readItemStackTemplate26_3} from './it
 import {readLpVec3} from './lp-vec3-26.3.js';
 import {readParticleOptions26_3,readParticles26_3} from './particles-26.3.js';
 import {SOUND_NAMES_26_3,MOB_EFFECT_NAMES_26_3} from './registry-names-26.3.js';
+import {readDebugSubscriptionEvent,readDebugSubscriptionUpdate} from './debug-subscriptions-26.3.js';
 
 const NAME_BY_ID=new Map(Object.entries(PLAY_CLIENTBOUND_26_3).map(([name,id])=>[id,name]));
 const readItemStack=readItemStack26_3;
@@ -898,6 +899,12 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     for(let i=0;i<count;i++)sample.push(Number(r.i64()));
     return {sample,type:r.varint()};
   },
+  // The four debug value/event packets all carry a DebugSubscription holder. Update has an
+  // optional value; Event always has one. BlockPos/ChunkPos use their packed-long codecs.
+  'debug/block_value'(r){return {position:r.position(),...readDebugSubscriptionUpdate(r)};},
+  'debug/chunk_value'(r){return {chunk:r.i64(),...readDebugSubscriptionUpdate(r)};},
+  'debug/entity_value'(r){return {entityId:r.varint(),...readDebugSubscriptionUpdate(r)};},
+  'debug/event'(r){return readDebugSubscriptionEvent(r);},
   // ClientboundGameTestHighlightPosPacket: a composite of two BlockPos codecs.
   game_test_highlight_pos(r){return {absolutePos:r.position(),relativePos:r.position()};},
   // ClientboundTestInstanceBlockStatus: component plus optional Vec3i (three VarInts).

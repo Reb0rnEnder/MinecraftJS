@@ -363,6 +363,25 @@ const ADAPTERS={
       tags:registry.tags.map(tag=>({tagName:tag.tag,entries:tag.entries}))}))};
   },
   debug_sample(packet){return {type:packet.type,sample:packet.sample};},
+  'debug/block_value'(packet){
+    return {position:packet.position,subscription:packet.subscription,subscriptionName:packet.subscriptionName,value:packet.value};
+  },
+  'debug/chunk_value'(packet){
+    // ChunkPos is one packed long: x low 32 bits, z high 32 bits (the same split the unload
+    // and biome handlers use).
+    const packed=BigInt.asUintN(64,BigInt(packet.chunk));
+    return {
+      chunkX:Number(BigInt.asIntN(32,packed&0xffffffffn)),
+      chunkZ:Number(BigInt.asIntN(32,packed>>32n)),
+      subscription:packet.subscription,subscriptionName:packet.subscriptionName,value:packet.value
+    };
+  },
+  'debug/entity_value'(packet){
+    return {entityId:packet.entityId,subscription:packet.subscription,subscriptionName:packet.subscriptionName,value:packet.value};
+  },
+  'debug/event'(packet){
+    return {subscription:packet.subscription,subscriptionName:packet.subscriptionName,value:packet.value};
+  },
   // The 766 trade_list shape: windowId, trades with a/out/b plus the price counters, then
   // villagerLevel, experience, isRegularVillager and canRestock. 26.3 calls the same two
   // booleans showProgress/canRestock and the counters specialPriceDiff/villagerXp.
