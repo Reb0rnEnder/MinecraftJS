@@ -148,7 +148,7 @@ export class HandRenderer {
     let sd = it.swingProgress - it.prevSwingProgress;
     if (sd < 0) sd += 1;
     const swing = it.prevSwingProgress + sd * partial;
-    const stacks = [g.inventory.held(), g.inventory.offhand];
+    const stacks = g.interaction?.shownHandStacks?.() ?? [g.inventory.held(), g.inventory.offhand];
     const primary = g.settings.mainHand === 'left' ? -1 : 1; // EnumHandSide of the main hand: 1 right, -1 left
     let drawMain = true, drawOff = true;
     if (pl.usingItem) {
