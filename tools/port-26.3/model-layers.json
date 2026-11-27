@@ -693,5 +693,64 @@
       [],
       []
     ]
+  },
+  "dragon": {
+    "layer": "minecraft:ender_dragon#main",
+    "fields": [
+      "head",
+      "neck0",
+      "neck1",
+      "neck2",
+      "neck3",
+      "neck4",
+      "tail0",
+      "tail1",
+      "tail2",
+      "tail3",
+      "tail4",
+      "tail5",
+      "tail6",
+      "tail7",
+      "tail8",
+      "tail9",
+      "tail10",
+      "tail11",
+      "jaw",
+      "body",
+      "left_wing",
+      "left_wing_tip",
+      "left_front_leg",
+      "left_front_leg_tip",
+      "left_front_foot",
+      "left_hind_leg",
+      "left_hind_leg_tip",
+      "left_hind_foot",
+      "right_wing",
+      "right_wing_tip",
+      "right_front_leg",
+      "right_front_leg_tip",
+      "right_front_foot",
+      "right_hind_leg",
+      "right_hind_leg_tip",
+      "right_hind_foot"
+    ]
+  },
+  "enderCrystal": {
+    "layer": "minecraft:end_crystal#main",
+    "fields": [
+      "outer_glass",
+      "inner_glass",
+      "cube",
+      "base"
+    ]
+  },
+  "enderCrystalNoBase": {
+    "layer": "minecraft:end_crystal#main",
+    "fields": [
+      "outer_glass",
+      "inner_glass",
+      "cube",
+      "base"
+    ]
   }
 }

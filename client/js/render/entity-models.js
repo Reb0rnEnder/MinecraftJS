@@ -591,7 +591,7 @@ export function vex() {
 // Native model roots for newly registered families. Their animation state
 // adapters are implemented separately; retaining native hierarchy avoids
 // incorrectly treating a different release's model as a biped.
-export const WILD_MOB_TEXTURES={armadillo:'entity/armadillo.png',allay:'entity/allay/allay.png',frog:'entity/frog/temperate_frog.png',tadpole:'entity/tadpole/tadpole.png',warden:'entity/warden/warden.png',camel:'entity/camel/camel.png',sniffer:'entity/sniffer/sniffer.png'};
+export const WILD_MOB_TEXTURES={armadillo:'entity/armadillo/armadillo.png',allay:'entity/allay/allay.png',frog:'entity/frog/temperate_frog.png',tadpole:'entity/tadpole/tadpole.png',warden:'entity/warden/warden.png',camel:'entity/camel/camel.png',sniffer:'entity/sniffer/sniffer.png'};
 export function wildMob(name) {
  if(name==='armadillo')return jarAdapter(name,JAR[name].slotNames,animateArmadillo766,{texture:WILD_MOB_TEXTURES[name],nativeAgeable:{bodyOnly:true,scaleHead:false,headY:0,headZ:0,headScale:1,bodyScale:1/PAWS_DATA_766.armadilloAgeable.scale,bodyY:PAWS_DATA_766.armadilloAgeable.bodyY}});
  return jarAdapter(name,JAR[name].slotNames,animateWildMob,{texture:WILD_MOB_TEXTURES[name]});
@@ -1107,17 +1107,20 @@ export function armorModel(inflate) {
   return biped(inflate < 0.75 ? 'armorInner' : 'armorOuter');
 }
 
-// ModelDragon (256x256 texture). The neck and tail reuse one spine segment many times, so this returns factories;
-// RenderDragon posing lives in the entity renderer.
+// 26.3 EnderDragonModel (256x256 texture). Every neck/tail segment, wing and
+// limb is a named part in the native hierarchy; the renderer poses them in place.
 export function dragonParts() {
-  const names = ['head', 'spine', 'jaw', 'body', 'rearLeg', 'frontLeg', 'rearLegTip', 'frontLegTip', 'rearFoot', 'frontFoot', 'wing', 'wingTip'];
-  const p = J('dragon', names);
-  const spine = () => J('dragon', names).spine;
-  const limbs = () => {
-    const q = J('dragon', names);
-    return { wing: q.wing, wingTip: q.wingTip, frontLeg: q.frontLeg, frontLegTip: q.frontLegTip, frontFoot: q.frontFoot, rearLeg: q.rearLeg, rearLegTip: q.rearLegTip, rearFoot: q.rearFoot };
-  };
-  return { head: p.head, jaw: p.jaw, body: p.body, spine, limbs };
+  const names = [
+    'head', 'neck0', 'neck1', 'neck2', 'neck3', 'neck4',
+    'tail0', 'tail1', 'tail2', 'tail3', 'tail4', 'tail5',
+    'tail6', 'tail7', 'tail8', 'tail9', 'tail10', 'tail11',
+    'jaw', 'body', 'left_wing', 'left_wing_tip', 'left_front_leg',
+    'left_front_leg_tip', 'left_front_foot', 'left_hind_leg',
+    'left_hind_leg_tip', 'left_hind_foot', 'right_wing', 'right_wing_tip',
+    'right_front_leg', 'right_front_leg_tip', 'right_front_foot',
+    'right_hind_leg', 'right_hind_leg_tip', 'right_hind_foot'
+  ];
+  return J('dragon', names);
 }
 
 // Block entity and small entity models, by jar model name and field names

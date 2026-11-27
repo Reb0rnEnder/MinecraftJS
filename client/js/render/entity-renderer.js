@@ -17,6 +17,7 @@ import {foxAnimationArgs} from '../game/fox.js';
 import {scaleFoxChild} from './fox-pose.js';
 import {nameUuid} from '../util/uuid-md5.js';
 import {shadowGeometry} from './shadows.js';
+import {entityTexture263} from './entity-textures-26.3.js';
 import {PANDA_VARIANTS} from '../game/panda-variants-1.19.4.js';
 import {villagerLayers} from './villager-layers.js';
 import { updateRiptide } from './riptide-layer.js';
@@ -284,7 +285,7 @@ export class EntityRenderer {
   // ---------------------------------------------------------------- building visuals
 
   _texFor(e) {
-    if(e.entityName==='frog')return 'entity/frog/'+(['temperate','warm','cold'][e.frogVariant||0]||'temperate')+'_frog.png';
+    if(e.entityName==='frog')return 'entity/frog/frog_'+(['temperate','warm','cold'][e.frogVariant||0]||'temperate')+'.png';
     if(['armadillo','allay','tadpole','warden','camel','sniffer'].includes(e.entityName))return M.WILD_MOB_TEXTURES[e.entityName];
     if (e.kind === 'player') return null;
     if (e.kind === 'armorstand') return 'entity/armorstand/wood.png';
@@ -319,7 +320,7 @@ export class EntityRenderer {
       case 'axolotl': return 'entity/axolotl/axolotl_'+(['lucy','wild','gold','cyan','blue'][e.axolotlVariant]||'lucy')+'.png';
       case 'glow_squid': return 'entity/squid/glow_squid.png';
       case 95: return wolfTexture766(this.game,e);
-      case 96: return 'entity/cow/'+(e.mooshroomType==='brown'?'brown':'red')+'_mooshroom.png';
+      case 96: return 'entity/cow/mooshroom_'+(e.mooshroomType==='brown'?'brown':'red')+'.png';
       case 97: return 'entity/snow_golem.png';
       case 98: return 'entity/cat/' + (CAT_TEX[e.catType || 0] || 'ocelot') + '.png';
       case 99: return 'entity/iron_golem/iron_golem.png';
@@ -629,22 +630,11 @@ export class EntityRenderer {
     unit.scale.set(1 / 16, 1 / 16, 1 / 16);
     const add = (part, parent) => { parent.add(part.build()); part.setMaterial(mat); return part; };
     v.neck = []; v.tail = [];
-    for (let i = 0; i < 5; i++) v.neck.push(add(M.spine(), unit));
+    for (let i = 0; i < 5; i++) v.neck.push(add(M['neck' + i], unit));
     v.head = add(M.head, unit);
     v.jaw = M.jaw;
-    v.bodyFrame = new Node();
-    unit.add(v.bodyFrame);
-    add(M.body, v.bodyFrame);
-    v.sides = [];
-    const mirror = new Node();
-    mirror.scale.set(-1, 1, 1);
-    for (const holder of [v.bodyFrame, mirror]) {
-      const L = M.limbs();
-      for (const k of ['wing', 'frontLeg', 'rearLeg']) add(L[k], holder);
-      v.sides.push(L);
-    }
-    v.bodyFrame.add(mirror);
-    for (let i = 0; i < 12; i++) v.tail.push(add(M.spine(), unit));
+    v.body = add(M.body, unit);
+    for (let i = 0; i < 12; i++) v.tail.push(add(M['tail' + i], unit));
     v.dragonMask = this._mat(v, 'entity/enderdragon/dragon_exploding.png', { colorWrite: false, cull: false });
     v.dragonSkin = mat; v.dragonEyes = eyes; v.dragonMaskDraws = [];
     unit.traverse(n => { for (const d of [...n.drawables]) {
@@ -659,7 +649,7 @@ export class EntityRenderer {
     v.root.add(v.corpse);
     v.corpse.add(v.offset);
     v.offset.add(unit);
-    v.all = [M.head, ...v.neck, ...v.tail, M.body, ...v.sides.flatMap((L) => [L.wing, L.frontLeg, L.rearLeg])];
+    v.all = [M.head, M.body, ...v.neck, ...v.tail];
     return v;
   }
 
@@ -708,17 +698,24 @@ export class EntityRenderer {
     const a0 = off(0), H = v.head;
     H.px = x; H.py = y; H.pz = z;
     H.ry = wrap(a0[0] - a6[0]) * D2R;
+    H.rx = wrap(a0[1] - a6[1]) * D2R * f5 * 5;
     H.rz = -wrap(a0[0] - f7) * D2R;
-    const bm = mat4.create();
-    mat4.translate(bm, bm, 0, 16, 0);
-    mat4.rotateZ(bm, bm, -f6 * f5 * D2R);
-    mat4.translate(bm, bm, 0, -16, 0);
-    v.bodyFrame.matrix = bm;
-    for (const L of v.sides) {
-      L.wing.rx = 0.125 - Math.cos(f8) * 0.2; L.wing.ry = 0.25; L.wing.rz = (Math.sin(f8) + 0.125) * 0.8;
-      L.wingTip.rz = -(Math.sin(f8 + 2) + 0.5) * 0.75;
-      L.rearLeg.rx = 1 + f1 * 0.1; L.rearLegTip.rx = 0.5 + f1 * 0.1; L.rearFoot.rx = 0.75 + f1 * 0.1;
-      L.frontLeg.rx = 1.3 + f1 * 0.1; L.frontLegTip.rx = -0.5 - f1 * 0.1; L.frontFoot.rx = 0.75 + f1 * 0.1;
+    v.body.rz = -f6 * f5 * D2R;
+    M.left_wing.rx = 0.125 - Math.cos(f8) * 0.2;
+    M.left_wing.ry = -0.25;
+    M.left_wing.rz = -(Math.sin(f8) + 0.125) * 0.8;
+    M.left_wing_tip.rz = (Math.sin(f8 + 2) + 0.5) * 0.75;
+    M.right_wing.rx = M.left_wing.rx;
+    M.right_wing.ry = 0.25;
+    M.right_wing.rz = -M.left_wing.rz;
+    M.right_wing_tip.rz = -M.left_wing_tip.rz;
+    for (const side of ['left', 'right']) {
+      M[side + '_hind_leg'].rx = 1 + f1 * 0.1;
+      M[side + '_hind_leg_tip'].rx = 0.5 + f1 * 0.1;
+      M[side + '_hind_foot'].rx = 0.75 + f1 * 0.1;
+      M[side + '_front_leg'].rx = 1.3 + f1 * 0.1;
+      M[side + '_front_leg_tip'].rx = -0.5 - f1 * 0.1;
+      M[side + '_front_foot'].rx = 0.75 + f1 * 0.1;
     }
     let f10 = 0;
     y = 10; z = 60; x = 0;
@@ -818,7 +815,7 @@ export class EntityRenderer {
         const sp = new Node();
         sp.billboard = true;
         sp.scale.setScalar(0.3);
-        sp.addDrawable(mesh, material('color', 'entity/experience_orb.png', v.params, { blend: 'add', depthWrite: false }), { order: 4 });
+        sp.addDrawable(mesh, material('color', entityTexture263('entity/experience_orb.png'), v.params, { blend: 'add', depthWrite: false }), { order: 4 });
         v.sprite = sp;
         v.root.add(sp);
         break;
@@ -969,18 +966,18 @@ export class EntityRenderer {
       case 'crystal': {
         v = { root: new Node(), kind: 'crystal', materials: [] };
         const mat = this._mat(v, 'entity/end_crystal/end_crystal.png', { fullBright: true });
-        // ModelEnderCrystal (RenderEnderCrystal builds it with the base): base scaled 2, then glass, glass and cube
-        const cm = M.blockModel(e.showBottom === false ? 'enderCrystalNoBase' : 'enderCrystal', ['cube', 'glass', 'base']);
-        if (cm.base) {
-          const bg = new Node(); bg.add(cm.base.build()); cm.base.setMaterial(mat);
-          bg.scale.set(2 / 16, 2 / 16, 2 / 16); bg.position.set(0, -1, 0);
-          v.root.add(bg);
-        }
-        v.cubes = [];
-        for (const pp of [cm.glass, M.blockModel('enderCrystal', ['cube', 'glass']).glass, cm.cube]) {
-          const o = pp.build(); pp.setMaterial(mat);
-          const g = new Node(); g.add(o); v.cubes.push(g); v.root.add(g);
-        }
+        // 26.3 EndCrystalModel: outer_glass -> inner_glass -> cube, plus base.
+        const cm = M.blockModel('enderCrystal', ['outer_glass', 'inner_glass', 'cube', 'base']);
+        const group = new Node();
+        group.scale.set(2 / 16, 2 / 16, 2 / 16); group.position.set(0, -1, 0);
+        v.root.add(group);
+        const outer = cm.outer_glass; outer.setMaterial(mat);
+        const outerNode = outer.build(); outerNode.position.set(0, 0, 0);
+        v.outerPivot = new Node(); v.outerPivot.add(outerNode); group.add(v.outerPivot);
+        v.inner = cm.inner_glass; v.inner.setMaterial(mat);
+        v.cube = cm.cube; v.cube.setMaterial(mat);
+        v.base = cm.base; v.base.setMaterial(mat);
+        group.add(v.base.build());
         break;
       }
       case 'lightning': {
@@ -2014,12 +2011,25 @@ export class EntityRenderer {
   _renderCrystal(e, v, partial) {
     const t = e.ticks + partial;
     const f1 = Math.sin(t * 0.2) / 2 + 0.5;
-    const y = f1 * f1 + f1;
-    v.cubes.forEach((c, i) => {
-      c.position.set(0, y + 0.5, 0);
-      c.rotation.set(Math.PI / 3 * (i + 1) * 0.3, t * 3 * D2R * (i + 1), Math.PI / 4);
-      c.scale.setScalar(2 / 16 * (1 - i * 0.125));
-    });
+    const crystalY = ((f1 * f1 + f1) * 0.4 - 1.4) * 8;
+    const angle = t * 3 * D2R;
+    const axis = Math.sin(Math.PI / 4);
+    const OM = mat4.create();
+    mat4.translate(OM, OM, 0, 24 + crystalY, 0);
+    mat4.rotateY(OM, OM, angle);
+    mat4.rotate(OM, OM, Math.PI / 3, axis, 0, axis);
+    v.outerPivot.matrix = OM;
+    const IM = mat4.create();
+    mat4.rotate(IM, IM, Math.PI / 3, axis, 0, axis);
+    mat4.rotateY(IM, IM, angle);
+    mat4.scale(IM, IM, 0.875, 0.875, 0.875);
+    v.inner.obj.matrix = IM;
+    const CM = mat4.create();
+    mat4.rotate(CM, CM, Math.PI / 3, axis, 0, axis);
+    mat4.rotateY(CM, CM, angle);
+    mat4.scale(CM, CM, 0.765625, 0.765625, 0.765625);
+    v.cube.obj.matrix = CM;
+    v.base.obj.visible = e.showBottom !== false;
   }
 
   // RenderLightningBolt: 4 layers x 3 branches of jagged additive triangle strips

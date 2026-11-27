@@ -126,8 +126,9 @@ pending; product outside current scope; or experiment-gated.
   AbstractBoat paddle/bubble accessors, picks the matching item, and extracts all 22 native boat
   and chest-boat models (with the separate water-patch layer). Rabbit, horse/donkey, camel,
   sniffer, horse-armor and player rigs now bind native 26.3 layers too, including merged player
-  cape/ears and horse/camel saddle layers. The ender dragon and end crystal still use their
-  1.20.6 fallback because their native part chains differ from the renderer.
+  cape/ears and horse/camel saddle layers. The ender dragon now uses its five-neck,
+  twelve-tail native chain with both wing/leg sides, and the end crystal uses the native
+  outer-glass -> inner-glass -> cube hierarchy with the conditional base.
 - All 69 serverbound Play IDs now have a sender or an explicit scope decision. The 26.3 chat
   family uses `chat`/`chat_command`/`chat_ack` ids and appends the LastSeenMessages checksum
   byte; bundle, game-mode, game-rule, entity-pick, spectator, player-loaded and test-block

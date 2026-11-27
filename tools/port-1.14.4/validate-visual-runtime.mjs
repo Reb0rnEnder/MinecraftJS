@@ -6,9 +6,10 @@ import {setJarModels} from '../../client/js/render/entity-models.js';
 import {EntityRenderer} from '../../client/js/render/entity-renderer.js';
 import {ENTITY_TYPES,MOB_FAMILIES} from '../../client/js/game/entity-types.js';
 import {villagerLayers} from '../../client/js/render/villager-layers.js';
+import {entityTexture263} from '../../client/js/render/entity-textures-26.3.js';
 const sourceRead=name=>JSON.parse(readFileSync(new URL('../../client/data/'+name+'.json',import.meta.url)));
-const NON_LIVING=new Set('ominous_item_spawner wind_charge breeze_wind_charge interaction block_display item_display text_display chest_boat marker glow_item_frame area_effect_cloud armor_stand arrow boat dragon_fireball end_crystal evoker_fangs experience_orb eye_of_ender falling_block firework_rocket item item_frame fireball leash_knot llama_spit minecart chest_minecart command_block_minecart furnace_minecart hopper_minecart spawner_minecart tnt_minecart painting tnt shulker_bullet small_fireball snowball spectral_arrow egg ender_pearl experience_bottle potion trident wither_skull lightning_bolt player fishing_bobber'.split(' '));
-export function validateVisualRuntime(jar,models,shapes=null,{pendingEntities=new Set(),dataDir=null}={}){
+const NON_LIVING=new Set('ominous_item_spawner wind_charge breeze_wind_charge interaction block_display item_display text_display chest_boat marker glow_item_frame area_effect_cloud armor_stand arrow boat cushion mannequin dragon_fireball end_crystal evoker_fangs experience_orb eye_of_ender falling_block firework_rocket item item_frame fireball leash_knot llama_spit minecart chest_minecart command_block_minecart furnace_minecart hopper_minecart spawner_minecart tnt_minecart painting tnt shulker_bullet small_fireball snowball spectral_arrow egg ender_pearl experience_bottle potion splash_potion lingering_potion trident wither_skull lightning_bolt player fishing_bobber'.split(' '));
+export function validateVisualRuntime(jar,models,shapes=null,{pendingEntities=new Set(),dataDir=null,textureAliases=false}={}){
  const read=name=>dataDir?JSON.parse(readFileSync(join(dataDir,name+'.json'))):sourceRead(name);
  shapes??=read('blockCollisionShapes');
  const hash=createHash('sha1').update(jar.data).digest('hex'),definitions=read('blocks'),count=Math.max(...definitions.map(b=>b.maxStateId))+1;
@@ -20,14 +21,16 @@ export function validateVisualRuntime(jar,models,shapes=null,{pendingEntities=ne
  }
  initBlocks(definitions,shapes);setJarModels(models);
  const renderer=Object.create(EntityRenderer.prototype),tested=new Set();
- const texture=path=>{if(!jar.read('assets/minecraft/textures/'+path))throw Error('Entity texture is absent from this jar: '+path);tested.add(path);};
+ const texture=path=>{if(textureAliases)path=entityTexture263(path);if(!jar.read('assets/minecraft/textures/'+path))throw Error('Entity texture is absent from this jar: '+path);tested.add(path);};
  let mobs=0;const pending=[];
  for(const entry of ENTITY_TYPES){
   if(pendingEntities.has(entry.name)){if(!entry.mob)throw Error('Deferred entity is not classified as living: '+entry.name);pending.push(entry.name);continue;}
-  if(!entry.mob){if(!NON_LIVING.has(entry.name))throw Error('Entity needs a living/object renderer classification: '+entry.name);continue;}
+  if(!entry.mob){if(!NON_LIVING.has(entry.name)&&!/(?:^|_)(?:chest_)?(?:boat|raft)$/.test(entry.name))throw Error('Entity needs a living/object renderer classification: '+entry.name);continue;}
   const e={kind:'mob',entityName:entry.name,type:MOB_FAMILIES[entry.name]?.[0]||entry.name,...MOB_FAMILIES[entry.name]?.[1]};
   mobs++;if(e.type===63){texture('entity/enderdragon/dragon.png');continue;}
-  texture(renderer._texFor(e));
+  const tex=renderer._texFor(e);
+  if(!tex)throw Error('Entity has no texture path: '+entry.name);
+  texture(tex);
 
   const model=renderer._modelFor(e);if(!model)throw Error('Missing living entity adapter: '+entry.name);
   model.animate(model,{age:0,yaw:0,pitch:0,ls:0,lsa:0,swing:0,peek:0,squish:0,onGround:true,inWater:false,entityId:1});
