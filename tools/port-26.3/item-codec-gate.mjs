@@ -260,6 +260,7 @@ const hiddenAttributes={...nativeStack('diamond_sword'),added:[{name:'tooltip_di
 assert.ok(!tooltipItems.tooltip(hiddenAttributes).some(line=>line.includes('attribute.')),'hidden tooltip components are omitted');
 const hiddenTooltip={...nativeStack('diamond_sword'),added:[{name:'tooltip_display',value:{hideTooltip:true,hiddenComponents:[]}}]};
 assert.deepEqual(tooltipItems.tooltip(hiddenTooltip),[],'native hide-tooltip suppresses every line');
+assert.ok(!tooltipItems.tooltip(nativeStack('stone_stairs')).some(line=>line.includes('attribute.')),'native items without attribute modifiers do not borrow the 766 id table');
 
 const total=Object.keys(DATA_COMPONENTS).length;
 const unsynced=Object.values(DATA_COMPONENTS).filter(entry=>!entry.synced).length;

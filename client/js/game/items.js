@@ -231,7 +231,7 @@ export class Items {
 
   attributeTooltip(item,lines) {
     const attrs=this.component(item,'attribute_modifiers')||{};if((attrs.show_in_tooltip??attrs.showTooltip??true)===false)return;
-    const own=attrs.modifiers??attrs.attributes??[],mods=own.length?own:ITEM_DATA_766.items[item.id]?.defaultAttributes?.modifiers||[],t=(key,...args)=>this.assets.translate(key,args),player=typeof this.player==='function'?this.player():this.player;
+    const own=attrs.modifiers??attrs.attributes??[],mods=own.length?own:item.version==='26.3'?[]:ITEM_DATA_766.items[item.id]?.defaultAttributes?.modifiers||[],t=(key,...args)=>this.assets.translate(key,args),player=typeof this.player==='function'?this.player():this.player;
     const uuid=v=>Array.isArray(v)?v.map(n=>(n>>>0).toString(16).padStart(8,'0')).join('').replace(/^(........)(....)(....)(....)(............)$/,'$1-$2-$3-$4-$5'):v;
     const groups=['mainhand','offhand','feet','legs','chest','head','body'];
     for(const group of groups){const selected=mods.filter(m=>{const s=(m.slot??'any').replace('_','');return s==='any'||s===group||s==='hand'&&['mainhand','offhand'].includes(group)||s==='armor'&&['feet','legs','chest','head'].includes(group);});if(!selected.length)continue;
