@@ -1,6 +1,7 @@
 import {appendAdventureTooltips} from './adventure-tooltip.js';
 import {itemComponentValues766} from '../net/item-components-1.20.6.js';
 import {ITEM_DATA_766} from './item-data-1.20.6.js';
+import {NATIVE_EFFECTS_26_3} from './effects-26.3.js';
 import{bundleContents,bundleContentWeight}from'./bundle.js';
 const attributeKey = name => 'attribute.name.' + name.replace(/^minecraft:/, '').replace(/[A-Z]/g, c => '_' + c.toLowerCase());
 // Item metadata helpers: names, tooltips, stack sizes, durability, use actions, tool speeds.
@@ -26,7 +27,7 @@ export class Items {
     this.byId = new Map(assets.data.items.map(d => [d.id, d]));
     this.byName = new Map(assets.data.items.map(d => [d.name, d]));
     this.maps = new Map();
-    this.effects = ITEM_DATA_766.effects;
+    this.effects = {...ITEM_DATA_766.effects,...NATIVE_EFFECTS_26_3};
   }
 
   def(id) { return this.byId.get(id) || null; }
