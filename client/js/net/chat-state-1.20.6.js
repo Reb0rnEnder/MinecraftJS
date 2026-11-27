@@ -1,5 +1,6 @@
 import { Writer766 } from "./configuration-1.20.6.js";
 import { PLAY_SERVERBOUND_766 as OUT } from "./protocol-1.20.6-ids.js";
+import { randomSalt } from "./chat-signing-1.20.6.js";
 
 const same = (a, b) => a && b && a.length === b.length && a.every((value, index) => value === b[index]);
 
@@ -50,12 +51,31 @@ export class ChatState766 {
     return new Writer766().varint(OUT.message_acknowledgement).varint(count).build();
   }
 
-  encode(text, { now = Date.now(), salt = 0n, signature = null } = {}) {
+  // ClientPacketListener.sendChat / sendCommand. this.signer(body) signs a SignedMessageBody with the local chat
+  // session (null without one); this.signableArguments(command) lists the command's message arguments
+  // (SignableCommand.of). Commands with such arguments always use chat_command_signed, signed or not.
+  encode(text, { now = Date.now(), salt = randomSalt(), signature = null } = {}) {
     const command = text.startsWith("/");
     const body = (command ? text.slice(1) : text).slice(0, 256);
-    if (command) return new Writer766().varint(OUT.chat_command).string(body).build();
+    if (command) {
+      const args = this.signableArguments?.(body) || [];
+      if (!args.length) return new Writer766().varint(OUT.chat_command).string(body).build();
+      const { offset, acknowledged, signatures } = this.collect();
+      const signed = [];
+      for (const arg of args) {
+        const sig = this.signer?.({ content: arg.value, timestamp: now, salt: BigInt(salt), lastSeen: signatures });
+        if (sig) signed.push({ name: arg.name, sig });
+      }
+      const writer = new Writer766().varint(OUT.chat_command_signed).string(body).i64(BigInt(now)).i64(BigInt(salt)).varint(signed.length);
+      for (const { name, sig } of signed) {
+        if (!(sig instanceof Uint8Array) || sig.length !== 256) throw new Error("Protocol 766 argument signature must be 256 bytes");
+        writer.string(name).raw(sig);
+      }
+      return writer.varint(offset).raw(acknowledged).build();
+    }
 
-    const { offset, acknowledged } = this.collect();
+    const { offset, acknowledged, signatures } = this.collect();
+    signature ||= this.signer?.({ content: body, timestamp: now, salt: BigInt(salt), lastSeen: signatures }) || null;
     const writer = new Writer766()
       .varint(OUT.chat_message)
       .string(body)

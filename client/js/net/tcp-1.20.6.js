@@ -84,6 +84,7 @@ export class VanillaSocket766 extends VanillaSocket {
         this.state = "play";
         this._control({
           type: "login_success",
+          encrypted: !!this.cipher,
           uuid: this.profile.uuid,
           username: this.profile.username
         });

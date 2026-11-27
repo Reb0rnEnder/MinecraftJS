@@ -158,6 +158,7 @@ export class Game {
     this.accounts = new Accounts(settings);
     this.socialBlocking=new SocialBlocking(this);
     this.accounts.onActiveChanged=()=>this.socialBlocking.sync();
+    chatState762.signableArguments=(command)=>this.commands?.signableArguments?.(command)||[];
     this.renderer = new Renderer(device, assets);
     this.renderer.renderDistance = settings.renderDistance;
     this.renderer.gamma = settings.gamma;
@@ -817,6 +818,9 @@ export class Game {
         break;
       case 'login_success':
         this.connected = true;
+        // Connection.isEncrypted(): online-mode servers only; a proxy that logged in reports it, else assume a
+        // signed-in Microsoft account was used for an online login
+        this.connectionEncrypted = m.encrypted ?? this.accounts.active()?.type === 'microsoft';
         this.playerUuid = m.uuid;
         this.username = m.username;
         this.screens.open(new DownloadingTerrainScreen(this));
@@ -917,6 +921,9 @@ export class Game {
     this.enabledFeatures=new Set(p.enabledFeatures||['minecraft:vanilla']);this.commandTags=p.commandTags||{};
     if(p.registryTags)this.tags?.replace(p.registryTags);
     this.blockPrediction?.reset();chatState762.reset();
+    // ClientPacketListener.handleLogin: drop the chat session, then prepare the profile key pair when encrypted
+    this.chatSession=null;chatState762.signer=null;
+    if(this.connectionEncrypted)this.prepareKeyPair();
     resetPlayerView(this);
     this.interaction?.predictedDoors?.clear();
     this.serverSimulationDistance=p.simulationDistance;
@@ -1806,8 +1813,25 @@ export class Game {
 
   // ---------------------------------------------------------------- Tick
 
+  // ProfileKeyPairManager.prepareKeyPair -> ClientPacketListener.setKeyPair
+  prepareKeyPair(){
+    if(this.preparingKeys)return;
+    const account=this.accounts.active();if(account?.type!=='microsoft')return;
+    this.preparingKeys=true;const conn=this.conn;
+    this.accounts.profileKeys(account).then(keys=>{if(keys&&this.conn===conn)this.setKeyPair(keys);}).catch(e=>console.warn('Chat signing key unavailable:',e.message)).finally(()=>{this.preparingKeys=false;});
+  }
+  async setKeyPair(keys){
+    if(this.chatSession?.keys===keys)return;
+    const {LocalChatSession766}=await import('../net/chat-signing-1.20.6.js');
+    const session=new LocalChatSession766(keys,this.playerUuid);
+    this.chatSession=session;chatState762.signer=(body)=>session.sign(body);
+    this.send(C.chatSession(session.sessionData()));
+  }
+
   tick() {
     this.ticks++;
+    // ClientPacketListener.tick: refresh the key pair once it is due on an encrypted connection
+    if(this.inWorld&&this.connectionEncrypted&&this.accounts.shouldRefreshKeys?.())this.prepareKeyPair();
     // Minecraft.tick: the level's tick-rate manager advances unless the game is paused
     if (this.inWorld) this.tickRate.tick();
     const runs = !this.inWorld || this.tickRate.runsNormally();

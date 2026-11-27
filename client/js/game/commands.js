@@ -211,6 +211,12 @@ export class CommandTree {
     }
     return {end};
   }
+  // SignableCommand.of: the parsed message arguments (SignedArgument), across redirects such as /execute ... run
+  signableArguments(text) {
+    const parsed=this.parse(text,false);
+    if(parsed.error||parsed.cursor<text.length)return [];
+    return (parsed.edges||[]).map(e=>({node:this.nodes[e.node],e})).filter(({node})=>node?.type===2&&node.parser==='minecraft:message').map(({node,e})=>({name:node.name,value:text.slice(e.start,e.end)}));
+  }
   parse(text,slash=true) {
     const start=slash&&text.startsWith('/')?1:0,limit=4000;let attempts=0;
     const visit=(id,pos,spans,edges,depth,color=spans.length)=>{

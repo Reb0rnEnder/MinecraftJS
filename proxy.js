@@ -141,6 +141,7 @@ app.post('/auth/poll', express.json(), authRoute(async (b) => ({ account: await 
 app.post('/auth/refresh', express.json(), authRoute(async (b) => ({ account: await msauth.refresh(String(b.refreshToken || '')) })));
 app.post('/auth/blocklist', express.json(), authRoute(async (b) => ({ blockedProfiles: await msauth.blockedProfiles(b.accessToken) })));
 app.post('/auth/privileges', express.json(), authRoute(async (b) => ({ privileges: await msauth.socialPrivileges(b.accessToken) })));
+app.post('/auth/certificates', express.json(), authRoute(async (b) => ({ certificates: await msauth.certificates(b.accessToken) })));
 // Session join for online-mode servers reached through a byte relay (Java relay / Wisp): the client does the
 // protocol and encryption itself, but sessionserver.mojang.com sends no CORS headers
 app.post('/auth/join', express.json(), authRoute(async (b) => {
@@ -518,7 +519,7 @@ wss.on('connection', (ws) => {
               const name = body.toString('utf8', o, o + nl.value);
               state = 'play';
               console.log(`[ws] ${name} logged in (${uuid})`);
-              sendJson({ type: 'login_success', uuid, username: name });
+              sendJson({ type: 'login_success', uuid, username: name, encrypted: !!cipher });
             }
           } else if (state === 'play') {
             if (ws.readyState === 1) ws.send(p, { binary: true });
