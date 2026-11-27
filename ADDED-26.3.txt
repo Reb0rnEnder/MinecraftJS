@@ -236,14 +236,18 @@ Known limit:
   native formulas. tools/port-26.3/extract-keyframe-animations.mjs extracts the jar's
   AnimationDefinition constants (breeze 6, copper golem 7, creaking 4, nautilus 1) with degree->
   radian, position-Y negation and scale-minus-one conversions; walk/idle/swim clips now drive
-  those models. Trigger-specific clips (jump, slide, attack, death) are stored but not yet wired.
+  those models. Native metadata indices for all ten 26.3-only entities are dumped from
+  SynchedEntityData (tools/port-26.3/entity-metadata.mjs) and feed the live states: breeze pose
+  drives idle/shoot/inhale/slide/jump/slide-back, copper golem state drives its four chest
+  interactions and its 200-239 tick idle, and creaking entity events 4/66 plus tearing-down drive
+  attack/invulnerable/death. Copper golem weathering selects its four native texture paths.
 
 ======================================================================
 12. TESTS, GATES AND DOCUMENTATION
 ======================================================================
 
 Green at this inventory:
-- npm run test:26.3: 65 tests.
+- npm run test:26.3: 66 tests.
 - npm run adapter:26.3: 53 packets, 36 handler names, 2 chunks.
 - tools/port-26.3/inbound-gate.mjs: all checks.
 - tools/port-26.3/serverbound-gate.mjs: all checks.
@@ -259,8 +263,10 @@ Docs:
 - ADDED-26.3.txt and NEEDED-26.3.txt (these files).
 
 Recent commit trail:
-- This batch: native keyframe extraction for breeze/copper golem/creaking/nautilus, applied as
-  walk/idle/swim clips, plus a pinned animation test.
+- This batch: native metadata indices for the 26.3-only mobs, pose/state/event animation triggers,
+  copper golem weathering textures and a metadata dump/check gate.
+- Native keyframe extraction for breeze/copper golem/creaking/nautilus, applied as walking/idle/
+  swim clips, plus a pinned animation test.
 - This batch: native bogged/parched rigs, native 26.3 stonecutter recipe source, recipe-book
   display state, diagnostic frames and complete pinned-frame adapter coverage.
 - 66dd0a1 Render native 26.3 debug subscriptions in the F3 screen

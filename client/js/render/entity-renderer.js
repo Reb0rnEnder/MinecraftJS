@@ -288,6 +288,7 @@ export class EntityRenderer {
     if(e.entityName==='frog')return 'entity/frog/frog_'+(['temperate','warm','cold'][e.frogVariant||0]||'temperate')+'.png';
     if(M.BIPED_MOB_TEXTURES?.[e.entityName])return M.BIPED_MOB_TEXTURES[e.entityName];
     if(e.entityName==='camel_husk')return 'entity/camel/camel_husk.png';
+    if(e.entityName==='copper_golem')return 'entity/copper_golem/copper_golem'+(['','_exposed','_weathered','_oxidized'][e.copperWeather||0]||'')+'.png';
     if(M.NATIVE_MOB_TEXTURES?.[e.entityName])return M.NATIVE_MOB_TEXTURES[e.entityName];
     if(['armadillo','allay','tadpole','warden','camel','sniffer'].includes(e.entityName))return M.WILD_MOB_TEXTURES[e.entityName];
     if (e.kind === 'player') return null;

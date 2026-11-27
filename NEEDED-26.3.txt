@@ -27,15 +27,18 @@ Done and committed:
   to their native 26.3 layer trees and textures; camel husk reuses the native camel layer with its
   own texture. The asset pending list is empty (90 rigs, 140 textures). Happy ghast tentacles and
   nautilus body look use their native formulas. Breeze, copper golem, creaking and nautilus
-  keyframe clips are extracted from the jar and their walk/idle/swim clips are applied; trigger
-  clips and visual acceptance are still open.
+  keyframe clips are extracted from the jar and their walk/idle/swim clips are applied. The ten
+  26.3-only entities now have native metadata indices dumped from SynchedEntityData, and their
+  state-driven clips are wired: breeze pose (shoot/inhale/slide/jump/slide-back), copper golem
+  chest states and idle schedule, creaking event 4/66 and tearing-down. Copper golem weathering
+  picks the native oxidation texture. Visual acceptance remains open.
 - 26.3 update_recipes is adapted. The stonecutter consumes the server's native
   ingredient/SlotDisplay list; the legacy recipe table is only a fallback. Recipe-display add/
   remove/settings state is stored natively.
 - custom_report_details and low_disk_space_warning are handled; only add_transient_block and the
   two game-test frames remain explicit scope decisions.
 - Adapter gate skips nothing across its 53 pinned frames (36 handler names).
-- Full 26.3 gate: test:26.3 62/62, adapter 53 frames / 36 handlers, inbound all, serverbound 0,
+- Full 26.3 gate: test:26.3 66/66, adapter 53 frames / 36 handlers, inbound all, serverbound 0,
   assets exit 0.
 
 Still deliberately untracked:
@@ -89,8 +92,10 @@ B. CODE-ONLY PARITY WORK, IN PRIORITY ORDER
    - 26.3: poplar wood, dappled forest, straw bed, abandoned camps, cushion, nautilus armor, spear,
      sulfur cube and release-article families not yet exercised.
    - No mob is pending a renderer. Breeze, creaking, copper golem, happy ghast, nautilus, zombie
-          nautilus and sulfur cube are bound to their native layer trees; port their remaining native keyframe clips and give each a visual check. Bogged, parched and camel husk are
-     fully routed through their native 26.3 families.
+     nautilus and sulfur cube are bound to their native layer trees; their native metadata indices
+     and state-driven clips are now wired, and copper golem weathering selects its native texture.
+     Give each family a live visual check. Bogged, parched and camel husk are fully routed through
+     their native 26.3 families.
 
 4. P12 - Particle, sound and animation acceptance
    - Add per-behaviour rendering/trigger coverage for all 128 particle types, not only codec
@@ -99,8 +104,8 @@ B. CODE-ONLY PARITY WORK, IN PRIORITY ORDER
      shriek, trail, vibration and explosion variants.
    - Complete remaining native animation formulas/triggers (wolf, dragon, piglin, splash and any
      release-specific mob animation) against the native part trees. Breeze/copper golem/creaking/
-     nautilus walk-idle-swim clips are in; wire their jump/slide/attack/death triggers and extend
-     the extractor to other families when their formulas are revised.
+     nautilus walk-idle-swim clips are in and their pose/state/event triggers are wired; verify
+     them live and extend the extractor to other families when their formulas are revised.
    - Confirm particle-setting clearing, the 512 cap and solid-block rejection in live explosions
      (logic is unit-tested; live acceptance is not done).
 

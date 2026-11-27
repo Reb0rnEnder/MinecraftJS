@@ -628,17 +628,48 @@ function animateNativeMob(model,a){
     const tentacles=p.body?.namedChildren;
     for(let i=0;i<9;i++){const t=tentacles?.['tentacle'+i];if(t)t.rx=0.2*Math.sin(a.age*0.3+i)+0.4;}
   }
-  // Native keyframe clips generated from the jar. Prefer the walk clip while moving and the
-  // idle clip at rest; nautilus only has its swim clip.
+  // Native keyframe clips generated from the jar. Clips are additive in the same order as the
+  // native model (walk, idle, interactions); one-shot states start from their sync timestamp.
   const clips=NATIVE_ANIMATIONS_26_3[model.jarModel];
   if(clips){
-    const names=Object.keys(clips),parts=nativePartMap(model);
-    const pick=suffix=>names.find(n=>n===suffix||n.endsWith('_'+suffix));
-    const walk=pick('WALK')||pick('SWIMMING');
-    const idle=pick('IDLE')||pick('SWIMMING');
-    const moving=model.jarModel==='nautilus'||model.jarModel==='zombie_nautilus'||a.moving||a.lsa>0.02;
-    if(moving&&walk)animateKeyframes762(parts,clips[walk],a.ls*100,Math.min(1,a.lsa*2.5));
-    else if(idle)animateKeyframes762(parts,clips[idle],a.age*50);
+    const names=Object.keys(clips),parts=nativePartMap(model),e=a.entity||{};
+    const play=(key,time,weight=1)=>animateKeyframes762(parts,clips[key],time,weight);
+    const since=start=>Math.max(0,(a.age-(start??0))*50);
+    const within=(key,time)=>{const clip=clips[key];return clip&&time<=clip.length*1000+50;};
+    const walk=names.find(n=>n.endsWith('_WALK'))||names.find(n=>n.endsWith('_SWIMMING'));
+    const moving=a.moving||a.lsa>0.02;
+    if(model.jarModel==='breeze'){
+      play('IDLE',a.age*50);
+      if(e.pose===16&&within('SHOOT',since(e.poseStart)))play('SHOOT',since(e.poseStart));
+      else if(e.pose===17)play('INHALE',since(e.poseStart));
+      else if(e.pose===15&&within('SLIDE',since(e.poseStart)))play('SLIDE',since(e.poseStart));
+      else if(e.pose===6&&within('JUMP',since(e.poseStart)))play('JUMP',since(e.poseStart));
+      if(e.pose!==15&&e.slideBackStart!==undefined&&within('SLIDE_BACK',since(e.slideBackStart)))play('SLIDE_BACK',since(e.slideBackStart));
+    }else if(model.jarModel==='copper_golem'){
+      const holding=(a.rightPose&&a.rightPose!=='empty')||(a.leftPose&&a.leftPose!=='empty');
+      const base=holding?'COPPER_GOLEM_WALK_ITEM':'COPPER_GOLEM_WALK';
+      if(moving&&clips[base])play(base,a.ls*100,Math.min(1,a.lsa*2.5));
+      if(e.copperGolemState===0&&e.ticks!==undefined){
+        // CopperGolem.setupAnimationStates waits 200-239 ticks between non-looping idles.
+        const cycle=200+((e.id||0)*37%40),phase=((e.ticks||0)+(e.id||0)*53)%cycle;
+        if(phase<70)play('COPPER_GOLEM_IDLE',phase*50);
+      }else if(e.copperGolemState>0){
+        // CopperGolemModel maps its four AnimationStates in this order; the names describe the
+        // item that is already in hand, not the state that triggers them.
+        const key={1:'COPPER_GOLEM_CHEST_INTERACTION_NOITEM_GET',2:'COPPER_GOLEM_CHEST_INTERACTION_NOITEM_NOGET',3:'COPPER_GOLEM_CHEST_INTERACTION_ITEM_DROP',4:'COPPER_GOLEM_CHEST_INTERACTION_ITEM_NODROP'}[e.copperGolemState];
+        if(key&&clips[key])play(key,since(e.copperStateStart));
+      }
+    }else if(model.jarModel==='creaking'){
+      if(e.canMove!==false&&moving&&clips.CREAKING_WALK)play('CREAKING_WALK',a.ls*100,Math.min(1,a.lsa*2.5));
+      if(e.creakingAttackStart!==undefined&&since(e.creakingAttackStart)<750)play('CREAKING_ATTACK',since(e.creakingAttackStart));
+      if(e.creakingInvulnerableStart!==undefined&&within('CREAKING_INVULNERABLE',since(e.creakingInvulnerableStart)))play('CREAKING_INVULNERABLE',since(e.creakingInvulnerableStart));
+      if(e.tearingDown&&within('CREAKING_DEATH',since(e.creakingDeathStart)))play('CREAKING_DEATH',since(e.creakingDeathStart));
+    }else if(walk){
+      const idle=names.find(n=>n.endsWith('_IDLE'))||walk;
+      const forced=model.jarModel==='nautilus'||model.jarModel==='zombie_nautilus';
+      if((forced||moving)&&walk)play(walk,a.ls*100,Math.min(1,a.lsa*2.5));
+      else play(idle,a.age*50);
+    }
   }
 }
 export function nativeMob(name){return jarAdapter(name,JAR[name].slotNames,animateNativeMob,{texture:NATIVE_MOB_TEXTURES[name]});}

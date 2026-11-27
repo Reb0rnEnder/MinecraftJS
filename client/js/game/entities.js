@@ -12,6 +12,7 @@ import {applyNetherMetadata} from './nether-metadata.js';
 import {applyFoxFlags,tickFox} from './fox.js';
 import {tickBeeSound,stopBeeSound} from './bee-sound.js';
 import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.20.6.js';
+import {NATIVE_METADATA_26_3 as WIRE_METADATA_26_3} from './entity-metadata-26.3.js';
 import {placeLeashKnot} from './leash-knot.js';
 import {NATIVE_METADATA} from './entity-metadata-1.14.4.js';
 import {playerPoseDimensions} from './player-poses-1.19.4.js';
@@ -402,7 +403,11 @@ export class EntityManager {
     if(living498&&compat[12]!==undefined)e.stingerCount=compat[12];
     if(wire[7]!==undefined)e.frozenTicks=wire[7];
     if(native[6]!==undefined){
-      if(e.pose!==native[6])e.wildAnimationStart=e.ticks;
+      if(e.pose!==native[6]){
+        if(e.pose===15)e.slideBackStart=e.ticks;
+        e.wildAnimationStart=e.ticks;
+        e.poseStart=e.ticks;
+      }
       e.pose=native[6];
       if(e.kind==='player'){
         const pose=['standing','fall_flying','sleeping','swimming','spin_attack','sneaking','long_jumping','dying'][e.pose];
@@ -421,6 +426,24 @@ export class EntityManager {
     const name = e.entityName;
     if(name==='painting'&&wire[PAINTING_VARIANT_INDEX_762]!==undefined)configurePainting762(e,wire[PAINTING_VARIANT_INDEX_762]);
     const own=WIRE_METADATA[name]||{},assign=(symbol,key)=>{const id=own[symbol];if(id!==undefined&&wire[id]!==undefined){if(['snifferState','dashing'].includes(key)&&e[key]!==wire[id])e.wildAnimationStart=e.ticks;e[key]=wire[id];}};
+    const own263=WIRE_METADATA_26_3[name]||{},assign263=(symbol,key)=>{const id=own263[symbol];if(id!==undefined&&wire[id]!==undefined)e[key]=wire[id];};
+    if(name==='copper_golem'){
+      const stateId=own263.COPPER_GOLEM_STATE;
+      if(stateId!==undefined&&wire[stateId]!==undefined&&e.copperGolemState!==wire[stateId]){
+        e.copperGolemState=wire[stateId];e.copperStateStart=e.ticks;
+      }
+      assign263('DATA_WEATHER_STATE','copperWeather');
+    }
+    if(name==='creaking'){
+      assign263('CAN_MOVE','canMove');
+      assign263('IS_ACTIVE','creakingActive');
+      const tearId=own263.IS_TEARING_DOWN;
+      if(tearId!==undefined&&wire[tearId]!==undefined){
+        if(wire[tearId]&&!e.tearingDown)e.creakingDeathStart=e.ticks;
+        e.tearingDown=!!wire[tearId];
+      }
+    }
+    if(name==='nautilus'||name==='zombie_nautilus')assign263('DASH','dashing');
     if (e.kind === 'display') applyDisplayMeta(e, wire, own);
     if (name === 'interaction') {
       assign('DATA_WIDTH_ID', 'width'); assign('DATA_HEIGHT_ID', 'height');
@@ -668,6 +691,7 @@ export class EntityManager {
     const g = this.game;
     if (!e) return;
     if(e.entityName==='warden'){if(p.entityStatus===4)e.wildAttackStart=e.ticks;if(p.entityStatus===62)e.sonicBoomStart=e.ticks;if(p.entityStatus===61)e.tendrilStart=e.ticks;}
+    if(e.entityName==='creaking'){if(p.entityStatus===4)e.creakingAttackStart=e.ticks;if(p.entityStatus===66)e.creakingInvulnerableStart=e.ticks;}
     if(e.entityName==='wolf'&&wolfEvent766(e,p.entityStatus))return;
     if(e.entityName==='armadillo'&&p.entityStatus===64){e.armadilloPeekReceived=true;g.sound.play('entity.armadillo.peek',e.x,e.y,e.z,1,1,{category:'neutral'});}
     switch (p.entityStatus) {
