@@ -130,7 +130,7 @@ define('block_state',r=>{
   return properties;
 });
 // ItemContainerContents.STREAM_CODEC: list(256) of optional ItemStackTemplate.
-define('container',list(r=>optional(readItemStackTemplate26_3)(r),256));
+define('container',list(readItemStackTemplate26_3,256));
 // ChargedProjectiles.STREAM_CODEC: list(1024) of ItemStackTemplate.
 define('charged_projectiles',list(readItemStackTemplate26_3,1024));
 // BundleContents.STREAM_CODEC: list of ItemStackTemplate.

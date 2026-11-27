@@ -60,24 +60,27 @@ assert.deepEqual(stack.added[4].value,[{enchantment:0,id:'minecraft:aqua_affinit
 assert.deepEqual(stack.removed,[componentId('unbreakable'),componentId('repair_cost')],'removed components are bare ids after the values');
 assert.equal(stack.components.damage,42,'the convenience map follows the patch');
 
-// 2. ItemStackTemplate inside container contents: item, count, patch; an empty slot is a bool false.
+// 2. ItemStackTemplate inside container contents is a plain list: item, count, patch. Empty
+// slots are omitted by the native codec rather than encoded as a bool.
 const containerBytes=new Writer()
   .varint(1).varint(chest)
   .varint(1)                          // one added component
   .varint(0)                          // no removed components
   .varint(componentId('container'))
-    .varint(2)                        // two slots
-    .bool(false)                      // empty slot
-    .bool(true).varint(apple).varint(3).varint(0).varint(0) // three apples, empty patch
+    .varint(2)                        // two occupied slots
+    .varint(apple).varint(3).varint(0).varint(0) // three apples, empty patch
+    .varint(itemId('stick')).varint(8).varint(0).varint(0) // eight sticks, empty patch
   .build();
 const containerReader=new Reader(containerBytes);
 const chestStack=readItemStack26_3(containerReader);
 assert.equal(containerReader.remaining(),0,'container contents consume exactly their bytes');
-assert.equal(chestStack.components.container.length,2);
-assert.equal(chestStack.components.container[0],null,'an absent slot is null');
-assert.equal(chestStack.components.container[1].itemId,apple);
-assert.equal(chestStack.components.container[1].count,3);
-assert.deepEqual(chestStack.components.container[1].added,[]);
+const containerContents=itemComponentValues26_3(chestStack).container;
+assert.equal(containerContents.length,2);
+assert.equal(containerContents[0].id,apple,'container templates adapt to decorated stacks');
+assert.equal(containerContents[0].count,3);
+assert.equal(containerContents[1].itemKey,'stick');
+assert.equal(containerContents[1].count,8);
+assert.deepEqual(containerContents[0].componentPatch,{added:[],removed:[]});
 
 // 3. Potion contents: optional potion holder, optional INT color, effect list, optional string.
 const potionBytes=new Writer()
