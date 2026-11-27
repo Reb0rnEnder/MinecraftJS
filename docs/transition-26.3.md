@@ -104,9 +104,13 @@ pending; product outside current scope; or experiment-gated.
 - Dialog screens (P13 partial): `show_dialog` and `clear_dialog` are now adapted. The screen parses the
   native Dialog dispatch graph for notice, confirmation, multi_action, dialog_list and server_links,
   resolves either holder branch through the configuration `minecraft:dialog` registry, renders compact
-  plain-message and item-description bodies, executes static click actions plus custom click actions, and
-  builds server-link buttons from the last `server_links` packet. `test-dialog-26.3.mjs` covers the parser,
-  registry resolution, adapter pair, server-link buttons and screen action semantics.
+  plain-message and item bodies, executes static click actions plus custom/dynamic click actions, and
+  builds server-link buttons from the last `server_links` packet. The four native input controls feed
+  `dynamic/run_command` (`$(key)` substitution with native escaping) and `dynamic/custom` (input NBT tags
+  merged into additions); item bodies draw their icon/count, the title-row warning button opens the
+  Back/Disconnect warning, and styled plain-message spans keep their click actions and show-text
+  tooltips. `test-dialog-26.3.mjs` covers the parser, registry resolution, adapter pair, server links,
+  inputs, dynamic actions and screen semantics; live visual acceptance remains.
 - The entity table is native for this target (P02 partial): the client's EntityType registry now supplies
   all 161 wire ids with native dimensions, eye heights and MobCategory, so spawn packets can no longer
   index 26.3 ids through the 1.20.6 order. The generated display table and stats names use the same dump,

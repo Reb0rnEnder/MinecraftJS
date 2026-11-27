@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {parseDialog263, parseDialogRegistry263} from '../client/js/net/dialog-26.3.js';
 import {adaptPlay26_3} from '../client/js/net/play-adapter-26.3.js';
-import {DialogScreen263} from '../client/js/gui/screens/dialog-26.3.js';
+import {DialogScreen263, instantiateTemplate, scaledRangeValue} from '../client/js/gui/screens/dialog-26.3.js';
 
 const S = value => ({t: 8, v: value});
 const I = value => ({t: 3, v: value});
@@ -20,6 +20,20 @@ const button = (label, action = null, width = 150) => C({
 });
 const command = (value) => C({type: S('minecraft:run_command'), command: S(value)});
 const url = (value) => C({type: S('minecraft:open_url'), url: S(value)});
+const F = value => ({t: 5, v: value});
+const input = (key, type, fields = {}) => C({key: S(key), type: S('minecraft:' + type), ...fields});
+const dialogInputs = L(
+  input('name', 'text', {label: text('Name'), width: I(180), initial: S('Steve'), max_length: I(24)}),
+  input('loud', 'boolean', {label: text('Loud'), initial: B(true), on_true: S('yes'), on_false: S('no')}),
+  input('amount', 'number_range', {
+    label: text('Amount'), width: I(180), label_format: S('options.generic_value'),
+    range_info: C({start: F(1), end: F(10), initial: F(4), step: F(1)})
+  }),
+  input('mood', 'single_option', {
+    label: text('Mood'), width: I(180),
+    options: L(S('calm'), C({id: S('loud'), display: text('Loud'), initial: B(true)}))
+  })
+);
 
 const notice = C({
   type: S('minecraft:notice'),
@@ -170,7 +184,7 @@ test('server_links packet supplies the dialog buttons', () => {
     send: () => {}
   }, dialog);
   screen.init();
-  assert.equal(screen.buttons.length, 3); // two links plus the exit button
+  assert.equal(screen.buttons.length, 4); // two links, exit button and the warning button
   assert.equal(screen.buttons[0].label, 'known_server_link.report_bug');
   assert.equal(screen.buttons[1].label, 'Custom link');
   assert.equal(screen.buttons[0].w, 120);
@@ -188,8 +202,9 @@ test('dialog screen presents native buttons and runs a notice action', () => {
   };
   const screen = new DialogScreen263(game, parseDialog263(notice));
   screen.init();
-  assert.equal(screen.buttons.length, 1);
+  assert.equal(screen.buttons.length, 2);
   assert.equal(screen.buttons[0].label, 'Continue');
+  assert.equal(screen.buttons[1].label, '!');
   screen.buttons[0].onClick();
   assert.equal(sent.length, 1);
   assert.equal(closed, 0); // notice.after_action is none
@@ -213,6 +228,139 @@ test('dialog screen closes after an action when after_action is close', () => {
   screen.init();
   screen.buttons[0].onClick();
   assert.equal(closed, 1);
+});
+
+test('item bodies keep the native stack template, decorations and description width', () => {
+  const dialog = parseDialog263(C({
+    type: S('minecraft:notice'), title: text('Item'),
+    body: L(C({
+      type: S('minecraft:item'),
+      item: C({id: S('minecraft:diamond'), count: I(3)}),
+      description: C({contents: text('Shiny'), width: I(80)}),
+      show_decorations: B(false), show_tooltip: B(true),
+      width: I(32), height: I(20)
+    }))
+  }));
+  const body = dialog.bodies[0];
+  assert.equal(body.type, 'item');
+  assert.equal(body.itemId, 'diamond');
+  assert.equal(body.count, 3);
+  assert.equal(body.description.text, 'Shiny');
+  assert.equal(body.descriptionWidth, 80);
+  assert.equal(body.showDecorations, false);
+  assert.equal(body.showTooltip, true);
+  assert.deepEqual([body.width, body.height], [32, 20]);
+});
+
+test('native dialog inputs parse and feed templates/custom payloads', () => {
+  const dynamic = C({type: S('minecraft:dynamic/run_command'), template: S('say $(name) $(loud) $(amount) $(mood)')});
+  const dialog = parseDialog263(C({
+    type: S('minecraft:notice'),
+    title: text('Inputs'),
+    inputs: dialogInputs,
+    action: button('Run', dynamic)
+  }));
+  assert.equal(dialog.inputCount, 4);
+  assert.deepEqual(dialog.inputs.map(input => [input.key, input.type]), [
+    ['name', 'text'], ['loud', 'boolean'], ['amount', 'number_range'], ['mood', 'single_option']
+  ]);
+  assert.equal(dialog.inputs[0].maxLength, 24);
+  assert.equal(dialog.inputs[0].labelVisible, true);
+  assert.equal(dialog.inputs[1].onTrue, 'yes');
+  assert.deepEqual([dialog.inputs[2].start, dialog.inputs[2].end, dialog.inputs[2].initial, dialog.inputs[2].step], [1, 10, 4, 1]);
+  assert.equal(dialog.inputs[3].entries[1].display.text, 'Loud');
+
+  const sent = [];
+  const game = {
+    gui: {width: 320, height: 240, font: {wrap: (text) => [text]}},
+    send: (bytes) => sent.push(bytes),
+    screens: {close: () => {}, open: () => {}}
+  };
+  const screen = new DialogScreen263(game, dialog);
+  screen.init();
+  assert.equal(screen.fields.length, 1);
+  assert.equal(screen.controls.length, 4);
+
+  screen.fields[0].setText('Buffy "quoted"');
+  screen.controls[1].widget.selected = false;
+  screen.controls[2].widget.value = 1;
+  screen.controls[3].widget.onClick();
+  const values = screen.inputValues();
+  assert.equal(values.name.value, 'Buffy "quoted"');
+  assert.equal(values.name.template, 'Buffy \\"quoted\\"');
+  assert.equal(values.loud.value, false);
+  assert.equal(values.loud.template, 'no');
+  assert.equal(values.amount.value, 10);
+  assert.equal(values.amount.tag.t, 5);
+  assert.equal(values.mood.value, 'calm');
+  assert.equal(instantiateTemplate('say $(name) $(loud) $(amount) $(mood)', values), 'say Buffy \\"quoted\\" no 10 calm');
+
+  screen.buttons.find(button => button.label === 'Run').onClick();
+  assert.equal(sent.length, 1);
+  assert.equal(scaledRangeValue(dialog.inputs[2], 0), 1);
+  assert.equal(scaledRangeValue(dialog.inputs[2], 0.5), 6);
+});
+
+test('multiline text inputs accept line breaks and respect max_length', () => {
+  const dialog = parseDialog263(C({
+    type: S('minecraft:notice'), title: text('Multiline'),
+    inputs: L(input('notes', 'text', {
+      label: text('Notes'), initial: S('a'), max_length: I(8),
+      multiline: C({max_lines: I(3), height: I(40)})
+    }))
+  }));
+  assert.deepEqual(dialog.inputs[0].multiline, {maxLines: 3, height: 40});
+  const screen = new DialogScreen263({
+    gui: {width: 320, height: 240, font: {wrap: (text) => [text]}},
+    send: () => {}, screens: {close: () => {}, open: () => {}}
+  }, dialog);
+  screen.init();
+  const field = screen.fields[0];
+  field.focused = true;
+  assert.equal(field.key({code: 'Enter'}), true);
+  field.char('b');
+  assert.equal(field.text, 'a\nb');
+  assert.equal(screen.inputValues().notes.value, 'a\nb');
+});
+
+test('dynamic_custom merges the input tags into the additions compound', () => {
+  const action = C({type: S('minecraft:dynamic/custom'), id: S('example:act'), additions: C({fixed: S('x')})});
+  const dialog = parseDialog263(C({
+    type: S('minecraft:notice'),
+    title: text('Custom'),
+    inputs: dialogInputs,
+    action: button('Send', action)
+  }));
+  const sent = [];
+  const game = {
+    gui: {width: 320, height: 240, font: {wrap: (text) => [text]}},
+    send: (bytes) => sent.push(bytes),
+    screens: {close: () => {}, open: () => {}}
+  };
+  const screen = new DialogScreen263(game, dialog);
+  screen.init();
+  assert.deepEqual(screen.dialog.buttons[0].action, {
+    type: 'dynamic_custom', id: 'example:act', additions: C({fixed: S('x')})
+  });
+  screen.buttons.find(button => button.label === 'Send').onClick();
+  assert.equal(sent.length, 1);
+});
+
+test('wait_for_response leaves the holder open for clear_dialog', () => {
+  let closed = 0;
+  const dialog = parseDialog263(C({
+    type: S('minecraft:notice'), title: text('Wait'), after_action: S('wait_for_response'),
+    action: button('Run', command('run'))
+  }));
+  const game = {
+    gui: {width: 320, height: 240, font: {wrap: (text) => [text]}},
+    send: () => {},
+    screens: {close: () => { closed++; }, open: () => {}}
+  };
+  const screen = new DialogScreen263(game, dialog);
+  screen.init();
+  screen.buttons[0].onClick();
+  assert.equal(closed, 0);
 });
 
 test('unsupported dialog types fail closed instead of presenting guessed UI', () => {

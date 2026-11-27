@@ -8,6 +8,7 @@ const shortName = value => String(value || '').replace(/^minecraft:/, '');
 const child = (node, key) => node && node.t === 10 ? node.v[key] : undefined;
 const stringValue = node => node && node.t === 8 ? String(node.v) : null;
 const intValue = node => node && (node.t === 3 || node.t === 2) ? Number(node.v) : null;
+const floatValue = node => node && [1, 2, 3, 5, 6].includes(node.t) ? Number(node.v) : null;
 const boolValue = (node, fallback) => node && node.t === 1 ? node.v !== 0 : fallback;
 const listValue = node => node && node.t === 9 ? node.items : null;
 
@@ -67,13 +68,11 @@ function actionFromTag(tag, registry) {
     }
     case 'dynamic/run_command': {
       const template = stringValue(data.template);
-      // Templates are filled from dialog inputs. With no input widget model yet, only a template
-      // that needs no substitution is safe to run.
-      return template != null && !/\$\{/.test(template) ? {type: 'run_command', command: template} : null;
+      return template != null ? {type: 'dynamic_run_command', template} : null;
     }
     case 'dynamic/custom': {
       const id = stringValue(data.id);
-      return id ? {type: 'custom', id, payload: data.additions || null} : null;
+      return id ? {type: 'dynamic_custom', id, additions: data.additions || null} : null;
     }
     default:
       return null;
@@ -105,13 +104,19 @@ function bodyFromTag(tag) {
   if (type === 'item') {
     const item = child(tag, 'item');
     const itemId = shortName(stringValue(item) || stringValue(child(item, 'id')) || '');
-    const description = child(tag, 'description');
+    const count = intValue(child(item, 'count')) ?? 1;
+    const descriptionTag = child(tag, 'description');
+    const descriptionContents = child(descriptionTag, 'contents') || descriptionTag;
     return {
       type: 'item',
       itemId,
-      description: description ? componentValue(description) : null,
-      width: intValue(child(tag, 'width')) ?? 16,
-      height: intValue(child(tag, 'height')) ?? 16
+      count: Math.max(1, count),
+      description: descriptionContents ? componentValue(descriptionContents) : null,
+      descriptionWidth: intValue(child(descriptionTag, 'width')) ?? 200,
+      showDecorations: boolValue(child(tag, 'show_decorations'), true),
+      showTooltip: boolValue(child(tag, 'show_tooltip'), true),
+      width: Math.max(1, Math.min(256, intValue(child(tag, 'width')) ?? 16)),
+      height: Math.max(1, Math.min(256, intValue(child(tag, 'height')) ?? 16))
     };
   }
   if (type === 'plain_message') {
@@ -129,6 +134,81 @@ function parseBodies(tag) {
   if (!tag) return [];
   const items = listValue(tag);
   return (items || [tag]).map(bodyFromTag).filter(Boolean);
+}
+
+// DialogInput.MAP_CODEC is dispatched on `type` and flattened beside the input key.
+// Widths are shared Dialog.WIDTH_CODEC (1..1024) values; the native record defaults are
+// TextInput/SingleOptionInput/NumberRangeInput 200, boolean/checkbox 20 high.
+function inputFromTag(tag) {
+  if (!tag || tag.t !== 10) return null;
+  const type = shortName(stringValue(child(tag, 'type')));
+  const key = stringValue(child(tag, 'key'));
+  if (!key) return null;
+  const width = Math.max(1, Math.min(1024, intValue(child(tag, 'width')) ?? 200));
+  const label = componentValue(child(tag, 'label'));
+  switch (type) {
+    case 'text': {
+      const multilineTag = child(tag, 'multiline');
+      const multiline = multilineTag && multilineTag.t === 10 ? {
+        maxLines: intValue(child(multilineTag, 'max_lines')),
+        height: intValue(child(multilineTag, 'height'))
+      } : null;
+      return {
+        key, type, width, label,
+        labelVisible: boolValue(child(tag, 'label_visible'), true),
+        initial: stringValue(child(tag, 'initial')) ?? '',
+        maxLength: Math.max(1, intValue(child(tag, 'max_length')) ?? 32),
+        multiline
+      };
+    }
+    case 'boolean':
+      return {
+        key, type, width, label,
+        initial: boolValue(child(tag, 'initial'), false),
+        onTrue: stringValue(child(tag, 'on_true')) ?? 'true',
+        onFalse: stringValue(child(tag, 'on_false')) ?? 'false'
+      };
+    case 'number_range': {
+      const range = child(tag, 'range_info');
+      const start = floatValue(child(range, 'start'));
+      const end = floatValue(child(range, 'end'));
+      if (start == null || end == null) return null;
+      const initial = floatValue(child(range, 'initial'));
+      const step = floatValue(child(range, 'step'));
+      return {
+        key, type, width, label,
+        labelFormat: stringValue(child(tag, 'label_format')) ?? 'options.generic_value',
+        start, end,
+        initial: initial != null && initial >= Math.min(start, end) && initial <= Math.max(start, end) ? initial : null,
+        step: step != null && step > 0 ? step : null
+      };
+    }
+    case 'single_option': {
+      const entries = (listValue(child(tag, 'options')) || []).map(entry => {
+        if (entry?.t === 8) return {id: entry.v, display: null, initial: false};
+        if (entry?.t !== 10) return null;
+        const id = stringValue(child(entry, 'id'));
+        return id ? {
+          id,
+          display: componentValue(child(entry, 'display')),
+          initial: boolValue(child(entry, 'initial'), false)
+        } : null;
+      }).filter(Boolean);
+      if (!entries.length || entries.filter(entry => entry.initial).length > 1) return null;
+      return {
+        key, type, width, label,
+        labelVisible: boolValue(child(tag, 'label_visible'), true),
+        entries
+      };
+    }
+    default:
+      // Native DialogSendWarningScreen logs and skips an unrecognised control.
+      return null;
+  }
+}
+
+function parseInputs(tag) {
+  return (listValue(tag) || []).map(inputFromTag).filter(Boolean);
 }
 
 function holderSet(node, registry) {
@@ -149,9 +229,9 @@ export function parseDialog263(tag, registry = null) {
     pause: boolValue(child(tag, 'pause'), true),
     afterAction: shortName(stringValue(child(tag, 'after_action')) || 'close'),
     bodies: parseBodies(child(tag, 'body')),
-    inputs: (listValue(child(tag, 'inputs')) || []).length
+    inputs: parseInputs(child(tag, 'inputs'))
   };
-  const dialog = {...common, type, inputCount: common.inputs, onCancel: null, buttons: [], exitAction: null, columns: 2};
+  const dialog = {...common, type, inputCount: common.inputs.length, onCancel: null, buttons: [], exitAction: null, columns: 2};
   switch (type) {
     case 'notice':
       dialog.buttons = [buttonFromTag(child(tag, 'action'), registry, {translate: 'gui.ok'})].filter(Boolean);

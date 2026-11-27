@@ -70,7 +70,7 @@ java -jar cache/tools/cfr.jar cache/port-26.3/client.jar --jarfilter '^net\.mine
 
 ## Next sections, in order
 
-1. **P13 dialog remainder** — notice/confirmation/multi_action/dialog_list/server_links and static/custom actions are presented, with server-link buttons fed from `server_links`; dialog input widgets, body click/tooltip widgets, item-body icons and the warning button are still open. The debug value/event packets are decoded but still need a native debug renderer.
+1. **P13 dialog remainder** — notice/confirmation/multi_action/dialog_list/server_links and static/custom actions are presented, with server-link buttons fed from `server_links`; text/multiline, boolean, number-range and single-option inputs feed dynamic actions, item bodies draw their icon and count, the title-row warning button opens Back/Disconnect, and styled plain-message spans keep their click actions and show-text tooltips. Only live visual acceptance remains. The debug value/event packets are decoded but still need a native debug renderer.
 2. **P02 entity table closed** — the 161-type 26.3 registry now drives wire ids, dimensions, eye heights, mob categories, stats names and boat/potion object kinds; `test-entity-registry-26.3.mjs` and `entity-registry:26.3 --check` pin it. P10 still needs the renderer rigs for the families 26.3 restructured.
 3. **P10** started: `tools/port-26.3/ExtractLayers26_3.java` dumps all 361 native layers and `lib/model-extract-26.3.js` bakes a complete 129-model bundle for the 26.3 asset target. Remaining: port the renderer rigs for the families 26.3 restructured so their geometry can drop the 1.20.6 fallback.
 
