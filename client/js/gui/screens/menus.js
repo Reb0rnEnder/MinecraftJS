@@ -14,6 +14,7 @@ import { ensureTested } from '../../net/proxies.js';
 import { PROTOCOL_VERSION } from '../../net/packets.js';
 
 export class TitleScreen extends Screen {
+  narrationTitle() { return tr('narrator.screen.title'); } // Screen.getNarrationMessage
   constructor(game, reason) {
     super(game);
     this.background = 'none';
@@ -158,6 +159,7 @@ export class MultiplayerSafetyScreen extends Screen {
 
 // GuiMultiplayer + ServerSelectionList (GuiListExtended) + ServerListEntryNormal / ServerListEntryLanScan
 export class MultiplayerScreen extends Screen {
+  narrationTitle() { return tr('multiplayer.title'); } // Screen.getNarrationMessage
   constructor(game, parent) {
     super(game);
     this.parent = parent;
@@ -388,6 +390,7 @@ class ServerList extends SlotList {
 
 // GuiYesNo
 export class ConfirmScreen extends Screen {
+  narrationTitle() { return [this.line1,this.line2].filter(Boolean).join('. '); } // Screen.getNarrationMessage
   constructor(game, callback, line1, line2, yes = tr('gui.yes'), no = tr('gui.no')) {
     super(game);
     this.background = game.inWorld ? 'world' : 'dirt';

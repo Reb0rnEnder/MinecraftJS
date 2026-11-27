@@ -54,6 +54,9 @@ export class Screen {
   onClose() {}
 }
 
+// Screen.children() in add order for narration (widgets are stamped when constructed)
+const narrationChildren=(s)=>{const all=[...(s.fields||[]),...(s.buttons||[])];return all.map((w,i)=>[w,i]).sort((a,b)=>(a[0].focusOrder??Infinity)-(b[0].focusOrder??Infinity)||a[1]-b[1]).map(p=>p[0]);};
+
 export class ScreenManager {
   constructor(game) {
     this.game = game;
@@ -112,15 +115,16 @@ export class ScreenManager {
     if (size !== this.lastSize) { this.lastSize = size; s.onResize(); }
     const [mx, my] = this._mouse();
     s.render(gui, mx, my, partial);
-    for(const b of s.buttons)gui.narrator?.widget(b,b.hovered?.(mx,my)??false,typeof b.label==='function'?b.label():b.label);
     for(const field of s.fields)gui.narrator?.widget(field,false,field.label||field.narrationLabel||'', 'editBox');
+    gui.narrator?.screenFrame?.(s,narrationChildren(s),this.narrationKeyboard);
   }
 
   // KeyboardHandler.keyPress: arrows and Tab in a screen make the keyboard the last input type
-  onKey(e) { if (!this.current) return; setLastInputType(inputTypeForKey(e.code)); this.current.key(e); }
+  // Screen.afterKeyboardAction (200 ms) / afterMouseMove (750 ms) narration delays
+  onKey(e) { this.narrationKeyboard = true; if (!this.current) return; setLastInputType(inputTypeForKey(e.code)); this.current.key(e); }
   onKeyUp(e) { if (this.current) this.current.keyUp(e); }
   onChar(c) { if (this.current) this.current.char(c); }
-  onMove() { if (this.current && this.current.mouseMove) { const [mx, my] = this._mouse(); this.current.mouseMove(mx, my); } }
+  onMove() { this.narrationKeyboard = false; if (this.current && this.current.mouseMove) { const [mx, my] = this._mouse(); this.current.mouseMove(mx, my); } }
   onWheel(d) { if (this.current) this.current.wheel(d); }
   onMouse(e) {
     if (!this.current) return;

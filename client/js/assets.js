@@ -1,3 +1,4 @@
+export const VANILLA_PACK_ID = 'vanilla';
 import {readResourceStack,readResourceBytes,resourceMetadata,resourceNamespaces,resourceFilter} from './resource-layers.js';
 import{preloadTextures}from'./render/texture-preload.js';
 import {applyPackModels,applyPackTextures} from './resource-models.js';
@@ -53,7 +54,8 @@ export class Assets {
     this.images = new Map();   // rel -> decoded image | null (loading) | false (missing)
     this.textures = new Map(); // rel -> device texture
     this.data = {};
-    this.packs = [];           // active packs, highest priority first
+    this.packs = [];           // active packs above Default (vanilla), highest priority first
+    this.lowerPacks = [];      // active packs moved below Default: consulted after vanilla, highest first
     this.serverPack = null;    // the current server's resource pack (serverpacks.js), first in packs while set
     this.device = null;
     this.version = 0;          // bumps on every (re)load so caches elsewhere can invalidate
@@ -96,7 +98,10 @@ export class Assets {
 
   async activatePacks(ids) {
     const all = await this.listPacks();
-    this.packs = ids.map((id) => all.find((p) => p.id === id)).filter(Boolean);
+    // ClientPackSource: Default ("vanilla") is required but not fixed; packs listed under it rank below vanilla
+    const at = ids.indexOf(VANILLA_PACK_ID), pick = (list) => list.map((id) => all.find((p) => p.id === id)).filter(Boolean);
+    this.packs = pick(at < 0 ? ids : ids.slice(0, at));
+    this.lowerPacks = at < 0 ? [] : pick(ids.slice(at + 1));
     if (this.serverPack) this.packs.unshift(this.serverPack); // a server's pack stays on top while connected
   }
 
@@ -208,12 +213,20 @@ export class Assets {
 
     step('Loading block models...', 15);
     const models = await this.source.models();
-    this.models = models.models;
-    this.blockstates = models.blockstates;
+    // packs below Default only supply what vanilla lacks
+    const under = { models: {}, blockstates: {} };
+    if (this.lowerPacks.length) applyPackModels([...this.lowerPacks].reverse(), under.models, under.blockstates);
+    this.models = { ...under.models, ...models.models };
+    this.blockstates = { ...under.blockstates, ...models.blockstates };
     applyPackModels(packsLowFirst,this.models,this.blockstates,this);
 
     step('Loading textures...', 35);
     const { files, mcmeta } = await this.source.blockTextures();
+    if (this.lowerPacks.length) {
+      const underFiles = new Map(), underMeta = {};
+      applyPackTextures([...this.lowerPacks].reverse(), underFiles, underMeta, this.models);
+      for (const [k, v] of underFiles) if (!files.has(k)) { files.set(k, v); if (underMeta[k] && !mcmeta[k]) mcmeta[k] = underMeta[k]; }
+    }
     applyPackTextures(packsLowFirst,files,mcmeta,this.models,this);
     step('Building texture atlas...', 50);
     const textures = [];
@@ -305,6 +318,9 @@ export class Assets {
   async loadLanguageList() {
     const list = { ...((this.defaultPackMeta && this.defaultPackMeta.language) || {}) };
     if (!list.en_us) list.en_us = { name: 'English', region: 'US', bidirectional: false };
+    const under = {};
+    for (const p of [...this.lowerPacks].reverse()) if (p.languages) Object.assign(under, p.languages);
+    for (const [code, language] of Object.entries(under)) if (!list[code]) list[code] = language;
     for (const p of [...this.packs].reverse()) if (p.languages) Object.assign(list, p.languages);
     this.languages = list;
     return list;
@@ -314,7 +330,7 @@ export class Assets {
   // the selected language and every active pack's .json files are layered on top.
   async loadVillagerHats(){
     const names=new Set(Object.keys(VILLAGER_HATS));
-    for(const pack of this.packs)for(const path of pack.list('textures/entity/'))if(/\/(villager|zombie_villager)\/.*\.png\.mcmeta$/.test(path))names.add(path.slice(9,-7));
+    for(const pack of [...this.packs,...this.lowerPacks])for(const path of pack.list('textures/entity/'))if(/\/(villager|zombie_villager)\/.*\.png\.mcmeta$/.test(path))names.add(path.slice(9,-7));
     const hats={};
     for(const path of names){const meta=await this.resourceMetadata('minecraft:textures/'+path);if(meta.bytes)try{hats[path]=JSON.parse(decodeUtf8(meta.bytes)).villager?.hat||'none';}catch{}else if(meta.base&&!meta.filtered)hats[path]=VILLAGER_HATS[path];}
     this.villagerHats=hats;

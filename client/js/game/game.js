@@ -185,6 +185,7 @@ export class Game {
     this.renderer.columnRevision = () => this.world._gen;
     this.renderer.opaqueAt = (x, y, z) => { const b = getBlock(this.world.getState(Math.floor(x), Math.floor(y), Math.floor(z))); return !!(b && b.opaque); };
     platform().on('resize', () => { this.gui.resize(); this.renderer.resize(); });
+    platform().on('filesdrop', (files) => this.screens.current?.onFilesDrop?.(files)); // Minecraft.onFilesDrop
 
     this.world = new World();
     this.world.selectionProvider = (state, x, y, z) => this.selectionBox(state, x, y, z);
@@ -675,6 +676,7 @@ export class Game {
   // Connect as the active account (or as an explicit offline username)
   async connect(host, port, username = null) {
     this.disconnect(true);
+    this.chatLog = []; // a new ReportingContext chat log per server
     const attempt=this.connectAttempt=(this.connectAttempt||0)+1;
     this.reset();
     this.serverAddress = { host, port };
@@ -928,6 +930,8 @@ export class Game {
    if(trust==='secure'&&(!chatComponentString(decorated).includes(p.plainMessage)||p.unsignedChatContent&&hasNonDefaultChatFont(JSON.parse(p.unsignedChatContent))))trust='modified';
    const blocked=this.hiddenPlayers?.has(p.sender)||this.socialBlocking?.isBlocked(p.sender)||this.blockedPlayers?.has(p.sender),shown=p.filterType!==1&&!blocked&&this.settings.chatVisibility===0&&!(this.settings.onlyShowSecureChat&&trust==='unverified');
    if(chatState762.process(p.signature,shown)&&chatState762.offset>64)this.send(chatState762.flush());if(!shown)return;
+   // ChatListener.logPlayerMessage -> ReportingContext.chatLog: shown signed player messages (1024 events)
+   if(p.signature){const log=this.chatLog||=[];log.push({uuid:p.sender,name:this.scoreboard?.players?.get(p.sender)?.name??this.socialNames?.get(p.sender)??null});if(log.length>1024)log.splice(0,log.length-1024);}
    if(p.filterType===2)content=filteredChat762(p.plainMessage,p.filterTypeMask);
    this.on_chat({sender:p.sender,message:JSON.stringify(p.filterType===2?decorateChat762(codec,p,content):decorated),position:0,trust,originalMessage:p.plainMessage,signature:p.signature});
   }

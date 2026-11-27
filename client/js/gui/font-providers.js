@@ -96,7 +96,7 @@ export class FontSet {
 }
 export async function loadFontSets(assets) {
  const result={},fonts=new Set(['minecraft:default','minecraft:alt','minecraft:uniform']);
- for(const pack of assets.packs||[])for(const path of pack.zip?.list(pack.prefix+'assets/')||[]){const match=/^([^/]+)\/font\/(.+)\.json$/.exec(path.slice((pack.prefix+'assets/').length));if(match)fonts.add(match[1]+':'+match[2]);}
+ for(const pack of [...(assets.packs||[]),...(assets.lowerPacks||[])])for(const path of pack.zip?.list(pack.prefix+'assets/')||[]){const match=/^([^/]+)\/font\/(.+)\.json$/.exec(path.slice((pack.prefix+'assets/').length));if(match)fonts.add(match[1]+':'+match[2]);}
  for(const id of fonts){
   const [namespace,...parts]=id.split(':'),name=parts.join(':'),path='font/'+name+'.json',definitions=[];
   if(assets.readResourceStack){for(const {bytes}of await assets.readResourceStack(id.replace(':',':font/')+'.json'))try{definitions.push(JSON.parse(decodeUtf8(bytes)));}catch{}}
