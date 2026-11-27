@@ -613,8 +613,44 @@ function intComponentHash(value){
   new DataView(bytes.buffer).setInt32(1,value,true);
   return crc32c(bytes);
 }
+// HashOps.createString: tag 12, little-endian UTF-16 length, then unencoded chars (UTF-16LE).
+function stringComponentHash(value){
+  const bytes=[12,value.length&255,(value.length>>>8)&255,(value.length>>>16)&255,(value.length>>>24)&255];
+  for(let i=0;i<value.length;i++){
+    const char=value.charCodeAt(i);
+    bytes.push(char&255,char>>>8);
+  }
+  return crc32c(bytes);
+}
+// HashOps.createMap: tag 2, key/value hash bytes sorted by the unsigned hash pair, then tag 3.
+// Guava's CRC32C HashCode.asBytes is little-endian; the native catalogue proves this order for
+// every one of its 128 enchantment maps.
+function mapComponentHash(entries){
+  entries.sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+  const bytes=[2];
+  for(const [key,value] of entries){
+    for(const hash of [key,value])bytes.push(hash&255,(hash>>>8)&255,(hash>>>16)&255,(hash>>>24)&255);
+  }
+  bytes.push(3);
+  return crc32c(bytes);
+}
+function enchantmentComponentHash(value){
+  if(!Array.isArray(value))return null;
+  const entries=[];
+  for(const enchantment of value){
+    if(typeof enchantment?.id!=='string'||!Number.isInteger(enchantment.level))return null;
+    entries.push([stringComponentHash(enchantment.id),intComponentHash(enchantment.level)]);
+  }
+  return mapComponentHash(entries);
+}
 // Persistent component codecs that are plain Codec.INT. Values are non-negative in vanilla.
 const INT_COMPONENTS=new Set(['max_stack_size','max_damage','damage','repair_cost','ominous_bottle_amplifier','enchantable']);
+function knownComponentHash(component,stack){
+  if(component.name==='damage'&&Number.isInteger(stack?.damage))return intComponentHash(stack.damage);
+  if(INT_COMPONENTS.has(component.name)&&Number.isInteger(component.value))return intComponentHash(component.value);
+  if(component.name==='enchantments'||component.name==='stored_enchantments')return enchantmentComponentHash(component.value);
+  return null;
+}
 
 // HashedStack.STREAM_CODEC: optional ActualItem(item holder, count, HashedPatchMap).
 // HashedPatchMap is (VarInt type, INT hash)* then VarInt removed ids. Empty patches need two
@@ -642,10 +678,8 @@ export function writeHashedStack26_3(w,stack){
   const creative=hashes&&stack.creativeHashesItem===itemId?new Map(hashes.added):null;
   const rows=[];
   for(const component of added){
-    let hash=null;
-    if(component.name==='damage'&&Number.isInteger(stack.damage))hash=intComponentHash(stack.damage);
-    else if(INT_COMPONENTS.has(component.name)&&Number.isInteger(component.value))hash=intComponentHash(component.value);
-    else if(creative?.has(component.type))hash=creative.get(component.type)>>>0;
+    let hash=knownComponentHash(component,stack);
+    if(hash===null&&creative?.has(component.type))hash=creative.get(component.type)>>>0;
     if(hash===null){
       // Unknown value: force a server slot correction rather than fabricate a hash. Removed
       // ids need no hash, so keep them even when some added values are unknown.

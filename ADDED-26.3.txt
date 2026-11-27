@@ -2,7 +2,7 @@ MinecraftJS 26.3 - WHAT WE HAVE ADDED
 Branch: 26.3
 Inventory date: 2026-11-27
 Baseline: be606d1 "Implement native 26.3 recipe-book displays and chat click parity" plus this batch
-Latest verified run: test:26.3 101/101, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
+Latest verified run: test:26.3 102/102, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
 inbound gate all checks passed, serverbound gate 0, npm run assets exit 0 (91 mobs, 141 textures,
 no mobs pending a renderer).
 
@@ -155,8 +155,10 @@ Known limit:
 - Canonical HashedPatchMap hashes for arbitrary server-provided component values are still not
   implemented. Integer-valued components (damage, max stack size, max damage, repair cost,
   ominous-bottle amplifier and enchantable) now use the pinned HashOps.CRC32C integer payload and
-  match Mojang's values exactly, including predicted damage. Other components without a known
-  hash travel in an empty hash map; the server accepts the click and may resync the slot. A
+  match Mojang's values exactly, including predicted damage. Enchantment and stored-enchantment
+  maps also use the native string/map HashOps encoding, verified against all 128 native catalogue
+  maps. Other components without a known hash travel in an empty hash map; the server accepts the
+  click and may resync the slot. A
   synthetic patch with no captured bytes and no native encoder still fails loudly rather than
   inventing a hash. Full no-resync parity needs the canonical per-component codec encoding.
 

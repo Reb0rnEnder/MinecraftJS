@@ -210,3 +210,40 @@ test('26.3 inventory offhand swaps, drag distribution and pickup-all are native'
   assert.equal(inv.main[0],null);
   assert.equal(inv.main[20].count,2);
 });
+
+test('native enchantment map hashes match every Creative catalogue fixture', () => {
+  let checked=0;
+  for(const entry of data.stacks){
+    if(!entry.patch||!entry.hashes)continue;
+    const wire=new Writer26_3();
+    wire.varint(entry.stack.count).varint(entry.stack.itemId).raw(Buffer.from(entry.patch,'base64'));
+    const decoded=readItemStack26_3(new Reader26_3(wire.build()));
+    for(const component of decoded.added){
+      if(component.name!=='enchantments'&&component.name!=='stored_enchantments')continue;
+      const stack={id:entry.stack.itemId,count:1,componentPatch:{added:[component],removed:[]}};
+      const reader=new Reader26_3(writeHashedStack26_3(new Writer26_3(),stack).build());
+      assert.equal(reader.bool(),true);
+      assert.equal(reader.varint(),entry.stack.itemId);
+      assert.equal(reader.varint(),1);
+      assert.equal(reader.varint(),1);
+      assert.equal(reader.varint(),component.type);
+      assert.equal(reader.i32(),entry.hashes.added.find(([type])=>type===component.type)[1]);
+      assert.equal(reader.varint(),0);
+      assert.equal(reader.remaining(),0);
+      checked++;
+    }
+  }
+  assert.ok(checked>100);
+
+  // A server-provided map works without the Creative hash table.
+  const stack={id:1,count:1,componentPatch:{added:[{type:45,name:'stored_enchantments',value:[{enchantment:0,id:'minecraft:aqua_affinity',level:1}]}],removed:[]}};
+  const reader=new Reader26_3(writeHashedStack26_3(new Writer26_3(),stack).build());
+  assert.equal(reader.bool(),true);
+  assert.equal(reader.varint(),1);
+  assert.equal(reader.varint(),1);
+  assert.equal(reader.varint(),1);
+  assert.equal(reader.varint(),45);
+  assert.equal(reader.i32(),1317401286);
+  assert.equal(reader.varint(),0);
+  assert.equal(reader.remaining(),0);
+});
