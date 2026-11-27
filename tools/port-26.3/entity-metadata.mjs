@@ -32,7 +32,7 @@ if(compile.status!==0)throw Error('javac failed\n'+compile.stdout+compile.stderr
 const run=spawnSync('java',['-Djava.awt.headless=true','-cp',classes+sep+classpath,'DumpEntityMetadata26_3'],{encoding:'utf8'});
 if(run.status!==0)throw Error('metadata dumper failed\n'+run.stdout+run.stderr);
 const table=JSON.parse(run.stdout);
-assert.equal(Object.keys(table).length,10,'all 26.3-only entities are dumped');
+assert.equal(Object.keys(table).length,11,'all 26.3-only entities are dumped');
 for(const [name,fields] of Object.entries(table)){
   assert.ok(Object.keys(fields).length>0,name+' has metadata');
   assert.ok(Object.values(fields).every(value=>Number.isInteger(value)&&value>=0),name+' indices are non-negative');

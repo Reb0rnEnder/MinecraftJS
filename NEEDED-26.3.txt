@@ -27,7 +27,7 @@ Done and committed:
   to their native 26.3 layer trees and textures; camel husk reuses the native camel layer with its
   own texture. The asset pending list is empty (90 rigs, 140 textures). Happy ghast tentacles and
   nautilus body look use their native formulas. Breeze, copper golem, creaking and nautilus
-  keyframe clips are extracted from the jar and their walk/idle/swim clips are applied. The ten
+  keyframe clips are extracted from the jar and their walk/idle/swim clips are applied. The eleven
   26.3-only entities now have native metadata indices dumped from SynchedEntityData, and their
   state-driven clips are wired: breeze pose (shoot/inhale/slide/jump/slide-back), copper golem
   chest states and idle schedule, creaking event 4/66 and tearing-down. Copper golem weathering
@@ -38,11 +38,15 @@ Done and committed:
 - custom_report_details and low_disk_space_warning are handled; only add_transient_block and the
   two game-test frames remain explicit scope decisions.
 - Adapter gate skips nothing across its 53 pinned frames (36 handler names).
-- Full 26.3 gate: test:26.3 72/72, adapter 53 frames / 36 handlers, inbound all, serverbound 0,
+- Full 26.3 gate: test:26.3 76/76, adapter 53 frames / 36 handlers, inbound all, serverbound 0,
   assets exit 0.
 - 26.3 spears: native kinetic/piercing component use, attack_range picking, minimum_attack_charge,
   STAB player_action, SwingAnimation duration, and the first-/third-person spear use and attack
   transforms from SpearAnimations. Pinned by test-spear-26.3.mjs; live visual acceptance remains.
+- 26.3 mannequins decode ResolvableProfile + PlayerSkin.Patch, render with the native player model
+  at AvatarRenderer's 0.9375 scale, use profile/patch skins, cape/elytra, main-hand and layer
+  masks, and show their description as the below-name label within 10 blocks. Pinned by
+  test-mannequin-26.3.mjs; live visual acceptance remains.
 
 Still deliberately untracked:
 - docs/checkpoint-26.3-entities*.png and docs/live-*.png are user screenshots. Never commit them.
@@ -95,7 +99,8 @@ B. CODE-ONLY PARITY WORK, IN PRIORITY ORDER
    - 26.3: poplar wood, dappled forest, straw bed, abandoned camps, cushion, nautilus armor,
      sulfur cube and release-article families not yet exercised (spears now have native attack and
      animation code; live visual/acceptance remains).
-   - No mob is pending a renderer. Breeze, creaking, copper golem, happy ghast, nautilus, zombie
+   - No mob is pending a renderer. Mannequins render as native Avatars with ResolvableProfile
+     skins and descriptions. Breeze, creaking, copper golem, happy ghast, nautilus, zombie
      nautilus and sulfur cube are bound to their native layer trees; their native metadata indices
      and state-driven clips are now wired, and copper golem weathering selects its native texture.
      Give each family a live visual check. Bogged, parched and camel husk are fully routed through

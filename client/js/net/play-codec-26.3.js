@@ -11,6 +11,7 @@ import {readLpVec3} from './lp-vec3-26.3.js';
 import {readParticleOptions26_3,readParticles26_3} from './particles-26.3.js';
 import {SOUND_NAMES_26_3,MOB_EFFECT_NAMES_26_3} from './registry-names-26.3.js';
 import {readDebugSubscriptionEvent,readDebugSubscriptionUpdate} from './debug-subscriptions-26.3.js';
+import {readResolvableProfile26_3} from './resolvable-profile-26.3.js';
 
 const NAME_BY_ID=new Map(Object.entries(PLAY_CLIENTBOUND_26_3).map(([name,id])=>[id,name]));
 const readItemStack=readItemStack26_3;
@@ -36,8 +37,8 @@ function readMoveDelta(r){
 // 26.3 set_entity_data: VarInt entity id, then (index byte, serializer VarInt, value) until
 // 0xff. The serializer ids are the native EntityDataSerializers registration order; values
 // follow each serializer's StreamCodec. Serializers whose codec is not implemented yet
-// (game profiles, the vibration particle's PositionSource) throw so the frame is skipped
-// instead of corrupting the stream.
+// (the vibration particle's PositionSource) throw so the frame is skipped instead of
+// corrupting the stream.
 function readEntityDataValue(r,type){
   const serializer=ENTITY_DATA_SERIALIZERS_26_3[type];
   switch(serializer){
@@ -79,6 +80,7 @@ function readEntityDataValue(r,type){
     case 'OPTIONAL_GLOBAL_POS':return r.bool()?{dimension:r.string(),position:r.position()}:null;
     case 'VECTOR3':return {x:r.f32(),y:r.f32(),z:r.f32()};
     case 'QUATERNION':return {x:r.f32(),y:r.f32(),z:r.f32(),w:r.f32()};
+    case 'RESOLVABLE_PROFILE':return readResolvableProfile26_3(r);
   }
   throw Error('Unsupported 26.3 entity data serializer '+type+(serializer?' '+serializer:''));
 }

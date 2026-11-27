@@ -181,7 +181,7 @@ export class EntityManager {
     if (e.type === 99) e.health = e.maxHealth = 100;
     if(e.entityName==='wolf')e.health=e.maxHealth=8;
     if(e.entityName==='armadillo')e.health=e.maxHealth=12;
-    e.kind = e.entityName === 'armor_stand' ? 'armorstand' : def && def.mob ? 'mob' : 'unknown_mob';
+    e.kind = e.entityName === 'mannequin' ? 'mannequin' : e.entityName === 'armor_stand' ? 'armorstand' : def && def.mob ? 'mob' : 'unknown_mob';
     e.typeName = MOB_NAMES[e.type] || e.entityName || 'Unknown entity';
     e.headYaw = e.prevHeadYaw = p.headPitch; // packet's "headPitch" is the head yaw
     e.width = def ? def.width : 0; e.height = def ? def.height : 0; e.eyeHeight = def ? def.eyeHeight : 0;
@@ -189,6 +189,7 @@ export class EntityManager {
     if (e.entityName === 'shulker') e.shulkerColor = 16;
     if (e.entityName === 'snow_golem') e.hasPumpkin = true;
     if (e.kind === 'armorstand') e.armorFlags = 0;
+    if (e.kind === 'mannequin') { e.mainHand = 1; e.skinFlags = 0x7f; e.skinPatch = null; e.mannequinDescription = 'Mannequin'; }
     e.motionX = p.velocity.x / 8000; e.motionY = p.velocity.y / 8000; e.motionZ = p.velocity.z / 8000;
     e.metadata = p.metadata;
     this._applyMeta(e);
@@ -398,7 +399,7 @@ export class EntityManager {
   _applyMeta(e, m = e.metadata) {
     // Preserve native metadata on e.metadata. Adapt the unchanged consumers below
     // around 1.14's base pose and living sleeping-position insertions.
-    const wire=m,compat=Object.fromEntries(Object.entries(wire).filter(([i])=>Number(i)!==7).map(([i,v])=>[Number(i)>7?Number(i)-1:Number(i),v])),living498=e.kind==='mob'||e.kind==='player'||e.kind==='armorstand';
+    const wire=m,compat=Object.fromEntries(Object.entries(wire).filter(([i])=>Number(i)!==7).map(([i,v])=>[Number(i)>7?Number(i)-1:Number(i),v])),living498=e.kind==='mob'||e.kind==='player'||e.kind==='mannequin'||e.kind==='armorstand';
     const native=living498?Object.fromEntries(Object.entries(compat).filter(([i])=>Number(i)!==12).map(([i,v])=>[Number(i)>12?Number(i)-1:Number(i),v])):compat;
     if(living498&&compat[12]!==undefined)e.stingerCount=compat[12];
     if(wire[7]!==undefined)e.frozenTicks=wire[7];
@@ -409,7 +410,7 @@ export class EntityManager {
         e.poseStart=e.ticks;
       }
       e.pose=native[6];
-      if(e.kind==='player'){
+      if(e.kind==='player'||e.kind==='mannequin'){
         const pose=['standing','fall_flying','sleeping','swimming','spin_attack','sneaking','long_jumping','dying'][e.pose];
         const size=playerPoseDimensions(pose);
         if(size){e.width=Math.fround(size[0]);e.height=Math.fround(size[1]);}
@@ -427,6 +428,14 @@ export class EntityManager {
     if(name==='painting'&&wire[PAINTING_VARIANT_INDEX_762]!==undefined)configurePainting762(e,wire[PAINTING_VARIANT_INDEX_762]);
     const own=WIRE_METADATA[name]||{},assign=(symbol,key)=>{const id=own[symbol];if(id!==undefined&&wire[id]!==undefined){if(['snifferState','dashing'].includes(key)&&e[key]!==wire[id])e.wildAnimationStart=e.ticks;e[key]=wire[id];}};
     const own263=WIRE_METADATA_26_3[name]||{},assign263=(symbol,key)=>{const id=own263[symbol];if(id!==undefined&&wire[id]!==undefined)e[key]=wire[id];};
+    if(name==='mannequin'){
+      const id=own263;
+      if(wire[id.DATA_PROFILE]!==undefined){const rp=wire[id.DATA_PROFILE];e.profile=rp?.profile??rp;e.skinPatch=rp?.skinPatch??null;}
+      if(wire[id.DATA_IMMOVABLE]!==undefined)e.immovable=!!wire[id.DATA_IMMOVABLE];
+      if(wire[id.DATA_DESCRIPTION]!==undefined)e.mannequinDescription=wire[id.DATA_DESCRIPTION]===null?null:chatToLegacy(wire[id.DATA_DESCRIPTION]);
+      if(wire[id.DATA_PLAYER_MAIN_HAND]!==undefined)e.mainHand=wire[id.DATA_PLAYER_MAIN_HAND];
+      if(wire[id.DATA_PLAYER_MODE_CUSTOMISATION]!==undefined)e.skinFlags=wire[id.DATA_PLAYER_MODE_CUSTOMISATION];
+    }
     if(name==='copper_golem'){
       const stateId=own263.COPPER_GOLEM_STATE;
       if(stateId!==undefined&&wire[stateId]!==undefined&&e.copperGolemState!==wire[stateId]){
@@ -1149,13 +1158,13 @@ export class EntityManager {
         if (e.swingTicks >= swingDuration) { e.swingTicks = 0; e.swinging = false; }
       } else e.swingTicks = 0;
       e.swingProgress = e.swingTicks / swingDuration;
-      if (e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand') this._livingUpdate(e);
+      if (e.kind === 'player' || e.kind === 'mannequin' || e.kind === 'mob' || e.kind === 'armorstand') this._livingUpdate(e);
       if(isSquid(e))tickSquid(e,squidInWater(e,g.world));
       if(e.entityName==='glow_squid')g.particles.nativeParticle('glow',e.x+(Math.random()-.5)*e.width*.6,e.y+Math.random()*e.height,e.z+(Math.random()-.5)*e.width*.6);
-      if (e.kind === 'player') this._updateCape(e);
+      if (e.kind === 'player' || e.kind === 'mannequin') this._updateCape(e);
       if (e.onFire && Math.random() < 0.3) g.particles.entityFire && g.particles.entityFire(e);
       // LivingEntity.tickEffects (1.20.5+): one of the effect particles, 1 in (invisible ? 15 : 4) * (ambient ? 5 : 1)
-      const living = e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand';
+      const living = e.kind === 'player' || e.kind === 'mannequin' || e.kind === 'mob' || e.kind === 'armorstand';
       const list = living ? e.effectParticles || [] : [];
       if (list.length) {
         const ambient = !!e.potionAmbient;

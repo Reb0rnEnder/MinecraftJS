@@ -16,6 +16,7 @@ public final class DumpEntityMetadata26_3 {
     {"copper_golem", "net.minecraft.world.entity.animal.golem.CopperGolem"},
     {"creaking", "net.minecraft.world.entity.monster.creaking.Creaking"},
     {"happy_ghast", "net.minecraft.world.entity.animal.happyghast.HappyGhast"},
+    {"mannequin", "net.minecraft.world.entity.decoration.Mannequin"},
     {"nautilus", "net.minecraft.world.entity.animal.nautilus.Nautilus"},
     {"parched", "net.minecraft.world.entity.monster.skeleton.Parched"},
     {"sulfur_cube", "net.minecraft.world.entity.monster.cubemob.SulfurCube"},

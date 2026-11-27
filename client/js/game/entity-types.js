@@ -25,7 +25,7 @@ export const AGEABLE = new Set([...ANIMALS, 'villager','wandering_trader']);
 export const HORSES = new Set(('horse donkey mule zombie_horse skeleton_horse llama trader_llama').split(' '));
 export const ZOMBIES = new Set(('zombie husk zombie_villager zombie_pigman drowned').split(' '));
 export const FISH = new Set(('cod salmon pufferfish tropical_fish').split(' '));
-const NEW_MOBS = new Set(('bogged breeze armadillo allay frog tadpole warden camel sniffer axolotl goat glow_squid hoglin piglin piglin_brute strider zoglin zombified_piglin bee cat fox panda pillager ravager wandering_trader trader_llama cod dolphin drowned evoker illusioner llama parrot polar_bear pufferfish salmon tropical_fish turtle vex vindicator phantom copper_golem').split(' '));
+const NEW_MOBS = new Set(('bogged breeze armadillo allay frog tadpole warden camel sniffer axolotl goat glow_squid hoglin piglin piglin_brute strider zoglin zombified_piglin bee cat fox panda pillager ravager wandering_trader trader_llama cod dolphin drowned evoker illusioner llama parrot polar_bear pufferfish salmon tropical_fish turtle vex vindicator phantom copper_golem mannequin').split(' '));
 export const ENTITY_TYPES = REGISTRY.map(([name, width, height, eyeHeight, category], id) => ({
   id, name, width, height, eyeHeight, category,
   mob: Object.hasOwn(MOB_FAMILIES, name) || NEW_MOBS.has(name) || MOB_CATEGORIES.has(category),

@@ -1,8 +1,8 @@
 MinecraftJS 26.3 - WHAT WE HAVE ADDED
 Branch: 26.3
 Inventory date: 2026-11-27
-Baseline: 66dd0a1 "Render native 26.3 debug subscriptions in the F3 screen" plus this batch
-Latest verified run: test:26.3 72/72, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
+Baseline: c4f682b "Add native 26.3 spear support" plus this batch
+Latest verified run: test:26.3 76/76, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
 inbound gate all checks passed, serverbound gate 0, npm run assets exit 0 (90 mobs, 140 textures,
 no mobs pending a renderer).
 
@@ -200,6 +200,12 @@ Known limit:
   use the item's `attack_range` for picking and the native `attack_animation` duration for swings.
   The formulas come from SpearAnimations (use raise/sway/lower phases, STAB arm and item transforms,
   first-person use/attack) and are pinned by test-spear-26.3.mjs. Visual acceptance remains open.
+- 26.3 mannequins render as native Avatars: ResolvableProfile and PlayerSkin.Patch decode from
+  entity metadata (profile 17, skin patch body/cape/elytra/model), the default NIL-profile skin is
+  the native slim default, profile textures and patch resource textures load, custom main hand and
+  layer masks apply, and the description renders as the below-name label within 10 blocks. Native
+  metadata indices are dumped by entity-metadata.mjs (11 entities) and pinned by
+  test-mannequin-26.3.mjs. Visual acceptance remains open.
 - Dialog screen supports both holders and notice/confirmation/multi_action/dialog_list/
   server_links dialogs; text/multiline, boolean, number-range and single-option inputs; item
   bodies; warning button; click actions and tooltips; dynamic command templates. Chat click
@@ -244,18 +250,21 @@ Known limit:
   native formulas. tools/port-26.3/extract-keyframe-animations.mjs extracts the jar's
   AnimationDefinition constants (breeze 6, copper golem 7, creaking 4, nautilus 1) with degree->
   radian, position-Y negation and scale-minus-one conversions; walk/idle/swim clips now drive
-  those models. Native metadata indices for all ten 26.3-only entities are dumped from
+  those models. Native metadata indices for all eleven 26.3-only entities are dumped from
   SynchedEntityData (tools/port-26.3/entity-metadata.mjs) and feed the live states: breeze pose
   drives idle/shoot/inhale/slide/jump/slide-back, copper golem state drives its four chest
   interactions and its 200-239 tick idle, and creaking entity events 4/66 plus tearing-down drive
   attack/invulnerable/death. Copper golem weathering selects its four native texture paths.
+  Mannequins use the native player model at AvatarRenderer's 0.9375 scale with profile/patch
+  skins, cape/elytra, main-hand and layer-mask support.
 
 ======================================================================
 12. TESTS, GATES AND DOCUMENTATION
 ======================================================================
 
 Green at this inventory:
-- npm run test:26.3: 72 tests (including spear components/STAB/animation formulas).
+- npm run test:26.3: 76 tests (including spear components/STAB/animation formulas and mannequin
+  profile/metadata/render classification).
 - npm run adapter:26.3: 53 packets, 36 handler names, 2 chunks.
 - tools/port-26.3/inbound-gate.mjs: all checks.
 - tools/port-26.3/serverbound-gate.mjs: all checks.
@@ -271,6 +280,8 @@ Docs:
 - ADDED-26.3.txt and NEEDED-26.3.txt (these files).
 
 Recent commit trail:
+- This batch: native 26.3 mannequin ResolvableProfile/PlayerSkin.Patch decoding and Avatar skin,
+  cape/elytra, main-hand, layer-mask and below-name description rendering.
 - This batch: native metadata indices for the 26.3-only mobs, pose/state/event animation triggers,
   copper golem weathering textures and a metadata dump/check gate.
 - Native keyframe extraction for breeze/copper golem/creaking/nautilus, applied as walking/idle/
