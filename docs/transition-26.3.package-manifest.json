@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "target": "26.3",
   "branch": "26.3",
-  "commit": "8521f8e846865b572811c94e5234ac477aa2a5bc",
+  "commit": "e21153b63cf4e487ef52642581404d553364c7a7",
   "workingTreeDirty": false,
-  "generatedOn": "2026-11-27T18:40:17.514Z",
+  "generatedOn": "2026-11-27T19:13:08.642Z",
   "fileCount": 1371,
-  "bytes": 19632058,
+  "bytes": 19636532,
   "exclusions": [
     "^cache\\/ -> native/derived cache",
     "^node_modules\\/ -> installed dependencies",
@@ -47,8 +47,8 @@
     },
     {
       "path": "NEEDED-26.3-REMAINING.txt",
-      "bytes": 17722,
-      "sha256": "e78b2c9a9031284a6de73883fb6c1c648ba95acdc54bfe2f71e16a9a4076b80d"
+      "bytes": 18207,
+      "sha256": "ab4619f7c7a70c8ab5cf9798c774c34f793b21fbcc7009d41f06b6f5c7bdd341"
     },
     {
       "path": "NEEDED-26.3.txt",
@@ -1382,8 +1382,8 @@
     },
     {
       "path": "client/js/main.js",
-      "bytes": 3336,
-      "sha256": "f1d0bab842460373c6c412efe66b1817a4bab003389c4ebd020f0e87713d5fc9"
+      "bytes": 3431,
+      "sha256": "571ae779f566e2e95a9f287e91281c8b58017bccf78103678de609e9479569b6"
     },
     {
       "path": "client/js/net/address.js",
@@ -1442,8 +1442,8 @@
     },
     {
       "path": "client/js/net/chunk-26.3.js",
-      "bytes": 5006,
-      "sha256": "ac05382edcf497213d372948030c9f744c013b3ad269852dd6eec68261c6e33f"
+      "bytes": 5305,
+      "sha256": "62448bdf95d139fd994d68957c4ca1d6ee64a57cd4ba3766844c22a692b02dec"
     },
     {
       "path": "client/js/net/chunk-batch.js",
@@ -1757,8 +1757,8 @@
     },
     {
       "path": "client/js/net/tcp-26.3.js",
-      "bytes": 7831,
-      "sha256": "15ddf4a1b049cb7cd80603788c929da7d86955dad53965fb75d2b0c0ee9a4a71"
+      "bytes": 8085,
+      "sha256": "f5285480cc4ddfc6d1742a9bcf4427ca0f3a13a684a4788c49d23a374332630d"
     },
     {
       "path": "client/js/net/tcp.js",
@@ -2917,8 +2917,8 @@
     },
     {
       "path": "docs/parity-checklist-26.3.md",
-      "bytes": 15021,
-      "sha256": "8ae320c1d882ce7a06cbf47e7525c6fc9f1917b23aec7ea07bf8139975851b83"
+      "bytes": 15476,
+      "sha256": "24246e7da3f4b7de672b24ee9a4b89825287e1603301f4ecfccef952faf3b8fd"
     },
     {
       "path": "docs/parity-fix-tasks-1.19.4.md",
@@ -3277,8 +3277,8 @@
     },
     {
       "path": "docs/transition-26.3.md",
-      "bytes": 18822,
-      "sha256": "138bd50d6400d7b3fa412d36caa4339dddb1ee372cf4fe1bb8c8f3a28a603b96"
+      "bytes": 19314,
+      "sha256": "bfd4cef2a89de972945241347fb3cf59fc081049cfc825a59fdd05c8b9610287"
     },
     {
       "path": "docs/transition-26.3.official-versions.json",
@@ -3297,8 +3297,8 @@
     },
     {
       "path": "docs/transition-26.3.tasks.json",
-      "bytes": 57967,
-      "sha256": "45254f3aaab2b9d504475311dfb8f3db44a5f69b5450ce1e9651b95ef950d88b"
+      "bytes": 59385,
+      "sha256": "b29fe5acb8ed145d4468e625e2346df561ff49fbd343a5ef7c706be63f3f9376"
     },
     {
       "path": "docs/ui-parity-1.20.6.md",
@@ -3502,8 +3502,8 @@
     },
     {
       "path": "proxy.js",
-      "bytes": 28202,
-      "sha256": "cc5d5bcee3b41ca30e5497f43633693f42a82647bc45c5e060691a571202f9af"
+      "bytes": 28264,
+      "sha256": "ea6395b9c02885aec720a6762b5d1c460901f7d5120fbfacc7038ea221c3eebf"
     },
     {
       "path": "tools/ExtractBlockOffsets.java",
@@ -6442,8 +6442,8 @@
     },
     {
       "path": "tools/test-protocol-fields-26.3.mjs",
-      "bytes": 1068,
-      "sha256": "6718a443ade3fc0c0edaae6cf626c9072f221a4a5d5d25f3f2f09b08eb6c4d0f"
+      "bytes": 1982,
+      "sha256": "0a2d2548996e68f0f7174a64c9cd4b2d3769928067579e44251a482ca76364e4"
     },
     {
       "path": "tools/test-proxy-deployment.mjs",
@@ -6877,12 +6877,12 @@
     }
   ],
   "archive": {
-    "name": "MinecraftJS-26.3-8521f8e84686.zip",
-    "bytes": 3944175,
-    "sha256": "0c152862647e5290ee5fde6a1ca58ee5866ae4570f47e5b24b9113a8f1a17554"
+    "name": "MinecraftJS-26.3-e21153b63cf4.zip",
+    "bytes": 3945990,
+    "sha256": "ef4f2ec8c44de721b28c95f9a545970860c8db827f1cd6b00de9f1c882769f91"
   },
   "archiveContents": {
     "files": 1372,
-    "bytes": 19862639
+    "bytes": 19867113
   }
 }
