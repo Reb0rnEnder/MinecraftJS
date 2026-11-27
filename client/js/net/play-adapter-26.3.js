@@ -11,6 +11,7 @@ import {componentFromNbt} from './component-nbt-1.20.6.js';
 import {parseDialog263} from './dialog-26.3.js';
 import {EFFECT_766} from '../game/effects-1.20.6.js';
 import {ITEM_DEFAULTS_26_3} from './item-defaults-26.3.js';
+import {readScoreFormat766} from '../game/score-format-1.20.6.js';
 
 // Reverse the native item table so a 26.3 cooldown group (an item identifier by default) can be
 // expressed as the item id the existing CooldownTracker is keyed by.
@@ -79,7 +80,7 @@ function itemStack(stack){
 }
 
 const componentJson=value=>value==null?null:JSON.stringify(componentFromNbt(value));
-const scoreNumberFormat=format=>format?.type==='fixed'?{type:'fixed',value:componentFromNbt(format.value)}:format;
+const scoreNumberFormat=format=>format?.type==='fixed'?{type:'fixed',value:componentFromNbt(format.value)}:format?.type==='styled'?readScoreFormat766(1,format.value):format;
 const TEAM_VISIBILITY=['always','never','hideForOtherTeams','hideForOwnTeam'];
 const TEAM_COLLISION=['always','never','pushOtherTeams','pushOwnTeam'];
 

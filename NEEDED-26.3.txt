@@ -108,8 +108,8 @@ B. CODE-ONLY PARITY WORK, IN PRIORITY ORDER
    - Finish native 26.3 chat/command UI: styled message handling and command suggestion
      focus/selection.
    - Finish option rows, focus/narration and keyboard/gamepad navigation against native widgets.
-   - Port the remaining Style/number-format codec so styled text and number formats stop failing
-     closed.
+   - Styled number formats are decoded; finish styled chat/event spans and hover/click rendering in
+     the remaining chat UI paths.
    - Resource-pack/font parity beyond the default jar: pack selection/priority/overlays, font
      providers, glyph atlases and missing-glyph behaviour.
    - Resolve every inherited 1.20.6 finding instead of dropping it: packs, fonts, menu

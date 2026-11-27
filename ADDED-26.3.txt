@@ -99,7 +99,9 @@ Recent inbound work:
 - Container windows, contents, slots, cursor item, merchant offers, enchanting and menu registry
   IDs; inventory, held item, pickups and take-item-entity.
 - Block changes, section updates, block events, level events, particles, maps.
-- Scoreboard objectives/scores/teams, tab list, player info, server links.
+- Scoreboard objectives/scores/teams, tab list, player info, server links. Blank, styled and
+  fixed number formats decode through the native NumberFormatTypes dispatch; styled reads the
+  Style map codec as an unnamed compound (color/shadow_color/flags/font).
 - Advancements, statistics, tags, game rules, command trees and suggestions.
 - World border initialise and all five setters; respawn, death screen, spawn position, health,
   experience, time, ticking state and chunk cache centre.

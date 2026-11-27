@@ -56,6 +56,8 @@ const nbtString = text => {
   const bytes = [...Buffer.from(text, 'utf8')];
   return [8, (bytes.length >> 8) & 0xff, bytes.length & 0xff, ...bytes];
 };
+const nbtName = text => { const bytes = [...Buffer.from(text, 'utf8')]; return [(bytes.length >> 8) & 0xff, bytes.length & 0xff, ...bytes]; };
+const nbtCompound = entries => [10, ...entries.flatMap(([key, value]) => [value[0], ...nbtName(key), ...value.slice(1)]), 0];
 const uuid = seed => Array.from({ length: 16 }, (_, i) => (seed + i) & 0xff);
 const str = text => { const bytes = [...Buffer.from(text, 'utf8')]; return [...varint(bytes.length), ...bytes]; };
 const holder = id => varint(id + 1);
@@ -175,6 +177,9 @@ check('set_player_team decodes parameters and players', () => {
 check('scoreboard score, reset and objective adapt', () => {
   const score = adapt('set_score', [...str('Steve'), ...str('obj'), ...varint(7), 1, ...nbtString('Steve'), 1, ...varint(0)], {name: 'scoreboard_score'});
   eq([score.action, score.itemName, score.scoreName, score.value, JSON.parse(score.displayName), score.numberFormat], [0, 'Steve', 'obj', 7, 'Steve', {type: 'blank'}]);
+  // StyledFormat's trusted codec is the Style map codec as one unnamed compound: color + bold.
+  const styled = adapt('set_score', [...str('Alex'), ...str('obj'), ...varint(3), 0, 1, ...varint(1), ...nbtCompound([['color', [8, 0, 3, 114, 101, 100]], ['bold', [1, 1]]])], {name: 'scoreboard_score'});
+  eq(styled.numberFormat, {type: 'styled', style: {color: 'red', bold: true}});
   const reset = adapt('reset_score', [...str('Steve'), 1, ...str('obj')], {name: 'reset_score'});
   eq([reset.action, reset.itemName, reset.scoreName], [1, 'Steve', 'obj']);
   const objective = adapt('set_objective', [...str('obj'), 0, ...nbtString('Objective'), ...varint(1), 0], {name: 'scoreboard_objective'});

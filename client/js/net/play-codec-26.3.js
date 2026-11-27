@@ -97,6 +97,9 @@ function readNumberFormat26_3(r){
   if(!r.bool())return null;
   const type=r.varint();
   if(type===0)return {type:'blank'};
+  // StyledFormat's trusted stream codec is Style.Serializer.MAP_CODEC over NbtOps, written as
+  // one unnamed compound tag. The map codec keys are the Style fields, not a text component.
+  if(type===1)return {type:'styled',value:readAnonymousNbt(r)};
   if(type===2)return {type:'fixed',value:readAnonymousNbt(r)};
   throw Error('Unsupported 26.3 number format type '+type);
 }
@@ -493,8 +496,8 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     return id===-1?{signatureId:-1,signature:Array.from(r.bytesN(256))}:{signatureId:id,signature:null};
   },
   // NumberFormatTypes: optional dispatch on the number_format_type registry id (0 blank, 1 styled,
-  // 2 fixed). blank has no payload and fixed carries one trusted component; the styled form is
-  // fail-closed until the Style stream codec is ported.
+  // 2 fixed). blank has no payload, fixed carries one trusted component and styled carries the
+  // Style map codec as one unnamed NBT compound.
   set_score(r){
     return {owner:r.string(),objectiveName:r.string(),value:r.varint(),
       display:r.bool()?readAnonymousNbt(r):null,numberFormat:readNumberFormat26_3(r)};
