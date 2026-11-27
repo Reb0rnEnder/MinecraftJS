@@ -5,6 +5,8 @@ import{PAWS_DATA_766}from'../game/paws-data-1.20.6.js';
 import{mcCos}from'../game/physics.js';
 import{animateArmadillo766}from'./armadillo-1.20.6.js';
 import {animateWildMob} from './wild-mobs-1.19.4.js';
+import {NATIVE_ANIMATIONS_26_3} from './animations-26.3.js';
+import {animateKeyframes762} from './keyframes-1.19.4.js';
 import { spyglassArmPitch } from './spyglass-pose.js';
 import { animateAxolotl } from './axolotl-pose.js';
 import {animateHoglin,animatePiglin,animateStrider} from './nether-poses.js';
@@ -602,6 +604,15 @@ export function nativeBipedMob(name){return jarAdapter(name,BIPED,animateBiped,{
 // animateNativeMob only adds the head tracking that every one of these families uses.
 export const NATIVE_MOB_TEXTURES={breeze:'entity/breeze/breeze.png',creaking:'entity/creaking/creaking.png',copper_golem:'entity/copper_golem/copper_golem.png',happy_ghast:'entity/ghast/happy_ghast.png',nautilus:'entity/nautilus/nautilus.png',zombie_nautilus:'entity/nautilus/zombie_nautilus.png',sulfur_cube:'entity/sulfur_cube/sulfur_cube_outer.png'};
 const nativeClamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+// Animation channels address bones by name, including nested head/arm children that are not
+// top-level fields in the model spec.
+function nativePartMap(model){
+  const map={};
+  const visit=(part,name)=>{if(!part||map[name]===part)return;map[name]=part;for(const [child,value] of Object.entries(part.namedChildren||{}))visit(value,child);};
+  for(const [name,part] of Object.entries(model.parts))visit(part,name);
+  if(model.roots.length===1)map.$root=model.roots[0];
+  return map;
+}
 function animateNativeMob(model,a){
   model.resetPose();
   const p=model.parts,D=Math.PI/180;
@@ -616,6 +627,18 @@ function animateNativeMob(model,a){
   if(model.jarModel==='happy_ghast'){
     const tentacles=p.body?.namedChildren;
     for(let i=0;i<9;i++){const t=tentacles?.['tentacle'+i];if(t)t.rx=0.2*Math.sin(a.age*0.3+i)+0.4;}
+  }
+  // Native keyframe clips generated from the jar. Prefer the walk clip while moving and the
+  // idle clip at rest; nautilus only has its swim clip.
+  const clips=NATIVE_ANIMATIONS_26_3[model.jarModel];
+  if(clips){
+    const names=Object.keys(clips),parts=nativePartMap(model);
+    const pick=suffix=>names.find(n=>n===suffix||n.endsWith('_'+suffix));
+    const walk=pick('WALK')||pick('SWIMMING');
+    const idle=pick('IDLE')||pick('SWIMMING');
+    const moving=model.jarModel==='nautilus'||model.jarModel==='zombie_nautilus'||a.moving||a.lsa>0.02;
+    if(moving&&walk)animateKeyframes762(parts,clips[walk],a.ls*100,Math.min(1,a.lsa*2.5));
+    else if(idle)animateKeyframes762(parts,clips[idle],a.age*50);
   }
 }
 export function nativeMob(name){return jarAdapter(name,JAR[name].slotNames,animateNativeMob,{texture:NATIVE_MOB_TEXTURES[name]});}

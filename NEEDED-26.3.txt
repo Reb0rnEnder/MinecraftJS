@@ -26,8 +26,9 @@ Done and committed:
 - Breeze, creaking, copper golem, happy ghast, nautilus, zombie nautilus and sulfur cube are bound
   to their native 26.3 layer trees and textures; camel husk reuses the native camel layer with its
   own texture. The asset pending list is empty (90 rigs, 140 textures). Happy ghast tentacles and
-  nautilus body look use their native formulas; the remaining keyframe clips and visual
-  acceptance are still open.
+  nautilus body look use their native formulas. Breeze, copper golem, creaking and nautilus
+  keyframe clips are extracted from the jar and their walk/idle/swim clips are applied; trigger
+  clips and visual acceptance are still open.
 - 26.3 update_recipes is adapted. The stonecutter consumes the server's native
   ingredient/SlotDisplay list; the legacy recipe table is only a fallback. Recipe-display add/
   remove/settings state is stored natively.
@@ -97,7 +98,9 @@ B. CODE-ONLY PARITY WORK, IN PRIORITY ORDER
    - Verify the 22 particle data codecs against real triggers: dust colours, block/item particles,
      shriek, trail, vibration and explosion variants.
    - Complete remaining native animation formulas/triggers (wolf, dragon, piglin, splash and any
-     release-specific mob animation) against the native part trees.
+     release-specific mob animation) against the native part trees. Breeze/copper golem/creaking/
+     nautilus walk-idle-swim clips are in; wire their jump/slide/attack/death triggers and extend
+     the extractor to other families when their formulas are revised.
    - Confirm particle-setting clearing, the 512 cap and solid-block rejection in live explosions
      (logic is unit-tested; live acceptance is not done).
 
@@ -186,7 +189,7 @@ E. SHORT ANSWER: WHAT IS ACTUALLY LEFT
 If the goal is "no incomplete code-only section left", do these in order:
 1. General arbitrary HashedPatchMap encoding/hashing and the four unverified menu flows.
 2. Live triggers for the byte-gated inbound families and the newly adapted packets.
-3. P11 new-content behaviour and the native keyframe clips for the seven newly bound mobs.
+3. P11 new-content behaviour and the trigger clips for the newly bound mobs.
 4. Live particle/sound/animation acceptance and the inherited P14 UI/pack/font findings.
 5. The P01/P02/P03 evidence tail and P15/P16 release gate.
 

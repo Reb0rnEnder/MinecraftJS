@@ -2,7 +2,7 @@ MinecraftJS 26.3 - WHAT WE HAVE ADDED
 Branch: 26.3
 Inventory date: 2026-11-27
 Baseline: 66dd0a1 "Render native 26.3 debug subscriptions in the F3 screen" plus this batch
-Latest verified run: test:26.3 62/62, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
+Latest verified run: test:26.3 65/65, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
 inbound gate all checks passed, serverbound gate 0, npm run assets exit 0 (90 mobs, 140 textures,
 no mobs pending a renderer).
 
@@ -233,22 +233,25 @@ Known limit:
 - Breeze, creaking, copper golem, happy ghast, nautilus, zombie nautilus and sulfur cube now
   bind their native 26.3 layer trees and texture paths. Camel husk reuses the native camel layer
   with its own texture. Happy ghast tentacles and nautilus/zombie-nautilus body look follow the
-  native formulas; the remaining keyframe clips are still to port (needs visual acceptance).
+  native formulas. tools/port-26.3/extract-keyframe-animations.mjs extracts the jar's
+  AnimationDefinition constants (breeze 6, copper golem 7, creaking 4, nautilus 1) with degree->
+  radian, position-Y negation and scale-minus-one conversions; walk/idle/swim clips now drive
+  those models. Trigger-specific clips (jump, slide, attack, death) are stored but not yet wired.
 
 ======================================================================
 12. TESTS, GATES AND DOCUMENTATION
 ======================================================================
 
 Green at this inventory:
-- npm run test:26.3: 62 tests.
+- npm run test:26.3: 65 tests.
 - npm run adapter:26.3: 53 packets, 36 handler names, 2 chunks.
 - tools/port-26.3/inbound-gate.mjs: all checks.
 - tools/port-26.3/serverbound-gate.mjs: all checks.
 - tools/port-26.3/client-net.mjs: real-server socket harness.
 - npm run assets: exit 0.
-- Focused tests: debug subscriptions, native stonecutter recipes (new), recipes, boats, entity
-  registry, dialogs, creative, title, smithing, name tags, tab hearts, entity rigs, outbound
-  coverage, particles, stats, advancements, explosions.
+- Focused tests: debug subscriptions, native stonecutter recipes, native keyframe animations
+  (new), recipes, boats, entity registry, dialogs, creative, title, smithing, name tags, tab
+  hearts, entity rigs, outbound coverage, particles, stats, advancements, explosions.
 
 Docs:
 - docs/transition-26.3.md, docs/transition-26.3.tasks.json, docs/parity-checklist-26.3.md,
@@ -256,6 +259,8 @@ Docs:
 - ADDED-26.3.txt and NEEDED-26.3.txt (these files).
 
 Recent commit trail:
+- This batch: native keyframe extraction for breeze/copper golem/creaking/nautilus, applied as
+  walk/idle/swim clips, plus a pinned animation test.
 - This batch: native bogged/parched rigs, native 26.3 stonecutter recipe source, recipe-book
   display state, diagnostic frames and complete pinned-frame adapter coverage.
 - 66dd0a1 Render native 26.3 debug subscriptions in the F3 screen

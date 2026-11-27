@@ -42,7 +42,7 @@ not closed by the version jump.
   dimensions and mob category. Boat entities now resolve one native per-wood identity (including
   `pale_oak` and `poplar`) and use the 26.3 boat/chest-boat layers; rabbit, horse/donkey, camel,
   sniffer, player, ender dragon and end crystal rigs are also native (P10).
-- The browser serves 26.3 assets (jar first, then the index) and bakes 26.3 block models, textures and the 26.3 panorama. Boat, rabbit, horse/donkey, camel, sniffer, player, ender dragon and end-crystal rigs are native 26.3. The 26.3 per-family/equipment texture locations are resolved through one alias table, and every new 26.3 mob now binds its native layer tree; breeze, creaking, copper golem, happy ghast, nautilus, zombie nautilus and sulfur cube still need their keyframe clips and visual acceptance.
+- The browser serves 26.3 assets (jar first, then the index) and bakes 26.3 block models, textures and the 26.3 panorama. Boat, rabbit, horse/donkey, camel, sniffer, player, ender dragon and end-crystal rigs are native 26.3. The 26.3 per-family/equipment texture locations are resolved through one alias table, and every new 26.3 mob now binds its native layer tree. Breeze, copper golem, creaking and nautilus keyframe clips are extracted from the jar and their walk/idle/swim clips run; their trigger clips and visual acceptance remain open.
 
 ## Out of scope
 
