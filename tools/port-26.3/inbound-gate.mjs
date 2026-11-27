@@ -102,6 +102,13 @@ check('swing_animation reads the hand and native SwingAnimation', () => {
   eq([adapted.entityId, adapted.animation, adapted.hand, adapted.swing.type, adapted.swing.duration], [42, 3, 1, 2, 8]);
 });
 
+check('waypoint reads the operation, icon and type payload', () => {
+  const body=[...varint(0), 1, ...Array.from({length:16},(_,i)=>i), ...str('minecraft:default'), 0, ...varint(1), ...varint(-12), ...varint(64), ...varint(30)];
+  const decoded = decode('waypoint', body);
+  eq(decoded.data.id, {uuid: '00010203-0405-0607-0809-0a0b0c0d0e0f'});
+  eq([decoded.data.operation, decoded.data.icon.style, decoded.data.icon.color, decoded.data.type, decoded.data.position], [0, 'minecraft:default', null, 1, {x: -12, y: 64, z: 30}]);
+});
+
 check('map_item_data decodes optional decorations and patch', () => {
   const body=[...varint(5), 2, 1, 1, ...varint(1), ...varint(3), 1, 2, 4, 1, ...nbtString('Steve'),
     1, 1, 2, 3, 4, ...varint(12), ...Array.from({length:12},(_,i)=>i)];

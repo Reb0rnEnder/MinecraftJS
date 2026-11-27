@@ -527,6 +527,21 @@ export const PLAY_DECODERS_26_3=Object.freeze({
   // ClientboundSwingAnimationPacket: entity id, InteractionHand id, then SwingAnimation
   // (SwingAnimationType id, VarInt duration). This is not the 766 animate packet.
   swing_animation(r){return {entityId:r.varint(),hand:r.varint(),animation:{type:r.varint(),duration:r.varint()}};},
+  // ClientboundTrackedWaypointPacket: Operation enum, Either<UUID, String> id,
+  // Waypoint.Icon (resource location style + optional RGB), Type enum, then the
+  // type-specific payload (three VarInts / two VarInts / one float).
+  waypoint(r){
+    const operation=r.varint();
+    const id=r.bool()?{uuid:r.uuid()}:{name:r.string()};
+    const icon={style:r.string(),color:r.bool()?{red:r.u8(),green:r.u8(),blue:r.u8()}:null};
+    const type=r.varint();
+    let position=null;
+    if(type===1)position={x:r.varint(),y:r.varint(),z:r.varint()};
+    else if(type===2)position={x:r.varint(),z:r.varint()};
+    else if(type===3)position={angle:r.f32()};
+    else if(type!==0)throw Error('Unknown tracked waypoint type '+type);
+    return {operation,id,icon,type,position};
+  },
   map_item_data(r){
     const mapId=r.varint(),scale=r.i8(),locked=r.bool();
     let decorations=null;
