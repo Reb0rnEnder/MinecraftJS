@@ -206,9 +206,11 @@ export const C = {
   queryEntityNbt: (transactionId, entityId) =>
     packet("query_entity_nbt").varint(transactionId).varint(entityId).build(),
 
+  // ServerboundPlaceRecipePacket: ContainerID (VarInt), RecipeDisplayId (VarInt), BOOL.
   placeRecipe: (windowId, recipe, makeAll) =>
-    packet("craft_recipe_request").i8(windowId).string(String(recipe)).bool(makeAll).build(),
-  recipeInfoShown: (recipe) => packet("displayed_recipe").string(String(recipe)).build(),
+    packet("craft_recipe_request").varint(windowId).varint(recipe).bool(makeAll).build(),
+  // ServerboundRecipeBookSeenRecipePacket: one RecipeDisplayId (VarInt).
+  recipeInfoShown: (recipe) => packet("displayed_recipe").varint(recipe).build(),
   recipeBookSettings: (bookId, open, filtering) =>
     packet("recipe_book").varint(bookId).bool(open).bool(filtering).build(),
   recipeInfoSettings: (open, filtering) =>
@@ -243,6 +245,9 @@ export const C = {
   },
 
   chat: (message, options = undefined) => chatState263.encode(String(message), options),
+  // Screen.clickCommandAction -> ClientPacketListener.sendUnattendedCommand: Commands.trimOptionalPrefix
+  // then ServerboundChatCommandPacket. Clicked commands need not start with a slash.
+  command: (command) => packet('chat_command').string(String(command).replace(/^\//, '').slice(0, 256)).build(),
   resourcePackStatus: (uuid, result) => packet("resource_pack_receive").uuid(uuid).varint(result).build(),
   enchantItem: (windowId, enchantment) => packet("enchant_item").i8(windowId).i8(enchantment).build(),
   menuButton: (windowId, button) => packet("enchant_item").i8(windowId).i8(button).build(),

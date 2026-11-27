@@ -1518,17 +1518,24 @@ export class Game {
     if (screen?.recipesUpdated) screen.recipesUpdated();
   }
 
-  // Native recipe-book state. The display graph is stored by its VarInt id; the old local
-  // string-id book stays in RecipeBook until a display-graph UI replaces it.
+  // Native recipe-book state. The display graph is stored by its VarInt id and resolved into
+  // book records by RecipeBook; the old local string-id parser is only a fallback before the
+  // first native add packet.
   on_recipe_book_add(p) {
     this.nativeRecipeDisplays ??= new Map();
     if (p.replace) this.nativeRecipeDisplays.clear();
     for (const entry of p.entries || []) this.nativeRecipeDisplays.set(entry.contents.id, entry);
+    this.recipeBook.onNativeAdd(p.entries || []);
   }
   on_recipe_book_remove(p) {
-    for (const id of p.recipes || []) this.nativeRecipeDisplays?.delete(id);
+    this.nativeRecipeDisplays ??= new Map();
+    for (const id of p.recipes || []) this.nativeRecipeDisplays.delete(id);
+    this.recipeBook.onNativeRemove();
   }
-  on_recipe_book_settings(p) { this.nativeRecipeBookSettings = p; }
+  on_recipe_book_settings(p) {
+    this.nativeRecipeBookSettings = p;
+    this.recipeBook.onNativeSettings(p);
+  }
 
   // Server-provided crash-report fields and the low-disk notice are client diagnostics, not
   // world state. Keep the details for the report screen and surface the warning once.
@@ -1712,12 +1719,16 @@ export class Game {
 
   on_unlock_recipes(p) { this.recipeBook.onPacket(p); }
 
-  // SPacketPlaceGhostRecipe: the server could not fill the grid; show what the recipe needs
+  // ClientboundPlaceGhostRecipePacket: the server could not fill the grid; show what the
+  // display needs. 26.3 carries the RecipeDisplay graph, while the old path carried an id.
   on_craft_recipe_response(p) {
     const s = this.screens.current;
     const win = s && s.container;
     const id = win ? (win.windowId !== undefined ? win.windowId : win.id) : -1;
-    if (s && s.recipeBook && id === p.windowId) s.recipeBook.setupGhost(p.recipe);
+    const packetWindow = p.containerId !== undefined ? p.containerId : p.windowId;
+    if (!s || !s.recipeBook || id !== packetWindow) return;
+    if (p.display) s.recipeBook.setupGhostDisplay(p.display);
+    else s.recipeBook.setupGhost(p.recipe);
   }
   on_select_advancement_tab(p) { this.advancements.onSelectTab(p.id); }
 

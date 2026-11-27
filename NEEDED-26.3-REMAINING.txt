@@ -1,9 +1,9 @@
 MinecraftJS 26.3 - REMAINING WORK (REFRESHED)
 Branch: 26.3
 Inventory date: 2026-11-27
-Baseline: 475c5e2 plus the native small-entity shadow/texture correction in this batch
+Baseline: 3e5e861 plus the native recipe-book/chat correction in this batch
 Verified for this inventory:
-- npm run test:26.3: 84/84 tests
+- npm run test:26.3: 95/95 tests
 - npm run adapter:26.3: 53 frames, 36 handler names, 2 chunks, 0 skipped
 - inbound gate: 144/144 Play IDs decoded, 0 raw
 - serverbound gate: 69/69 IDs have a sender or an explicit scope decision
@@ -27,6 +27,19 @@ That percentage is the existing project-level ledger. It is not a per-feature co
 not be read as "44% of the jar has been ported". The exact remaining work is below.
 
 Closed in this batch:
+- Native 26.3 RecipeDisplay-graph recipe book: all 13 categories map to tabs; SlotDisplay
+  item/item_stack/tag/composite/remainder/fuel branches resolve to stacks; shaped grids keep
+  width/height and empty cells; shapeless/furnace/stonecutter/smithing displays become book
+  records; add/replace/remove rebuilds the view; entry flags 1/2 drive notification/highlight;
+  seen display ids stay seen; and the server ghost display drives the grid ghost.
+- Native recipe-book senders now use RecipeDisplayId VarInts for place_recipe and seen_recipe
+  (the old string bodies were the 1.20.6 layout), and place_ghost_recipe resolves its native
+  RecipeDisplay instead of reading the absent legacy `recipe` field.
+- Native chat click parity: clickable styles are right-click only, shift-right-click applies the
+  style insertion, run_command uses the unattended command packet with optional slash trimming,
+  suggestions apply from any mouse button, and the suggestion rect consumes blank clicks.
+- Focused tests added: test-recipe-displays-26.3.mjs and five chat-routing cases in
+  test-chat-click-actions-26.3.mjs.
 - Native shadowRadius = 0 is now respected for cushions and ominous item spawners.
   CushionRenderer and OminousItemSpawnerRenderer do not set shadowRadius, while
   ItemEntityRenderer still uses 0.15; test-small-entities-26.3.mjs pins both sides.
@@ -73,8 +86,9 @@ B. CODE-ONLY WORK, IN PRIORITY ORDER
    - add_transient_block, game_test_highlight_pos and test_instance_block_status remain the only
      explicit Play scope decisions.
    - Recipe display: add/remove/settings and update_recipes are handled natively and the
-     stonecutter consumes the native ingredient/SlotDisplay list, but a full RecipeDisplay-graph
-     recipe-book UI is still open.
+     stonecutter consumes the native ingredient/SlotDisplay list. The RecipeDisplay-graph book,
+     ghost display, VarInt place/seen senders and seen/highlight state are wired; live visual
+     acceptance remains.
    - Keep unknown packets raw and fail-closed; a decode error must never close the socket.
 
 3. P11 - New content families from 1.20.6 to 26.3 (LARGE; code and live)
@@ -117,12 +131,11 @@ B. CODE-ONLY WORK, IN PRIORITY ORDER
    - Live visual acceptance for every implemented screen: title, options, dialogs, smithing,
      inventory/containers, merchant/enchanting/stonecutter/loom, death screen, debug/HUD, locator
      bar and waypoint UI.
-   - Finish native 26.3 chat/command UI: styled message handling and command suggestion
-     focus/selection.
+   - Native chat click routing, shift-insertion, unattended command clicks and any-button
+     suggestion rows are implemented; live hover/click rendering and narration acceptance remain.
    - Finish option rows, focus/narration and keyboard/gamepad navigation against native widgets.
-   - Finish live hover/click rendering acceptance in the remaining chat UI paths. Click actions
-     for open_url, run_command, suggest_command, copy_to_clipboard, change_page, show_dialog and
-     custom are decoded.
+   - Click actions for open_url, run_command, suggest_command, copy_to_clipboard, change_page,
+     show_dialog and custom are decoded and routed; finish live hover/click rendering acceptance.
    - Resource-pack/font parity beyond the default jar: pack selection/priority/overlays, font
      providers, glyph atlases and missing-glyph behaviour.
    - Resolve every inherited 1.20.6 finding instead of dropping it: packs, fonts, menu
@@ -194,8 +207,8 @@ By the project ledger: 44.1% (4 done, 7 partial, 6 todo).
 By work type:
 - Code-only and actionable now:
   * P08 general HashedPatchMap + inventory edge cases (largest single code gap).
-  * Chat/command suggestion focus/selection and hover/click rendering tail.
-  * RecipeDisplay-graph recipe-book UI.
+  * Completed this batch: RecipeDisplay-graph recipe-book UI and chat click/suggestion routing.
+  * Remaining: live hover/click rendering and narration acceptance for chat.
   * Resource-pack/font findings and dispositions.
   * Component/text codec and decoder re-encode tail.
   * Remaining animation formulas and any code-only new-content behaviour.
@@ -218,13 +231,14 @@ E. NEXT CODE-ONLY ORDER
 ======================================================================
 
 1. General HashedPatchMap (P08), only with canonical component codec encoding and oracle tests.
-2. Chat/command suggestion focus, selection and click/hover rendering tail (small and testable).
-3. RecipeDisplay-graph recipe-book UI (medium).
-4. Resource-pack/font findings, with one disposition per inherited finding.
-5. Component/text codec tail and outbound re-encoding for decode-only codecs.
-6. Remaining animation formulas/triggers that can be extracted from the jar.
-7. P01/P02 evidence reports and P16 packaging.
-8. Hand the live/visual/account work to the user with the exact scenarios listed above.
+2. Resource-pack/font findings, with one disposition per inherited finding.
+3. Component/text codec tail and outbound re-encoding for decode-only codecs.
+4. Remaining animation formulas/triggers that can be extracted from the jar.
+5. P01/P02 evidence reports and P16 packaging.
+6. Hand the live/visual/account work to the user with the exact scenarios listed above.
+
+Completed this batch and removed from the code-only order: RecipeDisplay-graph recipe-book UI;
+chat click/suggestion routing (live hover/narration acceptance remains).
 
 ======================================================================
 F. DEFINITION OF DONE FOR EACH REMAINING SECTION

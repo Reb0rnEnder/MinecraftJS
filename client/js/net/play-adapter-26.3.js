@@ -483,6 +483,8 @@ const ADAPTERS={
   recipe_book_add(packet){return {entries:packet.entries,replace:packet.replace};},
   recipe_book_remove(packet){return {recipes:packet.recipes};},
   recipe_book_settings(packet){return {crafting:packet.crafting,furnace:packet.furnace,blastFurnace:packet.blastFurnace,smoker:packet.smoker};},
+  // 26.3 sends the RecipeDisplay itself, not the old recipe identifier.
+  place_ghost_recipe(packet){return {containerId:packet.containerId,display:packet.display};},
   custom_report_details(packet){return {details:packet.details};},
   low_disk_space_warning(){return {};},
   post_effects(packet){return {effects:packet.effects};},

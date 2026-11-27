@@ -5,6 +5,7 @@ import { tr } from './i18n.js';
 import { TextField } from './widgets.js';
 import { C } from '../net/packets.js';
 import { BOOK_TABS } from '../game/recipebook.js';
+import { nativeRecipeFromDisplay } from '../game/recipe-displays-26.3.js';
 
 const TEX = 'gui/recipe_book.png';
 // GuiButtonRecipeTab icons: [main, second] (tools shows the combat icon too, misc the food icon)
@@ -125,7 +126,7 @@ export class RecipeBookGui {
     if (this.pages > 1 && this.page > 0) arrow(L + 38, T + 137, true);
     this._overlay(gui, mx, my);
     // GuiRecipeBook.recipesShown: new recipes on screen are marked seen
-    for (const r of shownRecipes) if (this.book.fresh.has(r.id)) { this.book.fresh.delete(r.id); g.send(C.recipeInfoShown(r.id)); }
+    for (const r of shownRecipes) if (this.book.fresh.has(r.id) && Number.isInteger(r.displayId)) { this.book.markSeen(r); g.send(C.recipeInfoShown(r.displayId)); }
   }
 
   // GuiRecipeOverlay: the recipes of a list, 4 (or 5) per row, green when craftable
@@ -150,7 +151,7 @@ export class RecipeBookGui {
 
   _place(rec, all) {
     this.ghost = null;
-    this.game.send(C.placeRecipe(this.opts.windowId(), rec.id, !!all));
+    if (Number.isInteger(rec.displayId)) this.game.send(C.placeRecipe(this.opts.windowId(), rec.displayId, !!all));
   }
 
   renderTooltip(gui, mx, my) {
@@ -188,10 +189,16 @@ export class RecipeBookGui {
     });
   }
 
-  // GuiRecipeBook.setupGhostRecipe (SPacketPlaceGhostRecipe)
+  // GuiRecipeBook.setupGhostRecipe (ClientboundPlaceGhostRecipePacket)
   setupGhost(id) {
     const rec = this.book.recipe(id);
-    if (!rec) return;
+    if (rec) this._setupGhostRecord(rec);
+  }
+  setupGhostDisplay(display) {
+    const rec = nativeRecipeFromDisplay(this.game, display);
+    if (rec) this._setupGhostRecord(rec);
+  }
+  _setupGhostRecord(rec) {
     const { gridW, slots } = this.opts;
     const ingredients = [{ alts: [rec.result], slot: slots[0], count: rec.result.count }];
     const k = rec.shaped ? rec.width : gridW;

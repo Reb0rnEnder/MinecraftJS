@@ -2,6 +2,7 @@ import {serverRecipe} from './server-recipes.js';
 // Recipe book (1.12): RecipeBook (known / new recipes, open and filtering flags), RecipeBookClient (recipe lists per
 // tab, grouped by the recipe's "group") and RecipeList craftability against the player's items.
 import {DEFAULT_TAGS} from './default-tags.js';
+import {nativeRecipeBookEntries} from './recipe-displays-26.3.js';
 
 export const FIRST_JSON_ID = 11; // CraftingManager: ids 0 - 10 are the special (dynamic) recipes
 export const BOOK_TABS = ['search', 'tools', 'buildingBlocks', 'misc', 'redstone'];
@@ -21,6 +22,7 @@ export class RecipeBook {
     this.game = game;
     this.known = new Set();
     this.fresh = new Set(); // RecipeBook.newRecipes (highlighted until seen)
+    this.seenNative = new Set(); // native display ids already shown on screen
     this.open = false;
     this.filtering = false;
     this.cookingStates={smelting:{open:false,filtering:false},blasting:{open:false,filtering:false},smoking:{open:false,filtering:false}};
@@ -33,6 +35,15 @@ export class RecipeBook {
     if (this.recipes) return;
     const g = this.game;
     this.recipes = {};
+    // A native 26.3 display graph is authoritative once it has arrived. Keep showing an empty
+    // book after a remove-all instead of falling back to bundled JSON recipes.
+    if(g.nativeRecipeDisplays instanceof Map){
+      for(const rec of nativeRecipeBookEntries(g,[...g.nativeRecipeDisplays.values()])){
+        this.recipes[rec.id]=rec;this.known.add(rec.id);if(rec.highlight&&!this.seenNative.has(rec.id))this.fresh.add(rec.id);
+      }
+      this._buildLists();
+      return;
+    }
     if(Array.isArray(g.serverRecipes)){for(const record of g.serverRecipes){const rec=serverRecipe(record);if(rec)this.recipes[rec.id]=rec;}}
     else (g.assets.recipes || []).forEach((r, i) => {
       const id = r.name.includes(':') ? r.name : 'minecraft:' + r.name;
@@ -59,22 +70,60 @@ export class RecipeBook {
       }
       this.recipes[id] = rec;
     });
-    // RecipeBookClient.rebuildTable: lists per tab, one per group (or per ungrouped recipe), in id order
+    this._buildLists();
+  }
+
+  // RecipeBookClient.rebuildTable: lists per tab, one per group (or per ungrouped recipe), in id order
+  _buildLists() {
     this.lists = {};
     for (const t of [...BOOK_TABS,'food']) this.lists[t] = [];
     const groups = new Map();
     for (const rec of Object.values(this.recipes)) {
       if (!rec) continue;
-      const tab = this.categoryOf(rec);
-      let list = rec.group ? groups.get(tab + '|' + rec.group) : null;
+      const tab = rec.tab || this.categoryOf(rec);
+      let list = rec.group != null ? groups.get(tab + '|' + rec.group) : null;
       if (!list) {
         list = { recipes: [], tab };
-        if (rec.group) groups.set(tab + '|' + rec.group, list);
+        if (rec.group != null) groups.set(tab + '|' + rec.group, list);
         this.lists[tab].push(list);
         this.lists.search.push(list);
       }
       list.recipes.push(rec);
     }
+  }
+
+  // A native add/remove replaces the parsed view. Known and fresh are rebuilt from the display
+  // graph, because the server only sends recipes the player has unlocked.
+  invalidate() {
+    this.recipes = null; this.lists = null; this.known.clear(); this.fresh.clear();
+  }
+  recipesUpdated() {
+    const scr = this.game.screens?.current;
+    if (scr && scr.recipesUpdated) scr.recipesUpdated();
+  }
+  onNativeAdd(entries) {
+    this.invalidate(); this._parse();
+    const toast = [];
+    for (const entry of entries || []) {
+      const id = entry?.contents?.id;
+      if (!Number.isInteger(id)) continue;
+      const rec = this.recipes['native:' + id];
+      if (rec && (entry.flags & 1)) toast.push(rec);
+    }
+    if (toast.length) this.game.hud?.addRecipeToast?.(toast);
+    this.recipesUpdated();
+  }
+  onNativeRemove() { this.invalidate(); this._parse(); this.recipesUpdated(); }
+  markSeen(rec) {
+    this.fresh.delete(rec.id);
+    if (rec.native) this.seenNative.add(rec.id);
+  }
+  onNativeSettings(p) {
+    this.open = !!p.crafting?.open; this.filtering = !!p.crafting?.filtering;
+    this.cookingStates.smelting.open = !!p.furnace?.open; this.cookingStates.smelting.filtering = !!p.furnace?.filtering;
+    this.cookingStates.blasting.open = !!p.blastFurnace?.open; this.cookingStates.blasting.filtering = !!p.blastFurnace?.filtering;
+    this.cookingStates.smoking.open = !!p.smoker?.open; this.cookingStates.smoking.filtering = !!p.smoker?.filtering;
+    this.recipesUpdated();
   }
 
   // RecipeBookClient.getItemCategory: tools / building blocks / redstone, combat with tools, the rest misc
@@ -116,8 +165,7 @@ export class RecipeBook {
       // RecipeToast.addOrUpdate
       if (added.length) this.game.hud.addRecipeToast(added);
     }
-    const scr = this.game.screens.current;
-    if (scr && scr.recipesUpdated) scr.recipesUpdated();
+    this.recipesUpdated();
   }
 
   // Items the player can use: the main inventory and the crafting grid (RecipeItemHelper)
@@ -131,7 +179,7 @@ export class RecipeBook {
 
   // Match all ingredient alternatives; a greedy choice can consume another cell's only item.
   canCraft(rec, counts) {
-    const left=new Map(counts),cells=rec.cells.filter(Boolean).sort((a,b)=>a.length-b.length);
+    const left=new Map(counts),cells=(rec.craftCells||rec.cells).filter(Boolean).sort((a,b)=>a.length-b.length);
     const search=index=>{
       if(index===cells.length)return true;
       for(const [key,count]of left){if(count<=0)continue;const [id,damage]=key.split(':').map(Number);

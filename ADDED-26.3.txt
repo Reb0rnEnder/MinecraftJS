@@ -1,8 +1,8 @@
 MinecraftJS 26.3 - WHAT WE HAVE ADDED
 Branch: 26.3
 Inventory date: 2026-11-27
-Baseline: c4f682b "Add native 26.3 spear support" plus this batch
-Latest verified run: test:26.3 84/84, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
+Baseline: 3e5e861 "Match native 26.3 small-entity shadows and wind texture sampling" plus this batch
+Latest verified run: test:26.3 95/95, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
 inbound gate all checks passed, serverbound gate 0, npm run assets exit 0 (91 mobs, 141 textures,
 no mobs pending a renderer).
 
@@ -123,11 +123,26 @@ Recent inbound work:
 - All 69 serverbound IDs are accounted for by a real sender or a recorded scope decision; only the
   gametest block editor is scoped out.
 - 26.3 chat uses chat / chat_command / chat_ack ids plus the LastSeenMessages checksum byte.
+- Recipe-book add/remove/settings carry the native display graph; place_recipe and seen_recipe
+  send RecipeDisplayId VarInts, and place_ghost_recipe resolves its RecipeDisplay into the grid
+  ghost. See the native recipe-book paragraph below.
 - Creative inventory carries the native raw component patch and native HashedStack hashes.
 - writeHashedStack26_3 round-trips Mojang's own HashedStack encoder for all 405 patched Creative
   stacks.
 - Native menu registry mapping (26.3 menu order matches 766's 25 IDs).
 - Local crafting for native shaped/shapeless recipes and {any:[item ids]} tag alternatives.
+- The native RecipeDisplay graph is resolved into the book: all 13 recipe-book categories map to
+  their tabs, SlotDisplay item/item_stack/tag/composite/remainder/fuel branches resolve to
+  stacks, shaped width/height and empty cells are preserved, shapeless/furnace/stonecutter/
+  smithing displays become grid records, and entry flags 1/2 drive notification/highlight.
+  Native add/replace/remove rebuild the parsed book, settings drive the four book states, seen
+  display ids stay seen across later adds, and the server ghost display drives the grid ghost.
+  Pinned by tools/test-recipe-displays-26.3.mjs.
+- Chat clickable styles are right-click only; shift-right-click applies style insertion, and
+  clicked run_command actions use the unattended command packet with the optional slash trimmed.
+  Suggestion rows apply from any mouse button, blank list clicks are consumed, and the existing
+  hover/selection/wrap/ghost-text behavior stays aligned with CommandSuggestions. Pinned by
+  tools/test-chat-click-actions-26.3.mjs.
 - Crafting remainders read the native use_remainder component (milk bucket -> bucket).
 - Live server accepted a pickup+place click (state 1 -> 2, dirt 43 -> 44, no resync); live attack
   removed a summoned pig after 8 hits; block break and place were server-verified.
@@ -273,7 +288,8 @@ Known limit:
 ======================================================================
 
 Green at this inventory:
-- npm run test:26.3: 84 tests (including spear components/STAB/animation formulas, mannequin
+- npm run test:26.3: 95 tests (including native recipe-display resolution, chat click routing,
+  spear components/STAB/animation formulas, mannequin
   profile/metadata/render classification, cushion model/metadata/transform and wind-charge/
   ominous-spawner geometry, repeat sampling and native shadow rules).
 - npm run adapter:26.3: 53 packets, 36 handler names, 2 chunks.
@@ -281,9 +297,10 @@ Green at this inventory:
 - tools/port-26.3/serverbound-gate.mjs: all checks.
 - tools/port-26.3/client-net.mjs: real-server socket harness.
 - npm run assets: exit 0.
-- Focused tests: debug subscriptions, native stonecutter recipes, native keyframe animations
-  (new), recipes, boats, entity registry, dialogs, creative, title, smithing, name tags, tab
-  hearts, entity rigs, outbound coverage, particles, stats, advancements, explosions.
+- Focused tests: debug subscriptions, native stonecutter recipes, native recipe displays (new),
+  native keyframe animations, recipes, boats, entity registry, dialogs, creative, title, smithing,
+  name tags, tab hearts, entity rigs, outbound coverage, chat click routing (new), particles,
+  stats, advancements, explosions.
 
 Docs:
 - docs/transition-26.3.md, docs/transition-26.3.tasks.json, docs/parity-checklist-26.3.md,
@@ -291,8 +308,10 @@ Docs:
 - ADDED-26.3.txt, NEEDED-26.3.txt and the refreshed NEEDED-26.3-REMAINING.txt.
 
 Recent commit trail:
-- This batch: native 26.3 wind-charge repeat sampling and zero shadowRadius for cushions and the
-  ominous item spawner, with focused tests.
+- This batch: native 26.3 RecipeDisplay-graph recipe book, VarInt place/seen senders, native
+  ghost display and chat right-click/insertion/unattended-command parity, with focused tests.
+- Previous batch: native 26.3 wind-charge repeat sampling and zero shadowRadius for cushions and
+  the ominous item spawner, with focused tests.
 - This batch: native 26.3 wind-charge model, UV scroll and renderer kinds, the ominous item
   spawner scale/spin renderer and lightning's renderer-kind mapping.
 - This batch: native 26.3 cushion model, all 16 dye textures, DYE_COLOR metadata and
