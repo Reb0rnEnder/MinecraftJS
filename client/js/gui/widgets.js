@@ -1,6 +1,7 @@
 import {VANILLA_UI} from './vanilla-layout.js';
 // GUI widgets: Button, TextField, Slider (vanilla look & behaviour)
 import { platform } from '../platform/platform.js';
+import { stampWidget } from './focus-tab.js';
 
 export class Button {
   constructor(id, x, y, w, h, label, onClick) {
@@ -9,6 +10,7 @@ export class Button {
     this.id = id; this.x = Math.floor(x); this.y = Math.floor(y); this.w = w; this.h = h;
     this.label = label; this.onClick = onClick;
     this.enabled = true; this.visible = true;
+    stampWidget(this);
   }
   hovered(mx, my) { return mx >= this.x && my >= this.y && mx < this.x + this.w && my < this.y + this.h; }
   render(gui, mx, my) {
@@ -88,6 +90,7 @@ export class TextField {
     this.onEnter = opts.onEnter || null;
     this.onChange = opts.onChange || null;
     this.validate = opts.validate || null;
+    stampWidget(this);
   }
 
   setText(t) {

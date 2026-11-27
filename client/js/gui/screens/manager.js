@@ -1,5 +1,7 @@
 // Screen stack (GuiScreen equivalent): routes input and rendering to the active screen.
 
+import { tabFocus } from '../focus-tab.js';
+
 export class Screen {
   constructor(game) {
     this.game = game;
@@ -34,13 +36,7 @@ export class Screen {
   mouseUp(mx, my, button) { for (const b of this.buttons) if (b.mouseUp) b.mouseUp(); }
   mouseMove() {}
   key(e) {
-    if(e.code==='Tab') {
-      const widgets=[...this.fields.filter(w=>w.enabled!==false),...this.buttons.filter(w=>w.visible!==false&&w.enabled!==false),...(this.list?[this.list]:[])];
-      if(!widgets.length)return false;
-      const i=widgets.findIndex(w=>w.focused),next=(i+(e.shift?-1:1)+widgets.length)%widgets.length;
-      widgets.forEach(w=>{w.focused=false;});this.focusedWidget=widgets[next];this.focusedWidget.focused=true;
-      return true;
-    }
+    if(e.code==='Tab') return tabFocus(this, !e.shift); // Screen.keyPressed: before the focused widget
     for (const f of this.fields) if (f.key(e)) return true;
     if(this.focusedWidget&&!this.fields.includes(this.focusedWidget)&&this.focusedWidget.key?.(e,this.game))return true;
     if (e.code === 'Escape') { this.close(); return true; }
