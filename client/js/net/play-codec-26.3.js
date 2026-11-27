@@ -524,7 +524,9 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     return {globalIndex,sender,index,signature,body,unsignedContent,filterType,filterMask,chatType,name,targetName};
   },
   // ClientboundAnimatePacket: VarInt entity id, unsigned byte action.
-  swing_animation(r){return {entityId:r.varint(),animation:r.u8()};},
+  // ClientboundSwingAnimationPacket: entity id, InteractionHand id, then SwingAnimation
+  // (SwingAnimationType id, VarInt duration). This is not the 766 animate packet.
+  swing_animation(r){return {entityId:r.varint(),hand:r.varint(),animation:{type:r.varint(),duration:r.varint()}};},
   map_item_data(r){
     const mapId=r.varint(),scale=r.i8(),locked=r.bool();
     let decorations=null;

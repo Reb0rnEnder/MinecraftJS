@@ -95,9 +95,11 @@ check('player_chat decodes body, last-seen ids and bound type', () => {
   eq([adapted.sender, adapted.index, JSON.parse(adapted.message).text, JSON.parse(adapted.networkName), adapted.chatType], ['00010203-0405-0607-0809-0a0b0c0d0e0f', 2, 'hello', 'Steve', 0]);
 });
 
-check('swing_animation reads id and action', () => {
-  const adapted = adapt('swing_animation', [...varint(42), 3], {name: 'swing_animation'});
-  eq([adapted.entityId, adapted.animation], [42, 3]);
+check('swing_animation reads the hand and native SwingAnimation', () => {
+  const decoded = decode('swing_animation', [...varint(42), ...varint(1), ...varint(2), ...varint(8)]);
+  eq(decoded.data, {entityId: 42, hand: 1, animation: {type: 2, duration: 8}});
+  const adapted = adapt('swing_animation', [...varint(42), ...varint(1), ...varint(2), ...varint(8)], {name: 'swing_animation'});
+  eq([adapted.entityId, adapted.animation, adapted.hand, adapted.swing.type, adapted.swing.duration], [42, 3, 1, 2, 8]);
 });
 
 check('map_item_data decodes optional decorations and patch', () => {

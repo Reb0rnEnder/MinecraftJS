@@ -216,7 +216,10 @@ const ADAPTERS={
       networkName:componentJson(packet.name),networkTargetName:packet.targetName?componentJson(packet.targetName):null,
       filterType:packet.filterType,filterMask:packet.filterMask,chatType:packet.chatType};
   },
-  swing_animation(packet){return {entityId:packet.entityId,animation:packet.animation};},
+  // The 26.3 packet names the hand and a swing style; the 766 renderer only has the
+  // legacy 0/3 main-hand/off-hand action, so map the hand and keep the native animation.
+  // SwingAnimationType.NONE (0) must not start a swing.
+  swing_animation(packet){const type=packet.animation?.type??0;return {entityId:packet.entityId,animation:type===0?-1:(packet.hand===1?3:0),hand:packet.hand,swing:packet.animation};},
   map_item_data(packet){
     const patch=packet.patch;
     return {itemDamage:packet.mapId,scale:packet.scale,locked:packet.locked,
