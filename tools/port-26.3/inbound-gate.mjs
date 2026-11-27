@@ -435,6 +435,13 @@ check('transient block, debug sample and test frames decode', () => {
   eq([status.status.v, status.size], ['ok', {x: 3, y: 4, z: 5}]);
 });
 
+check('show_dialog decodes both holder branches', () => {
+  eq(decode('show_dialog', [...varint(3)]).data, {dialogId:2});
+  const inline=decode('show_dialog', [...varint(0), 10, 0]).data;
+  eq(inline.dialogId, null);
+  eq(inline.dialog.t, 10);
+});
+
 check('recipe family decodes the native display graph', () => {
   const key = str('minecraft:test');
   // one property set (items 1,2) and one stonecutter entry (ingredient item 3, option item 5)

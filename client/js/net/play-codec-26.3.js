@@ -916,6 +916,14 @@ export const PLAY_DECODERS_26_3=Object.freeze({
   },
   // ClientboundClearDialogPacket: StreamCodec.unit, so the body is empty.
   clear_dialog(){return {};},
+  // ClientboundShowDialogPacket carries Dialog.STREAM_CODEC, a Holder<Dialog>: VarInt 0 means an
+  // inline value encoded with fromCodecWithRegistriesTrusted (one unnamed NBT tag); otherwise the
+  // value is registry id-1. The holder envelope is decoded here; interpreting the dialog graph and
+  // presenting its screen is still open.
+  show_dialog(r){
+    const holder=r.varint();
+    return holder===0?{dialogId:null,dialog:readAnonymousNbt(r)}:{dialogId:holder-1};
+  },
   // ClientboundMerchantOffersPacket (javap): writeContainerId (VarInt), the MerchantOffers
   // list, then VarInt villagerLevel, VarInt villagerXp, boolean showProgress, boolean
   // canRestock. MerchantOffer.writeToStream is ItemCost, ItemStack, optional ItemCost,

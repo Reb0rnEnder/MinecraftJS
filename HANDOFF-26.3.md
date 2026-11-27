@@ -15,7 +15,7 @@
 
 ## State at handoff
 
-- **P06 coverage: 139/144 inbound IDs decoded, 113 with adapters, 5 raw.**
+- **P06 coverage: 140/144 inbound IDs decoded, 113 with adapters, 4 raw.**
 - Ledger: **41.2%** (3 done, 8 partial, 6 todo; done=1, partial=0.5).
 - Last full run: `test:26.3`, `adapter:26.3`, `client-net:26.3` and `inbound-gate.mjs` all exit 0.
 - Real 26.3 server socket test passes (`client-net`, 23–31 chunks depending on spawn); graphical browser verification is unreliable on this machine (low disk, join stalls). Do not claim visual verification you did not do.
