@@ -8,6 +8,7 @@ import {ITEM_NAMES_26_3} from './items-26.3.js';
 import {itemComponentValues26_3} from './item-components-26.3.js';
 import {lightTo758} from '../world/light-26.3.js';
 import {componentFromNbt} from './component-nbt-1.20.6.js';
+import {parseDialog263} from './dialog-26.3.js';
 import {EFFECT_766} from '../game/effects-1.20.6.js';
 
 // Reverse the native item table so a 26.3 cooldown group (an item identifier by default) can be
@@ -226,6 +227,16 @@ const ADAPTERS={
   // SwingAnimationType.NONE (0) must not start a swing.
   swing_animation(packet){const type=packet.animation?.type??0;return {entityId:packet.entityId,animation:type===0?-1:(packet.hand===1?3:0),hand:packet.hand,swing:packet.animation};},
   waypoint(packet){return packet;},
+  // ClientboundShowDialogPacket: inline NBT for holder 0, otherwise id-1 into the synchronized
+  // minecraft:dialog registry. A registry value the configuration did not carry cannot be
+  // resolved, so it is reported as unported instead of opening an empty screen.
+  show_dialog(packet,context){
+    const raw=packet.dialogId===null?packet.dialog:context?.dialogs?.byId?.get(packet.dialogId);
+    if(!raw)return null;
+    try{return {dialogId:packet.dialogId,dialog:parseDialog263(raw,context?.dialogs)};}
+    catch(error){return {dialogId:packet.dialogId,dialog:null,dialogError:error.message};}
+  },
+  clear_dialog(){return {};},
   map_item_data(packet){
     const patch=packet.patch;
     return {itemDamage:packet.mapId,scale:packet.scale,locked:packet.locked,

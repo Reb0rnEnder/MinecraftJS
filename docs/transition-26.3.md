@@ -101,13 +101,18 @@ pending; product outside current scope; or experiment-gated.
   `[set_entity_data#101]` serializer 17. `ParticleTypes` BootstrapMethods pin all 128 particle types and the
   22 data StreamCodecs; `particle-codecs:26.3` decodes the live-captured frame and every codec byte layout.
   A fresh join now loads 81 chunks and 26 entities with zero skipped frames. Vibration stays fail-closed.
+- Dialog screens (P13 partial): `show_dialog` and `clear_dialog` are now adapted. The screen parses the
+  native Dialog dispatch graph for notice, confirmation, multi_action, dialog_list and server_links,
+  resolves either holder branch through the configuration `minecraft:dialog` registry, renders compact
+  plain-message and item-description bodies, and executes static click actions plus custom click actions.
+  `test-dialog-26.3.mjs` covers the parser, registry resolution, adapter pair and screen action semantics.
 - Open at this checkpoint: general HashedPatchMap hashing for arbitrary server-provided component values
   (Creative catalogue stacks now carry native hashes), live acceptance of the remaining container/menu
-  families, `can_place_on`/`can_break` (adventure-predicate graph), native support/placement rules, the dialog
-  screen for the decoded show_dialog holder, and the renderer rigs 26.3 restructured. All 144 inbound Play IDs
-  and all 16 native debug subscription entries decode; 117 have adapters. The native Creative catalogue now
+  families, `can_place_on`/`can_break` (adventure-predicate graph), native support/placement rules, dialog
+  input widgets and server-link buttons, and the renderer rigs 26.3 restructured. All 144 inbound Play IDs
+  and all 16 native debug subscription entries decode; 119 have adapters. The native Creative catalogue now
   comes from the pinned client for all eight feature masks (2034 stacks, 405 component patches), so creative
-  slots no longer wait on the item table. The task ledger remains partial; next task P08.
+  slots no longer wait on the item table. The task ledger remains partial; next tasks P08/P10.
 - The asset target is 26.3: `lib/mcassets.js` defaults this tree to 26.3 (pack format 97) and the proxy serves
   the jar first and the index for indexed objects. `tools/port-26.3/ExtractLayers26_3.java` bakes all 361
   native layers and `lib/model-extract-26.3.js` produces a complete 129-model bundle (native composites for the

@@ -5,6 +5,7 @@ import { decodePlayPacket766 } from "./play-codec-1.20.6.js";
 import { PLAY_SERVERBOUND_26_3 as OUT } from "./protocol-26.3-ids.js";
 import { writeLpVec3 } from "./lp-vec3-26.3.js";
 import { writeItemStack26_3, writeHashedStack26_3 } from "./item-components-26.3.js";
+import { writeAnonymousNbt } from "./nbt-anonymous.js";
 
 export const chatState762 = new ChatState766();
 export const PROTOCOL_VERSION = 777;
@@ -101,6 +102,13 @@ export const C = {
       .build(),
   customPayload: (channel, data) =>
     packet("custom_payload").string(payloadChannel(channel)).raw(data).build(),
+  // ServerboundCustomClickActionPacket: Identifier plus Optional<Tag> (bool, then the anonymous
+  // tag). Dialog custom actions use the additions compound as that payload.
+  customClickAction: (id, payload = null) => {
+    const w = packet("custom_click_action").string(payloadChannel(id)).bool(payload != null);
+    if (payload != null) writeAnonymousNbt(w, payload);
+    return w.build();
+  },
 
   clientCommand: (action) => packet("client_command").varint(action).build(),
   tabComplete: (text, _position = null, transactionId = 0) =>

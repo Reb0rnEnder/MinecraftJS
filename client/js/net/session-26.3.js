@@ -2,6 +2,7 @@
 // Nothing here is assumed: block states come from the native block report, biomes and
 // dimension types from the server's registry_data payloads, tags from update_tags.
 import {AIR_STATES_26_3,BLOCK_STATE_COUNT_26_3} from './blocks-26.3.js';
+import {parseDialogRegistry263} from './dialog-26.3.js';
 
 // Anonymous network NBT (tag id only) to plain JS. Longs stay BigInt so no precision is lost.
 export function nbtToJs(node){
@@ -77,6 +78,7 @@ export function loginContext26_3(configuration,login){
   const biomes=biomeEntries26_3(configuration);
   const registryTags=registryTags26_3(configuration);
   return {
+    dialogs:parseDialogRegistry263(configuration),
     blockStateRegistrySize:BLOCK_STATE_COUNT_26_3,
     airStates:AIR_STATES_26_3,
     biomeRegistrySize:biomes.reduce((max,biome)=>Math.max(max,biome.id+1),1),

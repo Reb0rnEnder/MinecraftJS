@@ -55,6 +55,7 @@ import {CameraEye} from '../render/camera-eye.js';
 import {menuInfo766} from "./menus-1.20.6.js";
 import { RegistryTags } from './tags.js';
 import {WaypointManager26_3} from './waypoints-26.3.js';
+import {DialogScreen263} from '../gui/screens/dialog-26.3.js';
 import { CommandTree } from './commands.js';
 import { startSleeping, stopSleeping, updateSleeping, sleepingCamera } from './bed-sleep.js';
 import { jarSelectionBox } from '../world/blocks.js';
@@ -1312,6 +1313,8 @@ export class Game {
   }
 
   on_waypoint(p) { this.waypoints.accept(p); }
+  on_show_dialog(p) { this.screens.open(new DialogScreen263(this, p.dialog)); }
+  on_clear_dialog() { if (this.screens.current?.isDialog263) this.screens.close(); }
 
   on_update_attributes(p) {
     if (p.entityId === this.entityId) {
