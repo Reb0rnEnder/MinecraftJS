@@ -13,7 +13,10 @@ import {readFileSync} from 'node:fs';
 // Bytes encoded by Mojang's own 26.3 StreamCodec in DumpAdvancements26_3.java.
 const ADVANCEMENT_FIXTURE=JSON.parse(readFileSync(new URL('./fixtures/advancements-26.3.json',import.meta.url),'utf8'));
 const EXPLODE_FIXTURE=JSON.parse(readFileSync(new URL('./fixtures/explode-26.3.json',import.meta.url),'utf8'));
+const STATS_FIXTURE=JSON.parse(readFileSync(new URL('./fixtures/stats-26.3.json',import.meta.url),'utf8'));
 import {ExplosionTracker} from '../../client/js/game/explosion-tracker.js';
+import {StatsCounter} from '../../client/js/game/stats-counter.js';
+import {STAT_TYPES_26_3,CUSTOM_STATS_26_3} from '../../client/js/game/stat-registry-26.3.js';
 
 let failures = 0;
 const check = (name, fn) => {
@@ -479,6 +482,27 @@ check('explode decodes Mojang-encoded bytes and keeps the weighted particle list
     [expected.particle, expected.sound.replace(/^minecraft:/, ''), expected.playSound]);
   eq(adapted.nativeExplosion.blockParticles.map(entry => [entry.value.particle.name, entry.value.scaling, entry.value.speed, entry.weight]),
     expected.blockParticles.map(entry => [entry.particle, entry.scaling, entry.speed, entry.weight]));
+});
+
+check('move_minecart_along_track reads every MinecartStep field', () => {
+  const body = [...varint(9), ...varint(1),
+    ...f64(1), ...f64(2), ...f64(3), ...f64(0.1), ...f64(0.2), ...f64(0.3), 64, 32, ...f32(1.5)];
+  const packet = decode('move_minecart_along_track', body);
+  eq([packet.data.entityId, packet.data.steps.length], [9, 1]);
+  eq(packet.data.steps[0], {position: {x: 1, y: 2, z: 3}, movement: {x: 0.1, y: 0.2, z: 0.3}, yRot: 64, xRot: 32, weight: 1.5});
+});
+
+check('award_stats decodes native bytes and resolves the 26.3 stat registries', () => {
+  const expected = STATS_FIXTURE.expected;
+  const adapted = adapt('award_stats', [...Buffer.from(STATS_FIXTURE.hex, 'hex')], {name: 'statistics'});
+  eq(adapted.entries.map(entry => [entry.categoryId, entry.value]),
+    expected.map(entry => [STAT_TYPES_26_3.indexOf(entry.type), entry.count]));
+  const counter = new StatsCounter({blocks: [{id: 1, name: 'stone'}], items: [{id: 1050, name: 'diamond_sword'}], entities: []},
+    {statTypes: STAT_TYPES_26_3, customStats: CUSTOM_STATS_26_3});
+  counter.apply(adapted.entries);
+  eq([counter.get('mined', 'stone'), counter.get('used', 'diamond_sword'), counter.get('custom', 'play_time')], [42, 7, 72000]);
+  // 26.3 inserted these three custom stats; the 1.20.6 table would shift every later id.
+  eq([CUSTOM_STATS_26_3.indexOf('happy_ghast_one_cm'), CUSTOM_STATS_26_3.indexOf('nautilus_one_cm'), CUSTOM_STATS_26_3.indexOf('sleep_in_straw_bed')], [17, 22, 61]);
 });
 
 check('explosion tracker spreads weighted particles, caps at 512 and respects the particle setting', () => {

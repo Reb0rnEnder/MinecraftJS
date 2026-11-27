@@ -418,6 +418,25 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     const blockParticles=readWeightedList26_3(r,readExplosionParticleInfo26_3);
     return {x,y,z,radius,blockCount,knockback,particle,sound,blockParticles,playSound:r.bool()};
   },
+  // ClientboundMoveMinecartPacket: VarInt entity id, then MinecartStep.STREAM_CODEC entries
+  // (Vec3 position, Vec3 movement, rotation byte yRot, rotation byte xRot, float weight).
+  move_minecart_along_track(r){
+    const entityId=r.varint(),steps=[];
+    for(let i=0,n=r.varint();i<n;i++){
+      steps.push({position:readVec3(r),movement:readVec3(r),yRot:r.i8(),xRot:r.i8(),weight:r.f32()});
+    }
+    return {entityId,steps};
+  },
+  // ClientboundAwardStatsPacket: a VarInt map where each key is Stat.STREAM_CODEC (the
+  // STAT_TYPE registry id, then the id of that type's value registry) and each value is VarInt.
+  award_stats(r){
+    const count=r.varint(),stats=[];
+    for(let i=0;i<count;i++){
+      const typeId=r.varint(),valueId=r.varint();
+      stats.push({typeId,valueId,value:r.varint()});
+    }
+    return {stats};
+  },
   // ClientboundUpdateAdvancementsPacket: reset flag, PositionedAdvancement list (holder id,
   // Advancement, float x/y), removed Identifier set, Identifier -> AdvancementProgress map
   // (criterion name -> optional epoch-millis instant), then the show-advancements flag.

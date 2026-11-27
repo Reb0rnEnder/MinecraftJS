@@ -80,6 +80,7 @@ import { Advancements } from './advancements.js';
 import { RecipeBook } from './recipebook.js';
 import { Input } from './input.js';
 import {StatsCounter} from './stats-counter.js';
+import {STAT_TYPES_26_3,CUSTOM_STATS_26_3} from './stat-registry-26.3.js';
 import { Renderer } from '../render/renderer.js';
 import { Gui } from '../gui/gui.js';
 import { chatToLegacy, chatComponentString, setTranslator } from '../gui/chat.js';
@@ -1528,7 +1529,7 @@ export class Game {
 
   // ClientboundAwardStatsPacket only carries changed stats; keep the running StatsCounter and hand it to screens
   on_statistics(p) {
-    this.statsCounter ||= new StatsCounter(this.assets.data);
+    this.statsCounter ||= new StatsCounter(this.assets.data,{statTypes:STAT_TYPES_26_3,customStats:CUSTOM_STATS_26_3});
     this.statsCounter.apply(p.entries);
     this.screens.current?.onStats?.(this.statsCounter);
   }

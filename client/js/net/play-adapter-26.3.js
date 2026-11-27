@@ -163,6 +163,9 @@ const ADAPTERS={
   block_entity_data(packet){return {location:packet.pos,nbtData:packet.tag};},
   open_sign_editor(packet){return {location:packet.pos,isFrontText:packet.slot===1};},
   select_advancements_tab(packet){return {id:packet.tab};},
+  // The 766 stats handler is keyed by (stat_type id, value registry id, count), which is
+  // exactly what 26.3 sends once the Stat key is read as two VarInts.
+  award_stats(packet){return {name:'statistics',entries:packet.stats.map(stat=>({categoryId:stat.typeId,statisticId:stat.valueId,value:stat.value}))};},
   // 26.3 explosions carry the server's shape, a weighted block-particle list and an optional
   // knockback; the destroyed-block offsets are gone, so no block records are synthesized.
   explode(packet){
