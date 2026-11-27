@@ -868,7 +868,7 @@ export class Game {
     if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));this.worker?.postMessage({type:'serverBiomes',codec:simplify(p.dimensionCodec)});}
     if(p.difficulty!==undefined)this.difficulty = p.difficulty;
     this.maxPlayers = p.maxPlayers;
-    this.levelType = p.levelType;
+    this.levelType = p.levelType ?? (p.isFlat ? 'flat' : 'default');
     this.reducedDebug = p.reducedDebugInfo;
     this.world.setDimension(p.dimension,p.dimensionData||{});
     if(p.dimensionData)this.world.hasSky=!!p.dimensionData.has_skylight;
@@ -2165,7 +2165,9 @@ export class Game {
       camPos: [ex, ey, ez], lookDir: look, dimension: this.dimension, underwater, inLava, biomeId:this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey)), waterVision:pl.waterVision(), conduitPower:this.effects.has(29),
       darkness:darkness762(this.effects.get(33),partial,this.ticks,this.settings.darknessEffectScale),
       blindness: this.effects.has(15), nightVision: this.effects.has(16) ? 1 : 0, clouds: this.settings.clouds,
-      horizon: String(this.levelType).toLowerCase() === 'flat' ? 0 : 63,
+      // ClientLevelData.getHorizonHeight (1.17+): the world's minimum build height on superflat, else 63;
+      // getClearColorScale: 1 on superflat, else 1/32
+      horizon: String(this.levelType).toLowerCase() === 'flat' ? (this.world.minY ?? 0) : 63, flatWorld: String(this.levelType).toLowerCase() === 'flat',
     });
     // Sky light for the world (night vision etc.) is folded into the lightmap
     this.profiler.start('culling');
