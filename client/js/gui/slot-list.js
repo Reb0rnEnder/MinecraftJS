@@ -2,9 +2,11 @@
 // Subclasses override size(), drawSlot(), and optionally isSelected(), clicked(), drawHeader(), headerClicked()
 // and decorations().
 import { platform } from '../platform/platform.js';
+import { stampWidget } from './focus-tab.js';
 
 export class SlotList {
   constructor(screen, top, bottom, slotHeight, opts = {}) {
+    stampWidget(this);
     this.screen = screen;
     this.top = top;
     this.bottom = bottom;
