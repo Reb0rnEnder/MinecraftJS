@@ -75,11 +75,13 @@ pending; product outside current scope; or experiment-gated.
   killed the player and the respawn round-trip restored health, and repeated disconnects rejoined Play.
   The preview webview cannot grant pointer lock, so input state was driven directly for that check.
 - Item stacks and component patches are live (P04 partial): `ItemStack`/`ItemStackTemplate` decode exactly
-  as `VarInt count, VarInt item id, VarInt added, VarInt removed, values, removed ids`, and 83 of the 115
+  as `VarInt count, VarInt item id, VarInt added, VarInt removed, values, removed ids`, and 113 of the 115
   wire components have verified readers. A real 26.3 session received a damaged custom-named sword, an
   enchanted pickaxe, potions, a chest containing [apple x5, null, null, diamond x2] and a bundle containing
   [apple x3, stick x8] with zero decode errors. `component-codecs:26.3` pins all 122 component codecs and the
-  seven server-only types; the remaining readers fail closed instead of consuming the wrong bytes.
+  seven server-only types. `components:26.3` encodes one real vanilla value per component with Mojang's own
+  codec and requires every reader to consume those exact bytes; 30 previously fail-closed readers are now
+  covered (only `can_place_on`/`can_break` remain).
 - Serverbound is live (P08 partial): every rewritten body comes from 26.3 bytecode - LpVec3 read/write,
   HashedStack/HashedPatchMap, `container_click`/`container_close`, `player_action` with its direction byte,
   `use_item_on` with the insideBlock/worldBorderHit booleans and the native attack. `serverbound:26.3` pins
@@ -90,8 +92,8 @@ pending; product outside current scope; or experiment-gated.
   22 data StreamCodecs; `particle-codecs:26.3` decodes the live-captured frame and every codec byte layout.
   A fresh join now loads 81 chunks and 26 entities with zero skipped frames. Vibration stays fail-closed.
 - Open at this checkpoint: patched-item HashedPatchMap hashing, creative slots (needs the P10 item table),
-  remaining container/menu families, the 32 fail-closed component readers (attribute_modifiers, profile and
-  item-modifier records), native support/placement rules, the 6 inbound IDs that are still raw
+  remaining container/menu families, `can_place_on`/`can_break` (adventure-predicate graph), native
+  support/placement rules, the 6 inbound IDs that are still raw
   (show-dialog/waypoints, debug) and the renderer rigs 26.3 restructured. The task ledger is at 41.2% (3 done, 8 partial, 6 todo); next task P08.
 - The asset target is 26.3: `lib/mcassets.js` defaults this tree to 26.3 (pack format 97) and the proxy serves
   the jar first and the index for indexed objects. `tools/port-26.3/ExtractLayers26_3.java` bakes all 361

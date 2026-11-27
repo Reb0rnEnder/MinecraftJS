@@ -101,11 +101,11 @@ assert.equal(readItemStack26_3(emptyReader),null);
 assert.equal(emptyReader.remaining(),0,'the empty stack is exactly one VarInt');
 
 // 5. A component without a verified codec fails closed instead of desynchronising the stream.
-assert.ok(COMPONENT_READERS_26_3.attribute_modifiers===undefined,'attribute_modifiers has no reader yet');
+assert.ok(COMPONENT_READERS_26_3.attribute_modifiers,'attribute_modifiers has a verified reader');
 const unknownBytes=new Writer()
   .varint(1).varint(apple)
   .varint(1).varint(0)
-  .varint(componentId('attribute_modifiers')).varint(0)
+  .varint(componentId('custom_data')).varint(0)
   .build();
 assert.throws(()=>readItemStack26_3(new Reader(unknownBytes)),/no verified network codec/,'unknown components throw');
 

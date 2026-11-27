@@ -154,8 +154,8 @@ define('lodestone_tracker',r=>({
   target:r.bool()?{dimension:r.string(),position:r.position()}:null,
   tracked:r.bool()
 }));
-// Registries.BANNER_PATTERN holder set: VarInt size then VarInt holder ids.
-define('provides_banner_patterns',idList);
+// Registries.BANNER_PATTERN holder set, including the named-tag branch.
+define('provides_banner_patterns',holderSet);
 // JukeboxSong.STREAM_CODEC is a holder stream codec.
 define('jukebox_playable',varint);
 // SulfurCubeContent.STREAM_CODEC is a plain ItemStackTemplate.
@@ -190,6 +190,132 @@ function mobEffect(r){
   const hidden=r.bool()?mobEffect(r):null;
   return {effect,duration,amplifier,ambient,showParticles,showIcon,hidden};
 }
+
+// ByteBufCodecs.holderSet: 0 then Identifier for a named tag, otherwise size+1 then holder ids.
+function holderSet(r){
+  const count=r.varint();
+  if(count===0)return {tag:r.string()};
+  const ids=[];
+  for(let i=0;i<count-1;i++)ids.push(r.varint());
+  return {ids};
+}
+const optionalHolderSet=()=>optional(holderSet);
+// GameProfile.STREAM_CODEC: UUID, UTF8(16) name, then PropertyMap.
+function profileProperties(r){
+  const count=r.varint();
+  if(count>16)throw Error('26.3 game profile has '+count+' properties');
+  const properties=[];
+  for(let i=0;i<count;i++)properties.push({name:r.string(),value:r.string(),signature:r.bool()?r.string():null});
+  return properties;
+}
+const gameProfile=r=>({id:r.uuid(),name:r.string(),properties:profileProperties(r)});
+// ByteBufCodecs.either writes Boolean.TRUE for the left branch and Boolean.FALSE for the right.
+const resolvableInt=r=>r.bool()?{value:r.i32()}:{reference:r.string()};
+const resolvableFloat=r=>r.bool()?{value:r.f32()}:{reference:r.string()};
+// ConsumeEffect.Type registry order: apply_effects, remove_effects, clear_all_effects,
+// teleport_randomly, play_sound.
+function consumeEffect(r){
+  const type=r.varint();
+  if(type===0)return {type:'apply_effects',effects:list(mobEffect)(r),probability:r.f32()};
+  if(type===1)return {type:'remove_effects',effects:holderSet(r)};
+  if(type===2)return {type:'clear_all_effects'};
+  if(type===3)return {type:'teleport_randomly',diameter:r.f32(),directionalParticles:r.bool()};
+  if(type===4)return {type:'play_sound',sound:r.varint()};
+  throw Error('Unknown 26.3 consume effect type '+type);
+}
+// ItemAttributeModifiers.Display.Type: default, hidden, override(Component).
+function attributeDisplay(r){
+  const type=r.varint();
+  if(type===0)return {type:'default'};
+  if(type===1)return {type:'hidden'};
+  if(type===2)return {type:'override',component:readAnonymousNbt(r)};
+  throw Error('Unknown 26.3 attribute modifier display '+type);
+}
+
+// ---- 26.3 components that were fail-closed before this port.
+define('use_effects',r=>({canSprint:r.bool(),interactVibrations:r.bool(),speedMultiplier:r.f32()}));
+define('attribute_modifiers',list(r=>({
+  attribute:r.varint(),
+  modifier:{id:r.string(),amount:r.f64(),operation:r.varint()},
+  slot:r.varint(),
+  display:attributeDisplay(r)
+})));
+define('food',r=>({nutrition:r.varint(),saturation:r.f32(),canAlwaysEat:r.bool()}));
+define('consumable',r=>({
+  consumeSeconds:r.f32(),
+  animation:r.varint(),
+  sound:r.varint(),
+  hasConsumeParticles:r.bool(),
+  onConsumeEffects:list(consumeEffect)(r)
+}));
+define('use_remainder',readItemStackTemplate26_3);
+define('use_cooldown',r=>({seconds:r.f32(),cooldownGroup:optional(string)(r)}));
+define('damage_resistant',holderSet);
+define('tool',r=>{
+  const rules=list(entry=>({blocks:holderSet(entry),speed:optional(float)(entry),correctForDrops:optional(entry=>entry.bool())(entry)}))(r);
+  return {rules,defaultMiningSpeed:r.f32(),damagePerBlock:r.varint(),canDestroyBlocksInCreative:r.bool()};
+});
+define('weapon',r=>({itemDamagePerAttack:r.varint(),disableBlockingForSeconds:r.f32()}));
+define('attack_range',r=>({
+  minReach:r.f32(),maxReach:r.f32(),minCreativeReach:r.f32(),
+  maxCreativeReach:r.f32(),hitboxMargin:r.f32(),mobFactor:r.f32()
+}));
+define('enchantable',varint);
+define('equippable',r=>({
+  slot:r.varint(),equipSound:r.varint(),assetId:optional(string)(r),cameraOverlay:optional(string)(r),
+  allowedEntities:optionalHolderSet()(r),dispensable:r.bool(),swappable:r.bool(),damageOnHurt:r.bool(),
+  equipOnInteract:r.bool(),canBeSheared:r.bool(),shearingSound:r.varint()
+}));
+define('repairable',holderSet);
+define('tooltip_style',string);
+define('death_protection',list(consumeEffect));
+define('blocks_attacks',r=>({
+  blockDelaySeconds:r.f32(),
+  disableCooldownScale:r.f32(),
+  damageReductions:list(entry=>({horizontalBlockingAngle:entry.f32(),type:optionalHolderSet()(entry),base:entry.f32(),factor:entry.f32()}))(r),
+  itemDamage:{threshold:r.f32(),base:r.f32(),factor:r.f32()},
+  bypassedBy:optionalHolderSet()(r),
+  blockSound:optional(varint)(r),
+  disableSound:optional(varint)(r)
+}));
+define('piercing_weapon',r=>({dealsKnockback:r.bool(),dismounts:r.bool(),sound:optional(varint)(r),hitSound:optional(varint)(r)}));
+define('kinetic_weapon',r=>({
+  contactCooldownTicks:r.varint(),delayTicks:r.varint(),
+  dismountConditions:optional(kineticCondition)(r),
+  knockbackConditions:optional(kineticCondition)(r),
+  damageConditions:optional(kineticCondition)(r),
+  forwardMovement:r.f32(),damageMultiplier:r.f32(),
+  sound:optional(varint)(r),hitSound:optional(varint)(r)
+}));
+function kineticCondition(r){return {maxDurationTicks:r.varint(),minSpeed:r.f32(),minRelativeSpeed:r.f32()};}
+const swingAnimation=r=>({type:r.varint(),duration:r.varint()});
+define('attack_animation',swingAnimation);
+define('interact_animation',swingAnimation);
+define('block_transformer',varint);
+define('villager_food',varint);
+// ResolvableProfile: either(full GameProfile, partial), then PlayerSkin.Patch
+// (three optional texture ids and an optional slim model flag).
+define('profile',r=>{
+  const profile=r.bool()?gameProfile(r):{
+    name:optional(string)(r),id:optional(()=>r.uuid())(r),properties:profileProperties(r)
+  };
+  return {profile,skinPatch:{
+    body:optional(string)(r),cape:optional(string)(r),elytra:optional(string)(r),model:optional(()=>r.bool())(r)
+  }};
+});
+define('compostable',r=>({layers:resolvableInt(r)}));
+define('cooking_fuel',r=>({burnTime:resolvableInt(r),speedMultiplier:resolvableFloat(r)}));
+define('brewing_fuel',r=>({uses:resolvableInt(r),speedMultiplier:resolvableFloat(r)}));
+define('mob_visibility',r=>({targetingEntityTypes:holderSet(r),visibility:r.f32()}));
+// SignText.STREAM_CODEC: four components, optional four filtered components, dye id, glowing flag.
+define('sign_text_front',signText);
+define('sign_text_back',signText);
+function signText(r){
+  const messages=[];for(let i=0;i<4;i++)messages.push(readAnonymousNbt(r));
+  const filtered=optional(()=>{const out=[];for(let i=0;i<4;i++)out.push(readAnonymousNbt(r));return out;})(r);
+  return {messages,filteredMessages:filtered,color:r.varint(),hasGlowingText:r.bool()};
+}
+define('cushion/color',varint);
 
 const UNSYNCED=new Set(['custom_data','intangible_projectile','map_decorations','debug_stick_state','recipes','lock','container_loot']);
 
