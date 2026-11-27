@@ -4,7 +4,7 @@
 // inside container contents. Unknown components must fail closed.
 import assert from 'node:assert/strict';
 import {Reader,Writer} from '../../client/js/net/buffer.js';
-import {readItemStack26_3,COMPONENT_READERS_26_3} from '../../client/js/net/item-components-26.3.js';
+import {readItemStack26_3,COMPONENT_READERS_26_3,itemComponentValues26_3,normalizeNativeComponent} from '../../client/js/net/item-components-26.3.js';
 import {DATA_COMPONENT_NAMES_26_3,ITEM_NAMES_26_3} from '../../client/js/net/items-26.3.js';
 import {adaptPlay26_3} from '../../client/js/net/play-adapter-26.3.js';
 import {DATA_COMPONENTS} from './component-fixture.mjs';
@@ -173,6 +173,20 @@ assert.ok(predicates[1].nbt,'NbtPredicate is one unnamed CompoundTag');
 assert.deepEqual(predicates[1].components.exact.map(component=>[component.name,component.value]),[['damage',5]]);
 assert.equal(predicates[1].components.partial[0].predicateType,0);
 assert.ok(COMPONENT_READERS_26_3.can_break,'can_break shares the AdventureModePredicate reader');
+
+// 9. Native defaults feed the game's item view: a decoded 26.3 stack keeps the report
+// defaults and applies its patch, so durability/stack size/food no longer come from 766.
+assert.equal(adventureStack.version,'26.3','decoded native stacks are marked for the consumer adapter');
+const swordValues=itemComponentValues26_3(stack);
+assert.equal(swordValues.max_damage,1561,'diamond sword native durability default');
+assert.equal(swordValues.max_stack_size,16,'patched stack size overrides the default');
+assert.equal(swordValues.damage,42,'patched damage overrides the default');
+assert.equal(swordValues.unbreakable,undefined,'removed native default is deleted from the view');
+assert.equal(itemComponentValues26_3({itemId:apple,added:[],removed:[]}).food.nutrition,4,'apple native food defaults');
+assert.deepEqual(normalizeNativeComponent('rarity',2),'rare','native rarity id maps to its name');
+assert.deepEqual(normalizeNativeComponent('dyed_color',0x123456),{rgb:0x123456,show_in_tooltip:true},'native dyed color becomes the item-view shape');
+assert.equal(normalizeNativeComponent('custom_model_data',{floats:[7],flags:[],strings:[],colors:[]}),7,'native custom model data exposes its first float');
+assert.equal(normalizeNativeComponent('potion_contents',{potion:13,customColor:null,customEffects:[],customEffectsName:null}).potionId,13,'native potion holder id reaches the item view');
 
 const total=Object.keys(DATA_COMPONENTS).length;
 const unsynced=Object.values(DATA_COMPONENTS).filter(entry=>!entry.synced).length;

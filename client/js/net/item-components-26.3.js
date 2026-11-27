@@ -16,8 +16,10 @@
 // A component whose codec is not implemented throws, so the caller skips the frame instead
 // of consuming the wrong number of bytes.
 import {readAnonymousNbt} from './nbt-anonymous.js';
+import {componentFromNbt} from './component-nbt-1.20.6.js';
 import {DATA_COMPONENT_NAMES_26_3} from './items-26.3.js';
 import {ENCHANTMENT_NAMES_26_3} from './enchantment-names-26.3.js';
+import {ITEM_DEFAULTS_26_3} from './item-defaults-26.3.js';
 
 const READERS={};
 const define=(name,read)=>{READERS[name]=read;};
@@ -385,6 +387,55 @@ export function readItemStackTemplate26_3(r){
   return readItemPatch(r,itemId,count);
 }
 
+// The native report and network codec use different shapes for a few components. Convert
+// network values to the consumer-facing shapes used by Items/rendering, while report
+// defaults already arrive in that shape.
+const RARITIES=['common','uncommon','rare','epic'];
+const ATTRIBUTE_OPERATIONS={0:'add_value',1:'add_multiplied_base',2:'add_multiplied_total'};
+const ATTRIBUTE_SLOTS={0:'any',1:'mainhand',2:'offhand',3:'hand',4:'feet',5:'legs',6:'chest',7:'head',8:'armor',9:'body'};
+const TEXT_COMPONENTS=new Set(['custom_name','item_name','lore','written_book_content']);
+
+function textValue(value){
+  return value==null?value:componentFromNbt(value);
+}
+
+function nativeAttributeModifiers(value){
+  if(!Array.isArray(value))return value;
+  return {modifiers:value.map(entry=>({
+    type:ITEM_DEFAULTS_26_3.attributeNames[entry.attribute]??entry.type,
+    id:entry.modifier?.id,
+    amount:entry.modifier?.amount,
+    operation:ATTRIBUTE_OPERATIONS[entry.modifier?.operation]??entry.modifier?.operation,
+    slot:ATTRIBUTE_SLOTS[entry.slot]??entry.slot
+  }))};
+}
+
+export function normalizeNativeComponent(name,value){
+  if(TEXT_COMPONENTS.has(name)){
+    if(name==='lore')return (value||[]).map(textValue);
+    if(name==='written_book_content')return {...value,pages:(value?.pages||[]).map(page=>({...page,content:textValue(page.content)}))};
+    return textValue(value);
+  }
+  if(name==='attribute_modifiers')return nativeAttributeModifiers(value);
+  if(name==='dyed_color'&&typeof value==='number')return {rgb:value>>>0,show_in_tooltip:true};
+  if(name==='rarity'&&typeof value==='number')return RARITIES[value]??value;
+  if(name==='potion_contents'&&value&&typeof value==='object')return {...value,potionId:value.potion};
+  if(name==='custom_model_data'&&value&&typeof value==='object')return value.floats?.[0]??0;
+  return value;
+}
+
+// Defaults plus the stack's patch, in the shape client consumers expect. 26.3 defaults come
+// from the native reports; patch values go through the network-shape conversion above.
+export function itemComponentValues26_3(item){
+  const entry=ITEM_DEFAULTS_26_3.items[item.itemId??item.id];
+  const values={...entry?.defaults};
+  for(const id of item.removed||[])delete values[DATA_COMPONENT_NAMES_26_3[id]];
+  for(const {name,value} of item.added||[])values[name]=normalizeNativeComponent(name,value);
+  const tooltip=values.tooltip_display;
+  if(tooltip&&(tooltip.hideTooltip??tooltip.hide_tooltip))values.hide_tooltip=true;
+  return values;
+}
+
 function readItemPatch(r,itemId,count){
   const addedCount=r.varint(),removedCount=r.varint();
   const added=[],removed=[],components={};
@@ -395,7 +446,7 @@ function readItemPatch(r,itemId,count){
     components[name]=value;
   }
   for(let i=0;i<removedCount;i++)removed.push(r.varint());
-  return {itemId,count,added,removed,components};
+  return {itemId,count,added,removed,components,version:'26.3'};
 }
 
 export function readItemStack26_3(r){

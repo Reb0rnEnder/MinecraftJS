@@ -75,8 +75,10 @@ pending; product outside current scope; or experiment-gated.
   killed the player and the respawn round-trip restored health, and repeated disconnects rejoined Play.
   The preview webview cannot grant pointer lock, so input state was driven directly for that check.
 - Item stacks and component patches are live (P04 partial): `ItemStack`/`ItemStackTemplate` decode exactly
-  as `VarInt count, VarInt item id, VarInt added, VarInt removed, values, removed ids`, and 113 of the 115
-  wire components have verified readers. A real 26.3 session received a damaged custom-named sword, an
+  as `VarInt count, VarInt item id, VarInt added, VarInt removed, values, removed ids`, and all 115 wire
+  components have verified readers. Native defaults come from the 1658-item report table
+  (`item-defaults:26.3`, 40 attributes); `itemComponentValues26_3` merges the patch and normalizes
+  report/network shape differences before `Items.components` consumes them. A real 26.3 session received a damaged custom-named sword, an
   enchanted pickaxe, potions, a chest containing [apple x5, null, null, diamond x2] and a bundle containing
   [apple x3, stick x8] with zero decode errors. `component-codecs:26.3` pins all 122 component codecs and the
   seven server-only types. `components:26.3` encodes one real vanilla value per component with Mojang's own

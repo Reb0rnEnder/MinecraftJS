@@ -1,7 +1,7 @@
 # MinecraftJS 26.3 — agent handoff
 
 **Repository:** https://github.com/Reb0rnEnder/MinecraftJS
-**Branch:** `26.3` (last commit `1724099`, "Decode every 26.3 world border packet.")
+**Branch:** `26.3` (last commit `720a7b9`, "Generate the native 26.3 food table.")
 **GitHub:** https://github.com/Reb0rnEnder/MinecraftJS/tree/26.3
 **Branch contains:** all 26.3 protocol work, reports, gates and tools. The handoff zip excludes `.git`, so clone the repo and check out `26.3`, or copy this tree over a clean clone.
 
@@ -72,7 +72,7 @@ java -jar cache/tools/cfr.jar cache/port-26.3/client.jar --jarfilter '^net\.mine
 2. The four debug value/event packets — they only arrive after a `debug_subscription_request` the client does not send yet, and their 16 subscription codecs are not ported.
 4. **P10** started: `tools/port-26.3/ExtractLayers26_3.java` dumps all 361 native layers and `lib/model-extract-26.3.js` bakes a complete 129-model bundle for the 26.3 asset target. Remaining: port the renderer rigs for the families 26.3 restructured so their geometry can drop the 1.20.6 fallback.
 
-Already closed: scoreboard/teams, biomes, maps, swing animation, player chat, merchant offers, damage events, advancements, explosions (Mojang-codec fixtures; `ClientExplosionTracker` ported), statistics (native 26.3 stat registry), minecart steps, projectile power (decoded only — 26.3's scalar has no 766 adapter), the full world-border family (initialize plus all five setters, 0–5 action vocabulary), tags, game-rule values, report details, the disk-space warning, transient blocks, mount screens, debug samples, the test-instance/highlight frames, server links, clear-dialog and the recipe family (native RecipeDisplay/SlotDisplay graph, live-capture verified; no 766 adapter because 766 has no display graph).
+Already closed: scoreboard/teams, biomes, maps, swing animation, player chat, merchant offers, damage events, advancements, explosions (Mojang-codec fixtures; `ClientExplosionTracker` ported), statistics (native 26.3 stat registry), minecart steps, projectile power (decoded only — 26.3's scalar has no 766 adapter), the full world-border family (initialize plus all five setters, 0–5 action vocabulary), tags, game-rule values, report details, the disk-space warning, transient blocks, mount screens, debug samples, the test-instance/highlight frames, server links, clear-dialog, native item defaults (all 1658 reports → `itemComponentValues26_3`) and the recipe family (native RecipeDisplay/SlotDisplay graph, live-capture verified; no 766 adapter because 766 has no display graph).
 
 ## Known blockers
 

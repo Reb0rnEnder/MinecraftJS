@@ -1,5 +1,6 @@
 import {appendAdventureTooltips} from './adventure-tooltip.js';
 import {itemComponentValues766} from '../net/item-components-1.20.6.js';
+import {itemComponentValues26_3} from '../net/item-components-26.3.js';
 import {ITEM_DATA_766} from './item-data-1.20.6.js';
 import {NATIVE_EFFECTS_26_3} from './effects-26.3.js';
 import{bundleContents,bundleContentWeight}from'./bundle.js';
@@ -34,7 +35,7 @@ export class Items {
 
   name(id) { const d = this.def(id); return d ? d.name : 'unknown'; }
 
-  components(item) {return itemComponentValues766(item);}
+  components(item) {return item?.version==='26.3'?itemComponentValues26_3(item):itemComponentValues766(item);}
   component(item,type) {return this.components(item)[type];}
   maxStack(item) {return this.component(item,'max_stack_size')??1;}
   maxDurability(item) {return this.component(item,'max_damage')??0;}
