@@ -192,6 +192,8 @@ export class TextField {
       // vanilla inverts the selection with a logic op
       gui.setBlend('invert');
       gui.rect(x0, ty - 1, x1, ty + 9, 0xffffffff);
+      gui.setBlend('add');
+      gui.rect(x0, ty - 1, x1, ty + 9, 0xff0000ff); // OR_REVERSE with 0xff0000ff: (~r, ~g, 255)
       gui.setBlend('alpha');
     }
   }
