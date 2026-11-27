@@ -238,6 +238,15 @@ export class BrowserPlatform extends Emitter {
       if (e.deltaY) this.emit('wheel', e.deltaY/(e.deltaMode===0?100:e.deltaMode===1?3:1));
     }, { passive: false });
     window.addEventListener('contextmenu', (e) => e.preventDefault());
+    // GLFW drop callback -> Minecraft.onFilesDrop
+    window.addEventListener('dragover', (e) => { if (e.dataTransfer?.types?.includes('Files')) e.preventDefault(); });
+    window.addEventListener('drop', async (e) => {
+      if (!e.dataTransfer?.files?.length) return;
+      e.preventDefault();
+      const files = [];
+      for (const f of e.dataTransfer.files) files.push({ name: f.name, bytes: new Uint8Array(await f.arrayBuffer()) });
+      this.emit('filesdrop', files);
+    });
     window.addEventListener('keydown', (e) => {
       this._userGesture();
       const block = ['Tab', 'F1', 'F2', 'F3', 'F5', 'F11', 'Space', 'Slash', 'Quote', 'Backspace', 'Escape', 'ArrowUp', 'ArrowDown'];
