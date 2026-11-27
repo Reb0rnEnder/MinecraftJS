@@ -212,6 +212,12 @@ assert.equal(itemView.strVsBlock(nativeStack('apple'),{name:'stone'}),1,'native 
 assert.equal(armorType(nativeStack('leather_helmet'),itemView),0,'native equippable head slot maps to the helmet slot');
 assert.equal(armorType(nativeStack('elytra'),itemView),1,'native equippable chest slot maps to the chest slot');
 assert.equal(armorType(nativeStack('wolf_armor'),itemView),-1,'native body equipment is not a player armor slot');
+assert.equal(itemView.canHarvest(nativeStack('diamond_pickaxe'),{name:'stone'}),true,'native pickaxe harvests tool-required stone');
+assert.equal(itemView.canHarvest(nativeStack('wooden_pickaxe'),{name:'stone'}),true,'wooden pickaxe harvests stone');
+assert.equal(itemView.canHarvest(nativeStack('wooden_pickaxe'),{name:'iron_ore'}),false,'wooden pickaxe cannot harvest iron ore');
+assert.equal(itemView.canHarvest(nativeStack('diamond_pickaxe'),{name:'obsidian'}),true,'diamond pickaxe harvests obsidian');
+assert.equal(itemView.canHarvest(nativeStack('apple'),{name:'stone'}),false,'hand cannot harvest tool-required stone');
+assert.equal(itemView.canHarvest(nativeStack('apple'),{name:'dirt'}),true,'hand harvests blocks that need no tool');
 assert.equal(normalizeNativeComponent('equippable',{slot:5,equipSound:0,dispensable:true,swappable:true,damageOnHurt:true,equipOnInteract:false,canBeSheared:false}).slot,'head','native equipment slot id maps to its name');
 const tooltipItems=new Items({data:{items:[{id:diamondSword,name:'diamond_sword'}],enchantments:[]},translate:key=>key});
 const hiddenAttributes={...nativeStack('diamond_sword'),added:[{name:'tooltip_display',value:{hideTooltip:false,hiddenComponents:[componentId('attribute_modifiers')]}}]};

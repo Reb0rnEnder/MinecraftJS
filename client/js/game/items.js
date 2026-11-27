@@ -5,7 +5,9 @@ import {ITEM_DATA_766} from './item-data-1.20.6.js';
 import {NATIVE_EFFECTS_26_3} from './effects-26.3.js';
 import{bundleContents,bundleContentWeight}from'./bundle.js';
 import {NATIVE_BLOCK_TAGS_26_3} from './block-tags-26.3.js';
+import {NATIVE_REQUIRES_TOOL_26_3} from './block-tools-26.3.js';
 const attributeKey = name => 'attribute.name.' + name.replace(/^minecraft:/, '').replace(/[A-Z]/g, c => '_' + c.toLowerCase());
+const REQUIRES_TOOL_26_3 = new Set(NATIVE_REQUIRES_TOOL_26_3.blocks);
 // Item metadata helpers: names, tooltips, stack sizes, durability, use actions, tool speeds.
 import { simplify } from '../net/nbt.js';
 import { blocksByName } from '../world/blocks.js';
@@ -312,6 +314,13 @@ export class Items {
   }
 
   canHarvest(item, blockDef) {
+    if(item?.version==='26.3'){
+      if(!REQUIRES_TOOL_26_3.has(resource(blockDef.name)))return true;
+      const tool=this.component(item,'tool');
+      if(!tool)return false;
+      for(const rule of tool.rules||[])if(this.blockRuleMatches(rule,blockDef))return !!(rule.correct_for_drops??rule.correctForDrops??false);
+      return false;
+    }
     if (!blockDef.harvestTools) return true;
     return !!(item && blockDef.harvestTools[item.id]);
   }

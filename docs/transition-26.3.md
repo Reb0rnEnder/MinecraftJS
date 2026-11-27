@@ -82,7 +82,9 @@ pending; product outside current scope; or experiment-gated.
   included. Native consumable animation/eat time drive `useAction`/`useDuration`, so potions drink and
   food eats with the 26.3 timings instead of the shifted 766 item ids. `block-tags:26.3` resolves the
   jar's 300 block tag files into the 16 tool-rule tag families, and native `tool` rules drive
-  `strVsBlock` (pickaxe stone 8, sword cobweb 15, sword leaves 1.5). `tooltip_display` hides
+  `strVsBlock` (pickaxe stone 8, sword cobweb 15, sword leaves 1.5); a native registry dump lists
+  the 470 blocks that require the correct tool, so `canHarvest` now rejects wood-on-iron-ore and
+  bare hands on stone. `tooltip_display` hides
   the whole tooltip or selected component sections using the native hidden-component ids, and
   `equippable.slot` drives player armor placement from the native component. A real 26.3 session received a damaged custom-named sword, an
   enchanted pickaxe, potions, a chest containing [apple x5, null, null, diamond x2] and a bundle containing
