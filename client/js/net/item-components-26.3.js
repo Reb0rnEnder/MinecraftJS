@@ -17,7 +17,7 @@
 // of consuming the wrong number of bytes.
 import {readAnonymousNbt} from './nbt-anonymous.js';
 import {componentFromNbt} from './component-nbt-1.20.6.js';
-import {DATA_COMPONENT_NAMES_26_3} from './items-26.3.js';
+import {DATA_COMPONENT_NAMES_26_3,ITEM_NAMES_26_3} from './items-26.3.js';
 import {ENCHANTMENT_NAMES_26_3} from './enchantment-names-26.3.js';
 import {ITEM_DEFAULTS_26_3} from './item-defaults-26.3.js';
 
@@ -437,6 +437,34 @@ export function normalizeNativeComponent(name,value){
   return value;
 }
 
+const NESTED_STACK_COMPONENTS=new Set(['use_remainder','charged_projectiles','bundle_contents','container','pot_decorations']);
+
+// The game's consumers expect decorated slot stacks (numeric id plus itemKey and the patch),
+// including the templates nested inside component values such as bundles and crossbows.
+export function adaptNativeStack26_3(stack){
+  if(!stack)return null;
+  const components=itemComponentValues26_3(stack);
+  return {
+    ...stack,
+    id:stack.itemId,
+    itemKey:ITEM_NAMES_26_3[stack.itemId],
+    version:'26.3',
+    damage:Number(components.damage||0),
+    maxDamage:components.max_damage??null,
+    maxStackSize:components.max_stack_size??null,
+    customName:components.custom_name??null,
+    componentPatch:{added:stack.added??[],removed:stack.removed??[]},
+    components
+  };
+}
+
+function nestedStacks(value){
+  if(Array.isArray(value))return value.map(nestedStacks);
+  if(value&&typeof value==='object'&&value.itemId!==undefined&&value.count!==undefined)return adaptNativeStack26_3(value);
+  if(value&&typeof value==='object')return Object.fromEntries(Object.entries(value).map(([key,entry])=>[key,nestedStacks(entry)]));
+  return value;
+}
+
 // Defaults plus the stack's patch, in the shape client consumers expect. 26.3 defaults come
 // from the native reports; patch values go through the network-shape conversion above.
 export function itemComponentValues26_3(item){
@@ -448,6 +476,7 @@ export function itemComponentValues26_3(item){
   for(const {name,value} of added)values[name]=normalizeNativeComponent(name,value);
   const tooltip=values.tooltip_display;
   if(tooltip?.hide_tooltip)values.hide_tooltip=true;
+  for(const name of NESTED_STACK_COMPONENTS)if(values[name]!==undefined)values[name]=nestedStacks(values[name]);
   return values;
 }
 

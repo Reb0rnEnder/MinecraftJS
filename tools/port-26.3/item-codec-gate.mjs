@@ -9,6 +9,7 @@ import {DATA_COMPONENT_NAMES_26_3,ITEM_NAMES_26_3} from '../../client/js/net/ite
 import {adaptPlay26_3} from '../../client/js/net/play-adapter-26.3.js';
 import {Items} from '../../client/js/game/items.js';
 import {armorType} from '../../client/js/game/container.js';
+import {bundleContents} from '../../client/js/game/bundle.js';
 import {DATA_COMPONENTS} from './component-fixture.mjs';
 
 const componentId=name=>{
@@ -137,6 +138,13 @@ assert.equal(adapted.items[0].maxDamage,1561,'adapted slots carry native default
 assert.equal(adapted.items[0].components.unbreakable,undefined,'adapted slots carry patch removals');
 assert.equal(itemComponentValues26_3(adapted.items[0]).max_stack_size,16,'the item view applies an adapted slot patch');
 assert.equal(itemComponentValues26_3(adapted.items[0]).unbreakable,undefined,'the item view applies adapted slot removals');
+const bundleView=new Items({data:{items:[],enchantments:[]}});
+const nestedBundle={version:'26.3',itemId:itemId('bundle'),added:[{name:'bundle_contents',value:[{itemId:apple,count:3,added:[],removed:[],components:{}},{itemId:itemId('stick'),count:8,added:[],removed:[],components:{}}]}],removed:[]};
+const bundleItems=bundleContents(nestedBundle,bundleView);
+assert.equal(bundleItems.length,2,'native bundle contents are visible');
+assert.equal(bundleItems[0].id,apple,'native bundle entries are adapted to decorated stacks');
+assert.equal(bundleItems[0].count,3,'native bundle entry counts survive adaptation');
+assert.equal(bundleView.component(nestedBundle,'bundle_contents')[1].itemKey,'stick','nested component templates carry item keys');
 assert.deepEqual(adapted.items[0].componentPatch.removed,[componentId('unbreakable'),componentId('repair_cost')]);
 
 const slot=adaptPlay26_3({decoded:true,name:'container_set_slot',data:{containerId:5,stateId:9,slot:12,item:stack}});

@@ -15,7 +15,7 @@ acceptance evidence from a native run, not because a table or model exists.
 | Native login/configuration bytes (P03) | Seven captured native frames decode with the client's Reader and Login Success round-trips exactly; 26.3's added session UUID is asserted rather than ignored. |
 | Play Login decode (P06) | The captured Play Login (id 50) parses to typed fields with zero trailing bytes and a plausible spawn: three levels, overworld dimension, sea level 63. |
 | Graphical join (P07) | Chrome reached a disposable 26.3 server, rendered terrain, 81 chunks, sky, grass, the full HUD and live mobs (pigs, sheep, cows, chickens, bats, villagers, glow squid) at sane coordinates. Movement was server-accepted, a zombie kill led to a working respawn, and repeated reconnects returned to Play. |
-| Native item stacks (P04) | All 115 wire components decode with verified readers; every stack gets defaults from the native 1658-item report table, patch additions/removals are preserved through adapted slots, and native shapes drive tooltips, consumable actions, equippable slots, tool-rule mining speeds and harvest checks (470 native tool-required blocks). Click hashing for patched stacks belongs to P08. |
+| Native item stacks (P04) | All 115 wire components decode with verified readers; every stack gets defaults from the native 1658-item report table, patch additions/removals are preserved through adapted slots, and native shapes drive tooltips, consumable actions, equippable slots, tool-rule mining speeds and harvest checks (470 native tool-required blocks); nested templates in bundle/container/charged-projectile components are adapted to decorated stacks. Click hashing for patched stacks belongs to P08. |
 
 ## Partial
 

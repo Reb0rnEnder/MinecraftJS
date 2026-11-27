@@ -7,7 +7,11 @@ function entries(item){const list=root(item).v.Items;return list?.t===TAG.LIST&&
 function decode(entry,items){const name=entry.id?.v?.replace(/^minecraft:/,''),def=items.byName.get(name),count=Number(entry.Count?.v)||0;if(!def||count<=0)return null;return{id:def.id,count,damage:0,nbt:entry.tag?.t===TAG.COMPOUND?structuredClone(entry.tag):null};}
 function encode(item,items){return{id:{t:TAG.STRING,v:'minecraft:'+items.name(item.id)},Count:{t:TAG.BYTE,v:item.count},...(item.nbt?{tag:structuredClone(item.nbt)}:{})};}
 function setEntries(item,list){const tag=structuredClone(root(item));if(list.length)tag.v.Items={t:TAG.LIST,v:{et:TAG.COMPOUND,items:list}};else delete tag.v.Items;item.nbt=tag;delete item.nbtRaw;}
-export function bundleContents(item,items){return entries(item).map(e=>decode(e,items)).filter(Boolean);}
+export function bundleContents(item,items){
+ const native=items.component(item,'bundle_contents');
+ if(Array.isArray(native))return native.filter(Boolean);
+ return entries(item).map(e=>decode(e,items)).filter(Boolean);
+}
 export function bundleWeight(item,items){
  const name=items.name(item.id);
  if(name==='bundle')return 4+bundleContentWeight(item,items);
