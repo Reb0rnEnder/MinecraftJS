@@ -12,7 +12,7 @@ export const DEFAULT_KEYS = {
 };
 
 const DEFAULTS = {
-  preloadTextures:false,microprofiler:false,microprofilerOverlay:'compact',skipUndisplayedFrames:true,functionKeyChords:true,zoomEnabled:true,dynamicLights:true,dynamicLightsOthers:true,fullBright:false,
+  preloadTextures:false,microprofiler:false,microprofilerOverlay:'compact',skipUndisplayedFrames:true,functionKeyChords:false,functionKeyChordsReset:1,zoomEnabled:true,dynamicLights:true,dynamicLightsOthers:true,fullBright:false,
   fov: 70,
   sensitivity: 0.5,
   invertMouse: false,
@@ -93,6 +93,9 @@ export class Settings {
     if (typeof config.skinProxy === 'string') defaults.skinProxy = config.skinProxy.trim();
     if (typeof config.skinProxyHttp === 'boolean') defaults.skinProxyHttp = config.skinProxyHttp;
     Object.assign(this, defaults, saved);
+    // Function-key chords used to be on by default and held every F press until release (no instant or repeated
+    // swap-hands, as native F does); settings saved before then start with them off once
+    if (!saved.functionKeyChordsReset) { this.functionKeyChords = false; this.functionKeyChordsReset = 1; }
     this.skinProxy = typeof this.skinProxy === 'string' ? this.skinProxy.trim() : '';
     if (!Object.prototype.hasOwnProperty.call(saved, 'lodDistance') && Number.isFinite(saved.lodChunks)) this.lodDistance = Math.max(0, saved.lodChunks * 16);
     if (!Number.isFinite(this.lodDistance) || this.lodDistance < 0) this.lodDistance = 128;
