@@ -104,7 +104,7 @@
     {
       "id": "P04",
       "title": "Item components and stacks",
-      "status": "partial",
+      "status": "done",
       "dependsOn": [
         "P03"
       ],

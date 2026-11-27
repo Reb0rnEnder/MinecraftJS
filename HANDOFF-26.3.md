@@ -1,7 +1,7 @@
 # MinecraftJS 26.3 — agent handoff
 
 **Repository:** https://github.com/Reb0rnEnder/MinecraftJS
-**Branch:** `26.3` (last commit `720a7b9`, "Generate the native 26.3 food table.")
+**Branch:** `26.3` (last commit `be69aed`, "Use native 26.3 equippable slots for armor placement.")
 **GitHub:** https://github.com/Reb0rnEnder/MinecraftJS/tree/26.3
 **Branch contains:** all 26.3 protocol work, reports, gates and tools. The handoff zip excludes `.git`, so clone the repo and check out `26.3`, or copy this tree over a clean clone.
 
@@ -16,7 +16,7 @@
 ## State at handoff
 
 - **P06 coverage: 140/144 inbound IDs decoded, 113 with adapters, 4 raw.**
-- Ledger: **41.2%** (3 done, 8 partial, 6 todo; done=1, partial=0.5).
+- Ledger: **44.1%** (4 done, 7 partial, 6 todo; done=1, partial=0.5).
 - Last full run: `test:26.3`, `adapter:26.3`, `client-net:26.3` and `inbound-gate.mjs` all exit 0.
 - Real 26.3 server socket test passes (`client-net`, 23–31 chunks depending on spawn); graphical browser verification is unreliable on this machine (low disk, join stalls). Do not claim visual verification you did not do.
 - Uncommitted in the source workspace: three `docs/checkpoint-26.3-entities*.png` screenshots (not part of the port; leave or add deliberately).
