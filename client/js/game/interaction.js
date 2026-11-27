@@ -8,6 +8,7 @@ import {consumeEffect} from '../audio/consume-sounds.js';
 import {playActivatedBlockSound} from '../audio/client-sound-triggers.js';
 import{familyCanSurvive}from'./placement-families.js';
 import{emptyBundle}from'./bundle.js';
+import{boatWoodFor}from'./boat-types-1.19.4.js';
 import{attachmentPlacement}from'./attachment-placement.js';
 import {growingPlantSurvives} from '../world/growing-plant-placement.js';
 import {predictDoorPair,reconcileDoorPair} from './door-prediction.js';
@@ -918,7 +919,7 @@ export class Interaction {
       if (e.kind === 'painting') name = 'painting';
       else if (e.kind === 'itemframe') { if (e.item) item = copy(e.item); else name = 'item_frame'; }
       else if (e.kind === 'minecart') name = e.entityName;
-      else if (e.kind === 'boat') name = (['oak', 'spruce', 'birch', 'jungle', 'acacia', 'dark_oak'][e.boatType || 0] || 'oak') + '_boat';
+      else if (e.kind === 'boat') name = e.entityName || (e.boatWood || boatWoodFor(e.entityName)) + '_boat';
       else if (e.kind === 'armorstand') name = 'armor_stand';
       else if (e.kind === 'crystal') name = 'end_crystal';
       else if (e.kind === 'mob' && e.entityName) name = e.entityName + '_spawn_egg';

@@ -22,6 +22,7 @@ import { simplify } from '../net/nbt.js';
 import { getBlock } from '../world/blocks.js';
 import { isPointInFluid } from '../world/fluids.js';
 import { mcSin, mcCos } from './physics.js';
+import { boatWoodFor } from './boat-types-1.19.4.js';
 import { chatToLegacy } from '../gui/chat.js';
 import { initDisplay, applyDisplayMeta, tickDisplay } from './display-entity.js';
 import { applyEntityScale, setScaleAttribute } from './entity-scale.js';
@@ -207,6 +208,8 @@ export class EntityManager {
     e.typeName = e.entityName || 'Unknown object';
     e.objectData = p.objectData;
     if(/_chest_(boat|raft)$/.test(e.entityName||''))e.chestBoat=true;
+    // 26.3 has one entity type per wood and no Boat.Type metadata value.
+    if(e.kind==='boat')e.boatWood=boatWoodFor(e.entityName);
     if(e.kind==='minecart')e.cartType=Math.max(0,MINECART_NAMES.indexOf(e.entityName));
     e.width = def ? def.width : 0; e.height = def ? def.height : 0; e.eyeHeight = def ? def.eyeHeight : 0;
     e.pickable = ['boat', 'minecart', 'crystal', 'itemframe', 'leash', 'armorstand', 'shulker_bullet'].includes(e.kind) || e.entityName === 'fireball';
@@ -506,6 +509,11 @@ export class EntityManager {
       set(6, 'rollingAmplitude'); set(7, 'rollingDirection'); set(8, 'cartDamage');
       set(9, 'displayBlock'); set(10, 'displayOffset'); set(11, 'customDisplay'); // direct block state
     }
+    if (e.kind === 'boat') {
+      // AbstractBoat adds three accessors after VehicleEntity: left/right paddle, bubble time.
+      set(6, 'timeSinceHit'); set(7, 'forwardDirection'); set(8, 'damageTaken');
+      set(9, 'paddleLeft'); set(10, 'paddleRight'); set(11, 'bubbleTime');
+    }
     switch (name) {
       case 'item': case 'potion': set(6, 'item'); break;
       case 'glow_item_frame': case 'item_frame': set(6, 'item'); set(7, 'rotation'); break;
@@ -515,9 +523,6 @@ export class EntityManager {
       case 'tnt': set(6, 'fuse'); break;
       case 'wither_skull': set(6, 'invulnerable'); break;
       case 'end_crystal': set(6, 'beamTarget'); set(7, 'showBottom'); break;
-      case 'boat':
-        set(6, 'timeSinceHit'); set(7, 'forwardDirection'); set(8, 'damageTaken'); set(9, 'boatType');
-        set(10, 'paddleLeft'); set(11, 'paddleRight'); set(12, 'bubbleTime'); break;
       case 'furnace_minecart': set(12, 'furnacePowered'); break;
       case 'command_block_minecart': set(12, 'command'); set(13, 'lastOutput'); break;
       // AreaEffectCloud (1.20.5+): radius, waiting, particle; the colour rides inside an entity_effect particle
@@ -768,7 +773,7 @@ export class EntityManager {
   }
 
   mountedOffset(v) {
-    if (v.kind === 'boat') return v.boatType===8?0.3:-0.1; // native 1.19.4 bamboo raft offset
+    if (v.kind === 'boat') return v.boatWood==='bamboo'?0.3:-0.1; // native bamboo raft offset
     if (v.kind === 'minecart') return 0;    // EntityMinecart.getMountedYOffset (1.9+)
     if (v.kind === 'mob') {
       if(v.entityName==='strider')return v.height-.19+.24*Math.cos((v.limbSwing||0)*1.5)*Math.min(.25,v.limbSwingAmount||0);

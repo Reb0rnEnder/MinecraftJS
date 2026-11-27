@@ -7,7 +7,7 @@ import {updateGolemCracks} from './iron-golem-cracks.js';
 import{updateGuiEquipment,guiHandPoses}from'./gui-player-equipment.js';
 import{paintingTiles,paintingTileLight}from'./painting.js';
 import {defaultSkin,DEFAULT_SKIN,uuidHash,profileDefaultSkin} from './default-skins.js';
-import {BOAT_TYPES} from '../game/boat-types-1.19.4.js';
+import {boatWoodFor} from '../game/boat-types-1.19.4.js';
 import {isSquid,squidTentacle,squidMatrix} from '../game/squid-animation.js';
 import { scaleAgeableGroups } from './ageable-pose.js';
 import { attachSpyglassHolder } from './spyglass-pose.js';
@@ -439,7 +439,7 @@ export class EntityRenderer {
   _visualKey(e) {
     if(e.kind==='painting')return ['painting',e.paintingName,e.width,e.height].join(':');
     if (e.kind === 'mob') return this._livingKey(e);
-    if (e.kind === 'boat') return 'boat:' + (e.boatType || 0)+':'+!!e.chestBoat;
+    if (e.kind === 'boat') return 'boat:' + (e.boatWood || boatWoodFor(e.entityName))+':'+!!e.chestBoat;
     if (e.kind === 'minecart') return ['cart', e.cartType, e.customDisplay, e.displayBlock, e.displayOffset, e.furnacePowered].join(':');
     if (e.kind === 'crystal') return 'crystal:' + (e.showBottom !== false);
     if (e.kind === 'projectile') return ['projectile', e.type, e.invulnerable,
@@ -914,9 +914,10 @@ export class EntityRenderer {
       }
       case 'boat': case 'minecart': {
         v = atlasOnly(e.kind);
-        const model = e.kind === 'boat' ? M.boat(BOAT_TYPES[e.boatType||0]||'oak',!!e.chestBoat) : M.minecart();
-        // EntityBoat.Type: 1.13 uses the wood name directly, including dark_oak.
-        const mat = this._mat(v, e.kind === 'boat' ? 'entity/'+(e.chestBoat?'chest_boat/':'boat/') + (BOAT_TYPES[e.boatType || 0] || 'oak') + '.png' : 'entity/minecart.png');
+        const wood = e.kind === 'boat' ? (e.boatWood || boatWoodFor(e.entityName)) : 'oak';
+        const model = e.kind === 'boat' ? M.boat(wood,!!e.chestBoat) : M.minecart();
+        // 26.3 has one entity type and one texture per wood, including pale_oak and poplar.
+        const mat = this._mat(v, e.kind === 'boat' ? 'entity/'+(e.chestBoat?'chest_boat/':'boat/') + wood + '.png' : 'entity/minecart.png');
         v.inner = new Node();
         const mg = new Node();
         mg.scale.set(-1 / 16, -1 / 16, 1 / 16);

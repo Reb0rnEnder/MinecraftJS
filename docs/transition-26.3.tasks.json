@@ -256,7 +256,8 @@
       "acceptance": "Default jar resources resolve with no custom pack, including the reworked item-model and GUI sprite systems.",
       "evidence": [
         "Native client tables built from the jar without minecraft-data: blocks:26.3 (1,286 blocks / 35,723 states, partition-checked) and items:26.3 (1,658 items, contiguous protocol ids, stack sizes from the item component reports, names from the jar en_us.json).",
-        "26.3 equipment renders from `entity/equipment/humanoid/<asset>.png` and `humanoid_leggings/<asset>.png` (not 1.20.6 `models/armor`), reading the native `equippable.assetId`. Armor trims use native trim material/pattern ids, `item/<item>_<material>_trim` models and generated palette textures; because 26.3 defines atlases in code, the blocks atlas synthesizes the native `trims/items/*_trim` paletted permutations from `palettes/trim_base` (verified in-browser for all four armor pieces and iron_darker). The smithing screen uses the native `container/slot/*` sprites with native template icons (including nautilus armor and spear). tests: `test-armor-trims-26.3.mjs`; screens/visual acceptance remains P13."
+        "26.3 equipment renders from `entity/equipment/humanoid/<asset>.png` and `humanoid_leggings/<asset>.png` (not 1.20.6 `models/armor`), reading the native `equippable.assetId`. Armor trims use native trim material/pattern ids, `item/<item>_<material>_trim` models and generated palette textures; because 26.3 defines atlases in code, the blocks atlas synthesizes the native `trims/items/*_trim` paletted permutations from `palettes/trim_base` (verified in-browser for all four armor pieces and iron_darker). The smithing screen uses the native `container/slot/*` sprites with native template icons (including nautilus armor and spear). tests: `test-armor-trims-26.3.mjs`; screens/visual acceptance remains P13.",
+      "26.3 boats are per-wood entity types, not a Boat.Type metadata index. The client now resolves the wood from the native entity name (oak through pale_oak/poplar plus bamboo rafts), reads the shifted AbstractBoat paddle/bubble accessors, picks the matching chest-boat/raft item, and extracts native 26.3 boat and chest-boat layers for all eleven woods. `test-boat-26.3.mjs` pins the identities; model extraction checks all 22 boat models resolve from `minecraft:boat/*` layers. Horse/donkey, rabbit, dragon and player rigs still use their 1.20.6 fallback."
       ]
     },
     {
@@ -288,7 +289,7 @@
     {
       "id": "P13",
       "title": "GUI, dialogs, chat and commands",
-      "status": "todo",
+      "status": "partial",
       "dependsOn": [
         "P09",
         "P10"

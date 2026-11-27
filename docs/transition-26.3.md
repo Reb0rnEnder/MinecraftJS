@@ -121,6 +121,11 @@ pending; product outside current scope; or experiment-gated.
   198 tag-alternative ingredient sets. `crafting.js` matches `{any:[ids]}` alternatives and
   `test-recipes-26.3.mjs` pins the acacia boat and coal/charcoal fire-charge paths. The remaining 857
   non-crafting/component-result recipes stay server-authoritative.
+- 26.3 boats are one entity type per wood (including pale_oak and poplar) with no Boat.Type
+  metadata index. The client resolves `boatWood` from the native entity name, reads the native
+  AbstractBoat paddle/bubble accessors, picks the matching item, and extracts all 22 native boat
+  and chest-boat models (with the separate water-patch layer). Horse, rabbit, dragon and player
+  rigs still use their 1.20.6 fallback.
 - Open at this checkpoint: general HashedPatchMap hashing for arbitrary server-provided component values
   (Creative catalogue stacks now carry native hashes), live acceptance of the remaining container/menu
   families, `can_place_on`/`can_break` (adventure-predicate graph), native support/placement rules, dialog

@@ -39,8 +39,10 @@ not closed by the version jump.
 - The remaining outbound Play families (chat, commands, recipe book) and inventory edge cases such as
   shift-click into a full container and patched stacks in a click.
 - Entity identities new to 26.3 (for example `minecraft:sulfur_cube`) spawn with the native 26.3 id,
-  dimensions and mob category, but families 26.3 restructured still lack a native renderer rig (P10).
-- The browser serves 26.3 assets (jar first, then the index) and bakes 26.3 block models, textures and the 26.3 panorama. Entity rigs for the families 26.3 restructured still come from 1.20.6 (P10).
+  dimensions and mob category. Boat entities now resolve one native per-wood identity (including
+  `pale_oak` and `poplar`) and use the 26.3 boat/chest-boat layers; the remaining restructured
+  families (horse/donkey, rabbit, dragon, player layers) still fall back to their 1.20.6 rigs (P10).
+- The browser serves 26.3 assets (jar first, then the index) and bakes 26.3 block models, textures and the 26.3 panorama. Boat rigs are now native 26.3; the horse/rabbit/dragon/player rigs named above still come from 1.20.6 (P10).
 
 ## Out of scope
 
