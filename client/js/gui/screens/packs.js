@@ -1,6 +1,6 @@
 import {ResourceLoadingScreen} from './loading.js';
 import { VANILLA_UI } from '../vanilla-layout.js';
-import { ConfirmScreen } from './menus.js';
+import { ConfirmScreen, AlertScreen } from './menus.js';
 // GuiScreenResourcePacks: available / selected pack lists, adding packs from files.
 import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
@@ -9,10 +9,15 @@ import { platform } from '../../platform/platform.js';
 import { decodePng } from '../../util/png.js';
 import { ListOf } from '../slot-list.js';
 import {packCompatibility} from '../../resource-pack-compatibility.js';
+import { VANILLA_PACK_ID } from '../../assets.js';
+
+// ClientPackSource VANILLA_SELECTION_CONFIG: required (cannot be unselected), bottom by default, not fixed (can move)
+const DEFAULT_PACK = Object.freeze({ id: VANILLA_PACK_ID, isDefault: true, required: true });
 
 const ENTRY_W = 200, ENTRY_H = 36;
 
 export class ResourcePacksScreen extends Screen {
+  narrationTitle() { return tr('resourcePack.title'); } // Screen.getNarrationMessage
   constructor(game, parent) {
     super(game);
     this.parent = parent;
@@ -29,9 +34,10 @@ export class ResourcePacksScreen extends Screen {
     const A = this.game.assets;
     const all = await A.listPacks();
     const active = this.game.settings.resourcePacks || [];
-    this.selected = active.map((id) => all.find((p) => p.id === id)).filter(Boolean);
+    this.selected = active.map((id) => (id === VANILLA_PACK_ID ? DEFAULT_PACK : all.find((p) => p.id === id))).filter(Boolean);
+    if (!this.selected.includes(DEFAULT_PACK)) this.selected.push(DEFAULT_PACK);
     this.available = all.filter((p) => !active.includes(p.id));
-    this.initial = this.selected.map((p) => p.id).join('\n');
+    this.initial = this._ids().join('\n');
     // PackSelectionScreen reads the default pack.png synchronously; wait for it so the first frame is not a placeholder.
     this._defaultIcon();await this.defaultIconLoad;
     this.loaded = true;
@@ -44,7 +50,7 @@ export class ResourcePacksScreen extends Screen {
     // Native TransferableSelectionList: 200 wide, 33-pixel header/footer, 36-pixel rows.
     const old = this.lists;
     this.lists = [0, 1].map((side) => {
-      const items = () => (side ? [...this.selected, null] : this.available);
+      const items = () => (side ? this.selected : this.available);
       const L = { side, title: tr(side ? 'pack.selected.title' : 'pack.available.title') };
       L.list = new ListOf(this, 33, this.height - 33, ENTRY_H, {
         size: () => (this.loaded ? items().length : 0),
@@ -58,6 +64,25 @@ export class ResourcePacksScreen extends Screen {
       if (old) { L.list.amountScrolled = old[side].list.amountScrolled; L.list.clamp(); }
       return L;
     });
+  }
+
+  // PackSelectionScreen.onFilesDrop: confirm the dropped names, copy the valid packs in, alert about the rest
+  onFilesDrop(files) {
+    const g = this.game, names = files.map((f) => f.name).join(', ');
+    g.screens.open(new ConfirmScreen(g, async (yes) => {
+      if (!yes) { g.screens.open(this); return; }
+      const rejected = [];
+      for (const f of files) {
+        try {
+          const pack = await g.assets.addPack(f.name, f.bytes);
+          this.available = this.available.filter((p) => p.id !== pack.id);
+          this.selected = this.selected.filter((p) => p.id !== pack.id);
+          this.available.unshift(pack);
+        } catch { rejected.push(f.name); }
+      }
+      if (rejected.length) g.screens.open(new AlertScreen(g, () => g.screens.open(this), tr('pack.dropRejected.title'), tr('pack.dropRejected.message', rejected.join(', '))));
+      else g.screens.open(this);
+    }, tr('pack.dropConfirm'), names));
   }
 
   async _add() {
@@ -76,7 +101,7 @@ export class ResourcePacksScreen extends Screen {
   }
 
   async done() {
-    const ids = this.selected.map((p) => p.id);
+    const ids = this._ids();
     const g = this.game;
     if (ids.join('\n') === this.initial) { g.screens.open(this.parent); return; }
     g.settings.resourcePacks = ids;
@@ -96,6 +121,12 @@ export class ResourcePacksScreen extends Screen {
 
   close() { this.done(); }
 
+  // options.txt resourcePacks: Default is only recorded once it has been moved off the bottom
+  _ids() {
+    const ids = this.selected.map((p) => p.id);
+    return ids[ids.length - 1] === VANILLA_PACK_ID ? ids.slice(0, -1) : ids;
+  }
+
   // Default pack: vanilla shows pack.png from the root of the game jar
   _defaultIcon() {
     const A = this.game.assets;
@@ -113,7 +144,7 @@ export class ResourcePacksScreen extends Screen {
 
   _icon(pack) {
     const A = this.game.assets;
-    if (!pack) return this._defaultIcon();
+    if (!pack || pack.isDefault) return this._defaultIcon();
     const k = pack.id + '@' + A.version;
     if (!this.icons.has(k)) {
       this.icons.set(k, pack.icon ? A.makeTexture('packicon:' + pack.id, pack.icon.width, pack.icon.height, pack.icon.data) : null);
@@ -133,9 +164,10 @@ export class ResourcePacksScreen extends Screen {
   }
 
   _entry(gui, L, pack, idx, x, y, mx, my) {
-    const name = pack ? pack.name : tr('resourcePack.vanilla.name');
-    const desc = pack ? pack.builtin ? tr('pack.nameAndSource',pack.description || '',tr('pack.source.builtin')) : pack.description || '' : tr('pack.nameAndSource',tr('resourcePack.vanilla.description'),tr('pack.source.builtin'));
-    const compatibility=packCompatibility(pack,VANILLA_UI.packFormat),incompatible=compatibility!=='compatible';
+    const vanilla = !pack || pack.isDefault;
+    const name = !vanilla ? pack.name : tr('resourcePack.vanilla.name');
+    const desc = !vanilla ? pack.builtin ? tr('pack.nameAndSource',pack.description || '',tr('pack.source.builtin')) : pack.description || '' : tr('pack.nameAndSource',tr('resourcePack.vanilla.description'),tr('pack.source.builtin'));
+    const compatibility=packCompatibility(vanilla?null:pack,VANILLA_UI.packFormat),incompatible=compatibility!=='compatible';
     if (incompatible) gui.rect(x - 1, y - 1, x + ENTRY_W - 3 - (L.list.maxScroll()>0?7:0), y + ENTRY_H - 3, 0xff770000);
     const icon = gui.tex(this._icon(pack));
     if (icon) gui.drawImage(icon, 0, 0, icon.width, icon.height, x, y, 32, 32);
@@ -145,7 +177,7 @@ export class ResourcePacksScreen extends Screen {
       const rx = mx - x, ry = my - y;
       if (L.side === 0) gui.sprite('transferable_list/select'+(rx<32?'_highlighted':''),x,y,32,32);
       else {
-        gui.sprite('transferable_list/unselect'+(rx<16?'_highlighted':''),x,y,32,32);
+        if (!pack.required) gui.sprite('transferable_list/unselect'+(rx<16?'_highlighted':''),x,y,32,32);
         if (idx > 0) gui.sprite('transferable_list/move_up'+(rx<32&&rx>16&&ry<16?'_highlighted':''),x,y,32,32);
         if (idx < this.selected.length - 1) gui.sprite('transferable_list/move_down'+(rx<32&&rx>16&&ry>16?'_highlighted':''),x,y,32,32);
       }
@@ -177,7 +209,7 @@ export class ResourcePacksScreen extends Screen {
       } else add();
     } else {
       if (rx > 32) return false;
-      if (rx < 16) { this.selected.splice(idx, 1); this.available.unshift(pack); }
+      if (rx < 16) { if (pack.required) return false; this.selected.splice(idx, 1); this.available.unshift(pack); }
       else if (rx>16 && ry < 16 && idx > 0) { this.selected.splice(idx, 1); this.selected.splice(idx - 1, 0, pack); }
       else if (rx>16 && ry > 16 && idx < this.selected.length - 1) { this.selected.splice(idx, 1); this.selected.splice(idx + 1, 0, pack); }
       else return false;
@@ -200,7 +232,7 @@ export class ResourcePacksScreen extends Screen {
     }
     const L=this.lists.find(L=>L.list.focused);
     if(L){
-      const i=L.list.focusedIndex??0,items=L.side?[...this.selected,null]:this.available,pack=items[i];
+      const i=L.list.focusedIndex??0,items=L.side?this.selected:this.available,pack=items[i];
       if(e.shift&&L.side&&pack&&['ArrowUp','ArrowDown'].includes(e.code)){
         const to=i+(e.code==='ArrowUp'?-1:1);
         if(to>=0&&to<this.selected.length){this.selected.splice(i,1);this.selected.splice(to,0,pack);L.list.focusedIndex=to;}

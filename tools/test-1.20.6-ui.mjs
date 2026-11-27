@@ -66,7 +66,7 @@ test('pack arrows use real sprites on entry hover, warn only for incompatible pa
  const sprites=[],gui={rect(){},tex:()=>null,textWidth:s=>s.length,font:{wrap:s=>[s]},text(){},sprite:name=>sprites.push(name)};
  const x=s.lists[0].list.slotLeft();s._entry(gui,s.lists[0],pack,0,x,50,x+90,60);assert.deepEqual(sprites,['transferable_list/select']);
  sprites.length=0;s._entry(gui,s.lists[0],pack,0,x,50,x+5,60);assert.deepEqual(sprites,['transferable_list/select_highlighted']);
- s.key({code:'Tab'});s.key({code:'Enter'});assert.deepEqual(s.selected,[pack]);assert.deepEqual(s.available,[]);
+ s.key({code:'Tab'});s.key({code:'Enter'});assert.deepEqual(s.selected.map(p=>p.id),['custom','vanilla']); /* Default stays a movable required entry */ assert.deepEqual(s._ids(),['custom']);assert.deepEqual(s.available,[]);
  assert.ok(jar.read('assets/minecraft/textures/gui/sprites/transferable_list/select.png'));assert.equal(jar.read('assets/minecraft/textures/gui/resource_packs.png'),null);
 });
 

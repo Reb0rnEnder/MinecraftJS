@@ -4,6 +4,7 @@ import {Screen}from'./manager.js';import {Button,TextField}from'../widgets.js';i
 // a bordered search box, All/Hidden/Blocked tabs and a ContainerObjectSelectionList of 36-pixel player rows.
 const ROW_W=220,ROW_H=36,TOOLTIP_DELAY=500;
 export class SocialInteractionsScreen extends Screen {
+  narrationTitle() { return tr('gui.socialInteractions.title'); } // Screen.getNarrationMessage
  constructor(game,parent=null){super(game);this.parent=parent;game.hiddenPlayers||=new Set();game.socialNames||=new Map();this.page='all';this.scroll=0;}
  // listHeight(): max(52, height - 128 - 16)
  get listHeight(){return Math.max(52,this.height-144);}
@@ -18,10 +19,23 @@ export class SocialInteractionsScreen extends Screen {
   this.buttons.push(new Button(4,Math.floor(W/2)-100,H-26,200,20,tr('gui.done'),()=>this.close()));
  }
  close(){if(this.parent)this.game.screens.open(this.parent);else this.game.screens.close();}
+ // SocialInteractionsScreen.showPage + SocialInteractionsPlayerList.updatePlayerList: rows for online players (All,
+ // Hidden and Blocked are all limited to players in the tab list), plus on All the senders of signed messages in
+ // the chat log as offline rows; logged senders sort ahead of other players
  entries(){
   const g=this.game;for(const [uuid,p]of g.scoreboard.players)g.socialNames.set(uuid,p.name);
-  const hidden=g.hiddenPlayers,blocked=g.blockedPlayers||new Set(),uuids=this.page==='all'?[...g.scoreboard.players.keys()]:this.page==='hidden'?[...hidden]:[...g.scoreboard.players.keys()].filter(id=>g.socialBlocking?.isBlocked(id)||blocked.has(id));
-  const query=this.search.text.toLowerCase();return uuids.map(uuid=>({uuid,name:g.socialNames.get(uuid)||uuid,player:g.scoreboard.players.get(uuid),hidden:hidden.has(uuid),blocked:!!(g.socialBlocking?.isBlocked(uuid)||blocked.has(uuid))})).filter(e=>e.name.toLowerCase().includes(query)).sort((a,b)=>{const rank=e=>e.uuid===g.playerUuid?0:String(e.uuid).replace(/-/g,'')[12]==='2'?4:3,ar=rank(a),br=rank(b);if(ar!==br)return ar-br;const valid=e=>/^[a-z0-9_]/i.test(e.name)?0:1;if(valid(a)!==valid(b))return valid(a)-valid(b);const an=a.name.toLowerCase(),bn=b.name.toLowerCase();return an<bn?-1:an>bn?1:0;});
+  const hidden=g.hiddenPlayers,blocked=g.blockedPlayers||new Set(),online=[...g.scoreboard.players.keys()];
+  const isBlocked=uuid=>!!(g.socialBlocking?.isBlocked(uuid)||blocked.has(uuid));
+  const uuids=this.page==='all'?online:this.page==='hidden'?[...hidden].filter(id=>g.scoreboard.players.has(id)):online.filter(isBlocked);
+  const rows=new Map(uuids.map(uuid=>[uuid,{uuid,name:g.socialNames.get(uuid)||uuid,player:g.scoreboard.players.get(uuid),hidden:hidden.has(uuid),blocked:isBlocked(uuid),recent:false}]));
+  const logged=new Map();for(let i=(g.chatLog||[]).length-1;i>=0;i--){const m=g.chatLog[i];if(!logged.has(m.uuid))logged.set(m.uuid,m.name);}
+  for(const [uuid,name]of logged){
+   let row=rows.get(uuid);
+   if(!row&&this.page==='all'){row={uuid,name:name||g.socialNames.get(uuid)||uuid,player:undefined,hidden:hidden.has(uuid),blocked:isBlocked(uuid),recent:false};rows.set(uuid,row);}
+   if(row)row.recent=true;
+  }
+  const query=this.search.text.toLowerCase();
+  return [...rows.values()].filter(e=>e.name.toLowerCase().includes(query)).sort((a,b)=>{const rank=e=>e.uuid===g.playerUuid?0:String(e.uuid).replace(/-/g,'')[12]==='2'?4:e.recent?2:3,ar=rank(a),br=rank(b);if(ar!==br)return ar-br;const valid=e=>/^[a-z0-9_]/i.test(e.name)?0:1;if(valid(a)!==valid(b))return valid(a)-valid(b);const an=a.name.toLowerCase(),bn=b.name.toLowerCase();return an<bn?-1:an>bn?1:0;});
  }
  hide(entry){const g=this.game;if(entry.hidden)g.hiddenPlayers.delete(entry.uuid);else g.hiddenPlayers.add(entry.uuid);g.sound.playUi('ui.button.click');g.hud.addChat(tr(entry.hidden?'gui.socialInteractions.shown_in_chat':'gui.socialInteractions.hidden_in_chat',entry.name),null,true);}
  maxScroll(n){return Math.max(0,n*ROW_H-(this.bottom-this.listTop-4));}

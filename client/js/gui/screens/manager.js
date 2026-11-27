@@ -1,4 +1,4 @@
-import { navigate, changeFocus, clearFocus, setInitialFocus, inputTypeForKey, children, INPUT, setLastInputType } from '../focus-navigation.js';
+import { navigate, changeFocus, clearFocus, setInitialFocus, inputTypeForKey, children, INPUT, setLastInputType, lastInputType, isKeyboard } from '../focus-navigation.js';
 // Screen stack (GuiScreen equivalent): routes input and rendering to the active screen.
 
 export class Screen {
@@ -114,8 +114,8 @@ export class ScreenManager {
     if (size !== this.lastSize) { this.lastSize = size; s.onResize(); }
     const [mx, my] = this._mouse();
     s.render(gui, mx, my, partial);
-    for(const b of s.buttons)gui.narrator?.widget(b,b.hovered?.(mx,my)??false,typeof b.label==='function'?b.label():b.label);
     for(const field of s.fields)gui.narrator?.widget(field,false,field.label||field.narrationLabel||'', 'editBox');
+    gui.narrator?.screenFrame?.(s,children(s),isKeyboard(lastInputType()));
   }
 
   // KeyboardHandler.keyPress: arrows and Tab in a screen make the keyboard the last input type

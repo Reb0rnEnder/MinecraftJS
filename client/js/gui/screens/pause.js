@@ -5,6 +5,7 @@ import { Screen } from './manager.js';
 import { Button } from '../widgets.js';
 
 export class PauseScreen extends Screen {
+  narrationTitle() { return tr('menu.game'); } // Screen.getNarrationMessage
   constructor(game) {
     super(game);
   }

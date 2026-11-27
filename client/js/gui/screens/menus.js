@@ -16,6 +16,7 @@ import { ensureTested } from '../../net/proxies.js';
 import { PROTOCOL_VERSION } from '../../net/packets.js';
 
 export class TitleScreen extends Screen {
+  narrationTitle() { return tr('narrator.screen.title'); } // Screen.getNarrationMessage
   constructor(game, reason) {
     super(game);
     this.background = 'none';
@@ -181,6 +182,7 @@ export class MultiplayerSafetyScreen extends Screen {
 
 // GuiMultiplayer + ServerSelectionList (GuiListExtended) + ServerListEntryNormal / ServerListEntryLanScan
 export class MultiplayerScreen extends Screen {
+  narrationTitle() { return tr('multiplayer.title'); } // Screen.getNarrationMessage
   constructor(game, parent) {
     super(game);
     this.parent = parent;
@@ -411,6 +413,7 @@ class ServerList extends SlotList {
 
 // GuiYesNo
 export class ConfirmScreen extends Screen {
+  narrationTitle() { return [this.line1,this.line2].filter(Boolean).join('. '); } // Screen.getNarrationMessage
   constructor(game, callback, line1, line2, yes = tr('gui.yes'), no = tr('gui.no')) {
     super(game);
     this.background = game.inWorld ? 'world' : 'dirt';
@@ -427,6 +430,28 @@ export class ConfirmScreen extends Screen {
     for (const l of gui.font.wrap(this.line2 || '', this.width - 50)) { gui.textCentered(l, this.width / 2, y, 0xffffff, true); y += 9; }
   }
   close() { this.callback(false); }
+}
+
+// AlertScreen: title at y 70, the message wrapped to width - 50 from y 90, one 150-wide button (Back by default)
+// placed under the message, clamped to [height / 6 + 96, height - 24]
+export class AlertScreen extends Screen {
+  narrationTitle() { return [this.title,this.message].filter(Boolean).join('. '); } // Screen.getNarrationMessage
+  constructor(game, callback, title, message, button = tr('gui.back'), closeOnEsc = true) {
+    super(game);
+    this.background = game.inWorld ? 'world' : 'dirt';
+    this.callback = callback; this.title = title; this.message = message; this.okLabel = button; this.closeOnEsc = closeOnEsc;
+  }
+  init() {
+    this.lines = this.gui.font.wrap(this.message || '', this.width - 50);
+    const y = Math.min(Math.max(90 + this.lines.length * 9 + 12, Math.floor(this.height / 6) + 96), this.height - 24);
+    this.buttons.push(new Button(0, Math.floor((this.width - 150) / 2), y, 150, 20, this.okLabel, () => this.callback()));
+  }
+  renderContent(gui) {
+    gui.textCentered(this.title, this.width / 2, 70, 0xffffff, true);
+    let y = 90;
+    for (const l of this.lines || []) { gui.textCentered(l, this.width / 2, y, 0xffffff, true); y += 9; }
+  }
+  shouldCloseOnEsc() { return this.closeOnEsc; }
 }
 
 export class ServerEditScreen extends Screen {
