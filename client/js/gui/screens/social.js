@@ -11,7 +11,7 @@ export class SocialInteractionsScreen extends Screen {
   this.game.socialBlocking?.sync();
   const W=this.width,H=this.height,m=this.listHeight;
   this.left=Math.floor((W-238)/2);this.listTop=88;this.bottom=88+m;this.rowLeft=Math.floor(W/2)-Math.floor(ROW_W/2)+2;
-  const query=this.search?.text||'';this.search=new TextField(this.left+28,74,200,15,{text:query,maxLength:16,background:true,onChange:()=>{this.scroll=0;}});this.search.textColor=0xffffff;this.fields=[this.search];
+  const query=this.search?.text||'';this.search=new TextField(this.left+28,74,200,15,{text:query,maxLength:16,background:true,focused:true,onChange:()=>{this.scroll=0;}});this.search.textColor=0xffffff;this.fields=[this.search];
   const rowRight=this.rowLeft+ROW_W,tab=Math.floor(ROW_W/3);
   this.buttons=['all','hidden','blocked'].map((name,i)=>new Button(i,[this.rowLeft,Math.floor((this.rowLeft+rowRight-tab)/2)+1,rowRight-tab+1][i],45,tab,20,()=>((name===this.page)?'\u00a7n':'')+tr('gui.socialInteractions.tab_'+name),()=>{this.page=name;this.scroll=0;}));
   this.manage=new Button(3,Math.floor(W/2)-100,64+m,200,20,tr('gui.socialInteractions.blocking_hint'),()=>this.game.screens.open(new ConfirmLinkScreen(this.game,this,'https://aka.ms/javablocking')));this.buttons.push(this.manage);

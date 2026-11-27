@@ -48,18 +48,19 @@ export class TitleScreen extends Screen {
     const realms = new Button(14, cx - 100, y + 48, 200, 20, tr('menu.online'));
     realms.enabled = false;
     this.buttons.push(realms);
-    this.buttons.push(new Button(0, cx - 100, y + 72 + 12, 98, 20, tr('menu.options'), () => {
-      import('./options.js').then((m) => g.screens.open(new m.OptionsScreen(g, this)));
-    }));
-    const quit = new Button(4, cx + 2, y + 72 + 12, 98, 20, tr('menu.quit'), () => { if (platform().quit) platform().quit(); });
-    this.buttons.push(quit);
-    // GuiButtonLanguage: 20x20 globe left of Options
+    // TitleScreen.init adds the language button before Options and Quit (Tab order)
     const lang = new Button(5, cx - 124, y + 72 + 12, 20, 20, '', () => {
       import('./options.js').then((m) => g.screens.open(new m.LanguageScreen(g, this)));
     });
     lang.narration=()=>tr('narrator.button.language');
     lang.render = (gui, mx, my) => {gui.button(lang.x,lang.y,20,20,'',lang.focused||lang.hovered(mx,my));gui.sprite('icon/language',lang.x+3,lang.y+3,15,15);};
     this.buttons.push(lang);
+    this.buttons.push(new Button(0, cx - 100, y + 72 + 12, 98, 20, tr('menu.options'), () => {
+      import('./options.js').then((m) => g.screens.open(new m.OptionsScreen(g, this)));
+    }));
+    const quit = new Button(4, cx + 2, y + 72 + 12, 98, 20, tr('menu.quit'), () => { if (platform().quit) platform().quit(); });
+    this.buttons.push(quit);
+    // GuiButtonLanguage: 20x20 globe left of Options
     const accessibility=new Button(6,cx+104,y+84,20,20,'',()=>import('./options.js').then(m=>g.screens.open(new m.AccessibilityScreen(g,this))));
     accessibility.narration=()=>tr('narrator.button.accessibility');
     accessibility.render=(gui,mx,my)=>{gui.button(accessibility.x,accessibility.y,20,20,'',accessibility.focused||accessibility.hovered(mx,my));gui.sprite('icon/accessibility',accessibility.x+3,accessibility.y+3,15,15);};

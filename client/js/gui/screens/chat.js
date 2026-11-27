@@ -37,6 +37,7 @@ export class ChatScreen extends Screen {
       maxLength: 256,
       background: false,
       focused: true,
+      canLoseFocus: false, // ChatScreen.init: input.setCanLoseFocus(false)
       onChange: () => { if (!this.applyingTab) this.requestSuggestions(); },
     });
     f.narrationLabel=tr('chat.editBox');
