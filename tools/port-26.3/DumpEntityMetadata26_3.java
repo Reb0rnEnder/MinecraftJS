@@ -15,6 +15,7 @@ public final class DumpEntityMetadata26_3 {
     {"camel_husk", "net.minecraft.world.entity.animal.camel.CamelHusk"},
     {"copper_golem", "net.minecraft.world.entity.animal.golem.CopperGolem"},
     {"creaking", "net.minecraft.world.entity.monster.creaking.Creaking"},
+    {"cushion", "net.minecraft.world.entity.decoration.Cushion"},
     {"happy_ghast", "net.minecraft.world.entity.animal.happyghast.HappyGhast"},
     {"mannequin", "net.minecraft.world.entity.decoration.Mannequin"},
     {"nautilus", "net.minecraft.world.entity.animal.nautilus.Nautilus"},

@@ -2,8 +2,8 @@ MinecraftJS 26.3 - WHAT WE HAVE ADDED
 Branch: 26.3
 Inventory date: 2026-11-27
 Baseline: c4f682b "Add native 26.3 spear support" plus this batch
-Latest verified run: test:26.3 76/76, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
-inbound gate all checks passed, serverbound gate 0, npm run assets exit 0 (90 mobs, 140 textures,
+Latest verified run: test:26.3 79/79, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
+inbound gate all checks passed, serverbound gate 0, npm run assets exit 0 (91 mobs, 141 textures,
 no mobs pending a renderer).
 
 This file lists work that exists in the repository. It does not claim full parity. Areas that are
@@ -236,12 +236,12 @@ Known limit:
 
 - 26.3 asset target: pack format 97, jar-first textures, indexed sounds, native panorama and
   native block models/textures.
-- ExtractLayers26_3 dumps 361 native layers; lib/model-extract-26.3.js bakes a 143-model bundle
+- ExtractLayers26_3 dumps 361 native layers; lib/model-extract-26.3.js bakes a 144-model bundle
   for the 26.3 target.
 - Equipment/armor/trim sprites and paletted permutations generated from the native asset tree.
 - Native boat/chest-boat layers and smithing template icons/container slot sprites.
 - Inventory/containers use native 26.3 menu ids and slot geometry for existing screens.
-- npm run assets: 35,723 states, 90 mobs, 140 textures, no pending mobs.
+- npm run assets: 35,723 states, 91 mobs, 141 textures, no pending mobs.
 - Native bogged and parched humanoid rigs use their 26.3 layer trees (head/hat/body/arms/legs)
   and the native skeleton texture paths instead of the 1.20.6 skeleton fallback.
 - Breeze, creaking, copper golem, happy ghast, nautilus, zombie nautilus and sulfur cube now
@@ -250,21 +250,24 @@ Known limit:
   native formulas. tools/port-26.3/extract-keyframe-animations.mjs extracts the jar's
   AnimationDefinition constants (breeze 6, copper golem 7, creaking 4, nautilus 1) with degree->
   radian, position-Y negation and scale-minus-one conversions; walk/idle/swim clips now drive
-  those models. Native metadata indices for all eleven 26.3-only entities are dumped from
+  those models. Native metadata indices for all twelve 26.3-only entities are dumped from
   SynchedEntityData (tools/port-26.3/entity-metadata.mjs) and feed the live states: breeze pose
   drives idle/shoot/inhale/slide/jump/slide-back, copper golem state drives its four chest
   interactions and its 200-239 tick idle, and creaking entity events 4/66 plus tearing-down drive
   attack/invulnerable/death. Copper golem weathering selects its four native texture paths.
   Mannequins use the native player model at AvatarRenderer's 0.9375 scale with profile/patch
   skins, cape/elytra, main-hand and layer-mask support.
+- 26.3 cushions use the single-box CushionModel, all 16 DyeColor texture paths and
+  CushionRenderer's direction/180-degree/flip transform, with the DYE_COLOR metadata at its
+  native index 8. Pinned by test-cushion-26.3.mjs.
 
 ======================================================================
 12. TESTS, GATES AND DOCUMENTATION
 ======================================================================
 
 Green at this inventory:
-- npm run test:26.3: 76 tests (including spear components/STAB/animation formulas and mannequin
-  profile/metadata/render classification).
+- npm run test:26.3: 79 tests (including spear components/STAB/animation formulas, mannequin
+  profile/metadata/render classification and cushion model/metadata/transform).
 - npm run adapter:26.3: 53 packets, 36 handler names, 2 chunks.
 - tools/port-26.3/inbound-gate.mjs: all checks.
 - tools/port-26.3/serverbound-gate.mjs: all checks.
@@ -280,6 +283,8 @@ Docs:
 - ADDED-26.3.txt and NEEDED-26.3.txt (these files).
 
 Recent commit trail:
+- This batch: native 26.3 cushion model, all 16 dye textures, DYE_COLOR metadata and
+  CushionRenderer transform; concurrent model extraction now uses a per-process layer dump.
 - This batch: native 26.3 mannequin ResolvableProfile/PlayerSkin.Patch decoding and Avatar skin,
   cape/elytra, main-hand, layer-mask and below-name description rendering.
 - This batch: native metadata indices for the 26.3-only mobs, pose/state/event animation triggers,

@@ -101,6 +101,17 @@
     "DATA_POSE": 6,
     "DATA_TICKS_FROZEN": 7
   },
+  "cushion": {
+    "DATA_COLOR": 8,
+    "DATA_SHARED_FLAGS_ID": 0,
+    "DATA_AIR_SUPPLY_ID": 1,
+    "DATA_CUSTOM_NAME": 2,
+    "DATA_CUSTOM_NAME_VISIBLE": 3,
+    "DATA_SILENT": 4,
+    "DATA_NO_GRAVITY": 5,
+    "DATA_POSE": 6,
+    "DATA_TICKS_FROZEN": 7
+  },
   "happy_ghast": {
     "IS_LEASH_HOLDER": 18,
     "STAYS_STILL": 19,

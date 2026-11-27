@@ -1213,6 +1213,14 @@ export function dragonParts() {
 // Block entity and small entity models, by jar model name and field names
 export function blockModel(name, names) { return J(name, names); }
 
+// CushionModel: one 16x4x16 box with a -0.005 deformation, pivot (23,4,-7).
+export function cushion() {
+  const p = J('cushion', ['cushion']);
+  // CushionModel's CubeDeformation(-0.005); the layer extractor records min/max only.
+  p.cushion.boxes[0].inflate = -0.005;
+  return { parts: p, roots: [p.cushion], animate() {} };
+}
+
 // Nether Update geometry is extracted from the target jar, including ears/bristles.
 export function hoglin(){return jarAdapter('hoglin',['head','rightEar','leftEar','body','frontRightLeg','frontLeftLeg','backRightLeg','backLeftLeg','mane'],animateHoglin,{hoglinAgeable:true});}
 export function strider(){return jarAdapter('strider',['rightLeg','leftLeg','body','bristle0','bristle1','bristle2','bristle3','bristle4','bristle5'],animateStrider);}

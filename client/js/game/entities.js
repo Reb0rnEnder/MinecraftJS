@@ -213,8 +213,9 @@ export class EntityManager {
     // 26.3 has one entity type per wood and no Boat.Type metadata value.
     if(e.kind==='boat')e.boatWood=boatWoodFor(e.entityName);
     if(e.kind==='minecart')e.cartType=Math.max(0,MINECART_NAMES.indexOf(e.entityName));
+    if(e.kind==='cushion')e.cushionColor=0;
     e.width = def ? def.width : 0; e.height = def ? def.height : 0; e.eyeHeight = def ? def.eyeHeight : 0;
-    e.pickable = ['boat', 'minecart', 'crystal', 'itemframe', 'leash', 'armorstand', 'shulker_bullet'].includes(e.kind) || e.entityName === 'fireball';
+    e.pickable = ['boat', 'minecart', 'crystal', 'itemframe', 'leash', 'armorstand', 'shulker_bullet', 'cushion'].includes(e.kind) || e.entityName === 'fireball';
     // Interaction defines its own dimensions, independent of EntityType's zero
     // registration size. Native bfs defaults to 1x1 and is always pickable.
     if (e.kind === 'display') { initDisplay(e, WIRE_METADATA[e.entityName]); e.noPhysics = true; }
@@ -436,6 +437,7 @@ export class EntityManager {
       if(wire[id.DATA_PLAYER_MAIN_HAND]!==undefined)e.mainHand=wire[id.DATA_PLAYER_MAIN_HAND];
       if(wire[id.DATA_PLAYER_MODE_CUSTOMISATION]!==undefined)e.skinFlags=wire[id.DATA_PLAYER_MODE_CUSTOMISATION];
     }
+    if(name==='cushion'){const colorId=WIRE_METADATA_26_3.cushion?.DATA_COLOR;if(colorId!==undefined&&wire[colorId]!==undefined)e.cushionColor=wire[colorId];}
     if(name==='copper_golem'){
       const stateId=own263.COPPER_GOLEM_STATE;
       if(stateId!==undefined&&wire[stateId]!==undefined&&e.copperGolemState!==wire[stateId]){

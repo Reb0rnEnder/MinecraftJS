@@ -313,7 +313,8 @@ export class EntityRenderer {
     if(e.entityName==='copper_golem')return 'entity/copper_golem/copper_golem'+(['','_exposed','_weathered','_oxidized'][e.copperWeather||0]||'')+'.png';
     if(M.NATIVE_MOB_TEXTURES?.[e.entityName])return M.NATIVE_MOB_TEXTURES[e.entityName];
     if(['armadillo','allay','tadpole','warden','camel','sniffer'].includes(e.entityName))return M.WILD_MOB_TEXTURES[e.entityName];
-    if (isAvatar(e)) return null;
+    if (e.kind === 'mannequin' || e.entityName === 'mannequin') return defaultSkin(profileUuid(e.profile)).path;
+    if (e.kind === 'player') return null;
     if (e.kind === 'armorstand') return 'entity/armorstand/wood.png';
     const t = e.type;
     switch (t) {
@@ -390,7 +391,7 @@ export class EntityRenderer {
   }
 
   _modelFor(e) {
-    if(e.kind==='mannequin')return M.playerModel(this.skinFor(e).slim,64,64);
+    if(e.kind==='mannequin'||e.entityName==='mannequin'){const s=this.skins?.get(e.uuid)||defaultSkin(profileUuid(e.profile));return M.playerModel(s.slim,64,64);}
     if(['bogged','parched'].includes(e.entityName))return M.nativeBipedMob(e.entityName);
     if(e.entityName==='camel_husk')return M.wildMob('camel');
     if(M.NATIVE_MOB_TEXTURES?.[e.entityName])return M.nativeMob(e.entityName);
@@ -470,6 +471,7 @@ export class EntityRenderer {
 
   _visualKey(e) {
     if(e.kind==='painting')return ['painting',e.paintingName,e.width,e.height].join(':');
+    if(e.kind==='cushion')return 'cushion:'+(e.cushionColor||0);
     if (e.kind === 'mob' || e.kind === 'mannequin') return this._livingKey(e);
     if (e.kind === 'boat') return 'boat:' + (e.boatWood || boatWoodFor(e.entityName))+':'+!!e.chestBoat;
     if (e.kind === 'minecart') return ['cart', e.cartType, e.customDisplay, e.displayBlock, e.displayOffset, e.furnacePowered].join(':');
@@ -983,6 +985,21 @@ export class EntityRenderer {
         });
         e.width=art[0]/16;e.height=art[1]/16;break;
       }
+      case 'cushion': {
+        v = { root: new Node(), kind: 'cushion', materials: [], ownMeshes: [] };
+        const model = M.cushion();
+        const mat = this._mat(v, () => this._cushionTexture(e), { alphaTest: 0.1, cull: false });
+        const yaw = new Node(), flip = new Node(), translate = new Node(), unit = new Node();
+        unit.scale.set(1 / 16, 1 / 16, 1 / 16);
+        unit.add(this._makeModelObject(model, mat));
+        // CushionRenderer: rotate Y (180 - direction), rotate X 180, translate(0,-0.25,0)
+        translate.position.y = -0.25; translate.add(unit);
+        flip.rotation.x = Math.PI; flip.add(translate);
+        yaw.add(flip); v.root.add(yaw);
+        v.yawGroup = yaw;
+        this._addShadow(v);
+        break;
+      }
       case 'itemframe': {
         v = atlasOnly('itemframe');
         const bm = this.game.assets.modelStore.bakeVariant(e.entityName==='glow_item_frame'?'glow_item_frame':'item_frame', { map: 'false' }, null, 0);
@@ -1128,6 +1145,7 @@ export class EntityRenderer {
           case 'tnt': this._renderTnt(e, v, partial); break;
           case 'boat': case 'minecart': this._renderVehicle(e, v, p, partial); break;
           case 'painting': this._renderPainting(e, v); break;
+          case 'cushion': this._renderCushion(e, v); break;
           case 'itemframe': this._renderFrame(e, v); break;
           case 'crystal': this._renderCrystal(e, v, partial); break;
           case 'lightning': this._renderLightning(e, v); break;
@@ -1967,6 +1985,19 @@ export class EntityRenderer {
       e.box = [x - (alongZ ? hw : 1 / 32), y - hh, z - (alongZ ? 1 / 32 : hw), x + (alongZ ? hw : 1 / 32), y + hh, z + (alongZ ? 1 / 32 : hw)];
     }
     for(const tile of v.tiles){const light=paintingTileLight((a,b,c)=>this._light(a,b,c),x,y,z,f,tile);tile.front.params.setLight(...light);tile.back.params.setLight(...light);}
+  }
+
+  _cushionTexture(e) {
+    const color = ENTITY_DYES[e.cushionColor || 0] || ENTITY_DYES[0];
+    return 'entity/cushion/' + color + '_cushion.png';
+  }
+
+  _renderCushion(e, v) {
+    // CushionRenderer.extractRenderState: Direction.fromYRot(getYRot()), then the
+    // renderer rotates by 180 - direction.toYRot().
+    const yaw = ((e.yaw % 360) + 360) % 360;
+    const toYRot = [0, 270, 180, 90][Math.floor((yaw + 45) / 90) % 4];
+    v.yawGroup.rotation.y = (180 - toYRot) * D2R;
   }
 
   _renderFrame(e, v) {
