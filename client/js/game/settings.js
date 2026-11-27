@@ -72,6 +72,7 @@ const DEFAULTS = {
   graphicsApi: 'webgl2', // 'webgl2' | 'webgpu' | 'software'
   superPotato: false, // lower internal resolution, single-pass menu panorama (always on with the CPU rasteriser)
   skinProxy: '', // Optional HTTP/CORS proxy template for public skin/profile URLs.
+  skinProxyHttp: false, // false: download skins over the client's own HTTP(S) through the raw TCP proxy route
   resourcePacks: [], // active pack ids, highest priority first
   entityShadows: true,
   lodFastLeaves: false, // Opt-in opaque foliage in distant simplified terrain.
@@ -111,6 +112,7 @@ export class Settings {
     defaults.touchscreen = platform().hasTouchscreen === true;
     if (Array.isArray(config.servers)) defaults.servers = configServers(config.servers);
     if (typeof config.skinProxy === 'string') defaults.skinProxy = config.skinProxy.trim();
+    if (typeof config.skinProxyHttp === 'boolean') defaults.skinProxyHttp = config.skinProxyHttp;
     Object.assign(this, defaults, saved);
     this.skinProxy = typeof this.skinProxy === 'string' ? this.skinProxy.trim() : '';
     if (!Object.prototype.hasOwnProperty.call(saved, 'lodDistance') && Number.isFinite(saved.lodChunks)) this.lodDistance = Math.max(0, saved.lodChunks * 16);
