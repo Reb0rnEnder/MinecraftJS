@@ -394,12 +394,15 @@ export class VanillaSocket extends Emitter {
 }
 
 async function joinSession(auth, hash) {
+  // The client's own HTTPS over a raw TCP route; a MinecraftJS proxy relays it only when there is none
+  const { rawRoute } = await import('./https.js');
+  if (rawRoute()) { const { joinServer } = await import('../game/msauth-client.js'); return joinServer(auth.accessToken, auth.uuid, hash); }
   const body = { accessToken: auth.accessToken, selectedProfile: auth.uuid.replace(/-/g, ''), serverId: hash };
   const viaProxy = proxyRoute('/auth/join');
   const url = viaProxy || 'https://sessionserver.mojang.com/session/minecraft/join';
   let r;
   try { r = await platform().postJson(url, viaProxy ? { accessToken: body.accessToken, uuid: auth.uuid, hash } : body); } catch (e) {
-    throw new Error(viaProxy ? 'The MinecraftJS proxy could not be reached for the session join' : 'Online-mode servers need a MinecraftJS proxy in the list (the session server blocks browsers)');
+    throw new Error(viaProxy ? 'The MinecraftJS proxy could not be reached for the session join' : 'Online-mode servers need a proxy, Wisp server or relay in the list');
   }
   if (r.status === 200 || r.status === 204) return;
   throw new Error((r.json && (r.json.error || r.json.errorMessage)) || 'Session join failed (HTTP ' + r.status + ')');

@@ -1,9 +1,13 @@
-// Account manager: offline names and Microsoft accounts (signed in through the proxy with the OAuth
-// device code flow). Stored through the platform settings store on this device only.
+// Account manager: offline names and Microsoft accounts (OAuth device code flow). The client signs in and talks to
+// Mojang services itself over its own TLS (msauth-client.js) through any raw TCP route (MinecraftJS proxy, Wisp
+// or relay); only without such a route does it ask a MinecraftJS proxy to relay the HTTP calls. Stored through
+// the platform settings store on this device only.
 import { platform } from '../platform/platform.js';
 import { proxyRoute } from '../net/proxies.js';
+import { rawRoute } from '../net/https.js';
+import * as direct from './msauth-client.js';
 
-// Microsoft sign in is relayed by the selected proxy (the Microsoft and Xbox services send no CORS headers)
+// The proxy's HTTP relay (the Microsoft and Mojang services send no CORS headers for browser fetches)
 function authPost(path, body) {
   const url = proxyRoute(path);
   if (!url) return Promise.reject(new Error('Signing in needs a MinecraftJS proxy: add one in Proxy Servers'));
@@ -67,6 +71,7 @@ export class Accounts {
   async ensureFresh(a) {
     if (a.type !== 'microsoft') return a;
     if (a.accessToken && a.expiresAt - Date.now() > REFRESH_MARGIN) return a;
+    if (rawRoute()) return this.addMicrosoft(await direct.refresh(a.refreshToken));
     const r = await authPost('/auth/refresh', { refreshToken: a.refreshToken });
     if (!r.json || !r.json.account) throw new Error((r.json && r.json.error) || 'Could not refresh the Microsoft session');
     return this.addMicrosoft(r.json.account);
@@ -74,14 +79,16 @@ export class Accounts {
 
   async socialPrivileges(account=this.active()) {
     if(account?.type!=='microsoft')return null;
-    const fresh=await this.ensureFresh(account),r=await authPost('/auth/privileges',{accessToken:fresh.accessToken});
+    const fresh=await this.ensureFresh(account);if(rawRoute())return direct.socialPrivileges(fresh.accessToken);
+    const r=await authPost('/auth/privileges',{accessToken:fresh.accessToken});
     if(r.status!==200||!r.json?.privileges)throw Error(r.json?.error||'Could not load account privileges');
     return r.json.privileges;
   }
 
   async blockedProfiles(account=this.active()) {
     if(account?.type!=='microsoft')return [];
-    const fresh=await this.ensureFresh(account),r=await authPost('/auth/blocklist',{accessToken:fresh.accessToken});
+    const fresh=await this.ensureFresh(account);if(rawRoute())return direct.blockedProfiles(fresh.accessToken);
+    const r=await authPost('/auth/blocklist',{accessToken:fresh.accessToken});
     if(r.status!==200||!Array.isArray(r.json?.blockedProfiles))throw Error(r.json?.error||'Could not load the account block list');
     return r.json.blockedProfiles;
   }
@@ -92,9 +99,10 @@ export class Accounts {
     if(account?.type!=='microsoft')return null;
     const cached=(this.keyPairs||=new Map()).get(account.id);
     if(cached&&Date.now()<cached.refreshedAfter)return cached;
-    const fresh=await this.ensureFresh(account),r=await authPost('/auth/certificates',{accessToken:fresh.accessToken});
-    const c=r.json?.certificates;
-    if(r.status!==200||!c?.keyPair?.privateKey||!c?.keyPair?.publicKey||!c.publicKeySignatureV2)throw Error(r.json?.error||'Could not load the chat signing key');
+    const fresh=await this.ensureFresh(account);let c;
+    if(rawRoute())c=await direct.certificates(fresh.accessToken);
+    else{const r=await authPost('/auth/certificates',{accessToken:fresh.accessToken});c=r.json?.certificates;if(r.status!==200||!c)throw Error(r.json?.error||'Could not load the chat signing key');}
+    if(!c?.keyPair?.privateKey||!c?.keyPair?.publicKey||!c.publicKeySignatureV2)throw Error('Could not load the chat signing key');
     const {pemBytes}=await import('../net/chat-signing-1.20.6.js');
     const keys={privateKey:pemBytes(c.keyPair.privateKey),publicKey:pemBytes(c.keyPair.publicKey),signature:pemBytes(c.publicKeySignatureV2),expiresAt:Date.parse(c.expiresAt),refreshedAfter:Date.parse(c.refreshedAfter)};
     this.keyPairs.set(account.id,keys);
@@ -105,6 +113,7 @@ export class Accounts {
 
   // Device code sign in: returns { userCode, verificationUri, deviceCode, interval, expiresIn }
   async startDeviceLogin() {
+    if (rawRoute()) return direct.startDeviceCode();
     const r = await authPost('/auth/device', {});
     if (!r.json || !r.json.deviceCode) throw new Error((r.json && r.json.error) || 'Could not reach Microsoft');
     return r.json;
@@ -112,6 +121,7 @@ export class Accounts {
 
   // Resolves to an account once signed in, null while still pending; throws on failure
   async pollDeviceLogin(deviceCode) {
+    if (rawRoute()) { const account = await direct.pollDeviceCode(deviceCode); return account ? this.addMicrosoft(account) : null; }
     const r = await authPost('/auth/poll', { deviceCode });
     if (r.status !== 200) throw new Error((r.json && r.json.error) || 'Sign in failed');
     return r.json.account ? this.addMicrosoft(r.json.account) : null;
