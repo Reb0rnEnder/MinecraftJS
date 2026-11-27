@@ -88,6 +88,20 @@ function readUpdateTags(r){
 // Optional<Component> with ComponentSerialization.TRUSTED_CONTEXT_FREE_STREAM_CODEC:
 // ByteBufCodecs.fromCodecTrusted writes the anonymous NBT tag (verified by play server_data).
 function component(r){return readAnonymousNbt(r);}
+function readServerLinks(r){
+  const count=r.varint(),links=[];
+  for(let i=0;i<count;i++){
+    const known=r.bool();
+    const type=known?r.varint():null;
+    const name=known?null:component(r);
+    links.push({type,name,link:r.string()});
+  }
+  return {links};
+}
+function readDialogHolder(r){
+  const holder=r.varint();
+  return holder===0?{dialogId:null,dialog:readAnonymousNbt(r)}:{dialogId:holder-1};
+}
 
 export function decodeConfiguration26_3(data){
   const r=new Reader26_3(data),id=r.varint(),name=configNames.get(id);
@@ -121,9 +135,10 @@ export function decodeConfiguration26_3(data){
     case 'custom_report_details':p.details=list(r,r=>({title:r.string(),description:r.string()}),32);break;
     case 'code_of_conduct':p.codeOfConduct=r.string();break;
     case 'clear_dialog':break;
-    // Dialog and server-link codecs carry slot/holder unions the client does not consume yet.
-    // They stay raw so a server that sends them is reported instead of silently misparsed.
-    case 'show_dialog':case 'server_links':p.decoded=false;p.raw=r.rest();break;
+    // ClientboundShowDialogPacket uses Dialog.STREAM_CODEC (a Holder<Dialog>); server links
+    // are an either(known type, component) plus URL. Both are native common-packet codecs.
+    case 'show_dialog':Object.assign(p,readDialogHolder(r));break;
+    case 'server_links':Object.assign(p,readServerLinks(r));break;
     default:throw Error('Unknown protocol-777 configuration packet '+id);
   }
   if(!p.decoded)return p;

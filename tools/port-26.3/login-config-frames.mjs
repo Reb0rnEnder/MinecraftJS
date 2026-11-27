@@ -3,12 +3,26 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {join} from 'node:path';
-import {decodeLogin26_3,decodeConfiguration26_3,Reader26_3} from '../../client/js/net/configuration-26.3.js';
+import {decodeLogin26_3,decodeConfiguration26_3,Reader26_3,Writer26_3} from '../../client/js/net/configuration-26.3.js';
+import {CONFIGURATION_CLIENTBOUND_26_3 as CI} from '../../client/js/net/protocol-26.3-ids.js';
 import {decodePlayPacket} from '../../client/js/net/play-codec-26.3.js';
 import {root} from './prepare.mjs';
 
 const fixture=JSON.parse(await readFile(join(root,'tools/port-26.3/fixtures/login-config-26.3.json'),'utf8'));
 assert.equal(fixture.protocol,777,'fixture must be protocol 777');
+
+// Configuration dialogs and server links were previously left raw. Build the native holder
+// and either envelopes by hand from javap to pin their field order.
+const inlineDialog=decodeConfiguration26_3(Uint8Array.from(new Writer26_3()
+  .varint(CI.show_dialog).varint(0).raw([10,0]).build()));
+assert.equal(inlineDialog.name,'show_dialog');
+assert.equal(inlineDialog.dialogId,null,'inline dialogs have no registry id');
+assert.equal(inlineDialog.dialog.t,10,'inline dialogs carry one anonymous compound');
+const linkedDialog=decodeConfiguration26_3(Uint8Array.from(new Writer26_3().varint(CI.show_dialog).varint(4).build()));
+assert.equal(linkedDialog.dialogId,3,'registry dialogs use id-1');
+const links=decodeConfiguration26_3(Uint8Array.from(new Writer26_3()
+  .varint(CI.server_links).varint(1).bool(true).varint(2).string('https://example.invalid/').build()));
+assert.deepEqual(links.links,[{type:2,name:null,link:'https://example.invalid/'}],'server links decode a known type');
 
 const names=[];
 let profile=null,playLogin=null,registryFrames=0;
