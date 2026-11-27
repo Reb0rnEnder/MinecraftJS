@@ -22,8 +22,12 @@ Done and committed:
 - Remaining inbound adapters: attributes, player rotation, mount screen, minecart steps, game
   rules, post effects and bundle delimiters (2c27429).
 - Native debug subscriptions render in F3, bounded and truncated (66dd0a1).
-- Native bogged and parched rigs are bound, with their own 26.3 layer specs and textures; the
-  asset pending list is down to 8 mobs (82 rigs, 132 textures).
+- Native bogged and parched rigs are bound, with their own 26.3 layer specs and textures.
+- Breeze, creaking, copper golem, happy ghast, nautilus, zombie nautilus and sulfur cube are bound
+  to their native 26.3 layer trees and textures; camel husk reuses the native camel layer with its
+  own texture. The asset pending list is empty (90 rigs, 140 textures). Happy ghast tentacles and
+  nautilus body look use their native formulas; the remaining keyframe clips and visual
+  acceptance are still open.
 - 26.3 update_recipes is adapted. The stonecutter consumes the server's native
   ingredient/SlotDisplay list; the legacy recipe table is only a fallback. Recipe-display add/
   remove/settings state is stored natively.
@@ -83,10 +87,9 @@ B. CODE-ONLY PARITY WORK, IN PRIORITY ORDER
      world behaviour.
    - 26.3: poplar wood, dappled forest, straw bed, abandoned camps, cushion, nautilus armor, spear,
      sulfur cube and release-article families not yet exercised.
-   - 8 mobs currently have no renderer and are explicitly pending in the asset build: breeze,
-     camel_husk, copper_golem, creaking, happy_ghast, nautilus, sulfur_cube, zombie_nautilus.
-     Bogged and parched are now bound to native 26.3 rigs. Bind the rest or record a visual
-     deferral for each.
+   - No mob is pending a renderer. Breeze, creaking, copper golem, happy ghast, nautilus, zombie
+          nautilus and sulfur cube are bound to their native layer trees; port their remaining native keyframe clips and give each a visual check. Bogged, parched and camel husk are
+     fully routed through their native 26.3 families.
 
 4. P12 - Particle, sound and animation acceptance
    - Add per-behaviour rendering/trigger coverage for all 128 particle types, not only codec
@@ -183,7 +186,7 @@ E. SHORT ANSWER: WHAT IS ACTUALLY LEFT
 If the goal is "no incomplete code-only section left", do these in order:
 1. General arbitrary HashedPatchMap encoding/hashing and the four unverified menu flows.
 2. Live triggers for the byte-gated inbound families and the newly adapted packets.
-3. P11 new-content behaviour and the 8 mobs still pending a renderer.
+3. P11 new-content behaviour and the native keyframe clips for the seven newly bound mobs.
 4. Live particle/sound/animation acceptance and the inherited P14 UI/pack/font findings.
 5. The P01/P02/P03 evidence tail and P15/P16 release gate.
 

@@ -11,7 +11,7 @@ const {models, errors} = extractModels({data: jar});
 
 test('restructured 26.3 rigs do not silently use the 1.20.6 fallback', () => {
   assert.deepEqual(errors, []);
-  for (const name of ['bogged', 'parched', 'horse', 'donkey', 'horseArmor', 'camel', 'sniffer', 'player', 'playerSlim', 'rabbit', 'dragon', 'enderCrystal', 'enderCrystalNoBase']) {
+  for (const name of ['bogged', 'parched', 'breeze', 'creaking', 'copper_golem', 'happy_ghast', 'nautilus', 'zombie_nautilus', 'sulfur_cube', 'horse', 'donkey', 'horseArmor', 'camel', 'sniffer', 'player', 'playerSlim', 'rabbit', 'dragon', 'enderCrystal', 'enderCrystalNoBase']) {
     assert.equal(models[name]?.rigSource, '26.3', `${name} should bind a native 26.3 layer`);
   }
   const boats = ['oak', 'spruce', 'birch', 'jungle', 'acacia', 'cherry', 'dark_oak', 'pale_oak', 'mangrove', 'poplar', 'bamboo'];
@@ -58,10 +58,30 @@ test('ported rigs construct and animate without a missing part', async () => {
     ['enderCrystal', M.blockModel('enderCrystal', ['outer_glass', 'inner_glass', 'cube', 'base'])],
     ['bogged', M.nativeBipedMob('bogged')],
     ['parched', M.nativeBipedMob('parched')],
+    ['camel_husk', M.wildMob('camel')],
+    ['breeze', M.nativeMob('breeze')],
+    ['creaking', M.nativeMob('creaking')],
+    ['copper_golem', M.nativeMob('copper_golem')],
+    ['happy_ghast', M.nativeMob('happy_ghast')],
+    ['nautilus', M.nativeMob('nautilus')],
+    ['zombie_nautilus', M.nativeMob('zombie_nautilus')],
+    ['sulfur_cube', M.nativeMob('sulfur_cube')],
   ];
   for (const [name, model] of built) {
     if (typeof model.animate === 'function') assert.doesNotThrow(() => model.animate(model, {age: 20, ls: 10, lsa: 0.5, yaw: 20, pitch: 10, saddled: true, hasRider: true}), name);
   }
+});
+
+test('native happy ghast and nautilus formulas stay within the jar bounds', async () => {
+  const M = await import('../client/js/render/entity-models.js');
+  M.setJarModels(models);
+  const ghast = M.nativeMob('happy_ghast');
+  ghast.animate(ghast, {age: 20, yaw: 0, pitch: 0});
+  assert.equal(ghast.parts.body.namedChildren.tentacle0.rx, 0.2 * Math.sin(6) + 0.4);
+  const nautilus = M.nativeMob('nautilus');
+  nautilus.animate(nautilus, {age: 1, yaw: 45, pitch: -45});
+  assert.equal(nautilus.parts.root.namedChildren.body.ry, 10 * Math.PI / 180);
+  assert.equal(nautilus.parts.root.namedChildren.body.rx, -10 * Math.PI / 180);
 });
 
 test('dragon child parts and crystal hierarchy resolve to the native nodes', async () => {

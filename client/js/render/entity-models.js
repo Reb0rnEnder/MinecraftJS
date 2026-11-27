@@ -597,6 +597,28 @@ export const WILD_MOB_TEXTURES={armadillo:'entity/armadillo/armadillo.png',allay
 // the attached layer alone instead of copying angles twice.
 export const BIPED_MOB_TEXTURES={bogged:'entity/skeleton/bogged.png',parched:'entity/skeleton/parched.png'};
 export function nativeBipedMob(name){return jarAdapter(name,BIPED,animateBiped,{texture:BIPED_MOB_TEXTURES[name]});}
+// The remaining 26.3-only mobs have native layer trees but their keyframe clips have not been
+// ported yet. Bind the real hierarchy at its rest pose instead of borrowing an unrelated rig;
+// animateNativeMob only adds the head tracking that every one of these families uses.
+export const NATIVE_MOB_TEXTURES={breeze:'entity/breeze/breeze.png',creaking:'entity/creaking/creaking.png',copper_golem:'entity/copper_golem/copper_golem.png',happy_ghast:'entity/ghast/happy_ghast.png',nautilus:'entity/nautilus/nautilus.png',zombie_nautilus:'entity/nautilus/zombie_nautilus.png',sulfur_cube:'entity/sulfur_cube/sulfur_cube_outer.png'};
+const nativeClamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+function animateNativeMob(model,a){
+  model.resetPose();
+  const p=model.parts,D=Math.PI/180;
+  if(p.head){p.head.rx=a.pitch*D;p.head.ry=a.yaw*D;}
+  // NautilusModel.applyBodyRotation clamps body look to +/-10 degrees and rotates the body,
+  // not the shell. The swim clip still needs porting.
+  if(model.jarModel==='nautilus'||model.jarModel==='zombie_nautilus'){
+    const body=p.root?.namedChildren?.body;
+    if(body){body.ry=nativeClamp(a.yaw,-10,10)*D;body.rx=nativeClamp(a.pitch,-10,10)*D;}
+  }
+  // GhastModel.animateTentacles: 0.2*sin(age*0.3+i)+0.4 radians, index in tentacle order.
+  if(model.jarModel==='happy_ghast'){
+    const tentacles=p.body?.namedChildren;
+    for(let i=0;i<9;i++){const t=tentacles?.['tentacle'+i];if(t)t.rx=0.2*Math.sin(a.age*0.3+i)+0.4;}
+  }
+}
+export function nativeMob(name){return jarAdapter(name,JAR[name].slotNames,animateNativeMob,{texture:NATIVE_MOB_TEXTURES[name]});}
 export function wildMob(name) {
  if(name==='armadillo')return jarAdapter(name,JAR[name].slotNames,animateArmadillo766,{texture:WILD_MOB_TEXTURES[name],nativeAgeable:{bodyOnly:true,scaleHead:false,headY:0,headZ:0,headScale:1,bodyScale:1/PAWS_DATA_766.armadilloAgeable.scale,bodyY:PAWS_DATA_766.armadilloAgeable.bodyY}});
  return jarAdapter(name,JAR[name].slotNames,animateWildMob,{texture:WILD_MOB_TEXTURES[name]});

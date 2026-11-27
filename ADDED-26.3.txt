@@ -3,8 +3,8 @@ Branch: 26.3
 Inventory date: 2026-11-27
 Baseline: 66dd0a1 "Render native 26.3 debug subscriptions in the F3 screen" plus this batch
 Latest verified run: test:26.3 62/62, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
-inbound gate all checks passed, serverbound gate 0, npm run assets exit 0 (82 mobs, 132 textures,
-8 new mobs explicitly pending a renderer).
+inbound gate all checks passed, serverbound gate 0, npm run assets exit 0 (90 mobs, 140 textures,
+no mobs pending a renderer).
 
 This file lists work that exists in the repository. It does not claim full parity. Areas that are
 decoded but not live-accepted are marked "decoded only", "byte-gated" or "needs visual acceptance".
@@ -220,14 +220,18 @@ Known limit:
 
 - 26.3 asset target: pack format 97, jar-first textures, indexed sounds, native panorama and
   native block models/textures.
-- ExtractLayers26_3 dumps 361 native layers; lib/model-extract-26.3.js bakes a 136-model bundle
+- ExtractLayers26_3 dumps 361 native layers; lib/model-extract-26.3.js bakes a 143-model bundle
   for the 26.3 target.
 - Equipment/armor/trim sprites and paletted permutations generated from the native asset tree.
 - Native boat/chest-boat layers and smithing template icons/container slot sprites.
 - Inventory/containers use native 26.3 menu ids and slot geometry for existing screens.
-- npm run assets: 35,723 states, 82 mobs, 132 textures, 8 explicitly pending mobs.
+- npm run assets: 35,723 states, 90 mobs, 140 textures, no pending mobs.
 - Native bogged and parched humanoid rigs use their 26.3 layer trees (head/hat/body/arms/legs)
   and the native skeleton texture paths instead of the 1.20.6 skeleton fallback.
+- Breeze, creaking, copper golem, happy ghast, nautilus, zombie nautilus and sulfur cube now
+  bind their native 26.3 layer trees and texture paths. Camel husk reuses the native camel layer
+  with its own texture. Happy ghast tentacles and nautilus/zombie-nautilus body look follow the
+  native formulas; the remaining keyframe clips are still to port (needs visual acceptance).
 
 ======================================================================
 12. TESTS, GATES AND DOCUMENTATION

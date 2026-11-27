@@ -287,6 +287,8 @@ export class EntityRenderer {
   _texFor(e) {
     if(e.entityName==='frog')return 'entity/frog/frog_'+(['temperate','warm','cold'][e.frogVariant||0]||'temperate')+'.png';
     if(M.BIPED_MOB_TEXTURES?.[e.entityName])return M.BIPED_MOB_TEXTURES[e.entityName];
+    if(e.entityName==='camel_husk')return 'entity/camel/camel_husk.png';
+    if(M.NATIVE_MOB_TEXTURES?.[e.entityName])return M.NATIVE_MOB_TEXTURES[e.entityName];
     if(['armadillo','allay','tadpole','warden','camel','sniffer'].includes(e.entityName))return M.WILD_MOB_TEXTURES[e.entityName];
     if (e.kind === 'player') return null;
     if (e.kind === 'armorstand') return 'entity/armorstand/wood.png';
@@ -366,6 +368,8 @@ export class EntityRenderer {
 
   _modelFor(e) {
     if(['bogged','parched'].includes(e.entityName))return M.nativeBipedMob(e.entityName);
+    if(e.entityName==='camel_husk')return M.wildMob('camel');
+    if(M.NATIVE_MOB_TEXTURES?.[e.entityName])return M.nativeMob(e.entityName);
     if(['armadillo','allay','frog','tadpole','warden','camel','sniffer'].includes(e.entityName))return M.wildMob(e.entityName);
     if (e.kind === 'player') {
       const s = this.skinFor(e);

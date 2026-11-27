@@ -146,7 +146,7 @@ pending; product outside current scope; or experiment-gated.
   slots no longer wait on the item table. The task ledger remains partial; next tasks P08/P10.
 - The asset target is 26.3: `lib/mcassets.js` defaults this tree to 26.3 (pack format 97) and the proxy serves
   the jar first and the index for indexed objects. `tools/port-26.3/ExtractLayers26_3.java` bakes all 361
-  native layers and `lib/model-extract-26.3.js` produces a complete 136-model bundle (native composites for the
+  native layers and `lib/model-extract-26.3.js` produces a complete 143-model bundle (native composites for the
   per-slot armor and split banners; the 1.20.6 rig only where 26.3 restructured the part tree the renderer
   animates). 26.3 has 3,964 textures against 3,048 in 1.20.6: 2,302 shared paths changed, 1,165 are new, and
   the 249 paths 26.3 dropped fall back to the pinned 1.20.6 file so the 1.20.6 UI still boots. The title

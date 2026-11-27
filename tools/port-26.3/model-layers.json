@@ -718,6 +718,34 @@
       "left_leg"
     ]
   },
+  "breeze": {
+    "layer": "minecraft:breeze#main",
+    "fields": ["body", "wind_body"]
+  },
+  "creaking": {
+    "layer": "minecraft:creaking#main",
+    "fields": ["root"]
+  },
+  "copper_golem": {
+    "layer": "minecraft:copper_golem#main",
+    "fields": ["left_leg", "right_leg", "body"]
+  },
+  "happy_ghast": {
+    "layer": "minecraft:happy_ghast#main",
+    "fields": ["body"]
+  },
+  "nautilus": {
+    "layer": "minecraft:nautilus#main",
+    "fields": ["root"]
+  },
+  "zombie_nautilus": {
+    "layer": "minecraft:zombie_nautilus#main",
+    "fields": ["root"]
+  },
+  "sulfur_cube": {
+    "layer": "minecraft:sulfur_cube#main",
+    "fields": ["cube"]
+  },
   "dragon": {
     "layer": "minecraft:ender_dragon#main",
     "fields": [
