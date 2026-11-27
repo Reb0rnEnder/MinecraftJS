@@ -273,7 +273,7 @@ export class Renderer {
     if(state.darkness?.factor>0&&!state.spectator){fogMode=0;fogEnd=fogEnd+(15-fogEnd)*state.darkness.factor;fogStart=fogEnd*.75;}
     if (state.blindness) { fogMode = 0; fogStart = 0; fogEnd = 5; fogR *= 0.1; fogG *= 0.1; fogB *= 0.1; }
     // WorldProvider.getVoidFogYFactor: 1.0 on superflat worlds, 1/32 otherwise
-    const voidFactor = state.horizon === 0 ? 1 : 0.03125;
+    const voidFactor = (state.flatWorld ?? state.horizon === 0) ? 1 : 0.03125;
     if (dimension === 0 && (state.camPos[1] - (state.minY??0)) * voidFactor < 1) {
       let d1 = (state.camPos[1] - (state.minY??0)) * voidFactor;
       if (d1 < 1) { if (d1 < 0) d1 = 0; d1 *= d1; fogR *= d1; fogG *= d1; fogB *= d1; }
