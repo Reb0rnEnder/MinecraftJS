@@ -1,4 +1,4 @@
-import { navigate, changeFocus, clearFocus, setInitialFocus, inputTypeForKey, children, INPUT, setLastInputType, lastInputType, isKeyboard } from '../focus-navigation.js';
+import { navigate, changeFocus, clearFocus, setInitialFocus, inputTypeForKey, children, INPUT, setLastInputType } from '../focus-navigation.js';
 // Screen stack (GuiScreen equivalent): routes input and rendering to the active screen.
 
 export class Screen {
@@ -115,14 +115,15 @@ export class ScreenManager {
     const [mx, my] = this._mouse();
     s.render(gui, mx, my, partial);
     for(const field of s.fields)gui.narrator?.widget(field,false,field.label||field.narrationLabel||'', 'editBox');
-    gui.narrator?.screenFrame?.(s,children(s),isKeyboard(lastInputType()));
+    gui.narrator?.screenFrame?.(s,children(s),this.narrationKeyboard);
   }
 
   // KeyboardHandler.keyPress: arrows and Tab in a screen make the keyboard the last input type
-  onKey(e) { if (!this.current) return; setLastInputType(inputTypeForKey(e.code)); this.current.key(e); }
+  // Screen.afterKeyboardAction (200 ms) / afterMouseMove (750 ms) narration delays
+  onKey(e) { this.narrationKeyboard = true; if (!this.current) return; setLastInputType(inputTypeForKey(e.code)); this.current.key(e); }
   onKeyUp(e) { if (this.current) this.current.keyUp(e); }
   onChar(c) { if (this.current) this.current.char(c); }
-  onMove() { if (this.current && this.current.mouseMove) { const [mx, my] = this._mouse(); this.current.mouseMove(mx, my); } }
+  onMove() { this.narrationKeyboard = false; if (this.current && this.current.mouseMove) { const [mx, my] = this._mouse(); this.current.mouseMove(mx, my); } }
   onWheel(d) { if (this.current) this.current.wheel(d); }
   onMouse(e) {
     if (!this.current) return;
