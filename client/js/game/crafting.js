@@ -7,7 +7,9 @@ let allShapeless = [];
 
 function norm(ing) {
   if (ing === null || ing === undefined) return null;
+  if (Array.isArray(ing)) return { any: ing.map(norm).filter(Boolean) };
   if (typeof ing === 'number') return { id: ing, meta: -1 };
+  if (Array.isArray(ing.any)) return { any: ing.any.map(norm).filter(Boolean) };
   return { id: ing.id, meta: ing.metadata === undefined ? -1 : ing.metadata };
 }
 
@@ -33,6 +35,7 @@ export function initRecipes(json) {
 const matchIng = (ing, item) => {
   if (!ing) return !item;
   if (!item) return false;
+  if (ing.any) return ing.any.some(candidate => matchIng(candidate, item));
   return item.id === ing.id && (ing.meta === -1 || ing.meta === 32767 || ing.meta === item.damage);
 };
 

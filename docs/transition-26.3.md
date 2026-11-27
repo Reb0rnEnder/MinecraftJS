@@ -116,6 +116,11 @@ pending; product outside current scope; or experiment-gated.
   index 26.3 ids through the 1.20.6 order. The generated display table and stats names use the same dump,
   and the 26.3 wood boats/rafts, split potions and wind charges map to their existing object kinds.
   `test-entity-registry-26.3.mjs` and `entity-registry:26.3 --check` pin the native order.
+- The local crafting table is native for this target (P02): `build-recipes:26.3` reads all 2042 recipe
+  files and resolves 1185 shaped/shapeless component-free recipes against the native item ids, including
+  198 tag-alternative ingredient sets. `crafting.js` matches `{any:[ids]}` alternatives and
+  `test-recipes-26.3.mjs` pins the acacia boat and coal/charcoal fire-charge paths. The remaining 857
+  non-crafting/component-result recipes stay server-authoritative.
 - Open at this checkpoint: general HashedPatchMap hashing for arbitrary server-provided component values
   (Creative catalogue stacks now carry native hashes), live acceptance of the remaining container/menu
   families, `can_place_on`/`can_break` (adventure-predicate graph), native support/placement rules, dialog

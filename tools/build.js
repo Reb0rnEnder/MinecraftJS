@@ -125,7 +125,9 @@ async function collectAssets(opts) {
     if (name.startsWith(P + 'shaders/')) continue; // post-processing shaders are not used by this client
     files.set('minecraft/' + name.slice(P.length), jar.read(name));
   }
-  for(const name of jar.list('data/minecraft/recipes/'))if(name.endsWith('.json'))files.set('minecraft/recipes/'+name.slice('data/minecraft/recipes/'.length),jar.read(name));
+  // 26.3 stores data-pack recipes under the singular data/minecraft/recipe/; older
+  // targets use data/minecraft/recipes/. Keep both layouts feeding the same bundle.
+  for(const dir of ['data/minecraft/recipe/','data/minecraft/recipes/'])for(const name of jar.list(dir))if(name.endsWith('.json'))files.set('minecraft/recipes/'+name.slice(dir.length),jar.read(name));
   const icon = jar.read('pack.png');
   if (icon) files.set('pack.png', icon);
   // Extraction failures must stop the build rather than publish stale geometry.
@@ -166,9 +168,9 @@ async function collectAssets(opts) {
   return files;
 }
 
-// CraftingManager recipe ids (1.12): 11 built-in recipes, then the jar's recipes/*.json in the order the zip
-// filesystem walks them: the reverse of the jar's entry order (checked against servers on Java 8 and Java 25,
-// all 432 recipes). The list keeps that order: id = 11 + index.
+// CraftingManager recipe ids: 11 built-in recipes, then the jar's recipe/*.json in the order the zip
+// filesystem walks them: the reverse of the jar's entry order. The list keeps that order: id = 11 + index.
+// Both the 1.20.6 plural directory and the 26.3 singular directory feed this bundle.
 function recipeBundle(files) {
   const list = [];
   for (const [name, buf] of files) {
