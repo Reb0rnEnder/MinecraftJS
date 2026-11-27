@@ -53,7 +53,7 @@ assert.equal(stack.added[0].value,16,'max_stack_size is a VarInt');
 assert.equal(stack.added[1].value,42,'damage is a VarInt');
 assert.equal(stack.added[2].value,0x11223344,'dyed_color is a fixed four-byte INT, not a VarInt');
 assert.deepEqual(stack.added[3].value,{floats:[0.5],flags:[true],strings:['a','b'],colors:[7]},'custom_model_data is four lists');
-assert.deepEqual(stack.added[4].value,[{enchantment:0,level:3},{enchantment:5,level:1}],'enchantments are (holder, level) VarInt pairs');
+assert.deepEqual(stack.added[4].value,[{enchantment:0,id:'minecraft:aqua_affinity',level:3},{enchantment:5,id:'minecraft:channeling',level:1}],'enchantments are (holder, level) VarInt pairs resolved through the native registry');
 assert.deepEqual(stack.removed,[componentId('unbreakable'),componentId('repair_cost')],'removed components are bare ids after the values');
 assert.equal(stack.components.damage,42,'the convenience map follows the patch');
 

@@ -17,6 +17,7 @@
 // of consuming the wrong number of bytes.
 import {readAnonymousNbt} from './nbt-anonymous.js';
 import {DATA_COMPONENT_NAMES_26_3} from './items-26.3.js';
+import {ENCHANTMENT_NAMES_26_3} from './enchantment-names-26.3.js';
 
 const READERS={};
 const define=(name,read)=>{READERS[name]=read;};
@@ -57,7 +58,12 @@ define('rarity',varint);
 const enchantments=r=>{
   const count=r.varint();
   const entries=[];
-  for(let i=0;i<count;i++)entries.push({enchantment:r.varint(),level:r.varint()});
+  for(let i=0;i<count;i++){
+    const enchantment=r.varint();
+    const name=ENCHANTMENT_NAMES_26_3[enchantment];
+    if(!name)throw Error('Unknown 26.3 enchantment id '+enchantment);
+    entries.push({enchantment,id:name,level:r.varint()});
+  }
   return entries;
 };
 define('enchantments',enchantments);

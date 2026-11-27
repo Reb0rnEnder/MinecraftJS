@@ -136,9 +136,17 @@ export class Items {
     if(!item)return [];
     const c=this.component(item,stored?'stored_enchantments':'enchantments');if(!c)return [];
     if(c.levels)return this.sortEnchantments(Object.entries(c.levels).map(([id,lvl])=>({id:resource(id),lvl})));
-    return this.sortEnchantments((c.enchantments||[]).map(e=>({id:ITEM_DATA_766.registries.enchantment[e.id],lvl:e.level})).filter(e=>e.id));
+    return this.sortEnchantments((c.enchantments||[]).map(e=>{
+      const native=typeof e.id==='string';
+      return {id:native?e.id:ITEM_DATA_766.registries.enchantment[e.enchantment??e.id],lvl:e.level,native};
+    }).filter(e=>e.id));
   }
-  sortEnchantments(list) {const order=ITEM_DATA_766.enchantmentOrder.map(id=>ITEM_DATA_766.registries.enchantment[id]);return list.sort((a,b)=>{const ai=order.indexOf(a.id),bi=order.indexOf(b.id);return (ai<0?Infinity:ai)-(bi<0?Infinity:bi);});}
+  sortEnchantments(list) {
+    const order=list.some(e=>e.native)
+      ?this.assets.data.enchantments.map(e=>resource(e.name))
+      :ITEM_DATA_766.enchantmentOrder.map(id=>ITEM_DATA_766.registries.enchantment[id]);
+    return list.sort((a,b)=>{const ai=order.indexOf(a.id),bi=order.indexOf(b.id);return (ai<0?Infinity:ai)-(bi<0?Infinity:bi);});
+  }
   isEnchanted(item) {return !!item&&this.enchantments(item,false).length>0;}
   hasEffect(item) {
     if(!item)return false;const c=this.components(item);
@@ -148,8 +156,8 @@ export class Items {
 
   // Enchantment.getTranslatedName: curses in red, the level unless a single-level enchantment at level 1
   enchantmentName(id, level) {
-    const definition = this.assets.data.enchantments.find(e => typeof id === 'number' ? e.id === id : resource(e.name) === resource(id));
-    const name = typeof id === 'number' ? definition?.name : id;
+    const name = typeof id === 'number' ? ITEM_DATA_766.registries.enchantment[id] : id;
+    const definition = this.assets.data.enchantments.find(e => resource(e.name) === resource(name));
     if (!name) return this.assets.translate('enchantment.unknown', [id]);
     const short = name.replace(/^minecraft:/, '');
     let s = this.assets.translate(translationKey('enchantment', name));
@@ -160,8 +168,9 @@ export class Items {
 
   enchantLevel(item, id) {
     if (!item) return 0;
-    // Numeric IDs use this target registry; gameplay callers use resource names.
-    const name = typeof id === 'number' ? this.assets.data.enchantments.find(e => e.id === id)?.name : id;
+    // Numeric IDs are the 766 wire registry used by the legacy component decoder; gameplay
+    // callers and native 26.3 components use resource names.
+    const name = typeof id === 'number' ? ITEM_DATA_766.registries.enchantment[id] : id;
     const e = name && this.enchantments(item,false).find((x) => x.id === resource(name));
     return e ? e.lvl : 0;
   }
