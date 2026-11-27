@@ -842,7 +842,7 @@ export class EntityRenderer {
       case 'ominous_item_spawner': {
         v = atlasOnly('ominous_item_spawner');
         v.itemKey = null;
-        this._addShadow(v);
+        // OminousItemSpawnerRenderer does not set shadowRadius (EntityRenderer default 0).
         break;
       }
       case 'xp': {
@@ -923,6 +923,9 @@ export class EntityRenderer {
         const model = M.windCharge();
         v = { root: new Node(), kind: 'jar_projectile', materials: [], model };
         v.windMat = this._mat(v, 'entity/projectiles/wind_charge.png', { transparent: true });
+        // RenderTypes.breezeWind samples with GL_REPEAT; the UV offset would smear at the
+        // texture edge if this scrolling texture used the atlas default of clamp-to-edge.
+        v.windMat.tex = () => this.game.assets.texture('entity/projectiles/wind_charge.png', { wrap: 'repeat' });
         v.inner = new Node();
         v.inner.add(this._makeModelObject(model, v.windMat));
         v.root.add(v.inner);
@@ -1012,7 +1015,8 @@ export class EntityRenderer {
         flip.rotation.x = Math.PI; flip.add(translate);
         yaw.add(flip); v.root.add(yaw);
         v.yawGroup = yaw;
-        this._addShadow(v);
+        // CushionRenderer does not set shadowRadius (EntityRenderer default 0); the cushion
+        // is a thin block-attached entity and vanilla draws no drop shadow under it.
         break;
       }
       case 'itemframe': {

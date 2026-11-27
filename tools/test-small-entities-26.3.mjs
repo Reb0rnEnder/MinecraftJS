@@ -38,6 +38,38 @@ test('26.3 wind charge keeps its own renderer kind instead of the item projectil
   }
 });
 
+test('26.3 wind charge scrolls a repeat-sampled texture', () => {
+  const renderer = Object.create(EntityRenderer.prototype);
+  const requested = [];
+  renderer.game = {assets: {texture: (path, opts) => { requested.push([path, opts]); return {}; }}};
+  renderer._makeModelObject = () => new Node();
+  renderer.group = {add: () => {}};
+  renderer.visuals = new Map();
+  const v = renderer._build({kind: 'wind_charge', id: 1});
+  assert.equal(typeof v.windMat.tex, 'function');
+  v.windMat.tex();
+  assert.deepEqual(requested, [['entity/projectiles/wind_charge.png', {wrap: 'repeat'}]]);
+});
+
+test('26.3 small entities keep native shadowRadius = 0', () => {
+  const renderer = Object.create(EntityRenderer.prototype);
+  renderer.game = {assets: {texture: () => ({})}};
+  renderer._mat = () => ({});
+  renderer._makeModelObject = () => new Node();
+  renderer.group = {add: () => {}};
+  renderer.visuals = new Map();
+  let shadows = 0;
+  renderer._addShadow = () => { shadows++; };
+  const cushion = renderer._build({kind: 'cushion', id: 1});
+  const spawner = renderer._build({kind: 'ominous_item_spawner', id: 2});
+  assert.equal(cushion.shadow, undefined);
+  assert.equal(spawner.shadow, undefined);
+  assert.equal(shadows, 0);
+  // ItemEntityRenderer still sets shadowRadius = 0.15, so keep that shadow path.
+  renderer._build({kind: 'item', id: 3});
+  assert.equal(shadows, 1);
+});
+
 test('OminousItemSpawnerRenderer scales in over 50 ticks and spins 40 degrees per tick', () => {
   const renderer = Object.create(EntityRenderer.prototype);
   renderer.game = {itemRenderer: {iconKey: () => 'icon'}, items: {hasEffect: () => false}};

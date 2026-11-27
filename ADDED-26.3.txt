@@ -2,7 +2,7 @@ MinecraftJS 26.3 - WHAT WE HAVE ADDED
 Branch: 26.3
 Inventory date: 2026-11-27
 Baseline: c4f682b "Add native 26.3 spear support" plus this batch
-Latest verified run: test:26.3 82/82, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
+Latest verified run: test:26.3 84/84, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
 inbound gate all checks passed, serverbound gate 0, npm run assets exit 0 (91 mobs, 141 textures,
 no mobs pending a renderer).
 
@@ -262,8 +262,10 @@ Known limit:
   native index 8. Pinned by test-cushion-26.3.mjs.
 - 26.3 wind charges bind WindChargeModel's counter-spinning bone/wind/wind_charge hierarchy,
   use the native 64x32 texture with its age*0.03 UV scroll, and keep their own kind instead of
-  the generic item-projection fallback. The ominous item spawner renders its ground item cluster,
-  scales in over 50 ticks and spins at 40 degrees per tick. Both are pinned by
+  the generic item-projection fallback. The scrolling sampler uses repeat wrapping, matching
+  RenderTypes.breezeWind. The ominous item spawner renders its ground item cluster, scales in over
+  50 ticks and spins at 40 degrees per tick, and neither it nor a cushion draws a drop shadow:
+  both renderers inherit EntityRenderer's default shadowRadius 0. Both are pinned by
   test-small-entities-26.3.mjs.
 
 ======================================================================
@@ -271,9 +273,9 @@ Known limit:
 ======================================================================
 
 Green at this inventory:
-- npm run test:26.3: 82 tests (including spear components/STAB/animation formulas, mannequin
+- npm run test:26.3: 84 tests (including spear components/STAB/animation formulas, mannequin
   profile/metadata/render classification, cushion model/metadata/transform and wind-charge/
-  ominous-spawner geometry and transforms).
+  ominous-spawner geometry, repeat sampling and native shadow rules).
 - npm run adapter:26.3: 53 packets, 36 handler names, 2 chunks.
 - tools/port-26.3/inbound-gate.mjs: all checks.
 - tools/port-26.3/serverbound-gate.mjs: all checks.
@@ -286,9 +288,11 @@ Green at this inventory:
 Docs:
 - docs/transition-26.3.md, docs/transition-26.3.tasks.json, docs/parity-checklist-26.3.md,
   docs/transition-26.3.release-index.json, HANDOFF-26.3.md, docs/development-26.3.md and audits.
-- ADDED-26.3.txt and NEEDED-26.3.txt (these files).
+- ADDED-26.3.txt, NEEDED-26.3.txt and the refreshed NEEDED-26.3-REMAINING.txt.
 
 Recent commit trail:
+- This batch: native 26.3 wind-charge repeat sampling and zero shadowRadius for cushions and the
+  ominous item spawner, with focused tests.
 - This batch: native 26.3 wind-charge model, UV scroll and renderer kinds, the ominous item
   spawner scale/spin renderer and lightning's renderer-kind mapping.
 - This batch: native 26.3 cushion model, all 16 dye textures, DYE_COLOR metadata and

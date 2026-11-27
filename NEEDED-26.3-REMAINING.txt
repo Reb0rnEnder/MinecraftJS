@@ -1,0 +1,239 @@
+MinecraftJS 26.3 - REMAINING WORK (REFRESHED)
+Branch: 26.3
+Inventory date: 2026-11-27
+Baseline: 475c5e2 plus the native small-entity shadow/texture correction in this batch
+Verified for this inventory:
+- npm run test:26.3: 84/84 tests
+- npm run adapter:26.3: 53 frames, 36 handler names, 2 chunks, 0 skipped
+- inbound gate: 144/144 Play IDs decoded, 0 raw
+- serverbound gate: 69/69 IDs have a sender or an explicit scope decision
+- last npm run assets: exit 0, 145 entity models, 91 mobs, 141 textures, pending []
+- no entity is waiting for a renderer
+
+This file replaces the "how much is left" view in NEEDED-26.3.txt. It is a work inventory, not a
+claim of full parity. A green decode/test gate does not mean a feature has been accepted live.
+
+======================================================================
+A. CURRENT LEDGER
+======================================================================
+
+The project ledger at this handoff is 44.1% complete:
+- 4 areas done
+- 7 areas partial
+- 6 areas todo
+- scoring: done = 1, partial = 0.5
+
+That percentage is the existing project-level ledger. It is not a per-feature count and it should
+not be read as "44% of the jar has been ported". The exact remaining work is below.
+
+Closed in this batch:
+- Native shadowRadius = 0 is now respected for cushions and ominous item spawners.
+  CushionRenderer and OminousItemSpawnerRenderer do not set shadowRadius, while
+  ItemEntityRenderer still uses 0.15; test-small-entities-26.3.mjs pins both sides.
+- The wind-charge scrolling texture now samples with repeat wrapping, matching
+  RenderTypes.breezeWind; clamp-to-edge would smear the UV scroll at the texture border.
+- Added two focused tests: wind-charge repeat sampling and native small-entity shadow rules.
+
+Still open from the previous inventory:
+- General arbitrary HashedPatchMap encoding and hashing.
+- Live trigger/acceptance work.
+- Broad new-content behaviour and particle/sound/animation coverage.
+- Inherited UI, resource-pack and font findings.
+- Evidence/crosswalk, packaging and the whole-target acceptance matrix.
+
+======================================================================
+B. CODE-ONLY WORK, IN PRIORITY ORDER
+======================================================================
+
+1. P08 - General HashedPatchMap and the remaining inventory paths (LARGE, highest unblocked risk)
+   Status: partial. The 405 Creative catalogue patches are encoded and hashed; the general path is
+   not implemented.
+   Remaining:
+   - Encode arbitrary server-provided component values, not only the Creative catalogue patches.
+   - Implement the native HashedPatchMap hash for arbitrary components. The native client uses
+     HashOps.CRC32C over the component's CODEC encoding, not a CRC of the network bytes. This
+     requires canonical per-component hash encoding.
+   - Use one native stack path for Creative writes and normal container clicks, then remove the
+     creativePatch/creativeHashes special cases.
+   - Verify click state IDs and server rejection/resync when a patched stack is refused.
+   - Inventory edge cases: shift-click into a full container, patched stacks into every slot type,
+     number-key/offhand swaps, drag distribution and double-click collection.
+   - Live-accept merchant, enchanting, stonecutter and loom windows.
+   Do not fake a hash to make a test pass. Wrong hashes only trigger server resyncs, so a fake
+   value hides a real correctness gap.
+
+2. P06 - Live triggers and the remaining scope decisions (LIVE, medium code tail)
+   Status: all 144 inbound IDs decode; the adapter and byte gates are green. Live acceptance is
+   the gap.
+   Remaining:
+   - Live-test the byte-gated families: sounds, cooldowns, mob effects, boss-bar add/update/remove,
+     entity events, world events and the remaining presentation frames.
+   - Exercise the newly adapted attributes, player-rotation, mount-screen, minecart, game-rule,
+     post-effects and bundle paths against a real server.
+   - add_transient_block, game_test_highlight_pos and test_instance_block_status remain the only
+     explicit Play scope decisions.
+   - Recipe display: add/remove/settings and update_recipes are handled natively and the
+     stonecutter consumes the native ingredient/SlotDisplay list, but a full RecipeDisplay-graph
+     recipe-book UI is still open.
+   - Keep unknown packets raw and fail-closed; a decode error must never close the socket.
+
+3. P11 - New content families from 1.20.6 to 26.3 (LARGE; code and live)
+   Status: every entity has a renderer; capability/behaviour coverage is the gap. A registry row
+   or a model is not acceptance.
+   Families still needing behaviour/source/sound/particle/GUI/tooltip/live checks:
+   - 1.21: crafter, trial chambers/spawners/vaults, breeze/wind charge, mace, heavy core, ominous
+     events, copper/tuff families, armadillo, wolf armor, bogged, pottery sherds, banner patterns,
+     new enchantments/effects.
+   - 1.21.2/1.21.4: bundles, pale oak, pale moss, creaking/heart, resin, eyeblossom, pale garden.
+   - 1.21.5: leaf litter, firefly bush, wildflowers, cactus flower, dry grass, bush, cold/warm
+     biome variants and spawn/behaviour rules.
+   - 1.21.6: dried ghast, ghastling, happy ghast, harness, locator bar, dialog flows.
+   - 1.21.9: copper bars/chains/chest/golem, copper tools/armor, shelves, mannequin/inventory
+     interactions.
+   - 26.1/26.2: golden dandelion, cinnabar/sulfur families, sulfur caves, new potions/effects and
+     world behaviour.
+   - 26.3: poplar wood, dappled forest, straw bed, abandoned camps, nautilus armor, sulfur cube and
+     release-article families.
+   Native renderers now cover mannequins, cushions, wind charges and the ominous item spawner.
+   Bogged, parched and camel husk use their native families. Breeze, creaking, copper golem, happy
+   ghast, nautilus, zombie nautilus and sulfur cube are bound to native layer trees, native
+   metadata indices and state clips. Their live visual/trigger acceptance remains.
+
+4. P12 - Particles, sounds and animation acceptance (MEDIUM-LARGE; mostly live)
+   Status: all 128 particle types and all 22 data codecs decode; wolf, dragon, piglin and splash
+   formulas are partly ported; breeze/copper golem/creaking/nautilus clips are wired.
+   Remaining:
+   - Per-behaviour rendering/trigger coverage for all 128 particle types, not only codec equality.
+   - Real-trigger verification of the 22 data codecs: dust colours, block/item particles, shriek,
+     trail, vibration and explosion variants.
+   - Finish remaining native animation formulas/triggers (wolf, dragon, piglin, splash and any
+     release-specific mob animation) against the native part trees.
+   - Verify particle-setting clearing, the 512 cap and solid-block rejection in live explosions.
+     The logic is unit-tested; live acceptance is not done.
+   - Verify the new spear use/attack and SwingAnimation STAB/WHACK/NONE paths live.
+
+5. P13 / P14 - Remaining screens, chat and inherited UI (MEDIUM, mostly live)
+   Remaining:
+   - Live visual acceptance for every implemented screen: title, options, dialogs, smithing,
+     inventory/containers, merchant/enchanting/stonecutter/loom, death screen, debug/HUD, locator
+     bar and waypoint UI.
+   - Finish native 26.3 chat/command UI: styled message handling and command suggestion
+     focus/selection.
+   - Finish option rows, focus/narration and keyboard/gamepad navigation against native widgets.
+   - Finish live hover/click rendering acceptance in the remaining chat UI paths. Click actions
+     for open_url, run_command, suggest_command, copy_to_clipboard, change_page, show_dialog and
+     custom are decoded.
+   - Resource-pack/font parity beyond the default jar: pack selection/priority/overlays, font
+     providers, glyph atlases and missing-glyph behaviour.
+   - Resolve every inherited 1.20.6 finding instead of dropping it: packs, fonts, menu
+     focus/narration, item consumer edge cases, adventure permissions, GUI layout/sound and
+     entity/gameplay gaps. Record one disposition per finding.
+
+6. P02 / P03 - Extraction and codec tail (MEDIUM)
+   Remaining:
+   - Refresh the remaining P02 resource-inventory dispositions; every extracted table needs a
+     reproducible report/hash and must reject mixed-version data.
+   - Finish remaining component/text serialization paths, dialog/waypoint families and complete
+     packet-consumption assertions.
+   - Round-trip remaining native codecs that are decode-only where outbound re-encoding is needed.
+   - Keep the 857 non-crafting/component recipes server-authoritative unless their native display
+     graph is implemented.
+
+7. P01 - Release-history crosswalk (MEDIUM, evidence only)
+   - Give every topic/fix in all 17 articles one disposition: native-client, server-owned,
+     experiment, experiment-gated or product-outside-scope.
+   - Record URL, retrieval method and SHA-256 for each source; never treat a challenge page as an
+     article.
+   - Use the crosswalk to prove P11 coverage, not just the family list above.
+
+8. P15 - Whole-target acceptance (LIVE, large scenario matrix)
+   - Run the scenario matrix: offline login/config, graphical join, movement, blocks, inventory,
+     combat, death/respawn, reconnect, menus, dialogs, chat/commands, particles/sounds, waypoints
+     and new-content families.
+   - Produce an honest partial/unverified list; do not claim full parity.
+   - Verify no 1.20.6 data, layouts, rigs or menu orders leak into 26.3.
+   - Re-run test:26.3, adapter:26.3, inbound gate, serverbound gate and client-net after each
+     section.
+
+9. P16 - Packaging and distributions (SMALL, release hygiene)
+   - Record source SHAs, manifest and checksums for every build.
+   - Exclude Mojang jars, derived large artifacts, caches and credentials.
+   - Preserve GPL-3.0 provenance and branch/worktree rules.
+   - Produce a clean handoff zip/tree without .git, servers/worlds or session files.
+
+======================================================================
+C. BLOCKED OR NEEDS USER INPUT
+======================================================================
+
+1. P09 - Authenticated lifecycle, transfer and packs
+   - Requires a real Microsoft account and a real authenticated 26.3 session.
+   - Needs end-to-end evidence for login, refresh/expiry, transfer, cookie store, resource-pack
+     negotiation and dialog flows.
+   - Do not fabricate session tests or substitute an offline account.
+
+2. Visual acceptance and judgment calls
+   - P10/P11/P12/P13 need a human to compare rendered results with native 26.3: entity rigs, GUI
+     spacing, dialog layout, particles, animations, sounds and new-content behaviour.
+   - Some acceptance needs a real server with the relevant content/experiments enabled.
+   - A screenshot or a compile is not visual proof.
+
+3. Product decisions outside the port
+   - Integrated singleplayer/world creation and Realms remain separate missing products.
+   - Custom server/resource-pack/experimental feature support needs an explicit scope call.
+
+4. General HashedPatchMap
+   - This is code-only but not a safe guess. It needs the canonical component codec encoding for
+     arbitrary values. Treat it as a deliberate large workstream, not a quick fix.
+
+======================================================================
+D. HOW MUCH IS LEFT
+======================================================================
+
+By the project ledger: 44.1% (4 done, 7 partial, 6 todo).
+
+By work type:
+- Code-only and actionable now:
+  * P08 general HashedPatchMap + inventory edge cases (largest single code gap).
+  * Chat/command suggestion focus/selection and hover/click rendering tail.
+  * RecipeDisplay-graph recipe-book UI.
+  * Resource-pack/font findings and dispositions.
+  * Component/text codec and decoder re-encode tail.
+  * Remaining animation formulas and any code-only new-content behaviour.
+- Live/server/user acceptance:
+  * P06 live triggers and the newly adapted packet paths.
+  * P09 authenticated lifecycle/transfer/packs.
+  * P10/P11/P12/P13 visual, sound, particle, animation, menu and content scenarios.
+  * P15 whole-target matrix.
+- Evidence and release hygiene:
+  * P01 crosswalk, P02 extraction reports, P16 packaging.
+- Explicit scope decisions already recorded:
+  * add_transient_block, game_test_highlight_pos and test_instance_block_status.
+
+There is no honest "single number of packets left": all inbound IDs decode and all outbound IDs
+have a sender or a scope decision. What remains is mostly correctness on the arbitrary item-stack
+path, feature behaviour, and live/visual acceptance.
+
+======================================================================
+E. NEXT CODE-ONLY ORDER
+======================================================================
+
+1. General HashedPatchMap (P08), only with canonical component codec encoding and oracle tests.
+2. Chat/command suggestion focus, selection and click/hover rendering tail (small and testable).
+3. RecipeDisplay-graph recipe-book UI (medium).
+4. Resource-pack/font findings, with one disposition per inherited finding.
+5. Component/text codec tail and outbound re-encoding for decode-only codecs.
+6. Remaining animation formulas/triggers that can be extracted from the jar.
+7. P01/P02 evidence reports and P16 packaging.
+8. Hand the live/visual/account work to the user with the exact scenarios listed above.
+
+======================================================================
+F. DEFINITION OF DONE FOR EACH REMAINING SECTION
+======================================================================
+
+1. Bytecode-verified decoder and adapter, or an explicit fail-closed/scope decision.
+2. A gate fixture consuming the exact native bytes.
+3. IDs regenerated if a game handler was added.
+4. test:26.3, adapter:26.3, inbound gate, serverbound gate and the relevant live harness green.
+5. Docs updated with new counts and evidence in the same commit.
+6. One focused commit, excluding screenshots and generated caches.
+7. A live/visual acceptance note where the section requires one.
