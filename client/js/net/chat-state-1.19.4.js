@@ -2,6 +2,7 @@
 // outgoing messages unsigned; acknowledgement state is still mandatory.
 import {Writer762} from './protocol-1.19.4.js';
 import {SERVERBOUND_762 as OUT} from './protocol-1.19.4-ids.js';
+import {randomSalt} from './chat-signing-1.19.4.js';
 const same=(a,b)=>a&&b&&a.length===b.length&&a.every((v,i)=>v===b[i]);
 export class ChatState762 {
  constructor(){this.reset();}
@@ -10,7 +11,18 @@ export class ChatState762 {
  ignore(signature){const entry=this.entries.findIndex(e=>e?.pending&&same(e.signature,signature));if(entry>=0)this.entries[entry]=null;}
  collect(){const offset=this.offset;this.offset=0;const acknowledged=new Uint8Array(3),signatures=[];for(let i=0;i<20;i++){const e=this.entries[(this.tail+i)%20];if(e){acknowledged[i>>3]|=1<<(i&7);signatures.push(e.signature);e.pending=false;}}return{offset,acknowledged,signatures};}
  flush(){const count=this.offset;this.offset=0;return new Writer762().varint(OUT.message_acknowledgement).varint(count).build();}
- encode(text,now=Date.now()){const{offset,acknowledged}=this.collect(),command=text.startsWith('/'),w=new Writer762().varint(command?OUT.chat_command:OUT.chat_message).string((command?text.slice(1):text).slice(0,256)).i64(BigInt(now)).i64(0n);if(command)w.varint(0);else w.bool(false);return w.varint(offset).raw(acknowledged).build();}
+ // ClientPacketListener.sendChat / sendCommand (1.19.4): one chat_command packet carries the argument signatures
+ // (SignableCommand.of; empty without a session). this.signer signs a SignedMessageBody with the local session.
+ encode(text,{now=Date.now(),salt=randomSalt()}={}){
+  const{offset,acknowledged,signatures}=this.collect(),command=text.startsWith('/'),body=(command?text.slice(1):text).slice(0,256);
+  const sign=(content)=>this.signer?.({content,timestamp:now,salt:BigInt(salt),lastSeen:signatures})||null;
+  const w=new Writer762().varint(command?OUT.chat_command:OUT.chat_message).string(body).i64(BigInt(now)).i64(BigInt(salt));
+  if(command){
+   const signed=[];for(const arg of this.signableArguments?.(body)||[]){const sig=sign(arg.value);if(sig)signed.push([arg.name,sig]);}
+   w.varint(signed.length);for(const[name,sig]of signed)w.string(name).raw(sig);
+  }else{const sig=sign(body);w.bool(!!sig);if(sig)w.raw(sig);}
+  return w.varint(offset).raw(acknowledged).build();
+ }
 }
 export function decorateChat762(codec,packet,content){
  const registry=codec?.['minecraft:chat_type']||codec?.chat_type||codec?.[':chat_type'],entry=registry?.value?.find(e=>e.id===packet.type)?.element?.chat;

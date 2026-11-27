@@ -30,3 +30,27 @@ export function verifyRsa(key,signature,data,algorithm='SHA-256'){
  let diff=0;for(let i=0;i<prefix.length;i++)diff|=encoded[separator+1+i]^prefix[i];for(let i=0;i<digest.length;i++)diff|=encoded[separator+1+prefix.length+i]^digest[i];return diff===0;
  }catch{return false;}
 }
+
+// RSA private keys for chat signing: PKCS#8 (what player/certificates returns, despite its "RSA PRIVATE KEY" PEM
+// label) or bare PKCS#1 RSAPrivateKey DER
+export function parseRsaPrivateKey(bytes){
+ if(!(bytes instanceof Uint8Array))throw Error('Invalid RSA private key');
+ const read=(at,tag)=>{if(bytes[at++]!==tag)throw Error('Invalid RSA DER tag');let len=bytes[at++];if(len&128){const count=len&127;len=0;for(let i=0;i<count;i++)len=len*256+bytes[at++];}if(at+len>bytes.length)throw Error('Truncated RSA DER');return{start:at,end:at+len};};
+ const ints=(seq)=>{const out=[];let at=seq.start;while(at<seq.end){const t=read(at,2);let n=0n;for(let i=t.start;i<t.end;i++)n=(n<<8n)|BigInt(bytes[i]);out.push(n);at=t.end;}return out;};
+ let seq=read(0,48),first=read(seq.start,2);
+ if(first.end<seq.end&&bytes[first.end]===48){const alg=read(first.end,48),octets=read(alg.end,4);seq=read(octets.start,48);} // PKCS#8 wrapper
+ const [,n,e,d,p,q,dp,dq,qi]=ints(seq);
+ if(!n||!d||!p||!q)throw Error('Invalid RSA private key');
+ return {n,e,d,p,q,dp,dq,qi,size:Math.ceil(n.toString(16).length/2)};
+}
+const powMod=(b,e,m)=>{let out=1n;b%=m;while(e){if(e&1n)out=out*b%m;b=b*b%m;e>>=1n;}return out;};
+// SHA256withRSA (PKCS#1 v1.5) with the CRT, synchronous so a chat packet is complete when it is built
+export function signRsaSha256(key,data){
+ const digest=sha256(data),size=key.size,encoded=new Uint8Array(size);
+ const separator=size-SHA256_PREFIX.length-digest.length-1;
+ encoded[0]=0;encoded[1]=1;encoded.fill(255,2,separator);encoded[separator]=0;encoded.set(SHA256_PREFIX,separator+1);encoded.set(digest,separator+1+SHA256_PREFIX.length);
+ const m=toBig(encoded),m1=powMod(m,key.dp,key.p),m2=powMod(m,key.dq,key.q);
+ let h=(key.qi*((m1-m2)%key.p+key.p))%key.p,s=m2+h*key.q;
+ const out=new Uint8Array(size);for(let i=size-1;i>=0;i--){out[i]=Number(s&255n);s>>=8n;}
+ return out;
+}

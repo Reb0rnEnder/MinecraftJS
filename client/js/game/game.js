@@ -154,6 +154,7 @@ export class Game {
     this.accounts = new Accounts(settings);
     this.socialBlocking=new SocialBlocking(this);
     this.accounts.onActiveChanged=()=>this.socialBlocking.sync();
+    chatState762.signableArguments=(command)=>this.commands?.signableArguments?.(command)||[];
     this.renderer = new Renderer(device, assets);
     this.renderer.renderDistance = settings.renderDistance;
     this.renderer.gamma = settings.gamma;
@@ -776,6 +777,9 @@ export class Game {
         if (this.screens.current instanceof ConnectingScreen) this.screens.current.status = m.key ? tr(m.key) : m.message;
         break;
       case 'login_success':
+        // Connection.isEncrypted(): online-mode servers only; a proxy that logged in reports it, else assume a
+        // signed-in Microsoft account was used for an online login
+        this.connectionEncrypted = m.encrypted ?? this.accounts.active()?.type === 'microsoft';
         this.connected = true;
         this.playerUuid = m.uuid;
         this.username = m.username;
@@ -841,6 +845,9 @@ export class Game {
     this.serverData=null;this.enforcesSecureChat=false;this.chatSignatures=new MessageSignatureCache762();this.chatVerifier?.reset();
     this.enabledFeatures=new Set(['minecraft:vanilla']);this.commandTags={};
     this.blockPrediction?.reset();chatState762.reset();
+    // ClientPacketListener.handleLogin: drop the chat session, then prepare the profile key pair when encrypted
+    this.chatSession=null;chatState762.signer=null;
+    if(this.connectionEncrypted)this.prepareKeyPair();
     resetPlayerView(this);
     this.interaction?.predictedDoors?.clear();
     this.serverSimulationDistance=p.simulationDistance;
@@ -1694,7 +1701,25 @@ export class Game {
 
   // ---------------------------------------------------------------- Tick
 
+  // ProfileKeyPairManager.prepareKeyPair -> ClientPacketListener.setKeyPair
+  prepareKeyPair(){
+    if(this.preparingKeys)return;
+    const account=this.accounts.active();if(account?.type!=='microsoft')return;
+    this.preparingKeys=true;const conn=this.conn;
+    this.accounts.profileKeys(account).then(keys=>{if(keys&&this.conn===conn)this.setKeyPair(keys);}).catch(e=>console.warn('Chat signing key unavailable:',e.message)).finally(()=>{this.preparingKeys=false;});
+  }
+  async setKeyPair(keys){
+    if(this.chatSession?.keys===keys)return;
+    const {LocalChatSession762}=await import('../net/chat-signing-1.19.4.js');
+    const session=new LocalChatSession762(keys,this.playerUuid);
+    this.chatSession=session;chatState762.signer=(body)=>session.sign(body);
+    this.send(C.chatSession(session.sessionData()));
+  }
+
+
   tick() {
+    // ClientPacketListener.tick: refresh the key pair once it is due on an encrypted connection
+    if(this.inWorld&&this.connectionEncrypted&&this.accounts.shouldRefreshKeys?.())this.prepareKeyPair();
     this.ticks++;
     this.worldBorder.tick();
     if (smoothCameraActive(this) && this._smoothCam) {

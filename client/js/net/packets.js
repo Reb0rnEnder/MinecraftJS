@@ -15,6 +15,7 @@ export const C={
  settings:(locale,viewDistance,chatFlags,chatColors,skinParts,mainHand=1)=>packet('settings').string(locale).i8(viewDistance).varint(chatFlags).bool(chatColors).u8(skinParts).varint(mainHand).bool(false).bool(true).build(),
  tabComplete:(text,_position=null,transactionId=0)=>packet('tab_complete').varint(transactionId).string(text).build(),
  chat:msg=>chatState762.encode(msg),
+ chatSession:({sessionUUID,expireTime,publicKey,signature})=>new Writer762().varint(OUT.chat_session_update).uuid(sessionUUID).i64(expireTime).varint(publicKey.length).raw(publicKey).varint(signature.length).raw(signature).build(),
  clientCommand:action=>packet('client_command').varint(action).build(),
  enchantItem:(windowId,enchantment)=>packet('enchant_item').u8(windowId).u8(enchantment).build(),
  menuButton:(windowId,button)=>packet('enchant_item').u8(windowId).u8(button).build(),

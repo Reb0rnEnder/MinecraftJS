@@ -328,7 +328,7 @@ export class VanillaSocket extends Emitter {
         else uuid=readString(body,0);
         const name = readString(body, uuid.end);
         this.state = 'play';
-        this._control({ type: 'login_success', uuid: uuid.value, username: name.value });
+        this._control({ type: 'login_success', encrypted: !!this.cipher, uuid: uuid.value, username: name.value });
         break;
       }
       case 0x03: this.split.threshold = readVarint(body, 0).value | 0; break; // set compression

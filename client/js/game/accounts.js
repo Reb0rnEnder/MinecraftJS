@@ -91,6 +91,24 @@ export class Accounts {
     return r.json.blockedProfiles;
   }
 
+  // AccountProfileKeyPairManager: the Mojang-signed chat key pair from player/certificates, reused until its
+  // refreshedAfter time (kept in memory only: the private key is not written to settings)
+  async profileKeys(account=this.active()) {
+    if(account?.type!=='microsoft')return null;
+    const cached=(this.keyPairs||=new Map()).get(account.id);
+    if(cached&&Date.now()<cached.refreshedAfter)return cached;
+    const fresh=await this.ensureFresh(account);let c;
+    if(rawRoute())c=await direct.certificates(fresh.accessToken);
+    else{const r=await authPost('/auth/certificates',{accessToken:fresh.accessToken});c=r.json?.certificates;if(r.status!==200||!c)throw Error(r.json?.error||'Could not load the chat signing key');}
+    if(!c?.keyPair?.privateKey||!c?.keyPair?.publicKey||!c.publicKeySignatureV2)throw Error('Could not load the chat signing key');
+    const {pemBytes}=await import('../net/chat-signing-1.19.4.js');
+    const keys={privateKey:pemBytes(c.keyPair.privateKey),publicKey:pemBytes(c.keyPair.publicKey),signature:pemBytes(c.publicKeySignatureV2),expiresAt:Date.parse(c.expiresAt),refreshedAfter:Date.parse(c.refreshedAfter)};
+    this.keyPairs.set(account.id,keys);
+    return keys;
+  }
+  // AccountProfileKeyPairManager.shouldRefreshKeyPair
+  shouldRefreshKeys(account=this.active()){const k=this.keyPairs?.get(account?.id);return !!k&&Date.now()>=k.refreshedAfter;}
+
   // Device code sign in: returns { userCode, verificationUri, deviceCode, interval, expiresIn }
   async startDeviceLogin() {
     if (rawRoute()) return direct.startDeviceCode();
