@@ -107,7 +107,9 @@ export class Interaction {
     const eye = g.eyePosition(partial);
     const look = g.lookVector(partial);
     const blockRange = this.reach();
-    const entityRange = entityRangeOverride ?? this.player.entityInteractionRange ?? (g.gameMode === 1 ? 5 : 3);
+    const attackRange = g.items.attackRange(g.inventory.held());
+    const itemRange = attackRange && (g.gameMode === 1 ? attackRange.maxCreativeReach : attackRange.maxReach) + attackRange.hitboxMargin;
+    const entityRange = entityRangeOverride ?? itemRange ?? this.player.entityInteractionRange ?? (g.gameMode === 1 ? 5 : 3);
     const range = Math.max(blockRange, entityRange);
     const hit = g.world.raycast(eye[0], eye[1], eye[2], look[0], look[1], look[2], range);
     const blockDist = hit ? hit.dist : range;
@@ -140,15 +142,31 @@ export class Interaction {
     this.player.usingItem = false;
   }
 
-  // EntityPlayerSP.swingArm
-  swing(hand = 0) {
-    this.game.send(C.armAnimation(hand));
+  // EntityPlayerSP.swingArm. animation is the native SwingAnimation ({type, duration}); interactions
+  // use SwingAnimation.DEFAULT, attacks use the held item's attack_animation component.
+  startSwing(animation, hand = 0, send = true) {
+    const g = this.game, a = animation || {type: 'whack', duration: 6};
+    if (send) g.send(C.armAnimation(hand));
     this.swingHand = hand;
-    // EntityLivingBase.swingItem: restart only past half of getArmSwingAnimationEnd()
-    if (!this.swinging || this.swingTicks >= Math.floor((this.swingLength || 6) / 2) || this.swingTicks < 0) {
+    // LivingEntity.SwingState.startIfAble: restart only past half of the current duration.
+    if (!this.swinging || this.swingTicks > (this.swingAnimationDuration || 6) / 2 || this.swingTicks <= 0) {
       this.swingTicks = -1;
       this.swinging = true;
+      this.swingAnimationType = a.type || 'whack';
+      this.swingAnimationDuration = a.duration ?? 6;
     }
+  }
+  swing(hand = 0, animation = null) { this.startSwing(animation, hand); }
+
+  // Minecraft.startAttack -> MultiPlayerGameMode.piercingAttack: a spear sends STAB instead of
+  // an entity attack, resets attack strength, swings with the item animation and plays its sound.
+  piercingAttack(held, animation) {
+    const g = this.game, weapon = g.items.piercingWeapon(held);
+    if (!weapon) return;
+    g.send(C.stab());
+    this.ticksSinceLastSwing = 0;
+    this.startSwing(animation, 0, false);
+    if (weapon.sound) g.sound?.playAtPlayer(weapon.sound, 1, 1, 'player');
   }
 
   // ---------------------------------------------------------------- per tick
@@ -208,7 +226,8 @@ export class Interaction {
   updateSwing() {
     this.prevSwingProgress = this.swingProgress;
     let haste = this.game.effects.get(EFFECT_766.haste), fatigue = this.game.effects.get(EFFECT_766.mining_fatigue);
-    const len = haste ? 6 - (1 + haste.amplifier) : fatigue ? 6 + (1 + fatigue.amplifier) * 2 : 6;
+    const base = this.swingAnimationDuration || 6;
+    const len = haste ? base - (1 + haste.amplifier) : fatigue ? base + (1 + fatigue.amplifier) * 2 : base;
     if (this.swinging) {
       this.swingTicks++;
       if (this.swingTicks >= len) { this.swingTicks = 0; this.swinging = false; }
@@ -237,6 +256,13 @@ export class Interaction {
     const g = this.game;
     if (this.leftClickCounter > 0) return;
     if (g.player.ridingEntity && g.player.ridingEntity.kind === 'boat') return; // isRowingBoat
+    const held = g.inventory.held();
+    if (g.items.piercingWeapon(held)) {
+      if (g.gameMode === 3) return;
+      const minimum = g.items.minimumAttackCharge(held);
+      if (minimum <= 0 || this.cooledAttackStrength(0) >= minimum) this.piercingAttack(held, g.items.attackAnimation(held));
+      return;
+    }
     const t = this.target;
     let miss = !t;
     if (t && t.type === 'entity') this.attackEntity(t.entity);
@@ -248,7 +274,7 @@ export class Interaction {
       if (g.gameMode !== 1) this.leftClickCounter = 10;
       this.resetCooldown();
     }
-    this.swing(0);
+    this.swing(0, g.items.attackAnimation(held));
   }
 
   // PlayerControllerMP.attackEntity + client-side EntityPlayer.attackTargetEntityWithCurrentItem. On the client

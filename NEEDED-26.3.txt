@@ -38,8 +38,11 @@ Done and committed:
 - custom_report_details and low_disk_space_warning are handled; only add_transient_block and the
   two game-test frames remain explicit scope decisions.
 - Adapter gate skips nothing across its 53 pinned frames (36 handler names).
-- Full 26.3 gate: test:26.3 68/68, adapter 53 frames / 36 handlers, inbound all, serverbound 0,
+- Full 26.3 gate: test:26.3 72/72, adapter 53 frames / 36 handlers, inbound all, serverbound 0,
   assets exit 0.
+- 26.3 spears: native kinetic/piercing component use, attack_range picking, minimum_attack_charge,
+  STAB player_action, SwingAnimation duration, and the first-/third-person spear use and attack
+  transforms from SpearAnimations. Pinned by test-spear-26.3.mjs; live visual acceptance remains.
 
 Still deliberately untracked:
 - docs/checkpoint-26.3-entities*.png and docs/live-*.png are user screenshots. Never commit them.
@@ -89,8 +92,9 @@ B. CODE-ONLY PARITY WORK, IN PRIORITY ORDER
      interactions.
    - 26.1/26.2: golden dandelion, cinnabar/sulfur families, sulfur caves, new potions/effects and
      world behaviour.
-   - 26.3: poplar wood, dappled forest, straw bed, abandoned camps, cushion, nautilus armor, spear,
-     sulfur cube and release-article families not yet exercised.
+   - 26.3: poplar wood, dappled forest, straw bed, abandoned camps, cushion, nautilus armor,
+     sulfur cube and release-article families not yet exercised (spears now have native attack and
+     animation code; live visual/acceptance remains).
    - No mob is pending a renderer. Breeze, creaking, copper golem, happy ghast, nautilus, zombie
      nautilus and sulfur cube are bound to their native layer trees; their native metadata indices
      and state-driven clips are now wired, and copper golem weathering selects its native texture.
@@ -104,8 +108,9 @@ B. CODE-ONLY PARITY WORK, IN PRIORITY ORDER
      shriek, trail, vibration and explosion variants.
    - Complete remaining native animation formulas/triggers (wolf, dragon, piglin, splash and any
      release-specific mob animation) against the native part trees. Breeze/copper golem/creaking/
-     nautilus walk-idle-swim clips are in and their pose/state/event triggers are wired; verify
-     them live and extend the extractor to other families when their formulas are revised.
+     nautilus walk-idle-swim clips are in and their pose/state/event triggers are wired; spear
+     use/attack and SwingAnimation STAB/WHACK/NONE are wired; verify them live and extend the
+     extractor to other families when their formulas are revised.
    - Confirm particle-setting clearing, the 512 cap and solid-block rejection in live explosions
      (logic is unit-tested; live acceptance is not done).
 

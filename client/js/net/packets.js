@@ -170,6 +170,8 @@ export const C = {
     packet("steer_vehicle").f32(sideways).f32(forward).u8(flags).build(),
   heldItemSlot: (slot) => packet("held_item_slot").i16(slot).build(),
   armAnimation: () => packet("arm_animation").build(),
+  // ServerboundPlayerActionPacket.Action.STAB (ordinal 8): 26.3 piercing-weapon attack.
+  stab: (sequence = 0) => packet("block_dig").varint(8).position(0, 0, 0).u8(0).varint(sequence).build(),
   spectate: (uuid) => packet("spectate").uuid(uuid).build(),
 
   // 26.3 ServerboundInteractPacket(int entityId, InteractionHand, Vec3.LP location, boolean

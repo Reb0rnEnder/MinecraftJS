@@ -36,6 +36,7 @@ import { isPointInFluid } from '../world/fluids.js';
 import { resolveState } from '../world/blockstates.js';
 import { FORMAT, colorParams, EntityParams } from '../gfx/device.js';
 import { mat4, D2R, aabbInFrustum } from '../gfx/math.js';
+import {spearThirdPersonAttackItem, spearThirdPersonUseItem} from './spear-animations-26.3.js';
 import { Node, material, drawTree, toDraw, Batcher } from '../gfx/scene.js';
 import { JavaRandom } from '../util/jrandom.js';
 import { decodePng } from '../util/png.js';
@@ -1316,7 +1317,8 @@ export class EntityRenderer {
         const name = g.items.name(stack.id);
         if (name === 'shield') return 'block';
         if (name === 'bow') return 'bow';
-        if (name === 'trident') return 'spear';
+        if (name === 'trident') return 'trident';
+        if (g.items.useAction(stack) === 'spear') return 'spear';
         if (name === 'spyglass') return 'spyglass';
         if (name === 'crossbow') return 'crossbow_charge';
         if(name==='brush')return 'brush';
@@ -1334,6 +1336,8 @@ export class EntityRenderer {
       useTicks:e.useTicks||0,crossbowChargeDuration:held&&g.items.name(held.id)==='crossbow'?g.items.crossbowChargeDuration(held):25,
       rightPose: skeletonAim ? 'bow' : primaryRight ? mainPose : offPose, leftPose: primaryRight ? offPose : mainPose,
       swingSide: ((e.swingHand || 0) === 0) === primaryRight ? 1 : -1,
+      swingType: e.swingType || 'whack',
+      kineticWeapon: g.items.kineticWeapon(mainPose === 'spear' ? held : offPose === 'spear' ? e.offhand : null),
       elytra: (e.elytraTicks || 0) > 4, speedSq,
       onGround: e.onGround, eatingGrass: e.eatingGrass || 0, sitting: e.sitting, angry: e.angry, hanging: e.hanging,
       carrying: !!e.carried, screaming: e.screaming, horseType: e.horseType, saddled: !!(e.horseFlags & 4) || e.saddled,
@@ -1555,7 +1559,7 @@ export class EntityRenderer {
     if (key !== st.key) {
       st.key = key;
       holder.clear();
-      st.root = null; st.glint = null;
+      st.root = null; st.glint = null; st.fx = null;
       if (stack) {
         const io = this.game.itemRenderer.objectFor(stack, v.atlasMat, true, entity);
         if (io) {
@@ -1567,16 +1571,29 @@ export class EntityRenderer {
           if (eye) off.position.set((leftHand ? -2.5 : 2.5) / 16, -.0625, 0);
           else off.position.set((leftHand ? -1 : 1) / 16, 0.125, -0.625);
           const t = new Node();
+          const fx = new Node();
           const d = io.model.display || {};
           applyTransform(t, eye ? d.head : leftHand ? d.thirdperson_lefthand || d.thirdperson_righthand : d.thirdperson_righthand, eye ? false : leftHand);
-          t.add(io.obj); off.add(t); turn.add(off); root.add(turn);
+          t.add(io.obj); fx.add(t); off.add(fx); turn.add(off); root.add(turn);
           holder.add(root);
-          st.root = root;
+          st.root = root; st.fx = fx;
           st.glint = io.obj.userData.glint ? io.obj : null;
         } else st.key = undefined;
       }
     }
     if (st.root) st.root.position.y = !eye && args.sneak ? 0.2 : 0;
+    if (st.fx) {
+      const kinetic = stack ? this.game.items.kineticWeapon(stack) : null;
+      const armSide = leftHand ? -1 : 1;
+      const usingSpear = args.kineticWeapon && (leftHand ? args.leftPose === 'spear' : args.rightPose === 'spear') && args.useTicks > 0;
+      const attack = args.swing > 0 && args.swingSide === armSide && args.swingType === 'stab';
+      if ((usingSpear && kinetic) || attack) {
+        const m = mat4.create();
+        if (attack && kinetic) spearThirdPersonAttackItem(m, kinetic, args.swing);
+        if (usingSpear && kinetic) spearThirdPersonUseItem(m, kinetic, args.useTicks, armSide, 0, Math.max(0, args.swing));
+        st.fx.matrix = m;
+      } else st.fx.matrix = null;
+    }
     if (st.glint) this.glints.push(st.glint);
   }
 

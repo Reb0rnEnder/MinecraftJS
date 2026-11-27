@@ -6,6 +6,7 @@ import {NATIVE_EFFECTS_26_3} from './effects-26.3.js';
 import{bundleContents,bundleContentWeight}from'./bundle.js';
 import {NATIVE_BLOCK_TAGS_26_3} from './block-tags-26.3.js';
 import {NATIVE_REQUIRES_TOOL_26_3} from './block-tools-26.3.js';
+import {SOUND_NAMES_26_3} from '../net/registry-names-26.3.js';
 const attributeKey = name => 'attribute.name.' + name.replace(/^minecraft:/, '').replace(/[A-Z]/g, c => '_' + c.toLowerCase());
 const REQUIRES_TOOL_26_3 = new Set(NATIVE_REQUIRES_TOOL_26_3.blocks);
 // Item metadata helpers: names, tooltips, stack sizes, durability, use actions, tool speeds.
@@ -28,6 +29,17 @@ const NATIVE_USE_ANIMATIONS = new Map([
   ['brush','brush'],['goat_horn','toot_horn']
 ]);
 const nativeUseAnimation = name => name === 'bundle' || name.endsWith('_bundle') ? 'bundle' : NATIVE_USE_ANIMATIONS.get(name) || null;
+// ItemUseAnimation / SwingAnimationType declaration orders in 26.3.
+const SWING_ANIMATIONS = ['none', 'whack', 'stab'];
+const soundName = value => {
+  if (typeof value === 'string') return value.replace(/^minecraft:/, '');
+  return Number.isInteger(value) ? SOUND_NAMES_26_3[value - 1] || null : null;
+};
+const kineticCondition = value => value ? {
+  maxDurationTicks: value.maxDurationTicks ?? value.max_duration_ticks ?? 0,
+  minSpeed: value.minSpeed ?? value.min_speed ?? 0,
+  minRelativeSpeed: value.minRelativeSpeed ?? value.min_relative_speed ?? 0
+} : null;
 const resource = (name) => name.includes(':') ? name : 'minecraft:' + name;
 const translationKey = (kind, name) => kind + '.' + resource(name).replace(':', '.');
 export class Items {
@@ -257,12 +269,53 @@ export class Items {
     const native=nativeUseAnimation(this.name(item.id));
     if(native)return native;
     if(c?.blocks_attacks!==undefined)return 'block';
-    if(c?.kinetic_weapon!==undefined)return 'spear';
+    if(this.piercingWeapon(item))return 'spear';
     if(item.version==='26.3')return 'none';
     const action=ITEM_DATA_766.items[item.id]?.action||'none';
     if(!['none','eat'].includes(action))return action;
     return 'none';
   }
+  attackAnimation(item) {
+    const value = item ? this.component(item, 'attack_animation') || {} : {};
+    const type = typeof value.type === 'number' ? SWING_ANIMATIONS[value.type] : value.type;
+    return {type: type || 'whack', duration: value.duration ?? 6};
+  }
+  kineticWeapon(item) {
+    const value = item ? this.component(item, 'kinetic_weapon') : null;
+    if (!value) return null;
+    return {
+      contactCooldownTicks: value.contactCooldownTicks ?? value.contact_cooldown_ticks ?? 0,
+      delayTicks: value.delayTicks ?? value.delay_ticks ?? 0,
+      dismountConditions: kineticCondition(value.dismountConditions ?? value.dismount_conditions),
+      knockbackConditions: kineticCondition(value.knockbackConditions ?? value.knockback_conditions),
+      damageConditions: kineticCondition(value.damageConditions ?? value.damage_conditions),
+      forwardMovement: value.forwardMovement ?? value.forward_movement ?? 0,
+      damageMultiplier: value.damageMultiplier ?? value.damage_multiplier ?? 0,
+      sound: soundName(value.sound), hitSound: soundName(value.hitSound ?? value.hit_sound)
+    };
+  }
+  piercingWeapon(item) {
+    const value = item ? this.component(item, 'piercing_weapon') : null;
+    if (!value) return null;
+    return {
+      dealsKnockback: !!(value.dealsKnockback ?? value.deals_knockback),
+      dismounts: !!(value.dismounts),
+      sound: soundName(value.sound), hitSound: soundName(value.hitSound ?? value.hit_sound)
+    };
+  }
+  attackRange(item) {
+    const value = item ? this.component(item, 'attack_range') : null;
+    if (!value) return null;
+    return {
+      minReach: value.minReach ?? value.min_reach ?? 0,
+      maxReach: value.maxReach ?? value.max_reach ?? 3,
+      minCreativeReach: value.minCreativeReach ?? value.min_creative_reach ?? 0,
+      maxCreativeReach: value.maxCreativeReach ?? value.max_creative_reach ?? 5,
+      hitboxMargin: value.hitboxMargin ?? value.hitbox_margin ?? 0.3,
+      mobFactor: value.mobFactor ?? value.mob_factor ?? 1
+    };
+  }
+  minimumAttackCharge(item) { return item ? this.component(item, 'minimum_attack_charge') ?? 0 : 0; }
   useDuration(item) {
     if(!item)return 0;const c=this.components(item),name=this.name(item.id),meta=ITEM_DATA_766.items[item.id];
     if(c.consumable)return Math.trunc(Math.fround(Math.fround(c.consumable.consumeSeconds??c.consumable.secondsToConsume??1.6)*20));

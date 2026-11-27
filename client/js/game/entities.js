@@ -135,7 +135,7 @@ export class EntityManager {
       packetX:x,packetY:y,packetZ:z,
       newX: x, newY: y, newZ: z, newYaw: yaw, newPitch: pitch, inc: 0,
       yaw, pitch, prevYaw: yaw, prevPitch: pitch, headYaw: yaw, prevHeadYaw: yaw, bodyYaw: yaw, prevBodyYaw: yaw,
-      limbSwing: 0, limbSwingAmount: 0, prevLimbSwingAmount: 0, swingProgress: 0, prevSwingProgress: 0, swingTicks: 0, swinging: false,
+      limbSwing: 0, limbSwingAmount: 0, prevLimbSwingAmount: 0, swingProgress: 0, prevSwingProgress: 0, swingTicks: 0, swinging: false, swingType: 'whack', swingDuration: 6,
       onGround: false, metadata: {}, equipment: [null, null, null, null, null], ticks: 0, hurtTime: 0, deathTime: 0,
       motionX: 0, motionY: 0, motionZ: 0, pickable: true, width: 0.6, height: 1.8, eyeHeight: 1.62, riding: -1, passenger: -1,
       health: 20, maxHealth: 20, effects: new Map(), dead: false,
@@ -672,12 +672,21 @@ export class EntityManager {
   onAnimation(p) {
     const e = this.map.get(p.entityId);
     const g = this.game;
-    if (p.entityId === g.entityId) { if (p.animation === 0) g.interaction.swing && (g.interaction.swinging = true, g.interaction.swingTicks = -1); return; }
+    if (p.entityId === g.entityId) {
+      if (p.animation === 0) g.interaction.swing && g.interaction.startSwing(p.swing, 0, false);
+      return;
+    }
     if (!e) return;
     switch (p.animation) {
-      case 0: case 3: // swing main hand / off hand
-        if (!e.swinging || e.swingTicks >= 3 || e.swingTicks < 0) { e.swingTicks = -1; e.swinging = true; e.swingHand = p.animation === 3 ? 1 : 0; }
+      case 0: case 3: { // swing main hand / off hand
+        const type = ['none', 'whack', 'stab'][p.swing?.type ?? 1] || 'whack';
+        const duration = p.swing?.duration ?? 6;
+        if (!e.swinging || e.swingTicks > (e.swingDuration || 6) / 2 || e.swingTicks <= 0) {
+          e.swingTicks = -1; e.swinging = true; e.swingHand = p.animation === 3 ? 1 : 0;
+          e.swingType = type; e.swingDuration = duration;
+        }
         break;
+      }
       case 1: e.hurtTime = 10; break;
       case 2: e.sleeping = false; break;
       case 4: g.particles.crit(e); break;
@@ -1134,11 +1143,12 @@ export class EntityManager {
       }
       if (e.eatingGrass > 0) e.eatingGrass--;
       // Swing progress
+      const swingDuration = e.swingDuration || 6;
       if (e.swinging) {
         e.swingTicks++;
-        if (e.swingTicks >= 6) { e.swingTicks = 0; e.swinging = false; }
+        if (e.swingTicks >= swingDuration) { e.swingTicks = 0; e.swinging = false; }
       } else e.swingTicks = 0;
-      e.swingProgress = e.swingTicks / 6;
+      e.swingProgress = e.swingTicks / swingDuration;
       if (e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand') this._livingUpdate(e);
       if(isSquid(e))tickSquid(e,squidInWater(e,g.world));
       if(e.entityName==='glow_squid')g.particles.nativeParticle('glow',e.x+(Math.random()-.5)*e.width*.6,e.y+Math.random()*e.height,e.z+(Math.random()-.5)*e.width*.6);

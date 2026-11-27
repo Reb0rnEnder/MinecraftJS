@@ -2,7 +2,7 @@ MinecraftJS 26.3 - WHAT WE HAVE ADDED
 Branch: 26.3
 Inventory date: 2026-11-27
 Baseline: 66dd0a1 "Render native 26.3 debug subscriptions in the F3 screen" plus this batch
-Latest verified run: test:26.3 68/68, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
+Latest verified run: test:26.3 72/72, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
 inbound gate all checks passed, serverbound gate 0, npm run assets exit 0 (90 mobs, 140 textures,
 no mobs pending a renderer).
 
@@ -194,6 +194,12 @@ Known limit:
 - Below-name objectives lift name tags only within 10 blocks.
 - Smithing screen: native container/slot sprites, template icons including nautilus armor and
   spear, error panel and armor-stand preview.
+- 26.3 spears: all seven native tiers are recognised from their `kinetic_weapon`/`piercing_weapon`
+  components, render the native first- and third-person spear use/attack clips, send the native
+  `player_action` STAB action on attack instead of an entity attack, honour `minimum_attack_charge`,
+  use the item's `attack_range` for picking and the native `attack_animation` duration for swings.
+  The formulas come from SpearAnimations (use raise/sway/lower phases, STAB arm and item transforms,
+  first-person use/attack) and are pinned by test-spear-26.3.mjs. Visual acceptance remains open.
 - Dialog screen supports both holders and notice/confirmation/multi_action/dialog_list/
   server_links dialogs; text/multiline, boolean, number-range and single-option inputs; item
   bodies; warning button; click actions and tooltips; dynamic command templates. Chat click
@@ -249,7 +255,7 @@ Known limit:
 ======================================================================
 
 Green at this inventory:
-- npm run test:26.3: 68 tests.
+- npm run test:26.3: 72 tests (including spear components/STAB/animation formulas).
 - npm run adapter:26.3: 53 packets, 36 handler names, 2 chunks.
 - tools/port-26.3/inbound-gate.mjs: all checks.
 - tools/port-26.3/serverbound-gate.mjs: all checks.

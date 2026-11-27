@@ -11,6 +11,7 @@ import { spyglassArmPitch } from './spyglass-pose.js';
 import { animateAxolotl } from './axolotl-pose.js';
 import {animateHoglin,animatePiglin,animateStrider} from './nether-poses.js';
 import {animateFox} from './fox-pose.js';
+import {spearThirdPersonHandUse, spearThirdPersonAttackArm} from './spear-animations-26.3.js';
 // Entity models (native 1.14.4). Their boxes come from the Minecraft client jar at build time (lib/modelextract.js runs the
 // game's model constructors and records every part: bundles/entity-models.json); this file names the parts and holds
 // the animation (ports of setRotationAngles / setLivingAnimations).
@@ -162,12 +163,14 @@ export function animateBiped(m, a) {
   else if (lp === 'item') p.leftArm.rx = p.leftArm.rx * 0.5 - PI / 10;
   else if (lp === 'spyglass') { p.leftArm.rx = spyglassArmPitch(p.head.rx, a.sneak); p.leftArm.ry = p.head.ry + .2617994; }
   else if(lp==='brush')brushArmPose766(p.leftArm);
-  else if (lp === 'spear') { p.leftArm.rx = p.leftArm.rx * 0.5 - PI; p.leftArm.ry = 0; }
+  else if (lp === 'trident') { p.leftArm.rx = p.leftArm.rx * 0.5 - PI; p.leftArm.ry = 0; }
+  else if (lp === 'spear') spearThirdPersonHandUse(p.leftArm, p.head, -1, a.kineticWeapon, a.useTicks, {fallFlying: a.elytra, swimAmount: swim});
   if (rp === 'block')shieldArmPose766(p.rightArm,p.head,true);
   else if (rp === 'item') p.rightArm.rx = p.rightArm.rx * 0.5 - PI / 10;
   else if (rp === 'spyglass') { p.rightArm.rx = spyglassArmPitch(p.head.rx, a.sneak); p.rightArm.ry = p.head.ry - .2617994; }
   else if(rp==='brush')brushArmPose766(p.rightArm);
-  else if (rp === 'spear') { p.rightArm.rx = p.rightArm.rx * 0.5 - PI; p.rightArm.ry = 0; }
+  else if (rp === 'trident') { p.rightArm.rx = p.rightArm.rx * 0.5 - PI; p.rightArm.ry = 0; }
+  else if (rp === 'spear') spearThirdPersonHandUse(p.rightArm, p.head, 1, a.kineticWeapon, a.useTicks, {fallFlying: a.elytra, swimAmount: swim});
   p.body.ry = 0;
   p.rightArm.pz = 0; p.rightArm.px = -5; p.leftArm.pz = 0; p.leftArm.px = 5;
   if (swing > -9990) {
@@ -178,12 +181,15 @@ export function animateBiped(m, a) {
     p.rightArm.pz = sin(p.body.ry) * 5; p.rightArm.px = -cos(p.body.ry) * 5;
     p.leftArm.pz = -sin(p.body.ry) * 5; p.leftArm.px = cos(p.body.ry) * 5;
     p.rightArm.ry += p.body.ry; p.leftArm.ry += p.body.ry; p.leftArm.rx += p.body.ry;
-    f1 = 1 - swing; f1 *= f1; f1 *= f1; f1 = 1 - f1;
-    const f2 = sin(f1 * PI);
-    const f3 = sin(swing * PI) * -(p.head.rx - 0.7) * 0.75;
-    arm.rx = arm.rx - (f2 * 1.2 + f3);
-    arm.ry += p.body.ry * 2;
-    arm.rz += sin(swing * PI) * -0.4;
+    if (a.swingType === 'stab') spearThirdPersonAttackArm({rightArm: p.rightArm, leftArm: p.leftArm, body: p.body}, swing, side);
+    else if (a.swingType !== 'none') {
+      f1 = 1 - swing; f1 *= f1; f1 *= f1; f1 = 1 - f1;
+      const f2 = sin(f1 * PI);
+      const f3 = sin(swing * PI) * -(p.head.rx - 0.7) * 0.75;
+      arm.rx = arm.rx - (f2 * 1.2 + f3);
+      arm.ry += p.body.ry * 2;
+      arm.rz += sin(swing * PI) * -0.4;
+    }
   }
   const yOff = m.yOff || 0;
   if (a.sneak) {

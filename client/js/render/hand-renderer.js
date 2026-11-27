@@ -1,4 +1,5 @@
 import{applyBrushFrame766}from'../game/brushing-1.20.6.js';
+import{spearFirstPersonUse,spearFirstPersonAttack}from'./spear-animations-26.3.js';
 import{firstPersonBlockLight}from'./dynamic-lights.js';
 import{EMPTY_DYNAMIC_LIGHTS}from'../gfx/dynamic-lighting.js';
 import { usingSpyglass } from '../game/spyglass.js';
@@ -269,8 +270,8 @@ export class HandRenderer {
         const ticks=it.useTicks+partial,charge=Math.min(1,ticks/g.items.crossbowChargeDuration(stack));
         if(charge>.1)mat4.translate(m,m,0,sin((ticks-.1)*1.3)*(charge-.1)*.004,0);
         mat4.translate(m,m,0,0,charge*.04);mat4.scale(m,m,1,1,1+charge*.2);R(side*45,0,-1,0);
-      } else if (act === 'spear') {
-        // ItemRenderer (cuc): ten ticks to charge the throw, then hold it back.
+      } else if (act === 'trident') {
+        // ItemRenderer TRIDENT: ten ticks to charge the throw, then hold it back.
         this._side(m, side, equip);
         mat4.translate(m, m, side * -0.5, 0.7, 0.1);
         R(-55, 1, 0, 0); R(side * 35.3, 0, 1, 0); R(side * -9.785, 0, 0, 1);
@@ -279,21 +280,34 @@ export class HandRenderer {
         mat4.translate(m, m, 0, 0, charge * 0.2);
         mat4.scale(m, m, 1, 1, 1 + charge * 0.2);
         R(side * 45, 0, -1, 0);
+      } else if (act === 'spear') {
+        // 26.3 SpearAnimations.firstPersonUse: fixed arm offset, then native kinetic sway.
+        this._side(m, side, 0);
+        spearFirstPersonUse(m, g.items.kineticWeapon(stack), it.useTicks + partial, side, pl.ticksSinceKineticHitFeedback || 0);
       } else this._side(m, side, equip); // NONE and BLOCK (shields)
+      return;
+    }
+    this._side(m, side, equip);
+    if (hand === 0 && g.items.name(stack.id) === 'crossbow' && g.items.crossbowCharged(stack) && sw < .001) {
+      mat4.translate(m, m, side * -.641864, 0, 0); R(side * 10, 0, 1, 0);
+    }
+    if (!(sw > 0)) return;
+    const swingType = (it.swingHand || 0) === hand ? it.swingAnimationType || 'whack' : 'none';
+    if (swingType === 'none') return;
+    if (swingType === 'stab') {
+      spearFirstPersonAttack(m, sw, side);
       return;
     }
     const f = -0.4 * sin(sqrt(sw) * Math.PI);
     const f1 = 0.2 * sin(sqrt(sw) * Math.PI * 2);
     const f2 = -0.2 * sin(sw * Math.PI);
     mat4.translate(m, m, side * f, f1, f2);
-    this._side(m, side, equip);
     // transformFirstPerson
     const a = sin(sw * sw * Math.PI);
     R(side * (45 + a * -20), 0, 1, 0);
     const b = sin(sqrt(sw) * Math.PI);
     R(side * b * -20, 0, 0, 1);
     R(b * -80, 1, 0, 0);
-    if(hand===0&&g.items.name(stack.id)==='crossbow'&&g.items.crossbowCharged(stack)&&sw<.001){mat4.translate(m,m,side*-.641864,0,0);R(side*10,0,1,0);}
     R(side * -45, 0, 1, 0);
   }
 
