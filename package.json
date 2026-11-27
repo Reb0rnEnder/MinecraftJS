@@ -10,7 +10,7 @@
     "prepare:1.20.6": "node tools/port-1.20.6/prepare.mjs",
     "prepare:26.3": "node tools/port-26.3/prepare.mjs",
     "reports:26.3": "node tools/port-26.3/reports.mjs",
-    "test:26.3": "node tools/port-26.3/generate-ids.mjs --check && node tools/port-26.3/reports.mjs --check && node tools/port-26.3/component-codecs.mjs --check && node tools/port-26.3/particle-codecs.mjs --check && node tools/port-26.3/item-codec-gate.mjs && node tools/port-26.3/particle-codecs-gate.mjs && node tools/port-26.3/advancements-oracle.mjs --check && node tools/port-26.3/explode-oracle.mjs --check && node tools/port-26.3/stats-oracle.mjs --check && node tools/port-26.3/components-oracle.mjs && node tools/port-26.3/registry-tables.mjs --check && node tools/port-26.3/build-biomes.mjs --check && node tools/port-26.3/build-enchantments.mjs --check && node tools/port-26.3/build-foods.mjs --check && node tools/port-26.3/build-item-defaults.mjs --check && node tools/port-26.3/inbound-gate.mjs && node tools/port-26.3/serverbound-gate.mjs && node tools/port-26.3/byte-fixtures.mjs && node tools/port-26.3/play-login.mjs && node tools/port-26.3/play-frames.mjs && node tools/port-26.3/chunk-frames.mjs && node tools/port-26.3/login-config-frames.mjs",
+    "test:26.3": "node tools/port-26.3/generate-ids.mjs --check && node tools/port-26.3/reports.mjs --check && node tools/port-26.3/component-codecs.mjs --check && node tools/port-26.3/particle-codecs.mjs --check && node tools/port-26.3/item-codec-gate.mjs && node tools/port-26.3/particle-codecs-gate.mjs && node tools/port-26.3/advancements-oracle.mjs --check && node tools/port-26.3/explode-oracle.mjs --check && node tools/port-26.3/stats-oracle.mjs --check && node tools/port-26.3/components-oracle.mjs && node tools/port-26.3/registry-tables.mjs --check && node tools/port-26.3/build-biomes.mjs --check && node tools/port-26.3/build-enchantments.mjs --check && node tools/port-26.3/build-foods.mjs --check && node tools/port-26.3/build-item-defaults.mjs --check && node tools/port-26.3/build-block-tags.mjs --check && node tools/port-26.3/inbound-gate.mjs && node tools/port-26.3/serverbound-gate.mjs && node tools/port-26.3/byte-fixtures.mjs && node tools/port-26.3/play-login.mjs && node tools/port-26.3/play-frames.mjs && node tools/port-26.3/chunk-frames.mjs && node tools/port-26.3/login-config-frames.mjs",
     "probe:26.3": "node tools/port-26.3/probe-server.mjs",
     "client-net:26.3": "node tools/port-26.3/client-net.mjs",
     "reports:1.20.6": "node tools/port-1.20.6/reports.mjs",
@@ -55,6 +55,7 @@
     "enchantments:26.3": "node tools/port-26.3/build-enchantments.mjs",
     "foods:26.3": "node tools/port-26.3/build-foods.mjs",
     "item-defaults:26.3": "node tools/port-26.3/build-item-defaults.mjs",
+    "block-tags:26.3": "node tools/port-26.3/build-block-tags.mjs",
     "component-codecs:26.3": "node tools/port-26.3/component-codecs.mjs",
     "item-codec:26.3": "node tools/port-26.3/item-codec-gate.mjs",
     "serverbound:26.3": "node tools/port-26.3/serverbound-gate.mjs"

@@ -4,6 +4,7 @@ import {itemComponentValues26_3} from '../net/item-components-26.3.js';
 import {ITEM_DATA_766} from './item-data-1.20.6.js';
 import {NATIVE_EFFECTS_26_3} from './effects-26.3.js';
 import{bundleContents,bundleContentWeight}from'./bundle.js';
+import {NATIVE_BLOCK_TAGS_26_3} from './block-tags-26.3.js';
 const attributeKey = name => 'attribute.name.' + name.replace(/^minecraft:/, '').replace(/[A-Z]/g, c => '_' + c.toLowerCase());
 // Item metadata helpers: names, tooltips, stack sizes, durability, use actions, tool speeds.
 import { simplify } from '../net/nbt.js';
@@ -261,10 +262,32 @@ export class Items {
   chargedProjectiles(item) {const value=this.component(item,'charged_projectiles');return value?.projectiles??value??[];}
   crossbowCharged(item) {return this.chargedProjectiles(item).length>0;}
 
-  // ItemTool.getStrVsBlock
+  blockRuleMatches(rule, blockDef) {
+    const blocks=rule?.blocks, name=String(blockDef?.name||'').replace(/^minecraft:/,'');
+    if(typeof blocks==='string')return blocks.startsWith('#')?this.blockTagHas(blocks,name):blocks.replace(/^minecraft:/,'')===name;
+    if(!blocks)return false;
+    if(blocks.tag)return this.blockTagHas(blocks.tag,name);
+    if(blocks.name)return blocks.name.replace(/^minecraft:/,'')===name;
+    if(Array.isArray(blocks.ids))return blocks.ids.some(id=>{const def=this.assets.data.blocks?.[id]??this.assets.data.blocks?.find?.(block=>block.id===id);return def?.name===name;});
+    if(Array.isArray(blocks))return blocks.some(entry=>this.blockRuleMatches({blocks:entry},blockDef));
+    return false;
+  }
+
+  blockTagHas(tag, name) {
+    const key=String(tag).replace(/^#/,'');
+    return !!NATIVE_BLOCK_TAGS_26_3.tags[key]?.includes(name);
+  }
+
+  // Item.getDestroySpeed: the first matching native tool rule wins, otherwise the tool's
+  // default mining speed applies. Rules and tags come from the 26.3 item reports/jar.
   strVsBlock(item, blockDef) {
     if (!item) return 1;
-    const name = this.name(item.id),native=this.assets.data.creative.toolSpeeds?.[item.id];
+    const tool=this.component(item,'tool');
+    if(tool){
+      for(const rule of tool.rules||[])if(this.blockRuleMatches(rule,blockDef))return rule.speed??1;
+      return tool.default_mining_speed??tool.defaultMiningSpeed??1;
+    }
+    const name = this.name(item.id),native=this.assets.data.creative?.toolSpeeds?.[item.id];
     if(native)return native[blockDef.name]??1;
     if (name === 'shears') {
       if (blockDef.name === 'cobweb' || blockDef.material === 'leaves') return 15;
@@ -278,9 +301,9 @@ export class Items {
       return 1;
     }
     // materials.json still has 1.12 numeric keys. Express the same tool/material rules by registry names.
-    const tool = /^(wooden|stone|iron|diamond|golden|netherite)_(pickaxe|axe|shovel)$/.exec(name);
-    if (tool && ({ pickaxe: ['rock'], axe: ['wood', 'plant'], shovel: ['dirt'] }[tool[2]]).includes(blockDef.material)) {
-      return { wooden: 2, stone: 4, iron: 6, diamond: 8, golden: 12, netherite: 9 }[tool[1]];
+    const toolName = /^(wooden|stone|iron|diamond|golden|netherite)_(pickaxe|axe|shovel)$/.exec(name);
+    if (toolName && ({ pickaxe: ['rock'], axe: ['wood', 'plant'], shovel: ['dirt'] }[toolName[2]]).includes(blockDef.material)) {
+      return { wooden: 2, stone: 4, iron: 6, diamond: 8, golden: 12, netherite: 9 }[toolName[1]];
     }
     return 1;
   }

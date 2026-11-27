@@ -199,6 +199,12 @@ assert.equal(itemView.useDuration(potionStack),32,'native consume seconds drive 
 const appleStack={version:'26.3',itemId:apple,added:[],removed:[]};
 assert.equal(itemView.useAction(appleStack),'eat','native food defaults remain edible');
 assert.equal(itemView.useDuration(appleStack),32,'native food consume time is 1.6 s');
+const nativeStack=name=>({version:'26.3',itemId:itemId(name),added:[],removed:[]});
+assert.equal(itemView.strVsBlock(nativeStack('diamond_pickaxe'),{name:'stone'}),8,'native pickaxe rule gives stone speed 8');
+assert.equal(itemView.strVsBlock(nativeStack('diamond_pickaxe'),{name:'dirt'}),1,'unmatched native tool rule falls back to 1');
+assert.equal(itemView.strVsBlock(nativeStack('diamond_sword'),{name:'cobweb'}),15,'native sword cobweb rule wins before the tag rules');
+assert.equal(itemView.strVsBlock(nativeStack('diamond_sword'),{name:'oak_leaves'}),1.5,'sword efficient tag is resolved through the native leaves tag');
+assert.equal(itemView.strVsBlock(nativeStack('wooden_axe'),{name:'stone'}),1,'wooden axe rejects stone through the incorrect-tool tag');
 
 const total=Object.keys(DATA_COMPONENTS).length;
 const unsynced=Object.values(DATA_COMPONENTS).filter(entry=>!entry.synced).length;
