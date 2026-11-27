@@ -1,5 +1,6 @@
 export const VANILLA_PACK_ID = 'vanilla';
 import { palettedPermutationSprites } from './render/paletted-permutations.js';
+import { runAtlasSources } from './render/atlas-sources.js';
 import {OverlayZip,overlayDirectories,resourceFilter,readResourceStack,readResourceBytes,resourceMetadata,resourceNamespaces,resourceBlockedAbove} from './resource-layers.js';
 import{preloadTextures}from'./render/texture-preload.js';
 import {applyPackModels,applyPackTextures} from './resource-models.js';
@@ -265,6 +266,22 @@ export class Assets {
     // atlases/blocks.json paletted_permutations (armor trim item sprites), merged across the pack stack
     try {
       const definitions = (await this.readResourceStack('minecraft:atlases/blocks.json')).reverse().map((r) => { try { return JSON.parse(decodeUtf8(r.bytes)); } catch { return null; } });
+      // directory / single / filter / unstitch sources over the block+item directory sprites
+      const index = await this.source.textureIndex?.() || [];
+      const vanillaDirs = index.map((e) => String(Array.isArray(e) ? e[0] : e).replace(/^minecraft\/textures\//, '').replace(/\.png$/, ''));
+      const list = async (dir) => {
+        const out = new Set(vanillaDirs.filter((n) => n.startsWith(dir + '/')).map((n) => n.slice(dir.length + 1)));
+        for (const pack of [...this.packs, ...this.lowerPacks]) for (const n of pack.list('textures/' + dir + '/')) if (n.endsWith('.png')) out.add(n.slice(('textures/' + dir + '/').length, -4));
+        return [...out];
+      };
+      const sources = await runAtlasSources(definitions, { names: new Set(textures.map((t) => t.name)), list, load: (p) => this.imageAsync(p + '.png').catch(() => null) });
+      if (sources.remove.size) for (let i = textures.length - 1; i >= 0; i--) if (sources.remove.has(textures[i].name)) textures.splice(i, 1);
+      for (const [name, load] of sources.add) {
+        const image = await load();
+        if (!image) continue;
+        const at = textures.findIndex((t) => t.name === name);
+        if (at >= 0) textures[at] = { name, image }; else textures.push({ name, image });
+      }
       const have = new Set(textures.map((t) => t.name));
       for (const sprite of await palettedPermutationSprites(definitions, (p) => this.imageAsync(p + '.png').catch(() => null))) if (!have.has(sprite.name)) textures.push(sprite);
     } catch (e) { /* an unreadable atlas definition leaves the directory sprites */ }
