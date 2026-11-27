@@ -700,6 +700,7 @@ export class Interaction {
     }
     g.send(C.useItem(hand)); // CPacketPlayerTryUseItem
     if (g.cooldownFraction(held.id, 0) > 0) return false; // CooldownTracker: still cooling down
+    if (held.id === 368) g.addCooldown(held.id, 20); // ItemEnderPearl.onItemRightClick sets it on both sides (1.9+)
     // ThrowablePotionItem.use overrides PotionItem.use even though its inherited animation is DRINK.
     if(held.id===438||held.id===441){
       if(g.gameMode!==1&&--held.count<=0)g.inventory.setHand(hand,null);
