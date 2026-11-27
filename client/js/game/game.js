@@ -107,6 +107,7 @@ import { MenuBlur } from '../render/menu-blur.js';
 import { PostEffects, entityShaderName } from '../render/post.js';
 import { TileEntityRenderer } from '../render/tile-renderer.js';
 import { Particles } from '../render/particles.js';
+import { ExplosionTracker } from './explosion-tracker.js';
 import { Weather } from '../render/weather.js';
 import { SoundManager } from '../audio/sound.js';
 import { Scoreboard } from './scoreboard.js';
@@ -181,6 +182,7 @@ export class Game {
     this.menuBlur = new MenuBlur(this.device);
     this.shaderPack = new ShaderPackFinal(this);
     this.particles = new Particles(this);
+    this.explosionTracker = new ExplosionTracker(this);
     this.debugLines = new DebugLines(this);
     this.borderRenderer = new BorderRenderer(this,{mode:'modern',fadeAtEntity:false});
     this.weather = new Weather(this);
@@ -908,6 +910,7 @@ export class Game {
     this.enabledFeatures=new Set(p.enabledFeatures||['minecraft:vanilla']);this.commandTags=p.commandTags||{};
     if(p.registryTags)this.tags?.replace(p.registryTags);
     this.blockPrediction?.reset();chatState762.reset();
+    this.explosionTracker?.clear();
     resetPlayerView(this);
     this.interaction?.predictedDoors?.clear();
     this.serverSimulationDistance=p.simulationDistance;
@@ -1347,8 +1350,22 @@ export class Game {
 
   on_block_break_animation(p) { this.interaction.setRemoteBreak(p.entityId, p.location, p.destroyStage); }
 
+  // ClientPacketListener.handleExplosion in 26.3: an optional sound, one explosion particle with
+  // velocity (1,0,0), the weighted block-particle tracker, and an optional player knockback.
+  // The packet no longer carries destroyed-block offsets, so no blocks are cleared here.
   on_explosion(p) {
     const native=p.nativeExplosion;
+    if(native?.blockParticles){
+      const name=native.sound?.name?.replace(/^minecraft:/,'');
+      if(native.playSound&&name)this.sound.play(name,p.x,p.y,p.z,4,(1+(Math.random()-Math.random())*.2)*.7,{category:'block'});
+      if(native.particle)this.particles.at(native.particle,p.x,p.y,p.z,1,0,0);
+      this.explosionTracker.track({x:p.x,y:p.y,z:p.z},p.radius,p.blockCount,native.blockParticles);
+      const k=p.knockback;
+      if(k&&Number.isFinite(k.x)&&Number.isFinite(k.y)&&Number.isFinite(k.z)){
+        this.player.motionX+=k.x;this.player.motionY+=k.y;this.player.motionZ+=k.z;
+      }
+      return;
+    }
     if(native){
       const name=native.soundName?.replace(/^minecraft:/,'') || this.assets.soundNames[native.soundId];
       if(name)this.sound.play(name,p.x,p.y,p.z,4,(1+(Math.random()-Math.random())*.2)*.7,{category:'block'});
@@ -1923,6 +1940,7 @@ export class Game {
       if (v && !v.controlled) this.player.setPosition(...this.entities.riderPos(v, this.entityId, 'player'));
     }
     this.particles.tick();
+    this.explosionTracker.tick();
     this.weather.tick();
     this.sound.tick();
     this.tileRenderer.tick();

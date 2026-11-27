@@ -163,6 +163,14 @@ const ADAPTERS={
   block_entity_data(packet){return {location:packet.pos,nbtData:packet.tag};},
   open_sign_editor(packet){return {location:packet.pos,isFrontText:packet.slot===1};},
   select_advancements_tab(packet){return {id:packet.tab};},
+  // 26.3 explosions carry the server's shape, a weighted block-particle list and an optional
+  // knockback; the destroyed-block offsets are gone, so no block records are synthesized.
+  explode(packet){
+    const knockback=packet.knockback;
+    return {x:packet.x,y:packet.y,z:packet.z,radius:packet.radius,blockCount:packet.blockCount,knockback,
+      motionX:knockback?knockback.x:0,motionY:knockback?knockback.y:0,motionZ:knockback?knockback.z:0,
+      nativeExplosion:{particle:packet.particle,sound:packet.sound,blockParticles:packet.blockParticles,playSound:packet.playSound}};
+  },
   // ClientAdvancementManager reads the 766 vocabulary: added entries carry a flat criteria
   // name list plus the native requirement groups, and progress maps criterion -> instant.
   update_advancements(packet){

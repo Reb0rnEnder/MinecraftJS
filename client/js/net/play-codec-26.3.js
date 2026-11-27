@@ -232,6 +232,28 @@ function readAdvancement26_3(r){
   return {parent,display,requirements:readAdvancementRequirements26_3(r),sendsTelemetryEvent:r.bool()};
 }
 
+// ByteBufCodecs.holder writes protocol id + 1 and reserves 0 for an inline sound event.
+function readSoundHolder26_3(r){
+  const id=r.varint();
+  if(id===0)return {name:r.string(),fixedRange:r.f32()};
+  const name=SOUND_NAMES_26_3[id-1];
+  if(!name)throw Error('Unknown 26.3 sound event '+(id-1));
+  return {id:id-1,name};
+}
+
+// WeightedList.streamCodec is a VarInt list of Weighted.streamCodec entries: value then
+// VarInt weight. Zero-weight entries are legal and simply never selected.
+function readWeightedList26_3(r,readValue){
+  const count=r.varint(),entries=[];
+  for(let i=0;i<count;i++)entries.push({value:readValue(r),weight:r.varint()});
+  return entries;
+}
+
+// ExplosionParticleInfo.STREAM_CODEC: ParticleTypes.STREAM_CODEC, float scaling, float speed.
+function readExplosionParticleInfo26_3(r){
+  return {particle:readParticleOptions26_3(r),scaling:r.f32(),speed:r.f32()};
+}
+
 export const PLAY_DECODERS_26_3=Object.freeze({
   // ClientboundLoginPacket: playerId, hardcore, level set, maxPlayers, chunkRadius,
   // simulationDistance, reducedDebugInfo, showDeathScreen, doLimitedCrafting, spawn info, onlineMode, enforcesSecureChat.
@@ -385,6 +407,17 @@ export const PLAY_DECODERS_26_3=Object.freeze({
   open_sign_editor(r){return {pos:r.position(),slot:r.varint()};},
   // ClientboundSelectAdvancementsTabPacket: a nullable Identifier.
   select_advancements_tab(r){return {tab:r.bool()?r.string():null};},
+  // ClientboundExplodePacket: Vec3 center, float radius, int blockCount, optional Vec3
+  // knockback, explosion particle, sound holder, WeightedList<ExplosionParticleInfo>
+  // and the playSound flag. 26.3 no longer sends destroyed-block offsets.
+  explode(r){
+    const x=r.f64(),y=r.f64(),z=r.f64(),radius=r.f32(),blockCount=r.i32();
+    const knockback=r.bool()?{x:r.f64(),y:r.f64(),z:r.f64()}:null;
+    const particle=readParticleOptions26_3(r);
+    const sound=readSoundHolder26_3(r);
+    const blockParticles=readWeightedList26_3(r,readExplosionParticleInfo26_3);
+    return {x,y,z,radius,blockCount,knockback,particle,sound,blockParticles,playSound:r.bool()};
+  },
   // ClientboundUpdateAdvancementsPacket: reset flag, PositionedAdvancement list (holder id,
   // Advancement, float x/y), removed Identifier set, Identifier -> AdvancementProgress map
   // (criterion name -> optional epoch-millis instant), then the show-advancements flag.

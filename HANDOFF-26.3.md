@@ -15,7 +15,7 @@
 
 ## State at handoff
 
-- **P06 coverage: 135/144 inbound IDs decoded, 110 with adapters, 9 raw.**
+- **P06 coverage: 136/144 inbound IDs decoded, 111 with adapters, 8 raw.**
 - Ledger: **41.2%** (3 done, 8 partial, 6 todo; done=1, partial=0.5).
 - Last full run: `test:26.3`, `adapter:26.3`, `client-net:26.3` and `inbound-gate.mjs` all exit 0.
 - Real 26.3 server socket test passes (`client-net`, 23–31 chunks depending on spawn); graphical browser verification is unreliable on this machine (low disk, join stalls). Do not claim visual verification you did not do.
@@ -59,6 +59,7 @@ java -jar cache/tools/cfr.jar cache/port-26.3/client.jar --jarfilter '^net\.mine
 ```
 
 - When field order or flag bits are not provable from `javap` alone, write a `Dump<Packet>26_3.java` oracle that builds the packet and encodes it with Mojang's own `STREAM_CODEC`; the gate then decodes those exact bytes. `DumpAdvancements26_3.java`/`advancements-oracle.mjs` is the reference.
+- If the client needs a Java library behaviour that JS lacks (weighted selection, `Instant`, a tracker class), port that class's method body instead of approximating it. `ClientExplosionTracker` is ported in `client/js/game/explosion-tracker.js` and unit-gated: 512-particle cap, weighted picks, particle-setting clearing and solid-block rejection.
 - Unknown packets stay raw and fail closed. A decode error must not close the socket.
 - Do not mix versions: menus are native 26.3, number formats are decoded natively, styled formats remain fail-closed until the Style codec is ported. Assets target 26.3 (pack format 97, jar-first textures, indexed sounds): `ExtractLayers26_3` bakes the native layers, and only the families whose part trees 26.3 restructured (horse/donkey, rabbit, dragon, boats, camel, sniffer, player, end crystal) keep the 1.20.6 rig the renderer animates. Only sprite paths 26.3 dropped fall back to the pinned 1.20.6 file.
 - No mixed-version data; no committed Mojang jars; preserve GPL-3.0 provenance.
@@ -67,11 +68,11 @@ java -jar cache/tools/cfr.jar cache/port-26.3/client.jar --jarfilter '^net\.mine
 
 ## Next sections, in order
 
-1. `explode` (36), `award_stats` (3).
+1. `award_stats` (3) — needs a native 26.3 custom-stat table before the statistics screen can be correct.
 2. `waypoint` / `show_dialog`, `move_minecart_along_track`, the debug value/event packets.
 4. **P10** started: `tools/port-26.3/ExtractLayers26_3.java` dumps all 361 native layers and `lib/model-extract-26.3.js` bakes a complete 129-model bundle for the 26.3 asset target. Remaining: port the renderer rigs for the families 26.3 restructured so their geometry can drop the 1.20.6 fallback.
 
-Already closed: scoreboard/teams, biomes, maps, swing animation, player chat, merchant offers, damage events, advancements (Mojang-codec fixture), projectile power (decoded only — 26.3's scalar has no 766 adapter), the full world-border family (initialize plus all five setters, 0–5 action vocabulary), tags, game-rule values, report details, the disk-space warning, transient blocks, mount screens, debug samples, the test-instance/highlight frames, server links, clear-dialog and the recipe family (native RecipeDisplay/SlotDisplay graph, live-capture verified; no 766 adapter because 766 has no display graph).
+Already closed: scoreboard/teams, biomes, maps, swing animation, player chat, merchant offers, damage events, advancements and explosions (Mojang-codec fixtures; `ClientExplosionTracker` ported), projectile power (decoded only — 26.3's scalar has no 766 adapter), the full world-border family (initialize plus all five setters, 0–5 action vocabulary), tags, game-rule values, report details, the disk-space warning, transient blocks, mount screens, debug samples, the test-instance/highlight frames, server links, clear-dialog and the recipe family (native RecipeDisplay/SlotDisplay graph, live-capture verified; no 766 adapter because 766 has no display graph).
 
 ## Known blockers
 

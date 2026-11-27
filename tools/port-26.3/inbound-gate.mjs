@@ -12,6 +12,8 @@ import {readFileSync} from 'node:fs';
 
 // Bytes encoded by Mojang's own 26.3 StreamCodec in DumpAdvancements26_3.java.
 const ADVANCEMENT_FIXTURE=JSON.parse(readFileSync(new URL('./fixtures/advancements-26.3.json',import.meta.url),'utf8'));
+const EXPLODE_FIXTURE=JSON.parse(readFileSync(new URL('./fixtures/explode-26.3.json',import.meta.url),'utf8'));
+import {ExplosionTracker} from '../../client/js/game/explosion-tracker.js';
 
 let failures = 0;
 const check = (name, fn) => {
@@ -466,6 +468,47 @@ check('update_advancements decodes Mojang-encoded bytes field for field', () => 
   eq(adapted.progress.map(entry => entry.id), [expected.id]);
   eq([adapted.progress[0].criteria.get_stone, adapted.progress[0].criteria.get_dirt, adapted.progress[0].criteria.get_gravel],
     [expected.progress[0].obtained, expected.progress[1].obtained, null]);
+});
+
+check('explode decodes Mojang-encoded bytes and keeps the weighted particle list', () => {
+  const expected = EXPLODE_FIXTURE.expected;
+  const adapted = adapt('explode', [...Buffer.from(EXPLODE_FIXTURE.hex, 'hex')], {name: 'explosion'});
+  eq([adapted.x, adapted.y, adapted.z, adapted.radius, adapted.blockCount, adapted.knockback],
+    [expected.x, expected.y, expected.z, expected.radius, expected.blockCount, expected.knockback]);
+  eq([adapted.nativeExplosion.particle.name, adapted.nativeExplosion.sound.name, adapted.nativeExplosion.playSound],
+    [expected.particle, expected.sound.replace(/^minecraft:/, ''), expected.playSound]);
+  eq(adapted.nativeExplosion.blockParticles.map(entry => [entry.value.particle.name, entry.value.scaling, entry.value.speed, entry.weight]),
+    expected.blockParticles.map(entry => [entry.particle, entry.scaling, entry.speed, entry.weight]));
+});
+
+check('explosion tracker spreads weighted particles, caps at 512 and respects the particle setting', () => {
+  const makeGame = (setting, air) => {
+    const spawned = [];
+    return {spawned, game: {particles: {setting: () => setting, at: (particle, x, y, z) => spawned.push([particle.name, x, y, z])},
+      world: {getBlockDef: () => ({isAir: air})}}};
+  };
+  const air = makeGame(0, true), tracker = new ExplosionTracker(air.game);
+  const entry = {value: {particle: {name: 'poof', data: {}}, scaling: 1, speed: 1}, weight: 1};
+  tracker.track({x: 0, y: 64, z: 0}, 4, 2, [entry]);
+  tracker.tick();
+  if (air.spawned.length !== 2) throw Error('expected 2 particles, got ' + air.spawned.length);
+  tracker.tick();
+  if (air.spawned.length !== 2) throw Error('tracker must clear its queue after one tick');
+
+  const capped = makeGame(0, true), capTracker = new ExplosionTracker(capped.game);
+  capTracker.track({x: 0, y: 64, z: 0}, 4, 600, [entry]);
+  capTracker.tick();
+  if (capped.spawned.length !== 512) throw Error('expected the 512-particle cap, got ' + capped.spawned.length);
+
+  const reduced = makeGame(2, true), reducedTracker = new ExplosionTracker(reduced.game);
+  reducedTracker.track({x: 0, y: 64, z: 0}, 4, 8, [entry]);
+  reducedTracker.tick();
+  if (reduced.spawned.length !== 0) throw Error('reduced particles must drop the queued explosion');
+
+  const solid = makeGame(0, false), solidTracker = new ExplosionTracker(solid.game);
+  solidTracker.track({x: 0, y: 64, z: 0}, 4, 8, [entry]);
+  solidTracker.tick();
+  if (solid.spawned.length !== 0) throw Error('solid block positions must be skipped');
 });
 
 if (failures) {

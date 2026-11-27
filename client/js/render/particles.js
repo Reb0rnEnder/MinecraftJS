@@ -744,6 +744,13 @@ export class Particles {
 
   vibration(data) { return vibrationParticle(this, data); }
 
+  // Spawn one particle with an exact velocity, the way Level.addParticle does; the
+  // count-0 packet path already threads the velocity through without any Gaussian spread.
+  at(particle, x, y, z, mx = 0, my = 0, mz = 0) {
+    this.onPacket({particleName: particle.name, x, y, z, particles: 0,
+      offsetX: mx, offsetY: my, offsetZ: mz, particleData: 1, data: particle.data || {}});
+  }
+
   onPacket(p) {
     const n = p.particles;
     const emit = (fn) => {
