@@ -3,7 +3,7 @@ Branch: 26.3
 Inventory date: 2026-11-27
 Baseline: 3e5e861 plus the native recipe-book/chat correction in this batch
 Verified for this inventory:
-- npm run test:26.3: 102/102 tests
+- npm run test:26.3: 111/111 tests
 - npm run adapter:26.3: 53 frames, 36 handler names, 2 chunks, 0 skipped
 - inbound gate: 144/144 Play IDs decoded, 0 raw
 - serverbound gate: 69/69 IDs have a sender or an explicit scope decision
@@ -26,7 +26,20 @@ The project ledger at this handoff is 44.1% complete:
 That percentage is the existing project-level ledger. It is not a per-feature count and it should
 not be read as "44% of the jar has been ported". The exact remaining work is below.
 
-Closed in this batch:
+Closed in this batch (2026-11-27 evidence pass):
+- P01: all 17 release articles cached and hashed; 4,703 top-level topics with one disposition each
+  (4,572 native-client, 69 experiment-gated, 5 server-owned, 57 product-outside-scope), extracted
+  article hashes and the official version manifest. release-crosswalk:26.3 --check passes.
+- P02: 31 committed tables/fixtures (6,445,503 bytes) pinned by SHA-256, size, generator/check
+  command and the target jar/report hashes; table-manifest:26.3 --check is in test:26.3.
+- P03 codec tail: 61 native component samples re-read from their own consumed bytes; outbound text
+  components round-trip byte-for-byte, with the NBT interpret flag fixed to re-encode as BOOLEAN.
+- P12 formula pass: wolf sitting front-leg x, piglin ear rest/signs and dance offsets, native
+  zombified-arm raiseArms/spear branches and dragon head-part phase offsets; test-animations-26.3.mjs.
+- P14: all 83 inherited checkpoints have one 26.3 disposition; inherited-findings:26.3 --check is in
+  test:26.3. Resource-pack compatibility now uses native PackFormat 97.1 (major/minor), not 1.20.6 32.
+- P16: deterministic tracked-source handoff zip with a per-file SHA-256 manifest and archive digest;
+  jars, screenshots, logs and caches are rejected.
 - Server-decoded component patches preserve their exact network bytes for normal container
   clicks; predicted damage updates only its own row. Integer components now use exact native
   HashOps.CRC32C values, and enchantment/stored-enchantment maps use the native string/map
@@ -56,11 +69,13 @@ Closed in this batch:
 - Added two focused tests: wind-charge repeat sampling and native small-entity shadow rules.
 
 Still open from the previous inventory:
-- General arbitrary HashedPatchMap encoding and hashing.
-- Live trigger/acceptance work.
+- General arbitrary HashedPatchMap encoding and hashing. The safe empty-map resync fallback is
+  deliberate and tested, but it is not the native no-resync hash path. Canonical per-component
+  CODEC hashes under HashOps.CRC32C are still required; do not fabricate them.
+- Live trigger/acceptance work, including the empty-map resync path and the remaining menu families.
 - Broad new-content behaviour and particle/sound/animation coverage.
-- Inherited UI, resource-pack and font findings.
-- Evidence/crosswalk, packaging and the whole-target acceptance matrix.
+- Live visual/narration acceptance for UI, fonts and converted entity rigs.
+- The whole-target acceptance matrix (P15); P01/P02/P16 evidence and P14 dispositions are closed.
 
 ======================================================================
 B. CODE-ONLY WORK, IN PRIORITY ORDER

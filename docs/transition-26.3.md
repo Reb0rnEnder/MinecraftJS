@@ -57,7 +57,16 @@ Indexed topics and present models are not passed scenarios. Each topic gets one 
 implemented and accepted; implemented but unverified; missing; server-owned with client acceptance
 pending; product outside current scope; or experiment-gated.
 
-## Current checkpoint (2026-11-26)
+## Current checkpoint (2026-11-27)
+
+- Evidence/automation batch: the 17-release crosswalk now carries 4,703 top-level topics with one
+disposition each (P01), 31 committed tables are hash-pinned (P02), all 83 inherited 1.20.6
+checkpoints have one 26.3 disposition (P14), and a deterministic tracked-source handoff zip is
+reproducible (P16). The component/text codec tail re-reads 61 native component samples and
+round-trips outbound text byte-for-byte (P03). The formula pass corrected 26.3 wolf sitting, piglin
+ear/dance/zombified-arm and dragon head-part offsets, with `test-animations-26.3.mjs` (P12).
+General arbitrary component hashes and live/visual acceptance remain open and are not claimed.
+
 
 - The native 26.3 runtime tables are installed: 1,286 blocks / 35,723 states with selection shape,
   collision boxes, render/suffocation/light/sound/occlusion values, 338 collision shapes, 418 selection

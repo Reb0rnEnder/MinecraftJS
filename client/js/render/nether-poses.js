@@ -29,19 +29,29 @@ function swingWeapon(p,a){
 }
 export function animatePiglin(m,a,biped){
  biped(m,a);const p=m.parts,phase=a.age*.1+a.ls*.5,amount=.08+a.lsa*.4;
- p.earRight.rz=-.5235988-Math.cos(phase*1.2)*amount;p.earLeft.rz=.5235988+Math.cos(phase)*amount;
+ // AbstractPiglinModel: adult ears rest at 30 degrees, baby ears at 5. The left ear
+ // uses cos(phase*1.2) and the right uses cos(phase); the signs follow the model's
+ // left/right rest rotations (-/+).
+ const ear=rad*(a.child?5:30);
+ p.earLeft.rz=-ear-Math.cos(phase*1.2)*amount;p.earRight.rz=ear+Math.cos(phase)*amount;
  if(a.zombified){
-  const f=Math.sin(Math.max(0,a.swing)*PI),g=Math.sin((1-(1-Math.max(0,a.swing))**2)*PI),base=-PI/(a.aggressive?1.5:2.25);
-  p.leftArm.rz=p.rightArm.rz=0;p.leftArm.ry=-(.1-f*.6);p.rightArm.ry=.1-f*.6;
-  p.leftArm.rx=p.rightArm.rx=base+f*1.2-g*.4;
-  p.rightArm.rz+=Math.cos(a.age*.09)*.05+.05;p.leftArm.rz-=Math.cos(a.age*.09)*.05+.05;
-  p.rightArm.rx+=Math.sin(a.age*.067)*.05;p.leftArm.rx-=Math.sin(a.age*.067)*.05;
+  // 26.3 AnimationUtils.animateZombieArms. Spear poses keep the HumanoidModel arm pose.
+  if(a.rightPose!=='spear'&&a.leftPose!=='spear'){
+   const swing=Math.max(0,a.swing),f=Math.sin(swing*PI),g=Math.sin((1-(1-swing)**2)*PI);
+   const raise=!a.child||!a.held,base=raise?-PI/(a.aggressive?1.5:2.25):0;
+   const ymod=(raise?1:-1)*f,x=base+ymod*1.2-g*.4,y=.1-ymod*.6;
+   p.rightArm.rx=x;p.leftArm.rx=x;p.rightArm.ry=raise?-y:y;p.leftArm.ry=raise?y:-y;
+   p.rightArm.rz=p.leftArm.rz=0;
+   p.rightArm.rz+=Math.cos(a.age*.09)*.05+.05;p.leftArm.rz-=Math.cos(a.age*.09)*.05+.05;
+   p.rightArm.rx+=Math.sin(a.age*.067)*.05;p.leftArm.rx-=Math.sin(a.age*.067)*.05;
+  }
  }else if(a.piglinPose==='dancing'){
+  // PiglinModel dance overrides the ear angles with the fixed adult 30-degree rest.
   const f=a.age/60;
-  p.earLeft.rz=.5235988+rad*Math.sin(f*30)*10;p.earRight.rz=-.5235988-rad*Math.cos(f*30)*10;
-  p.head.px=Math.sin(f*10);p.head.py=Math.sin(f*40)+.4;
+  p.earRight.rz=.5235988+rad*Math.sin(f*30)*10;p.earLeft.rz=-.5235988-rad*Math.cos(f*30)*10;
+  p.head.px+=Math.sin(f*10);p.head.py+=Math.sin(f*40)+.4;
   p.rightArm.rz=rad*(70+Math.cos(f*40)*10);p.leftArm.rz=-p.rightArm.rz;
-  p.rightArm.py=p.leftArm.py=Math.sin(f*40)*.5+1.5;p.body.py=Math.sin(f*40)*.35;
+  p.rightArm.py+=Math.sin(f*40)*.5-.5;p.leftArm.py+=Math.sin(f*40)*.5+.5;p.body.py+=Math.sin(f*40)*.35;
  }else if(a.piglinPose==='attacking'){
   if(a.swing>0)swingWeapon(p,a);else p[a.leftHanded?'leftArm':'rightArm'].rx=-1.8;
  }else if(a.piglinPose==='admiring'){

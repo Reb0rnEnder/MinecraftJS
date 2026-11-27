@@ -435,7 +435,7 @@ export function wolf(key='wolf') {
     if(a.sitting){
       q.mane.pivot(-1,16,-3).rot(1.2566371,0,0);q.body.pivot(0,18,0).rot(.7853982,0,0);q.tail.pivot(-1,21,6);
       q.leg1.pivot(-2.5,22.7,2).rx=4.712389;q.leg2.pivot(.5,22.7,2).rx=4.712389;
-      q.leg3.pivot(-2.49,17,-4).rx=5.811947;q.leg4.pivot(.51,17,-4).rx=5.811947;
+      q.leg3.pivot(-2.49,17,-4).rx=5.811947;q.leg4.pivot(.49,17,-4).rx=5.811947;
     }else{q.leg1.rx=q.leg4.rx=c(a.ls);q.leg2.rx=q.leg3.rx=f(f(mcCos(f(f(a.ls*f(.6662))+f(PI)))*f(1.4))*f(a.lsa));}
     q.head.rx=a.pitch*PI/180;q.head.ry=a.yaw*PI/180;q.tail.rx=a.tailRotation??PI/5;
     q.realHead.rz=a.headRoll??0;q.mane.rz=a.maneRoll??0;q.body.rz=a.bodyRoll??0;q.realTail.rz=a.tailRoll??0;

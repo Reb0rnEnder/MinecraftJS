@@ -38,6 +38,10 @@ export class ResourcePack {
       const d = meta.pack && meta.pack.description;
       this.description = chatToLegacy(d, { parsed: true });
       this.format = meta.pack && meta.pack.pack_format;
+      // 26.3 PackFormat: min_format/max_format are compact lists such as [97,1]. Keep the
+      // raw values here; resource-pack-compatibility.js applies the native major.minor rule.
+      this.minFormat = meta.pack?.min_format;
+      this.maxFormat = meta.pack?.max_format;
       this.supportedFormats = meta.pack?.supported_formats;
       try{this.blocksResource=resourceFilter(meta.filter);}catch(e){console.warn('Bad resource filter in',id,e.message);}
       try{this.zip=new OverlayZip(this.zip,this.prefix,overlayDirectories(meta.overlays,32));}catch(e){console.warn('Bad resource overlays in',id,e.message);}

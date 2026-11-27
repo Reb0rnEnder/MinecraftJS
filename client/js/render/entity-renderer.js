@@ -22,7 +22,7 @@ import {entityTexture263} from './entity-textures-26.3.js';
 import {PANDA_VARIANTS} from '../game/panda-variants-1.19.4.js';
 import {villagerLayers} from './villager-layers.js';
 import { updateRiptide } from './riptide-layer.js';
-import { EntityEffects, dragonCorpseMatrix } from './entity-effects.js';
+import { EntityEffects, dragonCorpseMatrix, dragonHeadOffset } from './entity-effects.js';
 import { poseInterval } from './lod.js';
 const isAvatar=e=>e.kind==='player'||e.kind==='mannequin';
 // Entity rendering (RenderManager + Render* classes) on the gfx scene graph.
@@ -706,6 +706,8 @@ export class EntityRenderer {
     v.dragonEyes.state.depthFunc = dying ? 'equal' : undefined;
     // ModelDragon.render
     const f = e.prevAnimTime + (e.animTime - e.prevAnimTime) * partial;
+    const phase = e.dragonPhase | 0;
+    const headOffset = (part, body, point) => dragonHeadOffset(phase, part, body[1], point[1], e.distanceToEggSqr);
     const TAU = Math.PI * 2;
     v.jaw.rx = (Math.sin(f * TAU) + 1) * 0.2;
     let f1 = Math.sin(f * TAU - 1) + 1;
@@ -723,7 +725,7 @@ export class EntityRenderer {
     for (let i = 0; i < 5; i++) {
       const a = off(5 - i), s = v.neck[i];
       s.ry = wrap(a[0] - a6[0]) * D2R * f5;
-      s.rx = Math.cos(i * 0.45 + f8) * 0.15 + (a[1] - a6[1]) * D2R * f5 * 5;
+      s.rx = Math.cos(i * 0.45 + f8) * 0.15 + headOffset(i, a6, a) * D2R * f5 * 5;
       s.rz = -wrap(a[0] - f7) * D2R * f5;
       s.px = x; s.py = y; s.pz = z;
       y += Math.sin(s.rx) * 10; z -= Math.cos(s.ry) * Math.cos(s.rx) * 10; x -= Math.sin(s.ry) * Math.cos(s.rx) * 10;
@@ -731,7 +733,7 @@ export class EntityRenderer {
     const a0 = off(0), H = v.head;
     H.px = x; H.py = y; H.pz = z;
     H.ry = wrap(a0[0] - a6[0]) * D2R;
-    H.rx = wrap(a0[1] - a6[1]) * D2R * f5 * 5;
+    H.rx = headOffset(6, a6, a0) * D2R * f5 * 5;
     H.rz = -wrap(a0[0] - f7) * D2R;
     v.body.rz = -f6 * f5 * D2R;
     M.left_wing.rx = 0.125 - Math.cos(f8) * 0.2;
@@ -1391,7 +1393,7 @@ export class EntityRenderer {
     const skeletonAim = (e.kind === 'mob' && e.type === 51 && e.armsRaised && held && g.items.name(held.id) === 'bow');
     const speedSq = (e.motionX || 0) ** 2 + (e.motionY || 0) ** 2 + (e.motionZ || 0) ** 2;
     const args = {
-      entity:e,
+      entity:e, held,
       ...foxAnimationArgs(e,partial),ls, lsa, age, yaw: head - body, pitch, swing: swing > 0 ? swing : -9999, partial,
       sneak: !e.sleeping && !!e.sneaking, riding: e.riding >= 0,
       useTicks:e.useTicks||0,crossbowChargeDuration:held&&g.items.name(held.id)==='crossbow'?g.items.crossbowChargeDuration(held):25,

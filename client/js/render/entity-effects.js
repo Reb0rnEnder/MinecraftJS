@@ -13,6 +13,19 @@ const point = (p, y = 0) => [p.x, p.y + y, p.z];
 export const crystalBob = age => { const f = Math.sin(age * 0.2) / 2 + 0.5; return (f*f+f)*0.2; };
 export const isDragon = e => e.kind === 'mob' && e.type === 63;
 
+// EnderDragonRenderState.getHeadPartYOffset. Phases 3/4 are LANDING/TAKEOFF, 5/6/7 are the
+// sitting phases and 10 is HOVERING (DragonHoverPhase.isSitting); everything else is normal
+// flight, where the head (part 6) has no vertical offset and the neck uses the flight history.
+// distanceToEggSqr is the vanilla distToCenterSqr value; the client does not receive the fight
+// origin, so a caller without it falls back to zero for the landing/takeoff term.
+export function dragonHeadOffset(phase, part, bodyY, partY, distanceToEggSqr = null) {
+  if (phase === 3 || phase === 4) {
+    return distanceToEggSqr == null ? 0 : part / Math.max(distanceToEggSqr / 4, 1);
+  }
+  if (phase === 5 || phase === 6 || phase === 7 || phase === 10) return part;
+  return part === 6 ? 0 : partY - bodyY;
+}
+
 // RenderDragon's octagonal taper, black at the dragon and white at the crystal.
 export function crystalBeam(start, end, age) {
   const dx=end[0]-start[0], dy=end[1]-start[1], dz=end[2]-start[2], len=Math.hypot(dx,dy,dz);

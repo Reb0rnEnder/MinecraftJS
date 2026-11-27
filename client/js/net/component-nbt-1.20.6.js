@@ -96,6 +96,10 @@ function normalizeComponent(value,path="component"){
  if(out.selector!==undefined&&typeof out.selector!=="string")throw Error("Invalid selector component at "+path);
  if(out.keybind!==undefined&&typeof out.keybind!=="string")throw Error("Invalid keybind component at "+path);
  if(out.nbt!==undefined&&typeof out.nbt!=="string")throw Error("Invalid NBT component path at "+path);
+ // NBTContents.interpret is a boolean in the codec; the generic NBT decoder flattens a
+ // BOOLEAN tag to 0/1, so restore it here or a re-encode would emit an INT tag instead.
+ if(out.interpret===0||out.interpret===1)out.interpret=!!out.interpret;
+ if(out.interpret!==undefined&&typeof out.interpret!=="boolean")throw Error("Invalid NBT interpret flag at "+path);
  if(out.with!==undefined){
   if(!Array.isArray(out.with))throw Error("Invalid translation arguments at "+path);
   // TranslatableContents accepts Number/Boolean/String arguments directly;

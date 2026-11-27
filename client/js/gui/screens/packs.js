@@ -1,5 +1,4 @@
 import {ResourceLoadingScreen} from './loading.js';
-import { VANILLA_UI } from '../vanilla-layout.js';
 import { ConfirmScreen } from './menus.js';
 // GuiScreenResourcePacks: available / selected pack lists, adding packs from files.
 import { tr } from '../i18n.js';
@@ -8,9 +7,11 @@ import { Button } from '../widgets.js';
 import { platform } from '../../platform/platform.js';
 import { decodePng } from '../../util/png.js';
 import { ListOf } from '../slot-list.js';
-import {packCompatibility} from '../../resource-pack-compatibility.js';
+import {packCompatibility,packFormatForProtocol} from '../../resource-pack-compatibility.js';
+import {PROTOCOL_VERSION} from '../../net/packets.js';
 
 const ENTRY_W = 200, ENTRY_H = 36;
+const PACK_FORMAT = packFormatForProtocol(PROTOCOL_VERSION);
 
 export class ResourcePacksScreen extends Screen {
   constructor(game, parent) {
@@ -135,7 +136,7 @@ export class ResourcePacksScreen extends Screen {
   _entry(gui, L, pack, idx, x, y, mx, my) {
     const name = pack ? pack.name : tr('resourcePack.vanilla.name');
     const desc = pack ? pack.builtin ? tr('pack.nameAndSource',pack.description || '',tr('pack.source.builtin')) : pack.description || '' : tr('pack.nameAndSource',tr('resourcePack.vanilla.description'),tr('pack.source.builtin'));
-    const compatibility=packCompatibility(pack,VANILLA_UI.packFormat),incompatible=compatibility!=='compatible';
+    const compatibility=packCompatibility(pack,PACK_FORMAT),incompatible=compatibility!=='compatible';
     if (incompatible) gui.rect(x - 1, y - 1, x + ENTRY_W - 3 - (L.list.maxScroll()>0?7:0), y + ENTRY_H - 3, 0xff770000);
     const icon = gui.tex(this._icon(pack));
     if (icon) gui.drawImage(icon, 0, 0, icon.width, icon.height, x, y, 32, 32);
@@ -169,11 +170,11 @@ export class ResourcePacksScreen extends Screen {
         const index=this.available.findIndex(p=>p.id===pack.id);
         if(index>=0){this.available.splice(index,1);this.selected.unshift(pack);}
       };
-      if(packCompatibility(pack,VANILLA_UI.packFormat)!=='compatible') {
+      if(packCompatibility(pack,PACK_FORMAT)!=='compatible') {
         this.game.screens.open(new ConfirmScreen(this.game, yes => {
           if(yes)add();
           this.game.screens.open(this);
-        },tr('pack.incompatible.confirm.title'),tr('pack.incompatible.confirm.'+packCompatibility(pack,VANILLA_UI.packFormat))));
+        },tr('pack.incompatible.confirm.title'),tr('pack.incompatible.confirm.'+packCompatibility(pack,PACK_FORMAT))));
       } else add();
     } else {
       if (rx > 32) return false;
