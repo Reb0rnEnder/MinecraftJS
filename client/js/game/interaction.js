@@ -1,3 +1,4 @@
+import { useOnLegacy, useLegacy } from './item-use-legacy.js';
 import {adventureAllows,LEGACY_UNRESTRICTED_USE} from './adventure.js';
 import {entityPickRadius} from './entity-pick-radius.js';
 import {isSlab,canMergeSlab,slabPlacementState} from './slab-placement.js';
@@ -637,6 +638,9 @@ export class Interaction {
       held.count--; // the server's slot update follows
       return true;
     }
+    // Item.onItemUse on this version's client: hoes, shovels (1.9+), flint and steel, fire charges
+    const used = useOnLegacy(g, held, t);
+    if (used) return used.success;
     switch (id) {
       case 259: return true; // flint and steel
       case 295: case 361: case 362: case 391: case 392: // seeds / carrot / potato
@@ -715,6 +719,12 @@ export class Interaction {
         return true;
       }
       return false;
+    }
+    // ItemBucket / ItemGlassBottle.onItemRightClick: predicted pickup or placement with the local sound
+    const fluidUse = useLegacy(g, held);
+    if (fluidUse) {
+      if (fluidUse.success && fluidUse.result && g.gameMode !== 1 && held.count === 1) { const r = { id: { water_bucket: 326, lava_bucket: 327, bucket: 325, potion: 373 }[fluidUse.result] }; if (r.id) g.inventory.setHand(hand, { ...held, id: r.id, count: 1, damage: 0 }); }
+      return fluidUse.success;
     }
     if (held.id === 346) { this.swing(hand); return true; } // ItemFishingRod swings the arm itself
     const survival = g.gameMode !== 1;
