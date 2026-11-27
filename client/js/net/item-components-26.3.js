@@ -200,6 +200,52 @@ function holderSet(r){
   return {ids};
 }
 const optionalHolderSet=()=>optional(holderSet);
+// StatePropertiesPredicate.PropertyMatcher.STREAM_CODEC: STRING name, then either(exact, ranged).
+// ValueMatcher.STREAM_CODEC writes Boolean.TRUE for ExactMatcher (one string) and FALSE for
+// RangedMatcher (optional min, optional max). StatePropertiesPredicate.STREAM_CODEC is a list.
+function statePropertiesPredicate(r){
+  const count=r.varint(),properties=[];
+  for(let i=0;i<count;i++){
+    const name=r.string();
+    properties.push({name,matcher:r.bool()?{exact:r.string()}:{min:optional(string)(r),max:optional(string)(r)}});
+  }
+  return properties;
+}
+// DataComponentPredicate.STREAM_CODEC: list(64) of a dispatched single predicate. Type.STREAM_CODEC
+// is either(predicateType, componentType) -- TRUE for an explicit predicate type, FALSE for a
+// component type used as an any-value predicate -- then VarInt id, then the predicate value.
+// TypeBase.singleStreamCodec wraps every predicate's codec with fromCodecWithRegistries, so that
+// value is one unnamed NBT tag. NbtPredicate.STREAM_CODEC is a plain unnamed CompoundTag.
+function dataComponentMatchers(r){
+  const exactCount=r.varint(),exact=[];
+  for(let i=0;i<exactCount;i++){
+    const typeId=r.varint();
+    exact.push({type:typeId,...readComponentValue(r,typeId)});
+  }
+  const partialCount=r.varint();
+  if(partialCount>64)throw Error('26.3 component matcher list '+partialCount+' exceeds native maximum 64');
+  const partial=[];
+  for(let i=0;i<partialCount;i++){
+    const predicateType=r.bool(),id=r.varint(),value=readAnonymousNbt(r);
+    partial.push(predicateType?{predicateType:id,value}:{componentType:id,value});
+  }
+  return {exact,partial};
+}
+const nbtPredicate=r=>readAnonymousNbt(r);
+// BlockPredicate.STREAM_CODEC: optional holderSet<Block>, optional state predicate,
+// optional NBT predicate, then DataComponentMatchers (never optional).
+function blockPredicate(r){
+  return {
+    blocks:optional(holderSet)(r),
+    properties:optional(statePropertiesPredicate)(r),
+    nbt:optional(nbtPredicate)(r),
+    components:dataComponentMatchers(r)
+  };
+}
+// AdventureModePredicate.STREAM_CODEC: ByteBufCodecs.list of BlockPredicate, no show-tooltip flag.
+const adventureModePredicate=r=>list(blockPredicate)(r);
+define('can_place_on',adventureModePredicate);
+define('can_break',adventureModePredicate);
 // GameProfile.STREAM_CODEC: UUID, UTF8(16) name, then PropertyMap.
 function profileProperties(r){
   const count=r.varint();

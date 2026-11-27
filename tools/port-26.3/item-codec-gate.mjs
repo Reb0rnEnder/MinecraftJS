@@ -142,6 +142,38 @@ assert.equal(inventory.name,'set_slot','26.3 player-inventory writes land on the
 assert.equal(inventory.windowId,-2,'windowId -2 is the existing direct player-inventory path');
 assert.equal(inventory.slot,36);
 
+// 8. Adventure predicates: optional block holder set, optional state matchers, optional NBT,
+// then DataComponentMatchers. Each partial matcher is a registry id and one unnamed NBT tag.
+const emptyCompound=[10,0];
+const adventureBytes=new Writer()
+  .varint(1).varint(apple)
+  .varint(1).varint(0)
+  .varint(componentId('can_place_on'))
+    .varint(2)                        // two BlockPredicates
+    .bool(true).varint(3).varint(7).varint(8) // direct holder set: size+1 then two block ids
+    .bool(true).varint(1).string('facing').bool(true).string('north')
+    .bool(false)                      // no NBT
+    .varint(0).varint(0)              // exact and partial component matchers are empty
+    .bool(false)                      // no block set
+    .bool(false)                      // no state predicate
+    .bool(true).raw(emptyCompound)    // empty NBT predicate
+    .varint(1).varint(componentId('damage')).varint(5) // exact component predicate
+    .varint(1).bool(true).varint(0).raw(emptyCompound) // one explicit predicate type
+  .build();
+const adventureReader=new Reader(adventureBytes);
+const adventureStack=readItemStack26_3(adventureReader);
+assert.equal(adventureReader.remaining(),0,'can_place_on consumes exactly its bytes');
+const predicates=adventureStack.components.can_place_on;
+assert.equal(predicates.length,2);
+assert.deepEqual(predicates[0].blocks,{ids:[7,8]},'holderSet direct branch is size+1 and holder ids');
+assert.deepEqual(predicates[0].properties,[{name:'facing',matcher:{exact:'north'}}]);
+assert.equal(predicates[0].nbt,null);
+assert.deepEqual(predicates[0].components,{exact:[],partial:[]});
+assert.ok(predicates[1].nbt,'NbtPredicate is one unnamed CompoundTag');
+assert.deepEqual(predicates[1].components.exact.map(component=>[component.name,component.value]),[['damage',5]]);
+assert.equal(predicates[1].components.partial[0].predicateType,0);
+assert.ok(COMPONENT_READERS_26_3.can_break,'can_break shares the AdventureModePredicate reader');
+
 const total=Object.keys(DATA_COMPONENTS).length;
 const unsynced=Object.values(DATA_COMPONENTS).filter(entry=>!entry.synced).length;
 console.log(JSON.stringify({
