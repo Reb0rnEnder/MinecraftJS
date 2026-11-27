@@ -155,7 +155,7 @@ export class BookScreen extends Screen {
       const text=this.pages[this.page]||'',lines=textLines(text,gui.font,114),[a,b]=this.editor.selection();
       lines.slice(0,14).forEach((l,i)=>{
         const lx=x+36,ly=y+32+i*9;gui.text(l.text,lx,ly,0,false);
-        if(this.editable&&a<l.end&&b>l.start){gui.setBlend('invert');gui.rect(lx+gui.textWidth(text.slice(l.start,Math.max(a,l.start))),ly,lx+gui.textWidth(text.slice(l.start,Math.min(b,l.end))),ly+9,0xffffffff);gui.setBlend('alpha');}
+        if(this.editable&&a<l.end&&b>l.start){gui.setBlend('invert');gui.rect(lx+gui.textWidth(text.slice(l.start,Math.max(a,l.start))),ly,lx+gui.textWidth(text.slice(l.start,Math.min(b,l.end))),ly+9, 0xffffffff);gui.setBlend('add');gui.rect(lx+gui.textWidth(text.slice(l.start,Math.max(a,l.start))),ly,lx+gui.textWidth(text.slice(l.start,Math.min(b,l.end))),ly+9, 0xff0000ff);gui.setBlend('alpha');}
         if(this.editable&&this.editor.cursor>=l.start&&this.editor.cursor<=l.end&&Math.floor(this.counter/6)%2===0){const cx=lx+gui.textWidth(text.slice(l.start,this.editor.cursor));gui.rect(cx,ly-1,cx+1,ly+9,0xff000000);}
       });
     }
