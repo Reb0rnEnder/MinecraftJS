@@ -50,3 +50,21 @@ test('HTTP responses: content-length, chunked and read-to-close bodies',()=>{
   assert.equal(parseResponse(e('HTTP/1.1 201 X\r\nTransfer-Encoding: chunked\r\n\r\n2\r\nhi\r\n1\r\n!\r\n0\r\n\r\n')).text(),'hi!');
   assert.equal(parseResponse(e('HTTP/1.1 204 No Content\r\n\r\n'),true).status,204);
 });
+import crypto from 'node:crypto';
+import * as pc from '../client/js/util/purecrypto.js';
+import {rsaKey,ecPoint} from '../client/js/net/x509.js';
+test('pure-JS primitives match Node crypto (no WebCrypto needed on http:// or file:// pages)',()=>{
+  const eq=(a,b)=>Buffer.from(a).equals(Buffer.from(b));
+  for(const n of [0,111,112,129,1000]){const d=crypto.randomBytes(n);for(const [h,nh] of [['SHA-256','sha256'],['SHA-384','sha384'],['SHA-512','sha512']]){assert.ok(eq(pc.digest(h,d),crypto.createHash(nh).update(d).digest()),h+' '+n);const k=crypto.randomBytes(n%150);assert.ok(eq(pc.hmac(h,k,d),crypto.createHmac(nh,k).update(d).digest()));}}
+  for(const kl of [16,32])for(const n of [0,17,1000]){const key=crypto.randomBytes(kl),iv=crypto.randomBytes(12),aad=crypto.randomBytes(5),pt=crypto.randomBytes(n),c=crypto.createCipheriv('aes-'+kl*8+'-gcm',key,iv);c.setAAD(aad);const ct=Buffer.concat([c.update(pt),c.final(),c.getAuthTag()]);
+    assert.ok(eq(pc.aesGcm(key).seal(iv,aad,pt),ct));assert.ok(eq(pc.aesGcm(key).open(iv,aad,ct),pt));ct[0]^=1;if(n)assert.throws(()=>pc.aesGcm(key).open(iv,aad,ct));}
+  for(const [curve,nc] of [['P-256','prime256v1'],['P-384','secp384r1']]){
+    const peer=crypto.createECDH(nc);peer.generateKeys();const mine=pc.ecdh(curve);assert.ok(eq(mine.derive(new Uint8Array(peer.getPublicKey())),peer.computeSecret(Buffer.from(mine.publicKey))));
+    const {privateKey,publicKey}=crypto.generateKeyPairSync('ec',{namedCurve:nc}),point=ecPoint(new Uint8Array(publicKey.export({type:'spki',format:'der'}))),data=crypto.randomBytes(30);
+    const sig=new Uint8Array(crypto.sign('sha384',data,{key:privateKey,dsaEncoding:'ieee-p1363'}));assert.ok(pc.ecdsaVerify(curve,point,'SHA-384',sig,data));assert.ok(!pc.ecdsaVerify(curve,point,'SHA-384',sig,crypto.randomBytes(30)));
+  }
+  const {privateKey,publicKey}=crypto.generateKeyPairSync('rsa',{modulusLength:3072}),key=rsaKey(new Uint8Array(publicKey.export({type:'spki',format:'der'}))),data=crypto.randomBytes(20);
+  assert.ok(pc.rsaVerifyPkcs1(key,'SHA-384',new Uint8Array(crypto.sign('sha384',data,privateKey)),data));
+  const pss=new Uint8Array(crypto.sign('sha256',data,{key:privateKey,padding:crypto.constants.RSA_PKCS1_PSS_PADDING,saltLength:32}));
+  assert.ok(pc.rsaVerifyPss(key,'SHA-256',32,pss,data));assert.ok(!pc.rsaVerifyPss(key,'SHA-256',32,pss,crypto.randomBytes(20)));
+});

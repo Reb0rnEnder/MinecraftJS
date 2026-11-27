@@ -1,11 +1,11 @@
-// A small TLS 1.3 client (RFC 8446) over any byte stream ({ write, close, on('data'|'close') }) on WebCrypto, so
-// it runs in browsers and Node alike: P-256 key share, TLS_AES_128_GCM_SHA256 / TLS_AES_256_GCM_SHA384, server
+// A small TLS 1.3 client (RFC 8446) over any byte stream ({ write, close, on('data'|'close') }) in pure JS
+// (util/purecrypto.js), so it runs on http:// and file:// pages, in browsers and in Node: P-256 key share, TLS_AES_128_GCM_SHA256 / TLS_AES_256_GCM_SHA384, server
 // CertificateVerify with RSA-PSS or ECDSA, certificate chains to the bundled roots (x509.js) and Finished checks.
 // No client certificates, resumption, 0-RTT or HelloRetryRequest; any protocol error closes the connection.
-import { parseCertificate, verifyChain, ecdsaRaw, CURVES } from './x509.js';
+import { parseCertificate, verifyChain, ecdsaRaw, CURVES, rsaKey, ecPoint } from './x509.js';
 import { TLS_ROOTS } from './tls-roots.js';
+import * as pc from '../util/purecrypto.js';
 
-const subtle = () => globalThis.crypto.subtle;
 const enc = new TextEncoder();
 const concat = (...parts) => {
   const out = new Uint8Array(parts.reduce((n, p) => n + p.length, 0));
@@ -23,12 +23,8 @@ export const tlsRoots = () => (rootCache ||= TLS_ROOTS.map((s) => parseCertifica
 const SUITES = { 0x1301: { hash: 'SHA-256', size: 32, key: 16 }, 0x1302: { hash: 'SHA-384', size: 48, key: 32 } };
 const ext = (type, body) => concat(u16(type), vec16(body));
 
-// ---------------------------------------------------------------- HKDF (RFC 5869 / 8446 §7.1) over WebCrypto HMAC
-async function hmac(hash, key, data) {
-  const k = await subtle().importKey('raw', key.length ? key : new Uint8Array(1), { name: 'HMAC', hash }, false, ['sign']);
-  // An empty HMAC key equals a single zero byte after padding to the block size
-  return new Uint8Array(await subtle().sign('HMAC', k, data));
-}
+// ---------------------------------------------------------------- HKDF (RFC 5869 / 8446 §7.1)
+const hmac = async (hash, key, data) => pc.hmac(hash, key, data);
 const extract = (s, salt, ikm) => hmac(s.hash, salt, ikm);
 async function expand(s, prk, info, length) {
   let t = new Uint8Array(0), out = new Uint8Array(0);
@@ -36,12 +32,12 @@ async function expand(s, prk, info, length) {
   return out.subarray(0, length);
 }
 const expandLabel = (s, secret, label, context, length) => expand(s, secret, concat(u16(length), vec8(enc.encode('tls13 ' + label)), vec8(context)), length);
-const digest = async (s, data) => new Uint8Array(await subtle().digest(s.hash, data));
+const digest = async (s, data) => pc.digest(s.hash, data);
 const deriveSecret = async (s, secret, label, transcript) => expandLabel(s, secret, label, await digest(s, transcript), s.size);
 
 // Traffic keys for one direction: AES-GCM with a per-record nonce of iv XOR sequence number
 async function trafficKeys(s, secret) {
-  const key = await subtle().importKey('raw', await expandLabel(s, secret, 'key', new Uint8Array(0), s.key), 'AES-GCM', false, ['encrypt', 'decrypt']);
+  const key = pc.aesGcm(await expandLabel(s, secret, 'key', new Uint8Array(0), s.key));
   return { key, iv: await expandLabel(s, secret, 'iv', new Uint8Array(0), 12), seq: 0n };
 }
 const nonce = (k) => { const n = k.iv.slice(); let seq = k.seq++; for (let i = 11; i >= 4; i--) { n[i] ^= Number(seq & 255n); seq >>= 8n; } return n; };
@@ -73,8 +69,8 @@ export class TlsSocket {
   }
 
   async _hello(alpn) {
-    this.ecdh = await subtle().generateKey({ name: 'ECDH', namedCurve: 'P-256' }, false, ['deriveBits']);
-    const share = new Uint8Array(await subtle().exportKey('raw', this.ecdh.publicKey));
+    this.ecdh = pc.ecdh('P-256');
+    const share = this.ecdh.publicKey;
     const exts = concat(
       ext(0x0000, vec16(concat(u8(0), vec16(enc.encode(this.host))))),                      // server_name
       ext(0x000a, vec16(u16(0x0017))),                                                      // supported_groups: secp256r1
@@ -116,7 +112,7 @@ export class TlsSocket {
     if (type === 21) { if (fragment[1] === 0) this.close(); else throw Error('TLS alert ' + fragment[1]); return; }
     if (type === 22 && !this.read) return this._handshakeBytes(fragment);
     if (type !== 23 || !this.read) throw Error('Unexpected TLS record ' + type);
-    const plain = new Uint8Array(await subtle().decrypt({ name: 'AES-GCM', iv: nonce(this.read), additionalData: header, tagLength: 128 }, this.read.key, fragment));
+    const plain = this.read.key.open(nonce(this.read), header, fragment);
     let end = plain.length - 1;
     while (end >= 0 && plain[end] === 0) end--; // TLSInnerPlaintext padding
     const inner = plain[end], content = plain.subarray(0, end);
@@ -170,8 +166,7 @@ export class TlsSocket {
     if (version !== 0x0304 || !share) throw Error('Server does not speak TLS 1.3');
     this.suite = suite;
     this.transcript = concat(this.transcript, message);
-    const peer = await subtle().importKey('raw', share, { name: 'ECDH', namedCurve: 'P-256' }, false, []);
-    const shared = new Uint8Array(await subtle().deriveBits({ name: 'ECDH', public: peer }, this.ecdh.privateKey, 256));
+    const shared = this.ecdh.derive(share);
     const s = suite, zero = new Uint8Array(s.size);
     const early = await extract(s, new Uint8Array(0), zero);
     const hs = await extract(s, await deriveSecret(s, early, 'derived', new Uint8Array(0)), shared);
@@ -202,12 +197,10 @@ export class TlsSocket {
     let ok = false;
     if (scheme >= 0x0804 && scheme <= 0x0806 && leaf.keyType === '1.2.840.113549.1.1.1') {
       const hash = ['SHA-256', 'SHA-384', 'SHA-512'][scheme - 0x0804];
-      const key = await subtle().importKey('spki', leaf.spki, { name: 'RSA-PSS', hash }, false, ['verify']);
-      ok = await subtle().verify({ name: 'RSA-PSS', saltLength: [32, 48, 64][scheme - 0x0804] }, key, sig, content);
+      ok = pc.rsaVerifyPss(rsaKey(leaf.spki), hash, [32, 48, 64][scheme - 0x0804], sig, content);
     } else if ((scheme === 0x0403 || scheme === 0x0503) && CURVES[leaf.curve]) {
       const [curve, size] = CURVES[leaf.curve];
-      const key = await subtle().importKey('spki', leaf.spki, { name: 'ECDSA', namedCurve: curve }, false, ['verify']);
-      ok = await subtle().verify({ name: 'ECDSA', hash: scheme === 0x0403 ? 'SHA-256' : 'SHA-384' }, key, ecdsaRaw(sig, size), content);
+      ok = pc.ecdsaVerify(curve, ecPoint(leaf.spki), scheme === 0x0403 ? 'SHA-256' : 'SHA-384', ecdsaRaw(sig, size), content);
     }
     if (!ok) throw Error('Server CertificateVerify signature is invalid');
     this.verified = true;
@@ -237,7 +230,7 @@ export class TlsSocket {
     for (let o = 0; o < data.length || o === 0; o += 16384) {
       const chunk = data.subarray(o, o + 16384), inner = concat(chunk, u8(type));
       const header = concat(u8(23), u16(0x0303), u16(inner.length + 16));
-      const sealed = new Uint8Array(await subtle().encrypt({ name: 'AES-GCM', iv: nonce(this.writeKeys), additionalData: header, tagLength: 128 }, this.writeKeys.key, inner));
+      const sealed = this.writeKeys.key.seal(nonce(this.writeKeys), header, inner);
       this.stream.write(concat(header, sealed));
       if (!data.length) break;
     }

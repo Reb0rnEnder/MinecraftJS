@@ -1,7 +1,7 @@
-// Minimal X.509 for the client's TLS: DER parsing, chain building to a bundled root, signature checks through
-// WebCrypto (RSA PKCS#1 v1.5 SHA-256/384/512, ECDSA P-256/P-384), validity dates and DNS SAN hostname matching.
-
-const subtle = () => globalThis.crypto.subtle;
+// Minimal X.509 for the client's TLS: DER parsing, chain building to a bundled root, signature checks in pure JS
+// (util/purecrypto.js: RSA PKCS#1 v1.5 SHA-256/384/512, ECDSA P-256/P-384), validity dates and DNS SAN hostname
+// matching. No WebCrypto, so it works on http:// and file:// pages too.
+import { rsaVerifyPkcs1, ecdsaVerify } from '../util/purecrypto.js';
 
 // DER TLV at `at`: { tag, start (content), end, header }
 export function der(bytes, at = 0) {
@@ -90,20 +90,23 @@ const CERT_ALGS = {
 };
 export const CURVES = { '1.2.840.10045.3.1.7': ['P-256', 32], '1.3.132.0.34': ['P-384', 48] };
 
+// SubjectPublicKeyInfo -> RSA { n, e, size } or the EC point bytes
+export function rsaKey(spki) {
+  const seq = der(spki, 0), [, bits] = children(spki, seq), inner = der(spki, bits.start + 1), [n, e] = children(spki, inner);
+  const int = (t) => { let v = 0n; for (let i = t.start; i < t.end; i++) v = (v << 8n) | BigInt(spki[i]); return v; };
+  const modulus = int(n);
+  return { n: modulus, e: int(e), size: Math.ceil(modulus.toString(16).length / 2) };
+}
+export function ecPoint(spki) { const [, bits] = children(spki, der(spki, 0)); return spki.subarray(bits.start + 1, bits.end); }
+
 // The issuer's key verifies `cert`'s signature
 export async function verifySignedBy(cert, issuer) {
   const alg = CERT_ALGS[cert.sigAlg];
   if (!alg) return false;
   try {
-    if (alg.kind === 'rsa') {
-      if (issuer.keyType !== '1.2.840.113549.1.1.1') return false;
-      const key = await subtle().importKey('spki', issuer.spki, { name: 'RSASSA-PKCS1-v1_5', hash: alg.hash }, false, ['verify']);
-      return await subtle().verify('RSASSA-PKCS1-v1_5', key, cert.signature, cert.tbs);
-    }
+    if (alg.kind === 'rsa') return issuer.keyType === '1.2.840.113549.1.1.1' && rsaVerifyPkcs1(rsaKey(issuer.spki), alg.hash, cert.signature, cert.tbs);
     const curve = CURVES[issuer.curve];
-    if (!curve) return false;
-    const key = await subtle().importKey('spki', issuer.spki, { name: 'ECDSA', namedCurve: curve[0] }, false, ['verify']);
-    return await subtle().verify({ name: 'ECDSA', hash: alg.hash }, key, ecdsaRaw(cert.signature, curve[1]), cert.tbs);
+    return !!curve && ecdsaVerify(curve[0], ecPoint(issuer.spki), alg.hash, ecdsaRaw(cert.signature, curve[1]), cert.tbs);
   } catch { return false; }
 }
 
