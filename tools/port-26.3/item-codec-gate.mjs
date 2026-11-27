@@ -135,6 +135,8 @@ assert.equal(adapted.items[0].maxStackSize,16);
 assert.equal(adapted.items[0].version,'26.3');
 assert.equal(adapted.items[0].maxDamage,1561,'adapted slots carry native defaults');
 assert.equal(adapted.items[0].components.unbreakable,undefined,'adapted slots carry patch removals');
+assert.equal(itemComponentValues26_3(adapted.items[0]).max_stack_size,16,'the item view applies an adapted slot patch');
+assert.equal(itemComponentValues26_3(adapted.items[0]).unbreakable,undefined,'the item view applies adapted slot removals');
 assert.deepEqual(adapted.items[0].componentPatch.removed,[componentId('unbreakable'),componentId('repair_cost')]);
 
 const slot=adaptPlay26_3({decoded:true,name:'container_set_slot',data:{containerId:5,stateId:9,slot:12,item:stack}});

@@ -442,8 +442,10 @@ export function normalizeNativeComponent(name,value){
 export function itemComponentValues26_3(item){
   const entry=ITEM_DEFAULTS_26_3.items[item.itemId??item.id];
   const values={...entry?.defaults};
-  for(const id of item.removed||[])delete values[DATA_COMPONENT_NAMES_26_3[id]];
-  for(const {name,value} of item.added||[])values[name]=normalizeNativeComponent(name,value);
+  const removed=item.removed??item.componentPatch?.removed??[];
+  const added=item.added??item.componentPatch?.added??[];
+  for(const id of removed)delete values[DATA_COMPONENT_NAMES_26_3[id]];
+  for(const {name,value} of added)values[name]=normalizeNativeComponent(name,value);
   const tooltip=values.tooltip_display;
   if(tooltip?.hide_tooltip)values.hide_tooltip=true;
   return values;
