@@ -199,6 +199,8 @@ export class Interaction {
 
   // ItemRenderer.updateEquippedItem (1.9+): the main hand follows the attack cooldown (strength cubed); a changed
   // stack lowers the hand, which comes back up with the new one
+  // ItemInHandRenderer renders mainHandItem/offHandItem: the old stacks until a lowered hand takes the new one
+  shownHandStacks() { const inv = this.game.inventory; return [this._equipped !== undefined ? this._equipped : inv.held(), this._equippedOff !== undefined ? this._equippedOff : inv.offhand]; }
   updateEquip() {
     this.prevEquipProgress = this.equipProgress;
     this.prevEquipProgressOff = this.equipProgressOff;
