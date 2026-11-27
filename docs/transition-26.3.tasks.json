@@ -289,7 +289,7 @@
       ],
       "acceptance": "Screens and option rows match native 26.3, including dialog and waypoint UI.",
       "evidence": [
-        "Player-list hearts use the native HealthState blink/catch-up and `hud/heart/*` sprites; name tags lift for the below-name objective only within 10 blocks; the smithing screen is now 26.3-native (slot sprites, template icons, error panel, armor-stand preview). Shared tests: `test-name-tags.mjs`, `test-tab-hearts-1.20.6.mjs`. Live visual acceptance and the dialog screen remain open."
+        "Player-list hearts use the native HealthState blink/catch-up and `hud/heart/*` sprites; name tags lift for the below-name objective only within 10 blocks; the smithing screen is now 26.3-native (slot sprites, template icons, error panel, armor-stand preview); the title screen uses the native 26.3 layout (Friends/language/accessibility icon columns, Options/Quit row, splash at width/2+123,69, and the clamped two-second widget fade while the panorama stays visible). The Friends button is present in its native disabled state because MinecraftJS has no friends backend. Tests: `test-name-tags.mjs`, `test-tab-hearts-1.20.6.mjs`, `test-title-26.3.mjs`. Live visual acceptance and the dialog screen remain open."
       ]
     },
     {

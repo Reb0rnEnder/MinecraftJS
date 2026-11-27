@@ -241,8 +241,8 @@ export class Gui {
     this.quad(this.white, x0, y0, x1, y1, 0, 0, 1, 1, a, b, b, a);
   }
 
-  text(s, x, y, color = 0xffffff, shadow = true) { return this.font.draw(s, x, y, color, shadow); }
-  textCentered(s, cx, y, color = 0xffffff, shadow = true) { return this.font.drawCentered(s, cx, y, color, shadow); }
+  text(s, x, y, color = 0xffffff, shadow = true) { return this.font.draw(s, x, y, color, shadow, this.color[3]); }
+  textCentered(s, cx, y, color = 0xffffff, shadow = true) { return this.font.drawCentered(s, cx, y, color, shadow, this.color[3]); }
   textWidth(s) { return this.font.width(s); }
 
   // Queue a 3D draw (e.g. item models) in GUI space. model is relative to the current matrix.
