@@ -137,16 +137,16 @@ pending; product outside current scope; or experiment-gated.
   (Creative catalogue stacks now carry native hashes), live acceptance of the remaining container/menu
   families, `can_place_on`/`can_break` (adventure-predicate graph), native support/placement rules, dialog
   input widgets, and the renderer rigs 26.3 restructured. All 144 inbound Play IDs
-  and all 16 native debug subscription entries decode; 130 have generated adapters and two more reuse shared
+  and all 16 native debug subscription entries decode; 135 have generated adapters and two more reuse shared
   handlers (mount_screen_open -> open_horse_window, move_minecart_along_track -> entity_teleport). Four IDs are
-  consumed by the connection layer before adaptation; the other eight are explicit scope decisions (three native
-  recipe-display packets, update_recipes, add_transient_block, custom_report_details, low_disk_space_warning and the
-  two game-test frames). The native Creative catalogue now
+  consumed by the connection layer before adaptation; the other three are explicit scope decisions
+  (add_transient_block and the two game-test frames). Recipe display state is stored natively, update_recipes
+  feeds the stonecutter from the server's native ingredient/SlotDisplay list, and every pinned adapter frame maps. The native Creative catalogue now
   comes from the pinned client for all eight feature masks (2034 stacks, 405 component patches), so creative
   slots no longer wait on the item table. The task ledger remains partial; next tasks P08/P10.
 - The asset target is 26.3: `lib/mcassets.js` defaults this tree to 26.3 (pack format 97) and the proxy serves
   the jar first and the index for indexed objects. `tools/port-26.3/ExtractLayers26_3.java` bakes all 361
-  native layers and `lib/model-extract-26.3.js` produces a complete 129-model bundle (native composites for the
+  native layers and `lib/model-extract-26.3.js` produces a complete 136-model bundle (native composites for the
   per-slot armor and split banners; the 1.20.6 rig only where 26.3 restructured the part tree the renderer
   animates). 26.3 has 3,964 textures against 3,048 in 1.20.6: 2,302 shared paths changed, 1,165 are new, and
   the 249 paths 26.3 dropped fall back to the pinned 1.20.6 file so the 1.20.6 UI still boots. The title

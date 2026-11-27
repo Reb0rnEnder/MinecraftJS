@@ -1508,6 +1508,37 @@ export class Game {
 
   on_declare_recipes(p) { replaceServerRecipes(this,p.recipes); }
 
+  // ClientboundUpdateRecipesPacket in 26.3: recipe property sets plus the stonecutter's
+  // native (ingredient, display) list. The stonecutter screen consumes this before falling
+  // back to the pre-26.3 server recipe table.
+  on_update_recipes(p) {
+    this.recipePropertySets = p.itemSets || {};
+    this.stonecutterRecipes = p.stonecutter || [];
+    const screen = this.screens.current;
+    if (screen?.recipesUpdated) screen.recipesUpdated();
+  }
+
+  // Native recipe-book state. The display graph is stored by its VarInt id; the old local
+  // string-id book stays in RecipeBook until a display-graph UI replaces it.
+  on_recipe_book_add(p) {
+    this.nativeRecipeDisplays ??= new Map();
+    if (p.replace) this.nativeRecipeDisplays.clear();
+    for (const entry of p.entries || []) this.nativeRecipeDisplays.set(entry.contents.id, entry);
+  }
+  on_recipe_book_remove(p) {
+    for (const id of p.recipes || []) this.nativeRecipeDisplays?.delete(id);
+  }
+  on_recipe_book_settings(p) { this.nativeRecipeBookSettings = p; }
+
+  // Server-provided crash-report fields and the low-disk notice are client diagnostics, not
+  // world state. Keep the details for the report screen and surface the warning once.
+  on_custom_report_details(p) { this.customReportDetails = p.details || {}; }
+  on_low_disk_space_warning() {
+    if (this.lowDiskSpace) return;
+    this.lowDiskSpace = true;
+    console.warn('[client] server reports low disk space');
+  }
+
   on_trade_list(p) {
     if(this.window?.id!==p.windowId)return;
     this.window.tradeData=p;

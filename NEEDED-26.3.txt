@@ -22,8 +22,15 @@ Done and committed:
 - Remaining inbound adapters: attributes, player rotation, mount screen, minecart steps, game
   rules, post effects and bundle delimiters (2c27429).
 - Native debug subscriptions render in F3, bounded and truncated (66dd0a1).
-- Adapter gate now skips only recipe_book_add, recipe_book_settings and update_recipes.
-- Full 26.3 gate: test:26.3 60/60, adapter 50 frames / 33 handlers, inbound all, serverbound 0,
+- Native bogged and parched rigs are bound, with their own 26.3 layer specs and textures; the
+  asset pending list is down to 8 mobs (82 rigs, 132 textures).
+- 26.3 update_recipes is adapted. The stonecutter consumes the server's native
+  ingredient/SlotDisplay list; the legacy recipe table is only a fallback. Recipe-display add/
+  remove/settings state is stored natively.
+- custom_report_details and low_disk_space_warning are handled; only add_transient_block and the
+  two game-test frames remain explicit scope decisions.
+- Adapter gate skips nothing across its 53 pinned frames (36 handler names).
+- Full 26.3 gate: test:26.3 62/62, adapter 53 frames / 36 handlers, inbound all, serverbound 0,
   assets exit 0.
 
 Still deliberately untracked:
@@ -52,11 +59,11 @@ B. CODE-ONLY PARITY WORK, IN PRIORITY ORDER
      add/update/remove, entity events, world events and the remaining presentation frames.
    - Exercise the newly adapted attribute, player-rotation, mount-screen, minecart, game-rule,
      post-effects and bundle paths against a real server.
-   - Decide whether to implement add_transient_block, custom_report_details and
-     low_disk_space_warning, or keep them explicitly scoped out.
-   - Recipe display remains scoped: recipe_book_add/remove/settings and update_recipes cannot map
-     onto the old string-id recipe book because 26.3 sends a RecipeDisplay graph and no server
-     recipe list. Implement a native display-graph UI or record the scope permanently.
+   - add_transient_block and the two game-test frames (game_test_highlight_pos,
+     test_instance_block_status) remain the only explicit Play scope decisions.
+   - Recipe display: add/remove/settings and update_recipes are now handled natively. The
+     stonecutter reads the server's native list; a full RecipeDisplay-graph recipe-book UI is
+     still open.
    - Keep unknown packets raw and fail-closed; a decode error must never close the socket.
 
 3. P11 - New content families from 1.20.6 -> 26.3
@@ -76,9 +83,10 @@ B. CODE-ONLY PARITY WORK, IN PRIORITY ORDER
      world behaviour.
    - 26.3: poplar wood, dappled forest, straw bed, abandoned camps, cushion, nautilus armor, spear,
      sulfur cube and release-article families not yet exercised.
-   - 10 mobs currently have no renderer and are explicitly pending in the asset build: bogged,
-     breeze, camel_husk, copper_golem, creaking, happy_ghast, nautilus, parched, sulfur_cube,
-     zombie_nautilus. Bind native rigs or record a visual deferral for each.
+   - 8 mobs currently have no renderer and are explicitly pending in the asset build: breeze,
+     camel_husk, copper_golem, creaking, happy_ghast, nautilus, sulfur_cube, zombie_nautilus.
+     Bogged and parched are now bound to native 26.3 rigs. Bind the rest or record a visual
+     deferral for each.
 
 4. P12 - Particle, sound and animation acceptance
    - Add per-behaviour rendering/trigger coverage for all 128 particle types, not only codec
@@ -175,7 +183,7 @@ E. SHORT ANSWER: WHAT IS ACTUALLY LEFT
 If the goal is "no incomplete code-only section left", do these in order:
 1. General arbitrary HashedPatchMap encoding/hashing and the four unverified menu flows.
 2. Live triggers for the byte-gated inbound families and the newly adapted packets.
-3. P11 new-content behaviour and the 10 mobs still pending a renderer.
+3. P11 new-content behaviour and the 8 mobs still pending a renderer.
 4. Live particle/sound/animation acceptance and the inherited P14 UI/pack/font findings.
 5. The P01/P02/P03 evidence tail and P15/P16 release gate.
 

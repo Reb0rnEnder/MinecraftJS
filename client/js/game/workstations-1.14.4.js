@@ -6,9 +6,34 @@ export const WORKSTATIONS_498 = {
   'minecraft:loom': {texture:'loom',slots:[[0,13,26],[1,33,26],[2,23,45],[3,143,58]],titleY:4},
 };
 export const LOOM_PATTERNS = 'b bl br tl tr bs ts ls rs cs ms drs dls ss cr sc bt tt bts tts ld rd lud rud mc mr vh hh vhr hhb bo cbo gra gru bri glb cre sku flo moj pig'.split(' ');
+// 26.3's stonecutter menu gets its list from ClientboundUpdateRecipesPacket, not from the old
+// server recipe table: each entry is an Ingredient plus a SlotDisplay. Keep the result in the
+// same {data:{result}} shape the screen already draws.
+function nativeDisplayStack(display) {
+  if (!display) return null;
+  if (display.type === 'item') return { id: display.item, count: 1 };
+  if (display.type === 'item_stack' && display.stack) {
+    const stack = { id: display.stack.itemId, count: display.stack.count };
+    if (display.stack.components) stack.components = display.stack.components;
+    if (display.stack.added?.length || display.stack.removed?.length) stack.componentPatch = { added: display.stack.added, removed: display.stack.removed };
+    return stack;
+  }
+  if (display.type === 'composite') {
+    for (const child of display.contents || []) { const stack = nativeDisplayStack(child); if (stack) return stack; }
+  }
+  return null;
+}
 export function stonecutterRecipes(game, input) {
   if(!input)return [];
   const key=r=>(game.items.isBlockItem(r.data.result.id)?'block.minecraft.':'item.minecraft.')+game.items.name(r.data.result.id);
+  if (Array.isArray(game.stonecutterRecipes)) {
+    return game.stonecutterRecipes.flatMap(recipe => {
+      const accepts = recipe.input?.items?.includes(input.id);
+      if (!accepts) return [];
+      const result = nativeDisplayStack(recipe.option);
+      return result ? [{ type: 'minecraft:stonecutting', data: { result, ingredient: recipe.input.items } }] : [];
+    }).sort((a,b)=>key(a)<key(b)?-1:key(a)>key(b)?1:0);
+  }
   return (game.serverRecipes||[]).filter(r=>r.type==='minecraft:stonecutting' && r.data.ingredient.some(it=>it?.id===input.id))
     .sort((a,b)=>key(a)<key(b)?-1:key(a)>key(b)?1:0);
 }

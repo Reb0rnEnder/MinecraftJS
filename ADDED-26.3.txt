@@ -1,10 +1,10 @@
 MinecraftJS 26.3 - WHAT WE HAVE ADDED
 Branch: 26.3
 Inventory date: 2026-11-27
-Latest commit: 66dd0a1 "Render native 26.3 debug subscriptions in the F3 screen"
-Latest verified run: test:26.3 60/60, adapter:26.3 50 pinned frames / 33 handler names / 2 chunks,
-inbound gate all checks passed, serverbound gate 0, npm run assets exit 0 (80 mobs, 130 textures,
-10 new mobs explicitly pending a renderer).
+Baseline: 66dd0a1 "Render native 26.3 debug subscriptions in the F3 screen" plus this batch
+Latest verified run: test:26.3 62/62, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
+inbound gate all checks passed, serverbound gate 0, npm run assets exit 0 (82 mobs, 132 textures,
+8 new mobs explicitly pending a renderer).
 
 This file lists work that exists in the repository. It does not claim full parity. Areas that are
 decoded but not live-accepted are marked "decoded only", "byte-gated" or "needs visual acceptance".
@@ -71,15 +71,13 @@ Native data tables installed:
 ======================================================================
 
 - All 144 inbound Play IDs decode with bytecode-verified bodies and zero raw packets.
-- 131 payloads adapt to a game handler: 129 through generated one-to-one mappings plus
+- 137 payloads adapt to a game handler: 135 through generated one-to-one mappings plus
   mount_screen_open -> open_horse_window and move_minecart_along_track -> entity_teleport.
 - Four IDs are consumed by the connection layer before adaptation: cookie_request,
   start_configuration, store_cookie and transfer.
-- Nine are explicit scope decisions: the three native recipe-display packets
-  (recipe_book_add/remove/settings), update_recipes (26.3 removed the server recipe list),
-  add_transient_block, custom_report_details, low_disk_space_warning and the two game-test frames.
-- The adapter gate replays 50 pinned frames into 33 real handler names; its only remaining skips
-  are recipe_book_add, recipe_book_settings and update_recipes.
+- Three are explicit scope decisions: add_transient_block and the two game-test frames
+  (game_test_highlight_pos, test_instance_block_status).
+- The adapter gate replays 53 pinned frames into 36 real handler names with zero skips.
 
 Recent inbound work:
 - Entity attributes now map native registry ids to the 766 camel-case keys, including operation
@@ -222,27 +220,29 @@ Known limit:
 
 - 26.3 asset target: pack format 97, jar-first textures, indexed sounds, native panorama and
   native block models/textures.
-- ExtractLayers26_3 dumps 361 native layers; lib/model-extract-26.3.js bakes a 129-model bundle
+- ExtractLayers26_3 dumps 361 native layers; lib/model-extract-26.3.js bakes a 136-model bundle
   for the 26.3 target.
 - Equipment/armor/trim sprites and paletted permutations generated from the native asset tree.
 - Native boat/chest-boat layers and smithing template icons/container slot sprites.
 - Inventory/containers use native 26.3 menu ids and slot geometry for existing screens.
-- npm run assets: 35,723 states, 80 mobs, 130 textures, 10 explicitly pending mobs.
+- npm run assets: 35,723 states, 82 mobs, 132 textures, 8 explicitly pending mobs.
+- Native bogged and parched humanoid rigs use their 26.3 layer trees (head/hat/body/arms/legs)
+  and the native skeleton texture paths instead of the 1.20.6 skeleton fallback.
 
 ======================================================================
 12. TESTS, GATES AND DOCUMENTATION
 ======================================================================
 
 Green at this inventory:
-- npm run test:26.3: 60 tests.
-- npm run adapter:26.3: 50 packets, 33 handler names, 2 chunks.
+- npm run test:26.3: 62 tests.
+- npm run adapter:26.3: 53 packets, 36 handler names, 2 chunks.
 - tools/port-26.3/inbound-gate.mjs: all checks.
 - tools/port-26.3/serverbound-gate.mjs: all checks.
 - tools/port-26.3/client-net.mjs: real-server socket harness.
 - npm run assets: exit 0.
-- Focused tests: debug subscriptions (new), recipes, boats, entity registry, dialogs, creative,
-  title, smithing, name tags, tab hearts, entity rigs, outbound coverage, particles, stats,
-  advancements, explosions.
+- Focused tests: debug subscriptions, native stonecutter recipes (new), recipes, boats, entity
+  registry, dialogs, creative, title, smithing, name tags, tab hearts, entity rigs, outbound
+  coverage, particles, stats, advancements, explosions.
 
 Docs:
 - docs/transition-26.3.md, docs/transition-26.3.tasks.json, docs/parity-checklist-26.3.md,
@@ -250,6 +250,8 @@ Docs:
 - ADDED-26.3.txt and NEEDED-26.3.txt (these files).
 
 Recent commit trail:
+- This batch: native bogged/parched rigs, native 26.3 stonecutter recipe source, recipe-book
+  display state, diagnostic frames and complete pinned-frame adapter coverage.
 - 66dd0a1 Render native 26.3 debug subscriptions in the F3 screen
 - 2c27429 Adapt the remaining native 26.3 Play packets
 - 6b70740 Bind the native 26.3 dragon and end-crystal rigs
@@ -262,7 +264,7 @@ Recent commit trail:
 13. WHAT THIS DOES NOT MEAN
 ======================================================================
 
-- "131 payloads adapt" does not mean every adapted family has been live-triggered. Sounds,
+- "137 payloads adapt" does not mean every adapted family has been live-triggered. Sounds,
   cooldowns, mob effects, boss bars, entity/world events and many presentation frames are
   byte-gated and socket-verified, not accepted in a live scenario.
 - Native item components do not mean arbitrary runtime component values can be re-encoded for

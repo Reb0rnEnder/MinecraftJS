@@ -87,7 +87,13 @@ const TEAM_COLLISION=['always','never','pushOtherTeams','pushOwnTeam'];
 // up by the generated one-to-one handler table.
 const NATIVE_HANDLED=Object.freeze({
   mount_screen_open:'open_horse_window',
-  move_minecart_along_track:'entity_teleport'
+  move_minecart_along_track:'entity_teleport',
+  update_recipes:'update_recipes',
+  recipe_book_add:'recipe_book_add',
+  recipe_book_remove:'recipe_book_remove',
+  recipe_book_settings:'recipe_book_settings',
+  custom_report_details:'custom_report_details',
+  low_disk_space_warning:'low_disk_space_warning'
 });
 
 const ADAPTERS={
@@ -469,6 +475,15 @@ const ADAPTERS={
     return {entityId:packet.entityId,properties};
   },
   bundle_delimiter(){return {};},
+  // 26.3 replaced the old recipe list with property sets and the stonecutter's input/output graph.
+  update_recipes(packet){return {itemSets:packet.itemSets,stonecutter:packet.stonecutter};},
+  // 26.3 recipe displays are identified by VarInt and carry a display graph; keep the native
+  // entries rather than trying to force them into the old string-id recipe book.
+  recipe_book_add(packet){return {entries:packet.entries,replace:packet.replace};},
+  recipe_book_remove(packet){return {recipes:packet.recipes};},
+  recipe_book_settings(packet){return {crafting:packet.crafting,furnace:packet.furnace,blastFurnace:packet.blastFurnace,smoker:packet.smoker};},
+  custom_report_details(packet){return {details:packet.details};},
+  low_disk_space_warning(){return {};},
   post_effects(packet){return {effects:packet.effects};},
   game_rule_values(packet){return {values:packet.values};},
   mount_screen_open(packet){return {containerId:packet.containerId,nbSlots:packet.inventoryColumns,entityId:packet.entityId};},
@@ -523,7 +538,7 @@ const ADAPTERS={
 
 export function adaptPlay26_3(packet,context){
   if(!packet?.decoded)return null;
-  const name=HANDLED_PLAY_CLIENTBOUND_26_3[packet.name]||NATIVE_HANDLED[packet.name];
+  const name=NATIVE_HANDLED[packet.name]||HANDLED_PLAY_CLIENTBOUND_26_3[packet.name];
   const adapt=ADAPTERS[packet.name];
   if(!name||!adapt)return null;
   const data=adapt(packet.data,context);

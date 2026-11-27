@@ -592,6 +592,11 @@ export function vex() {
 // adapters are implemented separately; retaining native hierarchy avoids
 // incorrectly treating a different release's model as a biped.
 export const WILD_MOB_TEXTURES={armadillo:'entity/armadillo/armadillo.png',allay:'entity/allay/allay.png',frog:'entity/frog/temperate_frog.png',tadpole:'entity/tadpole/tadpole.png',warden:'entity/warden/warden.png',camel:'entity/camel/camel.png',sniffer:'entity/sniffer/sniffer.png'};
+// New 26.3 humanoids keep the native skeleton-family layer rather than borrowing the
+// 1.20.6 skeleton part tree. Their hats are children of the head, so animateBiped leaves
+// the attached layer alone instead of copying angles twice.
+export const BIPED_MOB_TEXTURES={bogged:'entity/skeleton/bogged.png',parched:'entity/skeleton/parched.png'};
+export function nativeBipedMob(name){return jarAdapter(name,BIPED,animateBiped,{texture:BIPED_MOB_TEXTURES[name]});}
 export function wildMob(name) {
  if(name==='armadillo')return jarAdapter(name,JAR[name].slotNames,animateArmadillo766,{texture:WILD_MOB_TEXTURES[name],nativeAgeable:{bodyOnly:true,scaleHead:false,headY:0,headZ:0,headScale:1,bodyScale:1/PAWS_DATA_766.armadilloAgeable.scale,bodyY:PAWS_DATA_766.armadilloAgeable.bodyY}});
  return jarAdapter(name,JAR[name].slotNames,animateWildMob,{texture:WILD_MOB_TEXTURES[name]});

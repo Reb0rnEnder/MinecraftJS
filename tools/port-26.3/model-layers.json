@@ -694,6 +694,30 @@
       []
     ]
   },
+  "bogged": {
+    "layer": "minecraft:bogged#main",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
+  "parched": {
+    "layer": "minecraft:parched#main",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
   "dragon": {
     "layer": "minecraft:ender_dragon#main",
     "fields": [

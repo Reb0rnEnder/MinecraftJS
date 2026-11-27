@@ -11,7 +11,7 @@ const {models, errors} = extractModels({data: jar});
 
 test('restructured 26.3 rigs do not silently use the 1.20.6 fallback', () => {
   assert.deepEqual(errors, []);
-  for (const name of ['horse', 'donkey', 'horseArmor', 'camel', 'sniffer', 'player', 'playerSlim', 'rabbit', 'dragon', 'enderCrystal', 'enderCrystalNoBase']) {
+  for (const name of ['bogged', 'parched', 'horse', 'donkey', 'horseArmor', 'camel', 'sniffer', 'player', 'playerSlim', 'rabbit', 'dragon', 'enderCrystal', 'enderCrystalNoBase']) {
     assert.equal(models[name]?.rigSource, '26.3', `${name} should bind a native 26.3 layer`);
   }
   const boats = ['oak', 'spruce', 'birch', 'jungle', 'acacia', 'cherry', 'dark_oak', 'pale_oak', 'mangrove', 'poplar', 'bamboo'];
@@ -56,6 +56,8 @@ test('ported rigs construct and animate without a missing part', async () => {
     ['rabbit', M.rabbit()],
     ['dragon', M.dragonParts()],
     ['enderCrystal', M.blockModel('enderCrystal', ['outer_glass', 'inner_glass', 'cube', 'base'])],
+    ['bogged', M.nativeBipedMob('bogged')],
+    ['parched', M.nativeBipedMob('parched')],
   ];
   for (const [name, model] of built) {
     if (typeof model.animate === 'function') assert.doesNotThrow(() => model.animate(model, {age: 20, ls: 10, lsa: 0.5, yaw: 20, pitch: 10, saddled: true, hasRider: true}), name);
