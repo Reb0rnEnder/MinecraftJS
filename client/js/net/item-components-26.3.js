@@ -391,6 +391,13 @@ export function readItemStackTemplate26_3(r){
 // network values to the consumer-facing shapes used by Items/rendering, while report
 // defaults already arrive in that shape.
 const RARITIES=['common','uncommon','rare','epic'];
+// FireworkExplosion.Shape declaration order in 26.3.
+const FIREWORK_SHAPES=['small_ball','large_ball','star','creeper','burst'];
+const normalizeFireworkExplosion=value=>({
+  ...value,
+  shape:typeof value.shape==='number'?FIREWORK_SHAPES[value.shape]??value.shape:value.shape,
+  has_twinkle:value.hasFlicker??value.hasTwinkle??value.has_twinkle
+});
 // ItemUseAnimation declaration order in 26.3: NONE, EAT, DRINK, BLOCK, BOW, TRIDENT,
 // CROSSBOW, SPYGLASS, TOOT_HORN, BRUSH, BUNDLE, SPEAR.
 const USE_ANIMATIONS=['none','eat','drink','block','bow','trident','crossbow','spyglass','toot_horn','brush','bundle','spear'];
@@ -423,6 +430,8 @@ export function normalizeNativeComponent(name,value){
   if(name==='attribute_modifiers')return nativeAttributeModifiers(value);
   if(name==='dyed_color'&&typeof value==='number')return {rgb:value>>>0,show_in_tooltip:true};
   if(name==='rarity'&&typeof value==='number')return RARITIES[value]??value;
+  if(name==='firework_explosion'&&value&&typeof value==='object')return normalizeFireworkExplosion(value);
+  if(name==='fireworks'&&value&&typeof value==='object')return {...value,explosions:(value.explosions||[]).map(normalizeFireworkExplosion)};
   if(name==='potion_contents'&&value&&typeof value==='object')return {...value,potionId:value.potion};
   if(name==='tooltip_display'&&value&&typeof value==='object'){
     const hidden=value.hiddenComponents??value.hidden_components??[];

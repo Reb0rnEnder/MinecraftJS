@@ -208,6 +208,9 @@ assert.deepEqual(normalizeNativeComponent('dyed_color',0x123456),{rgb:0x123456,s
 assert.equal(normalizeNativeComponent('custom_model_data',{floats:[7],flags:[],strings:[],colors:[]}),7,'native custom model data exposes its first float');
 assert.equal(normalizeNativeComponent('potion_contents',{potion:13,customColor:null,customEffects:[],customEffectsName:null}).potionId,13,'native potion holder id reaches the item view');
 assert.equal(normalizeNativeComponent('consumable',{consumeSeconds:1.6,animation:2,sound:0,hasConsumeParticles:false,onConsumeEffects:[]}).animation,'drink','native use-animation id maps to its name');
+assert.equal(normalizeNativeComponent('firework_explosion',{shape:0,colors:[],fadeColors:[],hasTrail:true,hasFlicker:true}).shape,'small_ball','native firework shape ids map to names');
+assert.equal(normalizeNativeComponent('firework_explosion',{shape:0,colors:[],fadeColors:[],hasTrail:true,hasFlicker:true}).has_twinkle,true,'native firework flicker maps to the tooltip field');
+assert.equal(normalizeNativeComponent('fireworks',{flightDuration:2,explosions:[{shape:4,colors:[],fadeColors:[],hasTrail:false,hasFlicker:false}]}).explosions[0].shape,'burst','firework rockets normalize their explosion shapes');
 assert.deepEqual(normalizeNativeComponent('tooltip_display',{hideTooltip:false,hiddenComponents:[componentId('enchantments')]}),{hide_tooltip:false,hidden_components:['enchantments']},'native tooltip hidden-component ids map to names');
 assert.equal(normalizeNativeComponent('tooltip_display',{hideTooltip:true,hiddenComponents:[]}).hide_tooltip,true,'native tooltip hide flag is preserved');
 const itemView=new Items({data:{items:[]}});
