@@ -803,6 +803,15 @@ export class Interaction {
     }
     g.send(C.useItem(hand,g.blockPrediction?.current||0)); // CPacketPlayerTryUseItem
     if (g.cooldownFraction(held.id, 0) > 0) return false; // CooldownTracker: still cooling down
+    if (name === 'ender_pearl') g.addCooldown(held.id, 20); // ItemEnderPearl.onItemRightClick sets it on both sides (1.9+)
+    // InstrumentItem.use (1.19+): the local player hears the horn (the server excludes them), then the cooldown
+    if (name === 'goat_horn') {
+      const tag = g.items.nbt(held)?.instrument, key = String(tag || '').replace(/^minecraft:/, '');
+      const index = ['ponder_goat_horn', 'sing_goat_horn', 'seek_goat_horn', 'feel_goat_horn', 'admire_goat_horn', 'call_goat_horn', 'yearn_goat_horn', 'dream_goat_horn'].indexOf(key);
+      if (index < 0) return false;
+      g.sound?.play('item.goat_horn.sound.' + index, this.player.x, this.player.y, this.player.z, 16, 1, { category: 'record' });
+      g.addCooldown(held.id, 140);
+    }
     if (name === 'trident') {
       if (g.items.damage(held) >= g.items.maxDurability(held.id)-1) return false;
       if (g.items.enchantLevel(held, 'riptide') > 0 && !this._wetForRiptide()) return false;

@@ -1387,6 +1387,8 @@ export class Game {
   on_map(p) { this.items.updateMap(p); }
 
   // CooldownTracker (ender pearls, chorus fruit, shields disabled by an axe)
+  // CooldownTracker.setCooldown on the local player (the server's cooldown packet confirms or replaces it)
+  addCooldown(itemId, ticks) { (this.cooldowns ||= new Map()).set(itemId, { start: this.ticks, end: this.ticks + ticks }); }
   on_set_cooldown(p) {
     if (!this.cooldowns) this.cooldowns = new Map();
     if (p.cooldownTicks > 0) this.cooldowns.set(p.itemId, { start: this.ticks, end: this.ticks + p.cooldownTicks });
