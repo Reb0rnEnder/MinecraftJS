@@ -1221,6 +1221,17 @@ export function cushion() {
   return { parts: p, roots: [p.cushion], animate() {} };
 }
 
+// WindChargeModel (64x32): wind_charge spins one way inside bone, the wind shell the other.
+export function windCharge() {
+  const p = J('windCharge', ['bone']);
+  const bone = p.bone, wind = bone.namedChildren.wind, charge = bone.namedChildren.wind_charge;
+  return { parts: p, roots: [bone], animate(m, a) {
+    const spin = (a.age || 0) * 16 * D2R;
+    charge.ry = -spin;
+    wind.ry = spin;
+  } };
+}
+
 // Nether Update geometry is extracted from the target jar, including ears/bristles.
 export function hoglin(){return jarAdapter('hoglin',['head','rightEar','leftEar','body','frontRightLeg','frontLeftLeg','backRightLeg','backLeftLeg','mane'],animateHoglin,{hoglinAgeable:true});}
 export function strider(){return jarAdapter('strider',['rightLeg','leftLeg','body','bristle0','bristle1','bristle2','bristle3','bristle4','bristle5'],animateStrider);}

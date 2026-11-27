@@ -65,5 +65,5 @@ export const PAINTINGS = [
 // potion entity into splash/lingering ids and renamed boats by wood, so map those names before
 // falling back to the legacy table.
 const boatKind=name=>/_chest_(boat|raft)$/.test(name)||/_(boat|raft)$/.test(name)?'boat':null;
-const OBJECT_KINDS={splash_potion:'projectile',lingering_potion:'projectile',wind_charge:'projectile',breeze_wind_charge:'projectile'};
+const OBJECT_KINDS={splash_potion:'projectile',lingering_potion:'projectile',lightning_bolt:'lightning'};
 export const OBJECT_TYPES=Object.fromEntries(ENTITY_TYPES.map(def=>[def.id,{...def,kind:boatKind(def.name)||OBJECT_KINDS[def.name]||({'glow_item_frame':'itemframe','chest_boat':'boat','block_display':'display','item_display':'display','text_display':'display','interaction':'interaction','painting':'painting'})[def.name]||Object.values(LEGACY_OBJECT_TYPES).find(o=>o.name===def.name)?.kind||(MINECART_NAMES.includes(def.name)?'minecart':def.name)}]));

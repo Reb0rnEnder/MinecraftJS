@@ -29,12 +29,13 @@ test('native dimensions, eye heights and categories drive entity definitions', (
   assert.equal(ENTITIES_BY_NAME['fishing_bobber'].mob, false);
 });
 
-test('26.3 boats, rafts and split potions keep their renderer kinds', () => {
+test('26.3 boats, rafts, split potions and wind charges keep their renderer kinds', () => {
   for (const name of ['oak_boat', 'oak_chest_boat', 'bamboo_raft', 'bamboo_chest_raft', 'poplar_boat']) {
     assert.equal(OBJECT_TYPES[ENTITIES_BY_NAME[name].id].kind, 'boat', name);
   }
   assert.equal(OBJECT_TYPES[ENTITIES_BY_NAME['splash_potion'].id].kind, 'projectile');
   assert.equal(OBJECT_TYPES[ENTITIES_BY_NAME['lingering_potion'].id].kind, 'projectile');
-  assert.equal(OBJECT_TYPES[ENTITIES_BY_NAME['wind_charge'].id].kind, 'projectile');
+  assert.equal(OBJECT_TYPES[ENTITIES_BY_NAME['wind_charge'].id].kind, 'wind_charge');
+  assert.equal(OBJECT_TYPES[ENTITIES_BY_NAME['breeze_wind_charge'].id].kind, 'breeze_wind_charge');
   assert.equal(OBJECT_TYPES[ENTITIES_BY_NAME['minecart'].id].kind, 'minecart');
 });

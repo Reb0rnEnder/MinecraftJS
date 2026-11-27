@@ -2,7 +2,7 @@ MinecraftJS 26.3 - WHAT WE HAVE ADDED
 Branch: 26.3
 Inventory date: 2026-11-27
 Baseline: c4f682b "Add native 26.3 spear support" plus this batch
-Latest verified run: test:26.3 79/79, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
+Latest verified run: test:26.3 82/82, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
 inbound gate all checks passed, serverbound gate 0, npm run assets exit 0 (91 mobs, 141 textures,
 no mobs pending a renderer).
 
@@ -204,7 +204,7 @@ Known limit:
   entity metadata (profile 17, skin patch body/cape/elytra/model), the default NIL-profile skin is
   the native slim default, profile textures and patch resource textures load, custom main hand and
   layer masks apply, and the description renders as the below-name label within 10 blocks. Native
-  metadata indices are dumped by entity-metadata.mjs (11 entities) and pinned by
+  metadata indices are dumped by entity-metadata.mjs (12 entities) and pinned by
   test-mannequin-26.3.mjs. Visual acceptance remains open.
 - Dialog screen supports both holders and notice/confirmation/multi_action/dialog_list/
   server_links dialogs; text/multiline, boolean, number-range and single-option inputs; item
@@ -236,7 +236,7 @@ Known limit:
 
 - 26.3 asset target: pack format 97, jar-first textures, indexed sounds, native panorama and
   native block models/textures.
-- ExtractLayers26_3 dumps 361 native layers; lib/model-extract-26.3.js bakes a 144-model bundle
+- ExtractLayers26_3 dumps 361 native layers; lib/model-extract-26.3.js bakes a 145-model bundle
   for the 26.3 target.
 - Equipment/armor/trim sprites and paletted permutations generated from the native asset tree.
 - Native boat/chest-boat layers and smithing template icons/container slot sprites.
@@ -260,14 +260,20 @@ Known limit:
 - 26.3 cushions use the single-box CushionModel, all 16 DyeColor texture paths and
   CushionRenderer's direction/180-degree/flip transform, with the DYE_COLOR metadata at its
   native index 8. Pinned by test-cushion-26.3.mjs.
+- 26.3 wind charges bind WindChargeModel's counter-spinning bone/wind/wind_charge hierarchy,
+  use the native 64x32 texture with its age*0.03 UV scroll, and keep their own kind instead of
+  the generic item-projection fallback. The ominous item spawner renders its ground item cluster,
+  scales in over 50 ticks and spins at 40 degrees per tick. Both are pinned by
+  test-small-entities-26.3.mjs.
 
 ======================================================================
 12. TESTS, GATES AND DOCUMENTATION
 ======================================================================
 
 Green at this inventory:
-- npm run test:26.3: 79 tests (including spear components/STAB/animation formulas, mannequin
-  profile/metadata/render classification and cushion model/metadata/transform).
+- npm run test:26.3: 82 tests (including spear components/STAB/animation formulas, mannequin
+  profile/metadata/render classification, cushion model/metadata/transform and wind-charge/
+  ominous-spawner geometry and transforms).
 - npm run adapter:26.3: 53 packets, 36 handler names, 2 chunks.
 - tools/port-26.3/inbound-gate.mjs: all checks.
 - tools/port-26.3/serverbound-gate.mjs: all checks.
@@ -283,6 +289,8 @@ Docs:
 - ADDED-26.3.txt and NEEDED-26.3.txt (these files).
 
 Recent commit trail:
+- This batch: native 26.3 wind-charge model, UV scroll and renderer kinds, the ominous item
+  spawner scale/spin renderer and lightning's renderer-kind mapping.
 - This batch: native 26.3 cushion model, all 16 dye textures, DYE_COLOR metadata and
   CushionRenderer transform; concurrent model extraction now uses a per-process layer dump.
 - This batch: native 26.3 mannequin ResolvableProfile/PlayerSkin.Patch decoding and Avatar skin,

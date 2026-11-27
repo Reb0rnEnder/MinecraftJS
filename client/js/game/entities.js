@@ -438,6 +438,8 @@ export class EntityManager {
       if(wire[id.DATA_PLAYER_MODE_CUSTOMISATION]!==undefined)e.skinFlags=wire[id.DATA_PLAYER_MODE_CUSTOMISATION];
     }
     if(name==='cushion'){const colorId=WIRE_METADATA_26_3.cushion?.DATA_COLOR;if(colorId!==undefined&&wire[colorId]!==undefined)e.cushionColor=wire[colorId];}
+    // OminousItemSpawner.DATA_ITEM is the first accessor above Entity's base 0-7.
+    if(name==='ominous_item_spawner'&&wire[8]!==undefined)e.item=wire[8];
     if(name==='copper_golem'){
       const stateId=own263.COPPER_GOLEM_STATE;
       if(stateId!==undefined&&wire[stateId]!==undefined&&e.copperGolemState!==wire[stateId]){

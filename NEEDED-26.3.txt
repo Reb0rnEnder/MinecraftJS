@@ -38,7 +38,7 @@ Done and committed:
 - custom_report_details and low_disk_space_warning are handled; only add_transient_block and the
   two game-test frames remain explicit scope decisions.
 - Adapter gate skips nothing across its 53 pinned frames (36 handler names).
-- Full 26.3 gate: test:26.3 79/79, adapter 53 frames / 36 handlers, inbound all, serverbound 0,
+- Full 26.3 gate: test:26.3 82/82, adapter 53 frames / 36 handlers, inbound all, serverbound 0,
   assets exit 0.
 - 26.3 spears: native kinetic/piercing component use, attack_range picking, minimum_attack_charge,
   STAB player_action, SwingAnimation duration, and the first-/third-person spear use and attack
@@ -50,6 +50,9 @@ Done and committed:
 - 26.3 cushions render with CushionModel, all 16 DyeColor textures and the native
   direction/flip transform, and decode DYE_COLOR at index 8. Pinned by test-cushion-26.3.mjs;
   live visual acceptance remains.
+- Wind charges render WindChargeModel with the native counter-rotation and UV scroll, and the
+  ominous item spawner renders its ground item cluster with the native 50-tick scale-in and
+  40-degree spin. Pinned by test-small-entities-26.3.mjs; live trigger acceptance remains.
 
 Still deliberately untracked:
 - docs/checkpoint-26.3-entities*.png and docs/live-*.png are user screenshots. Never commit them.
@@ -101,13 +104,15 @@ B. CODE-ONLY PARITY WORK, IN PRIORITY ORDER
      world behaviour.
    - 26.3: poplar wood, dappled forest, straw bed, abandoned camps, nautilus armor, sulfur cube
      and release-article families not yet exercised (spears now have native attack and animation
-     code, mannequins render as Avatars and cushions render from CushionModel; live
+     code, mannequins render as Avatars, cushions render from CushionModel, wind charges use
+     WindChargeModel and the ominous item spawner has its native item cluster; live
      visual/acceptance remains).
    - No mob is pending a renderer. Mannequins render as native Avatars with ResolvableProfile
      skins and descriptions. Breeze, creaking, copper golem, happy ghast, nautilus, zombie
      nautilus and sulfur cube are bound to their native layer trees; their native metadata indices
      and state-driven clips are now wired, and copper golem weathering selects its native texture.
-     Mannequins and cushions have their own native render paths.
+     Mannequins, cushions, wind charges and the ominous item spawner have their own native
+     render paths.
      Give each family a live visual check. Bogged, parched and camel husk are fully routed through
      their native 26.3 families.
 

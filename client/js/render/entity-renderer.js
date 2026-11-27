@@ -839,6 +839,12 @@ export class EntityRenderer {
         this._addShadow(v);
         break;
       }
+      case 'ominous_item_spawner': {
+        v = atlasOnly('ominous_item_spawner');
+        v.itemKey = null;
+        this._addShadow(v);
+        break;
+      }
       case 'xp': {
         const size = e.count >= 2477 ? 10 : e.count >= 1237 ? 9 : e.count >= 617 ? 8 : e.count >= 307 ? 7 : e.count >= 149 ? 6 : e.count >= 73 ? 5 : e.count >= 37 ? 4 : e.count >= 17 ? 3 : e.count >= 7 ? 2 : e.count >= 3 ? 1 : 0;
         const u0 = (size % 4) * 16 / 64, v0 = Math.floor(size / 4) * 16 / 64;
@@ -910,6 +916,15 @@ export class EntityRenderer {
         const mat = this._mat(v, model.texture, { alphaTest: 0.1, ...model.materialOptions, fullBright: e.kind === 'shulker_bullet' });
         v.inner = new Node();
         v.inner.add(this._makeModelObject(model, mat));
+        v.root.add(v.inner);
+        break;
+      }
+      case 'wind_charge': case 'breeze_wind_charge': {
+        const model = M.windCharge();
+        v = { root: new Node(), kind: 'jar_projectile', materials: [], model };
+        v.windMat = this._mat(v, 'entity/projectiles/wind_charge.png', { transparent: true });
+        v.inner = new Node();
+        v.inner.add(this._makeModelObject(model, v.windMat));
         v.root.add(v.inner);
         break;
       }
@@ -1135,6 +1150,7 @@ export class EntityRenderer {
           case 'living': this._renderLiving(e, v, p, partial); updateRiptide(e, v, partial); break;
           case 'dragon': this._renderDragon(e, v, partial); break;
           case 'item': this._renderItem(e, v, p, partial); break;
+          case 'ominous_item_spawner': this._renderOminousItemSpawner(e, v, p, partial); break;
           case 'xp': this._renderXp(e, v, partial); break;
           case 'arrow': this._renderArrow(e, v, partial); break;
           case 'jar_projectile': this._renderJarProjectile(e, v, partial); break;
@@ -1826,6 +1842,51 @@ export class EntityRenderer {
     void p;
   }
 
+  // OminousItemSpawnerRenderer: the ground item cluster scales in over 50 ticks and
+  // spins at 40 degrees per tick until the trial-spawner item is released.
+  _renderOminousItemSpawner(e, v, p, partial) {
+    const it = e.item;
+    const copiesFor = count => count > 48 ? 5 : count > 32 ? 4 : count > 16 ? 3 : count > 1 ? 2 : 1;
+    const key = it ? this.game.itemRenderer.iconKey(it) + ':' + copiesFor(it.count) + ':' + (this.game.items.hasEffect(it) ? 1 : 0) : null;
+    if (key !== v.itemKey) {
+      v.itemKey = key;
+      if (v.inner) v.root.remove(v.inner);
+      v.inner = null;
+      v.glintNode = null;
+      if (it) {
+        const io = this._itemObject(it, v.atlasMat);
+        if (io) {
+          const copies = copiesFor(it.count);
+          const ground = (io.model.display || {}).ground;
+          const gs = (ground && ground.scale) || [1, 1, 1];
+          v.inner = new Node();
+          let z = 0;
+          for (let i = 0; i < copies; i++) {
+            const c = i === 0 ? io.obj : io.obj.clone();
+            const holder = new Node();
+            const j = io.gui3d ? 0.15 : 0.15 * 0.5;
+            if (i > 0) holder.position.set((Math.random() * 2 - 1) * j, (Math.random() * 2 - 1) * j, (Math.random() * 2 - 1) * j);
+            if (!io.gui3d) { holder.position.z += z; z += 0.09375 * gs[2]; }
+            const t = new Node();
+            applyTransform(t, ground);
+            t.add(c);
+            holder.add(t);
+            v.inner.add(holder);
+          }
+          v.root.add(v.inner);
+          if (io.obj.userData.glint) v.glintNode = v.inner;
+        } else v.itemKey = null; // retry next frame (textures still loading)
+      }
+    }
+    if (!v.inner) return;
+    const age = e.ticks + partial;
+    const scale = age <= 50 ? Math.min(age, 50) / 50 : 1;
+    v.inner.scale.setScalar(scale);
+    v.inner.rotation.set(0, (((age * 40) % 360) * D2R), 0);
+    if (v.glintNode) this.glints.push(v.glintNode);
+    void p;
+  }
+
   _renderXp(e, v, partial) {
     const t = (e.ticks + partial) / 2;
     const r = (Math.sin(t) + 1) * 0.5;
@@ -1848,6 +1909,8 @@ export class EntityRenderer {
     const scale = (model.modelScale ?? 1) / 16;
     v.inner.scale.setScalar(scale);
     v.inner.position.set(0, 0, 0);
+    // RenderTypes.breezeWind scrolls the 64x32 texture by age * 0.03 (WindChargeRenderer.xOffset).
+    if (v.windMat) v.windMat.params.setUvTransform(((e.ticks + partial) * 0.03) % 1, 0, 0);
     if (e.kind === 'trident' || e.kind === 'llama_spit') {
       v.inner.rotation.set(0, (yaw - 90) * D2R, (pitch + (e.kind === 'trident' ? 90 : 0)) * D2R, 'YZX');
     } else if (e.kind === 'shulker_bullet') {
