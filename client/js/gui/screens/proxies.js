@@ -245,14 +245,16 @@ export class SkinProxyScreen extends Screen {
     const cx=this.width/2,w=Math.min(400,this.width-40);
     this.urlField=new TextField(cx-w/2,76,w,20,{maxLength:2048,focused:true,text:this.game.settings.skinProxy||''});
     this.fields.push(this.urlField);
+    this.viaHttp=!!this.game.settings.skinProxyHttp;
+    this.buttons.push(new Button(2,cx-100,this.height-64,200,20,()=>tr('minecraftjs.skinProxy.viaHttp')+': '+tr(this.viaHttp?'options.on':'options.off'),()=>{this.viaHttp=!this.viaHttp;}));
     this.doneBtn=new Button(0,cx-155,this.height-38,150,20,tr('gui.done'),()=>this.done());
     this.buttons.push(this.doneBtn,new Button(1,cx+5,this.height-38,150,20,tr('gui.cancel'),()=>this.close()));
   }
   done() {
     const template=this.urlField.text.trim();
     if(!validSkinProxyTemplate(template))return;
-    const g=this.game,changed=template!==g.settings.skinProxy;
-    g.settings.skinProxy=template;g.settings.save();
+    const g=this.game,changed=template!==g.settings.skinProxy||this.viaHttp!==!!g.settings.skinProxyHttp;
+    g.settings.skinProxy=template;g.settings.skinProxyHttp=this.viaHttp;g.settings.save();
     if(changed && g.entityRenderer)g.entityRenderer.reloadSkins();
     g.screens.open(this.parent);
   }
@@ -267,6 +269,7 @@ export class SkinProxyScreen extends Screen {
         gui.textCentered(line,this.width/2,y,0xa0a0a0);y+=10;
       }
     }
-    if(!this.doneBtn.enabled)gui.textCentered(tr('minecraftjs.skinProxy.invalid'),this.width/2,this.height-54,0xff5555);
+    for(const line of gui.font.wrap(tr(this.viaHttp?'minecraftjs.skinProxy.viaHttpOn':'minecraftjs.skinProxy.viaHttpOff'),this.width-40)){gui.textCentered(line,this.width/2,y+6,0x808080);y+=10;}
+    if(!this.doneBtn.enabled)gui.textCentered(tr('minecraftjs.skinProxy.invalid'),this.width/2,this.height-76,0xff5555);
   }
 }

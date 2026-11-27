@@ -59,12 +59,22 @@ export function encodeRequest(url, { method = 'GET', headers = {}, body = null }
   return payload ? concat(enc.encode(head), payload) : enc.encode(head);
 }
 
-export async function httpsRequest(url, { method = 'GET', headers = {}, body = null, timeout = 15000, route = rawRoute(), open = openStream } = {}) {
-  const u = new URL(url);
-  if (u.protocol !== 'https:') throw Error('Only https URLs are supported');
-  if (!route) throw Error('Signing in needs a proxy, Wisp server or relay in the Proxy Servers list');
-  const stream = await open(route, u.hostname, +(u.port || 443));
-  const tls = new TlsSocket(stream, u.hostname);
+// http:// and https:// (TLS 1.3) requests over a raw TCP route, following up to three redirects
+export async function httpsRequest(url, options = {}) {
+  for (let hops = 0; ; hops++) {
+    const r = await request(url, options);
+    if (![301, 302, 303, 307, 308].includes(r.status) || !r.headers.location || hops >= 3) return r;
+    url = new URL(r.headers.location, url).href;
+    if (r.status === 303) options = { ...options, method: 'GET', body: null };
+  }
+}
+
+async function request(url, { method = 'GET', headers = {}, body = null, timeout = 15000, route = rawRoute(), open = openStream } = {}) {
+  const u = new URL(url), secure = u.protocol === 'https:';
+  if (!secure && u.protocol !== 'http:') throw Error('Only http and https URLs are supported');
+  if (!route) throw Error('This needs a proxy, Wisp server or relay in the Proxy Servers list');
+  const stream = await open(route, u.hostname, +(u.port || (secure ? 443 : 80)));
+  const tls = secure ? new TlsSocket(stream, u.hostname) : plainSocket(stream);
   return new Promise((resolve, reject) => {
     let buffer = new Uint8Array(0), done = false;
     const finish = (error, response) => { if (done) return; done = true; clearTimeout(timer); try { tls.close(); } catch { /* closed */ } error ? reject(error) : resolve(response); };
@@ -73,6 +83,11 @@ export async function httpsRequest(url, { method = 'GET', headers = {}, body = n
     tls.on('close', (error) => { if (error) return finish(error); try { finish(null, parseResponse(buffer, true)); } catch (e) { finish(e); } });
     tls.connect().then(() => tls.write(encodeRequest(url, { method, headers, body })), (e) => finish(e));
   });
+}
+
+// The raw stream with the TlsSocket interface, for http:// URLs
+function plainSocket(stream) {
+  return { on: (ev, fn) => stream.on(ev, ev === 'close' ? () => fn(null) : fn), connect: async () => {}, write: (b) => stream.write(b), close: () => { try { stream.close(); } catch { /* closed */ } } };
 }
 
 export const postJson = (url, json, headers = {}, options = {}) => httpsRequest(url, { method: 'POST', headers: { 'Content-Type': 'application/json', ...headers }, body: JSON.stringify(json), ...options });
