@@ -1,4 +1,4 @@
-// Native 26.3 Play codecs. Every layout here came from javap on the 26.3 client jar,
+// Native 26.3 Play codecs. Every layout here came from javap and CFR on the 26.3 client jar,
 // never from an older protocol schema. Packets without a verified layout stay undecoded
 // and are surfaced as raw bytes instead of being guessed at.
 import {PLAY_CLIENTBOUND_26_3} from './protocol-26.3-ids.js';
@@ -199,6 +199,39 @@ function readRecipeDisplayEntry26_3(r){
   return {id,display,group,category,requirements};
 }
 
+// AdvancementRequirements.STREAM_CODEC: a list of AND-groups, each a list of UTF-8 criterion
+// names. The group structure is the completion rule, not decoration, so it is kept intact.
+function readAdvancementRequirements26_3(r){
+  const count=r.varint(),requirements=[];
+  for(let i=0;i<count;i++){
+    const size=r.varint(),group=[];
+    for(let j=0;j<size;j++)group.push(r.string());
+    requirements.push(group);
+  }
+  return requirements;
+}
+
+// DisplayInfo.serializeToNetwork writes title, description, ItemStackTemplate icon,
+// AdvancementType (idMapper ordinal), then one flags int: bit 0 background, bit 1 toast,
+// bit 2 hidden. announceToChat is not on the wire and the native decoder always reads it false.
+function readDisplayInfo26_3(r){
+  const title=readAnonymousNbt(r);
+  const description=readAnonymousNbt(r);
+  const icon=readItemStackTemplate26_3(r);
+  const frame=r.varint();
+  const flags=r.i32();
+  const background=(flags&1)===0?null:r.string();
+  return {title,description,icon,frame,showToast:!!(flags&2),hidden:!!(flags&4),background};
+}
+
+// Advancement.STREAM_CODEC in 26.3: optional parent id, optional DisplayInfo,
+// AdvancementRequirements and the telemetry flag. Rewards and the criteria map are not sent.
+function readAdvancement26_3(r){
+  const parent=r.bool()?r.string():null;
+  const display=r.bool()?readDisplayInfo26_3(r):null;
+  return {parent,display,requirements:readAdvancementRequirements26_3(r),sendsTelemetryEvent:r.bool()};
+}
+
 export const PLAY_DECODERS_26_3=Object.freeze({
   // ClientboundLoginPacket: playerId, hardcore, level set, maxPlayers, chunkRadius,
   // simulationDistance, reducedDebugInfo, showDeathScreen, doLimitedCrafting, spawn info, onlineMode, enforcesSecureChat.
@@ -352,6 +385,28 @@ export const PLAY_DECODERS_26_3=Object.freeze({
   open_sign_editor(r){return {pos:r.position(),slot:r.varint()};},
   // ClientboundSelectAdvancementsTabPacket: a nullable Identifier.
   select_advancements_tab(r){return {tab:r.bool()?r.string():null};},
+  // ClientboundUpdateAdvancementsPacket: reset flag, PositionedAdvancement list (holder id,
+  // Advancement, float x/y), removed Identifier set, Identifier -> AdvancementProgress map
+  // (criterion name -> optional epoch-millis instant), then the show-advancements flag.
+  update_advancements(r){
+    const reset=r.bool();
+    const added=[];
+    for(let i=0,n=r.varint();i<n;i++){
+      const id=r.string(),advancement=readAdvancement26_3(r);
+      added.push({id,advancement,x:r.f32(),y:r.f32()});
+    }
+    const removed=Array.from({length:r.varint()},()=>r.string());
+    const progress=[];
+    for(let i=0,n=r.varint();i<n;i++){
+      const id=r.string(),criteria={};
+      for(let j=0,m=r.varint();j<m;j++){
+        const criterion=r.string();
+        criteria[criterion]=r.bool()?Number(r.i64()):null;
+      }
+      progress.push({id,criteria});
+    }
+    return {reset,added,removed,progress,showAdvancements:r.bool()};
+  },
   // ClientboundRespawnPacket: CommonPlayerSpawnInfo then a dataToKeep byte. GameType is a
   // VarInt and the previous type is OPTIONAL_VAR_INT (0 = none), verified from GameType's codec.
   respawn(r){

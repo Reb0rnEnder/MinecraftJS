@@ -8,6 +8,10 @@ import {PLAY_CLIENTBOUND_26_3} from '../../client/js/net/protocol-26.3-ids.js';
 import {SOUND_NAMES_26_3,MOB_EFFECT_NAMES_26_3} from '../../client/js/net/registry-names-26.3.js';
 import {EFFECT_766} from '../../client/js/game/effects-1.20.6.js';
 import {ITEM_NAMES_26_3,DATA_COMPONENT_NAMES_26_3} from '../../client/js/net/items-26.3.js';
+import {readFileSync} from 'node:fs';
+
+// Bytes encoded by Mojang's own 26.3 StreamCodec in DumpAdvancements26_3.java.
+const ADVANCEMENT_FIXTURE=JSON.parse(readFileSync(new URL('./fixtures/advancements-26.3.json',import.meta.url),'utf8'));
 
 let failures = 0;
 const check = (name, fn) => {
@@ -446,6 +450,22 @@ check('merchant_offers decodes costs, offer counters and villager data', () => {
   eq([trade.out.count, trade.b, trade.disabled, trade.uses, trade.max, trade.xp, trade.specialPrice, trade.demand], [1, null, false, 4, 12, 5, -1, 2]);
   if (Math.abs(trade.priceMultiplier - 0.05) > 1e-6) throw Error('price multiplier decoded as ' + trade.priceMultiplier);
   eq([adapted.villagerLevel, adapted.experience, adapted.isRegularVillager, adapted.canRestock], [2, 15, true, true]);
+});
+
+check('update_advancements decodes Mojang-encoded bytes field for field', () => {
+  const expected = ADVANCEMENT_FIXTURE.expected;
+  const adapted = adapt('update_advancements', [...Buffer.from(ADVANCEMENT_FIXTURE.hex, 'hex')], {name: 'advancements'});
+  const advancement = adapted.added[0], display = advancement.display;
+  eq([adapted.reset, adapted.showAdvancements, adapted.removed], [expected.reset, expected.show, expected.removed]);
+  eq([advancement.id, advancement.parent, advancement.requirements, advancement.criteria],
+    [expected.id, expected.parent, expected.requirements, ['get_stone', 'get_dirt', 'get_gravel']]);
+  eq([JSON.parse(display.title), JSON.parse(display.description)], [expected.title, expected.description]);
+  eq([display.frame, display.background, display.showToast, display.hidden, display.x, display.y],
+    [expected.frame, expected.background, expected.showToast, expected.hidden, expected.x, expected.y]);
+  eq(['minecraft:' + ITEM_NAMES_26_3[display.icon.id], display.icon.count], [expected.iconItem, expected.iconCount]);
+  eq(adapted.progress.map(entry => entry.id), [expected.id]);
+  eq([adapted.progress[0].criteria.get_stone, adapted.progress[0].criteria.get_dirt, adapted.progress[0].criteria.get_gravel],
+    [expected.progress[0].obtained, expected.progress[1].obtained, null]);
 });
 
 if (failures) {

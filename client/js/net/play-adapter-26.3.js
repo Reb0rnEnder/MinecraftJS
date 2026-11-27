@@ -163,6 +163,27 @@ const ADAPTERS={
   block_entity_data(packet){return {location:packet.pos,nbtData:packet.tag};},
   open_sign_editor(packet){return {location:packet.pos,isFrontText:packet.slot===1};},
   select_advancements_tab(packet){return {id:packet.tab};},
+  // ClientAdvancementManager reads the 766 vocabulary: added entries carry a flat criteria
+  // name list plus the native requirement groups, and progress maps criterion -> instant.
+  update_advancements(packet){
+    return {name:'advancements',reset:packet.reset,removed:packet.removed,showAdvancements:packet.showAdvancements,
+      added:packet.added.map(({id,advancement,x,y})=>({
+        id,parent:advancement.parent,
+        criteria:[...new Set(advancement.requirements.flat())],
+        requirements:advancement.requirements,
+        display:advancement.display?{
+          title:componentJson(advancement.display.title),
+          description:componentJson(advancement.display.description),
+          icon:itemStack(advancement.display.icon),
+          frame:advancement.display.frame,
+          showToast:advancement.display.showToast,
+          hidden:advancement.display.hidden,
+          background:advancement.display.background,
+          x,y
+        }:null
+      })),
+      progress:packet.progress.map(entry=>({id:entry.id,criteria:entry.criteria}))};
+  },
   // Respawn keeps the 766 spawn-info vocabulary and resolves the dimension from worldType.
   respawn(packet){
     const {spawn}=packet;
