@@ -247,6 +247,8 @@ export class ContainerScreen extends Screen {
     if (this.fields.some((f) => f.focused) && e.code !== 'Escape') return true;
     if (e.code === 'Escape' || e.code === g.settings.keys.inventory) { this.close(); return true; }
     if (this.hovered !== null && !this.inv.cursor) {
+      // AbstractContainerScreen.checkHotbarKeyPressed (1.16+): swap-hands swaps the hovered slot with the offhand
+      if (e.code === g.settings.keys.swapHands) { this.handleClick(this.hovered, this.hovered, 40, 2); return true; }
       for (let i = 0; i < 9; i++) {
         if (e.code === g.settings.keys['hotbar' + (i + 1)]) { this.handleClick(this.hovered, this.hovered, i, 2); return true; }
       }
