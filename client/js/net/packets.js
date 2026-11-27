@@ -226,8 +226,8 @@ export const C = {
 
   // ServerboundContainerClickPacket: container id VarInt, state id VarInt, short slot, byte
   // button, ContainerInput id VarInt, then (short slot, HashedStack) per changed slot and the
-  // carried HashedStack. HashedStack carries component hashes, so only empty patches are sent
-  // until the component hash encoder lands.
+  // carried HashedStack. Server-decoded component bytes are preserved; when a canonical
+  // component hash is unavailable the empty HashedPatchMap asks the server to resync that slot.
   windowClick: (windowId, slot, mouseButton, stateId, mode, changedSlots, cursorItem) => {
     const writer = packet("window_click")
       .varint(windowId)

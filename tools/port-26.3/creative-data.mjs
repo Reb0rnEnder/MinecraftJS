@@ -17,7 +17,9 @@ function canonical(value){
   if(typeof value==='bigint')return{$big:String(value)};
   if(ArrayBuffer.isView(value))return{$ta:value.constructor.name,a:Array.from(value,n=>typeof n==='bigint'?String(n):n)};
   if(Array.isArray(value))return value.map(canonical);
-  if(value&&typeof value==='object')return Object.fromEntries(Object.keys(value).sort().map(k=>[k,canonical(value[k])]));
+  // Captured component wire bytes are a client-side round-trip aid, not part of the native
+  // catalogue value. Keep the checked-in data independent of that transport detail.
+  if(value&&typeof value==='object')return Object.fromEntries(Object.keys(value).filter(key=>key!=='componentWire').sort().map(k=>[k,canonical(value[k])]));
   return value;
 }
 async function nativeClasspath(){

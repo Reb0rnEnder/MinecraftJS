@@ -3,7 +3,7 @@ Branch: 26.3
 Inventory date: 2026-11-27
 Baseline: 3e5e861 plus the native recipe-book/chat correction in this batch
 Verified for this inventory:
-- npm run test:26.3: 95/95 tests
+- npm run test:26.3: 99/99 tests
 - npm run adapter:26.3: 53 frames, 36 handler names, 2 chunks, 0 skipped
 - inbound gate: 144/144 Play IDs decoded, 0 raw
 - serverbound gate: 69/69 IDs have a sender or an explicit scope decision
@@ -27,6 +27,10 @@ That percentage is the existing project-level ledger. It is not a per-feature co
 not be read as "44% of the jar has been ported". The exact remaining work is below.
 
 Closed in this batch:
+- Server-decoded component patches preserve their exact network bytes for normal container
+  clicks; predicted damage updates only its own row. Integer components now use exact native
+  HashOps.CRC32C values, while other unknown hashes use the verified empty-HashedPatchMap resync
+  fallback instead of throwing from the click sender.
 - Native 26.3 RecipeDisplay-graph recipe book: all 13 categories map to tabs; SlotDisplay
   item/item_stack/tag/composite/remainder/fuel branches resolve to stacks; shaped grids keep
   width/height and empty cells; shapeless/furnace/stonecutter/smithing displays become book
@@ -59,8 +63,9 @@ B. CODE-ONLY WORK, IN PRIORITY ORDER
 ======================================================================
 
 1. P08 - General HashedPatchMap and the remaining inventory paths (LARGE, highest unblocked risk)
-   Status: partial. The 405 Creative catalogue patches are encoded and hashed; the general path is
-   not implemented.
+   Status: partial. The 405 Creative catalogue patches are encoded and hashed, and server-decoded
+   patches now preserve their exact bytes with a verified resync fallback for unknown hashes. The
+   general canonical hash path is still not implemented.
    Remaining:
    - Encode arbitrary server-provided component values, not only the Creative catalogue patches.
    - Implement the native HashedPatchMap hash for arbitrary components. The native client uses
@@ -68,7 +73,8 @@ B. CODE-ONLY WORK, IN PRIORITY ORDER
      requires canonical per-component hash encoding.
    - Use one native stack path for Creative writes and normal container clicks, then remove the
      creativePatch/creativeHashes special cases.
-   - Verify click state IDs and server rejection/resync when a patched stack is refused.
+   - Verify live click state IDs and the server resync path for a patched stack with an empty hash
+     map.
    - Inventory edge cases: shift-click into a full container, patched stacks into every slot type,
      number-key/offhand swaps, drag distribution and double-click collection.
    - Live-accept merchant, enchanting, stonecutter and loom windows.

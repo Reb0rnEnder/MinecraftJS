@@ -1,8 +1,8 @@
 MinecraftJS 26.3 - WHAT WE HAVE ADDED
 Branch: 26.3
 Inventory date: 2026-11-27
-Baseline: 3e5e861 "Match native 26.3 small-entity shadows and wind texture sampling" plus this batch
-Latest verified run: test:26.3 95/95, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
+Baseline: be606d1 "Implement native 26.3 recipe-book displays and chat click parity" plus this batch
+Latest verified run: test:26.3 99/99, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
 inbound gate all checks passed, serverbound gate 0, npm run assets exit 0 (91 mobs, 141 textures,
 no mobs pending a renderer).
 
@@ -128,7 +128,9 @@ Recent inbound work:
   ghost. See the native recipe-book paragraph below.
 - Creative inventory carries the native raw component patch and native HashedStack hashes.
 - writeHashedStack26_3 round-trips Mojang's own HashedStack encoder for all 405 patched Creative
-  stacks.
+  stacks. Server-decoded patches also keep each added component's exact wire bytes, so a normal
+  container click writes the received patch back unchanged; a locally changed damage value
+  replaces only its damage row.
 - Native menu registry mapping (26.3 menu order matches 766's 25 IDs).
 - Local crafting for native shaped/shapeless recipes and {any:[item ids]} tag alternatives.
 - The native RecipeDisplay graph is resolved into the book: all 13 recipe-book categories map to
@@ -148,9 +150,13 @@ Recent inbound work:
   removed a summoned pig after 8 hits; block break and place were server-verified.
 
 Known limit:
-- Arbitrary server-provided component values can still only be re-encoded through the 405
-  Creative hashes. General outbound HashedPatchMap hashing for runtime stacks is not implemented;
-  patched stacks outside the Creative catalogue fail loudly instead of sending a bad hash.
+- Canonical HashedPatchMap hashes for arbitrary server-provided component values are still not
+  implemented. Integer-valued components (damage, max stack size, max damage, repair cost,
+  ominous-bottle amplifier and enchantable) now use the pinned HashOps.CRC32C integer payload and
+  match Mojang's values exactly, including predicted damage. Other components without a known
+  hash travel in an empty hash map; the server accepts the click and may resync the slot. A
+  synthetic patch with no captured bytes and no native encoder still fails loudly rather than
+  inventing a hash. Full no-resync parity needs the canonical per-component codec encoding.
 
 ======================================================================
 6. ITEMS, TOOLTIPS, EQUIPMENT, CONSUMABLES (P04)
@@ -339,8 +345,9 @@ Recent commit trail:
 - "137 payloads adapt" does not mean every adapted family has been live-triggered. Sounds,
   cooldowns, mob effects, boss bars, entity/world events and many presentation frames are
   byte-gated and socket-verified, not accepted in a live scenario.
-- Native item components do not mean arbitrary runtime component values can be re-encoded for
-  outbound HashedPatchMap clicks; only the Creative catalogue is covered.
+- Native item components do not mean arbitrary runtime component values carry canonical
+  HashedPatchMap hashes; server-decoded patch bytes are preserved, integer components and the
+  Creative catalogue have exact hashes, but other unknown hashes use the empty-map resync fallback.
 - Native entity rigs are structurally verified, not visually accepted.
 - P09 authenticated lifecycle/transfer/packs, P11 new-content acceptance, P14 inherited 1.20.6
   findings, P15 whole-target acceptance and P16 packaging are not done.

@@ -16,6 +16,7 @@
 // A component whose codec is not implemented throws, so the caller skips the frame instead
 // of consuming the wrong number of bytes.
 import {readAnonymousNbt} from './nbt-anonymous.js';
+import {Writer26_3} from './configuration-26.3.js';
 import {componentFromNbt} from './component-nbt-1.20.6.js';
 import {DATA_COMPONENT_NAMES_26_3,ITEM_NAMES_26_3} from './items-26.3.js';
 import {ENCHANTMENT_NAMES_26_3} from './enchantment-names-26.3.js';
@@ -494,8 +495,13 @@ function readItemPatch(r,itemId,count){
   const added=[],removed=[],components={};
   for(let i=0;i<addedCount;i++){
     const typeId=r.varint();
+    // Keep the exact network-codec bytes for each added component. Server-provided stacks can
+    // be written back without re-encoding a component whose codec we only decode, and unchanged
+    // patches round-trip byte-for-byte. The offsets are relative to r.bytes, not a subarray.
+    const start=r.offset;
     const {name,value}=readComponentValue(r,typeId);
-    added.push({type:typeId,name,value});
+    const componentWire=r.bytes.slice(start,r.offset);
+    added.push({type:typeId,name,value,componentWire});
     components[name]=value;
   }
   for(let i=0;i<removedCount;i++)removed.push(r.varint());
@@ -519,8 +525,9 @@ export function readItemCost26_3(r){
   const added=[];
   for(let i=0;i<addedCount;i++){
     const typeId=r.varint();
+    const start=r.offset;
     const {name,value}=readComponentValue(r,typeId);
-    added.push({type:typeId,name,value});
+    added.push({type:typeId,name,value,componentWire:r.bytes.slice(start,r.offset)});
   }
   return {itemId,count,added};
 }
@@ -543,36 +550,116 @@ function base64Bytes(text){
   return Uint8Array.from(binary,char=>char.charCodeAt(0));
 }
 
+// Encode a patch from captured component wire bytes. This is the exact codec output the server
+// sent, so unchanged server-provided patches round-trip without a writer for every codec.
+function capturedPatch(added,removed,stack){
+  if(!added.length&&!removed.length)return null;
+  const writer=new Writer26_3();
+  // DataComponentPatch.STREAM_CODEC writes both list sizes before the added rows, then the
+  // removed ids. HashedPatchMap uses a different order, so do not share this envelope with it.
+  writer.varint(added.length).varint(removed.length);
+  for(const component of added){
+    if(!Number.isInteger(component?.type)||!(component.componentWire instanceof Uint8Array))return null;
+    // Damage is the one component local prediction changes without replacing the stack. Keep
+    // its current value while the other captured component rows stay byte-identical.
+    if(component.name==='damage'&&Number.isInteger(stack?.damage))writer.varint(component.type).varint(stack.damage);
+    else writer.varint(component.type).raw(component.componentWire);
+  }
+  for(const type of removed){
+    if(!Number.isInteger(type))return null;
+    writer.varint(type);
+  }
+  return writer.build();
+}
+
 export function writeItemStack26_3(w,stack){
   if(!stack||!(stack.count>0)){w.varint(0);return w;}
   const {itemId,count,added,removed}=patchOf(stack);
   if(!Number.isInteger(itemId)||itemId<0)throw Error('26.3 item stack needs a native item id');
   if(added.length||removed.length){
     // Native Creative catalog entries keep the exact patch emitted by the pinned client.
-    // Re-encoding arbitrary components is separate work; a missing patch must fail loudly.
-    if(!stack.creativePatch||stack.creativePatchItem!==itemId)throw Error('26.3 item writer has no component encoders for item '+itemId);
-    return w.varint(count).varint(itemId).raw(base64Bytes(stack.creativePatch));
+    if(stack.creativePatch&&stack.creativePatchItem===itemId)return w.varint(count).varint(itemId).raw(base64Bytes(stack.creativePatch));
+    // A server-decoded stack keeps the original component value bytes. A locally synthesized
+    // patch with no captured bytes still fails loudly instead of sending a wrong component.
+    const patch=capturedPatch(added,removed,stack);
+    if(patch)return w.varint(count).varint(itemId).raw(patch);
+    throw Error('26.3 item writer has no captured bytes or component encoders for item '+itemId);
   }
   w.varint(count).varint(itemId).varint(0).varint(0);
   return w;
 }
 
+// HashOps.CRC32C writes a one-byte numeric tag followed by the little-endian primitive. For
+// integer components such as damage and max_stack_size the persistent codec is Codec.INT, so
+// these hashes are exact and independent of the item. Derived from the pinned 26.3 HashOps and
+// checked against HashProbe263 values (damage 1/2/5/127/128/255/256/1000/1561).
+const CRC32C_TABLE=(()=>{
+  const table=new Uint32Array(256);
+  for(let n=0;n<256;n++){
+    let c=n;
+    for(let k=0;k<8;k++)c=(c&1)?(0x82f63b78^(c>>>1)):(c>>>1);
+    table[n]=c>>>0;
+  }
+  return table;
+})();
+function crc32c(bytes){
+  let c=0xffffffff;
+  for(const byte of bytes)c=CRC32C_TABLE[(c^byte)&255]^(c>>>8);
+  return (c^0xffffffff)>>>0;
+}
+function intComponentHash(value){
+  const bytes=new Uint8Array(5);
+  bytes[0]=8;
+  new DataView(bytes.buffer).setInt32(1,value,true);
+  return crc32c(bytes);
+}
+// Persistent component codecs that are plain Codec.INT. Values are non-negative in vanilla.
+const INT_COMPONENTS=new Set(['max_stack_size','max_damage','damage','repair_cost','ominous_bottle_amplifier','enchantable']);
+
 // HashedStack.STREAM_CODEC: optional ActualItem(item holder, count, HashedPatchMap).
 // HashedPatchMap is (VarInt type, INT hash)* then VarInt removed ids. Empty patches need two
-// zero counts; patched stacks must carry hashes computed by the native Creative extractor.
+// zero counts; Creative stacks carry hashes computed by the native extractor.
+//
+// For a server-provided patch without a canonical hash generator, an empty map is deliberate:
+// the server accepts the click first and only uses the mismatch to resync the remote slot. That
+// is safe, but it is not the native no-resync path and never substitutes a made-up hash.
 export function writeHashedStack26_3(w,stack){
   if(!stack||!(stack.count>0)){w.bool(false);return w;}
   const {itemId,count,added,removed}=patchOf(stack);
   w.bool(true).varint(itemId).varint(count);
   if(!(added.length||removed.length))return w.varint(0).varint(0);
+  // Removals carry no value hash, so they are exact even without a component codec writer.
+  if(!added.length){
+    w.varint(0).varint(removed.length);
+    for(const type of removed)w.varint(type);
+    return w;
+  }
   // Creative catalogue entries carry the hash fields computed by the pinned client's
-  // own HashedStack.create(ItemStack) and verified against Mojang's stream codec.
+  // own HashedStack.create(ItemStack) and verified against Mojang's stream codec. For
+  // server-decoded values, only the integer components have a canonical JS encoder so far;
+  // damage uses the stack's predicted value rather than the decoded snapshot.
   const hashes=stack.creativeHashes;
-  if(!hashes||stack.creativeHashesItem!==itemId||stack.creativePatchItem!==itemId)throw Error('26.3 HashedStack needs native component hashes (item '+itemId+')');
-  w.varint(hashes.added.length);
-  for(const [type,hash] of hashes.added)w.varint(type).i32(hash);
-  w.varint(hashes.removed.length);
-  for(const type of hashes.removed)w.varint(type);
+  const creative=hashes&&stack.creativeHashesItem===itemId?new Map(hashes.added):null;
+  const rows=[];
+  for(const component of added){
+    let hash=null;
+    if(component.name==='damage'&&Number.isInteger(stack.damage))hash=intComponentHash(stack.damage);
+    else if(INT_COMPONENTS.has(component.name)&&Number.isInteger(component.value))hash=intComponentHash(component.value);
+    else if(creative?.has(component.type))hash=creative.get(component.type)>>>0;
+    if(hash===null){
+      // Unknown value: force a server slot correction rather than fabricate a hash. Removed
+      // ids need no hash, so keep them even when some added values are unknown.
+      w.varint(0).varint(removed.length);
+      for(const type of [...removed].sort((a,b)=>a-b))w.varint(type);
+      return w;
+    }
+    rows.push([component.type,hash>>>0]);
+  }
+  rows.sort((a,b)=>a[0]-b[0]);
+  w.varint(rows.length);
+  for(const [type,hash] of rows)w.varint(type).i32(hash);
+  w.varint(removed.length);
+  for(const type of [...removed].sort((a,b)=>a-b))w.varint(type);
   return w;
 }
 

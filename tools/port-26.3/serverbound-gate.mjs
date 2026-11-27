@@ -44,8 +44,13 @@ assert.equal(
   id('container_click')+'00'+'07'+'0024'+'00'+'00'+'00'+'01'+'02'+'01'+'00'+'00',
   'container click with a carried stack'
 );
-// A patched stack without native hashes must fail instead of sending a wrong hash.
-assert.throws(()=>C.windowClick(0,36,0,7,0,[{slot:36,item:{id:1,count:1,componentPatch:{added:[{type:3}],removed:[]}}}],null),/component hashes/);
+// A patched stack with no canonical hash uses the empty map, which makes the server resync
+// that remote slot after accepting the click. It must not invent a hash.
+assert.equal(
+  hex(C.windowClick(0,36,0,7,0,[{slot:36,item:{id:1,count:1,componentPatch:{added:[{type:3}],removed:[]}}}],null)),
+  id('container_click')+'00'+'07'+'0024'+'00'+'00'+'01'+'0024'+'01'+'01'+'01'+'00'+'00'+'00',
+  'patched container click falls back to an empty HashedPatchMap'
+);
 
 // 4. Creative slot: short slot then the 26.3 optional stack.
 assert.equal(hex(C.creativeSlot(36,{id:1,count:1})),id('set_creative_mode_slot')+'0024'+'01'+'01'+'00'+'00','creative slot');
