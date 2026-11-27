@@ -192,6 +192,8 @@ assert.deepEqual(normalizeNativeComponent('dyed_color',0x123456),{rgb:0x123456,s
 assert.equal(normalizeNativeComponent('custom_model_data',{floats:[7],flags:[],strings:[],colors:[]}),7,'native custom model data exposes its first float');
 assert.equal(normalizeNativeComponent('potion_contents',{potion:13,customColor:null,customEffects:[],customEffectsName:null}).potionId,13,'native potion holder id reaches the item view');
 assert.equal(normalizeNativeComponent('consumable',{consumeSeconds:1.6,animation:2,sound:0,hasConsumeParticles:false,onConsumeEffects:[]}).animation,'drink','native use-animation id maps to its name');
+assert.deepEqual(normalizeNativeComponent('tooltip_display',{hideTooltip:false,hiddenComponents:[componentId('enchantments')]}),{hide_tooltip:false,hidden_components:['enchantments']},'native tooltip hidden-component ids map to names');
+assert.equal(normalizeNativeComponent('tooltip_display',{hideTooltip:true,hiddenComponents:[]}).hide_tooltip,true,'native tooltip hide flag is preserved');
 const itemView=new Items({data:{items:[]}});
 const potionStack={version:'26.3',itemId:itemId('potion'),added:[{name:'consumable',value:{consumeSeconds:1.6,animation:2,sound:0,hasConsumeParticles:false,onConsumeEffects:[]}}],removed:[]};
 assert.equal(itemView.useAction(potionStack),'drink','native consumable controls the potion use action');
@@ -205,6 +207,11 @@ assert.equal(itemView.strVsBlock(nativeStack('diamond_pickaxe'),{name:'dirt'}),1
 assert.equal(itemView.strVsBlock(nativeStack('diamond_sword'),{name:'cobweb'}),15,'native sword cobweb rule wins before the tag rules');
 assert.equal(itemView.strVsBlock(nativeStack('diamond_sword'),{name:'oak_leaves'}),1.5,'sword efficient tag is resolved through the native leaves tag');
 assert.equal(itemView.strVsBlock(nativeStack('wooden_axe'),{name:'stone'}),1,'wooden axe rejects stone through the incorrect-tool tag');
+const tooltipItems=new Items({data:{items:[{id:diamondSword,name:'diamond_sword'}],enchantments:[]},translate:key=>key});
+const hiddenAttributes={...nativeStack('diamond_sword'),added:[{name:'tooltip_display',value:{hideTooltip:false,hiddenComponents:[componentId('attribute_modifiers')]}}]};
+assert.ok(!tooltipItems.tooltip(hiddenAttributes).some(line=>line.includes('attribute.')),'hidden tooltip components are omitted');
+const hiddenTooltip={...nativeStack('diamond_sword'),added:[{name:'tooltip_display',value:{hideTooltip:true,hiddenComponents:[]}}]};
+assert.deepEqual(tooltipItems.tooltip(hiddenTooltip),[],'native hide-tooltip suppresses every line');
 
 const total=Object.keys(DATA_COMPONENTS).length;
 const unsynced=Object.values(DATA_COMPONENTS).filter(entry=>!entry.synced).length;

@@ -423,6 +423,13 @@ export function normalizeNativeComponent(name,value){
   if(name==='dyed_color'&&typeof value==='number')return {rgb:value>>>0,show_in_tooltip:true};
   if(name==='rarity'&&typeof value==='number')return RARITIES[value]??value;
   if(name==='potion_contents'&&value&&typeof value==='object')return {...value,potionId:value.potion};
+  if(name==='tooltip_display'&&value&&typeof value==='object'){
+    const hidden=value.hiddenComponents??value.hidden_components??[];
+    return {
+      hide_tooltip:value.hideTooltip??value.hide_tooltip??false,
+      hidden_components:hidden.map(id=>typeof id==='number'?DATA_COMPONENT_NAMES_26_3[id]:id).filter(Boolean)
+    };
+  }
   if(name==='consumable'&&typeof value?.animation==='number')return {...value,animation:USE_ANIMATIONS[value.animation]??value.animation};
   if(name==='custom_model_data'&&value&&typeof value==='object')return value.floats?.[0]??0;
   return value;
@@ -436,7 +443,7 @@ export function itemComponentValues26_3(item){
   for(const id of item.removed||[])delete values[DATA_COMPONENT_NAMES_26_3[id]];
   for(const {name,value} of item.added||[])values[name]=normalizeNativeComponent(name,value);
   const tooltip=values.tooltip_display;
-  if(tooltip&&(tooltip.hideTooltip??tooltip.hide_tooltip))values.hide_tooltip=true;
+  if(tooltip?.hide_tooltip)values.hide_tooltip=true;
   return values;
 }
 
