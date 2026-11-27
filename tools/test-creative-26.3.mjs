@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import {Reader26_3,Writer26_3} from '../client/js/net/configuration-26.3.js';
-import {readItemStack26_3,writeItemStack26_3} from '../client/js/net/item-components-26.3.js';
+import {readItemStack26_3,writeItemStack26_3,writeHashedStack26_3} from '../client/js/net/item-components-26.3.js';
 import {nativeCreativeRows263,creativeStack263} from '../client/js/gui/creative-data-26.3.js';
 import {creativeRows} from '../client/js/gui/screens/containers.js';
 
@@ -51,6 +51,10 @@ test('every native 26.3 Creative stack survives the real stack codec with its co
     if(entry.patch){
       assert.equal(stack.creativePatch,entry.patch);
       assert.equal(stack.creativePatchItem,stack.id);
+      assert.deepEqual(stack.creativeHashes,entry.hashes);
+      assert.equal(stack.creativeHashesItem,stack.id);
+      const hashed=Buffer.from(writeHashedStack26_3(new Writer26_3(),stack).build()).toString('base64');
+      assert.equal(hashed,entry.hashedWire);
     }
   }
 });

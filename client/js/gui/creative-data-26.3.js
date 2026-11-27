@@ -12,7 +12,7 @@ function revive(value){
 export function creativeStack263(entry){
   if(!entry?.stack)return null;
   const item=adaptNativeStack26_3(revive(entry.stack));
-  if(entry.patch){item.creativePatch=entry.patch;item.creativePatchItem=item.id;}
+  if(entry.patch){item.creativePatch=entry.patch;item.creativePatchItem=item.id;item.creativeHashes=entry.hashes;item.creativeHashesItem=item.id;item.creativeHashedWire=entry.hashedWire;}
   return item;
 }
 export function nativeCreativeRows263(game){

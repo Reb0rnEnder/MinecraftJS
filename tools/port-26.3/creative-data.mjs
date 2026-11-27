@@ -8,7 +8,7 @@ import {readFile,readdir,writeFile,mkdir} from 'node:fs/promises';
 import {join,delimiter} from 'node:path';
 import {pathToFileURL} from 'node:url';
 import {Reader26_3,Writer26_3} from '../../client/js/net/configuration-26.3.js';
-import {readItemStack26_3,writeItemStack26_3} from '../../client/js/net/item-components-26.3.js';
+import {readItemStack26_3,writeItemStack26_3,writeHashedStack26_3} from '../../client/js/net/item-components-26.3.js';
 import {creativeStack263} from '../../client/js/gui/creative-data-26.3.js';
 import {cache,root,target,verify} from './prepare.mjs';
 
@@ -53,10 +53,12 @@ export async function creativeData({check=false}={}){
     const patched=!!stack&&(stack.added.length||stack.removed.length);
     const wirePatch=patched?patchOfWire(wire).patch:null;
     if(patched&&!wirePatch)throw Error('Creative stack lost its component patch');
-    const value=canonical(stack),key=JSON.stringify(value);
-    if(!pool.has(key))pool.set(key,{stack:value,patch:wirePatch||undefined});
-    const expected=pool.get(key).patch||null;
+    const value=canonical(stack),key=JSON.stringify(value),nativeHashes=raw.hashes?.[wire];
+    if(!pool.has(key))pool.set(key,{stack:value,patch:wirePatch||undefined,hashes:nativeHashes?{added:nativeHashes.added,removed:nativeHashes.removed}:undefined,hashedWire:nativeHashes?.wire});
+    const entry=pool.get(key),expected=entry.patch||null;
     if(expected!==(wirePatch||null))throw Error('Two native Creative stacks disagree on their component patch');
+    const hashes=nativeHashes?{added:nativeHashes.added,removed:nativeHashes.removed}:undefined;
+    if(JSON.stringify(entry.hashes)!==JSON.stringify(hashes))throw Error('Two native Creative stacks disagree on their component hashes');
     decoded.set(wire,key);return key;
   };
   for(const catalog of raw.featureCatalogs)for(const name of ['tabs','operatorTabs'])for(const tab of catalog[name]){decode(tab.icon);tab.items.forEach(decode);}
@@ -66,13 +68,16 @@ export async function creativeData({check=false}={}){
   if(stacks.some(entry=>entry.stack&&!Number.isInteger(entry.stack.itemId)))throw Error('Creative stack has no native item id');
   if(stacks.some(entry=>entry.stack&&entry.stack.itemId>=1700))throw Error('Creative stack item id is outside the native item table');
   for(const entry of stacks){
-    const bytes=writeItemStack26_3(new Writer26_3(),creativeStack263(entry)).build(),r=new Reader26_3(bytes),round=readItemStack26_3(r);
+    if(!!entry.patch!==!!entry.hashes)throw Error('Creative component patch has no native hash');
+    const stack=creativeStack263(entry),bytes=writeItemStack26_3(new Writer26_3(),stack).build(),r=new Reader26_3(bytes),round=readItemStack26_3(r);
     if(r.remaining())throw Error('Creative catalogue writer left '+r.remaining()+' trailing bytes');
     if(JSON.stringify(canonical(round))!==JSON.stringify(entry.stack))throw Error('Creative catalogue writer changed a native stack');
     if(entry.patch){
       const count=readVarint(bytes,0),item=readVarint(bytes,count.offset);
       const writtenPatch=Buffer.from(bytes).subarray(item.offset).toString('base64');
       if(writtenPatch!==entry.patch)throw Error('Creative catalogue writer changed a component patch (item '+entry.stack.itemId+', '+writtenPatch.length+'/'+entry.patch.length+')');
+      const hashed=Buffer.from(writeHashedStack26_3(new Writer26_3(),stack).build()).toString('base64');
+      if(hashed!==entry.hashedWire)throw Error('Creative catalogue writer changed a native component hash (item '+entry.stack.itemId+')');
     }
   }
   const output={version:target.minecraftVersion,protocol:target.protocol,dataVersion:target.dataVersion,source:{clientJarSha1:target.downloads.client.sha1,extractorSha256:createHash('sha256').update(await readFile(java)).digest('hex'),serverJarSha1:target.downloads.server.sha1},stackFormat:'native-components-263',stacks,tabs:featureCatalogs[0].tabs,operatorTabs:featureCatalogs[0].operatorTabs,featureCatalogs,

@@ -558,13 +558,21 @@ export function writeItemStack26_3(w,stack){
 }
 
 // HashedStack.STREAM_CODEC: optional ActualItem(item holder, count, HashedPatchMap).
-// HashedPatchMap is (VarInt type, INT hash)* then VarInt removed ids; an empty patch is two
-// zero counts, which is the only patch this writer can prove without component hashing.
+// HashedPatchMap is (VarInt type, INT hash)* then VarInt removed ids. Empty patches need two
+// zero counts; patched stacks must carry hashes computed by the native Creative extractor.
 export function writeHashedStack26_3(w,stack){
   if(!stack||!(stack.count>0)){w.bool(false);return w;}
   const {itemId,count,added,removed}=patchOf(stack);
-  if(added.length||removed.length)throw Error('26.3 HashedStack needs component hashes; only empty patches are supported yet (item '+itemId+')');
-  w.bool(true).varint(itemId).varint(count).varint(0).varint(0);
+  w.bool(true).varint(itemId).varint(count);
+  if(!(added.length||removed.length))return w.varint(0).varint(0);
+  // Creative catalogue entries carry the hash fields computed by the pinned client's
+  // own HashedStack.create(ItemStack) and verified against Mojang's stream codec.
+  const hashes=stack.creativeHashes;
+  if(!hashes||stack.creativeHashesItem!==itemId||stack.creativePatchItem!==itemId)throw Error('26.3 HashedStack needs native component hashes (item '+itemId+')');
+  w.varint(hashes.added.length);
+  for(const [type,hash] of hashes.added)w.varint(type).i32(hash);
+  w.varint(hashes.removed.length);
+  for(const type of hashes.removed)w.varint(type);
   return w;
 }
 

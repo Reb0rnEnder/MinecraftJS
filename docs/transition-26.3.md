@@ -101,7 +101,8 @@ pending; product outside current scope; or experiment-gated.
   `[set_entity_data#101]` serializer 17. `ParticleTypes` BootstrapMethods pin all 128 particle types and the
   22 data StreamCodecs; `particle-codecs:26.3` decodes the live-captured frame and every codec byte layout.
   A fresh join now loads 81 chunks and 26 entities with zero skipped frames. Vibration stays fail-closed.
-- Open at this checkpoint: patched-item HashedPatchMap hashing, live acceptance of the remaining container/menu
+- Open at this checkpoint: general HashedPatchMap hashing for arbitrary server-provided component values
+  (Creative catalogue stacks now carry native hashes), live acceptance of the remaining container/menu
   families, `can_place_on`/`can_break` (adventure-predicate graph), native support/placement rules, the dialog
   screen for the decoded show_dialog holder, and the renderer rigs 26.3 restructured. All 144 inbound Play IDs
   and all 16 native debug subscription entries decode; 117 have adapters. The native Creative catalogue now

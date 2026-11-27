@@ -44,7 +44,7 @@ assert.equal(
   id('container_click')+'00'+'07'+'0024'+'00'+'00'+'00'+'01'+'02'+'01'+'00'+'00',
   'container click with a carried stack'
 );
-// A patched stack cannot be hashed yet and must fail instead of sending a wrong hash.
+// A patched stack without native hashes must fail instead of sending a wrong hash.
 assert.throws(()=>C.windowClick(0,36,0,7,0,[{slot:36,item:{id:1,count:1,componentPatch:{added:[{type:3}],removed:[]}}}],null),/component hashes/);
 
 // 4. Creative slot: short slot then the 26.3 optional stack.
