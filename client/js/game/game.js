@@ -167,6 +167,7 @@ export class Game {
     this.renderer.columnRevision = () => this.world._gen;
     this.renderer.opaqueAt = (x, y, z) => { const b = getBlock(this.world.getState(Math.floor(x), Math.floor(y), Math.floor(z))); return !!(b && b.opaque); };
     platform().on('resize', () => { this.gui.resize(); this.renderer.resize(); });
+    platform().on('filesdrop', (files) => this.screens.current?.onFilesDrop?.(files)); // Minecraft.onFilesDrop
 
     this.world = new World();
     this.world.selectionProvider = (state, x, y, z) => this.selectionBox(state, x, y, z);
