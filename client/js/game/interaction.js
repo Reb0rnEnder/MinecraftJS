@@ -1,3 +1,4 @@
+import { ITEM_DATA_766 } from './item-data-1.20.6.js';
 import { useOn766, use766 } from './item-use-1.20.6.js';
 import{bookshelfUse766}from'./bookshelf-1.20.6.js';
 import{startBrushing766,tickBrushing766}from'./brushing-1.20.6.js';
@@ -808,6 +809,18 @@ export class Interaction {
     }
     g.send(C.useItem(hand,g.blockPrediction?.current||0)); // CPacketPlayerTryUseItem
     if (g.cooldownFraction(held.id, 0) > 0) return false; // CooldownTracker: still cooling down
+    // EnderpearlItem / WindChargeItem / InstrumentItem.use add their cooldowns on the client as well; a goat horn
+    // also plays its instrument for the local player (the server excludes them)
+    if (name === 'ender_pearl') g.addCooldown(held.id, 20);
+    if (name === 'wind_charge') g.addCooldown(held.id, 10);
+    if (name === 'goat_horn') {
+      const inst = g.items.component(held, 'instrument'), meta = ITEM_DATA_766.instruments[inst?.instrumentId];
+      const duration = inst?.data?.useDuration ?? meta?.duration, range = inst?.data?.range ?? meta?.range;
+      if (!duration) return false; // InteractionResultHolder.fail without an instrument
+      const sound = inst?.data?.soundEvent?.soundId ?? inst?.data?.soundEvent ?? (meta ? 'item.goat_horn.sound.' + inst.instrumentId : null);
+      if (sound) g.sound?.play(String(sound).replace(/^minecraft:/, ''), this.player.x, this.player.y, this.player.z, range / 16, 1, { category: 'record' });
+      g.addCooldown(held.id, duration);
+    }
     if (name === 'trident') {
       if (g.items.damage(held) >= g.items.maxDurability(held)-1) return false;
       if (g.items.enchantLevel(held, 'riptide') > 0 && !this._wetForRiptide()) return false;
@@ -857,7 +870,7 @@ export class Interaction {
     const t = this.target;
     const lookingAtFrame = t && t.type === 'block' && getBlock(t.state).name === 'end_portal_frame';
     // thrown items: snowball, egg, ender pearl, experience bottle, splash / lingering potion, eye of ender
-    const thrown = ['snowball', 'egg', 'ender_pearl', 'experience_bottle', 'splash_potion', 'lingering_potion'].includes(name) || (name === 'ender_eye' && !lookingAtFrame);
+    const thrown = ['snowball', 'egg', 'ender_pearl', 'experience_bottle', 'splash_potion', 'lingering_potion', 'wind_charge'].includes(name) || (name === 'ender_eye' && !lookingAtFrame);
     if (thrown) {
       if (survival) {
         held.count--;

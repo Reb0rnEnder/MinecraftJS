@@ -1498,6 +1498,8 @@ export class Game {
   on_map(p) { this.items.updateMap(p); }
 
   // CooldownTracker (ender pearls, chorus fruit, shields disabled by an axe)
+  // ItemCooldowns.addCooldown on the local player (the server's cooldown packet confirms or replaces it)
+  addCooldown(itemId, ticks) { (this.cooldowns ||= new Map()).set(itemId, { start: this.ticks, end: this.ticks + ticks }); }
   on_set_cooldown(p) {
     if (!this.cooldowns) this.cooldowns = new Map();
     const item = p.itemID ?? p.itemId; // the 766 schema names it itemID
