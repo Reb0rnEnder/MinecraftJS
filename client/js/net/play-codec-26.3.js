@@ -292,6 +292,12 @@ export const PLAY_DECODERS_26_3=Object.freeze({
     if(particle.fromColor!==undefined)data.fromColor=particle.fromColor,data.toColor=particle.toColor,data.scale=particle.scale;
     if(particle.blockState!==undefined)data.blockState=particle.blockState;
     if(particle.item)data.itemId=particle.item.itemId;
+    if(particle.destination!==undefined){
+      data.destination=particle.destination;
+      data.positionType=particle.positionType;
+      data.ticks=particle.arrivalInTicks;
+      if(particle.entityEyeHeight!==undefined)data.entityEyeHeight=particle.entityEyeHeight;
+    }
     return {
       particle,particleName:particle.name,longDistance:overrideLimiter,alwaysShow,
       x,y,z,offsetX,offsetY,offsetZ,xMaxSpeed,yMaxSpeed,zMaxSpeed,

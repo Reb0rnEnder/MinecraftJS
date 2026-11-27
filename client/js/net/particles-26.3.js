@@ -35,9 +35,22 @@ export function readParticleOptions26_3(r){
     case 'shriek':return {id,name,delay:r.varint()};
     // TrailParticleOption.STREAM_CODEC: Vec3 target (3 doubles), INT color, VarInt duration.
     case 'trail':return {id,name,target:{x:r.f64(),y:r.f64(),z:r.f64()},color:r.i32(),duration:r.varint()};
-    // VibrationParticleOption.STREAM_CODEC nests a polymorphic PositionSource, so it stays
-    // undecoded until that codec is ported; consuming it wrong would corrupt the metadata map.
-    case 'vibration':throw Error('26.3 vibration particle decoding is not implemented');
+    // VibrationParticleOption.STREAM_CODEC: PositionSource (registry id + payload) and
+    // arrival ticks. PositionSourceType.BLOCK is a packed BlockPos; ENTITY is a VarInt
+    // entity id plus the float eye offset. Both built-in sources are ids 0 and 1.
+    case 'vibration':{
+      const sourceType=r.varint();
+      let destination,positionType,entityEyeHeight;
+      if(sourceType===0){
+        destination=r.position();
+        positionType='block';
+      }else if(sourceType===1){
+        destination=r.varint();
+        entityEyeHeight=r.f32();
+        positionType='entity';
+      }else throw Error('Unknown 26.3 position source type '+sourceType);
+      return {id,name,destination,positionType,entityEyeHeight,arrivalInTicks:r.varint()};
+    }
     case 'unit':return {id,name};
   }
   throw Error('Unclassified 26.3 particle codec '+codec);

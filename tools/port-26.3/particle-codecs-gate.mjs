@@ -133,10 +133,27 @@ check('unknown particle id fails closed', () => {
   if (!threw) throw Error('unknown particle id was accepted');
 });
 
-check('vibration fails closed instead of guessing PositionSource', () => {
+check('vibration block source is a packed BlockPos + arrival ticks', () => {
+  const view = new DataView(new ArrayBuffer(8));
+  const pack = (x, y, z) => BigInt.asUintN(64, (BigInt(x & 0x3ffffff) << 38n) | (BigInt(z & 0x3ffffff) << 12n) | BigInt(y & 0xfff));
+  view.setBigInt64(0, pack(-12, 64, 305));
+  const r = new Reader26_3(Uint8Array.from([0x3a, 0x00, ...new Uint8Array(view.buffer), 0x14]));
+  const p = readParticleOptions26_3(r);
+  eq([p.name, p.positionType, p.destination, p.arrivalInTicks], ['vibration', 'block', {x: -12, y: 64, z: 305}, 20]);
+  eq(r.remaining(), 0);
+});
+
+check('vibration entity source is a VarInt id + FLOAT eye offset', () => {
+  const r = new Reader26_3(Uint8Array.from([0x3a, 0x01, 0x2a, ...fl(1.62), 0x1e]));
+  const p = readParticleOptions26_3(r);
+  eq([p.name, p.positionType, p.destination, p.entityEyeHeight, p.arrivalInTicks], ['vibration', 'entity', 42, Math.fround(1.62), 30]);
+  eq(r.remaining(), 0);
+});
+
+check('vibration unknown source fails closed', () => {
   let threw = false;
-  try { readParticleOptions26_3(new Reader26_3(bytes(0x3a))); } catch (error) { threw = /vibration/.test(error.message); }
-  if (!threw) throw Error('vibration was decoded without its PositionSource codec');
+  try { readParticleOptions26_3(new Reader26_3(bytes(0x3a, 0x02))); } catch (error) { threw = /position source type/.test(error.message); }
+  if (!threw) throw Error('unknown PositionSourceType was accepted');
 });
 
 if (failures) {
