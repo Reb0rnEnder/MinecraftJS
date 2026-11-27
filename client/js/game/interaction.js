@@ -1,3 +1,4 @@
+import { useOn766, use766 } from './item-use-1.20.6.js';
 import{bookshelfUse766}from'./bookshelf-1.20.6.js';
 import{startBrushing766,tickBrushing766}from'./brushing-1.20.6.js';
 import {EFFECT_766} from './effects-1.20.6.js';
@@ -728,6 +729,9 @@ export class Interaction {
       held.count--; // the server's slot update follows
       return true;
     }
+    // 1.20.6 Item.useOn on the client: axes, shovels, hoes, flint and steel, fire charges and honeycomb
+    const used = useOn766(g, held, t);
+    if (used) return used.fail ? 'consume' : used.success;
     switch (name) {
       case 'flint_and_steel': return true;
       case 'wheat_seeds': case 'carrot': case 'potato':
@@ -809,6 +813,16 @@ export class Interaction {
       if (g.items.enchantLevel(held, 'riptide') > 0 && !this._wetForRiptide()) return false;
     }
     if(name==='bundle')return emptyBundle(g,held);
+    // BucketItem / BottleItem.use: predicted pickup or placement with the local sound; ItemUtils.createFilledResult
+    // swaps a lone survival stack for the result (creative keeps it, larger stacks wait for the server's slot update)
+    const fluidUse = use766(g, held);
+    if (fluidUse) {
+      if (fluidUse.success && fluidUse.result && g.gameMode !== 1 && held.count === 1) {
+        const result = g.items.byName.get(fluidUse.result);
+        if (result) g.inventory.setHand(hand, { ...held, id: result.id, count: 1, damage: 0, components: undefined, nbt: undefined });
+      }
+      return fluidUse.success;
+    }
     if (name === 'firework_rocket' && this.player.elytraFlying) return true;
     // ThrowablePotionItem.use overrides PotionItem.use even though its inherited animation is DRINK.
     if(name==='splash_potion'||name==='lingering_potion'){
