@@ -1,3 +1,4 @@
+import { palettedPermutationSprites } from './render/paletted-permutations.js';
 import {OverlayZip,overlayDirectories,resourceFilter,readResourceStack,readResourceBytes,resourceMetadata,resourceNamespaces,resourceBlockedAbove} from './resource-layers.js';
 import{preloadTextures}from'./render/texture-preload.js';
 import {applyPackModels,applyPackTextures} from './resource-models.js';
@@ -248,6 +249,25 @@ export class Assets {
     for (const [name, get] of files) {
       try { textures.push({ name, image: decodePng(get()) }); } catch (e) { /* undecodable texture */ }
     }
+    // 26.3 defines its atlases in code, so the armor-trim item overlays are not an atlases/blocks.json
+    // source in the jar. Synthesize the native paletted_permutations source (the same textures, palette
+    // key and permutations 1.20.6's blocks.json used); a pack-supplied definition still wins by name.
+    const trimSource = {
+      type: 'paletted_permutations',
+      textures: ['trims/items/helmet_trim', 'trims/items/chestplate_trim', 'trims/items/leggings_trim', 'trims/items/boots_trim'],
+      palette_key: 'palettes/trim_base',
+      permutations: Object.fromEntries(['quartz', 'iron', 'netherite', 'redstone', 'copper', 'gold', 'emerald', 'diamond', 'lapis', 'amethyst', 'resin',
+        'iron_darker', 'copper_darker', 'gold_darker', 'diamond_darker', 'netherite_darker'].map((n) => [n, 'palettes/trim/' + n])),
+    };
+    const definitions = [];
+    try {
+      definitions.push(...(await this.readResourceStack('minecraft:atlases/blocks.json')).reverse().map((r) => { try { return JSON.parse(decodeUtf8(r.bytes)); } catch { return null; } }));
+    } catch (e) { /* 26.3 has no atlas JSON; the native source below still runs */ }
+    definitions.push({ sources: [trimSource] }); // pack-generated trim sprites come first and win by name
+    try {
+      const have = new Set(textures.map((t) => t.name));
+      for (const sprite of await palettedPermutationSprites(definitions, (p) => this.imageAsync(p + '.png').catch(() => null))) if (!have.has(sprite.name)) textures.push(sprite);
+    } catch (e) { /* an unreadable atlas definition leaves the directory sprites */ }
     this.atlas = new Atlas();
     this.atlas.build(textures, mcmeta);
     if (this.atlasTexture) this.device.destroyTexture(this.atlasTexture);
@@ -277,7 +297,7 @@ export class Assets {
     this.fontSets = await loadFontSets(this);
 
     step('Preparing title textures...',78);
-    const nativeSprites=[...CORE_GUI_SPRITES,...['widget/button','widget/button_highlighted','widget/button_disabled','widget/slider','widget/slider_highlighted','widget/slider_handle','widget/slider_handle_highlighted','icon/accessibility','icon/language','widget/scroller','widget/scroller_background','container/creative_inventory/scroller','container/creative_inventory/scroller_disabled',...['top','bottom'].flatMap(row=>['selected','unselected'].flatMap(state=>Array.from({length:7},(_,i)=>'container/creative_inventory/tab_'+row+'_'+state+'_'+(i+1)))),...['select','unselect','move_up','move_down'].flatMap(n=>['transferable_list/'+n,'transferable_list/'+n+'_highlighted']),'hud/locator_bar_background','hud/locator_bar_arrow_up','hud/locator_bar_arrow_down',...['default_0','default_1','default_2','default_3','bowtie'].map(n=>'hud/locator_bar_dot/'+n)].map(name=>'gui/sprites/'+name+'.png')];
+    const nativeSprites=[...CORE_GUI_SPRITES,...['widget/button','widget/button_highlighted','widget/button_disabled','widget/slider','widget/slider_highlighted','widget/slider_handle','widget/slider_handle_highlighted','icon/accessibility','icon/language','widget/scroller','widget/scroller_background','container/creative_inventory/scroller','container/creative_inventory/scroller_disabled',...['top','bottom'].flatMap(row=>['selected','unselected'].flatMap(state=>Array.from({length:7},(_,i)=>'container/creative_inventory/tab_'+row+'_'+state+'_'+(i+1)))),...['select','unselect','move_up','move_down'].flatMap(n=>['transferable_list/'+n,'transferable_list/'+n+'_highlighted']),'hud/locator_bar_background','hud/locator_bar_arrow_up','hud/locator_bar_arrow_down',...['default_0','default_1','default_2','default_3','bowtie'].map(n=>'hud/locator_bar_dot/'+n),...['container','container_blinking','full','full_blinking','half','half_blinking','absorbing_full_blinking','absorbing_half_blinking'].map(n=>'hud/heart/'+n),...['ping_1','ping_2','ping_3','ping_4','ping_5','ping_unknown'].map(n=>'icon/'+n)].map(name=>'gui/sprites/'+name+'.png')];
     await Promise.all(nativeSprites.map(path=>this.loadGuiSprite(path)));
     const required=Array.from({length:6},(_,i)=>'gui/title/background/panorama_'+i+'.png').concat(['gui/title/minecraft.png','gui/title/minceraft.png','gui/title/edition.png','gui/menu_background.png','gui/inworld_menu_background.png','gui/menu_list_background.png','gui/inworld_menu_list_background.png','gui/header_separator.png','gui/footer_separator.png','gui/inworld_header_separator.png','gui/inworld_footer_separator.png','misc/credits_vignette.png','font/ascii.png','gui/title/mojangstudios.png'],nativeSprites);
     this.preloadReport={required:await preloadTextures(this,required,{budget:Infinity})};

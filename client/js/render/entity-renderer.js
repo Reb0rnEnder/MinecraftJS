@@ -1,7 +1,8 @@
+import { itemTrim, trimTextureName, armorTrimTexture } from './armor-trims-26.3.js';
 import {horseArmor766} from './horse-armor-1.20.6.js';
 import{PAWS_DATA_766}from'../game/paws-data-1.20.6.js';
 import{wolfTexture766,wolfArmor766}from'./wolf-1.20.6.js';
-import{wolfTailAngle766}from'../game/paws-1.20.6.js';
+import{wolfTailAngle766,wolfHeadRoll766,wolfBodyRoll766,wolfWetShade766}from'../game/paws-1.20.6.js';
 import {updateGolemCracks} from './iron-golem-cracks.js';
 import{updateGuiEquipment,guiHandPoses}from'./gui-player-equipment.js';
 import{paintingTiles,paintingTileLight}from'./painting.js';
@@ -115,6 +116,9 @@ function spriteMesh(device, u0, v0, u1, v1, w = 1, h = 1) {
   return device.createMesh(FORMAT.color, data, { quads: true });
 }
 
+// Name tag scale and sneaking drop for this release (1.15+: 0.025; crouching already lowers the hitbox)
+const NAME_TAG = { scale: 0.025, sneakOffset: false };
+
 export class EntityRenderer {
   constructor(game) {
     this.game = game;
@@ -154,6 +158,7 @@ export class EntityRenderer {
     if (v.line) this.group.remove(v.line);
     for (const m of v.ownMeshes || []) this.device.destroyMesh(m);
     destroyTextMeshes(this.device, v.tagMeshes);
+    destroyTextMeshes(this.device, v.tagBelowMeshes);
     if (v.kind === 'display') destroyDisplay(this, v);
     this.visuals.delete(e.id);
   }
@@ -739,16 +744,22 @@ export class EntityRenderer {
     for (let slot = 1; slot <= 4; slot++) {
       const inner = slot === 2;
       const m = piglin&&!inner?M.biped('piglinArmorOuter'):M.armorModel(inner ? 0.5 : 1.0);m.piglinAgeable=piglin;
-      const mat = this._mat(v, 'models/armor/iron_layer_1.png', { alphaTest: 0.1 });
+      const mat = this._mat(v, 'entity/equipment/humanoid/iron.png', { alphaTest: 0.1 });
       const obj = this._makeModelObject(m, mat);
       obj.visible = false;
       v.modelGroup.add(obj);
-      const overlayMat = this._mat(v, 'models/armor/leather_layer_1_overlay.png', { alphaTest: 0.1 });
+      const overlayMat = this._mat(v, 'entity/equipment/humanoid/leather_overlay.png', { alphaTest: 0.1 });
       const m2 = piglin&&!inner?M.biped('piglinArmorOuter'):M.armorModel(inner ? 0.5 : 1.0);m2.piglinAgeable=piglin;
       const obj2 = this._makeModelObject(m2, overlayMat);
       obj2.visible = false;
       v.modelGroup.add(obj2);
-      v.armor[slot] = { model: m, obj, mat, slot, inner, overlay: { model: m2, obj: obj2, mat: overlayMat }, key: null };
+      // HumanoidArmorLayer.renderTrim: the same model again with the armor_trims sprite, untinted
+      const trimMat = this._mat(v, 'entity/equipment/humanoid/iron.png', { alphaTest: 0.1 });
+      const m3 = piglin&&!inner?M.biped('piglinArmorOuter'):M.armorModel(inner ? 0.5 : 1.0);m3.piglinAgeable=piglin;
+      const obj3 = this._makeModelObject(m3, trimMat);
+      obj3.visible = false;
+      v.modelGroup.add(obj3);
+      v.armor[slot] = { model: m, obj, mat, slot, inner, overlay: { model: m2, obj: obj2, mat: overlayMat }, trim: { model: m3, obj: obj3, mat: trimMat }, key: null };
     }
     void e;
   }
@@ -1009,9 +1020,11 @@ export class EntityRenderer {
 
   // ---------------------------------------------------------------- per-frame
 
-  render(partial) {
+  render(framePartial) {
+    const partial = framePartial;
     const g = this.game;
     const camPos = this.r.camPos;
+    const rate = g.tickRate, frozenWorld = !!rate && !rate.runsNormally();
     const list = [...g.entities.all()];
     const self = g.entities.self;
     if (self) {
@@ -1024,6 +1037,8 @@ export class EntityRenderer {
     this.stats = { total: list.length-(g.entities.pickups?.length||0), culled: 0, lod: 0 };
     const burning = [];
     for (const e of list) {
+      // LevelRenderer.renderLevel: entities frozen by the server render at partial tick 1
+      const partial = frozenWorld && rate.isEntityFrozen(e, g.entities.carriesPlayer(e)) ? 1 : framePartial;
       let v = this.visuals.get(e.id);
       if (v && this._visualKey(e) !== v.visualKey) { this.remove(e); v = null; }
       const p = g.entities.interp(e, partial);
@@ -1318,6 +1333,11 @@ export class EntityRenderer {
       onGround: e.onGround, eatingGrass: e.eatingGrass || 0, sitting: e.sitting, angry: e.angry, hanging: e.hanging,
       carrying: !!e.carried, screaming: e.screaming, horseType: e.horseType, saddled: !!(e.horseFlags & 4) || e.saddled,
       tailRotation: wolfTailAngle766(e),
+      // WolfModel.prepareMobModel: begging head tilt plus the wet shake rolling head, upper body, body and tail
+      headRoll: e.entityName === 'wolf' ? wolfHeadRoll766(e, partial) + wolfBodyRoll766(e, partial, 0) : undefined,
+      maneRoll: e.entityName === 'wolf' ? wolfBodyRoll766(e, partial, -0.08) : undefined,
+      bodyRoll: e.entityName === 'wolf' ? wolfBodyRoll766(e, partial, -0.16) : undefined,
+      tailRoll: e.entityName === 'wolf' ? wolfBodyRoll766(e, partial, -0.2) : undefined,
       witchDrinking: e.kind === 'mob' && e.type === 66 && e.usingItem,
       squish: 0, tentacleAngle:isSquid(e)?squidTentacle(e,partial):undefined,
       peek: e.type === 69 ? (e.prevPeek || 0) + ((e.peek || 0) - (e.prevPeek || 0)) * partial : 0,
@@ -1346,6 +1366,8 @@ export class EntityRenderer {
     if (v.golemCracks) updateGolemCracks(e, v.golemCracks);
     if(v.horseArmor){const armor=horseArmor766(g.items,e.bodyEquipment);v.horseArmor.obj.visible=!!armor&&!e.invisible;if(armor){v.horseArmor.mat.tex=armor.texture;v.horseArmor.mat.params.setTint(...armor.color,1);}}
     if(v.wolfCollar){const armor=wolfArmor766(g.items,e.bodyEquipment),color=PAWS_DATA_766.dyes[e.collar??14]??PAWS_DATA_766.dyes[14];v.wolfCollar.obj.visible=!!e.tamed&&!armor&&!e.invisible;v.wolfCollar.mat.params.setTint(...color,1);v.wolfArmor.obj.visible=!!armor;v.wolfArmorDye.obj.visible=!!armor?.color;v.wolfArmorCracks.obj.visible=!!armor?.crack;if(armor?.color)v.wolfArmorDye.mat.params.setTint(...armor.color,1);if(armor?.crack)v.wolfArmorCracks.mat.tex='entity/wolf/wolf_armor_crackiness_'+armor.crack+'.png';}
+    // WolfRenderer: a wet wolf's model (and the layers drawn through it) is darkened by getWetShade
+    if(v.wolfCollar){const shade=wolfWetShade766(e,partial),dye=PAWS_DATA_766.dyes[e.collar??14]??PAWS_DATA_766.dyes[14];v.mainMat.params.setTint(shade,shade,shade,1);v.wolfCollar.mat.params.setTint(dye[0]*shade,dye[1]*shade,dye[2]*shade,1);}
     if (v.lodSkip && v.posed && v.wasInvisible === !!e.invisible) {
       // Keep the previous pose; only the transforms above were updated
       this._updateHeld(e, v, held, args);
@@ -1441,24 +1463,39 @@ export class EntityRenderer {
     for (let slot = 1; slot <= 4; slot++) {
       const A = v.armor[slot];
       const item = e.equipment[slot];
+      const equip = item ? this.game.items.component?.(item, 'equippable') : null;
+      const armorSlot = equip?.slot ?? equip?.slotName;
       const idx = item ? armorMaterialIndex(this.game.items.name(item.id)) : -1;
-      const visible = idx >= 0;
+      // 26.3 equipment assets: the equippable component names the texture family
+      const asset = String(equip?.assetId ?? equip?.asset_id ?? ARMOR_MATS[idx] ?? '').replace(/^minecraft:/, '');
+      const visible = !!asset && ['head', 'chest', 'legs', 'feet'].includes(armorSlot)
+        && ['leather', 'chainmail', 'copper', 'iron', 'gold', 'diamond', 'netherite', 'turtle_scute'].includes(asset);
+      const layerName = slot === 2 ? 'humanoid_leggings' : 'humanoid';
       A.obj.visible = visible;
-      A.overlay.obj.visible = visible && idx === 0;
+      A.overlay.obj.visible = visible && asset === 'leather';
+      A.trim.obj.visible = false;
       if (!visible) continue;
-      const key = idx + ':' + slot;
+      const key = asset + ':' + slot;
       if (A.key !== key) {
         A.key = key;
-        const layer = slot === 2 ? 2 : 1;
-        A.mat.tex = `models/armor/${ARMOR_MATS[idx]}_layer_${layer}.png`;
-        A.overlay.mat.tex = `models/armor/leather_layer_${layer}_overlay.png`;
+        A.mat.tex = `entity/equipment/${layerName}/${asset}.png`;
+        A.overlay.mat.tex = `entity/equipment/${layerName}/${asset}_overlay.png`;
       }
-      if (idx === 0) {
-        const tag = this.game.items.nbt(item);
-        const c = tag && tag.display && tag.display.color !== undefined ? tag.display.color : 10511680;
+      if (asset === 'leather') {
+        // DyedItemColor.getOrDefault(stack, 0xA06540); 26.3 reads the component directly
+        const dye = this.game.items.component?.(item, 'dyed_color');
+        const c = (typeof dye === 'number' ? dye : dye?.rgb ?? dye?.color ?? 10511680) >>> 0;
         A.mat.params.setTint(((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255, 1);
       } else A.mat.params.setTint(1, 1, 1, 1);
-      for (const M2 of idx===0?[A.model,A.overlay.model]:[A.model]) {
+      // HumanoidArmorLayer: the trim layer uses the paletted trims/entity texture
+      const trimName = trimTextureName(this.game, item, A.inner);
+      const trimTex = trimName ? armorTrimTexture(this.game, trimName, item) : null;
+      A.trim.obj.visible = !!trimTex;
+      if (trimTex) {
+        A.trim.mat.tex = trimTex;
+        A.trim.mat.state = { ...A.trim.mat.state, polygonOffset: !!itemTrim(this.game, item)?.decal };
+      }
+      for (const M2 of [A.model, ...(asset === 'leather' ? [A.overlay.model] : []), ...(trimTex ? [A.trim.model] : [])]) {
         if(M2.piglinAgeable)scalePiglinChild(M2.childGroups,!!e.child);
         M2.animate(M2, args);
         copyPose(model, M2);
@@ -1603,8 +1640,21 @@ export class EntityRenderer {
     if (e.id === -1 || e.id === g.entityId || g.hideGui || (e.kind !== 'armorstand' && e.passenger !== undefined && e.passenger >= 0)) name = null;
     const cam = this.r.camPos;
     const dist = Math.hypot(cam[0] - p.x, cam[1] - p.y, cam[2] - p.z);
-    if (!name || dist >= 64) { if (v.tag) v.tag.visible = false; return; }
+    if (!name || dist >= 64) { if (v.tag) v.tag.visible = false; if (v.tagBelow) v.tagBelow.visible = false; return; }
     const sneak = !!e.sneaking;
+    // PlayerRenderer.renderNameTag: within 10 blocks the below-name objective's "<score> <objective>" label takes the
+    // tag position and the name moves up by 9 * 1.15 font pixels
+    const below = e.kind === 'player' && dist < 10 ? this._belowNameText(e) : null;
+    if (below !== null) {
+      if (!v.tagBelow || v.tagBelowText !== below || v.tagBelowSneak !== sneak) {
+        if (v.tagBelow) v.root.remove(v.tagBelow);
+        destroyTextMeshes(this.device, v.tagBelowMeshes);
+        const { node, meshes } = this.makeLabel(below, sneak);
+        v.tagBelow = node; v.tagBelowMeshes = meshes; v.tagBelowText = below; v.tagBelowSneak = sneak;
+        v.root.add(node);
+      }
+      v.tagBelow.visible = true;
+    } else if (v.tagBelow) v.tagBelow.visible = false;
     if (!v.tag || v.tagText !== name || v.tagSneak !== sneak) {
       if (v.tag) v.root.remove(v.tag);
       destroyTextMeshes(this.device, v.tagMeshes);
@@ -1614,7 +1664,15 @@ export class EntityRenderer {
       v.root.add(v.tag);
     }
     v.tag.visible = true;
-    v.tag.position.set(0, e.height + 0.5 - (sneak ? 0.25 : 0) - (v.root.position.y - p.y), 0);
+    const base = e.height + 0.5 - (NAME_TAG.sneakOffset && sneak ? 0.25 : 0) - (v.root.position.y - p.y);
+    if (below !== null) v.tagBelow.position.set(0, base, 0);
+    v.tag.position.set(0, base + (below !== null ? 9 * 1.15 * NAME_TAG.scale : 0), 0);
+  }
+
+  _belowNameText(e) {
+    const sb = this.game.scoreboard, objective = sb?.belowName ? sb.objectives.get(sb.belowName) : null;
+    if (!objective) return null;
+    return sb.scoreText(objective, e.name, 'below_name') + ' ' + (objective.displayName ?? '');
   }
 
   // Render.renderLivingLabel: billboard text with a translucent background; non-sneaking labels are also
@@ -1623,11 +1681,13 @@ export class EntityRenderer {
     const font = this.game.gui.font;
     const w = font.width(text);
     const half = w / 2;
-    const bg = { x0: -half - 1, y0: -1, x1: half + 1, y1: 8, color: [0, 0, 0, 0.25] };
-    const meshes = buildTextMeshes(this.device, font, [{ text, x: -half, y: 0, color: 0xffffff }], [bg]);
+    // "deadmau5" is drawn 10 pixels higher
+    const dy = text === 'deadmau5' ? -10 : 0;
+    const bg = { x0: -half - 1, y0: -1 + dy, x1: half + 1, y1: 8 + dy, color: [0, 0, 0, 0.25] };
+    const meshes = buildTextMeshes(this.device, font, [{ text, x: -half, y: dy, color: 0xffffff }], [bg]);
     const node = new Node();
     node.billboard = true;
-    const s = 0.016666668 * 1.6;
+    const s = NAME_TAG.scale;
     node.scale.set(s, -s, s);
     const white = this.game.gui.white;
     for (const m of meshes) {
@@ -2064,6 +2124,43 @@ export class EntityRenderer {
     gui.clearScissor();
     v.root.position.set(...saved.pos); v.yawGroup.rotation.y = saved.yaw;
     if (v.shadow) v.shadow.visible = saved.shadow; if (v.tag) v.tag.visible = saved.tag;
+    return true;
+  }
+
+  // SmithingScreen's armor stand (1.20+): arms shown, no base plate, body yaw 210, pitch 25, wearing the result
+  // (armor in its slot, anything else in the off hand), drawn by InventoryScreen.renderEntityInInventory at
+  // (x, y) with scale 25 and rotationXYZ(25 degrees, 0, 180 degrees)
+  drawArmorStandPreview(gui, x, y, scale, item, partial = 0) {
+    const g = this.game;
+    if (!this._smithingStand) {
+      const e = g.entities._base(-1001, 0, 0, 0, 0, 25);
+      Object.assign(e, { kind: 'armorstand', entityName: 'armor_stand', typeName: 'armor_stand', showArms: true, noBasePlate: true, armorFlags: 4 | 8,
+        width: 0.5, height: 1.975, bodyYaw: 210, prevBodyYaw: 210, headYaw: 0, prevHeadYaw: 0, pitch: 25, prevPitch: 25 });
+      const v = this._build(e);
+      if (!v) return false;
+      this.group.remove(v.root); this.visuals.delete(e.id);
+      this._smithingStand = { e, v };
+    }
+    const { e, v } = this._smithingStand;
+    e.equipment = [null, null, null, null, null]; e.offhand = null;
+    if (item && item.id) {
+      const equip = g.items.component?.(item, 'equippable');
+      const asset = String(equip?.assetId ?? equip?.asset_id ?? '').replace(/^minecraft:/, '');
+      const armorSlot = { head: 4, chest: 3, legs: 2, feet: 1 }[equip?.slot ?? equip?.slotName];
+      if (armorSlot && ['leather', 'chainmail', 'copper', 'iron', 'gold', 'diamond', 'netherite', 'turtle_scute'].includes(asset)) e.equipment[armorSlot] = item;
+      else e.offhand = item;
+    }
+    this._renderLiving(e, v, { x: 0, y: 0, z: 0 }, partial);
+    v.root.position.set(0, 0, 0);
+    if (v.shadow) v.shadow.visible = false;
+    if (v.tag) v.tag.visible = false;
+    for (const m of v.materials || []) m.params.setLight(15, 15);
+    const mm = mat4.create();
+    mat4.translate(mm, mm, x, y, 50);
+    mat4.scale(mm, mm, scale, scale, -scale);
+    mat4.rotateX(mm, mm, 0.43633232);
+    mat4.rotateZ(mm, mm, Math.PI);
+    gui.drawNode(v.root, mm);
     return true;
   }
 

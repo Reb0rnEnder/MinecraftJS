@@ -1,3 +1,4 @@
+import { TickRateManager, clientTickMillis } from './tick-rate.js';
 import { EntityOutline } from '../render/entity-outline.js';
 import {EFFECT_766,createEffectBlend766,tickEffectBlend766} from './effects-1.20.6.js';
 import {bindingResolver} from './keybind-components.js';
@@ -226,6 +227,7 @@ export class Game {
     this.input.on('move', () => this.screens.onMove());
 
     this.profiler = new Profiler();
+    this.tickRate = new TickRateManager(); // ClientLevel.tickRateManager, replaced with each new level
     this.renderer.profiler = this.profiler;
     this.frameTimes = new Float32Array(240); // lagometer (FrameTimer)
     this.frameTimeIndex = 0;
@@ -895,8 +897,13 @@ export class Game {
 
   on_update_view_distance(p) { this.serverViewDistance=p.viewDistance; }
   on_update_view_position(p) { this.serverChunkCenter={x:p.chunkX,z:p.chunkZ}; }
-  on_set_ticking_state(p) { this.serverTickRate=p.tickRate;this.serverFrozen=!!p.isFrozen; }
-  on_step_tick(p) { this.serverStepTicks=p.tickSteps; }
+  // ClientboundTickingStatePacket / ClientboundTickingStepPacket (26.3 native fields)
+  on_set_ticking_state(p) {
+    const rate = p.tickRate ?? p.tick_rate, frozen = !!(p.isFrozen ?? p.is_frozen);
+    this.serverTickRate = rate; this.serverFrozen = frozen;
+    this.tickRate.setTickRate(rate); this.tickRate.setFrozen(frozen);
+  }
+  on_step_tick(p) { const steps = p.tickSteps ?? p.tick_steps; this.serverStepTicks = steps; this.tickRate.setFrozenTicksToRun(steps); }
 
   on_chat_suggestions(p) {
     const entries=this.customChatCompletions??=new Set();
@@ -926,6 +933,7 @@ export class Game {
     }
     if(p.blockStateRegistrySize)this.world.blockStateRegistrySize=p.blockStateRegistrySize;
     if(p.airStates)this.world.airStates=p.airStates.slice();
+    this.tickRate = new TickRateManager();
     // 1.20.2+: the server brand arrives during configuration and carries into play (CommonListenerCookie)
     this.serverViewDistance=p.viewDistance??this.settings.renderDistance;
     resetServerRecipes(this);this.nbtQueries?.clear();
@@ -1088,6 +1096,7 @@ export class Game {
       this.tileRenderer.clear();
     this.pistons.clear();
       this.doneLoadingTerrain = false;
+      this.tickRate = new TickRateManager();
       this.screens.open(new DownloadingTerrainScreen(this, levelLoadingReason(this.dead, p.worldName, this.worldName)));
     }
     this.dimension = p.dimension;
@@ -1519,8 +1528,9 @@ export class Game {
   // CooldownTracker (ender pearls, chorus fruit, shields disabled by an axe)
   on_set_cooldown(p) {
     if (!this.cooldowns) this.cooldowns = new Map();
-    if (p.cooldownTicks > 0) this.cooldowns.set(p.itemId, { start: this.ticks, end: this.ticks + p.cooldownTicks });
-    else this.cooldowns.delete(p.itemId);
+    const item = p.itemID ?? p.itemId; // 766 names it itemID; the 26.3 adapter emits itemId
+    if (p.cooldownTicks > 0) this.cooldowns.set(item, { start: this.ticks, end: this.ticks + p.cooldownTicks });
+    else this.cooldowns.delete(item);
   }
 
   // CooldownTracker.getCooldown: fraction of the cooldown left (0 = ready)
@@ -1844,6 +1854,9 @@ export class Game {
 
   tick() {
     this.ticks++;
+    // Minecraft.tick: the level's tick-rate manager advances unless the game is paused
+    if (this.inWorld) this.tickRate.tick();
+    const runs = !this.inWorld || this.tickRate.runsNormally();
     this.worldBorder.tick();
     if (smoothCameraActive(this) && this._smoothCam) {
       // EntityRenderer.updateRenderer: MouseFilter.smooth(accumulated, 0.05 * f)
@@ -1864,7 +1877,7 @@ export class Game {
     }
     this.renderer.tick();
     const A = this.assets;
-    const changed = A.atlas.tick();
+    const changed = runs ? A.atlas.tick() : []; // texture animations stop while the server is frozen
     for (const e of this._updateCompassClock()) changed.push(e);
     for (const e of changed) this.device.updateTexture(A.atlasTexture, A.atlas.region(e), e.x, e.y, e.w, e.h, this.settings.animateDistantTextures===false?null:{mipmapSource:A.atlas.data});
     this.screens.tick();
@@ -1876,8 +1889,10 @@ export class Game {
 
     // No client-side weather fade: World.updateWeather only moves the strengths on the server, which sends each
     // change (game state 7 / 8). "Begin raining" alone stays at strength 0, so nothing is visible.
-    if (world.doDaylightCycle) world.timeOfDay++;
-    world.worldAge++;
+    if (runs) { // ClientLevel.tick: tickTime only while the game runs normally
+      if (world.doDaylightCycle) world.timeOfDay++;
+      world.worldAge++;
+    }
 
     if (this.hurtTime > 0) this.hurtTime--;
 
@@ -1949,8 +1964,7 @@ export class Game {
       const v = this.entities.get(this.ridingEntityId);
       if (v && !v.controlled) this.player.setPosition(...this.entities.riderPos(v, this.entityId, 'player'));
     }
-    this.particles.tick();
-    this.explosionTracker.tick();
+    if (runs) { this.particles.tick(); this.explosionTracker.tick(); }
     this.weather.tick();
     this.sound.tick();
     this.tileRenderer.tick();
@@ -2144,14 +2158,15 @@ export class Game {
     this.tickAccumulator += dt;
     let n = 0;
     P.start('tick');
-    while (this.tickAccumulator >= TICK_MS && n < 10) {
-      this.tickAccumulator -= TICK_MS;
+    const tickMs = clientTickMillis(this.tickRate, this.inWorld);
+    while (this.tickAccumulator >= tickMs && n < 10) {
+      this.tickAccumulator -= tickMs;
       this.tick();
       n++;
     }
     P.end();
     if (n >= 10) this.tickAccumulator = 0;
-    this.partial = this.tickAccumulator / TICK_MS;
+    this.partial = this.tickAccumulator / tickMs;
 
     // Mouse look (applied per frame like vanilla)
     const [mdx, mdy] = this.input.takeMouseDelta();
@@ -2239,6 +2254,9 @@ export class Game {
   renderFrame() {
     const r = this.renderer;
     const partial = this.partial;
+    // LevelRenderer.renderLevel: the world (sky time, block entities, particles, weather) renders at partial 1 while
+    // the server is frozen; the camera and players keep the frame's partial
+    const worldPartial = this.tickRate.runsNormally() ? partial : 1;
     const gui = this.gui;
     if (!this.inWorld || !this.doneLoadingTerrain) {
       if (this.screens.current && (!this.inWorld || this.screens.current.panoramaBackground)) r.renderPanorama(platform().now(),this.settings.panoramaSpeed);
@@ -2319,7 +2337,7 @@ export class Game {
       fullBright:!!this.settings.fullBright,dynamicLights:collectDynamicLights(this,[ex,ey,ez],partial),
       hideLightningFlashes:!!this.settings.hideLightningFlashes,
       minY:this.world.minY,minSection:this.world.minSection,sectionCount:this.world.sectionCount,
-      worldTime: this.world.timeOfDay, partial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,biomeFog:sampleBiomeFog(this.world,ex,ey,ez),biomeSky:biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).effects?.sky_color,fireResistance:this.effects.has(EFFECT_766.fire_resistance),
+      worldTime: this.world.timeOfDay, partial: worldPartial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,biomeFog:sampleBiomeFog(this.world,ex,ey,ez),biomeSky:biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).effects?.sky_color,fireResistance:this.effects.has(EFFECT_766.fire_resistance),
       inPowderSnow: getBlock(this.world.getState(Math.floor(ex), Math.floor(ey), Math.floor(ez))).name === 'powder_snow', spectator: pl.spectator,
       camPos: [ex, ey, ez], lookDir: look, dimension: this.dimension, underwater, inLava, biomeId:this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey)), waterVision:pl.waterVision(), conduitPower:this.effects.has(EFFECT_766.conduit_power),
       darkness:darkness762(this.effects.get(EFFECT_766.darkness),partial,this.ticks,this.settings.darknessEffectScale),
@@ -2331,12 +2349,12 @@ export class Game {
     r.cull(); // frustum + occlusion + fog culling, before entities so they can use the result
     this.profiler.endStart('entities');
     this.entityRenderer.render(partial);
-    this.tileRenderer.render(partial);
+    this.tileRenderer.render(worldPartial);
     this.debugLines.update(partial);
     this.profiler.endStart('particles');
-    this.particles.render(partial, ex, ey, ez);
+    this.particles.render(worldPartial, ex, ey, ez);
     this.profiler.endStart('weather');
-    this.weather.render(partial, ex, ey, ez);
+    this.weather.render(worldPartial, ex, ey, ez);
     this.profiler.endStart('selection');
     this.interaction.renderSelection(partial);
     const hand = this.thirdPerson === 0 && !this.hideGui && this.gameMode !== 3 ? this.handRenderer.prepare(partial, fov) : null;

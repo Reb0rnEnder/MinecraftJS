@@ -1,6 +1,7 @@
 import{buildPot766,itemPotDecorations766}from'./decorated-pot-1.20.6.js';
 import{itemBannerLayers766}from'./banner-1.20.6.js';
 import{bundleBar,bundleContentWeight}from'../game/bundle.js';
+import { trimItemModel, trimTypePredicate } from './armor-trims-26.3.js';
 import {DEFAULT_SKIN} from './default-skins.js';
 import {blocksByName} from '../world/blocks.js';
 import {compassProperty} from './compass.js';
@@ -61,6 +62,9 @@ export class ItemRenderer {
     const g = this.game;
     const name = g.items.name(item.id);
     let path = 'item/' + (held && (name === 'trident' || name === 'spyglass') ? name + '_in_hand' : name);
+    // The 26.3 item definition selects <item>_<trim material>_trim for trimmed armor
+    const trimmed = trimItemModel(g, item);
+    if (trimmed && this.store.models[trimmed]) path = trimmed;
     // ItemOverrideList.applyOverride: the last override whose predicates all reach their values wins
     const ov = this.store.resolveModel(path).overrides;
     if (ov && ov.length) {
@@ -137,13 +141,14 @@ export class ItemRenderer {
       default: break;
     }
     pv.cooldown = local && g.cooldowns ? g.cooldownFraction(item.id, 0) : 0;
+    pv.trim_material = trimTypePredicate(g, item); // 26.3 item definition property
     return pv;
   }
 
   layerTint(item, layer) {
     const g = this.game;
     const name = g.items.name(item.id);
-    if (name.startsWith('leather_') && layer === 0) {const dye=g.items.component(item,'dyed_color');return dye?.color??dye?.rgb??10511680;}
+    if (name.startsWith('leather_') && layer === 0) {const dye=g.items.component(item,'dyed_color');return typeof dye === 'number' ? dye : dye?.color??dye?.rgb??10511680;}
     if (POTIONS.has(name) && layer === 0) return g.items.potionColor(item);
     if (name.endsWith('_spawn_egg')) {const c=g.items.eggInfo(item);return c?c[layer?1:0]:0xffffff;}
     if(name==='firework_star'&&layer===1){const colors=g.items.component(item,'firework_explosion')?.colors;if(!colors?.length)return 0x8a8a8a;let r=0,gg=0,b=0;for(const c of colors){r+=(c>>16)&255;gg+=(c>>8)&255;b+=c&255;}return ((Math.trunc(r/colors.length)<<16)|(Math.trunc(gg/colors.length)<<8)|Math.trunc(b/colors.length));}

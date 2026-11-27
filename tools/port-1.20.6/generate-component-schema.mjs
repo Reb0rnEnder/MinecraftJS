@@ -94,6 +94,12 @@ export async function generateComponentSchema(check = false) {
   for(const field of range[1])field.type=['option','string'];
   // BlockPredicate has an Optional<NbtPredicate>, with a separate presence bool.
   types.ItemBlockPredicate[1].find(field=>field.name==='nbt').type=['option','anonymousNbt'];
+  // Native TrimMaterial.DIRECT_STREAM_CODEC: asset name, ingredient item holder, the item model index float, a map
+  // from armor-material holder IDs to asset names, then the description. The pinned upstream schema omits the
+  // float and keys the map by strings, which misreads every inline trim material and the rest of the stack.
+  types.ArmorTrimMaterial=['container',[{name:'assetName',type:'string'},{name:'ingredientId',type:'varint'},{name:'itemModelIndex',type:'f32'},
+    {name:'overrideArmorMaterials',type:['array',{countType:'varint',type:['container',[{name:'armorMaterialId',type:'varint'},{name:'assetName',type:'string'}]]}]},
+    {name:'description',type:'anonymousNbt'}]];
 
   const schema = {
     minecraftVersion: target.minecraftVersion,
