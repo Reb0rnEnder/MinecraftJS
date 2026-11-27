@@ -125,7 +125,49 @@ async function resolveSrv(host, port) {
   return { host, port };
 }
 
+async function openMinecraftJSRaw(entry, host, port) {
+  const sock = await platform().openSocket(entry.url);
+  const stream = new Emitter(true);
+  let ready = false, settled = false;
+  const timer = setTimeout(() => {
+    if (settled) return;
+    sock.close();
+  }, 6000);
+
+  stream.write = (bytes) => sock.sendBinary(bytes);
+  stream.close = () => sock.close();
+  sock.on("binary", (bytes) => stream.emit("data", bytes));
+  sock.on("close", (event) => stream.emit("close", event?.reason || null));
+
+  const opened = new Promise((resolve, reject) => {
+    sock.on("text", (text) => {
+      let message;
+      try { message = JSON.parse(text); } catch { return; }
+      if (message.type === "raw_ready" && !settled) {
+        settled = true;
+        ready = true;
+        clearTimeout(timer);
+        resolve(stream);
+      } else if (message.type === "error" && !settled) {
+        settled = true;
+        clearTimeout(timer);
+        reject(new Error(message.message || "MinecraftJS raw bridge failed"));
+      }
+    });
+    sock.on("close", () => {
+      if (!ready && !settled) {
+        settled = true;
+        clearTimeout(timer);
+        reject(new Error("MinecraftJS raw bridge closed before connecting"));
+      }
+    });
+  });
+  sock.sendText(JSON.stringify({ type: "raw_connect", host, port }));
+  return opened;
+}
+
 export function openStream(entry, host, port) {
+  if (entry.type === "minecraftjs-raw") return openMinecraftJSRaw(entry, host, port);
   return entry.type === 'wisp' ? openWisp(entry, host, port) : openRelay(entry, host, port);
 }
 
@@ -343,12 +385,15 @@ export class VanillaSocket extends Emitter {
 }
 
 async function joinSession(auth, hash) {
+  // The client's own HTTPS over a raw TCP route; a MinecraftJS proxy relays it only when there is none
+  const { rawRoute } = await import('./https.js');
+  if (rawRoute()) { const { joinServer } = await import('../game/msauth-client.js'); return joinServer(auth.accessToken, auth.uuid, hash); }
   const body = { accessToken: auth.accessToken, selectedProfile: auth.uuid.replace(/-/g, ''), serverId: hash };
   const viaProxy = proxyRoute('/auth/join');
   const url = viaProxy || 'https://sessionserver.mojang.com/session/minecraft/join';
   let r;
   try { r = await platform().postJson(url, viaProxy ? { accessToken: body.accessToken, uuid: auth.uuid, hash } : body); } catch (e) {
-    throw new Error(viaProxy ? 'The MinecraftJS proxy could not be reached for the session join' : 'Online-mode servers need a MinecraftJS proxy in the list (the session server blocks browsers)');
+    throw new Error(viaProxy ? 'The MinecraftJS proxy could not be reached for the session join' : 'Online-mode servers need a proxy, Wisp server or relay in the list');
   }
   if (r.status === 200 || r.status === 204) return;
   throw new Error((r.json && (r.json.error || r.json.errorMessage)) || 'Session join failed (HTTP ' + r.status + ')');
