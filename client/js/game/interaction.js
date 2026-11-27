@@ -769,6 +769,7 @@ export class Interaction {
     }
     g.send(C.useItem(hand)); // CPacketPlayerTryUseItem
     if (g.cooldownFraction(held.id, 0) > 0) return false; // CooldownTracker: still cooling down
+    if (name === 'ender_pearl') g.addCooldown(held.id, 20); // ItemEnderPearl.onItemRightClick sets it on both sides (1.9+)
     if (name === 'trident') {
       if (g.items.damage(held) >= g.items.maxDurability(held.id)-1) return false;
       if (g.items.enchantLevel(held, 'riptide') > 0 && !this._wetForRiptide()) return false;
