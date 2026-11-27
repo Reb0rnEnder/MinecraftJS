@@ -1,0 +1,273 @@
+MinecraftJS 26.3 - WHAT WE HAVE ADDED
+Branch: 26.3
+Inventory date: 2026-11-27
+Latest commit: 66dd0a1 "Render native 26.3 debug subscriptions in the F3 screen"
+Latest verified run: test:26.3 60/60, adapter:26.3 50 pinned frames / 33 handler names / 2 chunks,
+inbound gate all checks passed, serverbound gate 0, npm run assets exit 0 (80 mobs, 130 textures,
+10 new mobs explicitly pending a renderer).
+
+This file lists work that exists in the repository. It does not claim full parity. Areas that are
+decoded but not live-accepted are marked "decoded only", "byte-gated" or "needs visual acceptance".
+
+======================================================================
+1. PINNED INPUTS AND PROJECT TOOLING (P00)
+======================================================================
+
+- Pinned the native 26.3 client/server metadata, protocol 777, world version 5023, pack formats
+  97.1/121.0, Java 25 and the unobfuscated jar layout.
+- Added SHA-1/size checks for the metadata, client jar and server jar.
+- Added the 26.3 preparation path that downloads and verifies the client jar/libraries into
+  cache/port-26.3.
+- Added the complete tools/port-26.3 generator and gate suite: reports, IDs, packet layouts,
+  login/config fixtures, play fixtures, chunk fixtures, item/component oracles, creative-data
+  extraction, entity extraction, advancement/stat/explosion oracles, model-layer extraction,
+  client-net harness and byte gates.
+- Preserved older branches/worktrees; 1.20.6 data is not used for 26.3 tables.
+
+======================================================================
+2. RELEASE CROSSWALK AND NATIVE DATA (P01/P02)
+======================================================================
+
+- Fetched and checksummed all 17 release articles between 1.20.6 and 26.3 and recorded URLs,
+  sizes and SHA-256 in docs/transition-26.3.release-index.json.
+- Built the first-pass crosswalk for 1.21 through 26.3 topics.
+
+Native data tables installed:
+- Blocks: 1,286 blocks and 35,723 states, every state owned once, properties/state counts/default
+  states checked against the native block report.
+- Items: 1,658 native items with contiguous protocol IDs, native stack sizes and jar names.
+- Item components: all 115 wire components have readers; native defaults and removals preserved.
+- Entity types: 161 in native registry order with width, height, eye height and MobCategory.
+- Mob effects: 40 contiguous effects, including breath_of_the_nautilus.
+- Biomes: 67 native biomes in registry order, including dappled_forest, pale_garden and
+  sulfur_caves.
+- Enchantments: 43 native enchantments in alphabetical registry order, including lunge.
+- Foods: 44 native foods, including the four edible fish buckets, excluding the ominous bottle.
+- Block tool rules: 16 tag families from 300 block tag files, nested tags expanded; 470
+  tool-required blocks dumped for harvest checks.
+- Local crafting: 2,042 recipe files classified; 1,185 shaped/shapeless component-free recipes and
+  198 item-tag alternative sets generated. The 857 non-crafting/component-result recipes stay
+  server-authoritative.
+- Creative catalogue: 2,034 unique stacks and 405 component-patched stacks across eight feature
+  masks, with native HashedPatchMap data.
+- Packet IDs and every contiguous registry checked from native reports, not wiki schemas.
+
+======================================================================
+3. LOGIN AND CONFIGURATION (P03/P05)
+======================================================================
+
+- A real 26.3 server accepts offline login -> Set Compression -> Login Success -> Login
+  Acknowledged -> Configuration.
+- Captured seven native login/configuration frames and decoded them with the client reader at a
+  256-byte compression threshold.
+- Login Success decodes the 26.3 session UUID after the game profile and round-trips byte-for-byte.
+- Configuration codecs: registry_data, update_tags, cookie store, transfer, resource packs,
+  code_of_conduct, show_dialog and server_links.
+- Native packet framing/compression and a server probe harness.
+- Configuration/Play dialog holder decoding: inline anonymous NBT or registry ID-1.
+
+======================================================================
+4. PLAY PROTOCOL - INBOUND (P06)
+======================================================================
+
+- All 144 inbound Play IDs decode with bytecode-verified bodies and zero raw packets.
+- 131 payloads adapt to a game handler: 129 through generated one-to-one mappings plus
+  mount_screen_open -> open_horse_window and move_minecart_along_track -> entity_teleport.
+- Four IDs are consumed by the connection layer before adaptation: cookie_request,
+  start_configuration, store_cookie and transfer.
+- Nine are explicit scope decisions: the three native recipe-display packets
+  (recipe_book_add/remove/settings), update_recipes (26.3 removed the server recipe list),
+  add_transient_block, custom_report_details, low_disk_space_warning and the two game-test frames.
+- The adapter gate replays 50 pinned frames into 33 real handler names; its only remaining skips
+  are recipe_book_add, recipe_book_settings and update_recipes.
+
+Recent inbound work:
+- Entity attributes now map native registry ids to the 766 camel-case keys, including operation
+  ids and modifier ids, so movement speed, max health, attack speed, gravity, jump strength,
+  fall distance, step height and scale reach the player.
+- player_rotation applies absolute or relative yaw/pitch without moving the player.
+- mount_screen_open reuses the horse-window inventory path with native container id, columns and
+  entity id.
+- move_minecart_along_track applies the last native weighted step as an entity teleport.
+- game_rule_values, post_effects and bundle_delimiter have real handlers; bundle frames are
+  dispatched in order and no longer dropped.
+- Debug block/chunk/entity/event values now render in F3, bounded to 24 lines with 160-character
+  payload truncation.
+- Entity spawn/remove/metadata/equipment/passengers/links/velocity/teleport/position sync/rotation.
+- Chat, disguised chat, system chat, deletion, player chat and chat sessions, with the native
+  checksum byte on outbound chat.
+- Titles/subtitles/action bar/timings/clear, boss bars, sounds, cooldowns, effects, animations,
+  hurt events, entity events, combat/death.
+- Container windows, contents, slots, cursor item, merchant offers, enchanting and menu registry
+  IDs; inventory, held item, pickups and take-item-entity.
+- Block changes, section updates, block events, level events, particles, maps.
+- Scoreboard objectives/scores/teams, tab list, player info, server links.
+- Advancements, statistics, tags, game rules, command trees and suggestions.
+- World border initialise and all five setters; respawn, death screen, spawn position, health,
+  experience, time, ticking state and chunk cache centre.
+- Waypoints and the native locator bar; projectile power; explosions; minecart steps.
+- All 16 native debug subscriptions and 15 value codecs; dedicated_server_tick_time stays
+  fail-closed.
+- Native statistics registry and custom stat names (happy_ghast_one_cm, nautilus_one_cm,
+  sleep_in_straw_bed).
+- ClientExplosionTracker with the native 512-particle cap, weighted picks, particle-setting
+  clearing and solid-block rejection.
+
+======================================================================
+5. PLAY PROTOCOL - OUTBOUND AND INTERACTION (P06/P08)
+======================================================================
+
+- Serverbound bodies rewritten from 26.3 bytecode: attack/interact, container close/click,
+  creative slot, player action, use_item_on, accept_teleportation, movement flags,
+  client_tick_end, keep_alive, pong, chat, command, recipe book, settings and related senders.
+- All 69 serverbound IDs are accounted for by a real sender or a recorded scope decision; only the
+  gametest block editor is scoped out.
+- 26.3 chat uses chat / chat_command / chat_ack ids plus the LastSeenMessages checksum byte.
+- Creative inventory carries the native raw component patch and native HashedStack hashes.
+- writeHashedStack26_3 round-trips Mojang's own HashedStack encoder for all 405 patched Creative
+  stacks.
+- Native menu registry mapping (26.3 menu order matches 766's 25 IDs).
+- Local crafting for native shaped/shapeless recipes and {any:[item ids]} tag alternatives.
+- Crafting remainders read the native use_remainder component (milk bucket -> bucket).
+- Live server accepted a pickup+place click (state 1 -> 2, dirt 43 -> 44, no resync); live attack
+  removed a summoned pig after 8 hits; block break and place were server-verified.
+
+Known limit:
+- Arbitrary server-provided component values can still only be re-encoded through the 405
+  Creative hashes. General outbound HashedPatchMap hashing for runtime stacks is not implemented;
+  patched stacks outside the Creative catalogue fail loudly instead of sending a bad hash.
+
+======================================================================
+6. ITEMS, TOOLTIPS, EQUIPMENT, CONSUMABLES (P04)
+======================================================================
+
+- All 115 wire components decode; every stack is materialised with native defaults and preserved
+  additions/removals.
+- Native component values drive item names, rarity, lore, tooltip visibility, stack size, damage,
+  food/nutrition/consumable actions, equippable slots/assets, tool rules/mining/harvest,
+  enchantments, attributes, potion/effect metadata, spawn-egg colours, instruments, dye/potion/
+  firework/map colours, glint and trim data.
+- Nested ItemStackTemplates in bundles, containers, charged projectiles, use_remainder and pot
+  decorations are adapted to decorated stack views.
+- Native equipment texture paths, trim material/pattern IDs, trim models and palettes.
+- Native Creative catalogue and 26.3 tab layout for every feature/operator tab.
+- Native item-default and component oracles, byte fixtures and stack round-trips.
+
+======================================================================
+7. WORLD, ENTITIES AND CONTENT DATA (P02/P07)
+======================================================================
+
+- Graphical join on a disposable 26.3 server: Chrome rendered terrain, sky, grass, full HUD and
+  live mobs; 81 chunks and 26 entities loaded with zero skipped frames.
+- Movement server-accepted; a zombie kill led to a working respawn; repeated reconnects returned
+  to Play.
+- Native 26.3 chunk layout: two section shorts, BitStorage longs, 64-entry biome containers and
+  byte-array BIT_SET; state bounds checked.
+- Native entity metadata/equipment and all 128 particle types decode; the old 56 skipped metadata
+  frames on join went to 0.
+- 26.3-only entities such as sulfur_cube spawn with native ids/dimensions.
+- Native boat identities for every wood, including pale_oak, poplar and bamboo rafts, and native
+  boat/chest-boat models with the separate water-patch layer.
+
+======================================================================
+8. ENTITY RIGS AND RENDERING (P10)
+======================================================================
+
+- Native rabbit and rabbit_baby rigs (11 fields each), horse family, donkey, mule, skeleton/zombie
+  horse, horse armor, camel, llama/trader llama, sniffer, player/playerSlim, ender dragon and end
+  crystal are structurally native; the restructured families no longer resolve to 1.20.6 trees.
+- Dragon: full 36-field/37-part hierarchy with five necks, twelve tails and two-sided limbs, plus
+  setupAnim.
+- End crystal: native outer_glass -> inner_glass -> cube hierarchy with the conditional base and
+  native animation matrices.
+- Texture relocations are centralised in client/js/render/entity-textures-26.3.js: per-family and
+  equipment moves, cat/rabbit prefixes and horse armor.
+- Entity-rig tests assert native extraction and construction (not visual acceptance).
+
+======================================================================
+9. SCREENS, HUD, DIALOGS, PRESENTATION (P13)
+======================================================================
+
+- Native 26.3 title screen layout, Friends/language/accessibility icon columns, Options/Quit row,
+  splash position and two-second widget fade over the panorama.
+- Player-list hearts use native HealthState blink/catch-up and hud/heart sprites.
+- Below-name objectives lift name tags only within 10 blocks.
+- Smithing screen: native container/slot sprites, template icons including nautilus armor and
+  spear, error panel and armor-stand preview.
+- Dialog screen supports both holders and notice/confirmation/multi_action/dialog_list/
+  server_links dialogs; text/multiline, boolean, number-range and single-option inputs; item
+  bodies; warning button; click actions and tooltips; dynamic command templates.
+- Server-link buttons populated from the last server_links payload.
+- Native 26.3 debug subscriptions now render in F3 (new).
+- Creative catalogue UI path and native debug subscription UI support.
+- Prior upstream presentation fixes for menus, HUD, title, trim/equipment visuals and layouts.
+
+======================================================================
+10. PARTICLES, SOUNDS, ANIMATIONS (P12)
+======================================================================
+
+- All 128 native particle types and 22 data codecs are registered and pinned.
+- Vibration decodes both native PositionSource branches and arrival ticks.
+- level_particles dispatches through on_world_particles to the particle system.
+- Native upstream formulas for wolf wet-shake, interested-head, splash and powered dragon/piglin
+  head animation.
+- Native sound/particle registries, sound event holder handling and 26.3 UI sound sources.
+- Firework shape/flicker mapping and explosion particle/sound handling.
+- Explosion acceptance for the 512 cap, weighted picks, particle-setting clearing and solid-block
+  rejection.
+
+======================================================================
+11. ASSETS, MODELS, FONTS, ATLASES (P10)
+======================================================================
+
+- 26.3 asset target: pack format 97, jar-first textures, indexed sounds, native panorama and
+  native block models/textures.
+- ExtractLayers26_3 dumps 361 native layers; lib/model-extract-26.3.js bakes a 129-model bundle
+  for the 26.3 target.
+- Equipment/armor/trim sprites and paletted permutations generated from the native asset tree.
+- Native boat/chest-boat layers and smithing template icons/container slot sprites.
+- Inventory/containers use native 26.3 menu ids and slot geometry for existing screens.
+- npm run assets: 35,723 states, 80 mobs, 130 textures, 10 explicitly pending mobs.
+
+======================================================================
+12. TESTS, GATES AND DOCUMENTATION
+======================================================================
+
+Green at this inventory:
+- npm run test:26.3: 60 tests.
+- npm run adapter:26.3: 50 packets, 33 handler names, 2 chunks.
+- tools/port-26.3/inbound-gate.mjs: all checks.
+- tools/port-26.3/serverbound-gate.mjs: all checks.
+- tools/port-26.3/client-net.mjs: real-server socket harness.
+- npm run assets: exit 0.
+- Focused tests: debug subscriptions (new), recipes, boats, entity registry, dialogs, creative,
+  title, smithing, name tags, tab hearts, entity rigs, outbound coverage, particles, stats,
+  advancements, explosions.
+
+Docs:
+- docs/transition-26.3.md, docs/transition-26.3.tasks.json, docs/parity-checklist-26.3.md,
+  docs/transition-26.3.release-index.json, HANDOFF-26.3.md, docs/development-26.3.md and audits.
+- ADDED-26.3.txt and NEEDED-26.3.txt (these files).
+
+Recent commit trail:
+- 66dd0a1 Render native 26.3 debug subscriptions in the F3 screen
+- 2c27429 Adapt the remaining native 26.3 Play packets
+- 6b70740 Bind the native 26.3 dragon and end-crystal rigs
+- 0491170 Close the Protocol 777 outbound sender audit
+- 9ade082 Bind native rabbit, horse, camel, sniffer and player rigs
+- earlier commits cover native inputs, data tables, login/config, inbound Play, items/components,
+  Creative hashing, dialogs, title/smithing, particles, boats and crafting.
+
+======================================================================
+13. WHAT THIS DOES NOT MEAN
+======================================================================
+
+- "131 payloads adapt" does not mean every adapted family has been live-triggered. Sounds,
+  cooldowns, mob effects, boss bars, entity/world events and many presentation frames are
+  byte-gated and socket-verified, not accepted in a live scenario.
+- Native item components do not mean arbitrary runtime component values can be re-encoded for
+  outbound HashedPatchMap clicks; only the Creative catalogue is covered.
+- Native entity rigs are structurally verified, not visually accepted.
+- P09 authenticated lifecycle/transfer/packs, P11 new-content acceptance, P14 inherited 1.20.6
+  findings, P15 whole-target acceptance and P16 packaging are not done.
+- Full visual acceptance has not been performed for every screen, particle, animation or mob.
