@@ -74,16 +74,16 @@ export function readBlockEntities(reader){
   return list;
 }
 
-export function readChunkBuffer(buffer,sections=24){
+export function readChunkBuffer(buffer,sections=null){
   const reader=new Reader(buffer);
   const out=[];
-  for(let i=0;i<sections;i++){
+  const readSection=()=>{
     const nonEmptyBlockCount=reader.i16();
     const fluidCount=reader.i16();
     const states=readContainer(reader,BLOCK_GLOBAL_BITS,BLOCK_ENTRIES);
     const biomes=readContainer(reader,BIOME_GLOBAL_BITS,BIOME_ENTRIES);
     out.push({
-      index:i,
+      index:out.length,
       nonEmptyBlockCount,
       fluidCount,
       blockBits:states.bits,
@@ -95,7 +95,11 @@ export function readChunkBuffer(buffer,sections=24){
       stateIds:unpackContainer(states,BLOCK_ENTRIES),
       biomeIds:unpackContainer(biomes,BIOME_ENTRIES)
     });
-  }
+  };
+  // The buffer length is the native section count: 24 for a 384-block overworld, 16 for
+  // 256-block nether/end dimensions. Never assume overworld height on a dimension change.
+  if(sections===null)while(reader.remaining()>0)readSection();
+  else for(let i=0;i<sections;i++)readSection();
   if(reader.remaining()!==0)throw Error('Chunk buffer not fully consumed: '+reader.remaining()+' bytes left');
   return out;
 }

@@ -62,7 +62,9 @@ export class VanillaSocket26_3 extends VanillaSocket{
           break;
         case 'custom_query':this._send(C26_3.loginPluginResponse(packet.messageId));break;
         case 'cookie_request':this._send(C26_3.loginCookieResponse(packet.key,this.cookies.get(packet.key)));break;
-        case 'hello':return this._encryptionRequest(packet,packet.shouldAuthenticate);
+        // 26.3 ClientboundHelloPacket calls the verify token a challenge; map it onto the
+        // shared encryption responder so online-mode logins do not encrypt undefined.
+        case 'hello':return this._encryptionRequest({serverId:packet.serverId,publicKey:packet.publicKey,verifyToken:packet.challenge},packet.shouldAuthenticate);
       }
       return;
     }

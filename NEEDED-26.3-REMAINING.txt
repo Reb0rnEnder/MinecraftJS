@@ -19,14 +19,19 @@ A. CURRENT LEDGER
 
 The project ledger at this handoff is 44.1% complete:
 - 4 areas done
-- 7 areas partial
-- 6 areas todo
+- 8 areas partial
+- 5 areas todo
 - scoring: done = 1, partial = 0.5
 
 That percentage is the existing project-level ledger. It is not a per-feature count and it should
 not be read as "44% of the jar has been ported". The exact remaining work is below.
 
 Closed in this batch (2026-11-27 evidence pass):
+- P09 real-account join: online-mode 26.3 accepted the signed-in Microsoft account and logged
+  UUID 055e7568-156d-4bb8-9771-dcbd7144f2c9; the client reached Play with 81 chunks and zero
+  decode errors after mapping 26.3's hello.challenge into the RSA verify token.
+- P06 live dimension travel: overworld -> nether -> end -> overworld, 117 chunks in each
+  dimension and zero decode errors after decoding the native 16-section nether/end chunk buffers.
 - P01: all 17 release articles cached and hashed; 4,703 top-level topics with one disposition each
   (4,572 native-client, 69 experiment-gated, 5 server-owned, 57 product-outside-scope), extracted
   article hashes and the official version manifest. release-crosswalk:26.3 --check passes.
@@ -239,7 +244,7 @@ By work type:
   * Remaining animation formulas and any code-only new-content behaviour.
 - Live/server/user acceptance:
   * P06 live triggers and the newly adapted packet paths.
-  * P09 authenticated lifecycle/transfer/packs.
+  * P09 transfer/cookie/dialog flows (the authenticated join is now accepted).
   * P10/P11/P12/P13 visual, sound, particle, animation, menu and content scenarios.
   * P15 whole-target matrix.
 - Evidence and release hygiene:

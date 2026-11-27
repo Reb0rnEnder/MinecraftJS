@@ -20,6 +20,7 @@ const {proxyOptions,resolveTarget,openPack}=require('./lib/proxy-options');
 const options=proxyOptions();
 if(options.help){console.log('Usage: npm start -- [--proxy-only] [--allow-loopback]\nPROXY_ONLY=1 disables client/assets hosting. Loopback targets are blocked unless ALLOW_LOOPBACK=1.');process.exit(0);}
 const PORT = parseInt(process.env.PORT, 10) || 3000;
+const HOST = process.env.HOST || undefined;
 const CLIENT_DIR = path.join(__dirname, 'client');
 const PROXY_VERSION = require('./package.json').version || '';
 
@@ -587,9 +588,9 @@ wss.on('connection', (ws) => {
     console.error('Could not load sound asset index (sounds disabled):', e.message);
   }
   }
-  server.listen(PORT, () => {
+  server.listen(PORT, HOST, () => {
     console.log(options.proxyOnly?'MinecraftJS proxy-only mode (client/assets hosting disabled)':'MinecraftJS client and proxy');
     console.log('Loopback connections: '+(options.allowLoopback?'allowed':'blocked'));
-    console.log(`MinecraftJS server running at http://localhost:${PORT}`);
+    console.log(`MinecraftJS server running at http://${HOST||'localhost'}:${PORT}`);
   });
 })();

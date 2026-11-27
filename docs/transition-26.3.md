@@ -142,6 +142,11 @@ General arbitrary component hashes and live/visual acceptance remain open and ar
   family uses `chat`/`chat_command`/`chat_ack` ids and appends the LastSeenMessages checksum
   byte; bundle, game-mode, game-rule, entity-pick, spectator, player-loaded and test-block
   senders were added. Only the gametest block editor is intentionally out of scope.
+- Live acceptance 2026-11-27: the signed-in Microsoft account completed an online-mode 26.3 login
+  (server-authenticated UUID `055e7568-156d-4bb8-9771-dcbd7144f2c9`, 81 chunks, zero decode errors).
+  This exposed and fixed 26.3's `hello.challenge` verify-token mapping. The same session moved
+  overworld -> nether -> end -> overworld with 117 chunks per dimension and zero decode errors after
+  the chunk reader stopped assuming 24 sections; nether and end chunks carry 16 native sections.
 - Open at this checkpoint: general HashedPatchMap hashing for arbitrary server-provided component values
   (Creative catalogue stacks now carry native hashes), live acceptance of the remaining container/menu
   families, `can_place_on`/`can_break` (adventure-predicate graph), native support/placement rules, dialog
