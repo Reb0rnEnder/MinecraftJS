@@ -15,8 +15,9 @@
 
 ## State at handoff
 
-- **P06 coverage: 140/144 inbound IDs decoded, 113 with adapters, 4 raw.**
+- **P06 coverage: 140/144 inbound IDs decoded, 113 with adapters, 4 raw.** Configuration `show_dialog` and `server_links` now decode through the same native common codecs as Play; the four raw Play packets are the debug value/event family.
 - Ledger: **44.1%** (4 done, 7 partial, 6 todo; done=1, partial=0.5).
+- P04 item work now also applies adapted slot patches on re-read, adapts nested ItemStackTemplates (bundles, containers, charged projectiles), mirrors native use animations/durations, skips the 766 id-indexed use/attribute fallbacks for 26.3 stacks, and exercises occupied component samples in the oracle.
 - Last full run: `test:26.3`, `adapter:26.3`, `client-net:26.3` and `inbound-gate.mjs` all exit 0.
 - Real 26.3 server socket test passes (`client-net`, 23–31 chunks depending on spawn); graphical browser verification is unreliable on this machine (low disk, join stalls). Do not claim visual verification you did not do.
 - Uncommitted in the source workspace: three `docs/checkpoint-26.3-entities*.png` screenshots (not part of the port; leave or add deliberately).
@@ -68,7 +69,7 @@ java -jar cache/tools/cfr.jar cache/port-26.3/client.jar --jarfilter '^net\.mine
 
 ## Next sections, in order
 
-1. `waypoint` / `show_dialog` — both need their new UI surfaces, not just decoders.
+1. `waypoint` / `show_dialog` — both need their new UI surfaces, not just decoders; the dialog holder and server-link envelopes are decoded.
 2. The four debug value/event packets — they only arrive after a `debug_subscription_request` the client does not send yet, and their 16 subscription codecs are not ported.
 4. **P10** started: `tools/port-26.3/ExtractLayers26_3.java` dumps all 361 native layers and `lib/model-extract-26.3.js` bakes a complete 129-model bundle for the 26.3 asset target. Remaining: port the renderer rigs for the families 26.3 restructured so their geometry can drop the 1.20.6 fallback.
 
