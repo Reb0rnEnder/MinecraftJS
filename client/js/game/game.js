@@ -53,6 +53,7 @@ import {ShaderPackFinal} from '../render/shader-pack.js';
 import {CameraEye} from '../render/camera-eye.js';
 import {menuInfo766} from "./menus-1.20.6.js";
 import { RegistryTags } from './tags.js';
+import {WaypointManager26_3} from './waypoints-26.3.js';
 import { CommandTree } from './commands.js';
 import { startSleeping, stopSleeping, updateSleeping, sleepingCamera } from './bed-sleep.js';
 import { jarSelectionBox } from '../world/blocks.js';
@@ -203,6 +204,7 @@ export class Game {
     this.player.onWaterEnter = () => this._waterSplash();
     this.player.onSwim = (vol) => this.sound.playAtPlayer('entity.player.swim', vol, 1 + (Math.random() - Math.random()) * 0.4);
     this.entities = new EntityManager(this);
+    this.waypoints = new WaypointManager26_3(this);
     this.scoreboard = new Scoreboard(this);
     this.advancements = new Advancements(this);
     this.recipeBook = new RecipeBook(this);
@@ -261,6 +263,8 @@ export class Game {
     this.xpBar = 0;
     this.xpLevel = 0;
     this.xpTotal = 0;
+    this.xpDisplayStartTick = -1000;
+    this.waypoints?.reset();
     this.heldSlot = 0;
     this.spawnPos = null;
     this.doneLoadingTerrain = false;
@@ -1269,7 +1273,12 @@ export class Game {
     this.player.levitation = lev ? lev.amplifier : -1;
   }
 
-  on_experience(p) { this.xpBar = p.experienceBar; this.xpLevel = p.level; this.xpTotal = p.totalExperience; }
+  on_experience(p) {
+    this.xpBar = p.experienceBar; this.xpLevel = p.level; this.xpTotal = p.totalExperience;
+    this.xpDisplayStartTick = this.ticks;
+  }
+
+  on_waypoint(p) { this.waypoints.accept(p); }
 
   on_update_attributes(p) {
     if (p.entityId === this.entityId) {

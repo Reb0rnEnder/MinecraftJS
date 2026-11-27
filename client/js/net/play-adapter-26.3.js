@@ -195,12 +195,15 @@ const ADAPTERS={
       })),
       progress:packet.progress.map(entry=>({id:entry.id,criteria:entry.criteria}))};
   },
-  // Respawn keeps the 766 spawn-info vocabulary and resolves the dimension from worldType.
-  respawn(packet){
+  // Respawn carries a holder id into minecraft:dimension_type, not a resource location. Resolve it
+  // through the join context's native registry so a nether/end respawn gets the right bounds.
+  respawn(packet,context){
     const {spawn}=packet;
-    return {worldType:spawn.dimensionType,worldName:spawn.dimension,hashedSeed:Number(spawn.seed),gameMode:spawn.gameMode,
+    const dimensionData=context?.dimensionTypes?.get(spawn.dimensionType);
+    const dimension=dimensionData?.effects==='minecraft:the_nether'?-1:dimensionData?.effects==='minecraft:the_end'?1:0;
+    return {worldType:dimensionData?.key??spawn.dimensionType,worldName:spawn.dimension,hashedSeed:Number(spawn.seed),gameMode:spawn.gameMode,
       previousGameMode:spawn.previousGameMode??-1,isDebug:spawn.isDebug,isFlat:spawn.isFlat,death:spawn.lastDeath,
-      portalCooldown:spawn.portalCooldown,seaLevel:spawn.seaLevel,dataToKeep:packet.dataToKeep};
+      portalCooldown:spawn.portalCooldown,seaLevel:spawn.seaLevel,dimensionData,dimension,dataToKeep:packet.dataToKeep};
   },
   player_look_at(packet){return {isEntity:packet.atEntity,entityId:packet.entity,x:packet.x,y:packet.y,z:packet.z,fromAnchor:packet.fromAnchor,toAnchor:packet.toAnchor};},
   open_book(packet){return {hand:packet.hand};},
@@ -220,6 +223,7 @@ const ADAPTERS={
   // legacy 0/3 main-hand/off-hand action, so map the hand and keep the native animation.
   // SwingAnimationType.NONE (0) must not start a swing.
   swing_animation(packet){const type=packet.animation?.type??0;return {entityId:packet.entityId,animation:type===0?-1:(packet.hand===1?3:0),hand:packet.hand,swing:packet.animation};},
+  waypoint(packet){return packet;},
   map_item_data(packet){
     const patch=packet.patch;
     return {itemDamage:packet.mapId,scale:packet.scale,locked:packet.locked,

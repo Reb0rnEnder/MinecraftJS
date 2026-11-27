@@ -16,6 +16,7 @@ const EXPLODE_FIXTURE=JSON.parse(readFileSync(new URL('./fixtures/explode-26.3.j
 const STATS_FIXTURE=JSON.parse(readFileSync(new URL('./fixtures/stats-26.3.json',import.meta.url),'utf8'));
 import {ExplosionTracker} from '../../client/js/game/explosion-tracker.js';
 import {StatsCounter} from '../../client/js/game/stats-counter.js';
+import {WaypointManager26_3,waypointSprite,WAYPOINT_STYLES} from '../../client/js/game/waypoints-26.3.js';
 import {STAT_TYPES_26_3,CUSTOM_STATS_26_3} from '../../client/js/game/stat-registry-26.3.js';
 
 let failures = 0;
@@ -107,6 +108,24 @@ check('waypoint reads the operation, icon and type payload', () => {
   const decoded = decode('waypoint', body);
   eq(decoded.data.id, {uuid: '00010203-0405-0607-0809-0a0b0c0d0e0f'});
   eq([decoded.data.operation, decoded.data.icon.style, decoded.data.icon.color, decoded.data.type, decoded.data.position], [0, 'minecraft:default', null, 1, {x: -12, y: 64, z: 30}]);
+});
+
+check('waypoint manager tracks, updates and removes by identity', () => {
+  const manager = new WaypointManager26_3({entities:{all:()=>[]}});
+  const base = {id:{uuid:'00010203-0405-0607-0809-0a0b0c0d0e0f'},icon:{style:'minecraft:default',color:null},type:1,position:{x:0,y:64,z:0}};
+  manager.accept({...base,operation:0});
+  eq(manager.hasWaypoints(), true);
+  manager.accept({...base,operation:2,position:{x:32,y:70,z:-4}});
+  eq(manager.waypoints.size, 1);
+  eq([...manager.waypoints.values()][0].position, {x:32,y:70,z:-4});
+  manager.accept({...base,operation:1});
+  eq(manager.hasWaypoints(), false);
+});
+
+check('waypoint bar selects the native distance sprite', () => {
+  const style = WAYPOINT_STYLES['minecraft:default'];
+  eq([waypointSprite(style, 0), waypointSprite(style, 128), waypointSprite(style, 230), waypointSprite(style, 332)], ['default_0', 'default_1', 'default_2', 'default_3']);
+  eq(WAYPOINT_STYLES['minecraft:bowtie'].sprites.length, 5);
 });
 
 check('map_item_data decodes optional decorations and patch', () => {
@@ -343,6 +362,9 @@ check('chunk unload, block entity, sign editor and advancement tab decode', () =
 check('respawn, look_at, open_book and suggestions decode', () => {
   const respawned = adapt('respawn', [...varint(1), ...str('minecraft:overworld'), ...i64(42), ...varint(1), ...varint(0), 1, 0, 0, ...varint(0), ...varint(63), 3], {name: 'respawn'});
   eq([respawned.worldType, respawned.worldName, respawned.hashedSeed, respawned.gameMode, respawned.previousGameMode, respawned.isDebug, respawned.isFlat, respawned.portalCooldown, respawned.seaLevel, respawned.dataToKeep], [1, 'minecraft:overworld', 42, 1, -1, true, false, 0, 63, 3]);
+  const netherType={key:'minecraft:the_nether',effects:'minecraft:the_nether',min_y:0,height:256};
+  const nether=adaptPlay26_3(decode('respawn', [...varint(2), ...str('minecraft:the_nether'), ...i64(42), ...varint(1), ...varint(0), 0, 0, 0, ...varint(0), ...varint(32), 0]), {dimensionTypes:new Map([[2, netherType]])});
+  eq([nether.worldType, nether.dimension, nether.dimensionData.key], ['minecraft:the_nether', -1, 'minecraft:the_nether']);
   const look = adapt('player_look_at', [...varint(0), ...f64(1.5), ...f64(64), ...f64(-2.5), 0], {name: 'face_player'});
   eq([look.isEntity, look.x, look.y, look.z, look.entityId], [false, 1.5, 64, -2.5, 0]);
   const lookEntity = adapt('player_look_at', [...varint(1), ...f64(0), ...f64(0), ...f64(0), 1, ...varint(9), ...varint(1)], {name: 'face_player'});

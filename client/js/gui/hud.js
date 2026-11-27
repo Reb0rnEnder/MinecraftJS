@@ -11,6 +11,7 @@ import {VANILLA_UI} from './vanilla-layout.js';
 import {fireOverlayVertices,fireOverlayProjection} from '../render/fire-overlay.js';
 import {NATIVE_METADATA} from '../game/entity-metadata-1.19.4.js';
 import { debugTargets } from './debug-targets.js';
+import { WAYPOINT_STYLES, waypointSprite } from '../game/waypoints-26.3.js';
 import {drawEffectIcon} from './effect-icons.js';
 import { getStateProperties } from '../world/blocks.js';
 import { getFluidState } from '../world/fluids.js';
@@ -419,7 +420,7 @@ export class Hud {
     if (g.sleeping) {
       gui.rect(0, 0, W, H, 0xb0101020);
     }
-    if (survival) this.renderXp(gui);
+    if (survival) this.renderXp(gui, partial);
     else if (g.gameMode === 1) { /* no xp bar in creative */ }
 
     // Held item name
@@ -676,22 +677,27 @@ export class Hud {
     }
   }
 
-  renderXp(gui) {
+  renderXp(gui, partial) {
     const g = this.game;
     const W = gui.width, H = gui.height;
-    const x = W / 2 - 91;
-    const v = g.entities.get && g.ridingEntityId >= 0 ? g.entities.get(g.ridingEntityId) : null;
-    if (v && v.kind === 'mob' && v.type === 100 && g.horseJump !== undefined) {
-      const fill = Math.floor(g.horseJump * 183);
-      const y = H - 32 + 3;
-      gui.blit(ICONS, x, y, 0, 84, 182, 5);
-      if (fill > 0) gui.blit(ICONS, x, y, 0, 89, fill, 5);
-      return;
+    const locator = g.waypoints?.hasWaypoints?.() && g.xpDisplayStartTick + 100 <= g.ticks;
+    if (locator) this.renderLocatorBar(gui, partial);
+    else {
+      const x = W / 2 - 91;
+      const v = g.entities.get && g.ridingEntityId >= 0 ? g.entities.get(g.ridingEntityId) : null;
+      if (v && v.kind === 'mob' && v.type === 100 && g.horseJump !== undefined) {
+        const fill = Math.floor(g.horseJump * 183);
+        const y = H - 32 + 3;
+        gui.blit(ICONS, x, y, 0, 84, 182, 5);
+        if (fill > 0) gui.blit(ICONS, x, y, 0, 89, fill, 5);
+      } else {
+        const fill = Math.floor(g.xpBar * 183);
+        const y = H - 32 + 3;
+        gui.blit(ICONS, x, y, 0, 64, 182, 5);
+        if (fill > 0) gui.blit(ICONS, x, y, 0, 69, fill, 5);
+      }
     }
-    const fill = Math.floor(g.xpBar * 183);
-    const y = H - 32 + 3;
-    gui.blit(ICONS, x, y, 0, 64, 182, 5);
-    if (fill > 0) gui.blit(ICONS, x, y, 0, 69, fill, 5);
+    // ContextualBar.extractExperienceLevel is drawn over either bar.
     if (g.xpLevel > 0) {
       const s = '' + g.xpLevel;
       const lx = (W - gui.textWidth(s)) / 2, ly = H - 31 - 4;
@@ -700,6 +706,36 @@ export class Hud {
       gui.text(s, lx, ly + 1, 0, false);
       gui.text(s, lx, ly - 1, 0, false);
       gui.text(s, lx, ly, 8453920, false);
+    }
+  }
+
+  // LocatorBar.extractBackground/extractRenderState, including the native 60-degree window,
+  // 173-pixel arc, per-distance sprite and pitch arrows.
+  renderLocatorBar(gui, partial) {
+    const g = this.game;
+    const W = gui.width, H = gui.height;
+    const top = H - 24 - 5;
+    gui.sprite('hud/locator_bar_background', (W - 182) / 2, top, 182, 5);
+    const camera = g.cameraPosition(partial);
+    const eye = {x: camera[0], y: camera[1], z: camera[2]};
+    const forward = g.lookVector(partial);
+    const middle = Math.ceil((W - 9) / 2);
+    const ownUuid = String(g.playerUuid || '').replace(/-/g, '').toLowerCase();
+    for (const waypoint of g.waypoints.ordered(eye)) {
+      if (waypoint.id?.uuid && String(waypoint.id.uuid).replace(/-/g, '').toLowerCase() === ownUuid) continue;
+      const angle = g.waypoints.angleToCamera(waypoint, eye, forward);
+      if (!Number.isFinite(angle) || angle <= -60 || angle > 60) continue;
+      const style = WAYPOINT_STYLES[waypoint.icon?.style] || WAYPOINT_STYLES['minecraft:default'];
+      const distance = Math.sqrt(g.waypoints.distanceSquared(waypoint, eye));
+      const sprite = waypointSprite(style, distance);
+      const dotX = middle + Math.floor(angle * 173 / 2 / 60);
+      const color = g.waypoints.color(waypoint);
+      const texture = gui.tex('gui/sprites/hud/locator_bar_dot/' + sprite + '.png');
+      if (texture) gui.quad(texture, dotX, top - 2, dotX + 9, top + 7, 0, 0, 1, 1, color);
+      const direction = g.waypoints.pitchDirection(waypoint, eye, forward, g.settings.fov);
+      if (direction === 'NONE') continue;
+      const arrow = direction === 'DOWN' ? 'hud/locator_bar_arrow_down' : 'hud/locator_bar_arrow_up';
+      gui.sprite(arrow, dotX + 1, top + (direction === 'DOWN' ? 6 : -6), 7, 5);
     }
   }
 
