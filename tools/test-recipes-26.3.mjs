@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {initRecipes, craftResult} from '../client/js/game/crafting.js';
+import {initRecipes, craftResult, containerItem} from '../client/js/game/crafting.js';
 
 const items = JSON.parse(readFileSync(new URL('../client/data/items.json', import.meta.url), 'utf8'));
 const recipes = JSON.parse(readFileSync(new URL('../client/data/recipes.json', import.meta.url), 'utf8'));
@@ -43,4 +43,9 @@ test('native shapeless recipes match tag alternatives', () => {
     assert.equal(result.id, id('fire_charge'), fuel);
     assert.equal(result.count, 3);
   }
+});
+
+test('a used milk bucket leaves the native bucket behind', () => {
+  assert.deepEqual(containerItem(stack('milk_bucket')), {id: id('bucket'), count: 1, damage: 0, nbt: null});
+  assert.equal(containerItem(stack('glass_bottle')), null);
 });

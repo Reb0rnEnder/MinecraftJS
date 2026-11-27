@@ -1,4 +1,7 @@
 import {serverCraftResult} from './server-recipes.js';
+import {ITEM_DEFAULTS_26_3} from '../net/item-defaults-26.3.js';
+
+const ITEM_ID_BY_NAME = new Map(ITEM_DEFAULTS_26_3.items.map((item, id) => [item.name, id]));
 // Client-side crafting result computation (vanilla 1.8 computes this on the client too).
 
 let recipesByResult = null;
@@ -95,10 +98,12 @@ export function craftResult(grid, n, items) {
   return null;
 }
 
-// Items left in the grid after crafting (buckets etc.)
+// Items left in the grid after crafting. 26.3 exposes the remainder through the item's
+// use_remainder component (milk bucket -> bucket) instead of the old 1.8 item ids.
 export function containerItem(item) {
   if (!item) return null;
-  if (item.id === 326 || item.id === 327 || item.id === 335) return { id: 325, count: 1, damage: 0, nbt: null };
-  if (item.id === 373 && false) return { id: 374, count: 1, damage: 0, nbt: null };
-  return null;
+  const remainder = ITEM_DEFAULTS_26_3.items[item.id]?.defaults?.use_remainder;
+  const name = String(remainder?.id || '').replace(/^minecraft:/, '');
+  const id = ITEM_ID_BY_NAME.get(name);
+  return id === undefined ? null : { id, count: 1, damage: 0, nbt: null };
 }
