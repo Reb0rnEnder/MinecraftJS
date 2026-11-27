@@ -217,7 +217,26 @@ assert.equal(itemView.useDuration(potionStack),32,'native consume seconds drive 
 const appleStack={version:'26.3',itemId:apple,added:[],removed:[]};
 assert.equal(itemView.useAction(appleStack),'eat','native food defaults remain edible');
 assert.equal(itemView.useDuration(appleStack),32,'native food consume time is 1.6 s');
-const nativeStack=name=>({version:'26.3',itemId:itemId(name),added:[],removed:[]});
+const nativeStack=name=>{const id=itemId(name);return{version:'26.3',id,itemId:id,added:[],removed:[]};};
+// Item.getUseAnimation/getUseDuration: class-based animations and the 26.3 component
+// branches (blocks_attacks -> block, kinetic_weapon -> spear) replace the 766 id table.
+const useView=new Items({data:{items:['bow','crossbow','trident','spyglass','brush','bundle','white_bundle','shield','wooden_spear','goat_horn'].map(name=>({id:itemId(name),name}))}});
+assert.equal(useView.useAction(nativeStack('bow')),'bow','bow class animation');
+assert.equal(useView.useAction(nativeStack('crossbow')),'crossbow','crossbow class animation');
+assert.equal(useView.useAction(nativeStack('trident')),'trident','trident class animation');
+assert.equal(useView.useAction(nativeStack('spyglass')),'spyglass','spyglass class animation');
+assert.equal(useView.useAction(nativeStack('brush')),'brush','brush class animation');
+assert.equal(useView.useAction(nativeStack('bundle')),'bundle','bundle class animation');
+assert.equal(useView.useAction(nativeStack('white_bundle')),'bundle','dyed bundles use the bundle animation');
+assert.equal(useView.useAction(nativeStack('shield')),'block','blocks_attacks drives the shield animation');
+assert.equal(useView.useAction(nativeStack('wooden_spear')),'spear','kinetic_weapon drives the spear animation');
+assert.equal(useView.useDuration(nativeStack('bow')),72000,'bow use duration');
+assert.equal(useView.useDuration(nativeStack('trident')),72000,'trident use duration');
+assert.equal(useView.useDuration(nativeStack('spyglass')),1200,'spyglass use duration');
+assert.equal(useView.useDuration(nativeStack('brush')),200,'brush use duration');
+assert.equal(useView.useDuration(nativeStack('bundle')),200,'bundle use duration');
+assert.equal(useView.useDuration(nativeStack('shield')),72000,'shield use duration');
+assert.equal(useView.useDuration(nativeStack('wooden_spear')),72000,'spear use duration');
 assert.equal(itemView.strVsBlock(nativeStack('diamond_pickaxe'),{name:'stone'}),8,'native pickaxe rule gives stone speed 8');
 assert.equal(itemView.strVsBlock(nativeStack('diamond_pickaxe'),{name:'dirt'}),1,'unmatched native tool rule falls back to 1');
 assert.equal(itemView.strVsBlock(nativeStack('diamond_sword'),{name:'cobweb'}),15,'native sword cobweb rule wins before the tag rules');

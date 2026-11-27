@@ -21,6 +21,13 @@ const FOOD_NAMES = new Set(`apple mushroom_stew bread porkchop cooked_porkchop g
 const SWORDS = new Set(['iron_sword', 'wooden_sword', 'stone_sword', 'diamond_sword', 'golden_sword','netherite_sword']);
 const POTIONS = new Set(['potion', 'splash_potion', 'lingering_potion', 'tipped_arrow']);
 const SINGLE_LEVEL = new Set(`aqua_affinity binding_curse silk_touch flame infinity channeling mending vanishing_curse`.split(' '));
+// Item.getUseAnimation overrides that are not represented by a component. Bundles are the
+// named bundle plus every dyed bundle; the rest are the native item classes' constants.
+const NATIVE_USE_ANIMATIONS = new Map([
+  ['bow','bow'],['crossbow','crossbow'],['trident','trident'],['spyglass','spyglass'],
+  ['brush','brush'],['goat_horn','toot_horn']
+]);
+const nativeUseAnimation = name => name === 'bundle' || name.endsWith('_bundle') ? 'bundle' : NATIVE_USE_ANIMATIONS.get(name) || null;
 const resource = (name) => name.includes(':') ? name : 'minecraft:' + name;
 const translationKey = (kind, name) => kind + '.' + resource(name).replace(':', '.');
 export class Items {
@@ -247,6 +254,10 @@ export class Items {
     const c=this.components(item),animation=c?.consumable?.animation;
     if(animation&&animation!=='none')return animation;
     if(c?.food!==undefined)return 'eat';
+    const native=nativeUseAnimation(this.name(item.id));
+    if(native)return native;
+    if(c?.blocks_attacks!==undefined)return 'block';
+    if(c?.kinetic_weapon!==undefined)return 'spear';
     const action=ITEM_DATA_766.items[item.id]?.action||'none';
     if(!['none','eat'].includes(action))return action;
     return 'none';
@@ -255,6 +266,12 @@ export class Items {
     if(!item)return 0;const c=this.components(item),name=this.name(item.id),meta=ITEM_DATA_766.items[item.id];
     if(c.consumable)return Math.trunc(Math.fround(Math.fround(c.consumable.consumeSeconds??c.consumable.secondsToConsume??1.6)*20));
     if(c.food&&['eat','none'].includes(meta?.action))return Math.trunc(Math.fround(Math.fround(c.food.eat_seconds??c.food.secondsToEat??1.6)*20));
+    // Item.getUseDuration: blocking and kinetic weapons use 72000 ticks; the item classes
+    // below override that with their own fixed durations.
+    if(c.blocks_attacks!==undefined||c.kinetic_weapon!==undefined)return 72000;
+    if(name==='bow'||name==='trident')return 72000;
+    if(name==='spyglass')return 1200;
+    if(name==='brush'||name==='bundle'||name.endsWith('_bundle'))return 200;
     if(name==='crossbow')return this.crossbowChargeDuration(item)+3;
     if(name==='goat_horn'){const instrument=c.instrument;return instrument?.data?.useDuration??ITEM_DATA_766.instruments[instrument?.instrumentId]?.duration??(typeof instrument==='string'?Object.values(ITEM_DATA_766.instruments).find(i=>i.key===instrument)?.duration:undefined)??meta?.duration??0;}
     return meta?.action==='eat'?0:meta?.duration||0;
