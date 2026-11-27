@@ -13,7 +13,7 @@ export const DEFAULT_KEYS = {
 };
 
 const DEFAULTS = {
-  preloadTextures:false,microprofiler:false,microprofilerOverlay:'compact',hideBundleTutorial:false,skipUndisplayedFrames:true,functionKeyChords:true,zoomEnabled:true,dynamicLights:false,dynamicLightsOthers:true,fullBright:false,
+  preloadTextures:false,microprofiler:false,microprofilerOverlay:'compact',hideBundleTutorial:false,skipUndisplayedFrames:true,functionKeyChords:true,zoomEnabled:true,dynamicLights:true,dynamicLightsOthers:true,fullBright:false,
   skipMultiplayerWarning: false,
   darkMojangStudiosBackground: false,
   fov: 70,
