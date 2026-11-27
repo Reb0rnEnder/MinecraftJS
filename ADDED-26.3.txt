@@ -2,7 +2,7 @@ MinecraftJS 26.3 - WHAT WE HAVE ADDED
 Branch: 26.3
 Inventory date: 2026-11-27
 Baseline: 66dd0a1 "Render native 26.3 debug subscriptions in the F3 screen" plus this batch
-Latest verified run: test:26.3 65/65, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
+Latest verified run: test:26.3 68/68, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
 inbound gate all checks passed, serverbound gate 0, npm run assets exit 0 (90 mobs, 140 textures,
 no mobs pending a renderer).
 
@@ -196,7 +196,9 @@ Known limit:
   spear, error panel and armor-stand preview.
 - Dialog screen supports both holders and notice/confirmation/multi_action/dialog_list/
   server_links dialogs; text/multiline, boolean, number-range and single-option inputs; item
-  bodies; warning button; click actions and tooltips; dynamic command templates.
+  bodies; warning button; click actions and tooltips; dynamic command templates. Chat click
+  events now cover native open_url/run_command/suggest_command/copy_to_clipboard/change_page/
+  show_dialog/custom actions, preserving the tagged dialog holder and custom payload.
 - Server-link buttons populated from the last server_links payload.
 - Native 26.3 debug subscriptions now render in F3 (new).
 - Creative catalogue UI path and native debug subscription UI support.
@@ -247,7 +249,7 @@ Known limit:
 ======================================================================
 
 Green at this inventory:
-- npm run test:26.3: 66 tests.
+- npm run test:26.3: 68 tests.
 - npm run adapter:26.3: 53 packets, 36 handler names, 2 chunks.
 - tools/port-26.3/inbound-gate.mjs: all checks.
 - tools/port-26.3/serverbound-gate.mjs: all checks.

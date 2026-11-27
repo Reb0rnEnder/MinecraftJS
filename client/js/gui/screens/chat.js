@@ -6,8 +6,11 @@ import { tr } from '../i18n.js';
 import { chatToPlain } from '../chat.js';
 import { Screen } from './manager.js';
 import { TextField, Button } from '../widgets.js';
-import { platform } from '../../platform/platform.js';
+import {platform } from '../../platform/platform.js';
+import {writeClipboard} from '../../platform/clipboard.js';
+import {parseDialog263} from '../../net/dialog-26.3.js';
 import { C,PROTOCOL_VERSION } from '../../net/packets.js';
+
 
 export class ChatScreen extends Screen {
   constructor(game, initial, options = {}) {
@@ -285,6 +288,17 @@ export class ChatScreen extends Screen {
           if(this.game.accountPrivileges?.onlineChat!==false)this.game.send(C.chat(c.value));
         } else if (c.action === 'suggest_command') {
           this.input.setText(c.value);
+        } else if (c.action === 'copy_to_clipboard') {
+          writeClipboard(c.value);
+        } else if (c.action === 'change_page') {
+          // ChangePage only applies to book components; chat has no page to change.
+        } else if (c.action === 'show_dialog') {
+          try{
+            const dialog=parseDialog263(c.dialogTag,this.game.conn?.joinContext?.dialogs);
+            import('./dialog-26.3.js').then(({DialogScreen263})=>this.game.screens.open(new DialogScreen263(this.game,dialog,this)));
+          }catch(e){/* unsupported dialog body fails closed */}
+        } else if (c.action === 'custom') {
+          this.game.send(C.customClickAction(c.id,c.payloadTag??null));
         }
         return true;
       }

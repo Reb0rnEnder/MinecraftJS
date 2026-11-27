@@ -38,7 +38,7 @@ Done and committed:
 - custom_report_details and low_disk_space_warning are handled; only add_transient_block and the
   two game-test frames remain explicit scope decisions.
 - Adapter gate skips nothing across its 53 pinned frames (36 handler names).
-- Full 26.3 gate: test:26.3 66/66, adapter 53 frames / 36 handlers, inbound all, serverbound 0,
+- Full 26.3 gate: test:26.3 68/68, adapter 53 frames / 36 handlers, inbound all, serverbound 0,
   assets exit 0.
 
 Still deliberately untracked:
@@ -116,8 +116,9 @@ B. CODE-ONLY PARITY WORK, IN PRIORITY ORDER
    - Finish native 26.3 chat/command UI: styled message handling and command suggestion
      focus/selection.
    - Finish option rows, focus/narration and keyboard/gamepad navigation against native widgets.
-   - Styled number formats are decoded; finish styled chat/event spans and hover/click rendering in
-     the remaining chat UI paths.
+   - Styled number formats are decoded. Chat click events now cover every server-allowed native
+     action, including copy_to_clipboard, change_page, show_dialog and custom; finish live
+     hover/click rendering acceptance in the remaining chat UI paths.
    - Resource-pack/font parity beyond the default jar: pack selection/priority/overlays, font
      providers, glyph atlases and missing-glyph behaviour.
    - Resolve every inherited 1.20.6 finding instead of dropping it: packs, fonts, menu

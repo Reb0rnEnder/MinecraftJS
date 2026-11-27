@@ -53,6 +53,9 @@ function encodeValue(value,path="value"){
  throw Error("Unsupported NBT value at "+path);
 }
 
+// Keep the original tagged node so click events can hand show_dialog and custom payloads to
+// the native dialog codec without re-guessing NBT types after decodeNode has flattened them.
+const rawTags=new WeakMap();
 function decodeNode(value,unwrap=false){
  if(!value)return null;
  switch(value.t){
@@ -63,7 +66,9 @@ function decodeNode(value,unwrap=false){
   case 9:return value.v.items.map((item)=>decodeNode(node(value.v.et,item),value.v.et===10));
   case 10:{
    if(unwrap&&isWrapper(value))return decodeNode(value.v[""]);
-   const out={};for(const [key,child] of Object.entries(value.v))out[key]=decodeNode(child);return out;
+   const out={};for(const [key,child] of Object.entries(value.v))out[key]=decodeNode(child);
+   rawTags.set(out,value);
+   return out;
   }
   default:throw Error("Unknown component NBT type "+value.t);
  }
@@ -103,7 +108,31 @@ function normalizeComponent(value,path="component"){
  }
  if(out.separator!==undefined)out.separator=normalizeComponent(out.separator,path+".separator");
  if(out.clickEvent!==undefined){
-  if(!out.clickEvent||typeof out.clickEvent!=="object"||typeof out.clickEvent.action!=="string"||typeof out.clickEvent.value!=="string")throw Error("Invalid click event at "+path);
+  if(!out.clickEvent||typeof out.clickEvent!=="object"||typeof out.clickEvent.action!=="string")throw Error("Invalid click event at "+path);
+  const raw=rawTags.get(out.clickEvent),event={...out.clickEvent};
+  switch(event.action){
+   case "open_url":case "run_command":case "suggest_command":case "copy_to_clipboard":
+    if(typeof event.value!=="string")throw Error("Invalid "+event.action+" click value at "+path);
+    break;
+   case "change_page":
+    if(!Number.isInteger(event.page)||event.page<1)throw Error("Invalid change_page click page at "+path);
+    break;
+   case "show_dialog":{
+    if(!event.dialog||typeof event.dialog!=="object")throw Error("Invalid show_dialog click dialog at "+path);
+    const tag=raw?.t===10?raw.v.dialog:undefined;
+    if(tag)Object.defineProperty(event,"dialogTag",{value:tag,enumerable:false});
+    break;
+   }
+   case "custom":
+    if(typeof event.id!=="string")throw Error("Invalid custom click id at "+path);
+    if(event.payload!=null){
+     const tag=raw?.t===10?raw.v.payload:undefined;
+     if(tag)Object.defineProperty(event,"payloadTag",{value:tag,enumerable:false});
+    }
+    break;
+   default:throw Error("Invalid click event action "+event.action+" at "+path);
+  }
+  out.clickEvent=event;
  }
  if(out.hoverEvent!==undefined){
   if(!out.hoverEvent||typeof out.hoverEvent!=="object"||typeof out.hoverEvent.action!=="string")throw Error("Invalid hover event at "+path);
