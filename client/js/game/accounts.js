@@ -2,6 +2,8 @@
 // device code flow). Stored through the platform settings store on this device only.
 import { platform } from '../platform/platform.js';
 import { proxyRoute } from '../net/proxies.js';
+import { rawRoute } from '../net/https.js';
+import * as direct from './msauth-client.js';
 
 // Microsoft sign in is relayed by the selected proxy (the Microsoft and Xbox services send no CORS headers)
 function authPost(path, body) {
@@ -67,6 +69,7 @@ export class Accounts {
   async ensureFresh(a) {
     if (a.type !== 'microsoft') return a;
     if (a.accessToken && a.expiresAt - Date.now() > REFRESH_MARGIN) return a;
+    if (rawRoute()) return this.addMicrosoft(await direct.refresh(a.refreshToken));
     const r = await authPost('/auth/refresh', { refreshToken: a.refreshToken });
     if (!r.json || !r.json.account) throw new Error((r.json && r.json.error) || 'Could not refresh the Microsoft session');
     return this.addMicrosoft(r.json.account);
@@ -74,20 +77,23 @@ export class Accounts {
 
   async socialPrivileges(account=this.active()) {
     if(account?.type!=='microsoft')return null;
-    const fresh=await this.ensureFresh(account),r=await authPost('/auth/privileges',{accessToken:fresh.accessToken});
+    const fresh=await this.ensureFresh(account);if(rawRoute())return direct.socialPrivileges(fresh.accessToken);
+    const r=await authPost('/auth/privileges',{accessToken:fresh.accessToken});
     if(r.status!==200||!r.json?.privileges)throw Error(r.json?.error||'Could not load account privileges');
     return r.json.privileges;
   }
 
   async blockedProfiles(account=this.active()) {
     if(account?.type!=='microsoft')return [];
-    const fresh=await this.ensureFresh(account),r=await authPost('/auth/blocklist',{accessToken:fresh.accessToken});
+    const fresh=await this.ensureFresh(account);if(rawRoute())return direct.blockedProfiles(fresh.accessToken);
+    const r=await authPost('/auth/blocklist',{accessToken:fresh.accessToken});
     if(r.status!==200||!Array.isArray(r.json?.blockedProfiles))throw Error(r.json?.error||'Could not load the account block list');
     return r.json.blockedProfiles;
   }
 
   // Device code sign in: returns { userCode, verificationUri, deviceCode, interval, expiresIn }
   async startDeviceLogin() {
+    if (rawRoute()) return direct.startDeviceCode();
     const r = await authPost('/auth/device', {});
     if (!r.json || !r.json.deviceCode) throw new Error((r.json && r.json.error) || 'Could not reach Microsoft');
     return r.json;
@@ -95,6 +101,7 @@ export class Accounts {
 
   // Resolves to an account once signed in, null while still pending; throws on failure
   async pollDeviceLogin(deviceCode) {
+    if (rawRoute()) { const account = await direct.pollDeviceCode(deviceCode); return account ? this.addMicrosoft(account) : null; }
     const r = await authPost('/auth/poll', { deviceCode });
     if (r.status !== 200) throw new Error((r.json && r.json.error) || 'Sign in failed');
     return r.json.account ? this.addMicrosoft(r.json.account) : null;

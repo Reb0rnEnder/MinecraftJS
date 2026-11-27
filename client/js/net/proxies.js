@@ -84,8 +84,9 @@ export function validSkinProxyTemplate(template) {
   } catch {return false;}
 }
 
-export function uuidSkinProxyAvailable(template=routingSettings?.skinProxy||'') {
-  return validSkinProxyTemplate(template)&&template.includes('%u')&&!/%[rRU]/.test(template);
+// UUID-only image templates apply only when skins are proxied via HTTP (otherwise the session profile gives the URL)
+export function uuidSkinProxyAvailable(template=routingSettings?.skinProxy||'',viaHttp=routingSettings?.skinProxyHttp??true) {
+  return !!viaHttp&&validSkinProxyTemplate(template)&&template.includes('%u')&&!/%[rRU]/.test(template);
 }
 
 export function skinProxyUrl(url,template=routingSettings?.skinProxy||'',uuid=null,kind='skin') {
@@ -104,14 +105,36 @@ export function skinProxyUrl(url,template=routingSettings?.skinProxy||'',uuid=nu
   return target?proxyRoute('/skin?url='+encodeURIComponent(target.href)):null;
 }
 
-export function fetchSkin(url,uuid=null,kind='skin') {
+// Skins, capes and profiles download over the client's own HTTP(S) on the raw TCP route unless "Proxy skins via
+// HTTP" (skinProxyHttp) is on or there is no raw route; then the URL template / MinecraftJS proxy is used.
+async function directSkinRoute(){
+  if(routingSettings?.skinProxyHttp)return null;
+  const https=await import('./https.js');
+  return https.rawRoute()?https:null;
+}
+export async function fetchSkin(url,uuid=null,kind='skin') {
+  const direct=await directSkinRoute();
+  if(direct){
+    const target=new URL(url);
+    if(!['http:','https:'].includes(target.protocol))throw new Error('Invalid skin URL');
+    if(target.hostname==='textures.minecraft.net')target.protocol='https:';
+    const r=await direct.httpsRequest(target.href,{headers:{Accept:'image/png'}});
+    if(r.status!==200)throw new Error('Skin download failed (HTTP '+r.status+')');
+    return r.bytes;
+  }
   try {const route=skinProxyUrl(url,undefined,uuid,kind);return route?platform().fetchBytes(route):Promise.reject(new Error('No skin proxy configured'));}
   catch(error){return Promise.reject(error);}
 }
 
-export function fetchSkinProfile(uuid) {
+export async function fetchSkinProfile(uuid) {
   const id=String(uuid).replace(/-/g,'');
-  if(!/^[0-9a-f]{32}$/i.test(id))return Promise.reject(new Error('Invalid profile UUID'));
+  if(!/^[0-9a-f]{32}$/i.test(id))throw new Error('Invalid profile UUID');
+  const direct=await directSkinRoute();
+  if(direct){
+    const r=await direct.httpsRequest('https://sessionserver.mojang.com/session/minecraft/profile/'+id);
+    if(r.status!==200)throw new Error('Profile lookup failed (HTTP '+r.status+')');
+    return r.json();
+  }
   try {
     const route=routingSettings?.skinProxy&&!uuidSkinProxyAvailable()
       ?skinProxyUrl('https://sessionserver.mojang.com/session/minecraft/profile/'+id,undefined,id,'profile')
