@@ -2,11 +2,11 @@
   "schemaVersion": 1,
   "target": "26.3",
   "branch": "26.3",
-  "commit": "e21153b63cf4e487ef52642581404d553364c7a7",
+  "commit": "47e8ed361a9f1bccdb9774763eb559357175c917",
   "workingTreeDirty": false,
-  "generatedOn": "2026-11-27T19:13:08.642Z",
+  "generatedOn": "2026-11-27T19:20:13.582Z",
   "fileCount": 1371,
-  "bytes": 19636532,
+  "bytes": 19638443,
   "exclusions": [
     "^cache\\/ -> native/derived cache",
     "^node_modules\\/ -> installed dependencies",
@@ -47,8 +47,8 @@
     },
     {
       "path": "NEEDED-26.3-REMAINING.txt",
-      "bytes": 18207,
-      "sha256": "ab4619f7c7a70c8ab5cf9798c774c34f793b21fbcc7009d41f06b6f5c7bdd341"
+      "bytes": 18744,
+      "sha256": "7e3613ee100d4d5294b47e3cbe9126fdbb32bf43ac0d7983405d00e734de1ba7"
     },
     {
       "path": "NEEDED-26.3.txt",
@@ -2917,8 +2917,8 @@
     },
     {
       "path": "docs/parity-checklist-26.3.md",
-      "bytes": 15476,
-      "sha256": "24246e7da3f4b7de672b24ee9a4b89825287e1603301f4ecfccef952faf3b8fd"
+      "bytes": 15909,
+      "sha256": "416677a253f199bd6535b0e60de2ea63433e5f7b985a1f087a81b60d2550ac5a"
     },
     {
       "path": "docs/parity-fix-tasks-1.19.4.md",
@@ -3277,8 +3277,8 @@
     },
     {
       "path": "docs/transition-26.3.md",
-      "bytes": 19314,
-      "sha256": "bfd4cef2a89de972945241347fb3cf59fc081049cfc825a59fdd05c8b9610287"
+      "bytes": 19600,
+      "sha256": "d77af43b05b42afa9bcaf4ae9db6f13a69db78e213bfb767f23fcf1bab61ad04"
     },
     {
       "path": "docs/transition-26.3.official-versions.json",
@@ -3297,8 +3297,8 @@
     },
     {
       "path": "docs/transition-26.3.tasks.json",
-      "bytes": 59385,
-      "sha256": "b29fe5acb8ed145d4468e625e2346df561ff49fbd343a5ef7c706be63f3f9376"
+      "bytes": 60040,
+      "sha256": "14fc55df7f7e0e1372b66d5e18f0f20bb3d76481f12defe3441bed100c73be7d"
     },
     {
       "path": "docs/ui-parity-1.20.6.md",
@@ -6877,12 +6877,12 @@
     }
   ],
   "archive": {
-    "name": "MinecraftJS-26.3-e21153b63cf4.zip",
-    "bytes": 3945990,
-    "sha256": "ef4f2ec8c44de721b28c95f9a545970860c8db827f1cd6b00de9f1c882769f91"
+    "name": "MinecraftJS-26.3-47e8ed361a9f.zip",
+    "bytes": 3946702,
+    "sha256": "13ff4810432331a117f150714ad11ae90ea29ee4f21b94ad577f3dadd8994aca"
   },
   "archiveContents": {
     "files": 1372,
-    "bytes": 19867113
+    "bytes": 19869024
   }
 }
