@@ -396,6 +396,7 @@ const RARITIES=['common','uncommon','rare','epic'];
 const USE_ANIMATIONS=['none','eat','drink','block','bow','trident','crossbow','spyglass','toot_horn','brush','bundle','spear'];
 const ATTRIBUTE_OPERATIONS={0:'add_value',1:'add_multiplied_base',2:'add_multiplied_total'};
 const ATTRIBUTE_SLOTS={0:'any',1:'mainhand',2:'offhand',3:'hand',4:'feet',5:'legs',6:'chest',7:'head',8:'armor',9:'body'};
+const EQUIPMENT_SLOTS=['mainhand','offhand','feet','legs','chest','head','body','saddle'];
 const TEXT_COMPONENTS=new Set(['custom_name','item_name','lore','written_book_content']);
 
 function textValue(value){
@@ -431,6 +432,7 @@ export function normalizeNativeComponent(name,value){
     };
   }
   if(name==='consumable'&&typeof value?.animation==='number')return {...value,animation:USE_ANIMATIONS[value.animation]??value.animation};
+  if(name==='equippable'&&typeof value?.slot==='number')return {...value,slot:EQUIPMENT_SLOTS[value.slot]??value.slot};
   if(name==='custom_model_data'&&value&&typeof value==='object')return value.floats?.[0]??0;
   return value;
 }

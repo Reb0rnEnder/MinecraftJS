@@ -8,6 +8,7 @@ import {readItemStack26_3,COMPONENT_READERS_26_3,itemComponentValues26_3,normali
 import {DATA_COMPONENT_NAMES_26_3,ITEM_NAMES_26_3} from '../../client/js/net/items-26.3.js';
 import {adaptPlay26_3} from '../../client/js/net/play-adapter-26.3.js';
 import {Items} from '../../client/js/game/items.js';
+import {armorType} from '../../client/js/game/container.js';
 import {DATA_COMPONENTS} from './component-fixture.mjs';
 
 const componentId=name=>{
@@ -207,6 +208,11 @@ assert.equal(itemView.strVsBlock(nativeStack('diamond_pickaxe'),{name:'dirt'}),1
 assert.equal(itemView.strVsBlock(nativeStack('diamond_sword'),{name:'cobweb'}),15,'native sword cobweb rule wins before the tag rules');
 assert.equal(itemView.strVsBlock(nativeStack('diamond_sword'),{name:'oak_leaves'}),1.5,'sword efficient tag is resolved through the native leaves tag');
 assert.equal(itemView.strVsBlock(nativeStack('wooden_axe'),{name:'stone'}),1,'wooden axe rejects stone through the incorrect-tool tag');
+assert.equal(itemView.strVsBlock(nativeStack('apple'),{name:'stone'}),1,'native non-tool items use hand speed instead of the shifted 766 table');
+assert.equal(armorType(nativeStack('leather_helmet'),itemView),0,'native equippable head slot maps to the helmet slot');
+assert.equal(armorType(nativeStack('elytra'),itemView),1,'native equippable chest slot maps to the chest slot');
+assert.equal(armorType(nativeStack('wolf_armor'),itemView),-1,'native body equipment is not a player armor slot');
+assert.equal(normalizeNativeComponent('equippable',{slot:5,equipSound:0,dispensable:true,swappable:true,damageOnHurt:true,equipOnInteract:false,canBeSheared:false}).slot,'head','native equipment slot id maps to its name');
 const tooltipItems=new Items({data:{items:[{id:diamondSword,name:'diamond_sword'}],enchantments:[]},translate:key=>key});
 const hiddenAttributes={...nativeStack('diamond_sword'),added:[{name:'tooltip_display',value:{hideTooltip:false,hiddenComponents:[componentId('attribute_modifiers')]}}]};
 assert.ok(!tooltipItems.tooltip(hiddenAttributes).some(line=>line.includes('attribute.')),'hidden tooltip components are omitted');

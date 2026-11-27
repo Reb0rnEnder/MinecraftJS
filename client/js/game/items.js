@@ -288,6 +288,8 @@ export class Items {
       for(const rule of tool.rules||[])if(this.blockRuleMatches(rule,blockDef))return rule.speed??1;
       return tool.default_mining_speed??tool.defaultMiningSpeed??1;
     }
+    // A native item without a tool component has hand speed; never index the shifted 766 table.
+    if(item.version==='26.3')return 1;
     const name = this.name(item.id),native=this.assets.data.creative?.toolSpeeds?.[item.id];
     if(native)return native[blockDef.name]??1;
     if (name === 'shears') {

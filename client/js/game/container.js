@@ -73,6 +73,10 @@ const itemName = (item, registry) => {
 // Public API: numeric stacks need Items (or its byId Map); named stacks also work without a registry.
 // 0 head .. 3 feet, -1 otherwise. Never interpret a protocol404 ID as a legacy ID.
 export function armorType(item, registry = null) {
+  const equippable=registry?.component?.(item,'equippable');
+  const nativeSlot={head:0,chest:1,legs:2,feet:3}[equippable?.slot];
+  if(nativeSlot!==undefined)return nativeSlot;
+  if(equippable?.slot)return -1;
   const name = itemName(item, registry);
   if (name === 'turtle_helmet' || HEADWEAR.has(name)) return 0;
   if (name === 'elytra') return 1;
