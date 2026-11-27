@@ -2,6 +2,7 @@ import {ConfirmLinkScreen}from'./chat.js';
 import {Screen}from'./manager.js';import {Button,TextField}from'../widgets.js';import {tr}from'../i18n.js';
 const TEX='gui/social_interactions.png';
 export class SocialInteractionsScreen extends Screen {
+  narrationTitle() { return tr('gui.socialInteractions.title'); } // Screen.getNarrationMessage
  constructor(game){super(game);game.hiddenPlayers||=new Set();game.socialNames||=new Map();this.page='all';this.scroll=0;}
  init(){
   this.game.socialBlocking?.sync();

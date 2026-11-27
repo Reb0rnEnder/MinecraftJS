@@ -24,17 +24,48 @@ export class Narrator {
     } catch (e) { /* speech unavailable */ }
   }
 
-  // AbstractWidget queues mouse hover after 750 ms and focused widgets after
-  // 200 ms; changing a hovered label queues a fresh 200 ms announcement.
-  widget(widget,hovered,label,kind='button'){
-    const focused=!!widget.focused,active=widget.enabled!==false&&widget.visible!==false&&(hovered||focused);
-    const now=platform().now(),previous=this.widgets.get(widget);
-    if(!active){this.widgets.delete(widget);return;}
-    if(!label&&!widget.narration){this.widgets.delete(widget);return;}
-    const text=widget.narration?.()||(kind==='editBox'?tr('gui.narrate.editBox',label,widget.text):tr('gui.narrate.'+kind,label));
-    let state=previous;
-    if(!state||state.text!==text||state.focused!==focused){state={text,focused,at:now+(focused||state?200:750),said:false};this.widgets.set(widget,state);}
-    if(!state.said&&now>=state.at){this.saySystem(text);state.said=true;}
+  // Widgets report their narration label, kind and hover state each frame; Screen narration reads them.
+  widget(widget,hovered,label,kind='button'){this.widgets.set(widget,{hovered:!!hovered,label,kind,frame:this.frame|0});}
+
+  // AbstractWidget.updateWidgetNarration: depth-1 TITLE and USAGE
+  _widgetEntries(widget,state,focused){
+    const label=state.label,kind=state.kind,out={};
+    out.title=widget.narration?.()||(kind==='editBox'?tr('gui.narrate.editBox',label,widget.text??''):label?tr('gui.narrate.'+kind,label):'');
+    if(kind==='button')out.usage=tr(focused?'narration.button.usage.focused':'narration.button.usage.hovered');
+    else if(kind==='slider')out.usage=tr(focused?'narration.slider.usage.focused':'narration.slider.usage.hovered');
+    return out;
+  }
+
+  // Screen.updateNarrationState / updateNarratedWidget collected as ScreenNarrationCollector does: entries keyed by
+  // (type, depth), spoken TITLE, POSITION, HINT, USAGE in depth order and joined with ". ". Opening a screen speaks
+  // everything at once and suppresses narration for 2 s; later only changed entries are spoken, 750 ms after the
+  // mouse or 200 ms after the keyboard changed them.
+  screenFrame(screen,children,lastInputKeyboard){
+    const frame=this.frame|0;this.frame=frame+1; // widgets recorded `frame` while this screen rendered
+    if(![1,3].includes(this.game.settings.narrator|0)||!this.active)return;
+    const now=platform().now();
+    const entries=new Map(),add=(type,depth,text)=>{if(text)entries.set(type+':'+depth,{type,depth,text});};
+    add('title',0,screen.narrationTitle?.()??(typeof screen.title==='string'?screen.title:''));
+    add('usage',0,tr('narrator.screen.usage'));
+    const list=children.filter(w=>w.visible!==false&&w.enabled!==false&&this.widgets.get(w)?.frame===frame);
+    const focused=list.find(w=>w.focused),hovered=list.find(w=>this.widgets.get(w).hovered);
+    const pick=focused||(this.lastNarratable&&list.includes(this.lastNarratable)&&this.widgets.get(this.lastNarratable).hovered?this.lastNarratable:hovered);
+    if(pick){
+      this.lastNarratable=pick;
+      if(list.length>1){add('position',0,tr('narrator.position.screen',list.indexOf(pick)+1,list.length));if(pick===focused)add('usage',0,tr('narration.component_list.usage'));}
+      const w=this._widgetEntries(pick,this.widgets.get(pick),pick===focused);add('title',1,w.title);add('usage',1,w.usage);
+    }
+    const order=['title','position','hint','usage'],speak=(changedOnly)=>[...entries.values()].filter(e=>!changedOnly||this.spoken?.get(e.type+':'+e.depth)!==e.text).sort((x,y)=>order.indexOf(x.type)-order.indexOf(y.type)||x.depth-y.depth).map(e=>e.text).join('. ');
+    if(this.narratedScreen!==screen){
+      this.narratedScreen=screen;this.spoken=new Map([...entries].map(([k,e])=>[k,e.text]));this.suppressUntil=now+2000;this.pendingAt=null;
+      this.saySystem(speak(false));return;
+    }
+    const changed=[...entries].some(([k,e])=>this.spoken.get(k)!==e.text);
+    if(!changed){this.pendingAt=null;return;}
+    if(this.pendingAt===null||this.pendingAt===undefined)this.pendingAt=now+(lastInputKeyboard?200:750);
+    if(now<this.pendingAt||now<this.suppressUntil)return;
+    const text=speak(true);this.spoken=new Map([...entries].map(([k,e])=>[k,e.text]));this.pendingAt=null;
+    if(text)this.saySystem(text);
   }
   saySystem(text){
     if(![1,3].includes(this.game.settings.narrator|0)||!text)return;
