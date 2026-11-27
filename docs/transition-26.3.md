@@ -147,6 +147,9 @@ General arbitrary component hashes and live/visual acceptance remain open and ar
   This exposed and fixed 26.3's `hello.challenge` verify-token mapping. The same session moved
   overworld -> nether -> end -> overworld with 117 chunks per dimension and zero decode errors after
   the chunk reader stopped assuming 24 sections; nether and end chunks carry 16 native sections.
+  `/transfer` reconnected the same authenticated account without a credential prompt, and a
+  native datapack notice dialog rendered in `DialogScreen263`; its Run button's `run_command`
+  reached the server as `dialog-ok` and the screen closed. Cookie store/request remains unobserved.
 - Open at this checkpoint: general HashedPatchMap hashing for arbitrary server-provided component values
   (Creative catalogue stacks now carry native hashes), live acceptance of the remaining container/menu
   families, `can_place_on`/`can_break` (adventure-predicate graph), native support/placement rules, dialog

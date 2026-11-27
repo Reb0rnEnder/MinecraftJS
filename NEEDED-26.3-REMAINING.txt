@@ -1,9 +1,9 @@
 MinecraftJS 26.3 - REMAINING WORK (REFRESHED)
 Branch: 26.3
 Inventory date: 2026-11-27
-Baseline: 3e5e861 plus the native recipe-book/chat correction in this batch
+Baseline: ebd0c50 plus the native transfer/dialog evidence in this batch
 Verified for this inventory:
-- npm run test:26.3: 111/111 tests
+- npm run test:26.3: 113/113 tests
 - npm run adapter:26.3: 53 frames, 36 handler names, 2 chunks, 0 skipped
 - inbound gate: 144/144 Play IDs decoded, 0 raw
 - serverbound gate: 69/69 IDs have a sender or an explicit scope decision
@@ -17,10 +17,9 @@ claim of full parity. A green decode/test gate does not mean a feature has been 
 A. CURRENT LEDGER
 ======================================================================
 
-The project ledger at this handoff is 44.1% complete:
-- 4 areas done
-- 8 areas partial
-- 5 areas todo
+The task ledger at this handoff has 17 tasks: 9 done, 6 partial, 2 todo.
+By task count that is 70.6%, but a task is not a feature and this is not a per-feature completion
+percentage. P11/P15 remain the broad unfinished areas.
 - scoring: done = 1, partial = 0.5
 
 That percentage is the existing project-level ledger. It is not a per-feature count and it should
@@ -30,6 +29,10 @@ Closed in this batch (2026-11-27 evidence pass):
 - P09 real-account join: online-mode 26.3 accepted the signed-in Microsoft account and logged
   UUID 055e7568-156d-4bb8-9771-dcbd7144f2c9; the client reached Play with 81 chunks and zero
   decode errors after mapping 26.3's hello.challenge into the RSA verify token.
+- P09 live transfer and dialog: `/transfer` reauthenticated the same account into a second Play
+  session on the accepting server; a native 26.3 datapack notice dialog rendered in
+  DialogScreen263, its Run button sent `say dialog-ok` to the server, and the screen closed.
+  A live store_cookie/cookie_request round trip is still unobserved.
 - P06 live dimension travel: overworld -> nether -> end -> overworld, 117 chunks in each
   dimension and zero decode errors after decoding the native 16-section nether/end chunk buffers.
 - P01: all 17 release articles cached and hashed; 4,703 top-level topics with one disposition each
@@ -209,9 +212,9 @@ C. BLOCKED OR NEEDS USER INPUT
 ======================================================================
 
 1. P09 - Authenticated lifecycle, transfer and packs
-   - Requires a real Microsoft account and a real authenticated 26.3 session.
-   - Needs end-to-end evidence for login, refresh/expiry, transfer, cookie store, resource-pack
-     negotiation and dialog flows.
+   - Login, transfer and a live dialog click are now accepted with the signed-in account.
+   - Remaining: a live server-issued store_cookie/cookie_request round trip (the local native
+     server has no cookie producer), plus explicit refresh/expiry coverage.
    - Do not fabricate session tests or substitute an offline account.
 
 2. Visual acceptance and judgment calls
@@ -232,7 +235,7 @@ C. BLOCKED OR NEEDS USER INPUT
 D. HOW MUCH IS LEFT
 ======================================================================
 
-By the project ledger: 44.1% (4 done, 7 partial, 6 todo).
+By the task ledger: 9 done, 6 partial, 2 todo (70.6% by task count).
 
 By work type:
 - Code-only and actionable now:
@@ -244,7 +247,7 @@ By work type:
   * Remaining animation formulas and any code-only new-content behaviour.
 - Live/server/user acceptance:
   * P06 live triggers and the newly adapted packet paths.
-  * P09 transfer/cookie/dialog flows (the authenticated join is now accepted).
+  * P09 cookie store/request and refresh/expiry (login, transfer and dialog are accepted).
   * P10/P11/P12/P13 visual, sound, particle, animation, menu and content scenarios.
   * P15 whole-target matrix.
 - Evidence and release hygiene:
