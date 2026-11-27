@@ -649,8 +649,9 @@ class AnvilScreen extends SimpleScreen {
   constructor(game, win) { super(game, win, 'gui/container/anvil.png', [[0, 27, 47], [1, 76, 47], [2, 134, 47]], { titleX: 60 }); }
   init() {
     super.init();
-    this.nameField = new TextField(this.guiLeft + 62, this.guiTop + 24, 103, 12, { maxLength: 30, background: false, focused: false });
-    this.nameField.textColor = 0xffffff;
+    // AnvilScreen.subInit: 50 characters, white text either way, cannot lose focus, focused on open
+    this.nameField = new TextField(this.guiLeft + 62, this.guiTop + 24, 103, 12, { maxLength: 50, background: false, focused: true, canLoseFocus: false });
+    this.nameField.textColor = 0xffffff; this.nameField.textColorUneditable = 0xffffff;
     this.nameField.onChange = (t) => {
       this.game.send(C.nameItem(t));
     };

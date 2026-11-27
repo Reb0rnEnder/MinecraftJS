@@ -72,7 +72,7 @@ if(layout.modern){
   s.mouseDown(slider.x+50,slider.y+5,0);assert.equal(s.focusedWidget,slider);assert.equal(s.fields.some(f=>f.focused),false);assert.equal(draw.filter(d=>d[0]==='sound').length,0);
   s.mouseUp(slider.x+50,slider.y+5,0);assert.equal(draw.filter(d=>d[0]==='sound').length,1);
   const value=slider.value;s.key({code:'ArrowRight'});assert.equal(slider.value,value+Math.fround(1/92));
-  if(layout.sliderToggle){s.key({code:'Enter'});assert.equal(slider.canChangeValue,false);assert.equal(events.length,0);const v=slider.value;s.key({code:'ArrowRight'});assert.equal(slider.value,v);s.key({code:'Space'});assert.equal(slider.canChangeValue,true);}else{s.key({code:'Enter'});assert.deepEqual(events.map(e=>e.kind),['send','close']);}
+  if(layout.sliderToggle){s.key({code:'Enter'});assert.equal(slider.canChangeValue,false);assert.equal(events.length,0);const v=slider.value;s.key({code:'ArrowRight'});assert.equal(slider.value,v);assert.notEqual(s.focusedWidget,slider);/* Screen arrow navigation once the slider declines */s.key({code:'ArrowLeft'});assert.equal(s.focusedWidget,slider);s.key({code:'Space'});assert.equal(slider.canChangeValue,true);}else{s.key({code:'Enter'});assert.deepEqual(events.map(e=>e.kind),['send','close']);}
  });
  test('Generate saves first, closes, then emits generation with native levels and keep toggle',()=>{
   const {s,events}=setup(nativeData);assert.equal(s.keepJigsaws,true);assert.equal(s.levels,0);

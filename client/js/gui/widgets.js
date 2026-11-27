@@ -1,6 +1,7 @@
 import {VANILLA_UI} from './vanilla-layout.js';
 // GUI widgets: Button, TextField, Slider (vanilla look & behaviour)
 import { platform } from '../platform/platform.js';
+import { stampWidget } from './focus-navigation.js';
 
 export class Button {
   constructor(id, x, y, w, h, label, onClick) {
@@ -9,6 +10,7 @@ export class Button {
     this.id = id; this.x = Math.floor(x); this.y = Math.floor(y); this.w = w; this.h = h;
     this.label = label; this.onClick = onClick;
     this.enabled = true; this.visible = true;
+    stampWidget(this);
   }
   hovered(mx, my) { return mx >= this.x && my >= this.y && mx < this.x + this.w && my < this.y + this.h; }
   render(gui, mx, my) {
@@ -88,6 +90,8 @@ export class TextField {
     this.onEnter = opts.onEnter || null;
     this.onChange = opts.onChange || null;
     this.validate = opts.validate || null;
+    if (opts.canLoseFocus === false) this.canLoseFocus = false;
+    stampWidget(this);
   }
 
   setText(t) {
@@ -164,8 +168,14 @@ export class TextField {
   }
 
   mouseDown(mx, my, gui) {
-    const inside = mx >= this.x && mx < this.x + this.w && my >= this.y && my < this.y + this.h;
-    this.focused = inside;
+    const inside = this.click(mx, my, gui);
+    if (inside || this.canLoseFocus !== false) this.focused = inside;
+    return inside;
+  }
+
+  // EditBox.mouseClicked / onClick: inside the box moves the cursor; focus is the screen's decision
+  click(mx, my, gui) {
+    const inside = this.enabled !== false && mx >= this.x && mx < this.x + this.w && my >= this.y && my < this.y + this.h;
     if (inside) {
       let rel = mx - this.x - (this.drawBackground ? 4 : 0);
       const visible = this.text.slice(this.scroll);
@@ -175,34 +185,48 @@ export class TextField {
     return inside;
   }
 
+  // EditBox.renderWidget: a white (focused) or 0xffa0a0a0 border round black, text split at the cursor (shadowed), a bar cursor inside the text or
+  // "_" past its end, the hint while empty and unfocused, and the selection drawn with OR_REVERSE blue
   render(gui) {
+    if (this.visible === false) return;
     if (this.drawBackground) {
-      gui.rect(this.x - 1, this.y - 1, this.x + this.w + 1, this.y + this.h + 1, 0xffa0a0a0);
+      gui.rect(this.x - 1, this.y - 1, this.x + this.w + 1, this.y + this.h + 1, this.focused ? 0xffffffff : 0xffa0a0a0);
       gui.rect(this.x, this.y, this.x + this.w, this.y + this.h, 0xff000000);
     }
     const innerW = this.drawBackground ? this.w - 8 : this.w;
     if (this.cursor < this.scroll) this.scroll = this.cursor;
     while (gui.font.width(this.text.slice(this.scroll, this.cursor)) > innerW && this.scroll < this.cursor) this.scroll++;
     const visible = gui.font.trimToWidth(this.text.slice(this.scroll), innerW);
+    const color = this.enabled !== false ? this.textColor : (this.textColorUneditable ?? 0x707070);
+    const cpos = this.cursor - this.scroll, inView = cpos >= 0 && cpos <= visible.length;
+    const blink = this.focused && Math.floor(this.cursorCounter / 6) % 2 === 0 && inView;
     const tx = this.drawBackground ? this.x + 4 : this.x;
-    const ty = this.drawBackground ? this.y + (this.h - 8) / 2 : this.y;
-    const color = this.enabled ? this.textColor : 0x707070;
-    gui.text(this.formatter ? this.formatter(visible, this.scroll) : visible, tx, ty, color, true);
-    const cpos = this.cursor - this.scroll;
-    const cx = tx + gui.font.width(visible.slice(0, cpos));
-    if (this.focused && Math.floor(this.cursorCounter / 6) % 2 === 0) {
-      if (this.cursor >= this.text.length) gui.text('_', cx, ty, color, true);
-      else gui.rect(cx, ty - 1, cx + 1, ty + 1 + 9, 0xffd0d0d0);
+    const ty = this.drawBackground ? this.y + Math.trunc((this.h - 8) / 2) : this.y;
+    const fmt = (str, offset) => (this.formatter ? this.formatter(str, offset) : str);
+    let end = tx;
+    if (visible) {
+      const before = inView ? visible.slice(0, cpos) : visible;
+      gui.text(fmt(before, this.scroll), tx, ty, color, true);
+      end = tx + gui.font.width(before) + 1; // Font.drawInBatch returns the next x, one past a shadow
     }
-    if (this.selEnd !== this.cursor) {
-      const a = Math.max(0, Math.min(this.cursor, this.selEnd) - this.scroll);
-      const b = Math.min(visible.length, Math.max(this.cursor, this.selEnd) - this.scroll);
-      const x0 = tx + gui.font.width(visible.slice(0, a)), x1 = tx + gui.font.width(visible.slice(0, b));
-      // vanilla inverts the selection with a logic op
-      gui.setBlend('invert');
-      gui.rect(x0, ty - 1, x1, ty + 9, 0xffffffff);
-      gui.setBlend('add');
-      gui.rect(x0, ty - 1, x1, ty + 9, 0xff0000ff); // OR_REVERSE with 0xff0000ff: (~r, ~g, 255)
+    const bar = this.cursor < this.text.length || this.text.length >= this.maxLength;
+    let cx = end;
+    if (!inView) cx = cpos > 0 ? tx + this.w : tx;
+    else if (bar) { cx--; end--; }
+    if (visible && inView && cpos < visible.length) gui.text(fmt(visible.slice(cpos), this.cursor), end, ty, color, true);
+    if (this.hint && !visible && !this.focused) gui.text(this.hint, end, ty, color, true);
+    if (blink) {
+      if (bar) gui.rect(cx, ty - 1, cx + 1, ty + 1 + 9, 0xffd0d0d0);
+      else gui.text('_', cx, ty, color, true);
+    }
+    const hl = Math.max(0, Math.min(this.selEnd - this.scroll, visible.length));
+    if (hl !== cpos) {
+      let x0 = cx, x1 = tx + gui.font.width(visible.slice(0, hl)) - 1, y0 = ty - 1, y1 = ty + 1 + 9;
+      if (x0 < x1) [x0, x1] = [x1, x0];
+      x1 = Math.min(x1, this.x + this.w); x0 = Math.min(x0, this.x + this.w);
+      // RenderType.guiTextHighlight: 0xff0000ff with LogicOp.OR_REVERSE = (~r, ~g, 255): invert, then saturate blue
+      gui.setBlend('invert'); gui.rect(x1, y0, x0, y1, 0xffffffff);
+      gui.setBlend('add'); gui.rect(x1, y0, x0, y1, 0xff0000ff);
       gui.setBlend('alpha');
     }
   }
