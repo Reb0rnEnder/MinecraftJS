@@ -1,3 +1,4 @@
+import { useOnNative, useNative } from './item-use.js';
 import {adventureAllows} from './adventure.js';
 import {entityPickRadius} from './entity-pick-radius.js';
 import {isSlab,canMergeSlab,slabPlacementState} from './slab-placement.js';
@@ -691,6 +692,9 @@ export class Interaction {
       held.count--; // the server's slot update follows
       return true;
     }
+    // Item.useOn as this version's client runs it (tools, flint and steel, fire charges, honeycomb)
+    const used = useOnNative(g, held, t);
+    if (used) return used.fail ? false : used.success;
     switch (name) {
       case 'flint_and_steel': return true;
       case 'wheat_seeds': case 'carrot': case 'potato':
@@ -794,6 +798,16 @@ export class Interaction {
         return true;
       }
       return false;
+    }
+    // BucketItem / BottleItem.use: predicted pickup or placement with the local sound; a lone survival stack becomes
+    // the result (creative keeps it, larger stacks wait for the server's slot update)
+    const fluidUse = useNative(g, held);
+    if (fluidUse) {
+      if (fluidUse.success && fluidUse.result && g.gameMode !== 1 && held.count === 1) {
+        const result = g.items.byName.get(fluidUse.result);
+        if (result) g.inventory.setHand(hand, { ...held, id: result.id, count: 1, damage: 0, nbt: undefined });
+      }
+      return fluidUse.success;
     }
     if (name === 'fishing_rod') { this.swing(hand); return true; } // ItemFishingRod swings the arm itself
     const survival = g.gameMode !== 1;
