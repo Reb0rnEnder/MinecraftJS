@@ -384,6 +384,7 @@ wss.on('connection', (ws) => {
 
   ws.on('message', async (data, isBinary) => {
     if (isBinary) {
+      if (mc && state === 'raw') { writeMc(Buffer.from(data)); return; } // raw TCP bridge (client TLS, raw logins)
       if (mc && state === 'play') writeMc(frame(Buffer.from(data), split.threshold));
       return;
     }
@@ -403,6 +404,20 @@ wss.on('connection', (ws) => {
       } catch (e) {
         sendJson({ type: 'ping_result', id: msg.id, error: e.message });
       }
+      return;
+    }
+
+    // Raw TCP bridge: the client speaks its own protocol (HTTPS with its TLS for sign in, skins and session joins)
+    if (msg.type === 'raw_connect') {
+      const host = msg.host || 'localhost', port = msg.port || 25565;
+      let target;
+      try { target = await resolveServer(host, port); } catch (error) { sendJson({ type: 'error', message: error.message }); ws.close(); return; }
+      if (ws.readyState !== 1) return;
+      if (mc) mc.destroy();
+      mc = net.createConnection({ host: target.host, port: target.port }, () => { mc.setNoDelay(true); state = 'raw'; sendJson({ type: 'raw_ready' }); });
+      mc.on('data', (raw) => { if (state === 'raw' && ws.readyState === 1) ws.send(raw, { binary: true }); });
+      mc.on('error', (error) => sendJson({ type: 'error', message: error.message }));
+      mc.on('close', () => { sendJson({ type: 'disconnected' }); if (ws.readyState === 1) ws.close(); });
       return;
     }
 
