@@ -220,7 +220,7 @@ assert.equal(itemView.useDuration(appleStack),32,'native food consume time is 1.
 const nativeStack=name=>{const id=itemId(name);return{version:'26.3',id,itemId:id,added:[],removed:[]};};
 // Item.getUseAnimation/getUseDuration: class-based animations and the 26.3 component
 // branches (blocks_attacks -> block, kinetic_weapon -> spear) replace the 766 id table.
-const useView=new Items({data:{items:['bow','crossbow','trident','spyglass','brush','bundle','white_bundle','shield','wooden_spear','goat_horn'].map(name=>({id:itemId(name),name}))}});
+const useView=new Items({data:{items:['bow','crossbow','trident','spyglass','brush','bundle','white_bundle','shield','wooden_spear','goat_horn','fishing_rod'].map(name=>({id:itemId(name),name}))}});
 assert.equal(useView.useAction(nativeStack('bow')),'bow','bow class animation');
 assert.equal(useView.useAction(nativeStack('crossbow')),'crossbow','crossbow class animation');
 assert.equal(useView.useAction(nativeStack('trident')),'trident','trident class animation');
@@ -237,6 +237,8 @@ assert.equal(useView.useDuration(nativeStack('brush')),200,'brush use duration')
 assert.equal(useView.useDuration(nativeStack('bundle')),200,'bundle use duration');
 assert.equal(useView.useDuration(nativeStack('shield')),72000,'shield use duration');
 assert.equal(useView.useDuration(nativeStack('wooden_spear')),72000,'spear use duration');
+assert.equal(useView.useAction(nativeStack('fishing_rod')),'none','native items without a use animation ignore the 766 id table');
+assert.equal(useView.useDuration(nativeStack('fishing_rod')),0,'native items without a use duration ignore the 766 id table');
 assert.equal(itemView.strVsBlock(nativeStack('diamond_pickaxe'),{name:'stone'}),8,'native pickaxe rule gives stone speed 8');
 assert.equal(itemView.strVsBlock(nativeStack('diamond_pickaxe'),{name:'dirt'}),1,'unmatched native tool rule falls back to 1');
 assert.equal(itemView.strVsBlock(nativeStack('diamond_sword'),{name:'cobweb'}),15,'native sword cobweb rule wins before the tag rules');

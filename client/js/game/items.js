@@ -258,6 +258,7 @@ export class Items {
     if(native)return native;
     if(c?.blocks_attacks!==undefined)return 'block';
     if(c?.kinetic_weapon!==undefined)return 'spear';
+    if(item.version==='26.3')return 'none';
     const action=ITEM_DATA_766.items[item.id]?.action||'none';
     if(!['none','eat'].includes(action))return action;
     return 'none';
@@ -265,7 +266,7 @@ export class Items {
   useDuration(item) {
     if(!item)return 0;const c=this.components(item),name=this.name(item.id),meta=ITEM_DATA_766.items[item.id];
     if(c.consumable)return Math.trunc(Math.fround(Math.fround(c.consumable.consumeSeconds??c.consumable.secondsToConsume??1.6)*20));
-    if(c.food&&['eat','none'].includes(meta?.action))return Math.trunc(Math.fround(Math.fround(c.food.eat_seconds??c.food.secondsToEat??1.6)*20));
+    if(c.food&&(item.version==='26.3'||['eat','none'].includes(meta?.action)))return Math.trunc(Math.fround(Math.fround(c.food.eat_seconds??c.food.secondsToEat??1.6)*20));
     // Item.getUseDuration: blocking and kinetic weapons use 72000 ticks; the item classes
     // below override that with their own fixed durations.
     if(c.blocks_attacks!==undefined||c.kinetic_weapon!==undefined)return 72000;
@@ -274,6 +275,7 @@ export class Items {
     if(name==='brush'||name==='bundle'||name.endsWith('_bundle'))return 200;
     if(name==='crossbow')return this.crossbowChargeDuration(item)+3;
     if(name==='goat_horn'){const instrument=c.instrument;return instrument?.data?.useDuration??ITEM_DATA_766.instruments[instrument?.instrumentId]?.duration??(typeof instrument==='string'?Object.values(ITEM_DATA_766.instruments).find(i=>i.key===instrument)?.duration:undefined)??meta?.duration??0;}
+    if(item.version==='26.3')return 0;
     return meta?.action==='eat'?0:meta?.duration||0;
   }
   isFood(item) {return !!item&&this.component(item,'food')!==undefined;}
