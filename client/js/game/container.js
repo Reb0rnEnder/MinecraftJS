@@ -300,32 +300,25 @@ class ContainerBase {
           this.onSlotChanged(slotId);
         }
       }
-    } else if (mode === 2 && button >= 0 && button < 9) {
+    } else if (mode === 2 && (button >= 0 && button < 9 || button === 40)) {
+      // AbstractContainerMenu.doClick SWAP (1.16+): hotbar slot 0-8 or the offhand (40) with the clicked slot;
+      // a stack larger than the slot allows is split, a displaced item returns to the inventory
       const slot = this.slots[slotId];
-      if (slot && this.canTake(slotId)) {
-        const hot = inv.main[button];
-        const slotIsPlayerInv = slot.playerIndex !== undefined;
-        let flag = !hot || (slotIsPlayerInv && this.isValid(slotId, hot));
-        let k1 = -1;
-        if (!flag) { k1 = inv.firstEmpty(); flag = flag || k1 > -1; }
-        if (slot.item && flag) {
-          const st = slot.item;
-          inv.main[button] = copy(st);
-          if ((!slotIsPlayerInv || !this.isValid(slotId, hot)) && hot) {
-            if (k1 > -1) {
-              inv.addToInventory(hot);
-              this.decr(slotId, st.count);
-              this.put(slotId, null);
-              this.onPickupFromSlot(slotId, st);
-            }
-          } else {
-            this.decr(slotId, st.count);
-            this.put(slotId, hot);
-            this.onPickupFromSlot(slotId, st);
+      const own = button === 40 ? inv.offhand : inv.main[button], there = slot ? slot.item : null;
+      const setOwn = (st) => { const v = st && st.count > 0 ? st : null; if (button === 40) inv.offhand = v; else inv.main[button] = v; };
+      if (slot && (own || there)) {
+        if (!own) {
+          if (this.canTake(slotId)) { setOwn(there); this.put(slotId, null); this.onPickupFromSlot(slotId, there); }
+        } else if (!there) {
+          if (this.isValid(slotId, own)) {
+            const max = this.slotLimit(slotId, own);
+            if (own.count > max) { const part = copy(own); part.count = max; own.count -= max; this.put(slotId, part); }
+            else { setOwn(null); this.put(slotId, own); }
           }
-        } else if (!slot.item && hot && this.isValid(slotId, hot)) {
-          inv.main[button] = null;
-          this.put(slotId, hot);
+        } else if (this.canTake(slotId) && this.isValid(slotId, own)) {
+          const max = this.slotLimit(slotId, own);
+          if (own.count > max) { const part = copy(own); part.count = max; own.count -= max; this.put(slotId, part); this.onPickupFromSlot(slotId, there); inv.addToInventory(there); }
+          else { setOwn(there); this.put(slotId, own); this.onPickupFromSlot(slotId, there); }
         }
         inv.syncWindowSlots();
       }

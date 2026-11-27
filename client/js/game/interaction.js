@@ -206,19 +206,31 @@ export class Interaction {
     this.swingLength = len;
   }
 
-  // ItemRenderer.updateEquippedItem (1.9+): the main hand follows the attack cooldown (strength cubed); a changed
-  // stack lowers the hand, which comes back up with the new one
+  // ItemInHandRenderer.tick: a hand keeps showing its stack while ItemStack.matches (item, count, components) or
+  // while it is the same stack object changed in place (eating shrinks it); otherwise it lowers, switches to the new
+  // stack below 0.1 and rises again. The main hand also follows the attack cooldown (strength cubed).
   updateEquip() {
     this.prevEquipProgress = this.equipProgress;
     this.prevEquipProgressOff = this.equipProgressOff;
     const inv = this.game.inventory;
-    const main = inv.held(), off = inv.offhand;
+    const main = inv.held() || null, off = inv.offhand || null;
     const f = this.cooledAttackStrength(1);
     const clamp = (v) => Math.max(-0.4, Math.min(0.4, v));
-    this.equipProgress += clamp((this._equipped === main ? f * f * f : 0) - this.equipProgress);
-    this.equipProgressOff += clamp((this._equippedOff === off ? 1 : 0) - this.equipProgressOff);
-    if (this.equipProgress < 0.1) this._equipped = main;
-    if (this.equipProgressOff < 0.1) this._equippedOff = off;
+    const matches = (snap, now) => (!snap && !now) || !!(snap && now && snap.id === now.id && (snap.count | 0) === (now.count | 0) && stackable(snap, now));
+    const keep = (ref, snap, now) => matches(snap, now) || (ref === now && !!now && snap?.id === now.id && stackable(snap, now));
+    const mainSame = keep(this._mainRef, this._mainSnap, main), offSame = keep(this._offRef, this._offSnap, off);
+    if (mainSame) { this._mainRef = main; this._mainSnap = main && copy(main); }
+    if (offSame) { this._offRef = off; this._offSnap = off && copy(off); }
+    this.equipProgress += clamp((mainSame ? f * f * f : 0) - this.equipProgress);
+    this.equipProgressOff += clamp((offSame ? 1 : 0) - this.equipProgressOff);
+    if (this.equipProgress < 0.1) { this._mainRef = main; this._mainSnap = main && copy(main); }
+    if (this.equipProgressOff < 0.1) { this._offRef = off; this._offSnap = off && copy(off); }
+  }
+  // The stacks the first-person renderer draws: the old one until the lowered hand switches
+  shownHandStacks() {
+    const inv = this.game.inventory;
+    const pick = (ref, snap, now) => (ref === now ? now : snap === undefined ? now : snap);
+    return [pick(this._mainRef, this._mainSnap, inv.held() || null), pick(this._offRef, this._offSnap, inv.offhand || null)];
   }
 
   // Minecraft.clickMouse (1.9+)
