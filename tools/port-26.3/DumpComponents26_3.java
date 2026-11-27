@@ -8,6 +8,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import net.minecraft.SharedConstants;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.Registry;
@@ -25,6 +26,11 @@ import net.minecraft.world.item.component.ResolvableProfile;
 import net.minecraft.server.Bootstrap;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.ItemStackTemplate;
+import net.minecraft.world.item.component.BundleContents;
+import net.minecraft.world.item.component.ChargedProjectiles;
+import net.minecraft.world.item.component.ItemContainerContents;
+import net.minecraft.world.level.block.entity.PotDecorations;
 
 public final class DumpComponents26_3 {
   private static String hex(ByteBuf buf) {
@@ -93,6 +99,16 @@ public final class DumpComponents26_3 {
     encoded.put("tooltip_style", encodeValue(access, DataComponents.TOOLTIP_STYLE, Identifier.fromNamespaceAndPath("minecraft", "default")));
     encoded.put("profile", encodeValue(access, DataComponents.PROFILE, ResolvableProfile.createUnresolved("Dev")));
 
+    // Item-container components must be exercised with occupied slots. Empty vanilla defaults
+    // would pass any incorrectly optional template reader and hide a desynchronising bool.
+    ItemStackTemplate apple = ItemStackTemplate.fromNonEmptyStack(new ItemStack(net.minecraft.world.item.Items.APPLE, 3));
+    ItemStackTemplate stick = ItemStackTemplate.fromNonEmptyStack(new ItemStack(net.minecraft.world.item.Items.STICK, 8));
+    ItemStackTemplate arrow = ItemStackTemplate.fromNonEmptyStack(new ItemStack(net.minecraft.world.item.Items.ARROW, 16));
+    encoded.put("container", encodeValue(access, DataComponents.CONTAINER, ItemContainerContents.fromItems(List.of(apple.create(), stick.create()))));
+    encoded.put("bundle_contents", encodeValue(access, DataComponents.BUNDLE_CONTENTS, new BundleContents(List.of(apple, stick))));
+    encoded.put("charged_projectiles", encodeValue(access, DataComponents.CHARGED_PROJECTILES, new ChargedProjectiles(List.of(arrow))));
+    encoded.put("pot_decorations", encodeValue(access, DataComponents.POT_DECORATIONS, new PotDecorations(Optional.of(apple), Optional.of(stick), Optional.empty(), Optional.empty())));
+
     List<String> names = new ArrayList<>(encoded.keySet());
     names.sort(Comparator.naturalOrder());
     StringBuilder out = new StringBuilder("{\n");
@@ -100,7 +116,7 @@ public final class DumpComponents26_3 {
       String name = names.get(i);
       if (i > 0) out.append(",\n");
       out.append("  ").append(json(name)).append(": {\"hex\": ").append(json(encoded.get(name)))
-          .append(", \"item\": ").append(examples.get(name)).append('}');
+          .append(", \"item\": ").append(examples.getOrDefault(name, -1)).append('}');
     }
     out.append("\n}\n");
     System.out.print(out);
