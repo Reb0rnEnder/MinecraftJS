@@ -7,6 +7,7 @@ import {Reader,Writer} from '../../client/js/net/buffer.js';
 import {readItemStack26_3,COMPONENT_READERS_26_3,itemComponentValues26_3,normalizeNativeComponent} from '../../client/js/net/item-components-26.3.js';
 import {DATA_COMPONENT_NAMES_26_3,ITEM_NAMES_26_3} from '../../client/js/net/items-26.3.js';
 import {adaptPlay26_3} from '../../client/js/net/play-adapter-26.3.js';
+import {Items} from '../../client/js/game/items.js';
 import {DATA_COMPONENTS} from './component-fixture.mjs';
 
 const componentId=name=>{
@@ -130,6 +131,9 @@ assert.equal(adapted.items[0].id,diamondSword);
 assert.equal(adapted.items[0].count,1);
 assert.equal(adapted.items[0].damage,42);
 assert.equal(adapted.items[0].maxStackSize,16);
+assert.equal(adapted.items[0].version,'26.3');
+assert.equal(adapted.items[0].maxDamage,1561,'adapted slots carry native defaults');
+assert.equal(adapted.items[0].components.unbreakable,undefined,'adapted slots carry patch removals');
 assert.deepEqual(adapted.items[0].componentPatch.removed,[componentId('unbreakable'),componentId('repair_cost')]);
 
 const slot=adaptPlay26_3({decoded:true,name:'container_set_slot',data:{containerId:5,stateId:9,slot:12,item:stack}});
@@ -187,6 +191,14 @@ assert.deepEqual(normalizeNativeComponent('rarity',2),'rare','native rarity id m
 assert.deepEqual(normalizeNativeComponent('dyed_color',0x123456),{rgb:0x123456,show_in_tooltip:true},'native dyed color becomes the item-view shape');
 assert.equal(normalizeNativeComponent('custom_model_data',{floats:[7],flags:[],strings:[],colors:[]}),7,'native custom model data exposes its first float');
 assert.equal(normalizeNativeComponent('potion_contents',{potion:13,customColor:null,customEffects:[],customEffectsName:null}).potionId,13,'native potion holder id reaches the item view');
+assert.equal(normalizeNativeComponent('consumable',{consumeSeconds:1.6,animation:2,sound:0,hasConsumeParticles:false,onConsumeEffects:[]}).animation,'drink','native use-animation id maps to its name');
+const itemView=new Items({data:{items:[]}});
+const potionStack={version:'26.3',itemId:itemId('potion'),added:[{name:'consumable',value:{consumeSeconds:1.6,animation:2,sound:0,hasConsumeParticles:false,onConsumeEffects:[]}}],removed:[]};
+assert.equal(itemView.useAction(potionStack),'drink','native consumable controls the potion use action');
+assert.equal(itemView.useDuration(potionStack),32,'native consume seconds drive the use duration');
+const appleStack={version:'26.3',itemId:apple,added:[],removed:[]};
+assert.equal(itemView.useAction(appleStack),'eat','native food defaults remain edible');
+assert.equal(itemView.useDuration(appleStack),32,'native food consume time is 1.6 s');
 
 const total=Object.keys(DATA_COMPONENTS).length;
 const unsynced=Object.values(DATA_COMPONENTS).filter(entry=>!entry.synced).length;

@@ -391,6 +391,9 @@ export function readItemStackTemplate26_3(r){
 // network values to the consumer-facing shapes used by Items/rendering, while report
 // defaults already arrive in that shape.
 const RARITIES=['common','uncommon','rare','epic'];
+// ItemUseAnimation declaration order in 26.3: NONE, EAT, DRINK, BLOCK, BOW, TRIDENT,
+// CROSSBOW, SPYGLASS, TOOT_HORN, BRUSH, BUNDLE, SPEAR.
+const USE_ANIMATIONS=['none','eat','drink','block','bow','trident','crossbow','spyglass','toot_horn','brush','bundle','spear'];
 const ATTRIBUTE_OPERATIONS={0:'add_value',1:'add_multiplied_base',2:'add_multiplied_total'};
 const ATTRIBUTE_SLOTS={0:'any',1:'mainhand',2:'offhand',3:'hand',4:'feet',5:'legs',6:'chest',7:'head',8:'armor',9:'body'};
 const TEXT_COMPONENTS=new Set(['custom_name','item_name','lore','written_book_content']);
@@ -420,6 +423,7 @@ export function normalizeNativeComponent(name,value){
   if(name==='dyed_color'&&typeof value==='number')return {rgb:value>>>0,show_in_tooltip:true};
   if(name==='rarity'&&typeof value==='number')return RARITIES[value]??value;
   if(name==='potion_contents'&&value&&typeof value==='object')return {...value,potionId:value.potion};
+  if(name==='consumable'&&typeof value?.animation==='number')return {...value,animation:USE_ANIMATIONS[value.animation]??value.animation};
   if(name==='custom_model_data'&&value&&typeof value==='object')return value.floats?.[0]??0;
   return value;
 }

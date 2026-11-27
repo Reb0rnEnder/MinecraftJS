@@ -239,12 +239,17 @@ export class Items {
   }
 
   useAction(item) {
-    if(!item)return 'none';const action=ITEM_DATA_766.items[item.id]?.action||'none';
+    if(!item)return 'none';
+    const c=this.components(item),animation=c?.consumable?.animation;
+    if(animation&&animation!=='none')return animation;
+    if(c?.food!==undefined)return 'eat';
+    const action=ITEM_DATA_766.items[item.id]?.action||'none';
     if(!['none','eat'].includes(action))return action;
-    return this.component(item,'food')!==undefined?'eat':'none';
+    return 'none';
   }
   useDuration(item) {
     if(!item)return 0;const c=this.components(item),name=this.name(item.id),meta=ITEM_DATA_766.items[item.id];
+    if(c.consumable)return Math.trunc(Math.fround(Math.fround(c.consumable.consumeSeconds??c.consumable.secondsToConsume??1.6)*20));
     if(c.food&&['eat','none'].includes(meta?.action))return Math.trunc(Math.fround(Math.fround(c.food.eat_seconds??c.food.secondsToEat??1.6)*20));
     if(name==='crossbow')return this.crossbowChargeDuration(item)+3;
     if(name==='goat_horn'){const instrument=c.instrument;return instrument?.data?.useDuration??ITEM_DATA_766.instruments[instrument?.instrumentId]?.duration??(typeof instrument==='string'?Object.values(ITEM_DATA_766.instruments).find(i=>i.key===instrument)?.duration:undefined)??meta?.duration??0;}

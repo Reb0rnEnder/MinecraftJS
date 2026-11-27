@@ -5,6 +5,7 @@
 import {HANDLED_PLAY_CLIENTBOUND_26_3} from './game-names-26.3.js';
 import {ENTITY_TYPES_26_3} from './entity-data-26.3.js';
 import {ITEM_NAMES_26_3} from './items-26.3.js';
+import {itemComponentValues26_3} from './item-components-26.3.js';
 import {lightTo758} from '../world/light-26.3.js';
 import {componentFromNbt} from './component-nbt-1.20.6.js';
 import {EFFECT_766} from '../game/effects-1.20.6.js';
@@ -44,16 +45,17 @@ function worldClock(clocks){
 }
 
 // A decoded 26.3 component patch becomes the slot shape the game already reads: numeric id,
-// count, and the effective components the UI needs. Defaults live in the item prototype, so a
-// value is only present when the patch added it; nothing is synthesized.
+// count, and the effective components the UI needs. The native report defaults are part of
+// that view, so durability, stack size, food and names survive the adapter.
 function itemStack(stack){
   if(!stack)return null;
-  const components=Object.fromEntries(stack.added.map(component=>[component.name,component.value]));
+  const components=itemComponentValues26_3(stack);
   return {
     id:stack.itemId,
     itemId:stack.itemId,
     itemKey:ITEM_NAMES_26_3[stack.itemId],
     count:stack.count,
+    version:'26.3',
     damage:Number(components.damage||0),
     maxDamage:components.max_damage??null,
     maxStackSize:components.max_stack_size??null,

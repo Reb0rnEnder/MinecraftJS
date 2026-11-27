@@ -78,7 +78,9 @@ pending; product outside current scope; or experiment-gated.
   as `VarInt count, VarInt item id, VarInt added, VarInt removed, values, removed ids`, and all 115 wire
   components have verified readers. Native defaults come from the 1658-item report table
   (`item-defaults:26.3`, 40 attributes); `itemComponentValues26_3` merges the patch and normalizes
-  report/network shape differences before `Items.components` consumes them. A real 26.3 session received a damaged custom-named sword, an
+  report/network shape differences before `Items.components` consumes them, adapted inventory slots
+  included. Native consumable animation/eat time drive `useAction`/`useDuration`, so potions drink and
+  food eats with the 26.3 timings instead of the shifted 766 item ids. A real 26.3 session received a damaged custom-named sword, an
   enchanted pickaxe, potions, a chest containing [apple x5, null, null, diamond x2] and a bundle containing
   [apple x3, stick x8] with zero decode errors. `component-codecs:26.3` pins all 122 component codecs and the
   seven server-only types. `components:26.3` encodes one real vanilla value per component with Mojang's own
