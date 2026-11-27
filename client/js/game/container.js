@@ -54,7 +54,15 @@ function componentsEqual(a,b){
   const ac=a?.effectiveComponents,bc=b?.effectiveComponents;
   if(ac||bc)return !!ac&&!!bc&&valueEqual(ac,bc);
   const ap=a?.componentPatch,bp=b?.componentPatch;
-  if(ap||bp)return !!ap&&!!bp&&valueEqual(ap,bp);
+  if(ap||bp){
+    if(!ap||!bp)return false;
+    // componentWire is a transport round-trip aid, not part of the component value. Native
+    // stacking compares the patch semantically, so a Creative stack and an equivalent
+    // server-decoded stack must still merge.
+    const norm=list=>(list??[]).map(({type,value})=>({type,value})).sort((x,y)=>x.type-y.type);
+    const removed=list=>(list??[]).slice().sort((x,y)=>x-y);
+    return valueEqual(norm(ap.added),norm(bp.added))&&valueEqual(removed(ap.removed),removed(bp.removed));
+  }
   return tagsEqual(a,b);
 }
 export function stackable(a, b) { return sameItem(a, b) && componentsEqual(a, b); }
@@ -326,17 +334,19 @@ class ContainerBase {
           this.onSlotChanged(slotId);
         }
       }
-    } else if (mode === 2 && button >= 0 && button < 9) {
+    } else if (mode === 2 && ((button >= 0 && button < 9) || button === 40)) {
       const slot = this.slots[slotId];
       if (slot && this.canTake(slotId)) {
-        const hot = inv.main[button];
+        // ContainerInput.SWAP uses button 40 for the off hand, not a tenth hotbar slot.
+        const hot = button === 40 ? inv.offhand : inv.main[button];
+        const setHot = item => { if (button === 40) inv.offhand = item; else inv.main[button] = item; };
         const slotIsPlayerInv = slot.playerIndex !== undefined;
         let flag = !hot || (slotIsPlayerInv && this.isValid(slotId, hot));
         let k1 = -1;
         if (!flag) { k1 = inv.firstEmpty(); flag = flag || k1 > -1; }
         if (slot.item && flag) {
           const st = slot.item;
-          inv.main[button] = copy(st);
+          setHot(copy(st));
           if ((!slotIsPlayerInv || !this.isValid(slotId, hot)) && hot) {
             if (k1 > -1) {
               inv.addToInventory(hot);
@@ -350,7 +360,7 @@ class ContainerBase {
             this.onPickupFromSlot(slotId, st);
           }
         } else if (!slot.item && hot && this.isValid(slotId, hot)) {
-          inv.main[button] = null;
+          setHot(null);
           this.put(slotId, hot);
         }
         inv.syncWindowSlots();

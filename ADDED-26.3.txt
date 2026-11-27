@@ -2,7 +2,7 @@ MinecraftJS 26.3 - WHAT WE HAVE ADDED
 Branch: 26.3
 Inventory date: 2026-11-27
 Baseline: be606d1 "Implement native 26.3 recipe-book displays and chat click parity" plus this batch
-Latest verified run: test:26.3 99/99, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
+Latest verified run: test:26.3 101/101, adapter:26.3 53 pinned frames / 36 handler names / 2 chunks,
 inbound gate all checks passed, serverbound gate 0, npm run assets exit 0 (91 mobs, 141 textures,
 no mobs pending a renderer).
 
@@ -130,7 +130,9 @@ Recent inbound work:
 - writeHashedStack26_3 round-trips Mojang's own HashedStack encoder for all 405 patched Creative
   stacks. Server-decoded patches also keep each added component's exact wire bytes, so a normal
   container click writes the received patch back unchanged; a locally changed damage value
-  replaces only its damage row.
+  replaces only its damage row. Component-patch stacking ignores transport bytes, and number-key
+  swap now handles the off-hand button 40 (plus drag distribution, pickup-all and full-container
+  shift-click coverage).
 - Native menu registry mapping (26.3 menu order matches 766's 25 IDs).
 - Local crafting for native shaped/shapeless recipes and {any:[item ids]} tag alternatives.
 - The native RecipeDisplay graph is resolved into the book: all 13 recipe-book categories map to

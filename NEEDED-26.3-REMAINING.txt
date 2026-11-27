@@ -3,7 +3,7 @@ Branch: 26.3
 Inventory date: 2026-11-27
 Baseline: 3e5e861 plus the native recipe-book/chat correction in this batch
 Verified for this inventory:
-- npm run test:26.3: 99/99 tests
+- npm run test:26.3: 101/101 tests
 - npm run adapter:26.3: 53 frames, 36 handler names, 2 chunks, 0 skipped
 - inbound gate: 144/144 Play IDs decoded, 0 raw
 - serverbound gate: 69/69 IDs have a sender or an explicit scope decision
@@ -30,7 +30,9 @@ Closed in this batch:
 - Server-decoded component patches preserve their exact network bytes for normal container
   clicks; predicted damage updates only its own row. Integer components now use exact native
   HashOps.CRC32C values, while other unknown hashes use the verified empty-HashedPatchMap resync
-  fallback instead of throwing from the click sender.
+  fallback instead of throwing from the click sender. Patch stacking ignores transport bytes.
+- Off-hand number-key swaps (button 40), drag distribution, pickup-all and full-container
+  shift-click have direct 26.3 inventory coverage.
 - Native 26.3 RecipeDisplay-graph recipe book: all 13 categories map to tabs; SlotDisplay
   item/item_stack/tag/composite/remainder/fuel branches resolve to stacks; shaped grids keep
   width/height and empty cells; shapeless/furnace/stonecutter/smithing displays become book

@@ -4,7 +4,7 @@ Inventory date: 2026-11-27
 Baseline: commit 66dd0a1 on top of 6b70740
 Rule: never fill a 26.3 gap with 1.20.6 data, packet layout, model layout or menu layout. The pinned
 26.3 jar and bytecode remain the source of truth.
-Refreshed remaining-work inventory: NEEDED-26.3-REMAINING.txt (2026-11-27, 99/99 tests).
+Refreshed remaining-work inventory: NEEDED-26.3-REMAINING.txt (2026-11-27, 101/101 tests).
 
 This is the remaining-work companion to ADDED-26.3.txt. It is ordered by what unblocks the most
 parity first. "Code-only" means it can be done without a Microsoft account or a human visual
@@ -42,11 +42,11 @@ Done and committed:
   insertion, run_command uses the unattended command packet with optional slash trimming, and
   suggestions apply from any mouse button with the native list-rect consumption. Pinned by
   test-chat-click-actions-26.3.mjs.
-- Full 26.3 gate: test:26.3 99/99.
+- Full 26.3 gate: test:26.3 101/101.
 - custom_report_details and low_disk_space_warning are handled; only add_transient_block and the
   two game-test frames remain explicit scope decisions.
 - Adapter gate skips nothing across its 53 pinned frames (36 handler names).
-- Full 26.3 gate: test:26.3 99/99, adapter 53 frames / 36 handlers, inbound all, serverbound 0,
+- Full 26.3 gate: test:26.3 101/101, adapter 53 frames / 36 handlers, inbound all, serverbound 0,
   assets exit 0.
 - 26.3 spears: native kinetic/piercing component use, attack_range picking, minimum_attack_charge,
   STAB player_action, SwingAnimation duration, and the first-/third-person spear use and attack

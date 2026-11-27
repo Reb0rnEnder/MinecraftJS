@@ -6,6 +6,7 @@ import {readItemStack26_3,writeItemStack26_3,writeHashedStack26_3} from '../clie
 import {C} from '../client/js/net/packets.js';
 import {nativeCreativeRows263,creativeStack263} from '../client/js/gui/creative-data-26.3.js';
 import {creativeRows} from '../client/js/gui/screens/containers.js';
+import {Inventory,stackable} from '../client/js/game/container.js';
 
 const data=JSON.parse(readFileSync(new URL('../client/data/creative.json',import.meta.url)));
 const items=JSON.parse(readFileSync(new URL('../client/data/items.json',import.meta.url)));
@@ -145,4 +146,67 @@ test('native integer component hashes match Mojang HashOps.CRC32C values', () =>
   assert.equal(hashOf(1,16),1769065625);
   // A predicted damage change must replace the stale decoded damage hash.
   assert.equal(hashOf(3,1,5),645064431);
+});
+
+test('component patches stack semantically without their transport bytes', () => {
+  const a={id:1,count:1,componentPatch:{added:[{type:3,name:'damage',value:1,componentWire:new Uint8Array([1])}],removed:[]}};
+  const b={id:1,count:1,componentPatch:{added:[{type:3,name:'damage',value:1}],removed:[]}};
+  const c={id:1,count:1,componentPatch:{added:[{type:3,name:'damage',value:2,componentWire:new Uint8Array([2])}],removed:[]}};
+  assert.equal(stackable(a,b),true);
+  assert.equal(stackable(a,c),false);
+});
+
+test('26.3 inventory offhand swaps, drag distribution and pickup-all are native', () => {
+  const items={maxStack:item=>item.maxStackSize??64,name:()=>'stone'};
+  const game={items,player:{},heldSlot:0,gameMode:0};
+  const inv=new Inventory(game);
+  game.inventory=inv;
+  const stone=count=>({id:1,count});
+
+  inv.main[0]=stone(1);
+  inv.offhand=stone(5);
+  inv.slotClick(36,40,2);
+  assert.equal(inv.offhand.count,1);
+  assert.equal(inv.main[0].count,5);
+  inv.slotClick(36,40,2);
+  assert.equal(inv.offhand.count,5);
+  assert.equal(inv.main[0].count,1);
+
+  inv.offhand=stone(5);
+  inv.main[2]=stone(1);
+  inv.slotClick(45,2,2);
+  assert.equal(inv.offhand.count,1);
+  assert.equal(inv.main[2].count,5);
+
+  inv.main.fill(null);
+  inv.cursor=stone(10);
+  inv.slotClick(36,0,5);
+  inv.slotClick(36,1,5);
+  inv.slotClick(37,1,5);
+  inv.slotClick(-999,2,5);
+  assert.equal(inv.main[0].count,5);
+  assert.equal(inv.main[1].count,5);
+  assert.equal(inv.cursor,null);
+
+  inv.main.fill(null);
+  inv.offhand=null;
+  inv.armor.fill(null);
+  inv.craft.fill(null);
+  inv.craftResult=null;
+  inv.cursor=stone(1);
+  inv.main[0]=stone(5);
+  inv.main[1]=stone(2);
+  inv.slotClick(38,0,6);
+  assert.equal(inv.cursor.count,8);
+  assert.equal(inv.main[0],null);
+  assert.equal(inv.main[1],null);
+
+  for(let index=9;index<36;index++)inv.main[index]=stone(64);
+  inv.main[0]=stone(2);
+  inv.slotClick(36,0,1);
+  assert.equal(inv.main[0].count,2);
+  inv.main[20]=null;
+  inv.slotClick(36,0,1);
+  assert.equal(inv.main[0],null);
+  assert.equal(inv.main[20].count,2);
 });
