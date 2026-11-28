@@ -175,11 +175,13 @@ export class EntityRenderer {
   // is redone when the property arrives or changes (the model may be drawn before the tab list entry). With no textures
   // from the server, the local player falls back to its own Mojang profile when the server's UUID is the account's.
   skinFor(e) {
+    const local=this.game.cosmetics?.localSkin(e.uuid);if(local)return local;
     const streamed=this.game.eaglerTextures?.request(e.uuid);if(streamed)return streamed;
     const value = this._texturesProp(e.uuid);
     let s = this.skins.get(e.uuid);
     if (s && (s.propValue === value || (value === null && s.propValue !== undefined && s.fromSession))) return s;
-    const fresh = { ...defaultSkin(e.uuid), texture: null, propValue: value };
+    const base = defaultSkin(e.uuid);
+    const fresh = { ...base, texture: null, propValue: value, cape: this.game.cosmetics?.localCape(e.uuid) || base.cape || null };
     if (s) this._rebuild(e.uuid);
     s = fresh;
     this.skins.set(e.uuid, s);
