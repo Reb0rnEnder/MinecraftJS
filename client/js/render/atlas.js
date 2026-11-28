@@ -1,5 +1,17 @@
 // Texture atlas built from decoded block + item textures (pure JS), with .mcmeta animation support.
 
+// MissingTextureAtlasSprite "missingno": 16x16, magenta 0xF800F8 where (y < 8) ^ (x < 8), black elsewhere. Every
+// atlas carries it and unknown sprite names resolve to it.
+export const MISSING_SPRITE = 'missingno';
+export function missingTextureImage() {
+  const data = new Uint8Array(16 * 16 * 4);
+  for (let y = 0; y < 16; y++) for (let x = 0; x < 16; x++) {
+    const o = (y * 16 + x) * 4, magenta = (y < 8) !== (x < 8);
+    data[o] = magenta ? 0xf8 : 0; data[o + 1] = 0; data[o + 2] = magenta ? 0xf8 : 0; data[o + 3] = 255;
+  }
+  return { width: 16, height: 16, data };
+}
+
 // Sprites whose frame is chosen by game state instead of time (TextureCompass, TextureClock)
 const MANUAL = new Set(['item/compass', 'item/clock']);
 
@@ -13,8 +25,9 @@ export class Atlas {
 
   // textures: [{ name, image: { width, height, data } }], mcmeta: { name: json }
   build(textures, mcmeta) {
-    const items = [];
+    const items = [{ name: MISSING_SPRITE, img: missingTextureImage(), w: 16, h: 16, frames: 1, meta: null }];
     for (const t of textures) {
+      if (t.name === MISSING_SPRITE) continue;
       const img = t.image;
       if (!img) continue;
       const meta = mcmeta[t.name];
@@ -71,7 +84,7 @@ export class Atlas {
   }
 
   uv(name) {
-    const e = this.entries.get(name) || this.entries.get('block/stone');
+    const e = this.entries.get(name) || this.entries.get(MISSING_SPRITE);
     return e ? e.uv : null;
   }
 
@@ -158,7 +171,7 @@ export class Atlas {
 
 export class AtlasLookup {
   constructor(table) { this.table = table; }
-  uv(name) { const e = this.table[name] || this.table['block/stone']; return e ? e.uv : null; }
+  uv(name) { const e = this.table[name] || this.table[MISSING_SPRITE]; return e ? e.uv : null; }
   hasAlpha(name) { const e = this.table[name]; return e ? e.alpha : false; }
   has(name) { return !!this.table[name]; }
 }
