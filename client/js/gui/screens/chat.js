@@ -10,7 +10,7 @@ import {platform } from '../../platform/platform.js';
 import {writeClipboard} from '../../platform/clipboard.js';
 import {parseDialog263} from '../../net/dialog-26.3.js';
 import { C,PROTOCOL_VERSION } from '../../net/packets.js';
-
+import { captureAutoLogin } from '../../game/auto-login.js';
 
 export class ChatScreen extends Screen {
   constructor(game, initial, options = {}) {
@@ -153,6 +153,7 @@ export class ChatScreen extends Screen {
       if (msg) {
         g.hud.sentHistory.push(msg);
         if (g.hud.sentHistory.length > 100) g.hud.sentHistory.shift();
+        if (captureAutoLogin(g, msg)) g.hud.addChat('§a' + tr('minecraftjs.autologin.captured'), null, true);
         g.send(C.chat(msg.slice(0, 256)));
       }
       this.close();
