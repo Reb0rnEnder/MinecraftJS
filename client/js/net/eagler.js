@@ -73,9 +73,10 @@ function readError(b) {
 const chatJson = (text) => JSON.stringify({ text });
 
 export class EaglerSocket extends Emitter {
-  constructor(address) {
+  constructor(address, game = null) {
     super();
     this.isEagler = true;
+    this.game = game;
     this.address = address; // parseAddress() result with kind 'eagler'
     this.state = 'idle';    // idle -> version -> login -> profile -> finish -> play | closed
     this.sock = null;
@@ -119,7 +120,7 @@ export class EaglerSocket extends Emitter {
     this.password = a.pass;
     this._control({ type: 'status', key: 'connect.authorizing', message: 'Logging in...' });
     this.state = 'version';
-    this.timer = setTimeout(() => { if (this.state !== 'play') this._fail('Timed out during the Eaglercraft handshake'); }, 15000);
+    this.timer = setTimeout(() => { if (this.state !== 'play') this._fail('Timed out during the MCJS handshake'); }, 15000);
     this.sock.sendBinary(new Writer()
       .byte(0x01).byte(0x02)                        // client version, handshake format 2
       .short(2).short(2).short(3)                   // eagler protocols
@@ -136,7 +137,7 @@ export class EaglerSocket extends Emitter {
       const r = new Reader(b);
       const id = r.byte();
       if (this.state === 'version') {
-        if (id === 0x03) { this._fail('Incompatible Eaglercraft server (protocol mismatch)'); return; }
+        if (id === 0x03) { this._fail('Incompatible MCJS server (protocol mismatch)'); return; }
         if (id !== 0x02) throw new Error('Unexpected packet 0x' + id.toString(16));
         let auth = AUTH_NONE;
         if (b[1] === 0x01) {
@@ -155,9 +156,9 @@ export class EaglerSocket extends Emitter {
         let pass = new Uint8Array(0);
         if (auth !== AUTH_NONE) {
           if (this.password === null) { this._fail('This server needs a password: add it to the address as name:password@wss://...'); return; }
-          if (auth !== AUTH_PLAINTEXT) { this._fail('This server uses an Eaglercraft password method MinecraftJS does not support yet'); return; }
+          if (auth !== AUTH_PLAINTEXT) { this._fail('This server uses a password method MCJS does not support yet'); return; }
           pass = encodeUtf8(this.password);
-          if(pass.length>255){this._fail('Eaglercraft password is too long (maximum 255 UTF-8 bytes)');return;}
+          if(pass.length>255){this._fail('MCJS password is too long (maximum 255 UTF-8 bytes)');return;}
         }
         this.state = 'login';
         this.sock.sendBinary(new Writer().byte(0x04).str8(this.username).str8('default').byte(pass.length).bytes(pass).done());
@@ -166,8 +167,15 @@ export class EaglerSocket extends Emitter {
         if (id !== 0x05) throw new Error('Unexpected packet 0x' + id.toString(16));
         this.username = r.str8();
         this.uuid = uuidString(r.bytes(16));
-        // Profile: built-in skin preset 0 (default), then finish
-        this.sock.sendBinary(new Writer().byte(0x07).str8('skin_v1').short(5).byte(0x01).int(0).done());
+        // Profile data: the account's chosen Eaglercraft skin and cape (default preset 0 when none),
+        // then finish. The server broadcasts these to the other players.
+        const profile = this.game && this.game.cosmetics && this.game.cosmetics.eaglerProfile
+          ? this.game.cosmetics.eaglerProfile() : null;
+        const skin = profile && profile.skin ? profile.skin : new Uint8Array([0x01, 0, 0, 0, 0]);
+        this.sock.sendBinary(new Writer().byte(0x07).str8('skin_v1').short(skin.length).bytes(skin).done());
+        if (profile && profile.cape) {
+          this.sock.sendBinary(new Writer().byte(0x07).str8('cape_v1').short(profile.cape.length).bytes(profile.cape).done());
+        }
         this.sock.sendBinary(new Uint8Array([0x08]));
         this.state = 'finish';
       } else if (this.state === 'finish') {
@@ -177,13 +185,13 @@ export class EaglerSocket extends Emitter {
         this._control({ type: 'login_success', uuid: this.uuid, username: this.username });
       }
     } catch (e) {
-      this._fail('Eaglercraft handshake failed: ' + e.message);
+      this._fail('MCJS handshake failed: ' + e.message);
     }
   }
 }
 
-export async function openEaglerSocket(address) {
-  return new EaglerSocket(address).open();
+export async function openEaglerSocket(address, game = null) {
+  return new EaglerSocket(address, game).open();
 }
 
 // Server list ping: "Accept: MOTD" answers with a JSON description and, when the server has one, a 64x64 icon as
@@ -211,7 +219,7 @@ export async function pingEagler(address, timeout = 6000) {
       status = {
         description: motd,
         players: { online: d.online | 0, max: d.max | 0, sample: (Array.isArray(d.players) ? d.players : []).map((name) => ({ name: String(name) })) },
-        version: { name: j.vers || j.brand || 'Eaglercraft', protocol: GAME_PROTOCOL },
+        version: { name: j.vers || j.brand || 'MCJS', protocol: GAME_PROTOCOL },
         ping: Math.round(P.now() - sent),
       };
       if (d.icon) iconTimer = setTimeout(() => finish({ status }), 1000);
