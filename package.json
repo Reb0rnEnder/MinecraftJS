@@ -1,12 +1,13 @@
 {
   "name": "minecraftjs",
   "version": "1.0.0",
-  "description": "MinecraftJS 1.20.6 port; graphical native-server milestone with parity work continuing",
+  "description": "MinecraftJS 1.21.11 port; parity work continuing",
   "scripts": {
     "start": "node proxy.js",
     "dev": "node proxy.js",
     "assets": "node tools/build.js assets",
     "build": "node tools/build.js html",
+    "test:1.21.11": "node tools/port-1.21.11/generate-ids.mjs --check && node tools/port-1.21.11/reports.mjs --check && node tools/port-1.21.11/component-fixtures.mjs --check && node tools/port-1.21.11/generate-component-schema.mjs --check && node tools/port-1.21.11/stack-fixtures.mjs --check && node tools/port-1.21.11/generate-play-schema.mjs --check && node tools/port-1.21.11/gui-data.mjs --check && node tools/port-1.21.11/ui-state-fixtures.mjs --check && node tools/generate-stat-registry.mjs --check && node tools/port-1.21.11/metadata-fixtures.mjs --check && node tools/stat-items.mjs --check && node tools/port-1.21.11/native-packet-names.mjs --check && node tools/port-1.21.11/creative-data.mjs --check && node tools/port-1.21.11/foliage-fixtures.mjs --check && node tools/port-1.21.11/item-ux-data.mjs --check && node tools/port-1.21.11/packet-oracle-check.mjs --check && node tools/port-1.21.11/support-data.mjs --check && node tools/port-1.21.11/font-fixtures.mjs --check && node tools/port-1.21.11/sign-transform-fixtures.mjs --check && node tools/port-1.21.11/banner-stack-fixtures.mjs --check && node tools/port-1.21.11/adventure-fixtures.mjs --check && node tools/port-1.21.11/default-tags.mjs --check && node tools/port-1.21.11/pack-metadata-fixtures.mjs --check && node tools/port-1.21.11/paws-fixtures.mjs --check && node tools/port-1.21.11/score-format-fixtures.mjs --check && node tools/port-1.21.11/pot-fixtures.mjs --check && node tools/port-1.21.11/presentation-fixtures.mjs --check && node tools/port-1.21.11/bookshelf-fixtures.mjs --check && node tools/port-1.21.11/border-fixtures.mjs --check && node --test tools/test-*1.21.11*.mjs",
     "prepare:1.20.6": "node tools/port-1.20.6/prepare.mjs",
     "reports:1.20.6": "node tools/port-1.20.6/reports.mjs",
     "component-fixtures:1.20.6": "node tools/port-1.20.6/component-fixtures.mjs",

@@ -266,13 +266,16 @@ function pickWeighted(v, rand) {
   return v[0];
 }
 
-// Multipart condition: { prop: "a|b", ... } (all must match) or { OR: [conditions] }
+// Multipart predicates: a lone OR/AND key contains nested conditions; otherwise all properties are conjunctive.
+// Each pipe-separated value is an alternative, and ! negates that individual value (e.g. !north|south).
 function matchWhen(when, props) {
-  if (when.OR) return when.OR.some((w) => matchWhen(w, props));
+  const keys = Object.keys(when);
+  if (keys.length === 1 && Array.isArray(when.OR)) return when.OR.some((w) => matchWhen(w, props));
+  if (keys.length === 1 && Array.isArray(when.AND)) return when.AND.every((w) => matchWhen(w, props));
   for (const [k, val] of Object.entries(when)) {
-    const p = props[k];
-    // values are strings ("a|b") or plain JSON booleans / numbers
-    if (!String(val).split('|').includes(String(p === undefined ? false : p))) return false;
+    const p = String(props[k] === undefined ? false : props[k]);
+    const matches = String(val).split('|').some((choice) => choice.startsWith('!') ? p !== choice.slice(1) : p === choice);
+    if (!matches) return false;
   }
   return true;
 }

@@ -53,7 +53,7 @@ test('tutorial toasts draw this release\'s native toast art',async()=>{
   const {t,toasts}=fixture('punch_tree');for(let i=0;i<600;i++)t.update();const toast=toasts[0];const calls=[];
   toast.draw({sprite:(...a)=>calls.push(['sprite',...a]),blit:(...a)=>calls.push(['blit',...a]),text(){},rect(){}},0);
   if(/gui\.sprite\('toast\/tutorial'/.test(source)){
-    const {ZipFile}=await import('../lib/zip.js');const jar=new ZipFile(new URL('../cache/port-1.20.6/client.jar',import.meta.url));
+    const {ZipFile}=await import('../lib/zip.js'),{MC_VERSION}=await import('../lib/mcassets.js');const jar=new ZipFile(new URL(`../cache/port-${MC_VERSION}/client.jar`,import.meta.url));
     assert.deepEqual(calls.map(c=>c[1]),['toast/tutorial','toast/tree']);
     for(const n of ['tutorial','movement_keys','mouse','tree','recipe_book','wooden_planks'])assert.ok(jar.read('assets/minecraft/textures/gui/sprites/toast/'+n+'.png'),n);
   }else assert.deepEqual(calls.map(c=>c[1]),['gui/toasts.png','gui/toasts.png']);

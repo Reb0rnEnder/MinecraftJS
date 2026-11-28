@@ -10,7 +10,7 @@ import {initBlocks,findState} from '../client/js/world/blocks.js';
 import {setTranslator} from '../client/js/gui/i18n.js';
 import {setPlatform} from '../client/js/platform/platform.js';
 const fixture=JSON.parse(readFileSync(new URL('./fixtures/jigsaw-native.json',import.meta.url))),protocol=PROTOCOL_VERSION;
-const ids=await import('../client/js/net/protocol-'+layout.version+'-ids.js'),OUT=ids['SERVERBOUND_'+protocol]||ids['PLAY_SERVERBOUND_'+protocol];
+const idVer=protocol===774?'1.21.11':layout.version,ids=await import('../client/js/net/protocol-'+idVer+'-ids.js'),OUT=ids['SERVERBOUND_'+protocol]||ids['PLAY_SERVERBOUND_'+protocol];
 setPlatform({now:()=>0});setTranslator((key,args)=>key+(args.length?'('+args.join(',')+')':''));
 initBlocks(JSON.parse(readFileSync(new URL('../client/data/blocks.json',import.meta.url))),null);
 const pos={x:-31,y:72,z:481};

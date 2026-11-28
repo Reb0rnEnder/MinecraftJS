@@ -38,10 +38,27 @@ const TRANSLUCENT = new Set(['water', 'lava', 'ice', 'frosted_ice', 'slime_block
 
 // Blocks without a block model (rendered by special renderers or invisible)
 const NO_MODEL = new Set([
-  'air', 'water', 'lava', 'chest', 'trapped_chest', 'ender_chest', 'sign', 'wall_sign', 'skull', 'white_bed',
-  'white_banner', 'white_wall_banner', 'moving_piston', 'barrier', 'end_portal', 'structure_void',
-  'end_gateway', ...SHULKER_BOXES,
+  'air', 'void_air', 'cave_air', 'water', 'lava', 'bubble_column',
+  'chest', 'trapped_chest', 'ender_chest', 'copper_chest', 'copper_golem_statue',
+  'sign', 'wall_sign', 'skull', 'white_bed', 'white_banner', 'white_wall_banner',
+  'moving_piston', 'barrier', 'light', 'end_portal', 'structure_void',
+  'end_gateway', 'conduit', 'decorated_pot', ...SHULKER_BOXES,
 ]);
+
+function hasDefaultBlockModel(name) {
+  return !NO_MODEL.has(name) &&
+    !name.endsWith('_bed') &&
+    !name.endsWith('_banner') &&
+    !name.endsWith('_wall_banner') &&
+    !name.endsWith('_sign') &&
+    !name.endsWith('_wall_sign') &&
+    !name.endsWith('_hanging_sign') &&
+    !name.endsWith('_wall_hanging_sign') &&
+    !name.endsWith('_copper_chest') &&
+    !name.endsWith('_copper_golem_statue') &&
+    !HEAD_BLOCKS.has(name) &&
+    !SHULKER_BOXES.has(name);
+}
 
 const FENCES = (name) => name.endsWith('_fence');
 const FENCE_GATES = (name) => name.endsWith('_fence_gate');
@@ -86,10 +103,7 @@ export function initBlocks(blocksJson, shapesJson) {
       opaque: b.boundingBox === 'block' && !b.transparent && !NOT_OPAQUE.has(name) && b.id !== 0,
       renderLayer,modelOffset:shapesJson?.modelOffsets?.blocks[name],
       translucent: renderLayer?renderLayer==='translucent':(TRANSLUCENT.has(name) || name.endsWith('_stained_glass') || name.endsWith('_stained_glass_pane')),
-      hasModel: !NO_MODEL.has(name) && !name.endsWith('_bed') && !name.endsWith('_banner') && !name.endsWith('_wall_banner') &&
-        !HEAD_BLOCKS.has(name) &&
-        name !== 'shulker_box' && !name.endsWith('_shulker_box') && name !== 'conduit' &&
-        name !== 'bubble_column' && name !== 'void_air' && name !== 'cave_air',
+      hasModel: hasDefaultBlockModel(name),
       isStairs: stairs,
       isFence: FENCES(name),
       isFenceGate: FENCE_GATES(name),
@@ -132,11 +146,14 @@ export function initBlocks(blocksJson, shapesJson) {
   const rendering = shapesJson?.render;
   if (rendering) {
     if (rendering.states.length !== states.length) throw new Error('Incomplete native block render properties; regenerate runtime data');
+    // Pre-1.21.11 RenderShape used 2=MODEL (with 1=ENTITYBLOCK_ANIMATED); 1.21.11 uses 0=INVISIBLE, 1=MODEL.
+    const hasEntityShape = rendering.values.some((v) => v.renderType === 2);
     for (const info of states) {
       const value = rendering.values[rendering.states[info.id]];
       if (!value) throw new Error('Missing block render properties for state '+info.id);
       const def = blocks[info.blockId];
-      const overrides = {hasModel:value.renderType===2,renderType:value.renderType,opaque:value.solid,suffocates:value.suffocates??value.viewBlocking,viewBlocking:value.viewBlocking,canOcclude:value.occludes,aoLight:value.shade,filterLight:value.lightBlock,
+      const hasModel = hasEntityShape ? value.renderType === 2 : (value.renderType !== 0 && hasDefaultBlockModel(def.name));
+      const overrides = {hasModel,renderType:value.renderType,opaque:value.solid,suffocates:value.suffocates??value.viewBlocking,viewBlocking:value.viewBlocking,canOcclude:value.occludes,aoLight:value.shade,filterLight:value.lightBlock,
         emitLight:value.emission,collisionFull:value.collisionFull,sturdyBottom:value.sturdyBottom,sturdyTop:value.sturdyTop,occlusionBoxes:value.occlusion,soundType:value.sound,
         useNeighborBrightness:!value.solid&&!value.collisionFull&&!def.isLiquid};
       renderBlocks[info.id] = Object.assign(Object.create(def),overrides);

@@ -1,3 +1,4 @@
+import { itemComponentValues774 } from '../net/item-components-1.21.11.js';
 import{bundleSlotClick}from'./bundle.js';
 import {smithingRecipe,smithingResult,smithingRecipes} from './workstations-1.16.5.js';
 // Inventory/container model with a faithful port of vanilla Container.slotClick and
@@ -50,14 +51,32 @@ function valueEqual(a,b){
   const ak=Object.keys(a).sort(),bk=Object.keys(b).sort();
   return ak.length===bk.length&&ak.every((key,index)=>key===bk[index]&&valueEqual(a[key],b[key]));
 }
-function componentsEqual(a,b){
-  const ac=a?.effectiveComponents,bc=b?.effectiveComponents;
-  if(ac||bc)return !!ac&&!!bc&&valueEqual(ac,bc);
-  const ap=a?.componentPatch,bp=b?.componentPatch;
-  if(ap||bp)return !!ap&&!!bp&&valueEqual(ap,bp);
-  return tagsEqual(a,b);
+function componentsEqual(a, b) {
+  const ac = a?.effectiveComponents || a?.componentValues, bc = b?.effectiveComponents || b?.componentValues;
+  if (ac || bc) {
+    if (!a?.nbt && !b?.nbt) return valueEqual(itemComponentValues774(a), itemComponentValues774(b));
+    return !!ac && !!bc && valueEqual(ac, bc);
+  }
+  const ap = a?.componentPatch, bp = b?.componentPatch;
+  if (ap || bp) return !!ap && !!bp && valueEqual(ap, bp);
+  return tagsEqual(a, b);
 }
 export function stackable(a, b) { return sameItem(a, b) && componentsEqual(a, b); }
+
+// ItemStack.matchesIgnoringComponents marked with ignoreSwapAnimation (1.21.11).
+// Damage is excluded from re-equip decisions, but remains significant for stacking.
+export function stackMatchesForSwapAnimation(a, b) {
+  if (a === b) return true;
+  if (!a || !b || a.id !== b.id || (a.count | 0) !== (b.count | 0)) return false;
+  const withoutDamage = (item) => Object.fromEntries(
+    Object.entries(itemComponentValues774(item)).filter(([type]) => type !== 'damage')
+  );
+  const ac = itemComponentValues774(a), bc = itemComponentValues774(b);
+  const ak = Object.keys(ac), bk = Object.keys(bc);
+  // Native comparison requires the same component set/size before applying the
+  // per-component ignore flag; only differing values on shared components skip.
+  return ak.length === bk.length && ak.every((type) => Object.hasOwn(bc, type)) && valueEqual(withoutDamage(a), withoutDamage(b));
+}
 
 const ARMOR_POINTS = {
   leather: [1, 3, 2, 1], chainmail: [2, 5, 4, 1], iron: [2, 6, 5, 2], diamond: [3, 8, 6, 3], netherite: [3, 8, 6, 3], golden: [2, 5, 3, 1],
@@ -322,32 +341,50 @@ class ContainerBase {
           this.onSlotChanged(slotId);
         }
       }
-    } else if (mode === 2 && button >= 0 && button < 9) {
+    } else if (mode === 2 && (button >= 0 && button < 9 || button === 40)) {
+      // AbstractContainerMenu.doClick SWAP (1.16+): hotbar slot 0-8 or the offhand (40) with the clicked slot;
+      // a stack larger than the slot allows is split, and a displaced item returns to the inventory.
       const slot = this.slots[slotId];
-      if (slot && this.canTake(slotId)) {
-        const hot = inv.main[button];
-        const slotIsPlayerInv = slot.playerIndex !== undefined;
-        let flag = !hot || (slotIsPlayerInv && this.isValid(slotId, hot));
-        let k1 = -1;
-        if (!flag) { k1 = inv.firstEmpty(); flag = flag || k1 > -1; }
-        if (slot.item && flag) {
-          const st = slot.item;
-          inv.main[button] = copy(st);
-          if ((!slotIsPlayerInv || !this.isValid(slotId, hot)) && hot) {
-            if (k1 > -1) {
-              inv.addToInventory(hot);
-              this.decr(slotId, st.count);
-              this.put(slotId, null);
-              this.onPickupFromSlot(slotId, st);
-            }
-          } else {
-            this.decr(slotId, st.count);
-            this.put(slotId, hot);
-            this.onPickupFromSlot(slotId, st);
+      const own = button === 40 ? inv.offhand : inv.main[button], there = slot ? slot.item : null;
+      const setOwn = (st) => {
+        const value = st && st.count > 0 ? st : null;
+        if (button === 40) inv.offhand = value;
+        else inv.main[button] = value;
+      };
+      if (slot && (own || there)) {
+        if (!own) {
+          if (this.canTake(slotId)) {
+            setOwn(there);
+            this.put(slotId, null);
+            this.onPickupFromSlot(slotId, there);
           }
-        } else if (!slot.item && hot && this.isValid(slotId, hot)) {
-          inv.main[button] = null;
-          this.put(slotId, hot);
+        } else if (!there) {
+          if (this.isValid(slotId, own)) {
+            const max = this.slotLimit(slotId, own);
+            if (own.count > max) {
+              const part = copy(own);
+              part.count = max;
+              own.count -= max;
+              this.put(slotId, part);
+            } else {
+              setOwn(null);
+              this.put(slotId, own);
+            }
+          }
+        } else if (this.canTake(slotId) && this.isValid(slotId, own)) {
+          const max = this.slotLimit(slotId, own);
+          if (own.count > max) {
+            const part = copy(own);
+            part.count = max;
+            own.count -= max;
+            this.put(slotId, part);
+            this.onPickupFromSlot(slotId, there);
+            inv.addToInventory(there);
+          } else {
+            setOwn(there);
+            this.put(slotId, own);
+            this.onPickupFromSlot(slotId, there);
+          }
         }
         inv.syncWindowSlots();
       }
@@ -452,8 +489,12 @@ export class Inventory extends ContainerBase {
     this.slots = s;
   }
 
-  // windowId -2 in 1.8 isn't used, kept for safety (index into main inventory)
-  setPlayerSlotByInventoryIndex(i, item) { if (i >= 0 && i < 36) this.main[i] = item; }
+  // Handle 1.21.2+ set_player_inventory slots: 0..35 main, 36..39 armor (feet..head), 40 offhand
+  setPlayerSlotByInventoryIndex(i, item) {
+    if (i >= 0 && i < 36) this.main[i] = item;
+    else if (i >= 36 && i <= 39) this.armor[i - 36] = item;
+    else if (i === 40) this.offhand = item;
+  }
 
   held() { return this.main[this.game.heldSlot]; }
   setHeld(item) { this.main[this.game.heldSlot] = item; }
@@ -534,7 +575,7 @@ function consumeGrid(container, from, to) {
   for (let s = from; s <= to; s++) {
     const it = container.get(s);
     if (!it) continue;
-    const cont = containerItem(it);
+    const cont = containerItem(it, container.items);
     container.decr(s, 1);
     if (cont) {
       if (!container.get(s)) container.put(s, cont);
@@ -609,8 +650,9 @@ export class ContainerWindow extends ContainerBase {
         if(i===2){slot.output=true;slot.valid=()=>false;}
         else slot.valid=it=>i===0?itemName(it,this.items)==='filled_map':['paper','map','glass_pane'].includes(itemName(it,this.items)); break;
       case 'minecraft:grindstone':
-        if(i===2){slot.output=true;slot.valid=()=>false;}
-        else slot.valid=it=>this.items.def(it.id)?.maxDurability>0 || itemName(it,this.items)==='enchanted_book' || !!this.items.nbt(it)?.Enchantments?.length; break;
+        if (i === 2) { slot.output = true; slot.valid = () => false; }
+        else slot.valid = (it) => this.items.def(it.id)?.maxDurability > 0 || this.items.maxDurability(it) > 0 || itemName(it, this.items) === 'enchanted_book' || this.items.enchantments(it, false).length > 0 || this.items.enchantments(it, true).length > 0 || !!this.items.nbt(it)?.Enchantments?.length;
+        break;
       case 'minecraft:lectern': slot.valid=()=>false;slot.canTake=()=>false; break;
       case 'minecraft:anvil': if (i === 2) { slot.output = true; slot.valid = () => false; } break;
       case 'minecraft:villager': if (i === 2) { slot.output = true; slot.valid = () => false; } break;
@@ -697,8 +739,13 @@ export class ContainerWindow extends ContainerBase {
       if (t === 'minecraft:furnace' || t === 'minecraft:blast_furnace' || t === 'minecraft:smoker') {
         if (i === 2) { if (!m(3, 39, true)) return false; }
         else if (i !== 1 && i !== 0) {
-          const kind=t==='minecraft:blast_furnace'?'minecraft:blasting':t==='minecraft:smoker'?'minecraft:smoking':'minecraft:smelting';
-          const smeltable=this.game.serverRecipes?this.game.serverRecipes.some(r=>r.type===kind&&r.data.ingredient.some(s=>s?.id===it.id)):SMELTABLE.has(name);
+          const kind = t === 'minecraft:blast_furnace' ? 'minecraft:blasting' : t === 'minecraft:smoker' ? 'minecraft:smoking' : 'minecraft:smelting';
+          const propKey = t === 'minecraft:blast_furnace' ? 'minecraft:blast_furnace_input' : t === 'minecraft:smoker' ? 'minecraft:smoker_input' : 'minecraft:furnace_input';
+          const smeltable = this.game.recipePropertySets?.has(propKey)
+            ? this.game.recipePropertySets.get(propKey).has(it.id)
+            : this.game.serverRecipes
+              ? this.game.serverRecipes.some((r) => r.type === kind && r.data.ingredient.some((s) => s?.id === it.id))
+              : SMELTABLE.has(name);
           if (smeltable) { if (!m(0, 1, false)) return false; }
           else if (FUEL.has(name) || name === 'bucket') { if (!m(1, 2, false)) return false; }
           else if (i >= 3 && i < 30) { if (!m(30, 39, false)) return false; }

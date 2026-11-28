@@ -490,8 +490,7 @@ export class Particles {
     return this.add(p);
   }
 
-  reddust(x, y, z, r, g, b) {
-    if (r === 0) r = 1;
+  reddust(x, y, z, r = 1, g = 0, b = 0) {
     const f = rand() * 0.4 + 0.6;
     const p = { x, y, z, sprite:'dust', mx: (rand() * 2 - 1) * 0.1 * 0.1, my: (rand() * 2 - 1) * 0.1 * 0.1, mz: (rand() * 2 - 1) * 0.1 * 0.1 };
     p.r = (rand() * 0.2 + 0.8) * r * f; p.g = (rand() * 0.2 + 0.8) * g * f; p.b = (rand() * 0.2 + 0.8) * b * f;
@@ -720,11 +719,17 @@ export class Particles {
   nativeParticle(type,x,y,z,mx=0,my=0,mz=0,data={}) {
     if(type==='vibration'&&data.positionType)return vibrationParticle762(this,x,y,z,data);
     if(type==='shriek')return shriekParticle762(this,x,y,z,data);
+    if(type==='copper_fire_flame'){const q=this.flame(x,y,z,mx,my,mz);if(q)q.sprite=type;return q;}
     if(CAVES_PARTICLES.has(type)) return cavesParticle(this,type,x,y,z,mx,my,mz,data);
     if(NETHER_PARTICLES.has(type))return netherParticle(this,type,x,y,z,mx,my,mz);
     const p={x,y,z,mx,my,mz,sprite:type,scale:1,maxAge:20,drag:.96,collide:false};
+    const unpackRgb=(c,fb=[1,1,1])=>c===undefined?fb:[((c>>>16)&255)/255,((c>>>8)&255)/255,(c&255)/255];
+    const band=(f,hi,lo)=>f>=1-hi?(1-f)/hi:f<=lo?f/lo:1;
     switch(type){
-      case 'flash':p.maxAge=4;p.scale=7.1;p.update=()=>{};p.sizeFn=(q,t)=>71*Math.sin((q.age+t-1)*.25*Math.PI);p.alphaFn=(q,t)=>.6-(q.age+t-1)*.125;break;
+      case 'flash': {
+        const [r,g,b]=unpackRgb(data?.colorArgb);
+        p.r=r;p.g=g;p.b=b;p.maxAge=4;p.scale=7.1;p.update=()=>{};p.sizeFn=(q,t)=>71*Math.sin((q.age+t-1)*.25*Math.PI);p.alphaFn=(q,t)=>.6-(q.age+t-1)*.125;break;
+      }
       case 'sneeze':p.r=200/255;p.g=231/255;p.b=193/255;p.a=.4;p.maxAge=Math.floor(8/(rand()*.8+.2));p.scale=2;break;
       case 'end_rod':p.fullBright=true;p.maxAge=60+Math.floor(rand()*12);p.gravity=-.0005;break;
       case 'totem_of_undying':p.r=.1+rand()*.2;p.g=.4+rand()*.6;p.b=rand()*.2;p.maxAge=60+Math.floor(rand()*12);p.scale=.75;p.gravity=.1;break;
@@ -738,6 +743,70 @@ export class Particles {
       case 'bubble_column_up':p.my=.06;p.maxAge=40+Math.floor(rand()*40);break;
       case 'dolphin':p.r=.3;p.g=.5;p.b=1;p.maxAge=Math.floor(16/(rand()*.8+.2));break;
       case 'nautilus':p.fullBright=true;p.maxAge=30+Math.floor(rand()*30);p.scale=.75;break;
+      case 'cherry_leaves': case 'pale_oak_leaves': case 'tinted_leaves': {
+        const cherry=type==='cherry_leaves',r0=rand();
+        if(type==='tinted_leaves')[p.r,p.g,p.b]=unpackRgb(data?.colorArgb);
+        p.spriteMode='random';p.spriteRandom=rand();p.maxAge=300;p.drag=1;p.collide=true;
+        p.scale=(rand()<.5?.5:.75)*(cherry?1:2);
+        const grav=(cherry?.25:.07)*1.2*.0025,swirlFrac=Math.random()*60*Math.PI/180;
+        const wx=Math.cos(swirlFrac)*(cherry?2:10),wz=Math.sin(swirlFrac)*(cherry?2:10);
+        const wSpeed=(1000+r0*3000)*Math.PI/180;
+        p.mx=0;p.my=cherry?0:-.021;p.mz=0;
+        p.update=q=>{
+          const f=Math.min(1,q.age/300);
+          let ax=0,az=0;
+          if(cherry){ax+=Math.pow(f,1.25)*wx;az+=Math.pow(f,1.25)*wz;}
+          else{ax+=f*Math.cos(f*wSpeed)*10;az+=f*Math.sin(f*wSpeed)*10;}
+          q.mx+=ax*.0025;q.mz+=az*.0025;q.my-=grav;
+          this.move(q,this.game.world);
+          if(q.onGround||(q.age>1&&(q.mx===0||q.mz===0)))return false;
+        };
+        break;
+      }
+      case 'firefly': {
+        p.maxAge=200+Math.floor(rand()*100);p.scale=1.5*.75;p.collide=true;
+        p.mx=(.5-rand())*.8;p.my=(rand()<.5?my:-my)*.8;p.mz=(.5-rand())*.8;p.a=0;
+        p.alphaFn=(q,t)=>band(Math.max(0,Math.min(1,(q.age+t)/q.maxAge)),.3,.5);
+        p.lightFn=(q,t)=>[0,Math.round(15*band(Math.max(0,Math.min(1,(q.age+t)/q.maxAge)),.1,.3))];
+        p.update=q=>{
+          const b=getBlock(this.game.world?.getState(Math.floor(q.x),Math.floor(q.y),Math.floor(q.z)));
+          if(b&&b.id!==0&&b.collisionFull)return false;
+          if(rand()>.95||q.age===1){q.mx=-.05+.1*rand();q.my=-.05+.1*rand();q.mz=-.05+.1*rand();}
+          this.move(q,this.game.world);q.mx*=.96;q.my*=.96;q.mz*=.96;
+        };
+        break;
+      }
+      case 'gust': case 'small_gust': p.maxAge=12+Math.floor(rand()*4);p.scale=type==='gust'?10:1.5;p.fullBright=true;p.update=()=>{};break;
+      case 'white_smoke': {
+        p.r=.729;p.g=.694;p.b=.761;p.mx=mx*.1+(rand()*2-1)*.05*.1;p.my=my*.1+(rand()*2-1)*.05*.1;p.mz=mz*.1+(rand()*2-1)*.05*.1;
+        p.scale=(rand()*.5+.5)*2*.3*.75;p.maxAge=Math.max(1,Math.floor(8/(rand()*.8+.2)));p.gravity=-.1;break;
+      }
+      case 'dust_plume': {
+        const c=rand()*.2;p.r=.729-c;p.g=.694-c;p.b=.761-c;p.mx=mx*.5;p.my=my*.5+.15;p.mz=mz*.5;
+        p.scale=.75;p.maxAge=10+Math.floor(rand()*15);p.gravity=.05;break;
+      }
+      case 'trail': {
+        const [r,g,b]=unpackRgb(data?.color);
+        p.r=r*(.875+rand()*.25);p.g=g*(.875+rand()*.25);p.b=b*(.875+rand()*.25);
+        p.scale=2.6;p.maxAge=Math.max(1,data?.duration||20);p.fullBright=true;p.target=data?.target;
+        p.update=q=>{if(!q.target)return;const rem=q.maxAge-q.age+1,f=rem>0?1/rem:1;q.x+=(q.target.x-q.x)*f;q.y+=(q.target.y-q.y)*f;q.z+=(q.target.z-q.z)*f;};
+        break;
+      }
+      case 'infested': case 'egg_crack': p.maxAge=type==='egg_crack'?3+Math.floor(rand()*5):10+Math.floor(rand()*20);p.drag=.98;break;
+      case 'trial_spawner_detection': case 'trial_spawner_detection_ominous': {
+        p.my=my*.9;p.scale=.75*1.5;p.maxAge=Math.max(1,Math.floor(8/(.5+rand()*.5)*1.5));p.fullBright=true;p.gravity=-.1;p.collide=true;
+        p.sizeFn=(q,t)=>q.scale*Math.min(1,(q.age+t)/q.maxAge*32);break;
+      }
+      case 'vault_connection': case 'ominous_spawning': {
+        const vault=type==='vault_connection';
+        p.sx=x;p.sy=y;p.sz=z;p.x=x+mx;p.y=y+my;p.z=z+mz;p.fullBright=true;
+        p.scale=(rand()*.5+.2)*(vault?1.5:3+rand()*2);p.maxAge=Math.floor(rand()*(vault?10:5))+(vault?30:25);
+        if(vault){p.r=0;p.g=.6;p.b=.25;}
+        else p.colorFn=(q,t)=>{const f=Math.max(0,Math.min(1,(q.age+t)/q.maxAge));return[(.27+.73*f),(.68+.32*f),(1-.004*(1-f))];};
+        p.update=q=>{const f=1-q.age/q.maxAge;q.x=q.sx+q.mx*f;q.y=q.sy+q.my*f-(vault?Math.pow(1-f,4)*1.2:0);q.z=q.sz+q.mz*f;};
+        break;
+      }
+      case 'raid_omen': case 'trial_omen': p.scale=(rand()*.5+.5)*2*.75;p.maxAge=Math.floor(8/(rand()*.8+.2));p.gravity=-.1;break;
     }
     return this.add(p);
   }
@@ -773,8 +842,12 @@ export class Particles {
       case 'enchanted_hit': emit((x, y, z, mx, my, mz) => this.crit1(x, y, z, mx, my, mz, true)); break;
       case 'smoke': emit((x, y, z, mx, my, mz) => this.smoke(x, y, z, mx, my, mz)); break;
       case 'large_smoke': emit((x, y, z, mx, my, mz) => this.smoke(x, y, z, mx, my, mz, 2.5)); break;
-      case 'effect': emit((x, y, z, mx, my, mz) => this.spell(x, y, z, mx, my, mz)); break;
-      case 'instant_effect': emit((x, y, z, mx, my, mz) => this.spell(x, y, z, mx, my, mz, 1, 1, 1, true)); break;
+      case 'effect': case 'instant_effect': {
+        const instant = type === 'instant_effect', c = p.data?.color, pow = p.data?.power ?? 1;
+        const [r, g, b] = c !== undefined ? [((c >>> 16) & 255) / 255, ((c >>> 8) & 255) / 255, (c & 255) / 255] : [1, 1, 1];
+        emit((x, y, z, mx, my, mz) => this.spell(x, y, z, mx * pow, my * pow, mz * pow, r, g, b, instant));
+        break;
+      }
       case 'entity_effect': case 'ambient_entity_effect': emit((x, y, z, mx, my, mz, single) => {
         if(p.data?.colorArgb!==undefined){
           const color=p.data.colorArgb>>>0,q=this.spell(x,y,z,0,0,0,((color>>>16)&255)/255,((color>>>8)&255)/255,(color&255)/255);
@@ -794,7 +867,13 @@ export class Particles {
       case 'composter':emit((x,y,z)=>this.simpleRising(x,y,z,0,{sprite:'composter',scale:.5,my:0}));break;
       case 'ash':case 'white_ash':case 'crimson_spore':case 'warped_spore':case 'soul':case 'soul_fire_flame':case 'reverse_portal':case 'dripping_obsidian_tear':case 'falling_obsidian_tear':case 'landing_obsidian_tear':
       case 'flash':case 'sneeze':case 'end_rod':case 'totem_of_undying':case 'damage_indicator':case 'dragon_breath':case 'spit':case 'squid_ink':case 'sweep_attack':case 'bubble_pop':case 'current_down':case 'bubble_column_up':case 'nautilus':case 'dolphin':
-        emit((x,y,z,mx,my,mz)=>this.nativeParticle(type,x,y,z,mx,my,mz));break;
+      case 'copper_fire_flame':case 'cherry_leaves':case 'pale_oak_leaves':case 'tinted_leaves':case 'trail':case 'firefly':case 'gust':case 'small_gust':case 'infested':case 'egg_crack':case 'dust_plume':case 'trial_spawner_detection':case 'trial_spawner_detection_ominous':case 'vault_connection':case 'ominous_spawning':case 'raid_omen':case 'trial_omen':case 'white_smoke':case 'vibration':
+        emit((x,y,z,mx,my,mz)=>this.nativeParticle(type,x,y,z,mx,my,mz,p.data));break;
+      case 'gust_emitter_large': case 'gust_emitter_small': {
+        const k = type === 'gust_emitter_large' ? 'gust' : 'small_gust', s = type === 'gust_emitter_large' ? 3 : 1;
+        emit((x,y,z)=>{ for(let i=0;i<3;i++) this.nativeParticle(k,x+(rand()-rand())*s,y+(rand()-rand())*s,z+(rand()-rand())*s); });
+        break;
+      }
       case 'angry_villager': emit((x, y, z) => this.simpleRising(x, y, z, 81, { my: 0 })); break;
       case 'happy_villager': case 'mycelium': emit((x, y, z) => this.simpleRising(x, y, z, type === 'happy_villager' ? 82 : 0, { my: 0.0, scale: type === 'happy_villager' ? 1.5 : 0.5, r: type === 'mycelium' ? 0.4 : 1, g: type === 'mycelium' ? 0.4 : 1, b: type === 'mycelium' ? 0.7 : 1 })); break;
       case 'note': emit((x, y, z, mx) => this.simpleRising(x, y, z, 64, { my: 0.2, maxAge: 6, r: Math.sin(mx * Math.PI * 2) * 0.65 + 0.35, g: Math.sin((mx + 1 / 3) * Math.PI * 2) * 0.65 + 0.35, b: Math.sin((mx + 2 / 3) * Math.PI * 2) * 0.65 + 0.35 })); break;
@@ -804,8 +883,10 @@ export class Particles {
       case 'lava': emit((x, y, z) => this.lava(x, y, z)); break;
       case 'cloud': emit((x, y, z, mx, my, mz) => { const s = this.smoke(x, y, z, mx, my, mz, 2.5); if (s) { s.sprite='cloud';s.r = s.g = s.b = 1 - rand() * 0.3; } }); break;
       case 'dust': emit((x, y, z) => {
-        const dust = this.reddust(x, y, z, p.data.red, p.data.green, p.data.blue);
-        if (dust) dust.scale *= Math.max(0.01, Math.min(4, p.data.scale));
+        const c = p.data?.color;
+        const [r, g, b] = c !== undefined ? [((c >>> 16) & 255) / 255, ((c >>> 8) & 255) / 255, (c & 255) / 255] : [p.data?.red ?? 1, p.data?.green ?? 0, p.data?.blue ?? 0];
+        const dust = this.reddust(x, y, z, r, g, b);
+        if (dust) dust.scale *= Math.max(0.01, Math.min(4, p.data?.scale ?? 1));
       }); break;
       case 'item_snowball': case 'item_slime': {
         const uv = this._itemAtlas(type === 'item_slime' ? this.game.items.byName.get('slime_ball')?.id : this.game.items.byName.get('snowball')?.id);
@@ -822,9 +903,21 @@ export class Particles {
         emit((x, y, z, mx, my, mz) => { if (uv) this._itemCrackAt(uv, x, y, z, mx, my, mz); });
         break;
       }
-      case 'block': case 'falling_dust': {
-        const state = p.data.blockState;
-        emit((x, y, z, mx, my, mz) => this.digging(x, y, z, mx, my, mz, state));
+      case 'block_marker': {
+        const uv = this._blockSprite(p.data?.blockState);
+        if (uv) emit((x, y, z) => this.add({ x: Math.floor(x) + 0.5, y: Math.floor(y) + 0.5, z: Math.floor(z) + 0.5, atlas: uv, scale: 5, maxAge: 80, collide: false, update: () => {} }));
+        break;
+      }
+      case 'block': case 'falling_dust': case 'dust_pillar': case 'block_crumble': {
+        const state = p.data?.blockState;
+        emit((x, y, z, mx, my, mz) => {
+          const vx = type === 'block_crumble' ? 0 : type === 'dust_pillar' ? gauss() / 30 : mx;
+          const vy = type === 'block_crumble' ? 0 : type === 'dust_pillar' ? my + gauss() / 2 : my;
+          const vz = type === 'block_crumble' ? 0 : type === 'dust_pillar' ? gauss() / 30 : mz;
+          const d = this.digging(x, y, z, vx, vy, vz, state);
+          if (d && type === 'block_crumble') d.maxAge = 1 + Math.floor(rand() * 10);
+          else if (d && type === 'dust_pillar') d.maxAge = 20 + Math.floor(rand() * 20);
+        });
         break;
       }
       case 'elder_guardian': this.game.hud.elderGuardianTime = 60; break;
@@ -919,17 +1012,27 @@ export class Particles {
         const pos=direction.map((v,i)=>[x,y,z][i]+(v?.5+v*.6:rand()));this.nativeParticle('dripping_obsidian_tear',...pos);
       }
     }
-    if(n==='soul_torch'||n==='soul_wall_torch'||n==='soul_fire'){this.nativeParticle('soul_fire_flame',x+.5,y+.7,z+.5);this.smoke(x+.5,y+.7,z+.5);}
+    const props = getStateProperties(state);
+    const m = Number(props.power ?? props.level ?? 0);
+    if(['torch','wall_torch','copper_torch','copper_wall_torch','soul_torch','soul_wall_torch','soul_fire'].includes(n)){
+      let px=x+.5,py=y+.7,pz=z+.5;
+      if(n.includes('wall')){const [dx,dz]={north:[0,1],south:[0,-1],west:[1,0],east:[-1,0]}[props.facing]||[0,0];px+=dx*.27;py+=.22;pz+=dz*.27;}
+      if(n==='soul_torch'||n==='soul_wall_torch'||n==='soul_fire'){this.nativeParticle('soul_fire_flame',px,py,pz);this.smoke(px,py,pz,0,0,0);}
+      else if(n==='copper_torch'||n==='copper_wall_torch'){this.smoke(px,py,pz,0,0,0);this.nativeParticle('copper_fire_flame',px,py,pz);}
+      else{this.smoke(px,py,pz,0,0,0);this.flame(px,py,pz);}
+    }
+    if(n==='firefly_bush'){
+      const light=Math.max(this.game.world?.getSkyLight?.(x,y,z)??0,this.game.world?.getBlockLight?.(x,y,z)??0);
+      if(light<=13&&rand()<=.7)this.nativeParticle('firefly',x+rand()*10-5,y+rand()*5,z+rand()*10-5,0,0,0);
+    }
     if ((n === 'barrier' || n === 'light') && this.game.player.creative) {
       const held = this.game.inventory.held();
       if (held && this.game.items.name(held.id) === n) this.barrier(x, y, z, n);
     }
-    const props = getStateProperties(state);
-    const m = Number(props.power ?? props.level ?? 0);
-    if (['torch','wall_torch','redstone_torch','redstone_wall_torch'].includes(n) && props.lit !== 'false') {
+    if (['redstone_torch','redstone_wall_torch'].includes(n) && props.lit !== 'false') {
       let px=x+.5,py=y+.7,pz=z+.5;
       if(n.includes('wall')){const [dx,dz]={north:[0,1],south:[0,-1],west:[1,0],east:[-1,0]}[props.facing]||[0,0];px+=dx*.27;py+=.22;pz+=dz*.27;}
-      if(n==='torch'||n==='wall_torch'){this.smoke(px,py,pz,0,0,0);this.flame(px,py,pz);}else this.reddust(px,py,pz,1,0,0);
+      this.reddust(px,py,pz,1,0,0);
     } else if (['furnace','blast_furnace','smoker'].includes(n) && props.lit === 'true') {
       if (rand() < .1) this.game.sound.play({furnace:'block.furnace.fire_crackle',blast_furnace:'block.blastfurnace.fire_crackle',smoker:'block.smoker.smoke'}[n], x + .5, y + .5, z + .5, 1, 1);
       const [dx,dz]={north:[0,-1],south:[0,1],west:[-1,0],east:[1,0]}[props.facing]||[0,-1];
@@ -981,8 +1084,18 @@ export class Particles {
     } else if (n === 'end_portal_frame' || n === 'dragon_egg') {
       // no-op
     } else if (n.endsWith('_leaves')) {
+      const belowSt = this.game.world.getState(x, y - 1, z), belowLeaf = getBlock(belowSt);
       // World.isRaining (canLightningStrike): rain strength above 0.2, not the "begin raining" flag
-      if (this.game.world.isRainingAt(x, y + 1, z) && rand() < 1/15 && !getBlock(this.game.world.getState(x, y - 1, z)).collisionFull) this.drip(x + rand(), y - 0.05, z + rand(), false);
+      if (this.game.world.isRainingAt(x, y + 1, z) && rand() < 1/15 && !belowLeaf?.collisionFull) this.drip(x + rand(), y - 0.05, z + rand(), false);
+      if (!belowLeaf?.collisionFull) {
+        if (n === 'cherry_leaves' && rand() < 0.1) this.nativeParticle('cherry_leaves', x + rand(), y - 0.05, z + rand());
+        else if (n === 'pale_oak_leaves' && rand() < 0.02) this.nativeParticle('pale_oak_leaves', x + rand(), y - 0.05, z + rand());
+        else if ((n === 'azalea_leaves' || n === 'flowering_azalea_leaves') && rand() < 0.01) this.nativeParticle('tinted_leaves', x + rand(), y - 0.05, z + rand(), 0, 0, 0, { colorArgb: -9399763 });
+        else if (n !== 'cherry_leaves' && n !== 'pale_oak_leaves' && rand() < 0.01) {
+          const tint = Mesher.prototype.tintFor.call({ world: this.game.world, options: this.game.settings || {}, biomeBlend: Mesher.prototype.biomeBlend }, state, 0, x, y, z);
+          this.nativeParticle('tinted_leaves', x + rand(), y - 0.05, z + rand(), 0, 0, 0, { colorArgb: tint });
+        }
+      }
     }
     // Liquids dripping through ceilings
       const below = getBlock(this.game.world.getState(x, y - 1, z));

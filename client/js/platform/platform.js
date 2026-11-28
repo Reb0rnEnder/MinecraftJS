@@ -13,6 +13,7 @@
 //       'wheel'         delta (+1 down / -1 up)
 //       'blur'          ()
 //       'pointerlock'   boolean
+//       'filesdrop'     [{ name, readBytes: async () -> Uint8Array }]   lazy: the receiving screen confirms before reading
 //   lockPointer() / unlockPointer() / isPointerLocked()
 //   toggleFullscreen() / isFullscreen()
 //   setClipboard(text)

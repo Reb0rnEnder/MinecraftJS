@@ -83,7 +83,7 @@ export class FontSet {
 }
 export async function loadFontSets(assets) {
  const result={},fonts=new Set(['minecraft:default','minecraft:alt','minecraft:uniform','minecraft:illageralt']);
- for(const pack of assets.packs||[])for(const path of pack.zip?.list(pack.prefix+'assets/')||[]){const match=/^([^/]+)\/font\/(.+)\.json$/.exec(path.slice((pack.prefix+'assets/').length));if(match)fonts.add(match[1]+':'+match[2]);}
+  for(const pack of [...(assets.lowerPacks||[]),...(assets.packs||[])])for(const path of pack.zip?.list(pack.prefix+'assets/')||[]){const match=/^([^/]+)\/font\/(.+)\.json$/.exec(path.slice((pack.prefix+'assets/').length));if(match)fonts.add(match[1]+':'+match[2]);}
  const resolved=new Map(),resources=new Map();
  const resource=id=>{if(!resources.has(id))resources.set(id,fontBytes(assets,id));return resources.get(id);};
  const filters=(a,b)=>{const out={...a};for(const[k,v]of Object.entries(b||{})){if(!['uniform','jp'].includes(k)||typeof v!=='boolean')throw Error('Invalid font filter');if(k in out&&out[k]!==v)return null;out[k]=v;}return out;};

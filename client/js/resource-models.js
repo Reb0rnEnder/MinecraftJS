@@ -11,6 +11,13 @@ export function packEntries(pack,kind){
  }
  return out;
 }
+export function applyPackDefinitions(packs,kind,target,assets=null){
+ const priority=assets?.packs||[...packs].reverse();
+ for(const key of Object.keys(target)){const [namespace,path]=resourceParts(key);if(resourceBlockedAbove(priority,null,namespace,kind+'/'+path+'.json'))delete target[key];}
+ for(const pack of packs)for(const entry of packEntries(pack,kind))if(entry.name.endsWith('.json')&&!resourceBlockedAbove(priority,pack,entry.namespace,entry.path)){
+  try{target[entry.key.slice(0,-5)]=JSON.parse(new TextDecoder().decode(entry.read()));}catch{ /* Ignore malformed optional files. */ }
+ }
+}
 export function applyPackModels(packs,models,blockstates,assets=null){
  const priority=assets?.packs||[...packs].reverse();
  for(const [kind,target]of [['models',models],['blockstates',blockstates]])for(const key of Object.keys(target)){const [namespace,path]=resourceParts(key);if(resourceBlockedAbove(priority,null,namespace,kind+'/'+path+'.json'))delete target[key];}

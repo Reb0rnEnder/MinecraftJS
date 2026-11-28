@@ -1,4 +1,4 @@
-import{signFace766}from'../../render/sign-1.20.6.js';
+import{signFace774}from'../../render/sign-1.21.11.js';
 // GuiEditSign
 import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
@@ -12,7 +12,7 @@ export class SignEditScreen extends Screen {
     super(game);
     this.pos = pos;this.front=front;
     this.hanging=isHangingSign(getBlock(game.world.getState(pos.x,pos.y,pos.z)).name);this.maxWidth=this.hanging?60:90;
-    this.lines=signFace766(game.tileRenderer._get(pos.x,pos.y,pos.z)?.data,front,game.settings.textFilteringEnabled).plainLines;
+    this.lines=signFace774(game.tileRenderer._get(pos.x,pos.y,pos.z)?.data,front,game.settings.textFilteringEnabled).plainLines;
     this.line = 0;
     this.counter = 0;
   }
@@ -52,7 +52,7 @@ export class SignEditScreen extends Screen {
     if (tex) gui.drawImage(tex, 2 * tex.width / 64, 2 * tex.height / 32, 24 * tex.width / 64, 12 * tex.height / 32, x0, y0, w, h);
     else gui.rect(x0, y0, x0 + w, y0 + h, 0xff9c7c4c);
     for (let i = 0; i < 4; i++) {
-      const f=this.fields[i];f.x=cx-gui.textWidth(f.text)/2;f.textColor=signTextColor(signFace766(this.game.tileRenderer._get(this.pos.x,this.pos.y,this.pos.z)?.data,this.front).color);
+      const f=this.fields[i];f.x=cx-gui.textWidth(f.text)/2;f.textColor=signTextColor(signFace774(this.game.tileRenderer._get(this.pos.x,this.pos.y,this.pos.z)?.data,this.front).color);
     }
   }
 }

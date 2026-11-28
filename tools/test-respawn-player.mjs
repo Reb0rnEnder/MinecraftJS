@@ -34,9 +34,9 @@ test('older metadata indices do not acquire newer pose, freeze or riptide fields
   assert.equal(g.selfMetadata[6],20);assert.equal(g.selfMetadata[1],200);assert.equal(Object.hasOwn(g.selfMetadata,7),false);assert.equal(Object.hasOwn(g.selfMetadata,8),false);
 });
 
-const version=mcassets.MC_VERSION,bits=['1.19.4','1.20.6'].includes(version),retentionFlag=['1.16.5','1.17.1','1.18.2'].includes(version);
+const version=mcassets.MC_VERSION,bits=['1.19.4','1.20.6','1.21.11'].includes(version),retentionFlag=['1.16.5','1.17.1','1.18.2'].includes(version);
 for(const value of(bits?[0,1,2,3]:retentionFlag?[false,true]:[null]))test(version+' Game respawn uses its native retention policy '+value,()=>{
-  const g=fixture(),world=g.world=new World(),modernHeight=['1.18.2','1.19.4','1.20.6'].includes(version),minY=modernHeight?-64:0,height=modernHeight?384:256;world.setDimension(0,{min_y:minY,height});
+  const g=fixture(),world=g.world=new World(),modernHeight=['1.18.2','1.19.4','1.20.6','1.21.11'].includes(version),minY=modernHeight?-64:0,height=modernHeight?384:256;world.setDimension(0,{min_y:minY,height});
   const type={min_y:nbt.int(minY),height:nbt.int(height),effects:nbt.string('minecraft:overworld')};
   g.dimensionCodec=nbt.compound({'minecraft:dimension_type':nbt.compound({value:nbt.list(TAG.COMPOUND,[{id:nbt.int(0),name:nbt.string('minecraft:overworld'),element:nbt.compound(type)}])})});
   Object.assign(g,{dimension:0,worldName:'minecraft:overworld',screens:{current:null},applyGameMode:Game.prototype.applyGameMode});

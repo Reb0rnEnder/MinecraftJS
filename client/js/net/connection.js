@@ -9,8 +9,8 @@ import { parseAddress } from './address.js';
 import { openEaglerSocket, pingEagler } from './eagler.js';
 import { currentProxy, proxyType } from './proxies.js';
 import { VanillaSocket } from './tcp.js';
-import { VanillaSocket766 } from './tcp-1.20.6.js';
-import { EaglerSocket766 } from './eagler-1.20.6.js';
+import { VanillaSocket774 } from './tcp-1.21.11.js';
+import { EaglerSocket774 } from './eagler-1.21.11.js';
 
 const NO_PROXY = 'No proxy selected: add one in Proxy Servers on the title screen (or join an Eaglercraft wss:// server)';
 
@@ -19,8 +19,8 @@ async function openProxySocket(protocol = PROTOCOL_VERSION, options = {}) {
   const p = currentProxy();
   if (!p) throw new Error(NO_PROXY);
   const type = proxyType(p);
-  if (protocol === 766) {
-    return new VanillaSocket766(
+  if (protocol === 774) {
+    return new VanillaSocket774(
       { ...p, type: type === "minecraftjs" ? "minecraftjs-raw" : type },
       { ...options, autoPlayAcks: false }
     );
@@ -48,7 +48,7 @@ export class Connection {
   async open(eagler) {
     if (this.ws) return;
     let sock;
-    if (eagler) sock = PROTOCOL_VERSION === 766 ? await new EaglerSocket766(eagler,{...this.options,autoPlayAcks:false}).open() : await openEaglerSocket(eagler);
+    if (eagler) sock = PROTOCOL_VERSION === 774 ? await new EaglerSocket774(eagler,{...this.options,autoPlayAcks:false}).open() : await openEaglerSocket(eagler);
     else sock = await openProxySocket(PROTOCOL_VERSION, this.options);
     this.ws = sock;
     sock.on('close', () => {
@@ -62,7 +62,7 @@ export class Connection {
       try { msg = JSON.parse(text); } catch (err) { return; }
       this.emit('control', msg);
     });
-    if (PROTOCOL_VERSION === 766) {
+    if (PROTOCOL_VERSION === 774) {
       sock.on('reconfiguration_start', () => {
         this.bundles.reset();
         this.emit('reconfiguration_start');
@@ -112,7 +112,7 @@ export class Connection {
     const eagler = a && a.kind === 'eagler' ? a : null;
     await this.open(eagler);
     this.state = 'login';
-    if (transfer && this.ws instanceof VanillaSocket766) {
+    if (transfer && this.ws instanceof VanillaSocket774) {
       this.ws.cookies = new Map([...transfer.cookies].map(([key, value]) => [key, value.slice()]));
     }
     this.ws.sendText(JSON.stringify({ type: 'connect', host, port, username, auth: eagler ? null : auth, protocol: PROTOCOL_VERSION, transferred: !!transfer }));

@@ -53,10 +53,10 @@ function fixture({fancy=true,rain=1,biome=null,top=64,particles=0,playerY=64}={}
 const snowy=()=>biomeId('snowy_plains','snowy_tundra','ice_flats','ice_plains');
 const at=(L)=>{const D=L.mesh.data,stride=11;for(let o=0;o<D.length;o+=stride*4)if(Math.abs(D[o]-1.5)<0.6&&Math.abs(D[o+2]-0.5)<0.6&&D[o+1]>66)return D.slice(o,o+stride);};
 
-test('fast graphics renders a radius of 5 and fancy a radius of 10; rain and snow alphas follow their own falloff',()=>{
+test('configured weather radius renders identically across graphics modes; rain and snow alphas follow their own falloff',()=>{
  const fancy=fixture(),fast=fixture({fancy:false});
  fancy.w.render(0,0.5,65.62,0.5);fast.w.render(0,0.5,65.62,0.5);
- assert.equal(fancy.w.layers.rain.count,21*21-1,'the anchor column is degenerate (0/0) natively');assert.equal(fast.w.layers.rain.count,11*11-1);
+  assert.equal(fancy.w.layers.rain.count,21*21-1,'the anchor column is degenerate (0/0) natively');assert.equal(fast.w.layers.rain.count,21*21-1);
  const snow=fixture({biome:snowy()});snow.w.render(0,0.5,65.62,0.5);assert.equal(snow.w.layers.snow.count,440);assert.equal(snow.w.layers.rain.count,0);
  // the column east of the anchor: distance 0.1, alpha 0.995 for rain, 0.797 for snow; snow light is raised to (L*3+15)/4
  assert.ok(Math.abs(at(fancy.w.layers.rain)[8]-0.995)<1e-6);const s=at(snow.w.layers.snow);assert.ok(Math.abs(s[8]-0.797)<1e-6);assert.equal(s[9],15);
@@ -72,10 +72,10 @@ test('desert has no precipitation; high columns of a 0.2 biome turn to snow by t
  const low=fixture({biome:hills});low.w.render(0,0.5,65.62,0.5);assert.equal(low.w.layers.snow.count,0);
 });
 
-test('tick rain halves on fast graphics and decreased particles; minimal particles splash nothing',()=>{
+test('weather splash attempts ignore graphics mode, decrease for reduced particles, and minimal emits no particles',()=>{
  const full=fixture(),fast=fixture({fancy:false}),less=fixture({particles:1}),min=fixture({particles:2});
  for(const f of [full,fast,less,min]){f.w.updateCount=7;f.w._rainParticles();}
- assert.equal(full.g.particles.rainCalls,100);assert.equal(fast.g.particles.rainCalls,25);assert.equal(less.g.particles.rainCalls,50);assert.equal(min.g.particles.rainCalls,undefined);
+ assert.equal(full.g.particles.rainCalls,99);assert.equal(fast.g.particles.rainCalls,99);assert.equal(less.g.particles.rainCalls,49);assert.equal(min.g.particles.rainCalls,undefined);
 });
 
 test('rain splashes land on the block top and the rain sound plays',()=>{

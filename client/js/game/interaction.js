@@ -1,13 +1,13 @@
-import{bookshelfUse766}from'./bookshelf-1.20.6.js';
-import{startBrushing766,tickBrushing766}from'./brushing-1.20.6.js';
-import {EFFECT_766} from './effects-1.20.6.js';
-import {adventureAllows} from './adventure.js';
-import {entityPickRadius} from './entity-pick-radius.js';
-import {isSlab,canMergeSlab,slabPlacementState} from './slab-placement.js';
-import {consumeEffect} from '../audio/consume-sounds.js';
-import {playActivatedBlockSound} from '../audio/client-sound-triggers.js';
-import{familyCanSurvive}from'./placement-families.js';
-import{emptyBundle}from'./bundle.js';
+import { bookshelfUse774 } from './bookshelf-1.21.11.js';
+import { startBrushing774, tickBrushing774 } from './brushing-1.21.11.js';
+import { EFFECT_774 } from './effects-1.21.11.js';
+import { adventureAllows } from './adventure.js';
+import { entityPickRadius } from './entity-pick-radius.js';
+import { isSlab, canMergeSlab, slabPlacementState } from './slab-placement.js';
+import { consumeEffect } from '../audio/consume-sounds.js';
+import { playActivatedBlockSound } from '../audio/client-sound-triggers.js';
+import { familyCanSurvive } from './placement-families.js';
+import { isBundleItem, emptyBundle } from './bundle.js';
 import{attachmentPlacement}from'./attachment-placement.js';
 import {growingPlantSurvives} from '../world/growing-plant-placement.js';
 import {predictDoorPair,reconcileDoorPair} from './door-prediction.js';
@@ -19,7 +19,7 @@ import { C } from '../net/packets.js';
 import { blocks, blocksByName, findState, getBlock, getStateProperties, staticCollisionBoxes, nativeReplaceable } from '../world/blocks.js';
 import { isPointInFluid, getFluidState } from '../world/fluids.js';
 import { rayBox } from '../world/world.js';
-import { armorType, copy, stackable } from './container.js';
+import { armorType, copy, stackMatchesForSwapAnimation } from './container.js';
 import { COMMAND_BLOCKS, CommandBlockScreen, CommandMinecartScreen } from '../gui/screens/commandblock.js';
 import { StructureBlockScreen } from '../gui/screens/structure.js';
 import { JigsawScreen } from '../gui/screens/jigsaw.js';
@@ -169,7 +169,7 @@ export class Interaction {
       this.useTicks++;
       if (!useDown) this.stopUsingItem();
       const held = g.inventory.getHand(this.activeHand);
-      if(this.brushItemId!==undefined)tickBrushing766(this,held);
+      if(this.brushItemId!==undefined)tickBrushing774(this,held);
       const dur = g.items.useDuration(held);
       if (held && g.items.name(held.id) === 'spyglass' && dur > 0 && this.useTicks >= dur) this.stopUsingItem();
       if (held && ['eat','drink'].includes(g.items.useAction(held)) && dur > 0 && this.useTicks >= dur) {
@@ -206,7 +206,7 @@ export class Interaction {
 
   updateSwing() {
     this.prevSwingProgress = this.swingProgress;
-    let haste = this.game.effects.get(EFFECT_766.haste), fatigue = this.game.effects.get(EFFECT_766.mining_fatigue);
+    let haste = this.game.effects.get(EFFECT_774.haste), fatigue = this.game.effects.get(EFFECT_774.mining_fatigue);
     const len = haste ? 6 - (1 + haste.amplifier) : fatigue ? 6 + (1 + fatigue.amplifier) * 2 : 6;
     if (this.swinging) {
       this.swingTicks++;
@@ -216,19 +216,39 @@ export class Interaction {
     this.swingLength = len;
   }
 
-  // ItemRenderer.updateEquippedItem (1.9+): the main hand follows the attack cooldown (strength cubed); a changed
-  // stack lowers the hand, which comes back up with the new one
+  // ItemInHandRenderer.tick: a hand keeps showing its stack while item/count/components match (ignoring components
+  // marked to ignore swap animation), or while the new item's client-item properties disable the animation, or
+  // while it is the same stack object changed in place (eating shrinks it); otherwise it lowers, switches to the new
+  // stack below 0.1 and rises again. The main hand also follows the attack cooldown (strength cubed).
+  shouldPlaySwapAnimation(stack) {
+    if (!stack) return true;
+    const itemModel = this.game.items.component(stack, 'item_model');
+    if (typeof itemModel !== 'string') return true;
+    const id = itemModel.replace(/^minecraft:/, '');
+    return this.game.assets?.itemModels?.[id]?.hand_animation_on_swap !== false;
+  }
   updateEquip() {
     this.prevEquipProgress = this.equipProgress;
     this.prevEquipProgressOff = this.equipProgressOff;
     const inv = this.game.inventory;
-    const main = inv.held(), off = inv.offhand;
+    const main = inv.held() || null, off = inv.offhand || null;
     const f = this.cooledAttackStrength(1);
     const clamp = (v) => Math.max(-0.4, Math.min(0.4, v));
-    this.equipProgress += clamp((this._equipped === main ? f * f * f : 0) - this.equipProgress);
-    this.equipProgressOff += clamp((this._equippedOff === off ? 1 : 0) - this.equipProgressOff);
-    if (this.equipProgress < 0.1) this._equipped = main;
-    if (this.equipProgressOff < 0.1) this._equippedOff = off;
+    const matches = (snap, now) => stackMatchesForSwapAnimation(snap, now);
+    const keep = (ref, snap, now) => matches(snap, now) || ref === now || !this.shouldPlaySwapAnimation(now);
+    const mainSame = keep(this._mainRef, this._mainSnap, main), offSame = keep(this._offRef, this._offSnap, off);
+    if (mainSame) { this._mainRef = main; this._mainSnap = main && copy(main); }
+    if (offSame) { this._offRef = off; this._offSnap = off && copy(off); }
+    this.equipProgress += clamp((mainSame ? f * f * f : 0) - this.equipProgress);
+    this.equipProgressOff += clamp((offSame ? 1 : 0) - this.equipProgressOff);
+    if (this.equipProgress < 0.1) { this._mainRef = main; this._mainSnap = main && copy(main); }
+    if (this.equipProgressOff < 0.1) { this._offRef = off; this._offSnap = off && copy(off); }
+  }
+  // The stacks the first-person renderer draws: the old one until the lowered hand switches.
+  shownHandStacks() {
+    const inv = this.game.inventory;
+    const pick = (ref, snap, now) => (ref === now ? now : snap === undefined ? now : snap);
+    return [pick(this._mainRef, this._mainSnap, inv.held() || null), pick(this._offRef, this._offSnap, inv.offhand || null)];
   }
 
   // Minecraft.clickMouse (1.9+)
@@ -274,7 +294,7 @@ export class Interaction {
     const strong = f2 > 0.9;
     let i = g.items.enchantLevel(held, 'knockback');
     if (pl.sprinting && strong) i++;
-    const crit = strong && pl.fallDistance > 0 && !pl.onGround && !pl.isOnLadder(g.world) && !pl.inWater && !g.effects.has(EFFECT_766.blindness) &&
+    const crit = strong && pl.fallDistance > 0 && !pl.onGround && !pl.isOnLadder(g.world) && !pl.inWater && !g.effects.has(EFFECT_774.blindness) &&
       !pl.ridingEntity && (e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand') && !pl.sprinting;
     if (e.kind !== 'player') return; // attackEntityFrom is false on the client for everything else
     if (i > 0) {
@@ -355,9 +375,9 @@ export class Interaction {
       const eff = g.items.enchantLevel(held, 'efficiency');
       if (eff > 0 && held) f = f32(f + (eff * eff + 1));
     }
-    const haste = g.effects.get(EFFECT_766.haste);
+    const haste = g.effects.get(EFFECT_774.haste);
     if (haste) f = f32(f * f32(1 + f32((haste.amplifier + 1) * f32(0.2))));
-    const fatigue = g.effects.get(EFFECT_766.mining_fatigue);
+    const fatigue = g.effects.get(EFFECT_774.mining_fatigue);
     if (fatigue) f = f32(f * f32([0.3, 0.09, 0.0027][fatigue.amplifier] ?? 8.1e-4));
     if (this._eyesInWater() && !this._aquaAffinity()) f = f32(f / 5);
     if (!this.player.onGround) f = f32(f / 5);
@@ -573,9 +593,9 @@ export class Interaction {
     let activated = false,shelfResult=null;
     if (g.gameMode !== 3) {
       const mainAndOffEmpty = !g.inventory.held() && !g.inventory.offhand;
-      if ((!this.player.sneaking || mainAndOffEmpty) && b && (INTERACTIVE.has(b.name) || b.isDoor || b.isFenceGate || b.name.endsWith('_trapdoor') || b.name.endsWith('_button') || b.name.endsWith('_bed') || b.name.endsWith('_sign') || ['repeater','comparator','note_block','daylight_detector','shulker_box','light_gray_shulker_box'].includes(b.name)) && b.name !== 'iron_door' && b.name !== 'iron_trapdoor') activated = true;
+      if ((!this.player.sneaking || mainAndOffEmpty) && b && (INTERACTIVE.has(b.name) || b.isDoor || b.isFenceGate || b.name.endsWith('_trapdoor') || b.name.endsWith('_button') || b.name.endsWith('_bed') || b.name.endsWith('_sign') || b.name.endsWith('_copper_chest') || b.name === 'copper_chest' || b.name.endsWith('_shelf') || b.name === 'crafter' || ['repeater','comparator','note_block','daylight_detector','shulker_box','light_gray_shulker_box','chipped_anvil','damaged_anvil'].includes(b.name)) && b.name !== 'iron_door' && b.name !== 'iron_trapdoor') activated = true;
       if((!this.player.sneaking||mainAndOffEmpty)&&b?.name==='decorated_pot')activated=true;
-      if((!this.player.sneaking||mainAndOffEmpty)&&b?.name==='chiseled_bookshelf'){shelfResult=bookshelfUse766(g,t,getStateProperties(g.world.getState(t.x,t.y,t.z)),held,hand);if(shelfResult!==null)activated=true;}
+      if((!this.player.sneaking||mainAndOffEmpty)&&b?.name==='chiseled_bookshelf'){shelfResult=bookshelfUse774(g,t,getStateProperties(g.world.getState(t.x,t.y,t.z)),held,hand);if(shelfResult!==null)activated=true;}
       if ((!this.player.sneaking || mainAndOffEmpty) && b && cavesBlockUse(b.name, getStateProperties(g.world.getState(t.x,t.y,t.z)), held ? g.items.name(held.id) : null, g.gameMode === 0 || g.gameMode === 1, g.food < 20, fy)) activated = true;
       // BlockCommandBlock.onBlockActivated: only for players who can use command blocks, who get GuiCommandBlock
       // (TileEntityStructure.usedBy too: GuiEditStructure)
@@ -583,8 +603,8 @@ export class Interaction {
       // ItemBlock.canPlaceBlockOnSide: no packet at all when the block could not go there
       if (!activated && held && this._itemBlock(held) && g.items.name(held.id)!=='scaffolding' && !this._canPlaceBlockOnSide(t, held)) return false;
     }
-    // CPacketPlayerTryUseItemOnBlock (cursor position on the face)
-    g.send(C.blockPlace(t.x, t.y, t.z, t.face, hand, fx, fy, fz,false,g.blockPrediction?.current||0));
+    // ServerboundUseItemOnPacket (cursor position on the face, insideBlock, worldBorderHit, sequence)
+    g.send(C.blockPlace(t.x, t.y, t.z, t.face, hand, fx, fy, fz, false, g.blockPrediction?.current || 0, !!t.worldBorderHit));
     if (activated) {
       if(b.name==='decorated_pot')return 'consume';
       if(b.name==='chiseled_bookshelf')return shelfResult;
@@ -597,7 +617,7 @@ export class Interaction {
     }
     if (g.gameMode === 3) return true;
     if(g.gameMode===2&&!adventureAllows(g,held,'CanPlaceOn',t))return false;
-    if(held&&g.items.name(held.id)==='brush')return startBrushing766(this,held,hand);
+    if(held&&g.items.name(held.id)==='brush')return startBrushing774(this,held,hand);
     if (held && g.items.name(held.id)==='scaffolding') return true; // authoritative extension/support/falling rules
     if (!held) return false;
     if (g.gameMode === 1) {
@@ -802,13 +822,13 @@ export class Interaction {
       // ItemWritableBook opens the editor client-side
       import('../gui/screens/book.js').then((m) => g.screens.open(new m.BookScreen(g, held, true, hand)));
     }
-    g.send(C.useItem(hand,g.blockPrediction?.current||0)); // CPacketPlayerTryUseItem
+    g.send(C.useItem(hand, g.blockPrediction?.current || 0, this.player?.yaw || 0, this.player?.pitch || 0)); // ServerboundUseItemPacket
     if (g.cooldownFraction(held.id, 0) > 0) return false; // CooldownTracker: still cooling down
     if (name === 'trident') {
       if (g.items.damage(held) >= g.items.maxDurability(held)-1) return false;
       if (g.items.enchantLevel(held, 'riptide') > 0 && !this._wetForRiptide()) return false;
     }
-    if(name==='bundle')return emptyBundle(g,held);
+    if (isBundleItem(held, g.items)) return emptyBundle(g, held);
     if (name === 'firework_rocket' && this.player.elytraFlying) return true;
     // ThrowablePotionItem.use overrides PotionItem.use even though its inherited animation is DRINK.
     if(name==='splash_potion'||name==='lingering_potion'){
@@ -916,9 +936,9 @@ export class Interaction {
       const e = t.entity;
       let name = null;
       if (e.kind === 'painting') name = 'painting';
-      else if (e.kind === 'itemframe') { if (e.item) item = copy(e.item); else name = 'item_frame'; }
+      else if (e.kind === 'itemframe') { if (e.item) item = copy(e.item); else name = e.entityName === 'glow_item_frame' ? 'glow_item_frame' : 'item_frame'; }
       else if (e.kind === 'minecart') name = e.entityName;
-      else if (e.kind === 'boat') name = (['oak', 'spruce', 'birch', 'jungle', 'acacia', 'dark_oak'][e.boatType || 0] || 'oak') + '_boat';
+      else if (e.kind === 'boat') name = (e.entityName?.endsWith('_boat') || e.entityName?.endsWith('_raft')) ? e.entityName : ((['oak', 'spruce', 'birch', 'jungle', 'acacia', 'dark_oak', 'mangrove', 'cherry', 'bamboo', 'pale_oak'][e.boatType || 0] || 'oak') + '_boat');
       else if (e.kind === 'armorstand') name = 'armor_stand';
       else if (e.kind === 'crystal') name = 'end_crystal';
       else if (e.kind === 'mob' && e.entityName) name = e.entityName + '_spawn_egg';

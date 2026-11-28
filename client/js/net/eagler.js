@@ -18,7 +18,7 @@ import { decodeUtf8, encodeUtf8 } from '../util/utf8.js';
 import { PROTOCOL_VERSION as GAME_PROTOCOL } from './packets.js';
 
 const BRAND = 'MinecraftJS';
-const VERSION = '1.20.6';
+const VERSION = '1.21.11';
 const AUTH_NONE = 0, AUTH_PLAINTEXT = 255;
 
 class Emitter {

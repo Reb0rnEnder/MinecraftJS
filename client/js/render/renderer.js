@@ -17,6 +17,7 @@ import { SectionCuller, sectionKey } from './culling.js';
 const P_SOLID = terrainParams(0, 1);
 const P_CUTOUT = terrainParams(0.1, 1);
 const P_TRANSLUCENT = terrainParams(0.004, 1);
+const MOON_PHASES_12111 = ['full_moon', 'waning_gibbous', 'third_quarter', 'waning_crescent', 'new_moon', 'waxing_crescent', 'first_quarter', 'waxing_gibbous'];
 // far (LOD) sections sample the atlas one and a half mip levels smaller
 const LOD_BIAS = 1.5;
 const P_SOLID_LOD = terrainParams(0, 1, undefined, LOD_BIAS);
@@ -354,8 +355,9 @@ export class Renderer {
 
   _setMoonPhase(phase) {
     this.moonPhase = phase;
-    const i = phase % 4, j = Math.floor(phase / 4) % 2;
-    const u0 = i / 4, u1 = (i + 1) / 4, v0 = j / 2, v1 = (j + 1) / 2;
+    const legacy = !this.assets?.texture?.('environment/celestial/moon/' + MOON_PHASES_12111[(phase || 0) & 7] + '.png');
+    const i = legacy ? phase % 4 : 0, j = legacy ? Math.floor(phase / 4) % 2 : 0;
+    const u0 = legacy ? i / 4 : 0, u1 = legacy ? (i + 1) / 4 : 1, v0 = legacy ? j / 2 : 0, v1 = legacy ? (j + 1) / 2 : 1;
     const s = 20, y = -100;
     const v = (x, z, uu, vv) => [x, y, z, uu, vv, 1, 1, 1, 1];
     const data = new Float32Array(36);
@@ -429,8 +431,9 @@ export class Renderer {
     const alpha = 1 - env.rain;
     const add = { blend: 'add', depthTest: false, depthWrite: false };
     if (env.starBrightness > 0) d.draw({ mesh: this.starMesh, pipeline: 'color', params: colorParams(1, 1, 1, env.starBrightness), model: cm, state: { blend: 'alpha', depthTest: false, depthWrite: false } });
-    const sunT = this.assets.texture('environment/sun.png');
-    const moonT = this.assets.texture('environment/moon_phases.png');
+    const sunT = this.assets.texture('environment/celestial/sun.png') || this.assets.texture('environment/sun.png');
+    const moonPhaseTex = this.assets.texture('environment/celestial/moon/' + MOON_PHASES_12111[(this.moonPhase || 0) & 7] + '.png');
+    const moonT = moonPhaseTex || this.assets.texture('environment/moon_phases.png');
     if (sunT) d.draw({ mesh: this.sunMesh, pipeline: 'color', textures: [sunT], params: colorParams(alpha, alpha, alpha, alpha), model: cm, state: add });
     if (moonT) d.draw({ mesh: this.moonMesh, pipeline: 'color', textures: [moonT], params: colorParams(alpha, alpha, alpha, alpha), model: cm, state: add });
   }

@@ -1,9 +1,9 @@
-import{animateBat766}from'./bat-1.20.6.js';
-import{shieldArmPose766}from'./shield-pose-1.20.6.js';
-import{brushArmPose766}from'../game/brushing-1.20.6.js';
-import{PAWS_DATA_766}from'../game/paws-data-1.20.6.js';
-import{mcCos}from'../game/physics.js';
-import{animateArmadillo766}from'./armadillo-1.20.6.js';
+import { animateBat774 } from './bat-1.21.11.js';
+import { shieldArmPose774 } from './shield-pose-1.21.11.js';
+import { brushArmPose774 } from '../game/brushing-1.21.11.js';
+import { PAWS_DATA_774 } from '../game/paws-data-1.21.11.js';
+import { mcCos } from '../game/physics.js';
+import { animateArmadillo774 } from './armadillo-1.21.11.js';
 import {animateWildMob} from './wild-mobs-1.19.4.js';
 import { spyglassArmPitch } from './spyglass-pose.js';
 import { animateAxolotl } from './axolotl-pose.js';
@@ -148,15 +148,15 @@ export function animateBiped(m, a) {
   }
   const rp = a.rightPose || (a.heldRight ? 'item' : 'empty'), lp = a.leftPose || 'empty';
   p.rightArm.ry = 0; p.leftArm.ry = 0;
-  if (lp === 'block')shieldArmPose766(p.leftArm,p.head,false);
+  if (lp === 'block') shieldArmPose774(p.leftArm, p.head, false);
   else if (lp === 'item') p.leftArm.rx = p.leftArm.rx * 0.5 - PI / 10;
   else if (lp === 'spyglass') { p.leftArm.rx = spyglassArmPitch(p.head.rx, a.sneak); p.leftArm.ry = p.head.ry + .2617994; }
-  else if(lp==='brush')brushArmPose766(p.leftArm);
+  else if (lp === 'brush') brushArmPose774(p.leftArm);
   else if (lp === 'spear') { p.leftArm.rx = p.leftArm.rx * 0.5 - PI; p.leftArm.ry = 0; }
-  if (rp === 'block')shieldArmPose766(p.rightArm,p.head,true);
+  if (rp === 'block') shieldArmPose774(p.rightArm, p.head, true);
   else if (rp === 'item') p.rightArm.rx = p.rightArm.rx * 0.5 - PI / 10;
   else if (rp === 'spyglass') { p.rightArm.rx = spyglassArmPitch(p.head.rx, a.sneak); p.rightArm.ry = p.head.ry - .2617994; }
-  else if(rp==='brush')brushArmPose766(p.rightArm);
+  else if (rp === 'brush') brushArmPose774(p.rightArm);
   else if (rp === 'spear') { p.rightArm.rx = p.rightArm.rx * 0.5 - PI; p.rightArm.ry = 0; }
   p.body.ry = 0;
   p.rightArm.pz = 0; p.rightArm.px = -5; p.leftArm.pz = 0; p.leftArm.px = 5;
@@ -409,7 +409,7 @@ export function wolf(key='wolf') {
     if(a.sitting){
       q.mane.pivot(-1,16,-3).rot(1.2566371,0,0);q.body.pivot(0,18,0).rot(.7853982,0,0);q.tail.pivot(-1,21,6);
       q.leg1.pivot(-2.5,22.7,2).rx=4.712389;q.leg2.pivot(.5,22.7,2).rx=4.712389;
-      q.leg3.pivot(-2.49,17,-4).rx=5.811947;q.leg4.pivot(.51,17,-4).rx=5.811947;
+      q.leg3.pivot(-2.49,17,-4).rx=5.811947;q.leg4.pivot(.49,17,-4).rx=5.811947;
     }else{q.leg1.rx=q.leg4.rx=c(a.ls);q.leg2.rx=q.leg3.rx=f(f(mcCos(f(f(a.ls*f(.6662))+f(PI)))*f(1.4))*f(a.lsa));}
     q.head.rx=a.pitch*PI/180;q.head.ry=a.yaw*PI/180;q.tail.rx=a.tailRotation??PI/5;
     q.realHead.rz=a.headRoll??0;q.mane.rz=a.maneRoll??0;q.body.rz=a.bodyRoll??0;q.realTail.rz=a.tailRoll??0;
@@ -504,7 +504,7 @@ export function llama(decor = false) {
   return jarAdapter(decor ? 'llamaDecor' : 'llama', [...QUADRUPED, 'rightChest', 'leftChest'], (m, a) => {
     animateQuadruped(m, a);
     m.parts.rightChest.visible = m.parts.leftChest.visible = !!a.chested && !a.child;
-  }, { texture: decor ? 'entity/llama/decor/white.png' : 'entity/llama/creamy.png', quadruped: true, childY: 8, childZ: 6 });
+  }, { texture: decor ? 'entity/equipment/llama_body/white.png' : 'entity/llama/creamy.png', quadruped: true, childY: 8, childZ: 6 });
 }
 
 // age is ticks, flap is the renderer's interpolated wing amplitude (not ageInTicks). If omitted,
@@ -565,10 +565,33 @@ export function vex() {
 // Native model roots for newly registered families. Their animation state
 // adapters are implemented separately; retaining native hierarchy avoids
 // incorrectly treating a different release's model as a biped.
-export const WILD_MOB_TEXTURES={armadillo:'entity/armadillo.png',allay:'entity/allay/allay.png',frog:'entity/frog/temperate_frog.png',tadpole:'entity/tadpole/tadpole.png',warden:'entity/warden/warden.png',camel:'entity/camel/camel.png',sniffer:'entity/sniffer/sniffer.png'};
+export const WILD_MOB_TEXTURES = {
+  armadillo: 'entity/armadillo.png',
+  allay: 'entity/allay/allay.png',
+  frog: 'entity/frog/temperate_frog.png',
+  tadpole: 'entity/tadpole/tadpole.png',
+  warden: 'entity/warden/warden.png',
+  camel: 'entity/camel/camel.png',
+  camel_husk: 'entity/camel/camel_husk.png',
+  sniffer: 'entity/sniffer/sniffer.png',
+};
 export function wildMob(name) {
- if(name==='armadillo')return jarAdapter(name,JAR[name].slotNames,animateArmadillo766,{texture:WILD_MOB_TEXTURES[name],nativeAgeable:{bodyOnly:true,scaleHead:false,headY:0,headZ:0,headScale:1,bodyScale:1/PAWS_DATA_766.armadilloAgeable.scale,bodyY:PAWS_DATA_766.armadilloAgeable.bodyY}});
- return jarAdapter(name,JAR[name].slotNames,animateWildMob,{texture:WILD_MOB_TEXTURES[name]});
+  const modelName = name === 'camel_husk' ? 'camel' : name;
+  if (name === 'armadillo') {
+    return jarAdapter(name, JAR[name].slotNames, animateArmadillo774, {
+      texture: WILD_MOB_TEXTURES[name],
+      nativeAgeable: {
+        bodyOnly: true, scaleHead: false, headY: 0, headZ: 0, headScale: 1,
+        bodyScale: 1 / PAWS_DATA_774.armadilloAgeable.scale, bodyY: PAWS_DATA_774.armadilloAgeable.bodyY
+      }
+    });
+  }
+  return jarAdapter(modelName, JAR[modelName].slotNames, (m, a) => {
+    animateWildMob(m, a);
+    if (modelName === 'camel' && a.saddled === false && m.parts.saddle) {
+      m.parts.saddle.visible = m.parts.bridle.visible = m.parts.reins.visible = false;
+    }
+  }, { texture: WILD_MOB_TEXTURES[name] });
 }
 
 // pose: crossed (default), attacking, spellcasting, bow. Illusioners show the constructor-hidden hat.
@@ -762,7 +785,7 @@ export function guardian() {
 }
 
 export function bat() {
-  return jarAdapter('bat',['$root','head','body','right_wing','left_wing','right_wing_tip','left_wing_tip','feet'],animateBat766);
+  return jarAdapter('bat', ['$root', 'head', 'body', 'right_wing', 'left_wing', 'right_wing_tip', 'left_wing_tip', 'feet'], animateBat774);
 }
 
 export function squid(name = 'squid') {
@@ -1115,4 +1138,76 @@ export function goat() {
 }
 export function axolotl() {
   return jarAdapter('axolotl', ['body','head','tail','rightFrontLeg','leftFrontLeg','rightHindLeg','leftHindLeg','topGills','leftGills','rightGills'], animateAxolotl, {nativeAgeable:{scaleHead:true,headY:8,headZ:3.35,headScale:2,bodyScale:2,bodyY:24,bodyOnly:true}});
+}
+
+export function bogged() {
+  return jarAdapter('bogged', [...BIPED, 'mushrooms'], (m, a) => {
+    animateBiped(m, { ...a, rightPose: a.armsRaised && a.rightPose === 'item' ? 'bow' : a.rightPose });
+    m.parts.mushrooms.visible = !a.sheared;
+  }, { texture: 'entity/skeleton/bogged.png' });
+}
+export function boggedOuter() {
+  return biped('boggedOuter');
+}
+export function parched() {
+  return jarAdapter('parched', BIPED, (m, a) => {
+    animateBiped(m, { ...a, rightPose: a.armsRaised && a.rightPose === 'item' ? 'bow' : a.rightPose });
+  }, { texture: 'entity/skeleton/parched.png' });
+}
+export function breeze() {
+  return jarAdapter('breeze', ['body', 'head', 'eyes', 'windBody', 'rods'], (m, a) => {
+    const p = m.parts;
+    p.head.ry = a.yaw * D2R; p.head.rx = a.pitch * D2R;
+    p.rods.ry = a.age * 0.25;
+  }, { texture: 'entity/breeze/breeze.png' });
+}
+export function breezeWind() {
+  return jarAdapter('breezeWind', ['windBody'], (m, a) => {
+    m.parts.windBody.ry = -a.age * 0.15;
+  }, { texture: 'entity/breeze/breeze_wind.png' });
+}
+export function creaking() {
+  return jarAdapter('creaking', ['$root', 'upperBody', 'head', 'body', 'rightArm', 'leftArm', 'rightLeg', 'leftLeg'], (m, a) => {
+    const p = m.parts;
+    p.head.rx = a.pitch * D2R; p.head.ry = a.yaw * D2R;
+    if (a.entity?.canMove !== false) {
+      p.rightLeg.rx = cos(a.ls * 0.6662) * 1.4 * a.lsa;
+      p.leftLeg.rx = cos(a.ls * 0.6662 + PI) * 1.4 * a.lsa;
+      p.rightArm.rx = cos(a.ls * 0.6662 + PI) * 1.4 * a.lsa;
+      p.leftArm.rx = cos(a.ls * 0.6662) * 1.4 * a.lsa;
+    }
+  }, { texture: 'entity/creaking/creaking.png' });
+}
+export function happyGhast() {
+  return jarAdapter('happyGhast', ['body', 'tentacles'], (m, a) => {
+    const ts = m.parts.tentacles || [];
+    for (let i = 0; i < ts.length; i++) if (ts[i]) ts[i].rx = 0.2 * sin(a.age * 0.3 + i) + 0.4;
+  }, { texture: 'entity/ghast/happy_ghast.png', modelScale: 4, childScale: 0.2375 });
+}
+export function copperGolem() {
+  return jarAdapter('copperGolem', ['head', 'body', 'rightArm', 'leftArm', 'rightLeg', 'leftLeg'], (m, a) => {
+    const p = m.parts;
+    p.head.rx = a.pitch * D2R; p.head.ry = a.yaw * D2R;
+    p.rightLeg.rx = cos(a.ls * 0.6662) * 1.4 * a.lsa;
+    p.leftLeg.rx = cos(a.ls * 0.6662 + PI) * 1.4 * a.lsa;
+    p.rightArm.rx = cos(a.ls * 0.6662 + PI) * 1.4 * a.lsa;
+    p.leftArm.rx = cos(a.ls * 0.6662) * 1.4 * a.lsa;
+  }, { texture: 'entity/copper_golem/copper_golem.png' });
+}
+export function nautilus(variant = 'nautilus') {
+  return jarAdapter(variant, ['$root', 'shell', 'body', 'upperMouth', 'lowerMouth', 'innerMouth'], (m, a) => {
+    const p = m.parts;
+    p.body.ry = clamp(a.yaw, -10, 10) * D2R;
+    p.body.rx = clamp(a.pitch, -10, 10) * D2R;
+  }, { texture: variant === 'zombieNautilus' ? 'entity/nautilus/zombie_nautilus.png' : 'entity/nautilus/nautilus.png' });
+}
+export function zombieNautilus() {
+  return nautilus('zombieNautilus');
+}
+export function windCharge() {
+  return jarAdapter('windCharge', ['bone', 'windCharge', 'wind'], (m, a) => {
+    const rad = a.age * 16 * D2R;
+    m.parts.windCharge.ry = -rad;
+    m.parts.wind.ry = rad;
+  }, { texture: 'entity/projectiles/wind_charge.png' });
 }

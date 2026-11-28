@@ -1,0 +1,3435 @@
+{
+  "version": "1.21.11",
+  "clientJarSha1": "ba2df812c2d12e0219c489c4cd9a5e1f0760f5bd",
+  "sourceSha256": "e863869085cb4aba7f97b3d722b0ad4ba9373c519e3a48f199192235ba9e3f9a",
+  "biomes": {
+    "minecraft:badlands": [
+      {
+        "dryFoliage": 10715206,
+        "foliage": 10387789,
+        "grass": 9470285,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 10387789,
+        "grass": 9470285,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 10387789,
+        "grass": 9470285,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 10387789,
+        "grass": 9470285,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:bamboo_jungle": [
+      {
+        "dryFoliage": 10707782,
+        "foliage": 3193611,
+        "grass": 5884220,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10707782,
+        "foliage": 3193611,
+        "grass": 5884220,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10707782,
+        "foliage": 3193611,
+        "grass": 5884220,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10707782,
+        "foliage": 3193611,
+        "grass": 5884220,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:basalt_deltas": [
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:beach": [
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:birch_forest": [
+      {
+        "dryFoliage": 10711622,
+        "foliage": 7055680,
+        "grass": 8960870,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10711622,
+        "foliage": 7055680,
+        "grass": 8960870,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10711622,
+        "foliage": 7055680,
+        "grass": 8960870,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10711622,
+        "foliage": 7055680,
+        "grass": 8960870,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:cherry_grove": [
+      {
+        "dryFoliage": 10580296,
+        "foliage": 11983713,
+        "grass": 11983713,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10580296,
+        "foliage": 11983713,
+        "grass": 11983713,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10580296,
+        "foliage": 11983713,
+        "grass": 11983713,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10580296,
+        "foliage": 11983713,
+        "grass": 11983713,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:cold_ocean": [
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:crimson_forest": [
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:dark_forest": [
+      {
+        "dryFoliage": 8082228,
+        "foliage": 5877296,
+        "grass": 5274162,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 8082228,
+        "foliage": 5877296,
+        "grass": 5274162,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 8082228,
+        "foliage": 5877296,
+        "grass": 5274162,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 8082228,
+        "foliage": 5877296,
+        "grass": 5274162,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:deep_cold_ocean": [
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:deep_dark": [
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:deep_frozen_ocean": [
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:deep_lukewarm_ocean": [
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:deep_ocean": [
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:desert": [
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:dripstone_caves": [
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:end_barrens": [
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:end_highlands": [
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:end_midlands": [
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:eroded_badlands": [
+      {
+        "dryFoliage": 10715206,
+        "foliage": 10387789,
+        "grass": 9470285,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 10387789,
+        "grass": 9470285,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 10387789,
+        "grass": 9470285,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 10387789,
+        "grass": 9470285,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:flower_forest": [
+      {
+        "dryFoliage": 10710342,
+        "foliage": 5877296,
+        "grass": 7979098,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10710342,
+        "foliage": 5877296,
+        "grass": 7979098,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10710342,
+        "foliage": 5877296,
+        "grass": 7979098,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10710342,
+        "foliage": 5877296,
+        "grass": 7979098,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:forest": [
+      {
+        "dryFoliage": 10710342,
+        "foliage": 5877296,
+        "grass": 7979098,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10710342,
+        "foliage": 5877296,
+        "grass": 7979098,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10710342,
+        "foliage": 5877296,
+        "grass": 7979098,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10710342,
+        "foliage": 5877296,
+        "grass": 7979098,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:frozen_ocean": [
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:frozen_peaks": [
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:frozen_river": [
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:grove": [
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:ice_spikes": [
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:jagged_peaks": [
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:jungle": [
+      {
+        "dryFoliage": 10707782,
+        "foliage": 3193611,
+        "grass": 5884220,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10707782,
+        "foliage": 3193611,
+        "grass": 5884220,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10707782,
+        "foliage": 3193611,
+        "grass": 5884220,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10707782,
+        "foliage": 3193611,
+        "grass": 5884220,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:lukewarm_ocean": [
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:lush_caves": [
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:mangrove_swamp": [
+      {
+        "dryFoliage": 8082228,
+        "foliage": 9285927,
+        "grass": 6975545,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 8082228,
+        "foliage": 9285927,
+        "grass": 5011004,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 8082228,
+        "foliage": 9285927,
+        "grass": 6975545,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 8082228,
+        "foliage": 9285927,
+        "grass": 5011004,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:meadow": [
+      {
+        "dryFoliage": 10580296,
+        "foliage": 6531400,
+        "grass": 8633197,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10580296,
+        "foliage": 6531400,
+        "grass": 8633197,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10580296,
+        "foliage": 6531400,
+        "grass": 8633197,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10580296,
+        "foliage": 6531400,
+        "grass": 8633197,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:mushroom_fields": [
+      {
+        "dryFoliage": 10707526,
+        "foliage": 2865935,
+        "grass": 5622079,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10707526,
+        "foliage": 2865935,
+        "grass": 5622079,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10707526,
+        "foliage": 2865935,
+        "grass": 5622079,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10707526,
+        "foliage": 2865935,
+        "grass": 5622079,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:nether_wastes": [
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:ocean": [
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:old_growth_birch_forest": [
+      {
+        "dryFoliage": 10711622,
+        "foliage": 7055680,
+        "grass": 8960870,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10711622,
+        "foliage": 7055680,
+        "grass": 8960870,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10711622,
+        "foliage": 7055680,
+        "grass": 8960870,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10711622,
+        "foliage": 7055680,
+        "grass": 8960870,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:old_growth_pine_taiga": [
+      {
+        "dryFoliage": 10253645,
+        "foliage": 6858079,
+        "grass": 8829055,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10253645,
+        "foliage": 6858079,
+        "grass": 8829055,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10253645,
+        "foliage": 6858079,
+        "grass": 8829055,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10253645,
+        "foliage": 6858079,
+        "grass": 8829055,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:old_growth_spruce_taiga": [
+      {
+        "dryFoliage": 10122831,
+        "foliage": 6857828,
+        "grass": 8828803,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10122831,
+        "foliage": 6857828,
+        "grass": 8828803,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10122831,
+        "foliage": 6857828,
+        "grass": 8828803,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10122831,
+        "foliage": 6857828,
+        "grass": 8828803,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:pale_garden": [
+      {
+        "dryFoliage": 10528412,
+        "foliage": 8883574,
+        "grass": 7832178,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10528412,
+        "foliage": 8883574,
+        "grass": 7832178,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10528412,
+        "foliage": 8883574,
+        "grass": 7832178,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10528412,
+        "foliage": 8883574,
+        "grass": 7832178,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:plains": [
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:river": [
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:savanna": [
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:savanna_plateau": [
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:small_end_islands": [
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:snowy_beach": [
+      {
+        "dryFoliage": 9533784,
+        "foliage": 6595192,
+        "grass": 8631699,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 9533784,
+        "foliage": 6595192,
+        "grass": 8631699,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 9533784,
+        "foliage": 6595192,
+        "grass": 8631699,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 9533784,
+        "foliage": 6595192,
+        "grass": 8631699,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:snowy_plains": [
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:snowy_slopes": [
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:snowy_taiga": [
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 9402970,
+        "foliage": 6332795,
+        "grass": 8434839,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:soul_sand_valley": [
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:sparse_jungle": [
+      {
+        "dryFoliage": 10708550,
+        "foliage": 4110351,
+        "grass": 6604607,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10708550,
+        "foliage": 4110351,
+        "grass": 6604607,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10708550,
+        "foliage": 4110351,
+        "grass": 6604607,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10708550,
+        "foliage": 4110351,
+        "grass": 6604607,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:stony_peaks": [
+      {
+        "dryFoliage": 10713414,
+        "foliage": 8563742,
+        "grass": 10141259,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10713414,
+        "foliage": 8563742,
+        "grass": 10141259,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10713414,
+        "foliage": 8563742,
+        "grass": 10141259,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10713414,
+        "foliage": 8563742,
+        "grass": 10141259,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:stony_shore": [
+      {
+        "dryFoliage": 9860947,
+        "foliage": 7185259,
+        "grass": 9090697,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 9860947,
+        "foliage": 7185259,
+        "grass": 9090697,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 9860947,
+        "foliage": 7185259,
+        "grass": 9090697,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 9860947,
+        "foliage": 7185259,
+        "grass": 9090697,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:sunflower_plains": [
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10712390,
+        "foliage": 7842607,
+        "grass": 9551193,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:swamp": [
+      {
+        "dryFoliage": 8082228,
+        "foliage": 6975545,
+        "grass": 6975545,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 8082228,
+        "foliage": 6975545,
+        "grass": 5011004,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 8082228,
+        "foliage": 6975545,
+        "grass": 6975545,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 8082228,
+        "foliage": 6975545,
+        "grass": 5011004,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:taiga": [
+      {
+        "dryFoliage": 10122831,
+        "foliage": 6857828,
+        "grass": 8828803,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10122831,
+        "foliage": 6857828,
+        "grass": 8828803,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10122831,
+        "foliage": 6857828,
+        "grass": 8828803,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10122831,
+        "foliage": 6857828,
+        "grass": 8828803,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:the_end": [
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:the_void": [
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:warm_ocean": [
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10581064,
+        "foliage": 7448397,
+        "grass": 9353585,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:warped_forest": [
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:windswept_forest": [
+      {
+        "dryFoliage": 9860947,
+        "foliage": 7185259,
+        "grass": 9090697,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 9860947,
+        "foliage": 7185259,
+        "grass": 9090697,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 9860947,
+        "foliage": 7185259,
+        "grass": 9090697,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 9860947,
+        "foliage": 7185259,
+        "grass": 9090697,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:windswept_gravelly_hills": [
+      {
+        "dryFoliage": 9860947,
+        "foliage": 7185259,
+        "grass": 9090697,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 9860947,
+        "foliage": 7185259,
+        "grass": 9090697,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 9860947,
+        "foliage": 7185259,
+        "grass": 9090697,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 9860947,
+        "foliage": 7185259,
+        "grass": 9090697,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:windswept_hills": [
+      {
+        "dryFoliage": 9860947,
+        "foliage": 7185259,
+        "grass": 9090697,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 9860947,
+        "foliage": 7185259,
+        "grass": 9090697,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 9860947,
+        "foliage": 7185259,
+        "grass": 9090697,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 9860947,
+        "foliage": 7185259,
+        "grass": 9090697,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:windswept_savanna": [
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 11445290,
+        "grass": 12564309,
+        "x": 121,
+        "z": 57
+      }
+    ],
+    "minecraft:wooded_badlands": [
+      {
+        "dryFoliage": 10715206,
+        "foliage": 10387789,
+        "grass": 9470285,
+        "x": 0,
+        "z": 0
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 10387789,
+        "grass": 9470285,
+        "x": 77,
+        "z": -19
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 10387789,
+        "grass": 9470285,
+        "x": -100,
+        "z": 200
+      },
+      {
+        "dryFoliage": 10715206,
+        "foliage": 10387789,
+        "grass": 9470285,
+        "x": 121,
+        "z": 57
+      }
+    ]
+  },
+  "noise": [
+    {
+      "grass": 5011004,
+      "value": 0.8237001930360832,
+      "x": -100,
+      "z": -100
+    },
+    {
+      "grass": 5011004,
+      "value": -0.03735959694235444,
+      "x": -100,
+      "z": -85
+    },
+    {
+      "grass": 5011004,
+      "value": 0.00599330305693204,
+      "x": -100,
+      "z": -70
+    },
+    {
+      "grass": 5011004,
+      "value": 0.011687518377287402,
+      "x": -100,
+      "z": -55
+    },
+    {
+      "grass": 5011004,
+      "value": 2.2259742333188322e-14,
+      "x": -100,
+      "z": -40
+    },
+    {
+      "grass": 6975545,
+      "value": 0.43755293730667644,
+      "x": -100,
+      "z": -25
+    },
+    {
+      "grass": 6975545,
+      "value": -0.9128007638732795,
+      "x": -100,
+      "z": -10
+    },
+    {
+      "grass": 5011004,
+      "value": -0.4283543469303762,
+      "x": -100,
+      "z": 5
+    },
+    {
+      "grass": 6975545,
+      "value": 0.43760436247764295,
+      "x": -100,
+      "z": 20
+    },
+    {
+      "grass": 5011004,
+      "value": -0.4146056250166925,
+      "x": -100,
+      "z": 35
+    },
+    {
+      "grass": 6975545,
+      "value": -1.9017505155462953e-14,
+      "x": -100,
+      "z": 50
+    },
+    {
+      "grass": 6975545,
+      "value": 0.39335172761134846,
+      "x": -100,
+      "z": 65
+    },
+    {
+      "grass": 5011004,
+      "value": -0.037469625811262494,
+      "x": -100,
+      "z": 80
+    },
+    {
+      "grass": 5011004,
+      "value": 0.36685168215566566,
+      "x": -100,
+      "z": 95
+    },
+    {
+      "grass": 6975545,
+      "value": 0.4364652349904799,
+      "x": -85,
+      "z": -100
+    },
+    {
+      "grass": 6975545,
+      "value": -0.42618231742472507,
+      "x": -85,
+      "z": -85
+    },
+    {
+      "grass": 5011004,
+      "value": 0.4637247580555951,
+      "x": -85,
+      "z": -70
+    },
+    {
+      "grass": 6975545,
+      "value": -0.4364322545325763,
+      "x": -85,
+      "z": -55
+    },
+    {
+      "grass": 6975545,
+      "value": 0.43084982255794113,
+      "x": -85,
+      "z": -40
+    },
+    {
+      "grass": 5011004,
+      "value": -0.010707205519554291,
+      "x": -85,
+      "z": -25
+    },
+    {
+      "grass": 6975545,
+      "value": -0.43517930398475363,
+      "x": -85,
+      "z": -10
+    },
+    {
+      "grass": 5011004,
+      "value": 0.4722815998158061,
+      "x": -85,
+      "z": 5
+    },
+    {
+      "grass": 5011004,
+      "value": -0.4131454873666357,
+      "x": -85,
+      "z": 20
+    },
+    {
+      "grass": 5011004,
+      "value": -0.026194208600492517,
+      "x": -85,
+      "z": 35
+    },
+    {
+      "grass": 5011004,
+      "value": 0.3924055838249175,
+      "x": -85,
+      "z": 50
+    },
+    {
+      "grass": 6975545,
+      "value": -0.4865928797511875,
+      "x": -85,
+      "z": 65
+    },
+    {
+      "grass": 6975545,
+      "value": 0.7334300909329721,
+      "x": -85,
+      "z": 80
+    },
+    {
+      "grass": 6975545,
+      "value": 0.4910782492331576,
+      "x": -85,
+      "z": 95
+    },
+    {
+      "grass": 6975545,
+      "value": 0.42618231742472507,
+      "x": -70,
+      "z": -100
+    },
+    {
+      "grass": 6975545,
+      "value": 0.44034972130098204,
+      "x": -70,
+      "z": -85
+    },
+    {
+      "grass": 5011004,
+      "value": -0.448500390195639,
+      "x": -70,
+      "z": -70
+    },
+    {
+      "grass": 6975545,
+      "value": 0.8818089893621324,
+      "x": -70,
+      "z": -55
+    },
+    {
+      "grass": 6975545,
+      "value": 0.9235079693928337,
+      "x": -70,
+      "z": -40
+    },
+    {
+      "grass": 6975545,
+      "value": -0.4317668254575649,
+      "x": -70,
+      "z": -25
+    },
+    {
+      "grass": 5011004,
+      "value": 0.9098859622934489,
+      "x": -70,
+      "z": -10
+    },
+    {
+      "grass": 6975545,
+      "value": 0.4146056250166896,
+      "x": -70,
+      "z": 5
+    },
+    {
+      "grass": 6975545,
+      "value": 0.4280536813245736,
+      "x": -70,
+      "z": 20
+    },
+    {
+      "grass": 5011004,
+      "value": 0.39287865571813546,
+      "x": -70,
+      "z": 35
+    },
+    {
+      "grass": 5011004,
+      "value": -0.07493925162252499,
+      "x": -70,
+      "z": 50
+    },
+    {
+      "grass": 6975545,
+      "value": -0.7336122731852116,
+      "x": -70,
+      "z": 65
+    },
+    {
+      "grass": 5011004,
+      "value": 0.7770311114032646,
+      "x": -70,
+      "z": 80
+    },
+    {
+      "grass": 6975545,
+      "value": 0.3364963743287717,
+      "x": -70,
+      "z": 95
+    },
+    {
+      "grass": 6975545,
+      "value": 0.46372475805558827,
+      "x": -55,
+      "z": -100
+    },
+    {
+      "grass": 5011004,
+      "value": -0.4364322545325763,
+      "x": -55,
+      "z": -85
+    },
+    {
+      "grass": 6975545,
+      "value": 0.4509591668042133,
+      "x": -55,
+      "z": -70
+    },
+    {
+      "grass": 6975545,
+      "value": 0.8806791473146166,
+      "x": -55,
+      "z": -55
+    },
+    {
+      "grass": 6975545,
+      "value": -0.8567086938607524,
+      "x": -55,
+      "z": -40
+    },
+    {
+      "grass": 6975545,
+      "value": -0.4549429811467296,
+      "x": -55,
+      "z": -25
+    },
+    {
+      "grass": 5011004,
+      "value": 0.001460137650066212,
+      "x": -55,
+      "z": -10
+    },
+    {
+      "grass": 6975545,
+      "value": 0.4018594727240457,
+      "x": -55,
+      "z": 5
+    },
+    {
+      "grass": 6975545,
+      "value": -0.3924055838248973,
+      "x": -55,
+      "z": 20
+    },
+    {
+      "grass": 5011004,
+      "value": -0.3741840023174,
+      "x": -55,
+      "z": 35
+    },
+    {
+      "grass": 6975545,
+      "value": -0.00009109112611977807,
+      "x": -55,
+      "z": 50
+    },
+    {
+      "grass": 6975545,
+      "value": 0.3885155557016323,
+      "x": -55,
+      "z": 65
+    },
+    {
+      "grass": 5011004,
+      "value": 0.3364963743287717,
+      "x": -55,
+      "z": 80
+    },
+    {
+      "grass": 6975545,
+      "value": 0.4265588696388783,
+      "x": -55,
+      "z": 95
+    },
+    {
+      "grass": 6975545,
+      "value": 0.43643225453257634,
+      "x": -40,
+      "z": -100
+    },
+    {
+      "grass": 6975545,
+      "value": 0.0067031147487351846,
+      "x": -40,
+      "z": -85
+    },
+    {
+      "grass": 6975545,
+      "value": 0.010707205519554291,
+      "x": -40,
+      "z": -70
+    },
+    {
+      "grass": 5011004,
+      "value": -0.4283543469303762,
+      "x": -40,
+      "z": -55
+    },
+    {
+      "grass": 5011004,
+      "value": 0.472281599815803,
+      "x": -40,
+      "z": -40
+    },
+    {
+      "grass": 6975545,
+      "value": -0.4116853497165817,
+      "x": -40,
+      "z": -25
+    },
+    {
+      "grass": 6975545,
+      "value": 0.4280536813245598,
+      "x": -40,
+      "z": -10
+    },
+    {
+      "grass": 6975545,
+      "value": -0.0009461437864419412,
+      "x": -40,
+      "z": 5
+    },
+    {
+      "grass": 5011004,
+      "value": -0.41165362812866246,
+      "x": -40,
+      "z": 20
+    },
+    {
+      "grass": 5011004,
+      "value": -0.36685168215566566,
+      "x": -40,
+      "z": 35
+    },
+    {
+      "grass": 6975545,
+      "value": 0.5423595959989203,
+      "x": -40,
+      "z": 50
+    },
+    {
+      "grass": 6975545,
+      "value": -0.6729927486575434,
+      "x": -40,
+      "z": 65
+    },
+    {
+      "grass": 6975545,
+      "value": -0.35889703545126406,
+      "x": -40,
+      "z": 80
+    },
+    {
+      "grass": 6975545,
+      "value": 0.30237489055294386,
+      "x": -40,
+      "z": 95
+    },
+    {
+      "grass": 6975545,
+      "value": -0.0067031147487351846,
+      "x": -25,
+      "z": -100
+    },
+    {
+      "grass": 6975545,
+      "value": 0.4403395736573083,
+      "x": -25,
+      "z": -85
+    },
+    {
+      "grass": 6975545,
+      "value": 0.8567086938607524,
+      "x": -25,
+      "z": -70
+    },
+    {
+      "grass": 6975545,
+      "value": -0.4549429811467296,
+      "x": -25,
+      "z": -55
+    },
+    {
+      "grass": 5011004,
+      "value": 0.0014601376500662136,
+      "x": -25,
+      "z": -40
+    },
+    {
+      "grass": 6975545,
+      "value": 0.02619420860051408,
+      "x": -25,
+      "z": -25
+    },
+    {
+      "grass": 6975545,
+      "value": -0.7867034552226694,
+      "x": -25,
+      "z": -10
+    },
+    {
+      "grass": 6975545,
+      "value": -0.5240625055624496,
+      "x": -25,
+      "z": 5
+    },
+    {
+      "grass": 5011004,
+      "value": 0.36685168215566566,
+      "x": -25,
+      "z": 20
+    },
+    {
+      "grass": 6975545,
+      "value": -0.33723420893587225,
+      "x": -25,
+      "z": 35
+    },
+    {
+      "grass": 6975545,
+      "value": 0.33648732741502957,
+      "x": -25,
+      "z": 50
+    },
+    {
+      "grass": 6975545,
+      "value": -0.3588970354512787,
+      "x": -25,
+      "z": 65
+    },
+    {
+      "grass": 6975545,
+      "value": 0.30237489055294386,
+      "x": -25,
+      "z": 80
+    },
+    {
+      "grass": 6975545,
+      "value": 0.5828728224513213,
+      "x": -25,
+      "z": 95
+    },
+    {
+      "grass": 5011004,
+      "value": 0.4403395736573083,
+      "x": -10,
+      "z": -100
+    },
+    {
+      "grass": 6975545,
+      "value": 0.43517930398475363,
+      "x": -10,
+      "z": -85
+    },
+    {
+      "grass": 5011004,
+      "value": 0.017338618669066684,
+      "x": -10,
+      "z": -70
+    },
+    {
+      "grass": 5011004,
+      "value": 0.4160657626667558,
+      "x": -10,
+      "z": -55
+    },
+    {
+      "grass": 5011004,
+      "value": 0.02619420860051408,
+      "x": -10,
+      "z": -40
+    },
+    {
+      "grass": 6975545,
+      "value": 0.7857573114362337,
+      "x": -10,
+      "z": -25
+    },
+    {
+      "grass": 5011004,
+      "value": 0.44912325393992497,
+      "x": -10,
+      "z": -10
+    },
+    {
+      "grass": 5011004,
+      "value": -0.00018218225223955614,
+      "x": -10,
+      "z": 5
+    },
+    {
+      "grass": 5011004,
+      "value": 0.49107824923315624,
+      "x": -10,
+      "z": 20
+    },
+    {
+      "grass": 6975545,
+      "value": -0.3364873274150158,
+      "x": -10,
+      "z": 35
+    },
+    {
+      "grass": 6975545,
+      "value": 0.4265588696388917,
+      "x": -10,
+      "z": 50
+    },
+    {
+      "grass": 5011004,
+      "value": -0.30237489055294386,
+      "x": -10,
+      "z": 65
+    },
+    {
+      "grass": 6975545,
+      "value": 0.49631459497683034,
+      "x": -10,
+      "z": 80
+    },
+    {
+      "grass": 6975545,
+      "value": -0.5295391451262608,
+      "x": -10,
+      "z": 95
+    },
+    {
+      "grass": 5011004,
+      "value": 0.4249418684031876,
+      "x": 5,
+      "z": -100
+    },
+    {
+      "grass": 6975545,
+      "value": -0.47228159981580636,
+      "x": 5,
+      "z": -85
+    },
+    {
+      "grass": 6975545,
+      "value": 0.4131454873666479,
+      "x": 5,
+      "z": -70
+    },
+    {
+      "grass": 6975545,
+      "value": 0.9346899884506618,
+      "x": 5,
+      "z": -55
+    },
+    {
+      "grass": 6975545,
+      "value": -0.0009461437864291573,
+      "x": 5,
+      "z": -40
+    },
+    {
+      "grass": 5011004,
+      "value": -0.4491232539399236,
+      "x": 5,
+      "z": -25
+    },
+    {
+      "grass": 6975545,
+      "value": -0.3669427732817855,
+      "x": 5,
+      "z": -10
+    },
+    {
+      "grass": 6975545,
+      "value": 0.3885155557016406,
+      "x": 5,
+      "z": 5
+    },
+    {
+      "grass": 5011004,
+      "value": -0.3364963743287818,
+      "x": 5,
+      "z": 20
+    },
+    {
+      "grass": 6975545,
+      "value": -0.494220703826501,
+      "x": 5,
+      "z": 35
+    },
+    {
+      "grass": 5011004,
+      "value": 0.30237489055294137,
+      "x": 5,
+      "z": 50
+    },
+    {
+      "grass": 6975545,
+      "value": -0.40975636750233924,
+      "x": 5,
+      "z": 65
+    },
+    {
+      "grass": 5011004,
+      "value": -0.2647695725631304,
+      "x": 5,
+      "z": 80
+    },
+    {
+      "grass": 6975545,
+      "value": 0.38978764467539995,
+      "x": 5,
+      "z": 95
+    },
+    {
+      "grass": 5011004,
+      "value": 0.4376043624776531,
+      "x": 20,
+      "z": -100
+    },
+    {
+      "grass": 5011004,
+      "value": 0.8321315253334994,
+      "x": 20,
+      "z": -85
+    },
+    {
+      "grass": 6975545,
+      "value": 0.428053681324555,
+      "x": 20,
+      "z": -70
+    },
+    {
+      "grass": 6975545,
+      "value": -0.0004730718932177245,
+      "x": 20,
+      "z": -55
+    },
+    {
+      "grass": 6975545,
+      "value": -0.4865928797511875,
+      "x": 20,
+      "z": -40
+    },
+    {
+      "grass": 5011004,
+      "value": 0.36685168215566566,
+      "x": 20,
+      "z": -25
+    },
+    {
+      "grass": 5011004,
+      "value": 0.43979690246739844,
+      "x": 20,
+      "z": -10
+    },
+    {
+      "grass": 5011004,
+      "value": -0.33648732741502774,
+      "x": 20,
+      "z": 5
+    },
+    {
+      "grass": 5011004,
+      "value": 0.29123520126367325,
+      "x": 20,
+      "z": 20
+    },
+    {
+      "grass": 6975545,
+      "value": 0.6047497811058827,
+      "x": 20,
+      "z": 35
+    },
+    {
+      "grass": 5011004,
+      "value": -0.7329545075301874,
+      "x": 20,
+      "z": 50
+    },
+    {
+      "grass": 6975545,
+      "value": -0.2647695725631304,
+      "x": 20,
+      "z": 65
+    },
+    {
+      "grass": 6975545,
+      "value": -0.10783404678637644,
+      "x": 20,
+      "z": 80
+    },
+    {
+      "grass": 6975545,
+      "value": -0.22408770236574807,
+      "x": 20,
+      "z": 95
+    },
+    {
+      "grass": 5011004,
+      "value": -0.8306713876834388,
+      "x": 35,
+      "z": -100
+    },
+    {
+      "grass": 5011004,
+      "value": 0.9084957798501494,
+      "x": 35,
+      "z": -85
+    },
+    {
+      "grass": 6975545,
+      "value": 0.7857573114362453,
+      "x": 35,
+      "z": -70
+    },
+    {
+      "grass": 5011004,
+      "value": -0.41165362812866246,
+      "x": 35,
+      "z": -55
+    },
+    {
+      "grass": 5011004,
+      "value": -0.36685168215566566,
+      "x": 35,
+      "z": -40
+    },
+    {
+      "grass": 6975545,
+      "value": 0.9308751517005538,
+      "x": 35,
+      "z": -25
+    },
+    {
+      "grass": 6975545,
+      "value": -0.6729882252006764,
+      "x": 35,
+      "z": -10
+    },
+    {
+      "grass": 5011004,
+      "value": 0.494220703826501,
+      "x": 35,
+      "z": 5
+    },
+    {
+      "grass": 5011004,
+      "value": -0.6047497811058827,
+      "x": 35,
+      "z": 20
+    },
+    {
+      "grass": 6975545,
+      "value": 0.40975636750233924,
+      "x": 35,
+      "z": 35
+    },
+    {
+      "grass": 6975545,
+      "value": 0,
+      "x": 35,
+      "z": 50
+    },
+    {
+      "grass": 5011004,
+      "value": -0.7795752893507999,
+      "x": 35,
+      "z": 65
+    },
+    {
+      "grass": 6975545,
+      "value": 0,
+      "x": 35,
+      "z": 80
+    },
+    {
+      "grass": 6975545,
+      "value": -0.23582135535159693,
+      "x": 35,
+      "z": 95
+    },
+    {
+      "grass": 6975545,
+      "value": 0.4542478899250847,
+      "x": 50,
+      "z": -100
+    },
+    {
+      "grass": 6975545,
+      "value": 0.39287865571813546,
+      "x": 50,
+      "z": -85
+    },
+    {
+      "grass": 5011004,
+      "value": -0.41165362812866246,
+      "x": 50,
+      "z": -70
+    },
+    {
+      "grass": 6975545,
+      "value": -0.36685168215566566,
+      "x": 50,
+      "z": -55
+    },
+    {
+      "grass": 6975545,
+      "value": 0.05128134676576266,
+      "x": 50,
+      "z": -40
+    },
+    {
+      "grass": 6975545,
+      "value": 0.3364828039581388,
+      "x": 50,
+      "z": -25
+    },
+    {
+      "grass": 6975545,
+      "value": 0.5618825380141103,
+      "x": 50,
+      "z": -10
+    },
+    {
+      "grass": 5011004,
+      "value": 0.30237489055294137,
+      "x": 50,
+      "z": 5
+    },
+    {
+      "grass": 5011004,
+      "value": -0.5828728224513213,
+      "x": 50,
+      "z": 20
+    },
+    {
+      "grass": 6975545,
+      "value": -0.2647695725631304,
+      "x": 50,
+      "z": 35
+    },
+    {
+      "grass": 6975545,
+      "value": -0.17411955110264707,
+      "x": 50,
+      "z": 50
+    },
+    {
+      "grass": 5011004,
+      "value": 0.22408770236574807,
+      "x": 50,
+      "z": 65
+    },
+    {
+      "grass": 5011004,
+      "value": -0.23582135535158885,
+      "x": 50,
+      "z": 80
+    },
+    {
+      "grass": 6975545,
+      "value": -0.36157363500043166,
+      "x": 50,
+      "z": 95
+    },
+    {
+      "grass": 6975545,
+      "value": -0.7852842395430426,
+      "x": 65,
+      "z": -100
+    },
+    {
+      "grass": 6975545,
+      "value": 0.41165362812866246,
+      "x": 65,
+      "z": -85
+    },
+    {
+      "grass": 5011004,
+      "value": 0.7337033643113313,
+      "x": 65,
+      "z": -70
+    },
+    {
+      "grass": 5011004,
+      "value": 0.8795938049347899,
+      "x": 65,
+      "z": -55
+    },
+    {
+      "grass": 6975545,
+      "value": 0.6729746548300353,
+      "x": 65,
+      "z": -40
+    },
+    {
+      "grass": 6975545,
+      "value": 0.06766183418760095,
+      "x": 65,
+      "z": -25
+    },
+    {
+      "grass": 6975545,
+      "value": -0.3023748905529156,
+      "x": 65,
+      "z": -10
+    },
+    {
+      "grass": 6975545,
+      "value": 0.32319814002784814,
+      "x": 65,
+      "z": 5
+    },
+    {
+      "grass": 6975545,
+      "value": 0,
+      "x": 65,
+      "z": 20
+    },
+    {
+      "grass": 6975545,
+      "value": 0.17411955110264707,
+      "x": 65,
+      "z": 35
+    },
+    {
+      "grass": 6975545,
+      "value": 0.22408770236574807,
+      "x": 65,
+      "z": 50
+    },
+    {
+      "grass": 5011004,
+      "value": -0.131273430241925,
+      "x": 65,
+      "z": 65
+    },
+    {
+      "grass": 6975545,
+      "value": -0.3615736350004601,
+      "x": 65,
+      "z": 80
+    },
+    {
+      "grass": 6975545,
+      "value": -0.4987429833631035,
+      "x": 65,
+      "z": 95
+    },
+    {
+      "grass": 5011004,
+      "value": -0.5240625055624499,
+      "x": 80,
+      "z": -100
+    },
+    {
+      "grass": 6975545,
+      "value": -0.36685168215566566,
+      "x": 80,
+      "z": -85
+    },
+    {
+      "grass": 5011004,
+      "value": 0.4910782492331576,
+      "x": 80,
+      "z": -70
+    },
+    {
+      "grass": 6975545,
+      "value": -0.33648732741501763,
+      "x": 80,
+      "z": -55
+    },
+    {
+      "grass": 6975545,
+      "value": -0.35889703545127993,
+      "x": 80,
+      "z": -40
+    },
+    {
+      "grass": 5011004,
+      "value": -0.3023748905529156,
+      "x": 80,
+      "z": -25
+    },
+    {
+      "grass": 5011004,
+      "value": -0.40975636750233924,
+      "x": 80,
+      "z": -10
+    },
+    {
+      "grass": 6975545,
+      "value": -0.2647695725631304,
+      "x": 80,
+      "z": 5
+    },
+    {
+      "grass": 6975545,
+      "value": 0.9952433829235527,
+      "x": 80,
+      "z": 20
+    },
+    {
+      "grass": 6975545,
+      "value": -0.44817540473149614,
+      "x": 80,
+      "z": 35
+    },
+    {
+      "grass": 6975545,
+      "value": 0.23582135535158885,
+      "x": 80,
+      "z": 50
+    },
+    {
+      "grass": 5011004,
+      "value": 0,
+      "x": 80,
+      "z": 65
+    },
+    {
+      "grass": 6975545,
+      "value": 0.028980607871655795,
+      "x": 80,
+      "z": 80
+    },
+    {
+      "grass": 6975545,
+      "value": 0.1353633264583077,
+      "x": 80,
+      "z": 95
+    },
+    {
+      "grass": 5011004,
+      "value": 0.7336122731852116,
+      "x": 95,
+      "z": -100
+    },
+    {
+      "grass": 6975545,
+      "value": 0.8283124581690272,
+      "x": 95,
+      "z": -85
+    },
+    {
+      "grass": 6975545,
+      "value": -0.3364963743287717,
+      "x": 95,
+      "z": -70
+    },
+    {
+      "grass": 6975545,
+      "value": -0.358897035451264,
+      "x": 95,
+      "z": -55
+    },
+    {
+      "grass": 6975545,
+      "value": -2.8321119575440305e-14,
+      "x": 95,
+      "z": -40
+    },
+    {
+      "grass": 5011004,
+      "value": -0.5828728224513213,
+      "x": 95,
+      "z": -25
+    },
+    {
+      "grass": 5011004,
+      "value": 0,
+      "x": 95,
+      "z": -10
+    },
+    {
+      "grass": 5011004,
+      "value": -0.2819535978890235,
+      "x": 95,
+      "z": 5
+    },
+    {
+      "grass": 6975545,
+      "value": 0.44817540473149614,
+      "x": 95,
+      "z": 20
+    },
+    {
+      "grass": 5011004,
+      "value": 0.23582135535159693,
+      "x": 95,
+      "z": 35
+    }
+  ],
+  "blocks": {
+    "minecraft:acacia_leaves": {
+      "item": [
+        4764952,
+        4764952
+      ],
+      "withoutWorld": [
+        4764952,
+        4764952
+      ],
+      "world": [
+        7842607,
+        7842607
+      ]
+    },
+    "minecraft:birch_leaves": {
+      "item": [
+        8431445,
+        8431445
+      ],
+      "withoutWorld": [
+        8431445,
+        8431445
+      ],
+      "world": [
+        8431445,
+        8431445
+      ]
+    },
+    "minecraft:bush": {
+      "item": [
+        8174955,
+        8174955
+      ],
+      "withoutWorld": [
+        8174955,
+        8174955
+      ],
+      "world": [
+        9551193,
+        9551193
+      ]
+    },
+    "minecraft:dark_oak_leaves": {
+      "item": [
+        4764952,
+        4764952
+      ],
+      "withoutWorld": [
+        4764952,
+        4764952
+      ],
+      "world": [
+        7842607,
+        7842607
+      ]
+    },
+    "minecraft:fern": {
+      "item": [
+        8174955,
+        8174955
+      ],
+      "withoutWorld": [
+        8174955,
+        8174955
+      ],
+      "world": [
+        9551193,
+        9551193
+      ]
+    },
+    "minecraft:grass_block": {
+      "item": [
+        8174955,
+        8174955
+      ],
+      "withoutWorld": [
+        8174955,
+        8174955
+      ],
+      "world": [
+        9551193,
+        9551193
+      ]
+    },
+    "minecraft:jungle_leaves": {
+      "item": [
+        4764952,
+        4764952
+      ],
+      "withoutWorld": [
+        4764952,
+        4764952
+      ],
+      "world": [
+        7842607,
+        7842607
+      ]
+    },
+    "minecraft:large_fern": {
+      "item": [
+        8174955,
+        8174955
+      ],
+      "withoutWorld": [
+        8174955,
+        8174955
+      ],
+      "world": [
+        9551193,
+        9551193
+      ]
+    },
+    "minecraft:leaf_litter": {
+      "item": [
+        6044722,
+        6044722
+      ],
+      "withoutWorld": [
+        6044722,
+        6044722
+      ],
+      "world": [
+        10712390,
+        10712390
+      ]
+    },
+    "minecraft:lily_pad": {
+      "item": [
+        7455580,
+        7455580
+      ],
+      "withoutWorld": [
+        7455580,
+        7455580
+      ],
+      "world": [
+        2129968,
+        2129968
+      ]
+    },
+    "minecraft:mangrove_leaves": {
+      "item": [
+        4764952,
+        4764952
+      ],
+      "withoutWorld": [
+        4764952,
+        4764952
+      ],
+      "world": [
+        7842607,
+        7842607
+      ]
+    },
+    "minecraft:oak_leaves": {
+      "item": [
+        4764952,
+        4764952
+      ],
+      "withoutWorld": [
+        4764952,
+        4764952
+      ],
+      "world": [
+        7842607,
+        7842607
+      ]
+    },
+    "minecraft:pink_petals": {
+      "item": [
+        -1,
+        -1
+      ],
+      "withoutWorld": [
+        -1,
+        8174955
+      ],
+      "world": [
+        -1,
+        9551193
+      ]
+    },
+    "minecraft:potted_fern": {
+      "item": [
+        8174955,
+        8174955
+      ],
+      "withoutWorld": [
+        8174955,
+        8174955
+      ],
+      "world": [
+        9551193,
+        9551193
+      ]
+    },
+    "minecraft:seagrass": {
+      "item": [
+        4210943,
+        4210943
+      ],
+      "withoutWorld": [
+        -1,
+        -1
+      ],
+      "world": [
+        -1,
+        -1
+      ]
+    },
+    "minecraft:short_grass": {
+      "item": [
+        8174955,
+        8174955
+      ],
+      "withoutWorld": [
+        8174955,
+        8174955
+      ],
+      "world": [
+        9551193,
+        9551193
+      ]
+    },
+    "minecraft:spruce_leaves": {
+      "item": [
+        6396257,
+        6396257
+      ],
+      "withoutWorld": [
+        6396257,
+        6396257
+      ],
+      "world": [
+        6396257,
+        6396257
+      ]
+    },
+    "minecraft:sugar_cane": {
+      "item": [
+        -1,
+        -1
+      ],
+      "withoutWorld": [
+        -1,
+        -1
+      ],
+      "world": [
+        9551193,
+        9551193
+      ]
+    },
+    "minecraft:tall_grass": {
+      "item": [
+        8174955,
+        8174955
+      ],
+      "withoutWorld": [
+        8174955,
+        8174955
+      ],
+      "world": [
+        9551193,
+        9551193
+      ]
+    },
+    "minecraft:tall_seagrass": {
+      "item": [
+        4210943,
+        4210943
+      ],
+      "withoutWorld": [
+        -1,
+        -1
+      ],
+      "world": [
+        -1,
+        -1
+      ]
+    },
+    "minecraft:vine": {
+      "item": [
+        4764952,
+        4764952
+      ],
+      "withoutWorld": [
+        4764952,
+        4764952
+      ],
+      "world": [
+        7842607,
+        7842607
+      ]
+    },
+    "minecraft:water": {
+      "item": [
+        -1,
+        -1
+      ],
+      "withoutWorld": [
+        -1,
+        -1
+      ],
+      "world": [
+        4159204,
+        4159204
+      ]
+    },
+    "minecraft:wildflowers": {
+      "item": [
+        -1,
+        -1
+      ],
+      "withoutWorld": [
+        -1,
+        8174955
+      ],
+      "world": [
+        -1,
+        9551193
+      ]
+    }
+  }
+}

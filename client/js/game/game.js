@@ -1,11 +1,11 @@
 import { TickRateManager, clientTickMillis } from './tick-rate.js';
 import { EntityOutline } from '../render/entity-outline.js';
-import {EFFECT_766,createEffectBlend766,tickEffectBlend766} from './effects-1.20.6.js';
+import { EFFECT_774, createEffectBlend774, tickEffectBlend774 } from './effects-1.21.11.js';
 import {bindingResolver} from './keybind-components.js';
 import {setKeybindResolver} from '../gui/chat.js';
 import {replaceRespawnPlayer} from './respawn-player.js';
 import {PLAYER_DATA,respawnPolicy,clampMaxHealth} from './player-native.js';
-import {WorldBorder} from '../world/world-border.js';
+import {WorldBorder774} from '../world/world-border-1.21.11.js';
 import {BorderRenderer} from '../render/world-border.js';
 import {applyLookAt} from './look-at.js';
 import {componentTemplate} from '../gui/component-translation.js';
@@ -23,10 +23,10 @@ import{markHotbarPickup,tickPickupAnimations}from'./pickup-animation.js';
 import{collectDynamicLights}from'../render/dynamic-lights.js';
 import {handleDamage762} from './damage-1.19.4.js';
 import {darkness762} from './darkness-1.19.4.js';
-import {chatState762} from '../net/packets.js';
-import {decorateChat762} from '../net/chat-state-1.19.4.js';
-import {readPalette762} from '../world/chunk-1.19.4.js';
-import {Reader762} from '../net/protocol-1.19.4.js';
+import { chatState774 } from '../net/packets.js';
+import { decorateChat762 } from '../net/chat-state-1.19.4.js';
+import { readPalette774 } from '../world/chunk-1.21.11.js';
+import { Reader762 } from '../net/protocol-1.19.4.js';
 import {BlockPrediction762} from './block-prediction-1.19.4.js';
 import {resolveDimension762} from '../net/protocol-1.19.4.js';
 import {ChunkBatchCalculator} from '../net/chunk-batch.js';
@@ -52,7 +52,8 @@ import {captureText} from '../debug/text-capture.js';
 import {pushLocalPlayer} from './entity-pushing.js';
 import {ShaderPackFinal} from '../render/shader-pack.js';
 import {CameraEye} from '../render/camera-eye.js';
-import {menuInfo766} from "./menus-1.20.6.js";
+import { menuInfo774 } from './menus-1.21.11.js';
+import { paintingVariantList774 } from './painting-1.21.11.js';
 import { RegistryTags } from './tags.js';
 import { CommandTree } from './commands.js';
 import { startSleeping, stopSleeping, updateSleeping, sleepingCamera } from './bed-sleep.js';
@@ -103,7 +104,7 @@ import { EntityRenderer } from '../render/entity-renderer.js';
 import { ItemRenderer } from '../render/item-renderer.js';
 import { HandRenderer } from '../render/hand-renderer.js';
 import { Pistons } from './pistons.js';
-import { ServerPacks766 as ServerPacks } from './serverpacks-1.20.6.js';
+import { ServerPacks774 as ServerPacks } from './serverpacks-1.21.11.js';
 import { MenuBlur } from '../render/menu-blur.js';
 import { PostEffects, entityShaderName } from '../render/post.js';
 import { TileEntityRenderer } from '../render/tile-renderer.js';
@@ -134,6 +135,7 @@ function attributeValue(prop) {
 const BLOCK_ENTITY_ACTIONS = {
   mob_spawner: 1, command_block: 2, beacon: 3, skull: 4, flower_pot: 5, banner: 6, structure_block: 7, end_gateway: 8,
   shulker_box: 10, bed: 11, jigsaw:12, campfire:13, beehive:14, bee_nest:14, decorated_pot:'decorated_pot', brushable_block:'brushable_block',
+  shelf: 'shelf',
 };
 
 const TICK_MS = 50;
@@ -190,6 +192,7 @@ export class Game {
     this.renderer.columnRevision = () => this.world._gen;
     this.renderer.opaqueAt = (x, y, z) => { const b = getBlock(this.world.getState(Math.floor(x), Math.floor(y), Math.floor(z))); return !!(b && b.opaque); };
     platform().on('resize', () => { this.gui.resize(); this.renderer.resize(); });
+    platform().on('filesdrop', (files) => this.screens.current?.onFilesDrop?.(files));
 
     this.world = new World();
     this.world.selectionProvider = (state, x, y, z) => this.selectionBox(state, x, y, z);
@@ -262,6 +265,9 @@ export class Game {
     this.xpTotal = 0;
     this.heldSlot = 0;
     this.spawnPos = null;
+    this.spawnAngle = 0;
+    this.spawnPitch = 0;
+    this.spawnDimension = null;
     this.doneLoadingTerrain = false;
     this.lastReported = { x: 0, y: 0, z: 0, yaw: 0, pitch: 0, sneak: false, sprint: false };
     this.positionUpdateTicks = 0;
@@ -271,7 +277,7 @@ export class Game {
     this.effects = new Map();
     this.dead = false;
     this.ticks = 0;
-    this.worldBorder = new WorldBorder(()=>Math.floor(platform().now()),{legacyTime:false,legacyBounds:false,collisionMode:'close'});
+    this.worldBorder = new WorldBorder774();
     if(this.world)this.world.worldBorder=this.worldBorder;
     this.cameraEntity = null;
     this.ridingEntityId = -1;
@@ -726,7 +732,7 @@ export class Game {
     });
     conn.on('reconfiguration_start', () => {
       if (this.conn !== conn) return;
-      if (chatState762.offset > 0) this.send(chatState762.flush());
+      if (chatState774.offset > 0) this.send(chatState774.flush());
       this.leaveWorld(true);
       this.connected = true;
       this.doneLoadingTerrain = false;
@@ -866,8 +872,23 @@ export class Game {
   }
   on_set_projectile_power(p) {
     const entity = this.entities.get(p.id);
-    if (entity && (FIREBALLS.has(entity.entityName) || ['wind_charge','breeze_wind_charge'].includes(entity.entityName))) {
-      entity.accelX = p.power.x; entity.accelY = p.power.y; entity.accelZ = p.power.z;
+    if (!entity || !(FIREBALLS.has(entity.entityName) || ['wind_charge', 'breeze_wind_charge'].includes(entity.entityName))) return;
+    if (p.accelerationPower !== undefined) {
+      entity.accelerationPower = p.accelerationPower;
+      if (Number.isFinite(entity.accelX) && Number.isFinite(entity.accelY) && Number.isFinite(entity.accelZ)) {
+        if (!entity._accelDir) {
+          const len = Math.hypot(entity.accelX, entity.accelY, entity.accelZ);
+          if (len > 0) entity._accelDir = [entity.accelX / len, entity.accelY / len, entity.accelZ / len];
+        }
+        if (entity._accelDir) {
+          [entity.accelX, entity.accelY, entity.accelZ] = entity._accelDir.map((n) => n * p.accelerationPower);
+        }
+      }
+      return;
+    }
+    const legacyPower = p['power'];
+    if (legacyPower) {
+      entity.accelX = legacyPower.x; entity.accelY = legacyPower.y; entity.accelZ = legacyPower.z;
     }
   }
   // Native combat-enter/end handlers intentionally have no side effects.
@@ -890,7 +911,7 @@ export class Game {
 
   on_update_view_distance(p) { this.serverViewDistance=p.viewDistance; }
   on_update_view_position(p) { this.serverChunkCenter={x:p.chunkX,z:p.chunkZ}; }
-  // ClientboundTickingStatePacket / ClientboundTickingStepPacket (fields as the 766 schema names them)
+  // ClientboundTickingStatePacket / ClientboundTickingStepPacket (fields as the 774 schema names them)
   on_set_ticking_state(p) {
     const rate = p.tick_rate ?? p.tickRate, frozen = !!(p.is_frozen ?? p.isFrozen);
     this.serverTickRate = rate; this.serverFrozen = frozen;
@@ -909,12 +930,13 @@ export class Game {
     this.customChatCompletions=new Set();
     this.chunkBatch = null;
     this.pingSamples = []; this.serverTickSamples = [];
-    this.spawnPos=null;this.spawnAngle=0;
+    this.spawnPos = null; this.spawnAngle = 0; this.spawnPitch = 0; this.spawnDimension = null;
     this.worldBorder?.reset();
     this.serverData=null;this.enforcesSecureChat=!!p.enforcesSecureChat;this.chatSignatures=new MessageSignatureCache762();this.chatVerifier?.reset();
     this.enabledFeatures=new Set(p.enabledFeatures||['minecraft:vanilla']);this.commandTags=p.commandTags||{};
     if(p.registryTags)this.tags?.replace(p.registryTags);
-    this.blockPrediction?.reset();chatState762.reset();
+    this.blockPrediction?.reset(); chatState774.reset();
+    this._lastInputBits = 0;
     resetPlayerView(this);
     this.interaction?.predictedDoors?.clear();
     this.serverSimulationDistance=p.simulationDistance;
@@ -948,13 +970,18 @@ export class Game {
     this.hardcore = p.isHardcore;
     this.dimension = p.dimension;
     this.worldName=p.worldName;this.dimensionData=p.dimensionData;this.lastDeathLocation=p.death;
-    if(p.dimensionCodec)this.dimensionCodec=p.dimensionCodec;
+    if(p.dimensionCodec){
+      this.dimensionCodec=p.dimensionCodec;
+      const paintEntries = registryEntries(simplify(p.dimensionCodec), 'minecraft:painting_variant');
+      if (paintEntries?.length) this.paintingVariants = paintingVariantList774(paintEntries);
+    }
     if(p.biomeEntries){setServerBiomeEntries(p.biomeEntries);this.worker?.postMessage({type:'serverBiomes',entries:p.biomeEntries});}
-    else if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomes(simplify(p.dimensionCodec));this.worker?.postMessage({type:'serverBiomes',codec:simplify(p.dimensionCodec)});}
+    else if(p.dimensionCodec){this.dimensionCodec=p.dimensionCodec;setServerBiomeEntries?.();setServerBiomes(simplify(p.dimensionCodec));this.worker?.postMessage({type:'serverBiomes',codec:simplify(p.dimensionCodec)});}
     if(p.difficulty!==undefined)this.difficulty = p.difficulty;
     this.maxPlayers = p.maxPlayers;
     this.levelType = p.levelType;
     this.reducedDebug = p.reducedDebugInfo;
+    this.world.protocol = 774;
     this.world.setDimension(p.dimension,p.dimensionData||{});
     if(p.dimensionData)this.world.hasSky=!!p.dimensionData.has_skylight;
     this.world.setBiomeSeed?.(p.hashedSeed);
@@ -1013,20 +1040,20 @@ export class Game {
    let trust=verified.signed&&!verified.stale?'secure':'unverified';
    if(trust==='secure'&&(!chatComponentString(decorated).includes(p.plainMessage)||p.unsignedChatContent&&hasNonDefaultChatFont(JSON.parse(p.unsignedChatContent))))trust='modified';
    const blocked=this.hiddenPlayers?.has(p.sender)||this.socialBlocking?.isBlocked(p.sender)||this.blockedPlayers?.has(p.sender),shown=p.filterType!==1&&!blocked&&this.settings.chatVisibility===0&&!(this.settings.onlyShowSecureChat&&trust==='unverified');
-   if(chatState762.process(p.signature,shown)&&chatState762.offset>64)this.send(chatState762.flush());if(!shown)return;
+   if(chatState774.process(p.signature,shown)&&chatState774.offset>64)this.send(chatState774.flush());if(!shown)return;
    if(p.filterType===2)content=filteredChat762(p.plainMessage,p.filterTypeMask);
    this.on_chat({sender:p.sender,message:JSON.stringify(p.filterType===2?decorateChat762(codec,p,content):decorated),position:0,trust,originalMessage:p.plainMessage,signature:p.signature});
   }
   on_hide_message(p){
    const signature=(this.chatSignatures||=new MessageSignatureCache762()).resolve({id:p.signatureId,signature:p.signature});
    if(!signature){this.disconnect(false,tr('multiplayer.disconnect.invalid_packet'));return;}
-   chatState762.ignore(signature);this.hud.deleteChatMessage(signature);
+   chatState774.ignore(signature);this.hud.deleteChatMessage(signature);
   }
   on_player_remove(p){this.on_player_info({action:4,data:p.players.map(uuid=>({uuid}))});}
   on_hurt_animation(p){if(p.entityId===this.entityId){this.hurtTime=10;this.attackedAtYaw=p.yaw;}else{const e=this.entities.get(p.entityId);if(e){e.hurtTime=10;e.attackedAtYaw=p.yaw;}}}
   on_damage_event(p){handleDamage762(this,p,simplify(this.dimensionCodec));}
   on_chunk_biomes(p){
-   const decoded=p.biomes.map(update=>{const r=new Reader762(update.data),biomes=new Uint32Array(this.world.sectionCount*64);for(let i=0;i<this.world.sectionCount;i++)biomes.set(readPalette762(r,64,this.world.biomeRegistrySize,'biomes'),i*64);if(r.remaining())throw Error('Trailing 762 biome update');return{...update,biomes};});
+   const decoded=p.biomes.map(update=>{const r=new Reader(update.data),biomes=new Uint32Array(this.world.sectionCount*64);for(let i=0;i<this.world.sectionCount;i++)biomes.set(readPalette774(r,64,this.world.biomeRegistrySize,'biomes'),i*64);if(r.remaining())throw Error('Trailing 774 biome update');return{...update,biomes};});
    for(const u of decoded){const c=this.world.getChunk(u.x,u.z);if(!c)continue;c.biomes=u.biomes;c.biomes3D=true;for(let sy=this.world.minSection;sy<this.world.maxSection;sy++)for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)this.world.emit('sectionDirty',u.x+dx,sy,u.z+dz);}
   }
   on_chat(p) {
@@ -1048,7 +1075,12 @@ export class Game {
 
   on_entity_equipment(p) { for(const equipment of p.equipments)this.entities.setEquipment(p.entityId,equipment.slot,equipment.item); }
 
-  on_spawn_position(p) { this.spawnPos = p.location; this.spawnAngle=p.angle??0; }
+  on_spawn_position(p) {
+    this.spawnPos = p.location ?? p.globalPos?.location ?? null;
+    this.spawnAngle = p.angle ?? p.yaw ?? 0;
+    this.spawnPitch = p.pitch ?? 0;
+    this.spawnDimension = p.dimensionName ?? p.globalPos?.dimensionName ?? null;
+  }
 
   on_update_health(p) {
     const wasAlive = this.health > 0;
@@ -1081,7 +1113,7 @@ export class Game {
     this.interaction?.predictedBlocks?.clear();
     if (p.dimension !== this.dimension || p.worldName!==this.worldName || (p.dimensionData?.min_y??0)!==this.world.minY || (p.dimensionData?.height??256)!==this.world.height) {
       this.worldBorder?.reset();
-      this.spawnPos=null;this.spawnAngle=0;
+      this.spawnPos = null; this.spawnAngle = 0; this.spawnPitch = 0; this.spawnDimension = null;
       this.world.clear();
       this._resetMeshing();
       this.entities.clear();
@@ -1113,30 +1145,70 @@ export class Game {
   }
 
   on_position(p) {
-    if(p.dismountVehicle&&this.ridingEntityId>=0)this._ride(this.entityId,-1);
+    if (p.dismountVehicle && this.ridingEntityId >= 0) this._ride(this.entityId, -1);
     const pl = this.player;
-    // NetHandlerPlayClient.handlePlayerPosLook (relative flags add to the current values, float angles)
-    let x = p.x, y = p.y, z = p.z, yaw = Math.fround(p.yaw), pitch = Math.fround(p.pitch);
-    if (p.flags & 1) x += pl.x; else pl.motionX = 0;
-    if (p.flags & 2) y += pl.y; else pl.motionY = 0;
-    if (p.flags & 4) z += pl.z; else pl.motionZ = 0;
-    if (p.flags & 8) yaw = Math.fround(yaw + pl.yaw);
-    if (p.flags & 16) pitch = Math.fround(pitch + pl.pitch);
-    // Entity.setPositionAndRotation: x / z clamped to the world, pitch to +-90, then setRotation keeps angle % 360
-    x = Math.max(-3e7, Math.min(3e7, x)); z = Math.max(-3e7, Math.min(3e7, z));
+    const rawFlags = typeof p.flags === 'number' ? p.flags : (p.flags?.raw ?? 0);
+    const oldYaw = pl.yaw || 0, oldPitch = pl.pitch || 0;
+    let x = p.x, y = p.y, z = p.z;
+    let yaw = Math.fround(p.yaw || 0), pitch = Math.fround(p.pitch || 0);
+    if (rawFlags & 1) x += pl.x;
+    if (rawFlags & 2) y += pl.y;
+    if (rawFlags & 4) z += pl.z;
+    if (rawFlags & 8) yaw = Math.fround(oldYaw + yaw);
+    if (rawFlags & 16) pitch = Math.fround(oldPitch + pitch);
     pitch = Math.max(-90, Math.min(90, pitch));
+
+    let vx = pl.motionX || 0, vy = pl.motionY || 0, vz = pl.motionZ || 0;
+    if (rawFlags & 256) {
+      const rx = (oldPitch - pitch) * (Math.PI / 180);
+      const cx = Math.cos(rx), sx = Math.sin(rx);
+      const ny = vy * cx + vz * sx, nz = vz * cx - vy * sx;
+      vy = ny; vz = nz;
+      const ry = (oldYaw - yaw) * (Math.PI / 180);
+      const cy = Math.cos(ry), sy = Math.sin(ry);
+      const nx = vx * cy + vz * sy, nz2 = vz * cy - vx * sy;
+      vx = nx; vz = nz2;
+    }
+    pl.motionX = (rawFlags & 32) ? vx + (p.dx || 0) : (p.dx || 0);
+    pl.motionY = (rawFlags & 64) ? vy + (p.dy || 0) : (p.dy || 0);
+    pl.motionZ = (rawFlags & 128) ? vz + (p.dz || 0) : (p.dz || 0);
+
+    x = Math.max(-3e7, Math.min(3e7, x)); z = Math.max(-3e7, Math.min(3e7, z));
     pl.setPosition(x, y, z);
     pl.prevX = x; pl.prevY = y; pl.prevZ = z;
     pl.prevYaw = yaw; pl.prevPitch = pitch;
     pl.yaw = Math.fround(yaw % 360); pl.pitch = Math.fround(pitch % 360);
     this.send(C.teleportConfirm(p.teleportId));
-    this.send(C.positionLook(pl.x, pl.y, pl.z, pl.yaw, pl.pitch, false));
-    // the last reported position stays: the next tick reports the new position again (onUpdateWalkingPlayer)
+    this.send(C.positionLook(pl.x, pl.y, pl.z, pl.yaw, pl.pitch, false, !!pl.collidedHorizontally));
     if (!this.doneLoadingTerrain) {
       this.doneLoadingTerrain = true;
       pl.prevX = pl.x; pl.prevY = pl.y; pl.prevZ = pl.z;
       if (this.screens.current instanceof DownloadingTerrainScreen) this.screens.current.terrainReady = true;
+      this.send(C.playerLoaded());
     }
+  }
+
+  on_player_rotation(p) {
+    const pl = this.player;
+    const yaw = Math.fround((p.relativeYaw ? (pl.yaw || 0) + p.yaw : p.yaw) % 360);
+    const pitch = Math.max(-90, Math.min(90, Math.fround(p.relativePitch ? (pl.pitch || 0) + p.pitch : p.pitch)));
+    pl.prevYaw = pl.yaw; pl.prevPitch = pl.pitch;
+    pl.yaw = yaw; pl.pitch = pitch;
+  }
+
+  on_sync_entity_position(p) {
+    if (p.entityId === this.entityId) {
+      const pl = this.player;
+      pl.setPosition(p.x, p.y, p.z);
+      pl.motionX = p.dx; pl.motionY = p.dy; pl.motionZ = p.dz;
+      pl.yaw = Math.fround(p.yaw % 360);
+      pl.pitch = Math.max(-90, Math.min(90, Math.fround(p.pitch)));
+      pl.onGround = !!p.onGround;
+      return;
+    }
+    this.entities.teleport(p);
+    const e = this.entities.get(p.entityId);
+    if (e) { e.motionX = p.dx; e.motionY = p.dy; e.motionZ = p.dz; }
   }
 
   on_held_item_slot(p) {
@@ -1170,7 +1242,7 @@ export class Game {
     const def=canonical?ENTITIES_BY_NAME[canonical]:ENTITY_TYPES[p.type];
     const normalized={...p,type:def?.id??-1,wireType:p.wireType??p.type,entityTypeName:canonical||def?.name};
     if(canonical==='player'){this.entities.spawnPlayer({...normalized,playerUUID:p.objectUUID,metadata:{}});return;}
-    if(def?.mob||def?.name==='armor_stand'||['armadillo','bogged','breeze'].includes(canonical))this.entities.spawnMob({...normalized,entityUUID:p.objectUUID,metadata:{}});
+    if(def?.mob||def?.name==='armor_stand'||['armadillo','bogged','breeze','camel_husk','copper_golem','creaking','happy_ghast','nautilus','parched','zombie_nautilus'].includes(canonical))this.entities.spawnMob({...normalized,entityUUID:p.objectUUID,metadata:{}});
     else this.entities.spawnObject(normalized);
   }
 
@@ -1182,9 +1254,9 @@ export class Game {
 
   on_entity_velocity(p) {
     if (p.entityId === this.entityId) {
-      this.player.motionX = p.velocity.x / 8000;
-      this.player.motionY = p.velocity.y / 8000;
-      this.player.motionZ = p.velocity.z / 8000;
+      this.player.motionX = p.velocity.x;
+      this.player.motionY = p.velocity.y;
+      this.player.motionZ = p.velocity.z;
     } else this.entities.setVelocity(p);
   }
 
@@ -1250,7 +1322,7 @@ export class Game {
 
   on_entity_effect(p) {
     if (p.entityId === this.entityId) {
-      this.effects.set(p.effectId, { amplifier: p.amplifier, duration: p.duration, hideParticles: p.hideParticles, ambient:p.ambient, showIcon:p.showIcon,factor:createEffectBlend766(p.effectId,p.duration,p.shouldBlend,this.effects.get(p.effectId)?.factor), start: this.ticks });
+      this.effects.set(p.effectId, { amplifier: p.amplifier, duration: p.duration, hideParticles: p.hideParticles, ambient:p.ambient, showIcon:p.showIcon,factor:createEffectBlend774(p.effectId,p.duration,p.shouldBlend,this.effects.get(p.effectId)?.factor), start: this.ticks });
       this._applyEffects();
     }
     this.entities.addEffect(p);
@@ -1261,10 +1333,10 @@ export class Game {
   }
 
   _applyEffects() {
-    const jb = this.effects.get(EFFECT_766.jump_boost);
+    const jb = this.effects.get(EFFECT_774.jump_boost);
     this.player.jumpBoost = jb ? jb.amplifier : -1;
-    this.player.blind = this.effects.has(EFFECT_766.blindness);
-    const lev = this.effects.get(EFFECT_766.levitation);
+    this.player.blind = this.effects.has(EFFECT_774.blindness);
+    const lev = this.effects.get(EFFECT_774.levitation);
     this.player.levitation = lev ? lev.amplifier : -1;
   }
 
@@ -1274,26 +1346,28 @@ export class Game {
     if (p.entityId === this.entityId) {
       for (const prop of p.properties) {
         (this.player.attributes??=new Map()).set(prop.key,structuredClone(prop));
+        const bare = String(prop.key).replace(/^minecraft:/, '');
+        if (bare !== prop.key) this.player.attributes.set(bare, structuredClone(prop));
         const value=attributeValue(prop);
-        if (prop.key === 'generic.movementSpeed') this.player.speedAttr = { base: prop.value, modifiers: prop.modifiers };
-        if (prop.key === 'generic.maxHealth') this.maxHealth = clampMaxHealth(value);
-        if (prop.key === 'generic.attackSpeed') this.player.attackSpeed = value;
-        if (prop.key === 'generic.gravity') this.player.gravity = value;
-        if (prop.key === 'generic.jumpStrength') this.player.jumpStrength = value;
-        if (prop.key === 'generic.safeFallDistance') this.player.safeFallDistance = value;
-        if (prop.key === 'generic.fallDamageMultiplier') this.player.fallDamageMultiplier = value;
-        if (prop.key === 'generic.stepHeight') this.player.stepHeight = value;
-        if (prop.key === 'generic.scale') {this.player.scale=value;this.player.updateSize?.(this.world);}
-        if (prop.key === 'player.blockBreakSpeed') this.player.blockBreakSpeed = value;
-        if (prop.key === 'player.blockInteractionRange') this.player.blockInteractionRange = value;
-        if (prop.key === 'player.entityInteractionRange') this.player.entityInteractionRange = value;
+        if (prop.key === 'generic.movementSpeed' || bare === 'movement_speed') this.player.speedAttr = { base: prop.value, modifiers: prop.modifiers };
+        if (prop.key === 'generic.maxHealth' || bare === 'max_health') this.maxHealth = clampMaxHealth(value);
+        if (prop.key === 'generic.attackSpeed' || bare === 'attack_speed') this.player.attackSpeed = value;
+        if (prop.key === 'generic.gravity' || bare === 'gravity') this.player.gravity = value;
+        if (prop.key === 'generic.jumpStrength' || bare === 'jump_strength') this.player.jumpStrength = value;
+        if (prop.key === 'generic.safeFallDistance' || bare === 'safe_fall_distance') this.player.safeFallDistance = value;
+        if (prop.key === 'generic.fallDamageMultiplier' || bare === 'fall_damage_multiplier') this.player.fallDamageMultiplier = value;
+        if (prop.key === 'generic.stepHeight' || bare === 'step_height') this.player.stepHeight = value;
+        if (prop.key === 'generic.scale' || bare === 'scale') {this.player.scale=value;this.player.updateSize?.(this.world);}
+        if (prop.key === 'player.blockBreakSpeed' || bare === 'block_break_speed') this.player.blockBreakSpeed = value;
+        if (prop.key === 'player.blockInteractionRange' || bare === 'block_interaction_range') this.player.blockInteractionRange = value;
+        if (prop.key === 'player.entityInteractionRange' || bare === 'entity_interaction_range') this.player.entityInteractionRange = value;
       }
     }
     this.entities.setAttributes(p);
   }
 
   on_map_chunk(p) {
-    this.world.loadChunk762(p);
+    this.world.loadChunk774(p);
     for (const nbt of p.blockEntities) this.applyBlockEntity(nbt);
   }
 
@@ -1349,18 +1423,93 @@ export class Game {
   on_block_break_animation(p) { this.interaction.setRemoteBreak(p.entityId, p.location, p.destroyStage); }
 
   on_explosion(p) {
-    const native=p.nativeExplosion;
-    if(native){
-      const name=native.soundName?.replace(/^minecraft:/,'') || this.assets.soundNames[native.soundId];
-      if(name)this.sound.play(name,p.x,p.y,p.z,4,(1+(Math.random()-Math.random())*.2)*.7,{category:'block'});
-    }else this.sound.playExplosion(p.x, p.y, p.z);
-    if(!native || native.interaction===1 || native.interaction===2)for (const r of p.records) this.world.setState(Math.floor(p.x) + r.x, Math.floor(p.y) + r.y, Math.floor(p.z) + r.z, 0);
-    this.player.motionX += p.motionX;
-    this.player.motionY += p.motionY;
-    this.player.motionZ += p.motionZ;
-    if(native)this.particles.onPacket({...(p.radius>=2 && native.interaction!==0?native.large:native.small),
-      x:p.x,y:p.y,z:p.z,particles:0,offsetX:1,offsetY:0,offsetZ:0,particleData:1});
-    else this.particles.explosion(p.x, p.y, p.z, p.radius);
+    const native = p.nativeExplosion;
+    if (native) {
+      const name = native.soundName?.replace(/^minecraft:/, '') || this.assets?.soundNames?.[native.soundId];
+      if (name) this.sound.play(name, p.x, p.y, p.z, 4, (1 + (Math.random() - Math.random()) * 0.2) * 0.7, { category: 'block' });
+    } else {
+      this.sound.playExplosion(p.x, p.y, p.z);
+    }
+    if ((!native || native.interaction === 1 || native.interaction === 2) && Array.isArray(p.records)) {
+      for (const r of p.records) this.world.setState(Math.floor(p.x) + r.x, Math.floor(p.y) + r.y, Math.floor(p.z) + r.z, 0);
+    }
+    if (this.player) {
+      this.player.motionX += p.motionX ?? 0;
+      this.player.motionY += p.motionY ?? 0;
+      this.player.motionZ += p.motionZ ?? 0;
+    }
+    const particle = native
+      ? (native.particle ?? (p.radius >= 2 && native.interaction !== 0 ? native.large : native.small))
+      : null;
+    if (particle) {
+      this.particles.onPacket({
+        ...particle,
+        x: p.x,
+        y: p.y,
+        z: p.z,
+        particles: 0,
+        offsetX: 1,
+        offsetY: 0,
+        offsetZ: 0,
+        particleData: 1
+      });
+    } else if (!native) {
+      this.particles.explosion(p.x, p.y, p.z, p.radius);
+    }
+    if (native && (native.blockCount ?? 0) > 0 && Array.isArray(native.blockParticles) && native.blockParticles.length && (this.settings?.particles ?? 0) === 0) {
+      this._emitExplosionBlockParticles(p.x, p.y, p.z, native.radius ?? p.radius ?? 0, native.blockCount, native.blockParticles);
+    }
+  }
+
+  _emitExplosionBlockParticles(cx, cy, cz, radius, blockCount, blockParticles) {
+    if (!(radius > 0)) return;
+    let totalWeight = 0;
+    for (const entry of blockParticles) totalWeight += Math.max(0, entry.weight ?? 0);
+    if (!(totalWeight > 0)) return;
+    const count = Math.min(blockCount, 512);
+    for (let i = 0; i < count; i++) {
+      const dx0 = Math.random() * 2 - 1, dy0 = Math.random() * 2 - 1, dz0 = Math.random() * 2 - 1;
+      const len = Math.hypot(dx0, dy0, dz0);
+      if (!len) continue;
+      const dx = dx0 / len, dy = dy0 / len, dz = dz0 / len;
+      const dist = Math.cbrt(Math.random()) * radius;
+      const ox = dx * dist, oy = dy * dist, oz = dz * dist;
+      if (typeof this.world?.getState === 'function') {
+        const block = getBlock(this.world.getState(Math.floor(cx + ox), Math.floor(cy + oy), Math.floor(cz + oz)));
+        if (block && !block.isAir && block.name !== 'air' && block.name !== 'cave_air' && block.name !== 'void_air') continue;
+      }
+      let r = Math.random() * totalWeight, picked = blockParticles[blockParticles.length - 1];
+      for (const entry of blockParticles) {
+        const w = Math.max(0, entry.weight ?? 0);
+        if (w <= 0) continue;
+        r -= w;
+        if (r < 0) { picked = entry; break; }
+      }
+      const info = picked.data || picked;
+      let bp = picked.particle;
+      if (!bp) {
+        const raw = info.particle;
+        if (raw?.particleId !== undefined) bp = raw;
+        else if (raw?.type && Array.isArray(this.assets?.data?.particles)) {
+          const particleId = this.assets.data.particles.findIndex((pt) => pt?.name === String(raw.type).replace(/^minecraft:/, ''));
+          if (particleId >= 0) bp = { particleId, data: raw.data ?? {} };
+        }
+      }
+      if (!bp || bp.particleId === undefined) continue;
+      const speed = (0.5 / (dist / radius + 0.1) * Math.random() * Math.random() + 0.3) * (info.speed ?? 1);
+      const scaling = info.scaling ?? 1;
+      this.particles.onPacket({
+        ...bp,
+        x: cx + ox * scaling,
+        y: cy + oy * scaling,
+        z: cz + oz * scaling,
+        particles: 0,
+        offsetX: dx * speed,
+        offsetY: dy * speed,
+        offsetZ: dz * speed,
+        particleData: 1
+      });
+    }
   }
 
   on_sculk_vibration_signal(p) { this.particles.vibration(p); }
@@ -1429,7 +1578,7 @@ export class Game {
 
   on_open_window(p) {
     if(typeof p.inventoryType==="number"){
-      const menu=menuInfo766(p.inventoryType);
+      const menu=menuInfo774(p.inventoryType);
       p={...p,inventoryType:menu.type,slotCount:menu.slotCount,registryMenu:menu.registryName};
     }
     const win = new ContainerWindow(this, p.windowId, p.inventoryType, chatToLegacy(p.windowTitle), p.slotCount, p.entityId);
@@ -1440,7 +1589,11 @@ export class Game {
 
   on_nbt_query_response(p) { this.nbtQueries?.handle(p); }
 
-  on_declare_recipes(p) { replaceServerRecipes(this,p.recipes); }
+  on_declare_recipes(p) { replaceServerRecipes(this, p); }
+
+  on_set_cursor_item(p) { if (this.inventory) this.inventory.cursor = p.contents; }
+
+  on_set_player_inventory(p) { this.inventory?.setPlayerSlotByInventoryIndex?.(p.slotId, p.contents); }
 
   on_trade_list(p) {
     if(this.window?.id!==p.windowId)return;
@@ -1486,20 +1639,30 @@ export class Game {
 
   on_map(p) { this.items.updateMap(p); }
 
-  // CooldownTracker (ender pearls, chorus fruit, shields disabled by an axe)
+  // ItemCooldowns (1.21.2+: keyed by cooldownGroup string, falling back to numeric ID for legacy fixtures)
   on_set_cooldown(p) {
     if (!this.cooldowns) this.cooldowns = new Map();
-    const item = p.itemID ?? p.itemId; // the 766 schema names it itemID
-    if (p.cooldownTicks > 0) this.cooldowns.set(item, { start: this.ticks, end: this.ticks + p.cooldownTicks });
-    else this.cooldowns.delete(item);
+    const key = p.cooldownGroup ?? (p.itemID ?? p.itemId);
+    if (p.cooldownTicks > 0) this.cooldowns.set(key, { start: this.ticks, end: this.ticks + p.cooldownTicks });
+    else this.cooldowns.delete(key);
   }
 
-  // CooldownTracker.getCooldown: fraction of the cooldown left (0 = ready)
-  cooldownFraction(itemId, partial) {
-    const c = this.cooldowns && this.cooldowns.get(itemId);
+  cooldownFraction(itemOrId, partial = 0) {
+    if (!this.cooldowns || !this.cooldowns.size) return 0;
+    let c = null, resolvedKey = itemOrId;
+    if (typeof itemOrId === 'object' && itemOrId !== null) {
+      const group = itemOrId.componentValues?.use_cooldown?.cooldown_group ?? ('minecraft:' + this.items.name(itemOrId.id));
+      c = this.cooldowns.get(group) || this.cooldowns.get(itemOrId.id);
+      resolvedKey = c === this.cooldowns.get(group) ? group : itemOrId.id;
+    } else {
+      const name = this.items?.name?.(itemOrId);
+      const group = name ? 'minecraft:' + name : null;
+      c = (group && this.cooldowns.get(group)) || this.cooldowns.get(itemOrId);
+      resolvedKey = c && group && this.cooldowns.get(group) === c ? group : itemOrId;
+    }
     if (!c) return 0;
     const t = this.ticks + partial;
-    if (t >= c.end) { this.cooldowns.delete(itemId); return 0; }
+    if (t >= c.end) { this.cooldowns.delete(resolvedKey); return 0; }
     return Math.max(0, Math.min(1, (c.end - t) / (c.end - c.start)));
   }
 
@@ -1585,13 +1748,15 @@ export class Game {
   on_advancements(p) { this.advancements.onPacket(p); }
 
   on_unlock_recipes(p) { this.recipeBook.onPacket(p); }
+  on_recipe_book_add(p) { this.recipeBook.onAdd(p); }
+  on_recipe_book_remove(p) { this.recipeBook.onRemove(p); }
+  on_recipe_book_settings(p) { this.recipeBook.onSettings(p); }
 
-  // SPacketPlaceGhostRecipe: the server could not fill the grid; show what the recipe needs
   on_craft_recipe_response(p) {
     const s = this.screens.current;
     const win = s && s.container;
     const id = win ? (win.windowId !== undefined ? win.windowId : win.id) : -1;
-    if (s && s.recipeBook && id === p.windowId) s.recipeBook.setupGhost(p.recipe);
+    if (s && s.recipeBook && id === p.windowId) s.recipeBook.setupGhost(p.recipeDisplay ?? p.recipe);
   }
   on_select_advancement_tab(p) { this.advancements.onSelectTab(p.id); }
 
@@ -1807,7 +1972,6 @@ export class Game {
     // Minecraft.tick: the level's tick-rate manager advances unless the game is paused
     if (this.inWorld) this.tickRate.tick();
     const runs = !this.inWorld || this.tickRate.runsNormally();
-    this.worldBorder.tick();
     if (smoothCameraActive(this) && this._smoothCam) {
       // EntityRenderer.updateRenderer: MouseFilter.smooth(accumulated, 0.05 * f)
       const sc = this._smoothCam;
@@ -1840,6 +2004,7 @@ export class Game {
     // No client-side weather fade: World.updateWeather only moves the strengths on the server, which sends each
     // change (game state 7 / 8). "Begin raining" alone stays at strength 0, so nothing is visible.
     if (runs) { // ClientLevel.tick: tickTime only while the game runs normally
+      this.worldBorder.tick();
       if (world.doDaylightCycle) world.timeOfDay++;
       world.worldAge++;
     }
@@ -1876,6 +2041,16 @@ export class Game {
     if (!this.screens.current && this.input.locked && !this.dead) this.interaction.tick(presses);
     else this.interaction.tickIdle();
 
+    const inputBits = (inp.forward ? 1 : 0) | (inp.back ? 2 : 0) | (inp.left ? 4 : 0) |
+      (inp.right ? 8 : 0) | (inp.jump ? 16 : 0) | (inp.sneak ? 32 : 0) | (inp.sprint ? 64 : 0);
+    if (inputBits !== this._lastInputBits) {
+      this._lastInputBits = inputBits;
+      this.send(C.playerInput({
+        forward: !!inp.forward, backward: !!inp.back, left: !!inp.left, right: !!inp.right,
+        jump: !!inp.jump, shift: !!inp.sneak, sprint: !!inp.sprint
+      }));
+    }
+
     // EntityPlayerSP.onUpdate: nothing at all happens (no movement, no packets) while the chunk under the player is
     // not loaded
     if (!world.isLoaded(Math.floor(pl.x), Math.floor(pl.z))) {
@@ -1897,7 +2072,7 @@ export class Game {
         const below=getBlock(world.getState(Math.floor(pl.x),Math.floor(pl.y-.2),Math.floor(pl.z)));
         if(below&&['soul_sand','soul_soil'].includes(below.name))this.particles.nativeParticle('soul',pl.x+(Math.random()-.5)*pl.width,pl.y+.1,pl.z+(Math.random()-.5)*pl.width,-pl.motionX*.2,.1,-pl.motionZ*.2);
       }
-      pl.dolphinsGrace=this.effects.has(EFFECT_766.dolphins_grace);pl.slowFalling=this.effects.has(EFFECT_766.slow_falling);
+      pl.dolphinsGrace=this.effects.has(EFFECT_774.dolphins_grace);pl.slowFalling=this.effects.has(EFFECT_774.slow_falling);
       pl.sleeping = !!this.sleeping;
       this.particles.sprint(pl);
       const res = pl.tick(world, tin);
@@ -1948,8 +2123,9 @@ export class Game {
 
     for (const [id, e] of this.effects) {
       if (e.duration > 0) e.duration--;
-      tickEffectBlend766(e);
+      tickEffectBlend774(e);
     }
+    this.send(C.tickEnd());
   }
 
   portalTick() { tickPortal(this); }
@@ -2017,7 +2193,7 @@ export class Game {
       } else {
         const a = v.attributes || {};
         const val = (k, d) => (a[k] ? attributeValue(a[k]) : d);
-        const jb = this.effects.get(EFFECT_766.jump_boost);
+        const jb = this.effects.get(EFFECT_774.jump_boost);
         ctl.tick(pl, strafe, forward, { speed: val('generic.movementSpeed',v.entityName==='strider'?.175:v.entityName==='pig'?.25:.225), jumpStrength: val('horse.jumpStrength', 0.7), jumpBoost: jb ? jb.amplifier : -1 });
       }
       // the vehicle entity follows the simulation
@@ -2029,7 +2205,7 @@ export class Game {
     if (v) {
       pl.setPosition(...this.entities.riderPos(v, this.entityId, 'player'));
     }
-    this.send(C.look(pl.yaw, pl.pitch, pl.onGround));
+    this.send(C.look(pl.yaw, pl.pitch, pl.onGround, !!pl.collidedHorizontally));
     this.send(C.steerVehicle(strafe, forward, (jump ? 1 : 0) | (inp.sneak ? 2 : 0)));
     if (ctl) this.send(C.vehicleMove(v.x, v.y, v.z, v.yaw, ctl.body.pitch || 0));
   }
@@ -2065,13 +2241,14 @@ export class Game {
     this.positionUpdateTicks++;
     const moved = d0 * d0 + d1 * d1 + d2 * d2 > 9.0e-4 || this.positionUpdateTicks >= 20;
     const rotated = d3 !== 0 || d4 !== 0;
-    if (moved && rotated) this.send(C.positionLook(pl.x, pl.y, pl.z, pl.yaw, pl.pitch, pl.onGround));
-    else if (moved) this.send(C.position(pl.x, pl.y, pl.z, pl.onGround));
-    else if (rotated) this.send(C.look(pl.yaw, pl.pitch, pl.onGround));
-    else if (lr.onGround !== pl.onGround) this.send(C.flying(pl.onGround));
+    if (moved && rotated) this.send(C.positionLook(pl.x, pl.y, pl.z, pl.yaw, pl.pitch, pl.onGround, !!pl.collidedHorizontally));
+    else if (moved) this.send(C.position(pl.x, pl.y, pl.z, pl.onGround, !!pl.collidedHorizontally));
+    else if (rotated) this.send(C.look(pl.yaw, pl.pitch, pl.onGround, !!pl.collidedHorizontally));
+    else if (lr.onGround !== pl.onGround || lr.horizontalCollision !== !!pl.collidedHorizontally) this.send(C.flying(pl.onGround, !!pl.collidedHorizontally));
     if (moved) { lr.x = pl.x; lr.y = pl.y; lr.z = pl.z; this.positionUpdateTicks = 0; }
     if (rotated) { lr.yaw = pl.yaw; lr.pitch = pl.pitch; }
     lr.onGround = pl.onGround; // prevOnGround
+    lr.horizontalCollision = !!pl.collidedHorizontally;
   }
 
   // ---------------------------------------------------------------- Frame
@@ -2123,11 +2300,11 @@ export class Game {
       this.tutorial.handleMouse(mdx, mdy);
       const s = this.settings.sensitivity * 0.6 + 0.2;
       const f = s * s * s * (isScoping(this) && !smoothCameraActive(this) ? 1 : 8);
-      let dx = mdx * f * 0.15, dy = mdy * f * 0.15 * (this.settings.invertMouse ? -1 : 1);
+      let dx = mdx * f * 0.15 * (this.settings.invertMouseX ? -1 : 1), dy = mdy * f * 0.15 * (this.settings.invertMouse ? -1 : 1);
       if (smoothCameraActive(this)) {
         // EntityRenderer: accumulate input, filtered once per tick and spread over the frames of that tick
         const sc = this._smoothCam || (this._smoothCam = { yaw: 0, pitch: 0, fx: 0, fy: 0, partial: 0 });
-        sc.yaw += mdx * f; sc.pitch += mdy * f * (this.settings.invertMouse ? -1 : 1);
+        sc.yaw += mdx * f * (this.settings.invertMouseX ? -1 : 1); sc.pitch += mdy * f * (this.settings.invertMouse ? -1 : 1);
         const step = this.partial - sc.partial;
         sc.partial = this.partial;
         dx = sc.fx * Math.max(0, step) * 0.15; dy = sc.fy * Math.max(0, step) * 0.15;
@@ -2279,18 +2456,18 @@ export class Game {
     fov = zoomFov(this,fov);
     r.renderDistance = this.settings.renderDistance;
     r.fabulousEnabled=!!this.settings.fabulousGraphics;
-    r.setCamera(ex, ey, ez, camYaw, camPitch, roll, fov, pre,portalWarp(portal*(this.settings.screenEffectScale??1)**2,this.ticks+partial,this.effects.has(EFFECT_766.nausea)));
+    r.setCamera(ex, ey, ez, camYaw, camPitch, roll, fov, pre,portalWarp(portal*(this.settings.screenEffectScale??1)**2,this.ticks+partial,this.effects.has(EFFECT_774.nausea)));
     const temp = biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).temperature;
     const rain = this.world.prevRain !== undefined ? this.world.prevRain + (this.world.rainStrength - this.world.prevRain) * partial : this.world.rainStrength;
     r.updateEnvironment({
       fullBright:!!this.settings.fullBright,dynamicLights:collectDynamicLights(this,[ex,ey,ez],partial),
       hideLightningFlashes:!!this.settings.hideLightningFlashes,
       minY:this.world.minY,minSection:this.world.minSection,sectionCount:this.world.sectionCount,
-      worldTime: this.world.timeOfDay, partial: worldPartial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,biomeFog:sampleBiomeFog(this.world,ex,ey,ez),biomeSky:biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).effects?.sky_color,fireResistance:this.effects.has(EFFECT_766.fire_resistance),
+      worldTime: this.world.timeOfDay, partial: worldPartial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,biomeFog:sampleBiomeFog(this.world,ex,ey,ez),biomeSky:biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).effects?.sky_color,fireResistance:this.effects.has(EFFECT_774.fire_resistance),
       inPowderSnow: getBlock(this.world.getState(Math.floor(ex), Math.floor(ey), Math.floor(ez))).name === 'powder_snow', spectator: pl.spectator,
-      camPos: [ex, ey, ez], lookDir: look, dimension: this.dimension, underwater, inLava, biomeId:this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey)), waterVision:pl.waterVision(), conduitPower:this.effects.has(EFFECT_766.conduit_power),
-      darkness:darkness762(this.effects.get(EFFECT_766.darkness),partial,this.ticks,this.settings.darknessEffectScale),
-      blindness: this.effects.has(EFFECT_766.blindness), nightVision: this.effects.has(EFFECT_766.night_vision) ? 1 : 0, clouds: this.settings.clouds,
+      camPos: [ex, ey, ez], lookDir: look, dimension: this.dimension, underwater, inLava, biomeId:this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey)), waterVision:pl.waterVision(), conduitPower:this.effects.has(EFFECT_774.conduit_power),
+      darkness:darkness762(this.effects.get(EFFECT_774.darkness),partial,this.ticks,this.settings.darknessEffectScale),
+      blindness: this.effects.has(EFFECT_774.blindness), nightVision: this.effects.has(EFFECT_774.night_vision) ? 1 : 0, clouds: this.settings.clouds,
       horizon: String(this.levelType).toLowerCase() === 'flat' ? 0 : 63,
     });
     // Sky light for the world (night vision etc.) is folded into the lightmap

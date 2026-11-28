@@ -1,0 +1,64 @@
+// Transitional UV adapter for shared HUD and inventory consumers on 1.21.11 (pack format 75).
+// Maps legacy sprite-sheet rectangles to native sprites in assets/minecraft/textures/gui/sprites/.
+const sheets=new Map();
+function region(sheet,x,y,w,h,sprite){let list=sheets.get(sheet);if(!list)sheets.set(sheet,list=[]);list.push({x,y,w,h,sprite});}
+const icons=(x,y,w,h,sprite)=>region('gui/icons.png',x,y,w,h,sprite);
+const widgets=(x,y,w,h,sprite)=>region('gui/widgets.png',x,y,w,h,sprite);
+widgets(0,0,182,22,'hud/hotbar');widgets(0,22,24,23,'hud/hotbar_selection');
+widgets(24,22,29,24,'hud/hotbar_offhand_left');widgets(53,22,29,24,'hud/hotbar_offhand_right');
+icons(0,0,16,16,'hud/crosshair');
+for(const [u,name] of [[16,'empty'],[25,'half'],[34,'full']])icons(u,9,9,9,'hud/armor_'+name);
+icons(16,18,9,9,'hud/air');icons(25,18,9,9,'hud/air_bursting');
+icons(16,27,9,9,'hud/food_empty');icons(133,27,9,9,'hud/food_empty_hunger');
+icons(52,27,9,9,'hud/food_full');icons(61,27,9,9,'hud/food_half');
+icons(88,27,9,9,'hud/food_full_hunger');icons(97,27,9,9,'hud/food_half_hunger');
+for(const [v,hardcore] of [[0,false],[45,true]]){
+  icons(16,v,9,9,'hud/heart/container'+(hardcore?'_hardcore':''));
+  icons(25,v,9,9,'hud/heart/container'+(hardcore?'_hardcore':'')+'_blinking');
+  for(const [base,type] of [[52,''],[88,'poisoned_'],[124,'withered_'],[160,'absorbing_'],[178,'frozen_']]){
+    for(const [offset,half,blink] of [[0,false,false],[9,true,false],[18,false,true],[27,true,true]]){
+      if(base===160&&blink)continue;
+      icons(base+offset,v,9,9,'hud/heart/'+type+(hardcore?'hardcore_':'')+(half?'half':'full')+(blink?'_blinking':''));
+    }
+  }
+}
+icons(52,9,9,9,'hud/heart/vehicle_container');icons(88,9,9,9,'hud/heart/vehicle_full');icons(97,9,9,9,'hud/heart/vehicle_half');
+icons(0,64,182,5,'hud/experience_bar_background');icons(0,69,182,5,'hud/experience_bar_progress');
+icons(0,84,182,5,'hud/jump_bar_background');icons(0,89,182,5,'hud/jump_bar_progress');
+icons(0,94,18,18,'hud/hotbar_attack_indicator_background');icons(18,94,18,18,'hud/hotbar_attack_indicator_progress');
+icons(36,94,16,4,'hud/crosshair_attack_indicator_background');icons(52,94,17,4,'hud/crosshair_attack_indicator_progress');icons(68,94,16,16,'hud/crosshair_attack_indicator_full');
+for(let i=0;i<6;i++)icons(0,176+i*8,10,8,i===5?'server_list/unreachable':'server_list/ping_'+(5-i));
+for(let i=0;i<5;i++)icons(10,176+i*8,10,8,'server_list/pinging_'+(i+1));
+for(const [row,name] of [[0,'advancement'],[32,'recipe'],[64,'system'],[96,'tutorial']])region('gui/toasts.png',0,row,160,32,'toast/'+name);
+for(const [i,color] of ['pink','blue','red','green','yellow','purple','white'].entries()){
+  region('gui/bars.png',0,i*10,182,5,'boss_bar/'+color+'_background');region('gui/bars.png',0,i*10+5,183,5,'boss_bar/'+color+'_progress');
+}
+for(const [i,count] of [6,10,12,20].entries()){
+  region('gui/bars.png',0,80+i*10,182,5,'boss_bar/notched_'+count+'_background');region('gui/bars.png',0,85+i*10,183,5,'boss_bar/notched_'+count+'_progress');
+}
+for(const [u,name] of [[0,'teleport_to_player'],[16,'teleport_to_team'],[128,'close'],[144,'scroll_left'],[160,'scroll_right']])region('gui/spectator_widgets.png',u,0,16,16,'spectator/'+name);
+for(const [x,focused] of [[0,false],[20,true]])for(const [y,selected] of [[0,false],[20,true]])region('gui/checkbox.png',x,y,20,20,'widget/checkbox'+(selected?'_selected':'')+(focused?'_highlighted':''));
+
+// In 1.21.2+, inventory effect panels unified large & small into nine-sliced container/inventory/effect_background.
+region('gui/container/inventory.png',0,166,120,32,'container/inventory/effect_background');
+region('gui/container/inventory.png',0,198,32,32,'container/inventory/effect_background');
+region('gui/container/inventory.png',141,166,24,24,'hud/effect_background');
+region('gui/container/inventory.png',165,166,24,24,'hud/effect_background_ambient');
+for(const [sheet,u,v]of [['gui/container/inventory.png',178,0],['gui/container/crafting_table.png',0,168]])for(const [offset,suffix]of [[0,''],[19,'_highlighted']])region(sheet,u,v+offset,20,18,'recipe_book/button'+suffix);
+for(const [u,name]of [[153,'tab'],[188,'tab_selected']])region('gui/recipe_book.png',u,2,35,27,'recipe_book/'+name);
+for(const [u,name]of [[152,'filter_disabled'],[180,'filter_enabled']])for(const [v,suffix]of [[41,''],[59,'_highlighted']])region('gui/recipe_book.png',u,v,26,16,'recipe_book/'+name+suffix);
+for(const [u,craftable]of [[29,true],[54,false]])for(const [v,many]of [[206,false],[231,true]])region('gui/recipe_book.png',u,v,25,25,'recipe_book/slot_'+(many?'many_':'')+(craftable?'craftable':'uncraftable'));
+for(const [u,name]of [[1,'page_forward'],[14,'page_backward']])for(const [v,suffix]of [[208,''],[226,'_highlighted']])region('gui/recipe_book.png',u,v,12,17,'recipe_book/'+name+suffix);
+for(const [u,disabled]of [[152,false],[178,true]])for(const [v,hover]of [[78,false],[104,true]])region('gui/recipe_book.png',u,v,24,24,'recipe_book/crafting_overlay'+(disabled?'_disabled':'')+(hover?'_highlighted':''));
+
+for(const [sheet,prefix,arrows] of [
+  ['gui/server_selection.png','server_list',[[0,'join'],[96,'move_up'],[64,'move_down']]],
+  ['gui/resource_packs.png','transferable_list',[[0,'select'],[32,'unselect'],[96,'move_up'],[64,'move_down']]],
+])for(const [u,name] of arrows)for(const [v,suffix] of [[0,''],[32,'_highlighted']])region(sheet,u,v,32,32,prefix+'/'+name+suffix);
+
+export function legacyGuiSprite(path,u,v,w,h){
+  const r=sheets.get(path)?.find(r=>u>=r.x&&v>=r.y&&u+w<=r.x+r.w&&v+h<=r.y+r.h);
+  return r?{path:'gui/sprites/'+r.sprite+'.png',spriteName:r.sprite,u:(u-r.x)/r.w,v:(v-r.y)/r.h,u1:(u-r.x+w)/r.w,v1:(v-r.y+h)/r.h}:null;
+}
+
+export const CORE_GUI_SPRITES=[...new Set([...sheets.values()].flat().map(r=>'gui/sprites/'+r.sprite+'.png').concat('gui/sprites/recipe_book/overlay_recipe.png','gui/sprites/container/inventory/effect_background_ambient.png'))];

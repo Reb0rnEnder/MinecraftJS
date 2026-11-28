@@ -5,9 +5,9 @@ import {platform} from '../platform/platform.js';
 // LevelRenderer.renderWorldBorder, using the jar's forcefield texture. Modern
 // versions center the wall's vertical extent on the camera; older targets use
 // their native 0..256 wall (selected by their integration).
-export function borderGeometry(border,camera,distance,now,{mode='modern',fadePosition=camera}={}){
+export function borderGeometry(border,camera,distance,now,{mode='modern',fadePosition=camera,partial=0}={}){
   const legacyHeight=mode==='classic';
-  const [x,y,z]=camera,[x0,z0,x1,z1]=border.bounds();
+  const [x,y,z]=camera,[x0,z0,x1,z1]=border.bounds(partial);
   if(x<x1-distance&&x>x0+distance&&z<z1-distance&&z>z0+distance)return null;
   let alpha=Math.pow(1-border.distance(fadePosition[0],fadePosition[2])/distance,4);
   if(!legacyHeight)alpha=Math.max(0,Math.min(1,alpha));
@@ -41,7 +41,8 @@ export class BorderRenderer {
   }
   draw(device){
     const g=this.game,r=g.renderer;if(!g.inWorld)return;
-    const geometry=borderGeometry(g.worldBorder,r.camPos,r.renderDistance*16,platform().now(),{mode:this.mode,fadePosition:this.fadeAtEntity?[g.player.x,g.player.y,g.player.z]:r.camPos});
+    const partial=g.tickRate?.runsNormally()===false?1:g.partial??0;
+    const geometry=borderGeometry(g.worldBorder,r.camPos,r.renderDistance*16,platform().now(),{mode:this.mode,fadePosition:this.fadeAtEntity?[g.player.x,g.player.y,g.player.z]:r.camPos,partial});
     if(!geometry)return;
     const texture=g.assets.texture('misc/forcefield.png',{wrap:'repeat'});if(!texture)return;
     if(!this.mesh)this.mesh=device.createMesh(FORMAT.color,geometry.data,{quads:true,dynamic:true});else device.updateMesh(this.mesh,geometry.data);

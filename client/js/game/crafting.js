@@ -93,8 +93,13 @@ export function craftResult(grid, n, items) {
 }
 
 // Items left in the grid after crafting (buckets etc.)
-export function containerItem(item) {
+export function containerItem(item, items = null) {
   if (!item) return null;
+  const name = items?.name?.(item.id);
+  if (name === 'water_bucket' || name === 'lava_bucket' || name === 'milk_bucket') {
+    const bucketId = items.byName?.get?.('bucket');
+    if (bucketId !== undefined) return { id: bucketId, count: 1, damage: 0, nbt: null };
+  }
   if (item.id === 326 || item.id === 327 || item.id === 335) return { id: 325, count: 1, damage: 0, nbt: null };
   if (item.id === 373 && false) return { id: 374, count: 1, damage: 0, nbt: null };
   return null;

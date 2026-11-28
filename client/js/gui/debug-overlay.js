@@ -24,10 +24,36 @@ export function columnHeights(game,chunk,x,z){
  for(let y=max-1;y>=min&&(S<min||M<min);y--){const mask=parseInt(masks[chunk.getState(x&15,y,z&15)],16);if(S<min&&(mask&1))S=y;if(M<min&&(mask&4))M=y;}
  const result={S,M};cache.values.set(key,result);return result;
 }
+const HEIGHTMAP_TYPES={
+ 0:'WORLD_SURFACE_WG',
+ 1:'WORLD_SURFACE',
+ 2:'OCEAN_FLOOR_WG',
+ 3:'OCEAN_FLOOR',
+ 4:'MOTION_BLOCKING',
+ 5:'MOTION_BLOCKING_NO_LEAVES',
+};
+const HEIGHTMAP_IDS=Object.fromEntries(Object.entries(HEIGHTMAP_TYPES).map(([id,name])=>[name.toLowerCase(),Number(id)]));
+
+function resolveHeightmapRaw(heightmaps,type){
+ if(!heightmaps)return null;
+ const canon=typeof type==='number'?(HEIGHTMAP_TYPES[type]??String(type)):String(type).replace(/^minecraft:/,'').toUpperCase();
+ const lower=canon.toLowerCase(),id=HEIGHTMAP_IDS[lower];
+ if(Array.isArray(heightmaps)){
+  const entry=heightmaps.find(e=>e&&(e.type===type||e.type===id||(typeof e.type==='string'&&e.type.replace(/^minecraft:/,'').toUpperCase()===canon)));
+  return entry?.data?.v??entry?.data??null;
+ }
+ if(heightmaps instanceof Map){
+  const entry=heightmaps.get(type)??heightmaps.get(canon)??heightmaps.get(lower)??heightmaps.get(id);
+  return entry?.v??entry??null;
+ }
+ const map=heightmaps.v??heightmaps;
+ return map?.[type]?.v??map?.[type]??map?.[canon]?.v??map?.[canon]??map?.[lower]?.v??map?.[lower]??null;
+}
+
 // Heightmaps were continuous bit arrays before 1.16 and padded per long afterwards.
 export function packetHeight(chunk,type,x,z){
- const raw=chunk.heightmaps?.v?.[type]?.v??chunk.heightmaps?.[type];if(!raw?.length)return -1;
- const index=(z&15)*16+(x&15),padded=since(16),bits=Math.ceil(Math.log2((chunk.height??256)+1)),perLong=Math.floor(64/bits),word=padded?Math.floor(index/perLong):Math.floor(index*bits/64),shift=padded?(index%perLong)*bits:index*bits%64;
+ const raw=resolveHeightmapRaw(chunk.heightmaps,type);if(!raw?.length)return -1;
+ const index=(z&15)*16+(x&15),padded=Array.isArray(chunk.heightmaps)||since(16),bits=Math.ceil(Math.log2((chunk.height??256)+1)),perLong=Math.floor(64/bits),word=padded?Math.floor(index/perLong):Math.floor(index*bits/64),shift=padded?(index%perLong)*bits:index*bits%64;
  if(raw[word]===undefined)return -1;let value=BigInt.asUintN(64,BigInt(raw[word]))>>BigInt(shift);
  if(!padded&&shift>64-bits&&raw[word+1]!==undefined)value|=BigInt.asUintN(64,BigInt(raw[word+1]))<<BigInt(64-shift);
  return Number(value&((1n<<BigInt(bits))-1n))+(chunk.minY??0)-1;

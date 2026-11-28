@@ -1,17 +1,19 @@
 import {technicalPackets} from './technical-packets.js';
-import { ChatState766 } from "./chat-state-1.20.6.js";
-import { Writer766 } from "./configuration-1.20.6.js";
-import { decodePlayPacket766 } from "./play-codec-1.20.6.js";
-import { PLAY_SERVERBOUND_766 as OUT } from "./protocol-1.20.6-ids.js";
+import { ChatState774, computeLastSeenChecksum } from "./chat-state-1.21.11.js";
+import { Writer774 } from "./configuration-1.21.11.js";
+import { writeAnonymousNbt } from "./nbt-anonymous.js";
+import { decodePlayPacket774 } from "./play-codec-1.21.11.js";
+import { PLAY_SERVERBOUND_774 as OUT } from "./protocol-1.21.11-ids.js";
 
-export const chatState762 = new ChatState766();
-export const PROTOCOL_VERSION = 766;
-export const decodePacket = (data) => decodePlayPacket766(data);
+export const chatState774 = new ChatState774();
+export const chatState762 = chatState774;
+export const PROTOCOL_VERSION = 774;
+export const decodePacket = (data, context) => decodePlayPacket774(data, context);
 
 const packet = (name) => {
   const id = OUT[name];
-  if (!Number.isInteger(id)) throw new Error("Unknown protocol-766 serverbound packet " + name);
-  return new Writer766().varint(id);
+  if (!Number.isInteger(id)) throw new Error("Unknown protocol-774 serverbound packet " + name);
+  return new Writer774().varint(id);
 };
 
 function payloadChannel(channel) {
@@ -23,36 +25,52 @@ function payloadChannel(channel) {
 
 export const C = {
   ...technicalPackets(packet),
-  setDifficulty: value => packet('set_difficulty').u8(value).build(),
-  lockDifficulty: value => packet('lock_difficulty').bool(value).build(),
-  pickItem: slot => packet('pick_item').varint(slot).build(),
-  pingRequest: id => packet('ping_request').i64(id).build(),
-  debugSampleSubscription: type => packet('debug_sample_subscription').varint(type).build(),
+  setDifficulty: (value) => packet('set_difficulty').varint(value).build(),
+  changeGamemode: (mode) => packet('change_gamemode').varint(mode).build(),
+  lockDifficulty: (value) => packet('lock_difficulty').bool(value).build(),
+  pickItemFromBlock: (pos, includeData = false) => packet('pick_item_from_block').position(pos.x, pos.y, pos.z).bool(!!includeData).build(),
+  pickItemFromEntity: (entityId, includeData = false) => packet('pick_item_from_entity').varint(entityId).bool(!!includeData).build(),
+  selectBundleItem: (slotId, selectedItemIndex) => packet('select_bundle_item').varint(slotId).varint(selectedItemIndex).build(),
+  pingRequest: (id) => packet('ping_request').i64(id).build(),
+  debugSubscriptionRequest: (subscriptions = []) => {
+    const w = packet('debug_subscription_request').varint(subscriptions.length);
+    for (const id of subscriptions) w.varint(id);
+    return w.build();
+  },
   setSlotState: (slot, windowId, enabled) => packet('set_slot_state').varint(slot).varint(windowId).bool(enabled).build(),
-  generateStructure: (pos, levels, keepJigsaws) => packet('generate_structure').position(pos.x,pos.y,pos.z).varint(levels).bool(keepJigsaws).build(),
+  generateStructure: (pos, levels, keepJigsaws) => packet('generate_structure').position(pos.x, pos.y, pos.z).varint(levels).bool(keepJigsaws).build(),
   editBook: (slot, pages, title = null) => {
     const w = packet('edit_book').varint(slot).varint(pages.length);
     for (const page of pages) w.string(page);
     w.bool(title !== null); if (title !== null) w.string(title);
     return w.build();
   },
-  chatSession: ({sessionUUID, expireTime, publicKey, signature}) => packet('chat_session_update')
+  chatSession: ({ sessionUUID, expireTime, publicKey, signature }) => packet('chat_session_update')
     .uuid(sessionUUID).i64(expireTime).varint(publicKey.length).raw(publicKey).varint(signature.length).raw(signature).build(),
-  signedCommand: (command, {timestamp, salt, argumentSignatures = [], messageCount = 0, acknowledged}) => {
+  signedCommand: (command, { timestamp, salt, argumentSignatures = [], messageCount = 0, acknowledged, checksum = undefined }) => {
     if (!(acknowledged instanceof Uint8Array) || acknowledged.length !== 3) throw Error('Chat acknowledgement must be 3 bytes');
     const w = packet('chat_command_signed').string(command).i64(timestamp).i64(salt).varint(argumentSignatures.length);
-    for (const {argumentName, signature} of argumentSignatures) {
+    const sigs = [];
+    for (const { argumentName, signature } of argumentSignatures) {
       if (!(signature instanceof Uint8Array) || signature.length !== 256) throw Error('Chat argument signature must be 256 bytes');
       w.string(argumentName).raw(signature);
+      sigs.push(signature);
     }
-    return w.varint(messageCount).raw(acknowledged).build();
+    const byteSum = checksum !== undefined ? (checksum & 0xff) : computeLastSeenChecksum(sigs);
+    return w.varint(messageCount).raw(acknowledged).u8(byteSum).build();
   },
   teleportConfirm: (id) => packet("teleport_confirm").varint(id).build(),
   chunkBatchReceived: (chunksPerTick) => packet("chunk_batch_received").f32(chunksPerTick).build(),
   keepAlive: (id) => packet("keep_alive").i64(id).build(),
   pong: (id) => packet("pong").i32(id).build(),
+  playerLoaded: () => packet("player_loaded").build(),
+  tickEnd: () => packet("tick_end").build(),
+  customClickAction: (id, payload = null) => {
+    const body = writeAnonymousNbt(new Writer774(), payload).build();
+    return packet("custom_click_action").string(id).varint(body.length).raw(body).build();
+  },
 
-  settings: (locale, viewDistance, chatFlags, chatColors, skinParts, mainHand = 1, allowServerListing = true) =>
+  settings: (locale, viewDistance, chatFlags, chatColors, skinParts, mainHand = 1, allowServerListing = true, particleStatus = 0, textFiltering = false) =>
     packet("settings")
       .string(locale)
       .i8(viewDistance)
@@ -60,8 +78,9 @@ export const C = {
       .bool(chatColors)
       .u8(skinParts)
       .varint(mainHand)
-      .bool(false)
+      .bool(!!textFiltering)
       .bool(allowServerListing)
+      .varint(particleStatus)
       .build(),
   customPayload: (channel, data) =>
     packet("custom_payload").string(payloadChannel(channel)).raw(data).build(),
@@ -69,27 +88,45 @@ export const C = {
   clientCommand: (action) => packet("client_command").varint(action).build(),
   tabComplete: (text, _position = null, transactionId = 0) =>
     packet("tab_complete").varint(transactionId).string(text).build(),
-  closeWindow: (windowId) => packet("close_window").u8(windowId).build(),
+  closeWindow: (windowId) => packet("close_window").varint(windowId).build(),
 
-  flying: (onGround) => packet("flying").bool(onGround).build(),
-  position: (x, y, z, onGround) =>
-    packet("position").f64(x).f64(y).f64(z).bool(onGround).build(),
-  look: (yaw, pitch, onGround) =>
-    packet("look").f32(yaw).f32(pitch).bool(onGround).build(),
-  positionLook: (x, y, z, yaw, pitch, onGround) =>
+  flying: (onGround, horizontalCollision = false) =>
+    packet("flying").u8((onGround ? 1 : 0) | (horizontalCollision ? 2 : 0)).build(),
+  position: (x, y, z, onGround, horizontalCollision = false) =>
+    packet("position").f64(x).f64(y).f64(z).u8((onGround ? 1 : 0) | (horizontalCollision ? 2 : 0)).build(),
+  look: (yaw, pitch, onGround, horizontalCollision = false) =>
+    packet("look").f32(yaw).f32(pitch).u8((onGround ? 1 : 0) | (horizontalCollision ? 2 : 0)).build(),
+  positionLook: (x, y, z, yaw, pitch, onGround, horizontalCollision = false) =>
     packet("position_look")
       .f64(x).f64(y).f64(z)
       .f32(yaw).f32(pitch)
-      .bool(onGround)
+      .u8((onGround ? 1 : 0) | (horizontalCollision ? 2 : 0))
       .build(),
-  vehicleMove: (x, y, z, yaw, pitch) =>
-    packet("vehicle_move").f64(x).f64(y).f64(z).f32(yaw).f32(pitch).build(),
+  vehicleMove: (x, y, z, yaw, pitch, onGround = true) =>
+    packet("vehicle_move").f64(x).f64(y).f64(z).f32(yaw).f32(pitch).bool(!!onGround).build(),
   steerBoat: (left, right) => packet("steer_boat").bool(left).bool(right).build(),
   abilities: (flags) => packet("abilities").i8(flags).build(),
   entityAction: (entityId, action, jumpBoost = 0) =>
     packet("entity_action").varint(entityId).varint(action).varint(jumpBoost).build(),
+  playerInput: ({ forward = false, backward = false, left = false, right = false, jump = false, shift = false, sprint = false } = {}) =>
+    packet("player_input").u8(
+      (forward ? 1 : 0) |
+      (backward ? 2 : 0) |
+      (left ? 4 : 0) |
+      (right ? 8 : 0) |
+      (jump ? 16 : 0) |
+      (shift ? 32 : 0) |
+      (sprint ? 64 : 0)
+    ).build(),
   steerVehicle: (sideways, forward, flags) =>
-    packet("steer_vehicle").f32(sideways).f32(forward).u8(flags).build(),
+    packet("player_input").u8(
+      (forward > 0 ? 1 : 0) |
+      (forward < 0 ? 2 : 0) |
+      (sideways > 0 ? 4 : 0) |
+      (sideways < 0 ? 8 : 0) |
+      (flags & 1 ? 16 : 0) |
+      (flags & 2 ? 32 : 0)
+    ).build(),
   heldItemSlot: (slot) => packet("held_item_slot").i16(slot).build(),
   armAnimation: (hand = 0) => packet("arm_animation").varint(hand).build(),
   spectate: (uuid) => packet("spectate").uuid(uuid).build(),
@@ -102,51 +139,52 @@ export const C = {
   },
   blockDig: (status, x, y, z, face, sequence = 0) =>
     packet("block_dig").varint(status).position(x, y, z).i8(face).varint(sequence).build(),
-  blockPlace: (x, y, z, face, hand, cursorX, cursorY, cursorZ, insideBlock = false, sequence = 0) =>
+  blockPlace: (x, y, z, face, hand, cursorX, cursorY, cursorZ, insideBlock = false, sequence = 0, worldBorderHit = false) =>
     packet("block_place")
       .varint(hand)
       .position(x, y, z)
       .varint(face)
       .f32(cursorX).f32(cursorY).f32(cursorZ)
       .bool(insideBlock)
+      .bool(!!worldBorderHit)
       .varint(sequence)
       .build(),
-  useItem: (hand = 0, sequence = 0) =>
-    packet("use_item").varint(hand).varint(sequence).build(),
+  useItem: (hand = 0, sequence = 0, yaw = 0, pitch = 0) =>
+    packet("use_item").varint(hand).varint(sequence).f32(yaw).f32(pitch).build(),
 
   queryBlockNbt: (transactionId, x, y, z) =>
     packet("query_block_nbt").varint(transactionId).position(x, y, z).build(),
   queryEntityNbt: (transactionId, entityId) =>
     packet("query_entity_nbt").varint(transactionId).varint(entityId).build(),
 
-  placeRecipe: (windowId, recipe, makeAll) =>
-    packet("craft_recipe_request").i8(windowId).string(String(recipe)).bool(makeAll).build(),
-  recipeInfoShown: (recipe) => packet("displayed_recipe").string(String(recipe)).build(),
+  placeRecipe: (windowId, recipeId, makeAll) =>
+    packet("craft_recipe_request").varint(windowId).varint(recipeId).bool(makeAll).build(),
+  recipeInfoShown: (recipeId) => packet("displayed_recipe").varint(recipeId).build(),
   recipeBookSettings: (bookId, open, filtering) =>
     packet("recipe_book").varint(bookId).bool(open).bool(filtering).build(),
   recipeInfoSettings: (open, filtering) =>
     packet("recipe_book").varint(0).bool(open).bool(filtering).build(),
 
-  creativeSlot: (slot, item) => packet("set_creative_slot").i16(slot).slot(item).build(),
+  creativeSlot: (slot, item) => packet("set_creative_slot").i16(slot).untrustedSlot(item).build(),
 
   windowClick: (windowId, slot, mouseButton, stateId, mode, changedSlots, cursorItem) => {
     const writer = packet("window_click")
-      .u8(windowId)
+      .varint(windowId)
       .varint(stateId)
       .i16(slot)
       .i8(mouseButton)
       .varint(mode)
       .varint(changedSlots.length);
     for (const changed of changedSlots) {
-      writer.i16(changed.slot).slot(changed.item);
+      writer.i16(changed.slot).hashedSlot(changed.item);
     }
-    return writer.slot(cursorItem).build();
+    return writer.hashedSlot(cursorItem).build();
   },
 
-  chat: (message, options = undefined) => chatState762.encode(String(message), options),
+  chat: (message, options = undefined) => chatState774.encode(String(message), options),
   resourcePackStatus: (uuid, result) => packet("resource_pack_receive").uuid(uuid).varint(result).build(),
-  enchantItem: (windowId, enchantment) => packet("enchant_item").i8(windowId).i8(enchantment).build(),
-  menuButton: (windowId, button) => packet("enchant_item").i8(windowId).i8(button).build(),
+  enchantItem: (windowId, enchantment) => packet("enchant_item").varint(windowId).i8(enchantment).build(),
+  menuButton: (windowId, button) => packet("enchant_item").varint(windowId).i8(button).build(),
   seenAdvancements: (tabId) => {
     const writer = packet("advancement_tab").varint(tabId == null ? 1 : 0);
     if (tabId != null) writer.string(String(tabId));
@@ -183,4 +221,4 @@ export const C = {
       .build()
 };
 
-export const mcStringBytes = (value) => new Writer766().string(value).build();
+export const mcStringBytes = (value) => new Writer774().string(value).build();

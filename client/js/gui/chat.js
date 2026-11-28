@@ -245,7 +245,8 @@ export function chatClickUrl(json) {
   if (typeof json === 'string') { try { obj = JSON.parse(json); } catch (e) { return null; } }
   const walk = (c) => {
     if (!c || typeof c !== 'object') return null;
-    if (c.clickEvent && c.clickEvent.action === 'open_url') return c.clickEvent.value;
+    const ce = c.click_event || c.clickEvent;
+    if (ce && ce.action === 'open_url') return ce.url ?? ce.value;
     for (const e of c.extra || []) { const r = walk(e); if (r) return r; }
     return null;
   };
@@ -257,9 +258,9 @@ export function chatSegments(raw) {
   const obj=typeof raw==='string'?decodeComponent(raw):raw,out=[];
   const walk=(c,parent={},events={})=>{
     if(c===null||c===undefined)return;
-    if(Array.isArray(c)){const first=c[0],base=first&&typeof first==='object'?{...events,click:first.clickEvent||events.click,hover:first.hoverEvent||events.hover}:events;c.forEach((x,i)=>walk(x,i?rootStyle(first,parent):parent,i?base:events));return;}
+    if(Array.isArray(c)){const first=c[0],base=first&&typeof first==='object'?{...events,click:first.click_event||first.clickEvent||events.click,hover:first.hover_event||first.hoverEvent||events.hover}:events;c.forEach((x,i)=>walk(x,i?rootStyle(first,parent):parent,i?base:events));return;}
     if(typeof c!=='object'){out.push({text:styleCodes(parent)+String(c),...events,style:parent});return;}
-    const style=inherit(parent,c),next={click:c.clickEvent||events.click,hover:c.hoverEvent||events.hover};
+    const style=inherit(parent,c),next={click:c.click_event||c.clickEvent||events.click,hover:c.hover_event||c.hoverEvent||events.hover};
     if(next.hover?.action==='show_text')next.hoverText=chatToLegacy(next.hover.contents??next.hover.value,{parsed:true});
     const push=text=>{if(text)out.push({text:styleCodes(style)+text,...next,style});};
     if(c.translate!==undefined){

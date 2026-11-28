@@ -414,18 +414,49 @@ export class ConfirmScreen extends Screen {
     super(game);
     this.background = game.inWorld ? 'world' : 'dirt';
     this.callback = callback;
+    this.callbackCalled = false;
     this.line1 = line1; this.line2 = line2; this.yes = yes; this.no = no;
   }
+  _answer(value) {
+    if (this.callbackCalled) return;
+    this.callbackCalled = true;
+    return this.callback(value);
+  }
   init() {
-    this.buttons.push(new Button(0, this.width / 2 - 155, this.height / 6 + 96, 150, 20, this.yes, () => this.callback(true)));
-    this.buttons.push(new Button(1, this.width / 2 - 155 + 160, this.height / 6 + 96, 150, 20, this.no, () => this.callback(false)));
+    this.buttons.push(new Button(0, this.width / 2 - 155, this.height / 6 + 96, 150, 20, this.yes, () => this._answer(true)));
+    this.buttons.push(new Button(1, this.width / 2 - 155 + 160, this.height / 6 + 96, 150, 20, this.no, () => this._answer(false)));
   }
   renderContent(gui) {
     gui.textCentered(this.line1, this.width / 2, 70, 0xffffff, true);
     let y = 90;
     for (const l of gui.font.wrap(this.line2 || '', this.width - 50)) { gui.textCentered(l, this.width / 2, y, 0xffffff, true); y += 9; }
   }
-  close() { this.callback(false); }
+  close() { this._answer(false); }
+}
+
+export class AlertScreen extends Screen {
+  constructor(game, callback, title, message) {
+    super(game);
+    this.background = game.inWorld ? 'world' : 'dirt';
+    this.callback = callback;
+    this.callbackCalled = false;
+    this.title = title;
+    this.message = message;
+  }
+  _done() {
+    if (this.callbackCalled) return;
+    this.callbackCalled = true;
+    return this.callback();
+  }
+  init() {
+    this.buttons.push(new Button(0, this.width / 2 - 100, this.height / 6 + 96, 200, 20, tr('gui.done'), () => this._done()));
+  }
+  renderContent(gui) {
+    gui.textCentered(this.title, this.width / 2, 70, 0xffffff, true);
+    let y = 90;
+    for (const line of gui.font.wrap(this.message || '', this.width - 50)) { gui.textCentered(line, this.width / 2, y, 0xffffff, true); y += 9; }
+  }
+  close() { this._done(); }
 }
 
 export class ServerEditScreen extends Screen {

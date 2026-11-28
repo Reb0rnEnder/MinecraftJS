@@ -1,4 +1,4 @@
-import{applyBrushFrame766}from'../game/brushing-1.20.6.js';
+import{applyBrushFrame774}from'../game/brushing-1.21.11.js';
 import{firstPersonBlockLight}from'./dynamic-lights.js';
 import{EMPTY_DYNAMIC_LIGHTS}from'../gfx/dynamic-lighting.js';
 import { usingSpyglass } from '../game/spyglass.js';
@@ -148,7 +148,7 @@ export class HandRenderer {
     let sd = it.swingProgress - it.prevSwingProgress;
     if (sd < 0) sd += 1;
     const swing = it.prevSwingProgress + sd * partial;
-    const stacks = [g.inventory.held(), g.inventory.offhand];
+    const stacks = g.interaction?.shownHandStacks?.() ?? [g.inventory.held(), g.inventory.offhand];
     const primary = g.settings.mainHand === 'left' ? -1 : 1; // EnumHandSide of the main hand: 1 right, -1 left
     let drawMain = true, drawOff = true;
     if (pl.usingItem) {
@@ -246,7 +246,7 @@ export class HandRenderer {
         R(side * f3 * 90, 0, 1, 0); R(f3 * 10, 1, 0, 0); R(side * f3 * 30, 0, 0, 1);
         this._side(m, side, equip);
       } else if(act==='brush'){
-        applyBrushFrame766(m,side,it.useTicks,partial,equip);
+        applyBrushFrame774(m,side,it.useTicks,partial,equip);
       } else if (act === 'bow') {
         this._side(m, side, equip);
         mat4.translate(m, m, side * -0.2785682, 0.18344387, 0.15731531);

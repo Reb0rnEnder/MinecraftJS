@@ -4,7 +4,11 @@ import {decodeUtf8} from '../util/utf8.js';
 
 // Sprite lists belong to particles/*.json; animation timing belongs to the particle, not .mcmeta.
 export async function loadParticleSprites(assets) {
-  const definitions=structuredClone(assets.data.particleSprites||{});
+  const definitions={};
+  for(const pack of [...(assets.lowerPacks||[])].reverse())for(const path of pack.list('particles/'))if(path.endsWith('.json')) {
+    try { definitions[path.slice(10,-5)]=JSON.parse(decodeUtf8(pack.read(path))); } catch { /* malformed pack definition */ }
+  }
+  Object.assign(definitions,structuredClone(assets.data.particleSprites||{}));
   for(const pack of [...assets.packs].reverse())for(const path of pack.list('particles/'))if(path.endsWith('.json')) {
     try { definitions[path.slice(10,-5)]=JSON.parse(decodeUtf8(pack.read(path))); } catch { /* malformed pack definition */ }
   }

@@ -1,6 +1,6 @@
-import {EFFECT_766} from './effects-1.20.6.js';
-import {getBlock} from '../world/blocks.js';
-import {mat4} from '../gfx/math.js';
+import { EFFECT_774 } from './effects-1.21.11.js';
+import { getBlock } from '../world/blocks.js';
+import { mat4 } from '../gfx/math.js';
 // Portal contact is entity/block overlap, not just the block at the player's centre.
 export function touchesPortal(game){
  if((game.ridingEntityId??-1)>=0)return false;
@@ -14,7 +14,7 @@ export function tickPortal(game){
  if(touchesPortal(game)){
   if(!game.portalTime)game.sound.playAtPlayer('block.portal.trigger',1,Math.random()*.4+.8);
   game.portalTime=Math.min(1,game.prevPortalTime+.0125);
- }else if(game.effects?.get(EFFECT_766.nausea)&&(game.effects.get(EFFECT_766.nausea).duration===-1||game.effects.get(EFFECT_766.nausea).duration>60))game.portalTime=Math.min(1,game.prevPortalTime+.006666667);
+ }else if(game.effects?.get(EFFECT_774.nausea)&&(game.effects.get(EFFECT_774.nausea).duration===-1||game.effects.get(EFFECT_774.nausea).duration>60))game.portalTime=Math.min(1,game.prevPortalTime+.006666667);
  else game.portalTime=Math.max(0,game.prevPortalTime-.05);
 }
 // Native rotating anisotropic screen distortion. Teleport timing stays server-owned.

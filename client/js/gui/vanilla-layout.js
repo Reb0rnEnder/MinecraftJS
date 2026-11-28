@@ -1,37 +1,47 @@
-// Native 1.20.6 option arrays, derived from the pinned jar and mapped getters.
+// Native 1.21.11 option arrays, derived from the pinned jar and mapped getters.
 export const VANILLA_UI = {
-  "version": "1.20.6",
-  "clientJarSha1": "05b6f1c6b46a29d6ea82b4e0d42190e42402030f",
-  "packFormat": 32,
+  "version": "1.21.11",
+  "clientJarSha1": "ba2df812c2d12e0219c489c4cd9a5e1f0760f5bd",
+  "packFormat": 75,
   "videoOptions": [
     "options.fullscreen.resolution",
+    "options.framerateLimit",
+    "options.vsync",
+    "options.inactivityFpsLimit",
+    "options.guiScale",
+    "options.fullscreen",
+    "options.gamma",
+    "options.graphics.preset",
     "options.biomeBlendRadius",
-    "options.graphics",
     "options.renderDistance",
     "options.prioritizeChunkUpdates",
     "options.simulationDistance",
     "options.ao",
-    "options.framerateLimit",
-    "options.vsync",
-    "options.viewBobbing",
-    "options.guiScale",
-    "options.attackIndicator",
-    "options.gamma",
     "options.renderClouds",
-    "options.fullscreen",
     "options.particles",
     "options.mipmapLevels",
     "options.entityShadows",
-    "options.screenEffectScale",
     "options.entityDistanceScaling",
-    "options.fovEffectScale",
+    "options.accessibility.menu_background_blurriness",
+    "options.renderCloudsDistance",
+    "options.cutoutLeaves",
+    "options.improvedTransparency",
+    "options.textureFiltering",
+    "options.maxAnisotropy",
+    "options.weatherRadius",
     "options.autosaveIndicator",
-    "options.glintSpeed",
-    "options.glintStrength",
-    "options.accessibility.menu_background_blurriness"
+    "options.vignette",
+    "options.attackIndicator",
+    "options.chunkFade"
   ],
   "controlOptions": [
-    "options.autoJump"
+    "key.sneak",
+    "key.sprint",
+    "key.attack",
+    "key.use",
+    "options.autoJump",
+    "options.sprintWindow",
+    "options.operatorItemsTab"
   ],
   "categoryOrder": [
     "key.categories.movement",
@@ -80,16 +90,18 @@ export const VANILLA_UI = {
   },
   "mouseOptions": [
     "options.sensitivity",
-    "options.invertMouse",
+    "options.touchscreen",
     "options.mouseWheelSensitivity",
     "options.discrete_mouse_scroll",
-    "options.touchscreen"
+    "options.invertMouseX",
+    "options.invertMouseY",
+    "options.allowCursorChanges",
+    "options.rawMouseInput"
   ],
   "accessibilityOptions": [
     "options.narrator",
     "options.showSubtitles",
     "options.accessibility.high_contrast",
-    "options.autoJump",
     "options.accessibility.menu_background_blurriness",
     "options.accessibility.text_background_opacity",
     "options.accessibility.text_background",
@@ -97,8 +109,7 @@ export const VANILLA_UI = {
     "options.chat.line_spacing",
     "options.chat.delay_instant",
     "options.notifications.display_time",
-    "key.sneak",
-    "key.sprint",
+    "options.viewBobbing",
     "options.screenEffectScale",
     "options.fovEffectScale",
     "options.darknessEffectScale",
@@ -109,7 +120,9 @@ export const VANILLA_UI = {
     "options.darkMojangStudiosBackgroundColor",
     "options.accessibility.panorama_speed",
     "options.hideSplashTexts",
-    "options.accessibility.narrator_hotkey"
+    "options.accessibility.narrator_hotkey",
+    "options.rotateWithMinecart",
+    "options.accessibility.high_contrast_block_outline"
   ],
   "controlsLayout": {
     "extraWidth": 45,
@@ -134,7 +147,8 @@ export const VANILLA_UI = {
     "options.autoSuggestCommands",
     "options.hideMatchedNames",
     "options.reducedDebugInfo",
-    "options.onlyShowSecureChat"
+    "options.onlyShowSecureChat",
+    "options.chat.drafts"
   ],
   "buttonText": {
     "normal": 16777215,

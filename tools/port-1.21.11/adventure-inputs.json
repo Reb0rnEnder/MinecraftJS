@@ -1,0 +1,1724 @@
+[
+  {
+    "label": "can_break any",
+    "component": "can_break",
+    "block": "minecraft:stone",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {}
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break none",
+    "component": "can_break",
+    "block": "minecraft:stone",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "blocks": "minecraft:stone"
+          }
+        ]
+      }
+    },
+    "directEmpty": true
+  },
+  {
+    "label": "can_break stone",
+    "component": "can_break",
+    "block": "minecraft:stone",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "blocks": "minecraft:stone"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break mismatch",
+    "component": "can_break",
+    "block": "minecraft:dirt",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "blocks": "minecraft:stone"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break OR",
+    "component": "can_break",
+    "block": "minecraft:dirt",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "blocks": "minecraft:stone"
+          },
+          {
+            "blocks": "minecraft:dirt"
+          }
+        ],
+        "minecraft:tooltip_display": {
+          "hidden_components": [
+            "minecraft:can_break"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "label": "can_break ID set",
+    "component": "can_break",
+    "block": "minecraft:dirt",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "blocks": [
+              "minecraft:stone",
+              "minecraft:dirt"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break logs oak_log",
+    "component": "can_break",
+    "block": "minecraft:oak_log",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "blocks": "#minecraft:logs"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break logs birch_log",
+    "component": "can_break",
+    "block": "minecraft:birch_log",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "blocks": "#minecraft:logs"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break logs stone",
+    "component": "can_break",
+    "block": "minecraft:stone",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "blocks": "#minecraft:logs"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break exact age 4",
+    "component": "can_break",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "age": "4"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break exact age 04",
+    "component": "can_break",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "age": "04"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break exact age +4",
+    "component": "can_break",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "age": "+4"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break exact age 8",
+    "component": "can_break",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "age": "8"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break exact age bad",
+    "component": "can_break",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "age": "bad"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break exact age 4.0",
+    "component": "can_break",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "age": "4.0"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break exact missing 4",
+    "component": "can_break",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "missing": "4"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break range {\"min\":\"2\",\"max\":\"5\"}",
+    "component": "can_break",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "age": {
+                "min": "2",
+                "max": "5"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break range {\"min\":\"5\"}",
+    "component": "can_break",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "age": {
+                "min": "5"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break range {\"max\":\"3\"}",
+    "component": "can_break",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "age": {
+                "max": "3"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break range {\"min\":\"04\",\"max\":\"4\"}",
+    "component": "can_break",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "age": {
+                "min": "04",
+                "max": "4"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break range {}",
+    "component": "can_break",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "age": {}
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break range {\"min\":\"-1\"}",
+    "component": "can_break",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "age": {
+                "min": "-1"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break range {\"max\":\"8\"}",
+    "component": "can_break",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "age": {
+                "max": "8"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break range {\"min\":\"bad\"}",
+    "component": "can_break",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "age": {
+                "min": "bad"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break range {\"min\":\"7\",\"max\":\"2\"}",
+    "component": "can_break",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "age": {
+                "min": "7",
+                "max": "2"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break direction {\"min\":\"south\",\"max\":\"east\"}",
+    "component": "can_break",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "facing": "west"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "facing": {
+                "min": "south",
+                "max": "east"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break direction {\"min\":\"east\",\"max\":\"west\"}",
+    "component": "can_break",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "facing": "west"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "facing": {
+                "min": "east",
+                "max": "west"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break direction {\"max\":\"north\"}",
+    "component": "can_break",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "facing": "west"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "facing": {
+                "max": "north"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break direction {\"min\":\"east\"}",
+    "component": "can_break",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "facing": "west"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "facing": {
+                "min": "east"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break direction {\"min\":\"invalid\"}",
+    "component": "can_break",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "facing": "west"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "facing": {
+                "min": "invalid"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break boolean {\"min\":\"false\",\"max\":\"true\"}",
+    "component": "can_break",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "waterlogged": "false"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "waterlogged": {
+                "min": "false",
+                "max": "true"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break boolean {\"min\":\"true\"}",
+    "component": "can_break",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "waterlogged": "false"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "waterlogged": {
+                "min": "true"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break boolean {\"max\":\"false\"}",
+    "component": "can_break",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "waterlogged": "false"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "waterlogged": {
+                "max": "false"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break boolean {\"min\":\"TRUE\"}",
+    "component": "can_break",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "waterlogged": "false"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "state": {
+              "waterlogged": {
+                "min": "TRUE"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break state and blocks AND",
+    "component": "can_break",
+    "block": "minecraft:stone",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "blocks": "minecraft:stone",
+            "state": {
+              "age": {}
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break NBT missing",
+    "component": "can_break",
+    "block": "minecraft:chest",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "blocks": "minecraft:chest",
+            "nbt": "{}"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_break NBT subset",
+    "component": "can_break",
+    "block": "minecraft:chest",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "blocks": "minecraft:chest",
+            "nbt": "{x:0,Items:[]}"
+          }
+        ]
+      }
+    },
+    "actualNbt": "{id:\"minecraft:chest\",x:0,y:64,z:0,Items:[]}"
+  },
+  {
+    "label": "can_break NBT wrong type",
+    "component": "can_break",
+    "block": "minecraft:chest",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "blocks": "minecraft:chest",
+            "nbt": "{x:0b}"
+          }
+        ]
+      }
+    },
+    "actualNbt": "{id:\"minecraft:chest\",x:0,y:64,z:0,Items:[]}"
+  },
+  {
+    "label": "can_place_on any",
+    "component": "can_place_on",
+    "block": "minecraft:stone",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {}
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on none",
+    "component": "can_place_on",
+    "block": "minecraft:stone",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "blocks": "minecraft:stone"
+          }
+        ]
+      }
+    },
+    "directEmpty": true
+  },
+  {
+    "label": "can_place_on stone",
+    "component": "can_place_on",
+    "block": "minecraft:stone",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "blocks": "minecraft:stone"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on mismatch",
+    "component": "can_place_on",
+    "block": "minecraft:dirt",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "blocks": "minecraft:stone"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on OR",
+    "component": "can_place_on",
+    "block": "minecraft:dirt",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "blocks": "minecraft:stone"
+          },
+          {
+            "blocks": "minecraft:dirt"
+          }
+        ],
+        "minecraft:tooltip_display": {
+          "hidden_components": [
+            "minecraft:can_place_on"
+          ]
+        }
+      }
+    }
+  },
+  {
+    "label": "can_place_on ID set",
+    "component": "can_place_on",
+    "block": "minecraft:dirt",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "blocks": [
+              "minecraft:stone",
+              "minecraft:dirt"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on logs oak_log",
+    "component": "can_place_on",
+    "block": "minecraft:oak_log",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "blocks": "#minecraft:logs"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on logs birch_log",
+    "component": "can_place_on",
+    "block": "minecraft:birch_log",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "blocks": "#minecraft:logs"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on logs stone",
+    "component": "can_place_on",
+    "block": "minecraft:stone",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "blocks": "#minecraft:logs"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on exact age 4",
+    "component": "can_place_on",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "age": "4"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on exact age 04",
+    "component": "can_place_on",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "age": "04"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on exact age +4",
+    "component": "can_place_on",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "age": "+4"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on exact age 8",
+    "component": "can_place_on",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "age": "8"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on exact age bad",
+    "component": "can_place_on",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "age": "bad"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on exact age 4.0",
+    "component": "can_place_on",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "age": "4.0"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on exact missing 4",
+    "component": "can_place_on",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "missing": "4"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on range {\"min\":\"2\",\"max\":\"5\"}",
+    "component": "can_place_on",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "age": {
+                "min": "2",
+                "max": "5"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on range {\"min\":\"5\"}",
+    "component": "can_place_on",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "age": {
+                "min": "5"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on range {\"max\":\"3\"}",
+    "component": "can_place_on",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "age": {
+                "max": "3"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on range {\"min\":\"04\",\"max\":\"4\"}",
+    "component": "can_place_on",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "age": {
+                "min": "04",
+                "max": "4"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on range {}",
+    "component": "can_place_on",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "age": {}
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on range {\"min\":\"-1\"}",
+    "component": "can_place_on",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "age": {
+                "min": "-1"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on range {\"max\":\"8\"}",
+    "component": "can_place_on",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "age": {
+                "max": "8"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on range {\"min\":\"bad\"}",
+    "component": "can_place_on",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "age": {
+                "min": "bad"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on range {\"min\":\"7\",\"max\":\"2\"}",
+    "component": "can_place_on",
+    "block": "minecraft:wheat",
+    "state": {
+      "age": "4"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "age": {
+                "min": "7",
+                "max": "2"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on direction {\"min\":\"south\",\"max\":\"east\"}",
+    "component": "can_place_on",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "facing": "west"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "facing": {
+                "min": "south",
+                "max": "east"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on direction {\"min\":\"east\",\"max\":\"west\"}",
+    "component": "can_place_on",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "facing": "west"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "facing": {
+                "min": "east",
+                "max": "west"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on direction {\"max\":\"north\"}",
+    "component": "can_place_on",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "facing": "west"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "facing": {
+                "max": "north"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on direction {\"min\":\"east\"}",
+    "component": "can_place_on",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "facing": "west"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "facing": {
+                "min": "east"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on direction {\"min\":\"invalid\"}",
+    "component": "can_place_on",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "facing": "west"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "facing": {
+                "min": "invalid"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on boolean {\"min\":\"false\",\"max\":\"true\"}",
+    "component": "can_place_on",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "waterlogged": "false"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "waterlogged": {
+                "min": "false",
+                "max": "true"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on boolean {\"min\":\"true\"}",
+    "component": "can_place_on",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "waterlogged": "false"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "waterlogged": {
+                "min": "true"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on boolean {\"max\":\"false\"}",
+    "component": "can_place_on",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "waterlogged": "false"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "waterlogged": {
+                "max": "false"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on boolean {\"min\":\"TRUE\"}",
+    "component": "can_place_on",
+    "block": "minecraft:oak_stairs",
+    "state": {
+      "waterlogged": "false"
+    },
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "state": {
+              "waterlogged": {
+                "min": "TRUE"
+              }
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on state and blocks AND",
+    "component": "can_place_on",
+    "block": "minecraft:stone",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "blocks": "minecraft:stone",
+            "state": {
+              "age": {}
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on NBT missing",
+    "component": "can_place_on",
+    "block": "minecraft:chest",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "blocks": "minecraft:chest",
+            "nbt": "{}"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "can_place_on NBT subset",
+    "component": "can_place_on",
+    "block": "minecraft:chest",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "blocks": "minecraft:chest",
+            "nbt": "{x:0,Items:[]}"
+          }
+        ]
+      }
+    },
+    "actualNbt": "{id:\"minecraft:chest\",x:0,y:64,z:0,Items:[]}"
+  },
+  {
+    "label": "can_place_on NBT wrong type",
+    "component": "can_place_on",
+    "block": "minecraft:chest",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_place_on": [
+          {
+            "blocks": "minecraft:chest",
+            "nbt": "{x:0b}"
+          }
+        ]
+      }
+    },
+    "actualNbt": "{id:\"minecraft:chest\",x:0,y:64,z:0,Items:[]}"
+  },
+  {
+    "label": "tooltip duplicate blocks",
+    "component": "can_break",
+    "block": "minecraft:stone",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "blocks": [
+              "minecraft:stone",
+              "minecraft:dirt"
+            ]
+          },
+          {
+            "blocks": "minecraft:stone"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "tooltip unknown overrides list",
+    "component": "can_break",
+    "block": "minecraft:stone",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "blocks": "minecraft:stone"
+          },
+          {
+            "state": {
+              "age": "1"
+            }
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "tooltip both permissions",
+    "component": "can_break",
+    "block": "minecraft:stone",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "blocks": "minecraft:stone"
+          }
+        ],
+        "minecraft:can_place_on": [
+          {
+            "blocks": "minecraft:dirt"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "label": "tooltip hidden",
+    "component": "can_break",
+    "block": "minecraft:stone",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "blocks": "minecraft:stone"
+          }
+        ],
+        "minecraft:tooltip_display": {
+          "hide_tooltip": true
+        }
+      }
+    }
+  },
+  {
+    "label": "tooltip hidden component",
+    "component": "can_break",
+    "block": "minecraft:stone",
+    "state": {},
+    "stack": {
+      "id": "minecraft:diamond_pickaxe",
+      "count": 1,
+      "components": {
+        "minecraft:can_break": [
+          {
+            "blocks": "minecraft:stone"
+          }
+        ],
+        "minecraft:can_place_on": [
+          {
+            "blocks": "minecraft:dirt"
+          }
+        ],
+        "minecraft:tooltip_display": {
+          "hidden_components": [
+            "minecraft:can_break"
+          ]
+        }
+      }
+    }
+  }
+]

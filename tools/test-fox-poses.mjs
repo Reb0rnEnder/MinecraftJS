@@ -13,10 +13,10 @@ test('sitting, sleeping, crouching and faceplanting reset cleanly back to standi
  m.animate(m,{foxFaceplanted:true,age:10,pitch:50});close(p.head.rx,0);assert.ok(Math.abs(p.rightHindLeg.rx)<=.1);
  m.animate(m,{});close(p.head.py,16.5);close(p.head.ry,0);close(p.head.rz,0);close(p.body.rx,Math.PI/2);close(p.tail.pz,-1);close(p.rightHindLeg.py,17.5);assert.equal(p.rightFrontLeg.visible,true);
 });
-test('wire flags, interpolated crouch/head interest and sleeping textures reach the fox',()=>{
+test('wire flags, interpolated crouch/head interest and sleeping textures reach the fox',async()=>{
  const manager=new EntityManager({}),e=manager._base(7,0,0,0);e.kind='mob';e.entityName='fox';e.type='fox';
  // Use the active native metadata table; 1.15 inserted the living stinger count.
- const metadata=JSON.parse(readFileSync(new URL('../client/js/game/entity-metadata-'+version+'.js',import.meta.url),'utf8').split('export const NATIVE_METADATA=')[1].replace(/;\s*$/,''));
+ const {NATIVE_METADATA:metadata}=await import('../client/js/game/entity-metadata-'+version+'.js');
  const ids=metadata.fox;manager._applyMeta(e,{[ids.DATA_TYPE_ID]:1,[ids.DATA_FLAGS_ID]:1|4|8|16|32|64|128});assert.equal(e.foxType,1);for(const key of ['sitting','foxCrouching','foxInterested','foxPouncing','foxSleeping','foxFaceplanted','foxDefending'])assert.equal(e[key],true,key);
  tickFox(e);const a=foxAnimationArgs(e,.5);close(a.foxCrouchAmount,.1);close(a.foxHeadRoll,.2*.11*Math.PI);for(let i=0;i<20;i++)tickFox(e);close(e.foxCrouchAmount,3);
  assert.equal(EntityRenderer.prototype._texFor.call({},e),'entity/fox/snow_fox_sleep.png');applyFoxFlags(e,0);tickFox(e);assert.equal(e.foxCrouchAmount,0);assert.equal(e.foxSleeping,false);assert.equal(EntityRenderer.prototype._texFor.call({},e),'entity/fox/snow_fox.png');

@@ -1,0 +1,124 @@
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { Scoreboard } from '../client/js/game/scoreboard.js';
+import { decodePlayBody774 } from '../client/js/net/play-codec-1.21.11.js';
+import { chatToLegacy } from '../client/js/gui/chat.js';
+import { Hud } from '../client/js/gui/hud.js';
+import { formatScore774, readScoreFormat774 } from '../client/js/game/score-format-1.21.11.js';
+import { SCOREBOARD_SLOTS } from '../client/js/game/commands.js';
+
+const native = JSON.parse(readFileSync(new URL('./fixtures/score-formats-1.21.11.json', import.meta.url)));
+const body = (wire) => Buffer.from(wire, 'base64');
+const decode = (name, wire) => decodePlayBody774(name, body(wire));
+const game = () => {
+  const g = { username: 'viewer', settings: {}, entities: { all: () => [] }, scoreboard: null };
+  g.scoreboard = new Scoreboard(g);
+  return g;
+};
+
+test('native score/objective packet bodies reproduce every native blank/styled/fixed rendering', () => {
+  for (const row of native.samples) {
+    const g = game(), score = decode('scoreboard_score', row.scorePacket);
+    for (const packet of row.objectivePackets) {
+      g.scoreboard.onObjective(decode('scoreboard_objective', packet));
+      g.scoreboard.onScore(score);
+      const obj = g.scoreboard.objectives.get('objective');
+      for (const context of ['sidebar', 'list', 'name']) {
+        assert.equal(g.scoreboard.scoreText(obj, 'owner', context), chatToLegacy(row.formatted[context], { parsed: true }), row.label + ' ' + context);
+      }
+      assert.equal(g.scoreboard.scoreDisplayName(obj, 'owner'), '§6Alias§r');
+      assert.equal(obj.type, 'integer');
+    }
+  }
+});
+
+test('per-score overrides inherit objective defaults, clear correctly, and preserve numeric sorting values', () => {
+  const g = game(), sb = g.scoreboard;
+  sb.onObjective({ action: 0, objective: 'a', displayText: 'Title', type: 'integer', numberFormat: { type: 'blank' } });
+  sb.onScore({ scoreName: 'a', itemName: 'owner', value: 50, displayName: 'Name', numberFormat: { type: 'fixed', value: { text: 'X' } } });
+  const a = sb.objectives.get('a');
+  assert.equal(a.scores.get('owner'), 50);
+  assert.equal(sb.scoreText(a, 'owner'), 'X');
+  sb.onScore({ scoreName: 'a', itemName: 'owner', value: 20 });
+  assert.equal(sb.scoreText(a, 'owner'), '');
+  assert.equal(sb.scoreDisplayName(a, 'owner'), 'owner');
+  sb.onObjective({ action: 2, objective: 'a', displayText: 'New', type: 'integer', numberFormat: null });
+  assert.equal(sb.scoreText(a, 'owner'), '§c20§r');
+  sb.onScore({ action: 1, scoreName: 'a', itemName: 'owner' });
+  assert.equal(a.scores.size, 0);
+  assert.equal(a.scoreInfo.size, 0);
+});
+
+const gui = () => {
+  const texts = [], rects = [];
+  const g = {
+    width: 321,
+    height: 241,
+    textWidth: (text) => String(text).replace(/§[0-9a-fk-or]/g, '').length * 6,
+    text: (...a) => texts.push(a),
+    rect: (...a) => rects.push(a)
+  };
+  return { g, texts, rects };
+};
+
+test('sidebar uses formatted score widths, display names and native order; blank scores reserve no width', () => {
+  const g = game(), sb = g.scoreboard;
+  sb.onObjective({ action: 0, objective: 'a', displayText: 'T', type: 'integer', numberFormat: { type: 'blank' } });
+  sb.onDisplay({ position: 1, objective: 'a' });
+  for (const [name, value, displayName] of [['z', 5, 'Last'], ['A', 9, 'First'], ['b', 9, 'Second'], ['#hidden', 20, 'Visible']]) {
+    sb.onScore({ scoreName: 'a', itemName: name, value, displayName });
+  }
+  const s = gui();
+  Hud.prototype.renderSidebar.call({ game: g }, s.g);
+  assert.deepEqual(s.texts.map((t) => t[0]), ['T', 'First', '', 'Second', '', 'Last', '']);
+  assert.equal(s.rects[0][0], 321 - 36 - 3 - 2, 'no colon/score padding when formatted width is zero');
+  assert.ok(s.texts.every((t) => Number.isInteger(t[1]) && Number.isInteger(t[2])));
+  assert.equal(s.rects[0][4], 0x66000000);
+  assert.equal(s.rects[1][4], 0x4c000000);
+});
+
+test('empty modern sidebar still draws its header and native accessibility background opacity', () => {
+  const g = game();
+  g.settings = { textBackgroundOnlyChat: false, textBackgroundOpacity: 0.5 };
+  g.scoreboard.onObjective({ action: 0, objective: 'a', displayText: 'Title', type: 'integer' });
+  g.scoreboard.onDisplay({ position: 1, objective: 'a' });
+  const s = gui();
+  Hud.prototype.renderSidebar.call({ game: g }, s.g);
+  assert.equal(s.texts.length, 1);
+  assert.equal(s.texts[0][0], 'Title');
+  assert.equal(s.rects[0][4], 0x7f000000);
+  assert.equal(s.rects[1][4], 0x7f000000);
+});
+
+test('default list/name formatting and style-only payloads preserve native empty/default semantics', () => {
+  assert.equal(formatScore774(0, null, 'list'), '§e0§r');
+  assert.equal(formatScore774(-2, null, 'name'), '-2');
+  assert.equal(formatScore774(7, { type: 'fixed', value: '' }), '');
+  const format = readScoreFormat774(1, { t: 10, v: { bold: { t: 1, v: 1 }, extra: { t: 8, v: 'ignored' }, text: { t: 8, v: 'ignored' } } });
+  assert.equal(formatScore774(7, format), '§l7§r');
+  assert.throws(() => readScoreFormat774(3, null), /Invalid/);
+});
+
+test('tab list renders fixed per-score text and uses blank formats without a synthetic zero', () => {
+  const g = game(), sb = g.scoreboard;
+  g.entityRenderer = { skinImage: () => null };
+  sb.onObjective({ action: 0, objective: 'a', displayText: 'Title', type: 'integer' });
+  sb.onDisplay({ position: 0, objective: 'a' });
+  sb.players.set('uuid', { name: 'owner', uuid: 'uuid', gamemode: 0, ping: 10, listed: true });
+  sb.onScore({ scoreName: 'a', itemName: 'owner', value: 37, numberFormat: { type: 'fixed', value: { text: 'Coins', color: 'aqua' } } });
+  let s = gui();
+  Object.assign(s.g, { tex: () => null, drawImage() {}, blit() {}, sprite() {} });
+  Hud.prototype.renderTabList.call({ game: g }, s.g);
+  assert.ok(s.texts.some((t) => t[0] === '§bCoins§r'));
+  assert.ok(!s.texts.some((t) => String(t[0]).includes('37')));
+  sb.onScore({ scoreName: 'a', itemName: 'owner', value: 37, numberFormat: { type: 'blank' } });
+  s = gui();
+  Object.assign(s.g, { tex: () => null, drawImage() {}, blit() {}, sprite() {} });
+  Hud.prototype.renderTabList.call({ game: g }, s.g);
+  assert.ok(!s.texts.some((t) => String(t[0]).includes('37') || String(t[0]).includes('0')));
+});
+
+test('scoreboard display-slot choices exactly match the native enum', () => {
+  assert.deepEqual(SCOREBOARD_SLOTS, native.displaySlots);
+});

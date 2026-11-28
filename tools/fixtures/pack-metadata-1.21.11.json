@@ -1,0 +1,132 @@
+{
+  "version": "1.21.11",
+  "clientJarSha1": "ba2df812c2d12e0219c489c4cd9a5e1f0760f5bd",
+  "oracleSha256": "774dd09f47592cee43e5c3b677dfaea5f54f42cfe6c46efad873e44989e59f89",
+  "cases": [
+    {
+      "label": "filter_none",
+      "queries": [
+        {
+          "blocked": false,
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "blocked": false,
+          "namespace": "minecraft",
+          "path": "lang/en_us.json"
+        }
+      ],
+      "section": "filter",
+      "valid": true
+    },
+    {
+      "label": "filter_textures",
+      "queries": [
+        {
+          "blocked": true,
+          "namespace": "minecraft",
+          "path": "textures/block/stone.png"
+        },
+        {
+          "blocked": true,
+          "namespace": "minecraft",
+          "path": "textures/item/stick.png"
+        }
+      ],
+      "section": "filter",
+      "valid": true
+    },
+    {
+      "label": "filter_namespace",
+      "queries": [
+        {
+          "blocked": true,
+          "namespace": "custom",
+          "path": "anything.png"
+        },
+        {
+          "blocked": true,
+          "namespace": "minecraft",
+          "path": "anything.png"
+        }
+      ],
+      "section": "filter",
+      "valid": true
+    },
+    {
+      "label": "overlay_legacy_supported",
+      "section": "overlays",
+      "valid": false
+    },
+    {
+      "label": "overlay_12111_min_max",
+      "queries": [
+        {
+          "format": [
+            64,
+            0
+          ],
+          "overlays": []
+        },
+        {
+          "format": [
+            65,
+            0
+          ],
+          "overlays": [
+            "ov_new"
+          ]
+        },
+        {
+          "format": [
+            75,
+            0
+          ],
+          "overlays": [
+            "ov_new",
+            "ov_minor"
+          ]
+        },
+        {
+          "format": [
+            75,
+            2
+          ],
+          "overlays": [
+            "ov_new",
+            "ov_minor"
+          ]
+        },
+        {
+          "format": [
+            75,
+            3
+          ],
+          "overlays": [
+            "ov_new"
+          ]
+        },
+        {
+          "format": [
+            76,
+            0
+          ],
+          "overlays": []
+        }
+      ],
+      "section": "overlays",
+      "valid": true
+    },
+    {
+      "label": "pack_12111_valid",
+      "section": "pack",
+      "valid": false
+    },
+    {
+      "label": "pack_12111_min_max_only",
+      "section": "pack",
+      "valid": true
+    }
+  ]
+}

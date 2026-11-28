@@ -1,44 +1,66 @@
-# MinecraftJS 1.20.6 port
+# MinecraftJS 1.21.11 port
 
-The named **1.20.6** branch is under development. Native protocol **766** offline
-login, Configuration, essential Play/Game consumers and the first graphical
-native-server milestone are implemented and tested against a disposable vanilla
-1.20.6 server. The default runtime data/assets and public version identity now
-target **1.20.6**. Full feature parity is still unfinished; later ledger gates
-cover inventory actions, authenticated sessions, resource packs, presentation
-families, chat/commands and inherited baseline gaps.
+The named **1.21.11** branch is under development. The default client protocol
+is **774**, and the runtime data/assets and public version identity target
+**1.21.11**. Full feature parity is unfinished; selecting this target does not
+certify every vanilla feature or patch fix.
 
-The current [full-parity checklist](docs/parity-checklist-1.20.6.md) separates
+## Historical 1.20.6 baseline evidence
+
+The inherited 1.20.6 milestone recorded native protocol **766** offline login,
+Configuration, essential Play/Game consumers and the first graphical native-server
+milestone against a disposable vanilla 1.20.6 server. These results are historical
+1.20.6 evidence, not fresh 1.21.11 acceptance results.
+
+The historical 1.20.6 [full-parity checklist](docs/parity-checklist-1.20.6.md) separates
 accepted work, partial implementations, confirmed missing consumers and unverified
 scenarios. Its [editable JSON ledger](docs/parity-checklist-1.20.6.json) drives the
 counts; checkpoint counts are not completion percentages.
 
-See the [transition plan](docs/transition-1.20.6.md) and
-[native transport evidence](docs/development-1.20.6.md) for remaining gates.
-The [ordered task ledger](docs/transition-1.20.6.tasks.json) tracks dependencies and acceptance criteria. The GitHub handoff audit repaired live recipe joining, encrypted transport, reconfiguration/transfer, chat/sound consumers and native GUI sprites. The next resource gate covers remaining atlases, fonts and pack overlays; item-specific and authenticated-account acceptance remains open.
+See the 1.20.6 [transition plan](docs/transition-1.20.6.md) and
+[native transport evidence](docs/development-1.20.6.md) for that baseline's gates.
+The 1.20.6 [ordered task ledger](docs/transition-1.20.6.tasks.json) tracks dependencies and acceptance criteria. Its GitHub handoff audit recorded repairs to live recipe joining, encrypted transport, reconfiguration/transfer, chat/sound consumers and native GUI sprites. At that checkpoint, the next resource gate covered remaining atlases, fonts and pack overlays; item-specific and authenticated-account acceptance remained open.
+
+That baseline also recorded encrypted login with independent RSA/AES tests, while
+a real account-backed login remained unverified. A real Chrome client joined the
+local native fixture and `wss://mc.arch.lol`, rendering the target menu and hotbar.
+WebMC's Eagler backend returned `Your client does not support online mode` before
+Configuration; this server rejection is preserved. No prebuilt 1.20.6 distribution
+was claimed. These observations do not establish 1.21.11 acceptance or full parity.
+
+Explicit `*:1.20.6` npm scripts remain 1.20.6 tools. The unqualified
+`parity:status`, `parity:update` and `parity:consumers` aliases also operate on the
+**1.20.6** evidence/ledgers, not 1.21.11.
+
+## 1.21.11 setup and isolated fixture
 
 ```sh
 npm ci
-npm run prepare:1.20.6
-npm run test:1.20.6
+node tools/port-1.21.11/prepare.mjs
+npm run test:1.21.11
 # In one terminal (Java 21+, with JAVA set if java is not on PATH):
-npm run fixture:1.20.6
+node tools/port-1.21.11/run-protocol-fixture.mjs
 # In another terminal:
-npm run probe:1.20.6
+node tools/port-1.21.11/probe-configuration.mjs
 ```
 
-The fixture binds only `127.0.0.1:25568` in a fresh cache-local temporary world and refuses an occupied port. It verifies the pinned server SHA-1 and writes its own fixture EULA/properties, so it never loads or upgrades user worlds or configuration. Stop the fixture with Ctrl+C when finished.
-
-Encrypted login is implemented and has independent RSA/AES tests; a real account-backed login remains unverified. A real Chrome client joined the local native fixture and `wss://mc.arch.lol`, rendering the target menu and hotbar. WebMC's Eagler backend returned `Your client does not support online mode` before Configuration; this server rejection is preserved. This is not a full-parity release, and no prebuilt 1.20.6 distribution is claimed.
+The 1.21.11 fixture binds only `127.0.0.1:25571` and refuses an occupied port.
+It verifies the pinned server SHA-1 and writes its own fixture EULA/properties in
+`cache/port-1.21.11/fixture-server`. Its `protocol-fixture` world is cache-local
+and reused across runs, not a fresh temporary world on each launch. It does not
+load existing user servers/worlds or their configuration. Wait for the server to
+finish starting before running the probe; stop it with Ctrl+C when finished.
+The probe checks native offline transport, Play decoding and basic interactions,
+not full feature parity.
 
 ## Inherited implementation baseline
 
-The 1.20.6 port still intentionally reuses some renderer/gameplay helpers whose
-last dedicated parity review was on 1.19.4. Those helpers are being replaced or
-revalidated gate-by-gate rather than blindly relabelled; see the transition task
-ledger for the remaining work. The default network protocol, runtime registries,
-block/entity data, visual-state tables, assets and public identity are now native
-1.20.6. Older supported clients remain on their existing named branches.
+This 1.21.11 port inherits the 1.20.6 baseline, including some renderer/gameplay
+helpers whose last dedicated parity review was on 1.19.4. Historical provenance
+labels are retained rather than blindly relabelled as 1.21.11 evidence. The
+default network protocol, runtime registries, block/entity data, visual-state
+tables, assets and public identity target 1.21.11; this is not a full-parity
+claim. Older supported clients remain on their existing named branches.
 
 Start the proxy from **this worktree**:
 
@@ -46,35 +68,42 @@ Start the proxy from **this worktree**:
 PORT=3003 ALLOW_LOOPBACK=1 npm start
 ```
 
-Open `http://localhost:3003/` and join a compatible 1.20.6 server. Loopback is
+Open `http://localhost:3003/` and join a compatible 1.21.11 server. Loopback is
 explicitly allowed here for local testing; deployments block it by default.
-Use the isolated `npm run fixture:1.20.6` workflow above for parity testing so
+Use the isolated 1.21.11 fixture workflow above for native testing so
 existing local worlds/configurations are never loaded or upgraded.
 
-Reproduce the native 1.20.6 runtime data and assets (Java 21+):
+Validate the prepared 1.21.11 inputs and checked-in runtime data, then build
+assets (Java 21+):
 
 ```sh
-npm run prepare:1.20.6
-node tools/port-1.20.6/reports.mjs --check
-node tools/port-1.20.6/runtime-data.mjs
-node tools/port-1.20.6/visual-runtime.mjs
+node tools/port-1.21.11/prepare.mjs
+node tools/port-1.21.11/reports.mjs --check
+node tools/port-1.21.11/runtime-data.mjs --check
 npm run assets
-npm run test:1.20.6
+npm run test:1.21.11
 ```
+
+`runtime-data.mjs --check` validates the existing `client/data` tables; it does
+not regenerate them. Regeneration without `--check` also invokes
+`tools/port-1.21.11/visual-runtime.mjs` and requires prepared native extraction
+inputs, including `cache/port-1.21.11/client-unsigned.jar` and its Java libraries.
+The explicit 1.20.6 generators instead prepare that older target's cache and
+are not the default workflow for this branch.
 
 `npm run build` creates a standalone HTML client; use
 `npm run build -- --static --out=dist/site` for static hosting. These are browser
 clients and require a compatible proxy to connect to ordinary Java TCP servers.
 
 MinecraftJS is not affiliated with Mojang or Microsoft. The repository contains no Mojang asset files: target
-game assets are resolved from the SHA-pinned 1.20.6 Mojang inputs/cache when you build them. Entity and block-entity
+game assets are resolved from the SHA-pinned 1.21.11 Mojang inputs/cache when you build them. Entity and block-entity
 models (mobs, boats, chests, signs, skulls, beds, ...) are extracted from pinned native Java constructors through the
 official mappings and stored in `bundles/entity-models.json`.
 
 ## Requirements
 
 - Node.js 22 or newer
-- Java 21 or newer for native 1.20.6 asset/data extraction
+- Java 21 or newer for native 1.21.11 asset/data extraction
 - `npm install` (installs the proxy's dependencies, plus esbuild and ffmpeg for the build)
 
 ## Running with the proxy
@@ -87,13 +116,20 @@ npm start
 Then open http://localhost:3000. The proxy serves the client, bridges the browser to Minecraft servers (TCP),
 relays Microsoft account sign in and serves player skins.
 
-Game assets are found automatically from the selected target cache; the 1.20.6 branch defaults to the SHA-pinned
-`cache/port-1.20.6` inputs. A built `client/assets/` directory can be served directly for static hosting.
+Game assets are found automatically from the selected target cache; this 1.21.11 branch defaults to the SHA-pinned
+`cache/port-1.21.11` inputs. A built `client/assets/` directory can be served directly for static hosting.
 
 | Variable | Default | Meaning |
 | --- | --- | --- |
 | `PORT` | `3000` | HTTP and WebSocket port |
-| `MC_VERSION` | `1.20.6` | asset/runtime target selected by the build |
+| `MC_VERSION` | `1.21.11` | vanilla asset target used by the proxy/build; does not switch the client protocol |
+
+Leave `MC_VERSION` at this branch's default for the 1.21.11 client. Older asset
+targets remain available for explicit compatibility workflows; selecting one
+does not turn this client into a 1.20.6 client. Builds use `client/data` unless
+`MC_RUNTIME_DATA` points to another runtime-data directory; keep those tables
+matched to 1.21.11. `MC_JAR`, if set, must likewise identify the intended target's
+client jar.
 
 ## Building
 

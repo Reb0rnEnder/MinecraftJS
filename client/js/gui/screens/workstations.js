@@ -1,4 +1,4 @@
-import{itemBannerLayers766,bannerLayers766,loomPatterns766}from'../../render/banner-1.20.6.js';
+import{itemBannerLayers774,bannerLayers774,loomPatterns774}from'../../render/banner-1.21.11.js';
 import {WORKSTATIONS_754} from '../../game/workstations-1.16.5.js';
 import {stonecutterRecipes,tradeCost} from '../../game/workstations-1.14.4.js';
 import {C} from '../../net/packets.js';
@@ -25,7 +25,7 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
       return stonecutterRecipes(game,input);
     }
     patterns(){
-      return loomPatterns766(game,win.get(0),win.get(1),win.get(2));
+      return loomPatterns774(game,win.get(0),win.get(1),win.get(2));
     }
     grid(){
       const stone=win.type==='minecraft:stonecutter';
@@ -35,7 +35,7 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
     icon(gui,id,x,y,width=5,height=10,layers=null){
       const key='loom/'+game.assets.version+'/'+(layers?JSON.stringify(layers):id);
       let tex=game.assets.textures.get(key);
-      if(!tex){const image=composeBanner(game.assets,layers||bannerLayers766(game,7,[{pattern:{patternId:id},colorId:15}]));if(!image)return;tex=game.assets.makeTexture(key,image.width,image.height,image.data);}
+      if(!tex){const image=composeBanner(game.assets,layers||bannerLayers774(game,7,[{pattern:{patternId:id},colorId:15}]));if(!image)return;tex=game.assets.makeTexture(key,image.width,image.height,image.data);}
       gui.blit(tex,x,y,1,1,20,40,tex.width,tex.height,width,height);
     }
     drawBackground(gui,mx,my){
@@ -69,7 +69,7 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
         if(!stone){
           for(const [slot,sx,sy] of definition.slots.slice(0,3))if(!win.get(slot))gui.blit(this.tex,x+sx,y+sy,176+slot*16,0,16,16);
           const output=win.get(3);if(output){
-            const layers=itemBannerLayers766(game,output);
+            const layers=itemBannerLayers774(game,output);
             this.icon(gui,0,x+141,y+8,20,40,layers);
           }
         }

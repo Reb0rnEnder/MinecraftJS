@@ -3,7 +3,7 @@
 import { nativeModelOffset, blocks, getBlock, getStateProperties, staticCollisionBoxes, DIR_OFFSETS, DIR_NAMES, OPPOSITE } from '../world/blocks.js';
 import { getFluidState } from '../world/fluids.js';
 import { resolveState } from '../world/blockstates.js';
-import { grassColor, foliageColor, waterColor } from '../world/biomes.js';
+import { grassColor, foliageColor, dryFoliageColor, waterColor } from '../world/biomes.js';
 import { computeVisibility } from './visgraph.js';
 
 export const BYTES_PER_VERTEX = 20;
@@ -195,10 +195,11 @@ export class Mesher {
     const n = b.name;
     const props = getStateProperties(state);
     switch (n) {
-      case 'pink_petals': if(tint===0)return 0xffffff; // Only the stems use biome tint.
-      case 'grass_block': case 'short_grass': case 'tall_grass': case 'fern': case 'large_fern': case 'sugar_cane': case 'potted_fern':
+      case 'pink_petals': case 'wildflowers': if (tint === 0) return 0xffffff; // Only the stems use biome tint.
+      case 'grass_block': case 'short_grass': case 'tall_grass': case 'fern': case 'large_fern': case 'sugar_cane': case 'potted_fern': case 'bush':
         return this.biomeBlend(x, (n==='tall_grass'||n==='large_fern')&&props.half==='upper'?y-1:y, z, grassColor);
       case 'vine': case 'oak_leaves': case 'jungle_leaves': case 'acacia_leaves': case 'dark_oak_leaves': case 'mangrove_leaves': return this.biomeBlend(x, y, z, foliageColor);
+      case 'leaf_litter': return this.biomeBlend(x, y, z, dryFoliageColor);
       case 'spruce_leaves': return 0x619961;
       case 'birch_leaves': return 0x80a755;
       default:

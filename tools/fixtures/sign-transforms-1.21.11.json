@@ -1,0 +1,2845 @@
+{
+  "minecraftVersion": "1.21.11",
+  "clientJarSha1": "ba2df812c2d12e0219c489c4cd9a5e1f0760f5bd",
+  "extractorSha256": "1c6a6f51168df49b0d6af86144bbb701888c381972e09500833b400d4c21ffd4",
+  "samples": [
+    {
+      "attachment": "ceiling",
+      "label": "oak hanging 0 false",
+      "modelScale": 1,
+      "state": 5739,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "oak hanging 0 true",
+      "modelScale": 1,
+      "state": 5707,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "attachment": "ceiling",
+      "label": "oak hanging 4 false",
+      "modelScale": 1,
+      "state": 5747,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "oak hanging 4 true",
+      "modelScale": 1,
+      "state": 5715,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "attachment": "ceiling",
+      "label": "oak hanging 8 false",
+      "modelScale": 1,
+      "state": 5755,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "oak hanging 8 true",
+      "modelScale": 1,
+      "state": 5723,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "attachment": "ceiling",
+      "label": "oak hanging 12 false",
+      "modelScale": 1,
+      "state": 5763,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "oak hanging 12 true",
+      "modelScale": 1,
+      "state": 5731,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "label": "oak wall_sign north",
+      "modelScale": 0.6666667,
+      "state": 5627,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.1875,
+        0.9375,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "oak wall_hanging_sign north",
+      "modelScale": 1,
+      "state": 6475,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "oak wall_sign south",
+      "modelScale": 0.6666667,
+      "state": 5629,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.1875,
+        0.0625,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "oak wall_hanging_sign south",
+      "modelScale": 1,
+      "state": 6477,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "oak wall_sign east",
+      "modelScale": 0.6666667,
+      "state": 5633,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.06250003,
+        0.18750003,
+        0.5,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "oak wall_hanging_sign east",
+      "modelScale": 1,
+      "state": 6481,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "oak wall_sign west",
+      "modelScale": 0.6666667,
+      "state": 5631,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.9375,
+        0.18750003,
+        0.5,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "oak wall_hanging_sign west",
+      "modelScale": 1,
+      "state": 6479,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "oak standing 3",
+      "modelScale": 0.6666667,
+      "state": 5141,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        0.3826834,
+        0,
+        0.9238795,
+        0,
+        0,
+        1,
+        0,
+        0,
+        -0.9238795,
+        0,
+        0.3826834,
+        0,
+        0.5,
+        0.5,
+        0.5,
+        1
+      ]
+    },
+    {
+      "attachment": "ceiling",
+      "label": "mangrove hanging 0 false",
+      "modelScale": 1,
+      "state": 6379,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "mangrove hanging 0 true",
+      "modelScale": 1,
+      "state": 6347,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "attachment": "ceiling",
+      "label": "mangrove hanging 4 false",
+      "modelScale": 1,
+      "state": 6387,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "mangrove hanging 4 true",
+      "modelScale": 1,
+      "state": 6355,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "attachment": "ceiling",
+      "label": "mangrove hanging 8 false",
+      "modelScale": 1,
+      "state": 6395,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "mangrove hanging 8 true",
+      "modelScale": 1,
+      "state": 6363,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "attachment": "ceiling",
+      "label": "mangrove hanging 12 false",
+      "modelScale": 1,
+      "state": 6403,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "mangrove hanging 12 true",
+      "modelScale": 1,
+      "state": 6371,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "label": "mangrove wall_sign north",
+      "modelScale": 0.6666667,
+      "state": 5691,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.1875,
+        0.9375,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "mangrove wall_hanging_sign north",
+      "modelScale": 1,
+      "state": 6539,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "mangrove wall_sign south",
+      "modelScale": 0.6666667,
+      "state": 5693,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.1875,
+        0.0625,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "mangrove wall_hanging_sign south",
+      "modelScale": 1,
+      "state": 6541,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "mangrove wall_sign east",
+      "modelScale": 0.6666667,
+      "state": 5697,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.06250003,
+        0.18750003,
+        0.5,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "mangrove wall_hanging_sign east",
+      "modelScale": 1,
+      "state": 6545,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "mangrove wall_sign west",
+      "modelScale": 0.6666667,
+      "state": 5695,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.9375,
+        0.18750003,
+        0.5,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "mangrove wall_hanging_sign west",
+      "modelScale": 1,
+      "state": 6543,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "mangrove standing 3",
+      "modelScale": 0.6666667,
+      "state": 5397,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        0.3826834,
+        0,
+        0.9238795,
+        0,
+        0,
+        1,
+        0,
+        0,
+        -0.9238795,
+        0,
+        0.3826834,
+        0,
+        0.5,
+        0.5,
+        0.5,
+        1
+      ]
+    },
+    {
+      "attachment": "ceiling",
+      "label": "cherry hanging 0 false",
+      "modelScale": 1,
+      "state": 5995,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "cherry hanging 0 true",
+      "modelScale": 1,
+      "state": 5963,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "attachment": "ceiling",
+      "label": "cherry hanging 4 false",
+      "modelScale": 1,
+      "state": 6003,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "cherry hanging 4 true",
+      "modelScale": 1,
+      "state": 5971,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "attachment": "ceiling",
+      "label": "cherry hanging 8 false",
+      "modelScale": 1,
+      "state": 6011,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "cherry hanging 8 true",
+      "modelScale": 1,
+      "state": 5979,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "attachment": "ceiling",
+      "label": "cherry hanging 12 false",
+      "modelScale": 1,
+      "state": 6019,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "cherry hanging 12 true",
+      "modelScale": 1,
+      "state": 5987,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "label": "cherry wall_sign north",
+      "modelScale": 0.6666667,
+      "state": 5659,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.1875,
+        0.9375,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "cherry wall_hanging_sign north",
+      "modelScale": 1,
+      "state": 6507,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "cherry wall_sign south",
+      "modelScale": 0.6666667,
+      "state": 5661,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.1875,
+        0.0625,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "cherry wall_hanging_sign south",
+      "modelScale": 1,
+      "state": 6509,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "cherry wall_sign east",
+      "modelScale": 0.6666667,
+      "state": 5665,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.06250003,
+        0.18750003,
+        0.5,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "cherry wall_hanging_sign east",
+      "modelScale": 1,
+      "state": 6513,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "cherry wall_sign west",
+      "modelScale": 0.6666667,
+      "state": 5663,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.9375,
+        0.18750003,
+        0.5,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "cherry wall_hanging_sign west",
+      "modelScale": 1,
+      "state": 6511,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "cherry standing 3",
+      "modelScale": 0.6666667,
+      "state": 5269,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        0.3826834,
+        0,
+        0.9238795,
+        0,
+        0,
+        1,
+        0,
+        0,
+        -0.9238795,
+        0,
+        0.3826834,
+        0,
+        0.5,
+        0.5,
+        0.5,
+        1
+      ]
+    },
+    {
+      "attachment": "ceiling",
+      "label": "bamboo hanging 0 false",
+      "modelScale": 1,
+      "state": 6443,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "bamboo hanging 0 true",
+      "modelScale": 1,
+      "state": 6411,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "attachment": "ceiling",
+      "label": "bamboo hanging 4 false",
+      "modelScale": 1,
+      "state": 6451,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "bamboo hanging 4 true",
+      "modelScale": 1,
+      "state": 6419,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "attachment": "ceiling",
+      "label": "bamboo hanging 8 false",
+      "modelScale": 1,
+      "state": 6459,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "bamboo hanging 8 true",
+      "modelScale": 1,
+      "state": 6427,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "attachment": "ceiling",
+      "label": "bamboo hanging 12 false",
+      "modelScale": 1,
+      "state": 6467,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "bamboo hanging 12 true",
+      "modelScale": 1,
+      "state": 6435,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "label": "bamboo wall_sign north",
+      "modelScale": 0.6666667,
+      "state": 5699,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.1875,
+        0.9375,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "bamboo wall_hanging_sign north",
+      "modelScale": 1,
+      "state": 6563,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "bamboo wall_sign south",
+      "modelScale": 0.6666667,
+      "state": 5701,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.1875,
+        0.0625,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "bamboo wall_hanging_sign south",
+      "modelScale": 1,
+      "state": 6565,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "bamboo wall_sign east",
+      "modelScale": 0.6666667,
+      "state": 5705,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.06250003,
+        0.18750003,
+        0.5,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "bamboo wall_hanging_sign east",
+      "modelScale": 1,
+      "state": 6569,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "bamboo wall_sign west",
+      "modelScale": 0.6666667,
+      "state": 5703,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.9375,
+        0.18750003,
+        0.5,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "bamboo wall_hanging_sign west",
+      "modelScale": 1,
+      "state": 6567,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "bamboo standing 3",
+      "modelScale": 0.6666667,
+      "state": 5429,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        0.3826834,
+        0,
+        0.9238795,
+        0,
+        0,
+        1,
+        0,
+        0,
+        -0.9238795,
+        0,
+        0.3826834,
+        0,
+        0.5,
+        0.5,
+        0.5,
+        1
+      ]
+    },
+    {
+      "attachment": "ceiling",
+      "label": "pale_oak hanging 0 false",
+      "modelScale": 1,
+      "state": 6187,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "pale_oak hanging 0 true",
+      "modelScale": 1,
+      "state": 6155,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "attachment": "ceiling",
+      "label": "pale_oak hanging 4 false",
+      "modelScale": 1,
+      "state": 6195,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "pale_oak hanging 4 true",
+      "modelScale": 1,
+      "state": 6163,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "attachment": "ceiling",
+      "label": "pale_oak hanging 8 false",
+      "modelScale": 1,
+      "state": 6203,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "pale_oak hanging 8 true",
+      "modelScale": 1,
+      "state": 6171,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "attachment": "ceiling",
+      "label": "pale_oak hanging 12 false",
+      "modelScale": 1,
+      "state": 6211,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": false,
+        "vChains": false
+      }
+    },
+    {
+      "attachment": "ceiling_middle",
+      "label": "pale_oak hanging 12 true",
+      "modelScale": 1,
+      "state": 6179,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": false,
+        "plank": false,
+        "vChains": true
+      }
+    },
+    {
+      "label": "pale_oak wall_sign north",
+      "modelScale": 0.6666667,
+      "state": 5683,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.1875,
+        0.9375,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "pale_oak wall_hanging_sign north",
+      "modelScale": 1,
+      "state": 6531,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        -1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        -1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "pale_oak wall_sign south",
+      "modelScale": 0.6666667,
+      "state": 5685,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.1875,
+        0.0625,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "pale_oak wall_hanging_sign south",
+      "modelScale": 1,
+      "state": 6533,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "pale_oak wall_sign east",
+      "modelScale": 0.6666667,
+      "state": 5689,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.06250003,
+        0.18750003,
+        0.5,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "pale_oak wall_hanging_sign east",
+      "modelScale": 1,
+      "state": 6537,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "pale_oak wall_sign west",
+      "modelScale": 0.6666667,
+      "state": 5687,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.9375,
+        0.18750003,
+        0.5,
+        1
+      ]
+    },
+    {
+      "attachment": "wall",
+      "label": "pale_oak wall_hanging_sign west",
+      "modelScale": 1,
+      "state": 6535,
+      "textOffset": [
+        0,
+        -0.3199999928474426,
+        0.0729999989271164
+      ],
+      "textScale": 0.9,
+      "transform": [
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        0.99999994,
+        0,
+        0,
+        -0.99999994,
+        0,
+        0,
+        0,
+        0.5,
+        0.625,
+        0.5,
+        1
+      ],
+      "visible": {
+        "normalChains": true,
+        "plank": true,
+        "vChains": false
+      }
+    },
+    {
+      "label": "pale_oak standing 3",
+      "modelScale": 0.6666667,
+      "state": 5365,
+      "textOffset": [
+        0,
+        0.3333333432674408,
+        0.046666666865348816
+      ],
+      "textScale": 0.6666667,
+      "transform": [
+        0.3826834,
+        0,
+        0.9238795,
+        0,
+        0,
+        1,
+        0,
+        0,
+        -0.9238795,
+        0,
+        0.3826834,
+        0,
+        0.5,
+        0.5,
+        0.5,
+        1
+      ]
+    }
+  ],
+  "signText": {
+    "color": "red",
+    "has_glowing_text": true,
+    "messages": [
+      {
+        "bold": true,
+        "text": "Zażółć \"test\""
+      },
+      "back",
+      "",
+      ""
+    ]
+  }
+}

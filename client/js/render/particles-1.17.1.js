@@ -27,7 +27,8 @@ export function cavesParticle(system,type,x,y,z,mx=0,my=0,mz=0,data={}){
   q.update=p=>ordinaryTick(system,p,.0004,1);return system.add(q);
  }else if(type==='dust_color_transition'){
   const scale=clamp(Number(data.scale)||1,.01,4),brightness=rand()*.4+.6;
-  const from=[data.red??1,data.green??0,data.blue??0].map(c=>(rand()*.2+.8)*c*brightness),to=[data.toRed??0,data.toGreen??0,data.toBlue??1].map(c=>(rand()*.2+.8)*c*brightness);
+  const rgb=(c,fb)=>c===undefined?fb:[((c>>>16)&255)/255,((c>>>8)&255)/255,(c&255)/255];
+  const from=rgb(data.fromColor,[data.red??1,data.green??0,data.blue??0]).map(c=>(rand()*.2+.8)*c*brightness),to=rgb(data.toColor,[data.toRed??0,data.toGreen??0,data.toBlue??1]).map(c=>(rand()*.2+.8)*c*brightness);
   const q=system.fx(x,y,z,mx,my,mz,{...p,collide:true,scale:(rand()*.5+.5)*2*.75*scale,maxAge:Math.max(1,Math.floor(Math.floor(8/(rand()*.8+.2))*scale))});
   q.mx*=.1;q.my*=.1;q.mz*=.1;q.update=p=>ordinaryTick(system,p,0,.96,true);
   q.colorFn=(p,t)=>{const f=(p.age+t)/(p.maxAge+1);return from.map((c,i)=>c+(to[i]-c)*f);};q.sizeFn=(p,t)=>p.scale*clamp((p.age+t)/p.maxAge*32,0,1);return system.add(q);

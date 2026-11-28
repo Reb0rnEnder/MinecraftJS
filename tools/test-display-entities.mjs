@@ -2,7 +2,7 @@
 // flags, interpolation progress and the transformation/billboard matrices.
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {NATIVE_METADATA} from '../client/js/game/entity-metadata-1.20.6.js';
+import {NATIVE_METADATA} from '../client/js/game/entity-metadata-1.21.11.js';
 import {initDisplay,applyDisplayMeta,tickDisplay,displayProgress,lerpTransformation,transformationMatrix,orientationMatrix,billboardAngles,lerpInt,lerpColor,textStyle} from '../client/js/game/display-entity.js';
 
 const ids=NATIVE_METADATA.block_display,tids=NATIVE_METADATA.text_display;

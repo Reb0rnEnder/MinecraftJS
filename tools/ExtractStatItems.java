@@ -33,7 +33,7 @@ public class ExtractStatItems {
     Object blocks = f(regs, "BLOCK"), items = f(regs, "ITEM");
     Class<?> registry = c("net.minecraft.core.Registry");
     Method getKey = null;
-    Class<?> rl = c("net.minecraft.resources.ResourceLocation");
+    Class<?> rl = c(has("net.minecraft.resources.ResourceLocation") ? "net.minecraft.resources.ResourceLocation" : "net.minecraft.resources.Identifier");
     for (Method x : registry.getMethods()) if (x.getParameterCount() == 1 && x.getParameterTypes()[0] == Object.class && x.getReturnType() == rl && !Modifier.isStatic(x.getModifiers())) { getKey = x; break; }
     Method asItem = m("net.minecraft.world.level.block.Block", "asItem");
     Class<?> blockItem = c("net.minecraft.world.item.BlockItem");
