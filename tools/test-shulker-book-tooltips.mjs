@@ -22,3 +22,12 @@ test('shulker boxes list five stacks by slot, then "and N more..."',{skip:!table
   const lines=items.tooltip(stack(box,`{BlockEntityTag:{LootTable:"minecraft:chests/x",Items:[${entries}]}}`)).map(plain);
   assert.deepEqual(lines.slice(1,8),['???????','Stick x7','Egg x6','Arrow x5','Bread x4','Apple x3','and 2 more...']);
 });
+test('tropical fish buckets name a predefined variant, or the pattern and colors',{skip:!def('tropical_fish_bucket')},()=>{
+  const lines=v=>items.tooltip(stack('tropical_fish_bucket',`{BucketVariantTag:${v}}`)).map(plain).slice(1);
+  assert.deepEqual(lines(1|(1<<8)|(1<<16)|(7<<24)),['Anemone']);
+  assert.deepEqual(lines((1<<8)|(1<<16)|(7<<24)),[translate('entity.minecraft.tropical_fish.type.sunstreak'),'Orange, Gray']);assert.deepEqual(lines(1|(1<<16)|(7<<24)),[translate('entity.minecraft.tropical_fish.type.flopper'),'Orange, Gray']);
+});
+test('banner patterns (1.14+) and disc fragments (1.19+) show their description',{skip:!def('flower_banner_pattern')},()=>{
+  assert.deepEqual(items.tooltip(stack('flower_banner_pattern','{}')).map(plain).slice(1),['Flower Charge']);
+  if(def('disc_fragment_5'))assert.deepEqual(items.tooltip(stack('disc_fragment_5','{}')).map(plain).slice(1),['Music Disc - 5']);
+});
