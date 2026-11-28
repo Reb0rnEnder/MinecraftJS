@@ -44,12 +44,13 @@ const hostPort = (host, port, omitDefault) => {
 // ---------------------------------------------------------------- transports: { write(u8), close(), on('data'|'close') }
 
 // Eaglercraft 26.2 relay: the WebSocket is the TCP connection
-async function openRelay(entry, host, port) {
+async function openRelay(entry, host, port, opts = {}) {
   let base = entry.url.replace(/\/+$/, '');
   if (!/\/minecraft$/.test(base)) base += '/minecraft';
   // The endpoint has already been resolved (including SRV); make the port explicit so the relay
   // cannot fall back to 25565 or resolve the hostname differently from the handshake.
-  let url = base + '?target=' + encodeURIComponent(hostPort(host, port, false));
+  // ...unless our own SRV lookup could not run (DNS-over-HTTPS blocked): then the relay resolves it as before
+  let url = base + '?target=' + encodeURIComponent(hostPort(host, port, !!opts.relayResolvesSrv && !isIp(host) && host !== 'localhost'));
   if (entry.token) url += '&token=' + encodeURIComponent(entry.token);
   let sock;
   try { sock = await platform().openSocket(url); } catch (e) { throw new Error('Could not reach the relay ' + entry.url); }
@@ -63,7 +64,6 @@ async function openRelay(entry, host, port) {
 
 // Wisp: one WebSocket per stream (stream id 1), DATA frames held back while the server's buffer is full
 async function openWisp(entry, host, port) {
-  if (port === 25565 && !isIp(host) && host !== 'localhost') ({ host, port } = await resolveSrv(host, port));
   let sock;
   try { sock = await platform().openSocket(wispUrl(entry.url)); } catch (e) { throw new Error('Could not reach the Wisp server ' + entry.url); }
   const s = new Emitter(true);
@@ -124,15 +124,17 @@ export async function resolveSrv(host, port) {
     'https://dns.google/resolve?name=' + encodeURIComponent('_minecraft._tcp.' + host) + '&type=SRV',
     'https://cloudflare-dns.com/dns-query?ct=application/dns-json&type=SRV&name=' + encodeURIComponent('_minecraft._tcp.' + host),
   ];
+  let answered = false;
   for (const url of urls) {
     try {
       const j = JSON.parse(decodeUtf8(await platform().fetchBytes(url)));
+      answered = true;
       const recs = (j.Answer || []).filter((a) => a.type === 33).map((a) => a.data.split(/\s+/)).map(([pr, w, p, t]) => ({ pr: +pr, w: +w, port: +p, host: t.replace(/\.$/, '') }));
       recs.sort((a, b) => a.pr - b.pr || b.w - a.w);
       if (recs[0]) return { host: recs[0].host, port: recs[0].port };
     } catch (e) { /* try the next resolver, then the plain host */ }
   }
-  return { host, port };
+  return answered ? { host, port } : { host, port, lookupFailed: true };
 }
 
 async function openMinecraftJSRaw(entry, host, port) {
@@ -176,9 +178,9 @@ async function openMinecraftJSRaw(entry, host, port) {
   return opened;
 }
 
-export function openStream(entry, host, port) {
+export function openStream(entry, host, port, opts = {}) {
   if (entry.type === "minecraftjs-raw") return openMinecraftJSRaw(entry, host, port);
-  return entry.type === "wisp" ? openWisp(entry, host, port) : openRelay(entry, host, port);
+  return entry.type === "wisp" ? openWisp(entry, host, port) : openRelay(entry, host, port, opts);
 }
 
 // ---------------------------------------------------------------- Minecraft framing
@@ -289,7 +291,7 @@ export class VanillaSocket extends Emitter {
 
   // onClose(reason) runs before the socket reports its own close
   async _open(host, port, onPacket, onClose) {
-    this.stream = await openStream(this.entry, host, port);
+    this.stream = await openStream(this.entry, host, port, { relayResolvesSrv: !!this.srvLookupFailed });
     if (this.closed) { this.stream.close(); return; }
     this.stream.on('close', (reason) => {
       if (onClose) onClose(reason);
@@ -307,7 +309,8 @@ export class VanillaSocket extends Emitter {
 
   // SRV applies to hostnames on the default port; explicit ports are used as entered.
   async _resolveEndpoint(host, port) {
-    if (port === 25565 && !isIp(host) && host !== 'localhost') return resolveSrv(host, port);
+    this.srvLookupFailed = false;
+    if (port === 25565 && !isIp(host) && host !== 'localhost') { const r = await resolveSrv(host, port); this.srvLookupFailed = !!r.lookupFailed; return r; }
     return { host, port };
   }
 
