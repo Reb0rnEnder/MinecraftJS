@@ -7,6 +7,7 @@ const attributeKey = name => 'attribute.name.' + name.replace(/^minecraft:/, '')
 import { simplify } from '../net/nbt.js';
 import { blocksByName } from '../world/blocks.js';
 import { chatToLegacy } from '../gui/chat.js';
+import { appendHoverText766, trimTooltip766 } from './item-hover-text-1.20.6.js';
 
 // Registry names, never legacy item IDs or metadata variants. See items-1.13.2.md for sources.
 const FOOD_NAMES = new Set(`apple mushroom_stew bread porkchop cooked_porkchop golden_apple enchanted_golden_apple
@@ -88,10 +89,14 @@ export class Items {
   }
 
   // PotionUtils.addPotionTooltip (durationFactor: potions 1, lingering 0.25, tipped arrows 0.125)
-  potionTooltip(item, lines, factor) {
+  // numeric MobEffect id for a resource name
+  effectId(name) { const n=resource(name),hit=Object.entries(ITEM_DATA_766.registries.mob_effect).find(([,v])=>v===n);return hit?Number(hit[0]):undefined; }
+
+  // PotionContents.addPotionTooltip; `list` replaces the item's own effects (ominous bottle, suspicious stew)
+  potionTooltip(item, lines, factor, list = null) {
     const E = this.effects;
     const t = (k, ...a) => this.assets.translate(k, a).trim();
-    const effects = this.potionEffects(item), mods = [];
+    const effects = list ?? this.potionEffects(item), mods = [];
     if (!effects.length) lines.push('§7' + t('effect.none'));
     for (const e of effects) {
       const def = E[e.id];
@@ -170,18 +175,20 @@ export class Items {
     const rarity=this.rarity(item),color={common:'white',uncommon:'yellow',rare:'aqua',epic:'light_purple'}[rarity]||'white';
     const name=c.custom_name??c.item_name??{text:this.displayName(item)},lines=[chatToLegacy(name,{parsed:true,style:{color,...(c.custom_name!==undefined?{italic:true}:{})}})];
     const t=(key,...args)=>this.assets.translate(key,args),registryName=this.name(item.id);
+    // ItemStack.getTooltipLines: a plain filled map shows its id under the name
+    if(!advanced&&c.custom_name===undefined&&registryName==='filled_map'&&c.map_id!=null)lines.push('§7'+t('filled_map.id',c.map_id));
     if(!Object.hasOwn(c,'hide_additional_tooltip')){
       if(POTIONS.has(registryName))this.potionTooltip(item,lines,registryName==='lingering_potion'?.25:registryName==='tipped_arrow'?.125:1);
       if(registryName==='bundle'){const weight=bundleContentWeight(item,this);lines.push('§7'+t('item.minecraft.bundle.fullness',weight,64));lines.bundleTooltip={items:bundleContents(item,this),weight};}
-      const book=c.written_book_content;if(registryName==='written_book'&&book?.author)lines.push('§7'+t('book.byAuthor',book.author));
       if(registryName.startsWith('music_disc_'))lines.push('§7'+t(translationKey('item',registryName)+'.desc'));
       if(registryName==='goat_horn'){const instrument=c.instrument,meta=ITEM_DATA_766.instruments[instrument?.instrumentId];if(meta)lines.push('§7'+t('instrument.'+meta.key.replace(':','.')));}
       if(registryName==='crossbow'&&this.chargedProjectiles(item).length){const projectile=this.chargedProjectiles(item)[0];lines.push(t('item.minecraft.crossbow.projectile')+' ['+this.displayName(projectile)+']');if(advanced&&this.name(projectile.id)==='firework_rocket'){const more=[];this.rocketTooltip(this.component(projectile,'fireworks'),more);lines.push(...more.map(s=>'§7  '+s));}}
       if(registryName==='firework_rocket')this.rocketTooltip(c.fireworks,lines);
-      if(registryName==='filled_map'&&advanced&&!this.maps.has(c.map_id))lines.push('§7'+t('filled_map.unknown'));
+      appendHoverText766(this,item,lines,{advanced,creative});
       if(registryName==='firework_star'&&c.firework_explosion)this.fireworkTooltip(c.firework_explosion,lines);
 
     }
+    lines.push(...trimTooltip766(this,c.trim,t));
     for(const stored of [true,false]){
       const enchant=this.component(item,stored?'stored_enchantments':'enchantments');
       if(enchant&&(enchant.show_in_tooltip??enchant.showInTooltip??enchant.showTooltip??true))for(const e of this.enchantments(item,stored))lines.push('§7'+this.enchantmentName(e.id,e.lvl));
@@ -192,6 +199,8 @@ export class Items {
     if(c.unbreakable!==undefined&&(typeof c.unbreakable==='boolean'?c.unbreakable:c.unbreakable.show_in_tooltip??c.unbreakable.showTooltip??true))lines.push('§9'+t('item.unbreakable'));
     appendAdventureTooltips(this,item,lines);
     if(advanced){if(this.isDamageable(item)&&this.damage(item)>0)lines.push(t('item.durability',this.maxDurability(item)-this.damage(item),this.maxDurability(item)));lines.push('§8'+resource(registryName));const n=Object.keys(c).length;if(n)lines.push('§8'+t('item.components',n));}
+    // ItemStack.getTooltipLines: items outside the level's enabled features are marked disabled
+    {const player=typeof this.player==='function'?this.player():this.player,need=this.def(item.id)?.requiredFeatures,enabled=this.game?.enabledFeatures;if(player&&need?.length&&enabled&&!need.every(f=>enabled.has(f)))lines.push('§c'+t('item.disabled'));}
     return lines;
   }
 
