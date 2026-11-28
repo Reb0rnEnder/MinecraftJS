@@ -6,9 +6,18 @@ import {parseDialogRegistry263} from './dialog-26.3.js';
 
 // Anonymous network NBT (tag id only) to plain JS. Longs stay BigInt so no precision is lost.
 export function nbtToJs(node){
-  if(!node)return null;
+  if(node===null||node===undefined)return null;
+  // Known-pack registry values are plain JSON (the server omits their NBT payload); accept
+  // both that form and anonymous network NBT nodes here.
+  if(typeof node!=='object')return node;
+  if(node.t===undefined){
+    if(Array.isArray(node))return node.map(nbtToJs);
+    return Object.fromEntries(Object.entries(node).map(([key,child])=>[key,nbtToJs(child)]));
+  }
   switch(node.t){
-    case 1:return node.v!==0;
+    // NBT byte is signed and is used for both booleans and small numbers (dimension min_y);
+    // keep the number, callers that want a boolean coerce it with !!.
+    case 1:return node.v;
     case 2:case 3:case 5:case 6:return node.v;
     case 4:return node.v;
     case 7:return Array.from(node.v);

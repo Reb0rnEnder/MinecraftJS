@@ -244,11 +244,24 @@ export class Configuration26_3{
       case 'store_cookie':this.cookies.set(p.key,p.value.slice());break;
       case 'registry_data':{
         const seen=new Set();
+        // The server may omit payloads covered by a negotiated known pack. The 26.3 core
+        // known pack carries the four dimension types, and its keys are stored without
+        // the minecraft: namespace; normalize both sides before matching.
+        const selectedCore=this.selectedKnownPacks.some(p=>p.namespace==='minecraft'&&p.id==='core'&&p.version==='26.3');
+        const cached=selectedCore?KNOWN_PACK_26_3.registries?.[p.registry]:null;
+        const canonical=key=>key.includes(':')?key:'minecraft:'+key;
+        const cachedByKey=cached?new Map(cached.map(entry=>[canonical(entry.key),entry.value])):null;
         this.registries.set(p.registry,p.entries.map((entry,id)=>{
           if(seen.has(entry.key))throw Error('Duplicate registry key '+p.registry+' / '+entry.key);
           seen.add(entry.key);
-          if(entry.value===null)this.elidedRegistryValues++;
-          return {...entry,id};
+          let value=entry.value;
+          if(value===null){
+            const known=cachedByKey?.get(canonical(entry.key));
+            if(known!==undefined){value=known;this.cachedRegistryValues=(this.cachedRegistryValues||0)+1;}
+            else if(p.registry==='minecraft:dimension_type')throw Error('Omitted dimension type payload for '+entry.key+' without a matching known-pack value');
+            else this.elidedRegistryValues++;
+          }
+          return {...entry,value,id};
         }));
         break;
       }

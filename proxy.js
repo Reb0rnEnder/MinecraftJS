@@ -303,6 +303,19 @@ async function resolveServer(host, port) {
   return {...await resolveTarget(target.host,target.port,options),serverHost:target.host};
 }
 
+// 1.20.2 and newer Login Start carries the profile UUID after the name. The proxy performs
+// the login itself, so it must supply one (the authenticated UUID when available, otherwise
+// the vanilla offline UUID derived from the name).
+function loginStartUuid(username, auth) {
+  if (auth && /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i.test(auth.uuid || '')) {
+    return Buffer.from(auth.uuid.replace(/-/g, ''), 'hex');
+  }
+  const digest = crypto.createHash('md5').update('OfflinePlayer:' + username, 'utf8').digest();
+  digest[6] = (digest[6] & 0x0f) | 0x30;
+  digest[8] = (digest[8] & 0x3f) | 0x80;
+  return digest;
+}
+
 // protocol: the client's game protocol (762 = 1.19.4)
 function handshake(host, port, nextState, protocol = 762) {
   return Buffer.concat([
@@ -465,7 +478,8 @@ wss.on('connection', (ws) => {
         mc.setNoDelay(true);
         sendJson({ type: 'status', key: 'connect.authorizing', message: 'Logging in...' });
         writeMc(frame(handshake(target.serverHost, target.port, 2, protocol), -1));
-        writeMc(frame(Buffer.concat([writeVarInt(0x00), mcString(username), ...(protocol===762?[Buffer.from([0])]:[])]), -1));
+        const profileUuid = protocol >= 764 ? loginStartUuid(username, auth) : protocol === 762 ? Buffer.from([0]) : Buffer.alloc(0);
+        writeMc(frame(Buffer.concat([writeVarInt(0x00), mcString(username), profileUuid]), -1));
         state = 'login';
       });
 

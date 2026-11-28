@@ -106,6 +106,8 @@ export class Connection {
         this.emit('configuration_complete', configuration);
       });
       sock.on('transfer', (packet) => this.emit('transfer', packet));
+      sock.on('resource_pack', (packet) => this.emit('resource_pack', packet));
+      sock.on('resource_pack_remove', (packet) => this.emit('resource_pack_remove', packet));
       sock.on('play', (packet) => {
         this.packetsIn++;
         const adapted = adaptPlay26_3(packet, this.joinContext);

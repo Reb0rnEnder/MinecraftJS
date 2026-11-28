@@ -34,7 +34,7 @@ class Emitter {
 }
 
 const randomBytes = (n) => { const b = new Uint8Array(n); crypto.getRandomValues(b); return b; };
-const isIp = (h) => /^\d{1,3}(\.\d{1,3}){3}$/.test(h) || h.includes(':');
+export const isIp = (h) => /^\d{1,3}(\.\d{1,3}){3}$/.test(h) || h.includes(':');
 const hostPort = (host, port, omitDefault) => {
   const h = host.includes(':') ? '[' + host + ']' : host;
   return omitDefault && port === 25565 ? h : h + ':' + port;
@@ -114,14 +114,22 @@ async function openWisp(entry, host, port) {
   return s;
 }
 
-// _minecraft._tcp SRV record over DNS-over-HTTPS (Wisp servers only resolve plain hostnames)
-async function resolveSrv(host, port) {
-  try {
-    const j = JSON.parse(decodeUtf8(await platform().fetchBytes('https://cloudflare-dns.com/dns-query?ct=application/dns-json&type=SRV&name=_minecraft._tcp.' + encodeURIComponent(host))));
-    const recs = (j.Answer || []).filter((a) => a.type === 33).map((a) => a.data.split(/\s+/)).map(([pr, w, p, t]) => ({ pr: +pr, w: +w, port: +p, host: t.replace(/\.$/, '') }));
-    recs.sort((a, b) => a.pr - b.pr || b.w - a.w);
-    if (recs[0]) return { host: recs[0].host, port: recs[0].port };
-  } catch (e) { /* no record or no DNS-over-HTTPS: the plain host */ }
+// _minecraft._tcp SRV record over DNS-over-HTTPS (relays and the 26.3 raw bridge resolve plain hostnames)
+export async function resolveSrv(host, port) {
+  // Google's JSON endpoint sends CORS headers, so it works from a browser; Cloudflare's
+  // DNS-over-HTTPS endpoint is kept as a fallback (it is used by non-browser callers).
+  const urls = [
+    'https://dns.google/resolve?name=' + encodeURIComponent('_minecraft._tcp.' + host) + '&type=SRV',
+    'https://cloudflare-dns.com/dns-query?ct=application/dns-json&type=SRV&name=' + encodeURIComponent('_minecraft._tcp.' + host),
+  ];
+  for (const url of urls) {
+    try {
+      const j = JSON.parse(decodeUtf8(await platform().fetchBytes(url)));
+      const recs = (j.Answer || []).filter((a) => a.type === 33).map((a) => a.data.split(/\s+/)).map(([pr, w, p, t]) => ({ pr: +pr, w: +w, port: +p, host: t.replace(/\.$/, '') }));
+      recs.sort((a, b) => a.pr - b.pr || b.w - a.w);
+      if (recs[0]) return { host: recs[0].host, port: recs[0].port };
+    } catch (e) { /* try the next resolver, then the plain host */ }
+  }
   return { host, port };
 }
 

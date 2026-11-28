@@ -751,6 +751,17 @@ export class Game {
       // ClientConfigurationPacketListener: minecraft:brand is the server brand shown by F3
       if (packet.name === 'custom_payload') this.on_custom_payload(packet);
     });
+    // 26.3 configuration sends its resource-pack push/pop as its own packets; route them
+    // through the same repository (prompt, cached download, SHA-1 check) as 1.20.6.
+    conn.on('resource_pack', packet => {
+      if (this.conn !== conn) return;
+      this.serverPacks.handle(packet.url, packet.hash, status => {
+        if (this.conn === conn) conn.ws?.sendResourcePackStatus?.(packet.uuid, status);
+      }, !!packet.forced, packet.prompt == null ? null : JSON.stringify(packet.prompt));
+    });
+    conn.on('resource_pack_remove', packet => {
+      if (this.conn === conn && !packet.uuid) this.serverPacks.clear();
+    });
     try {
       await conn.connect(host, port, username, auth, transfer);
     } catch (e) {

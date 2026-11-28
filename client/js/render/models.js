@@ -68,9 +68,12 @@ export class ModelStore {
       if (j.gui_light) guiLight = j.gui_light;
       if (j.display) display = Object.assign({}, display, j.display);
     }
+    // 26.3 model textures may be either a string or a {sprite, force_translucent} object.
+    const textureName = (t) => typeof t === 'string' ? t : t && typeof t === 'object' ? t.sprite : null;
     const resolveTex = (t) => {
+      t = textureName(t);
       let g = 0;
-      while (t && t.startsWith('#') && g++ < 16) t = textures[t.slice(1)];
+      while (t && t.startsWith('#') && g++ < 16) t = textureName(textures[t.slice(1)]);
       return resourceName(t) || null;
     };
     // item model overrides (1.9+) belong to the model file itself, not its parents
