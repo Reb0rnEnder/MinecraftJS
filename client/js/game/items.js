@@ -40,6 +40,10 @@ const EGG_ADDITIONS = {
   tropical_fish: [15690005, 16775663], turtle: [15198183, 44975],
 };
 
+// TropicalFish patterns by size and index, and COMMON_VARIANTS (pattern, base color, pattern color)
+const FISH_PATTERNS = [['kob', 'sunstreak', 'snooper', 'dasher', 'brinely', 'spotty'], ['flopper', 'stripey', 'glitter', 'blockfish', 'betty', 'clayfish']];
+const FISH_COMMON = 'stripey,orange,gray;flopper,gray,gray;flopper,gray,blue;clayfish,white,gray;sunstreak,blue,gray;kob,orange,white;spotty,pink,light_blue;blockfish,purple,yellow;clayfish,white,red;spotty,white,yellow;glitter,white,gray;clayfish,white,orange;dasher,cyan,pink;brinely,lime,light_blue;betty,red,white;snooper,gray,red;blockfish,red,white;flopper,white,yellow;kob,red,white;sunstreak,gray,white;dasher,cyan,yellow;flopper,yellow,yellow'.split(';');
+const DYE_NAMES = ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'light_gray', 'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black'];
 export class Items {
   constructor(assets) {
     this.assets = assets;
@@ -259,6 +263,17 @@ export class Items {
     if (total - shown > 0) lines.push('§o' + this.assets.translate('container.shulkerBox.more', [total - shown]));
   }
 
+  // MobBucketItem (tropical fish): a predefined variant's name, else the pattern and its colors, italic gray
+  fishBucketTooltip(item, lines) {
+    const packed = this.nbt(item)?.BucketVariantTag;
+    if (!Number.isInteger(packed)) return;
+    const t = (k) => this.assets.translate(k), size = packed & 0xff, index = (packed >> 8) & 0xff, base = DYE_NAMES[(packed >> 16) & 0xff] ?? 'white', over = DYE_NAMES[(packed >>> 24) & 0xff] ?? 'white';
+    const pattern = (FISH_PATTERNS[size] || FISH_PATTERNS[0])[index] ?? 'kob', common = FISH_COMMON.indexOf([pattern, base, over].join(','));
+    if (common !== -1) { lines.push('§7§o' + t('entity.minecraft.tropical_fish.predefined.' + common)); return; }
+    lines.push('§7§o' + t('entity.minecraft.tropical_fish.type.' + pattern));
+    lines.push('§7§o' + t('color.minecraft.' + base) + (base !== over ? ', ' + t('color.minecraft.' + over) : ''));
+  }
+
   tooltip(item, advanced = false) {
     const lines = [];
     let name = this.displayName(item);
@@ -278,6 +293,9 @@ export class Items {
     // WrittenBookItem.appendHoverText: any tag shows the author (when set) and the generation
     if (tag && registryName === 'written_book') { if (tag.author) lines.push('§7' + t('book.byAuthor', tag.author)); lines.push('§7' + t('book.generation.' + (Number(tag.generation) | 0))); }
     if (/(^|_)shulker_box$/.test(this.name(item.id))) this.shulkerTooltip(item, lines);
+    if (this.name(item.id) === 'tropical_fish_bucket') this.fishBucketTooltip(item, lines);
+    // BannerPatternItem: the description name in gray
+    if (/_banner_pattern$/.test(this.name(item.id))) lines.push('§7' + this.assets.translate('item.minecraft.' + this.name(item.id) + '.desc'));
     if(registryName==='bundle'){const weight=bundleContentWeight(item,this);lines.push('§7'+t('item.minecraft.bundle.fullness',weight,64));lines.bundleTooltip={items:bundleContents(item,this),weight};}
     if (registryName.startsWith('music_disc_')) lines.push('§7' + t(translationKey('item', registryName) + '.desc'));
     if (!(tooltipHideFlags(item) & 1)) for (const e of this.enchantments(item)) lines.push('§7' + this.enchantmentName(e.id, e.lvl));
