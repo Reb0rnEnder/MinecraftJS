@@ -20,7 +20,7 @@
 //   files: persistent binary store  -> async put(name, bytes), get(name), list(prefix) -> [names], delete(name)
 //   pickFiles({ accept, multiple }) -> Promise<[{ name, bytes }]>
 //   saveFile(name, bytes, mime)
-//   openUrl(url)
+//   openUrl(url) / quit()               quit closes the hosting tab/window when allowed
 //   fetchBytes(path) / fetchText(path) / fetchJson(path)     assets served next to the client
 //   postJson(url, body) -> Promise<{ status, json }>        requests to the proxy (e.g. account sign in)
 //   probe(url) -> Promise<true>             optional: rejects when an http(s) URL does not answer (reachability only)
