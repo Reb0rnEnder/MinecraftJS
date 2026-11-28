@@ -1,10 +1,11 @@
 import { TAG } from './nbt.js';
 // Typed SNBT for chat hover payloads. Kept separate from JSON chat parsing.
-export function parseSnbt(text,{indexedLists=true,singleQuotes=true,nativeNumbers=false}={}) {
+// partial: TagParser.readValue from `from`, returning { value, end } (unquoted strings use the native [0-9A-Za-z_.+-])
+export function parseSnbt(text,{indexedLists=true,singleQuotes=true,nativeNumbers=false,partial=false,from=0}={}) {
   if(typeof text!=='string'||text.length>262144)throw new Error('Invalid SNBT');
-  let i=0;const skip=()=>{while(/\s/.test(text[i]||'')&&i<text.length)i++;};
+  let i=from;const skip=()=>{while(/\s/.test(text[i]||'')&&i<text.length)i++;};
   const quoted=()=>{const quote=text[i++];if(quote==="'"&&!singleQuotes)throw new Error('Single quotes not supported');let out='';while(i<text.length){let c=text[i++];if(c===quote)return out;if(c==='\\'){c=text[i++];if(c!==quote&&c!=='\\')throw new Error('Invalid escape');}out+=c;}throw new Error('Unclosed string');};
-  const token=()=>{const start=i;while(i<text.length&&!/[\s,\]}]/.test(text[i]))i++;if(i===start)throw new Error('Expected value');return text.slice(start,i);};
+  const token=()=>{const start=i;while(i<text.length&&(partial?/[0-9A-Za-z_.+-]/.test(text[i]):!/[\s,\]}]/.test(text[i])))i++;if(i===start)throw new Error('Expected value');return text.slice(start,i);};
   const number=s=>{
     if(nativeNumbers){
       const string=()=>({t:TAG.STRING,v:s});
@@ -45,5 +46,5 @@ export function parseSnbt(text,{indexedLists=true,singleQuotes=true,nativeNumber
     }
     const s=token();if(s==='true'||s==='false')return {t:1,v:s==='true'?1:0};return number(s);
   };
-  const result=value(0);skip();if(i!==text.length)throw new Error('Trailing SNBT');return result;
+  const result=value(0);if(partial)return {value:result,end:i};skip();if(i!==text.length)throw new Error('Trailing SNBT');return result;
 }

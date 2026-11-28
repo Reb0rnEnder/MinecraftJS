@@ -1,4 +1,5 @@
 import {COMMAND_ARGUMENT_VALUES} from './command-arguments-1.19.4.js';
+import {parseItemStack,parseItemPredicate} from './command-items-1.20.6.js';
 import {registryEntries} from '../net/registry-codec.js';
 import {simplify} from '../net/nbt.js';
 import {PROTOCOL_VERSION} from '../net/packets.js';
@@ -182,6 +183,9 @@ export class CommandTree {
       }
     }
     if(parser==='minecraft:swizzle'&&(!/^[xyz]+$/.test(value)||new Set(value).size!==value.length))return fail(start,'arguments.swizzle.invalid');
+    // 1.20.5 ItemParser / ItemPredicateArgument: item components in [...], no NBT
+    if(parser==='minecraft:item_stack')return parseItemStack(text,start,{items:this.registry('items')});
+    if(parser==='minecraft:item_predicate')return parseItemPredicate(text,start,{items:this.registry('items'),itemTags:this.game.tags?.names?this.game.tags.names('items'):null});
     const kind=(['minecraft:resource','minecraft:resource_or_tag','minecraft:resource_key','minecraft:resource_or_tag_key'].includes(parser)?RESOURCE_KINDS[p.registry]:null)||{ 'minecraft:block_state':'blocks','minecraft:block_predicate':'blocks','minecraft:item_stack':'items','minecraft:item_predicate':'items','minecraft:entity_summon':'entities','minecraft:mob_effect':'effects','minecraft:item_enchantment':'enchantments'}[parser];
     if(kind) {
       const nbt=value.indexOf('{');if(nbt>=0){try{if(nativeSnbt(value.slice(nbt)).t!==10)return fail(start);}catch{return fail(start);}}
