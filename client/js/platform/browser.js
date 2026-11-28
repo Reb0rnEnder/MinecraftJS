@@ -319,6 +319,13 @@ export class BrowserPlatform extends Emitter {
 
   openUrl(url) { window.open(url, '_blank', 'noopener'); }
 
+  // TitleScreen Quit Game / Close Game. Browsers only allow scripts to close a tab that
+  // the script opened; try the normal path, then the opener-less one used by embedded builds.
+  quit() {
+    try { window.close(); } catch (e) { /* not script-opened */ }
+    setTimeout(() => { try { window.open('', '_self', '')?.close(); } catch (e) { /* still blocked */ } }, 30);
+  }
+
   async fetchBytes(path) {
     const r = await fetch(path);
     if (!r.ok) return null;
