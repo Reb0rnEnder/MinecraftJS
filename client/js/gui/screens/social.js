@@ -1,5 +1,5 @@
 import {ConfirmLinkScreen}from'./chat.js';
-import {Screen}from'./manager.js';import {Button,TextField}from'../widgets.js';import {tr}from'../i18n.js';import {platform}from'../../platform/platform.js';
+import {Screen}from'./manager.js';import {ReportPlayerScreen,draftReportHandled}from'./reporting.js';import {Button,TextField}from'../widgets.js';import {tr}from'../i18n.js';import {platform}from'../../platform/platform.js';
 // Native 1.20.6 SocialInteractionsScreen: title header and Done footer, the social_interactions/background panel,
 // a bordered search box, All/Hidden/Blocked tabs and a ContainerObjectSelectionList of 36-pixel player rows.
 const ROW_W=220,ROW_H=36,TOOLTIP_DELAY=500;
@@ -27,15 +27,23 @@ export class SocialInteractionsScreen extends Screen {
   const hidden=g.hiddenPlayers,blocked=g.blockedPlayers||new Set(),online=[...g.scoreboard.players.keys()];
   const isBlocked=uuid=>!!(g.socialBlocking?.isBlocked(uuid)||blocked.has(uuid));
   const uuids=this.page==='all'?online:this.page==='hidden'?[...hidden].filter(id=>g.scoreboard.players.has(id)):online.filter(isBlocked);
-  const rows=new Map(uuids.map(uuid=>[uuid,{uuid,name:g.socialNames.get(uuid)||uuid,player:g.scoreboard.players.get(uuid),hidden:hidden.has(uuid),blocked:isBlocked(uuid),recent:false}]));
-  const logged=new Map();for(let i=(g.chatLog||[]).length-1;i>=0;i--){const m=g.chatLog[i];if(!logged.has(m.uuid))logged.set(m.uuid,m.name);}
+  const rows=new Map(uuids.map(uuid=>[uuid,{uuid,name:g.socialNames.get(uuid)||uuid,player:g.scoreboard.players.get(uuid),hidden:hidden.has(uuid),blocked:isBlocked(uuid),recent:false,chatReportable:g.chatVerifier?.sessionId?.(uuid)!=null}]));
+  // collectProfilesFromChatLog: senders of signed messages, newest first
+  const logged=new Map(),log=g.reporting?.chatLog;if(log)for(let i=log.end();i>=log.start();i--){const m=log.lookup(i);if(m?.type==='player'&&m.message.signature&&!logged.has(m.profile.uuid))logged.set(m.profile.uuid,m.profile.name);}
   for(const [uuid,name]of logged){
    let row=rows.get(uuid);
-   if(!row&&this.page==='all'){row={uuid,name:name||g.socialNames.get(uuid)||uuid,player:undefined,hidden:hidden.has(uuid),blocked:isBlocked(uuid),recent:false};rows.set(uuid,row);}
+   if(!row&&this.page==='all'){row={uuid,name:name||g.socialNames.get(uuid)||uuid,player:undefined,hidden:hidden.has(uuid),blocked:isBlocked(uuid),recent:false,chatReportable:true};rows.set(uuid,row);}
    if(row)row.recent=true;
   }
   const query=this.search.text.toLowerCase();
   return [...rows.values()].filter(e=>e.name.toLowerCase().includes(query)).sort((a,b)=>{const rank=e=>e.uuid===g.playerUuid?0:String(e.uuid).replace(/-/g,'')[12]==='2'?4:e.recent?2:3,ar=rank(a),br=rank(b);if(ar!==br)return ar-br;const valid=e=>/^[a-z0-9_]/i.test(e.name)?0:1;if(valid(a)!==valid(b))return valid(a)-valid(b);const an=a.name.toLowerCase(),bn=b.name.toLowerCase();return an<bn?-1:an>bn?1:0;});
+ }
+ get reportingEnabled(){return this.game.accounts?.active?.()?.type==='microsoft'&&!!this.game.reporting;}
+ report(entry){
+  if(!this.reportingEnabled)return;
+  const g=this.game;g.sound.playUi('ui.button.click');
+  const player={uuid:entry.uuid,name:entry.name,chatReportable:!!entry.chatReportable,hasRecentMessages:!!entry.recent,skin:{player:entry.player||{uuid:entry.uuid,name:entry.name},url:g.entityRenderer?.skinUrl?.(entry.player||{uuid:entry.uuid,name:entry.name})??null}};
+  draftReportHandled(g,this,()=>g.screens.open(new ReportPlayerScreen(g,this,player)));
  }
  hide(entry){const g=this.game;if(entry.hidden)g.hiddenPlayers.delete(entry.uuid);else g.hiddenPlayers.add(entry.uuid);g.sound.playUi('ui.button.click');g.hud.addChat(tr(entry.hidden?'gui.socialInteractions.shown_in_chat':'gui.socialInteractions.hidden_in_chat',entry.name),null,true);}
  maxScroll(n){return Math.max(0,n*ROW_H-(this.bottom-this.listTop-4));}
@@ -60,9 +68,13 @@ export class SocialInteractionsScreen extends Screen {
    if(e.uuid!==this.game.playerUuid&&!e.blocked){
     const by=y+Math.floor((h-20)/2),hx=x+(ROW_W-20-4)-20-4,rx=x+ROW_W-20-4,over=(bx)=>inList&&mx>=bx&&mx<bx+20&&my>=by&&my<by+20;
     gui.sprite('social_interactions/'+(e.hidden?'unmute':'mute')+'_button'+(over(hx)?'_highlighted':''),hx,by,20,20);this.rows.push({entry:e,x:hx,y:by});
-    // Reporting needs a signed Microsoft session, which this client does not have: the native disabled state.
-    gui.sprite('social_interactions/report_button_disabled',rx,by,20,20);
-    if(over(rx))tip=['report',tr('gui.socialInteractions.tooltip.report.disabled')];
+    // PlayerEntry report button: enabled with a Microsoft session (UserApiService.canSendReports), a draft icon
+    // when a draft report for this player exists
+    const enabled=this.reportingEnabled;
+    gui.sprite('social_interactions/report_button'+(!enabled?'_disabled':over(rx)?'_highlighted':''),rx,by,20,20);
+    if(this.game.reporting?.hasDraftFor(e.uuid))gui.sprite('icon/draft_report',rx+5,by+1,15,15);
+    this.rows.push({entry:e,x:rx,y:by,report:true});
+    if(over(rx))tip=['report'+e.uuid,enabled?tr('gui.socialInteractions.tooltip.report'):tr('gui.socialInteractions.tooltip.report.disabled')];
     if(over(hx))tip=[e.uuid+(e.hidden?'show':'hide'),tr(e.hidden?'gui.socialInteractions.tooltip.show':'gui.socialInteractions.tooltip.hide',e.name)];
    }
   }
@@ -77,7 +89,7 @@ export class SocialInteractionsScreen extends Screen {
   this.tooltip=tip&&now-this.tipSince>=TOOLTIP_DELAY?tip[1]:null;
  }
  render(gui,mx,my,partial){super.render(gui,mx,my,partial);if(!this.search.focused&&!this.search.text)gui.text('\u00a77\u00a7o'+tr('gui.socialInteractions.search_hint'),this.search.x+4,this.search.y+3,0xffffff,true);if(this.tooltip)gui.tooltip(this.tooltip.split('\n').flatMap(l=>gui.font.wrap(l,170)),mx,my);}
- mouseDown(mx,my,button){if(button===0&&this.scrollbar&&mx>=this.scrollbar.x&&mx<this.scrollbar.x+6&&my>=this.listTop&&my<this.bottom){this.dragY=my;return true;}if(button===0&&my>=this.listTop&&my<this.bottom){const row=this.rows?.find(r=>mx>=r.x&&mx<r.x+20&&my>=r.y&&my<r.y+20);if(row){this.hide(row.entry);return true;}}return super.mouseDown(mx,my,button);}
+ mouseDown(mx,my,button){if(button===0&&this.scrollbar&&mx>=this.scrollbar.x&&mx<this.scrollbar.x+6&&my>=this.listTop&&my<this.bottom){this.dragY=my;return true;}if(button===0&&my>=this.listTop&&my<this.bottom){const row=this.rows?.find(r=>mx>=r.x&&mx<r.x+20&&my>=r.y&&my<r.y+20);if(row){if(row.report)this.report(row.entry);else this.hide(row.entry);return true;}}return super.mouseDown(mx,my,button);}
  mouseUp(mx,my,button){delete this.dragY;super.mouseUp(mx,my,button);}
  mouseMove(mx,my){if(this.dragY===undefined||!this.scrollbar)return;const delta=my-this.dragY;this.dragY=my;const b=this.scrollbar;this.scroll=my<this.listTop?0:my>this.bottom?b.max:Math.max(0,Math.min(b.max,this.scroll+delta*Math.max(1,b.max/(b.height-b.thumb))));}
  wheel(delta){this.scroll+=delta*ROW_H/2;}

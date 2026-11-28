@@ -142,6 +142,9 @@ app.post('/auth/refresh', express.json(), authRoute(async (b) => ({ account: awa
 app.post('/auth/blocklist', express.json(), authRoute(async (b) => ({ blockedProfiles: await msauth.blockedProfiles(b.accessToken) })));
 app.post('/auth/privileges', express.json(), authRoute(async (b) => ({ privileges: await msauth.socialPrivileges(b.accessToken) })));
 app.post('/auth/certificates', express.json(), authRoute(async (b) => ({ certificates: await msauth.certificates(b.accessToken) })));
+app.post('/auth/report', express.json({ limit: '256kb' }), async (req, res) => {
+  try { await msauth.reportAbuse(req.body?.accessToken, req.body?.body); res.json({ ok: true }); } catch (e) { res.status(400).json({ error: e.message, status: e.status }); }
+});
 // Session join for online-mode servers reached through a byte relay (Java relay / Wisp): the client does the
 // protocol and encryption itself, but sessionserver.mojang.com sends no CORS headers
 app.post('/auth/join', express.json(), authRoute(async (b) => {

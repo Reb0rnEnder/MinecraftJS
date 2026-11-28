@@ -277,6 +277,12 @@ export class EntityRenderer {
   }
 
   // Texture (or path) of a player's skin, for GUI drawing (tab list faces)
+  // PlayerSkin.textureUrl: the SKIN url of the profile's textures property, null for default skins
+  skinUrl(p) {
+    try { const value = this._texturesProp(p.uuid); const url = value && JSON.parse(decodeUtf8(decodeBase64(value))).textures?.SKIN?.url; return typeof url === 'string' ? url : null; }
+    catch { return null; }
+  }
+
   skinImage(p) {
     const s = this.skinFor({ uuid: p.uuid });
     return s.texture || s.path;
@@ -2115,6 +2121,41 @@ export class EntityRenderer {
     gui.clearScissor();
     v.root.position.set(...saved.pos); v.yawGroup.rotation.y = saved.yaw;
     if (v.shadow) v.shadow.visible = saved.shadow; if (v.tag) v.tag.visible = saved.tag;
+    return true;
+  }
+
+  // PlayerSkinWidget (skin report): the reported player's model with that player's skin, origin at the widget's
+  // bottom centre, scale height / 2.125, raised 1/16, turned by rotationX around (0, -1.0625, 0) then rotationY
+  drawPlayerSkinPreview(gui, x, y, w, h, rotX, rotY, skin, partial = 0) {
+    const g = this.game, uuid = skin?.player?.uuid;
+    if (!uuid) return false;
+    if (this._skinPreview?.e.uuid !== uuid) {
+      if (this._skinPreview) this._skinPreview = null;
+      const e = g.entities._base(-1002, 0, 0, 0, 0, 0);
+      Object.assign(e, { kind: 'player', entityName: 'player', typeName: 'Player', uuid, name: skin.player.name, width: 0.6, height: 1.8,
+        bodyYaw: 0, prevBodyYaw: 0, headYaw: 0, prevHeadYaw: 0, pitch: 0, prevPitch: 0, equipment: [null, null, null, null, null], offhand: null });
+      const v = this._build(e);
+      if (!v) return false;
+      this.group.remove(v.root); this.visuals.delete(e.id);
+      this._skinPreview = { e, v };
+    }
+    const { e, v } = this._skinPreview;
+    this._renderLiving(e, v, { x: 0, y: 0, z: 0 }, partial);
+    v.root.position.set(0, 0, 0); v.yawGroup.rotation.y = 0;
+    if (v.shadow) v.shadow.visible = false;
+    if (v.tag) v.tag.visible = false;
+    for (const m of v.materials || []) m.params.setLight(15, 15);
+    const f = h / 2.125, k = 1 / (v.model?.modelScale || 1), mm = mat4.create();
+    mat4.translate(mm, mm, x + w / 2, y + h, 100);
+    mat4.scale(mm, mm, f, f, f);
+    mat4.translate(mm, mm, 0, -0.0625 - 1.0625, 0);
+    mat4.rotateX(mm, mm, rotX * D2R);
+    mat4.translate(mm, mm, 0, 1.0625, 0);
+    mat4.rotateY(mm, mm, rotY * D2R);
+    // PlayerSkinWidget.Model: scale(1, 1, -1) on the raw model, whose y runs down from the head
+    mat4.scale(mm, mm, k, k, -k);
+    mat4.rotateZ(mm, mm, Math.PI);
+    gui.drawNode(v.root, mm);
     return true;
   }
 

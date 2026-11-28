@@ -41,6 +41,7 @@ import {SocialBlocking} from './social-blocking.js';
 import { isScoping } from './spyglass.js';
 import {ResourceLoadingScreen} from '../gui/screens/loading.js';
 import {SocialInteractionsScreen} from '../gui/screens/social.js';
+import {ReportingContext,reportEnvironment,loggedPlayerMessage,loggedSystemMessage} from './reporting.js';
 import {GameModeSwitcherScreen} from '../gui/screens/gamemode-switcher.js';
 import {sampleBiomeFog} from '../world/biome-effects.js';
 import {NbtQueries,copyInspect} from './nbt-queries.js';
@@ -694,7 +695,8 @@ export class Game {
   async connect(host, port, username = null, transfer = null) {
     this.disconnect(true);
     this.serverBrand = null;
-    this.chatLog = []; // a new ReportingContext chat log per server
+    // Minecraft.updateReportEnvironment: the reporting context (chat log, draft) is kept while the server is the same
+    {const env=reportEnvironment(host,port);if(!this.reporting?.matches(env))this.reporting=new ReportingContext(env);}
     const attempt=this.connectAttempt=(this.connectAttempt||0)+1;
     this.reset();
     this.serverAddress = { host, port };
@@ -1008,8 +1010,9 @@ export class Game {
     if(p.enforcesSecureChat!==undefined&&!secure)this.hud.addToast(multilineToast(this.gui,'unsecureServer',this.assets.translate('multiplayer.unsecureserver.toast.title'),this.assets.translate('multiplayer.unsecureserver.toast'),10000));
   }
   on_feature_flags(p){this.enabledFeatures=new Set(p.features);}
-  on_system_chat(p){this.on_chat({message:p.content,position:p.isActionBar?2:1});}
-  on_profileless_chat(p){this.on_chat({message:JSON.stringify(decorateChat762(simplify(this.dimensionCodec),p,JSON.parse(p.message))),position:1});}
+  // ChatListener.handleSystemMessage / handleDisguisedChatMessage log shown chat lines as system events
+  on_system_chat(p){this.on_chat({message:p.content,position:p.isActionBar?2:1});if(!p.isActionBar)this.reporting?.chatLog.push(loggedSystemMessage(chatToLegacy(p.content)));}
+  on_profileless_chat(p){const message=JSON.stringify(decorateChat762(simplify(this.dimensionCodec),p,JSON.parse(p.message)));this.on_chat({message,position:1});this.reporting?.chatLog.push(loggedSystemMessage(chatToLegacy(message)));}
   on_player_chat(p){
    const cache=this.chatSignatures||=new MessageSignatureCache762(),previous=(p.previousMessages||[]).map(entry=>cache.resolve(entry));
    if(previous.some(s=>s===null)){this.disconnect(false,tr('multiplayer.disconnect.invalid_packet'));return;}
@@ -1023,9 +1026,9 @@ export class Game {
    if(trust==='secure'&&(!chatComponentString(decorated).includes(p.plainMessage)||p.unsignedChatContent&&hasNonDefaultChatFont(JSON.parse(p.unsignedChatContent))))trust='modified';
    const blocked=this.hiddenPlayers?.has(p.sender)||this.socialBlocking?.isBlocked(p.sender)||this.blockedPlayers?.has(p.sender),shown=p.filterType!==1&&!blocked&&this.settings.chatVisibility===0&&!(this.settings.onlyShowSecureChat&&trust==='unverified');
    if(chatState762.process(p.signature,shown)&&chatState762.offset>64)this.send(chatState762.flush());if(!shown)return;
-   // ChatListener.logPlayerMessage -> ReportingContext.chatLog: shown signed player messages (1024 events)
-   if(p.signature){const log=this.chatLog||=[];log.push({uuid:p.sender,name:this.scoreboard?.players?.get(p.sender)?.name??this.socialNames?.get(p.sender)??null});if(log.length>1024)log.splice(0,log.length-1024);}
    if(p.filterType===2)content=filteredChat762(p.plainMessage,p.filterTypeMask);
+   // ChatListener.logPlayerMessage: every shown player message, with the content the chat shows
+   this.reporting?.chatLog.push(loggedPlayerMessage(p,this.chatVerifier.sessionId(p.sender),previous,{uuid:p.sender,name:this.scoreboard?.players?.get(p.sender)?.name??this.socialNames?.get(p.sender)??String(p.sender)},trust,chatToLegacy(JSON.stringify(content))));
    this.on_chat({sender:p.sender,message:JSON.stringify(p.filterType===2?decorateChat762(codec,p,content):decorated),position:0,trust,originalMessage:p.plainMessage,signature:p.signature});
   }
   on_hide_message(p){

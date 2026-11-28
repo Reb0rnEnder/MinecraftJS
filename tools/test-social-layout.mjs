@@ -10,11 +10,17 @@ test('1.20.6 social layout: header/footer, panel, bordered search and tabs, pres
  s.renderContent(s.gui,-100,-100);assert.ok(calls.sprite.some(a=>a[0]==='social_interactions/background'&&a[1]===84&&a[2]===64&&a[3]===236&&a[4]===175));assert.ok(calls.sprite.some(a=>a[0]==='icon/search'&&a[1]===94&&a[2]===76));
  s.search.text='Al';s.onResize();assert.equal(s.search.text,'Al');
 });
-test('rows: self first, 32-pixel bodies, native name/icon placement and disabled report sprite',()=>{
+test('rows: self first, 32-pixel bodies, native name/icon placement; report disabled without a Microsoft session',()=>{
  const{s,calls}=fixture();assert.deepEqual(s.entries().map(e=>e.name),['Zulu','Alpha']);s.renderContent(s.gui,-100,-100);
  assert.ok(calls.rect.some(a=>a[0]===92&&a[1]===92&&a[2]===312&&a[3]===124));assert.ok(calls.rect.some(a=>a[1]===128&&a[3]===160));
- assert.ok(calls.text.some(a=>a[0]==='Alpha'&&a[1]===124&&a[2]===128+11));assert.deepEqual(s.rows.map(r=>[r.x,r.y]),[[264,134]]);
+ assert.ok(calls.text.some(a=>a[0]==='Alpha'&&a[1]===124&&a[2]===128+11));assert.deepEqual(s.rows.map(r=>[r.x,r.y,!!r.report]),[[264,134,false],[288,134,true]]);
  assert.ok(calls.sprite.some(a=>a[0]==='social_interactions/mute_button'&&a[1]===264));assert.ok(calls.sprite.some(a=>a[0]==='social_interactions/report_button_disabled'&&a[1]===288));
+});
+test('a Microsoft session enables the report button; a draft for the player shows the draft icon',async()=>{
+ const{ReportingContext,ReportBuilder}=await import('../client/js/game/reporting.js');
+ const{s,g,calls}=fixture();g.accounts={active:()=>({type:'microsoft'})};g.reporting=new ReportingContext({address:'x',clientVersion:'1.20.6',locale:'en-US'});
+ g.reporting.setDraft(new ReportBuilder('name','other',{name:'Alpha'}));s.renderContent(s.gui,-100,-100);
+ assert.ok(calls.sprite.some(a=>a[0]==='social_interactions/report_button'&&a[1]===288));assert.ok(calls.sprite.some(a=>a[0]==='icon/draft_report'&&a[1]===293));
 });
 test('hide/show toggles on its icon and the tooltip waits for the native 500 ms delay',()=>{
  const{s,g,calls}=fixture();s.renderContent(s.gui,-100,-100);const row=s.rows[0];

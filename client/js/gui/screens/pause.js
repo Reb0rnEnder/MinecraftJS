@@ -1,4 +1,5 @@
 import {ConfirmLinkScreen} from './chat.js';
+import { draftReportHandled } from './reporting.js';
 // GuiIngameMenu
 import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
@@ -31,7 +32,8 @@ export class PauseScreen extends Screen {
     this.buttons.push(new Button(7, col(1), row(3), 98, 20, tr('menu.playerReporting'), () => {
       import('./social.js').then((m) => g.screens.open(new m.SocialInteractionsScreen(g, this)));
     }));
-    this.buttons.push(new Button(1, col(0), row(4), 204, 20, tr('menu.disconnect'), () => g.disconnect(false)));
+    // PauseScreen: disconnecting first offers to keep editing an unsent report draft
+    this.buttons.push(new Button(1, col(0), row(4), 204, 20, tr('menu.disconnect'), (b) => { b.enabled = false; draftReportHandled(g, this, () => g.disconnect(false), true); }));
   }
 
   renderContent(gui) {
