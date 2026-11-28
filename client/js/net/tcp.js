@@ -3,8 +3,9 @@ import {networkExceptionReason} from './network-errors.js';
 // (handshake, login, compression, encryption) done here in the client:
 //
 //   relay  Eaglercraft 26.2 relay ("minecraft-java-byte-stream-v1"): wss://relay/minecraft?target=host[:port][&token=]
-//          one WebSocket per connection, binary frames in both directions are the TCP stream. Without a port the
-//          relay resolves _minecraft._tcp SRV records itself; the handshake port must match the target port.
+//          one WebSocket per connection, binary frames in both directions are the TCP stream. The client resolves
+//          _minecraft._tcp before opening it and always sends the explicit endpoint, so the handshake port and
+//          the relay's TCP target stay identical for SRV and non-default ports.
 //   wisp   Wisp v1 (Mercury Workshop): one WebSocket multiplexing TCP streams. Frames are
 //          [type u8][stream id u32 LE][payload]: 0x01 CONNECT [0x01 tcp][port u16 LE][host], 0x02 DATA,
 //          0x03 CONTINUE [buffer u32 LE] (flow control: DATA frames the server can still take), 0x04 CLOSE [reason],
@@ -46,8 +47,9 @@ const hostPort = (host, port, omitDefault) => {
 async function openRelay(entry, host, port) {
   let base = entry.url.replace(/\/+$/, '');
   if (!/\/minecraft$/.test(base)) base += '/minecraft';
-  // no explicit default port for hostnames: the relay looks up the SRV record like the vanilla client
-  let url = base + '?target=' + encodeURIComponent(hostPort(host, port, !isIp(host) && host !== 'localhost'));
+  // The endpoint has already been resolved (including SRV); make the port explicit so the relay
+  // cannot fall back to 25565 or resolve the hostname differently from the handshake.
+  let url = base + '?target=' + encodeURIComponent(hostPort(host, port, false));
   if (entry.token) url += '&token=' + encodeURIComponent(entry.token);
   let sock;
   try { sock = await platform().openSocket(url); } catch (e) { throw new Error('Could not reach the relay ' + entry.url); }
@@ -303,11 +305,20 @@ export class VanillaSocket extends Emitter {
     });
   }
 
+  // SRV applies to hostnames on the default port; explicit ports are used as entered.
+  async _resolveEndpoint(host, port) {
+    if (port === 25565 && !isIp(host) && host !== 'localhost') return resolveSrv(host, port);
+    return { host, port };
+  }
+
   async _connect(msg) {
-    const host = msg.host || 'localhost', port = msg.port || 25565, protocol = msg.protocol | 0;
+    let host = msg.host || 'localhost', port = msg.port || 25565;
+    const protocol = msg.protocol | 0;
     this.protocol=protocol;
     this.auth = msg.auth && msg.auth.accessToken && msg.auth.uuid ? msg.auth : null;
     this.state = 'login';
+    ({ host, port } = await this._resolveEndpoint(host, port));
+    if (this.closed) return;
     this._control({ type: 'status', key: 'connect.connecting', message: `Connecting to ${host}:${port}...` });
     try {
       await this._open(host, port, (p) => this._packet(p));
@@ -379,8 +390,10 @@ export class VanillaSocket extends Emitter {
 
   // Server list ping (status state): the same reply the MinecraftJS proxy sends
   async _ping(msg) {
-    const host = msg.host || 'localhost', port = msg.port || 25565;
+    let host = msg.host || 'localhost', port = msg.port || 25565;
     this.state = 'status';
+    ({ host, port } = await this._resolveEndpoint(host, port));
+    if (this.closed) return;
     let sent = 0, status = null;
     const done = (r) => { if (this.state === 'done') return; this.state = 'done'; this._control({ type: 'ping_result', id: msg.id, ...r }); this.close(); };
     try {

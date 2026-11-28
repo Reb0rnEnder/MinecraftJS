@@ -1,6 +1,6 @@
 // Protocol 777 socket: the 26.3 login/configuration states plus the decoded Play layer.
 import {ChunkBatchCalculator} from './chunk-batch.js';
-import {VanillaSocket,isIp,resolveSrv} from './tcp.js';
+import {VanillaSocket} from './tcp.js';
 import {C26_3,Configuration26_3,Reader26_3,decodeLogin26_3} from './configuration-26.3.js';
 import {decodePlayPacket} from './play-codec-26.3.js';
 import {nameUuid} from '../util/uuid-md5.js';
@@ -22,13 +22,11 @@ export class VanillaSocket26_3 extends VanillaSocket{
     this.chunks=0;
   }
 
-  async _connect(msg){
+  _connect(msg){
     this.transferred=!!msg.transferred;
-    let host=msg.host||'localhost',port=msg.port||25565;
-    // Resolve _minecraft._tcp before the bridge connects: the SRV record also carries the
-    // real port, and the handshake must name that target (pksmp.org is served on 25603).
-    if(port===25565&&!isIp(host)&&host!=='localhost')({host,port}=await resolveSrv(host,port));
-    return super._connect({...msg,host,port,protocol:777});
+    // The base socket resolves SRV before opening, so the relay/raw target and the
+    // handshake both use the real non-default port (pksmp.org is served on 25603).
+    return super._connect({...msg,protocol:777});
   }
 
   _loginIntent(){return this.transferred?3:2;}
