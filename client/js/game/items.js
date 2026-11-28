@@ -163,7 +163,8 @@ export class Items {
     lines.push(color + name);
     const t = (k, ...a) => this.assets.translate(k, a);
     if (item.id === 373) this.potionTooltip(item, lines);
-    if (tag && tag.author && item.id === 387) lines.push('§7' + t('book.byAuthor', tag.author));
+    // WrittenBookItem.appendHoverText: any tag shows the author (when set) and the generation
+    if (tag && item.id === 387) { if (tag.author) lines.push('§7' + t('book.byAuthor', tag.author)); lines.push('§7' + t('book.generation.' + (Number(tag.generation) | 0))); }
     const rec = this.names.recordDescription(item.id);
     if (rec) lines.push('§7' + rec);
     if (!(tooltipHideFlags(item)&1)) for (const e of this.enchantments(item)) {
