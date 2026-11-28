@@ -4,15 +4,18 @@ import { ENTITY_REGISTRY_26_3 } from './entity-registry-26.3.js';
 const REGISTRY = ENTITY_REGISTRY_26_3;
 const MOB_CATEGORIES = new Set(['monster','creature','ambient','axolotls','underground_water_creature','water_creature','water_ambient']);
 
+// INTERNAL renderer selectors, never protocol IDs. Only families already selected
+// by the renderer use numbers. A new family keeps its canonical string as e.type.
 export const MOB_FAMILIES = {
   creeper: [50], skeleton: [51], wither_skeleton: [51, { wither: true }], stray: [51, { stray: true }],
-  spider: [52], giant: [53], zombie: [54], husk: [54, { husk: true }], zombie_villager: [54, { villagerZombie: true }],
-  slime: [55], ghast: [56], zombie_pigman: [57], zombified_piglin: [57], enderman: [58], cave_spider: [59], silverfish: [60],
-  blaze: [61], magma_cube: [62], ender_dragon: [63], wither: [64], bat: [65], witch: [66],
-  endermite: [67], guardian: [68], elder_guardian: [68, { elder: true }], shulker: [69],
-  pig: [90], sheep: [91], cow: [92], chicken: [93], squid: [94], wolf: [95],
-  mooshroom: [96], snow_golem: [97], ocelot: [98], iron_golem: [99],
-  horse: [100, { horseType: 0 }], donkey: [100, { horseType: 1 }], mule: [100, { horseType: 2 }],
+  spider: [52], giant: [53], zombie: [54], husk: [54, { husk: true }],
+  zombie_villager: [54, { villagerZombie: true }], slime: [55], ghast: [56], zombie_pigman: [57],
+  enderman: [58], cave_spider: [59], silverfish: [60], blaze: [61], magma_cube: [62],
+  ender_dragon: [63], wither: [64], bat: [65], witch: [66], endermite: [67],
+  guardian: [68], elder_guardian: [68, { elder: true }], shulker: [69],
+  pig: [90], sheep: [91], cow: [92], chicken: [93], squid: [94], wolf: [95], mooshroom: [96],
+  snow_golem: [97], ocelot: [98], iron_golem: [99], horse: [100, { horseType: 0 }],
+  donkey: [100, { horseType: 1 }], mule: [100, { horseType: 2 }],
   zombie_horse: [100, { horseType: 3 }], skeleton_horse: [100, { horseType: 4 }],
   rabbit: [101], villager: [120],
 };
@@ -29,18 +32,34 @@ export const ENTITY_TYPES = REGISTRY.map(([name, width, height, eyeHeight, categ
 }));
 export const ENTITIES_BY_NAME = Object.fromEntries(ENTITY_TYPES.map(e => [e.name, e]));
 
-export const AGEABLE = new Set([
-  ...ANIMALS, 'villager', 'wandering_trader', 'camel_husk', 'zombie_nautilus'
-]);
-
-export const HORSES = new Set(['horse', 'donkey', 'mule', 'zombie_horse', 'skeleton_horse', 'llama', 'trader_llama']);
-export const ZOMBIES = new Set(['zombie', 'husk', 'zombie_villager', 'zombie_pigman', 'zombified_piglin', 'drowned']);
-export const FISH = new Set(['cod', 'salmon', 'pufferfish', 'tropical_fish']);
+// NetHandlerPlayClient crd.a(iz): object ID -> canonical identity and renderer kind.
+const LEGACY_OBJECT_TYPES = Object.fromEntries([
+  [1, 'boat', 'boat'], [2, 'item', 'item'], [3, 'area_effect_cloud', 'area_effect_cloud'],
+  [10, 'minecart', 'minecart'], [50, 'tnt', 'tnt'], [51, 'end_crystal', 'crystal'],
+  [60, 'arrow', 'arrow'], [61, 'snowball', 'projectile'], [62, 'egg', 'projectile'],
+  [63, 'fireball', 'projectile'], [64, 'small_fireball', 'projectile'], [65, 'ender_pearl', 'projectile'],
+  [66, 'wither_skull', 'projectile'], [67, 'shulker_bullet', 'shulker_bullet'], [68, 'llama_spit', 'llama_spit'],
+  [70, 'falling_block', 'falling'], [71, 'item_frame', 'itemframe'], [72, 'eye_of_ender', 'projectile'],
+  [73, 'potion', 'projectile'], [75, 'experience_bottle', 'projectile'], [76, 'firework_rocket', 'projectile'],
+  [77, 'leash_knot', 'leash'], [78, 'armor_stand', 'armorstand'], [79, 'evoker_fangs', 'evoker_fangs'],
+  [90, 'fishing_bobber', 'fishhook'], [91, 'spectral_arrow', 'spectral_arrow'],
+  [93, 'dragon_fireball', 'dragon_fireball'], [94, 'trident', 'trident'],
+].map(([id, name, kind]) => [id, { ...ENTITIES_BY_NAME[name], id, kind }]));
+export const MINECART_NAMES = ['minecart', 'chest_minecart', 'furnace_minecart', 'tnt_minecart', 'spawner_minecart', 'hopper_minecart', 'command_block_minecart'];
 export const ARROWS = new Set(['arrow', 'spectral_arrow', 'trident']);
 export const FIREBALLS = new Set(['fireball', 'small_fireball', 'dragon_fireball', 'wither_skull']);
-export const MINECART_NAMES = ['minecart', 'chest_minecart', 'furnace_minecart', 'tnt_minecart', 'spawner_minecart', 'hopper_minecart', 'command_block_minecart'];
 
-const isBoatName = (name) => name.endsWith('_boat') || name.endsWith('_raft');
+// Painting motive registry amd; retain the existing atlas title spelling at the boundary.
+export const PAINTINGS = [
+  ['kebab', 'Kebab', 16, 16], ['aztec', 'Aztec', 16, 16], ['alban', 'Alban', 16, 16],
+  ['aztec2', 'Aztec2', 16, 16], ['bomb', 'Bomb', 16, 16], ['plant', 'Plant', 16, 16], ['wasteland', 'Wasteland', 16, 16],
+  ['pool', 'Pool', 32, 16], ['courbet', 'Courbet', 32, 16], ['sea', 'Sea', 32, 16], ['sunset', 'Sunset', 32, 16], ['creebet', 'Creebet', 32, 16],
+  ['wanderer', 'Wanderer', 16, 32], ['graham', 'Graham', 16, 32],
+  ['match', 'Match', 32, 32], ['bust', 'Bust', 32, 32], ['stage', 'Stage', 32, 32], ['void', 'Void', 32, 32],
+  ['skull_and_roses', 'SkullAndRoses', 32, 32], ['wither', 'Wither', 32, 32], ['fighters', 'Fighters', 64, 32],
+  ['pointer', 'Pointer', 64, 64], ['pigscene', 'Pigscene', 64, 64], ['burning_skull', 'BurningSkull', 64, 64],
+  ['skeleton', 'Skeleton', 64, 48], ['donkey_kong', 'DonkeyKong', 64, 48],
+];
 
 // Since 1.14 Spawn Entity and Spawn Mob use the same entity registry. 26.3 split the generic
 // potion entity into splash/lingering ids and renamed boats by wood, so map those names before
