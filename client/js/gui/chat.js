@@ -40,9 +40,9 @@ function styleCodes(style) {
 
 function inherit(parent, c) {
   const st = { ...parent };
-  for (const k of ['font','color', 'bold', 'italic', 'underlined', 'strikethrough', 'obfuscated']) {
+  for (const k of ['font','color','insertion', 'bold', 'italic', 'underlined', 'strikethrough', 'obfuscated']) {
     // JSON null, like an absent style property, inherits; false explicitly clears it.
-    if (c[k] !== undefined && c[k] !== null) st[k] = (k === 'color'||k==='font') ? c[k] : c[k] === true || c[k] === 'true';
+    if (c[k] !== undefined && c[k] !== null) st[k] = (k === 'color'||k==='font'||k==='insertion') ? c[k] : c[k] === true || c[k] === 'true';
   }
   return st;
 }

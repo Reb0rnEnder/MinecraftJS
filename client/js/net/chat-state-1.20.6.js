@@ -4,7 +4,9 @@ import { PLAY_SERVERBOUND_766 as OUT } from "./protocol-1.20.6-ids.js";
 const same = (a, b) => a && b && a.length === b.length && a.every((value, index) => value === b[index]);
 
 export class ChatState766 {
-  constructor() {
+  constructor({out = OUT, checksum = false} = {}) {
+    this.out = out;
+    this.checksum = checksum;
     this.reset();
   }
 
@@ -47,17 +49,17 @@ export class ChatState766 {
   flush() {
     const count = this.offset;
     this.offset = 0;
-    return new Writer766().varint(OUT.message_acknowledgement).varint(count).build();
+    return new Writer766().varint(this.out.chat_ack ?? this.out.message_acknowledgement).varint(count).build();
   }
 
   encode(text, { now = Date.now(), salt = 0n, signature = null } = {}) {
     const command = text.startsWith("/");
     const body = (command ? text.slice(1) : text).slice(0, 256);
-    if (command) return new Writer766().varint(OUT.chat_command).string(body).build();
+    if (command) return new Writer766().varint(this.out.chat_command).string(body).build();
 
     const { offset, acknowledged } = this.collect();
     const writer = new Writer766()
-      .varint(OUT.chat_message)
+      .varint(this.out.chat ?? this.out.chat_message)
       .string(body)
       .i64(BigInt(now))
       .i64(BigInt(salt))
@@ -68,6 +70,8 @@ export class ChatState766 {
       }
       writer.raw(signature);
     }
-    return writer.varint(offset).raw(acknowledged).build();
+    writer.varint(offset).raw(acknowledged);
+    if (this.checksum) writer.u8(0); // 26.3 LastSeenMessages.Update checksum; 0 = ignore
+    return writer.build();
   }
 }

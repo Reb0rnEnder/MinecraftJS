@@ -1,0 +1,49 @@
+{
+  "minecraftVersion": "26.3",
+  "protocol": 777,
+  "dataVersion": 5023,
+  "resourcePackFormat": 97,
+  "resourcePackFormatMinor": 1,
+  "dataPackFormat": 121,
+  "dataPackFormatMinor": 0,
+  "javaVersion": 25,
+  "obfuscated": false,
+  "embeddedAssets": true,
+  "baselineVersion": "1.20.6",
+  "baselineCommit": "761970ed38eedd69effb38a1bfedf912cb26e30c",
+  "metadata": {
+    "url": "https://piston-meta.mojang.com/v1/packages/8696584e8d2da5726487597e6c5777480387ec22/26.3.json",
+    "sha1": "8696584e8d2da5726487597e6c5777480387ec22"
+  },
+  "downloads": {
+    "client": {
+      "sha1": "e877b6a07acd633fb3bb475002175cec036e7b87",
+      "size": 41483720,
+      "url": "https://piston-data.mojang.com/v1/objects/e877b6a07acd633fb3bb475002175cec036e7b87/client.jar"
+    },
+    "server": {
+      "sha1": "33680f5f2ac32864d6d7cf5e56a705fdb3e05f4c",
+      "size": 62294556,
+      "url": "https://piston-data.mojang.com/v1/objects/33680f5f2ac32864d6d7cf5e56a705fdb3e05f4c/server.jar"
+    }
+  },
+  "assetIndex": {
+    "id": "34",
+    "sha1": "7b1c46ecb5292e80d36be4ccd18118f3d7b555aa",
+    "size": 597235,
+    "totalSize": 487865386,
+    "url": "https://piston-meta.mojang.com/v1/packages/7b1c46ecb5292e80d36be4ccd18118f3d7b555aa/34.json"
+  },
+  "nativeLayout": {
+    "classes": "net/minecraft/",
+    "assets": "assets/",
+    "data": "data/",
+    "assetsMarker": "assets/.mcassetsroot",
+    "dataMarker": "data/.mcassetsroot",
+    "note": "26.3 is the first target whose client jar contains unobfuscated classes plus the resource and data packs. There are no client.txt/server.txt downloads to pin and no asset objects to fetch at build time."
+  },
+  "officialMappings": {
+    "published": false,
+    "note": "Mojang publishes no 26.3 client_mappings/server_mappings. Extraction runs against the native class names in the jar; a mapping file is never substituted."
+  }
+}

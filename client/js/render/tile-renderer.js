@@ -255,6 +255,12 @@ export class TileEntityRenderer {
   tick() {
     this.ticks++;
     const g = this.game;
+    // SkullBlockEntity.animation: powered heads count ticks
+    for (const t of this.tiles.values()) {
+      if (!t.skullAnimate) continue;
+      t.skullAnimating = getStateProperties(g.world.getState(t.x, t.y, t.z)).powered === 'true';
+      if (t.skullAnimating) t.skullTicks++;
+    }
     const beaconUpdate = (Number(g.world.worldAge) || this.ticks) % 80 === 0;
     for (const t of this.tiles.values()) {
       if(t.type==='campfire'&&g.player&&Math.hypot(t.x-g.player.x,t.y-g.player.y,t.z-g.player.z)<64) {
@@ -503,6 +509,7 @@ export class TileEntityRenderer {
         const tex = ['entity/skeleton/skeleton.png', 'entity/skeleton/wither_skeleton.png', 'entity/zombie/zombie.png', DEFAULT_SKIN, 'entity/creeper/creeper.png', 'entity/enderdragon/dragon.png', 'entity/piglin/piglin.png'][type] || 'entity/skeleton/skeleton.png';
         mat = entityMaterial(type===3&&t.data?.SkullOwner?this.game.entityRenderer.skullTexture(t.data.SkullOwner):tex, { alphaTest: 0.1 });
         const model = skullModel(type, mat);
+        if (model.skullAnimate) { t.skullAnimate = model.skullAnimate; t.skullTicks = t.skullTicks || 0; t.skullAnimating = false; }
         const outer = new Node();
         if (!name.includes('_wall_')) {
           outer.position.set(0.5, 0, 0.5);
@@ -779,6 +786,9 @@ export class TileEntityRenderer {
         t.bannerSwing.rotation.x = bannerSwing(time);
       } else if (t.type === 'beacon' && t.beamNode) {
         this._buildBeam(t, partial);
+      } else if (t.type === 'skull' && t.skullAnimate) {
+        // SkullBlockEntity.getAnimation: ticks + partial while powered, else the ticks it stopped at
+        t.skullAnimate(t.skullAnimating ? t.skullTicks + partial : t.skullTicks);
       } else if (t.type === 'endportal' && t.portalPasses) {
         updateEndPortalPasses17(t.portalPasses, shaderGameTime(this.game.world.worldAge ?? this.ticks, partial), this.device.width, this.device.height);
       }
@@ -832,13 +842,21 @@ export function skullModel(type, mat) {
   const model = new Node();
   model.scale.set(-1 / 16, -1 / 16, 1 / 16);
   let parts;
-  if(type===6){const p=blockModel('piglinHead',['head','leftEar','rightEar']);p.leftEar.rz=-.7;p.rightEar.rz=.7;model.add(p.head.build());p.head.setMaterial(mat);return model;}
+  // PiglinHeadModel / DragonHeadModel.setupAnim(animation): ears flap and the jaw opens with the powered
+  // skull's animation ticks (0 at rest: ears -0.7 / 0.7, jaw 0.2)
+  if(type===6){
+    const p=blockModel('piglinHead',['head','leftEar','rightEar']);model.add(p.head.build());p.head.setMaterial(mat);
+    model.skullAnimate=(a)=>{const f32=Math.fround;p.leftEar.rz=f32(-(Math.cos(f32(f32(a*f32(Math.PI))*f32(.2))*f32(1.2))+2.5)*f32(.2));p.rightEar.rz=f32((Math.cos(f32(f32(a*f32(Math.PI))*f32(.2)))+2.5)*f32(.2));p.leftEar.sync();p.rightEar.sync();};
+    model.skullAnimate(0);
+    return model;
+  }
   if (type === 5) {
     const d = blockModel('dragonHead', ['head', 'jaw']);
-    d.jaw.rx = 0.2;
     const g = new Node(); g.position.set(0, -0.374375 * 16, 0); g.scale.setScalar(0.75);
     g.add(d.head.build()); d.head.setMaterial(mat);
     model.add(g);
+    model.skullAnimate=(a)=>{const f32=Math.fround;d.jaw.rx=f32((Math.sin(f32(f32(a*f32(Math.PI))*f32(.2)))+1)*f32(.2));d.jaw.sync();};
+    model.skullAnimate(0);
     return model;
   }
   if(type===2)parts=[blockModel('zombieHead',['head']).head];

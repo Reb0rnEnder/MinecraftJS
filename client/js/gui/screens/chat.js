@@ -6,8 +6,11 @@ import { tr } from '../i18n.js';
 import { chatToPlain } from '../chat.js';
 import { Screen } from './manager.js';
 import { TextField, Button } from '../widgets.js';
-import { platform } from '../../platform/platform.js';
+import {platform } from '../../platform/platform.js';
+import {writeClipboard} from '../../platform/clipboard.js';
+import {parseDialog263} from '../../net/dialog-26.3.js';
 import { C,PROTOCOL_VERSION } from '../../net/packets.js';
+import { captureAutoLogin } from '../../game/auto-login.js';
 
 export class ChatScreen extends Screen {
   constructor(game, initial, options = {}) {
@@ -150,6 +153,7 @@ export class ChatScreen extends Screen {
       if (msg) {
         g.hud.sentHistory.push(msg);
         if (g.hud.sentHistory.length > 100) g.hud.sentHistory.shift();
+        if (captureAutoLogin(g, msg)) g.hud.addChat('§a' + tr('minecraftjs.autologin.captured'), null, true);
         g.send(C.chat(msg.slice(0, 256)));
       }
       this.close();
@@ -268,13 +272,23 @@ export class ChatScreen extends Screen {
     if(this.game.commands&&(this.commandOnly||this.input.text.startsWith('/')))this.commandState=this.game.commands.parse(this.input.text,!this.commandOnly);
   }
 
-  mouseDown(mx, my, button) {
-    if (button === 0) {
-      if(this.game.hud.queuedChatClick(mx,my))return true;
-      const row = this._suggestionRow(mx, my);
-      if (row >= 0) { this._selectTab(row); this._applyTab(); return true; }
+  mouseDown(mx, my, button, e) {
+    // CommandSuggestions.mouseClicked runs before the button check: any button applies the
+    // row and the whole list rect consumes the click.
+    const row = this._suggestionRow(mx, my);
+    if (row >= 0) { this._selectTab(row); this._applyTab(); return true; }
+    if (this.tabMatches?.length && this.tabBox &&
+      mx >= this.tabBox.x && mx < this.tabBox.x + this.tabBox.width &&
+      my >= this.tabBox.y && my < this.tabBox.y + this.tabBox.rows * 12) return true;
+    if (button === 0 && this.game.hud.queuedChatClick(mx, my)) return true;
+    // ChatScreen only resolves clickable styles with the right button.
+    if (button === 1) {
       const comp = this.game.hud.chatComponentAt(mx, my);
-      if (comp && comp.click) {
+      if (comp && e?.shift && comp.style?.insertion) {
+        this.input.insert(comp.style.insertion);
+        return true;
+      }
+      if (comp && !e?.shift && comp.click) {
         const c = comp.click;
         if (c.action === 'open_url') {
           const url = c.url ?? c.value;
@@ -283,9 +297,23 @@ export class ChatScreen extends Screen {
           if(this.game.settings.chatLinksPrompt===false){platform().openUrl(url);return true;}
           this.game.screens.open(new ConfirmLinkScreen(this.game, this, url));
         } else if (c.action === 'run_command') {
-          if(this.game.accountPrivileges?.onlineChat!==false)this.game.send(C.chat(c.command ?? c.value));
+          // Screen.clickCommandAction: unattended command, optional slash trimmed.
+          this.game.send(C.command(c.value));
         } else if (c.action === 'suggest_command') {
-          this.input.setText(c.command ?? c.value);
+          this.input.setText(c.value);
+        } else if (c.action === 'copy_to_clipboard') {
+          writeClipboard(c.value);
+        } else if (c.action === 'change_page') {
+          // ChangePage only applies to book components; chat has no page to change.
+        } else if (c.action === 'show_dialog') {
+          try{
+            const dialog=parseDialog263(c.dialogTag,this.game.conn?.joinContext?.dialogs);
+            import('./dialog-26.3.js').then(({DialogScreen263})=>this.game.screens.open(new DialogScreen263(this.game,dialog,this)));
+          }catch(e){/* unsupported dialog body fails closed */}
+        } else if (c.action === 'custom') {
+          const id = String(c.id || '');
+          if (id === 'minecraft:internal/expand_chat_queue') this.game.hud.processQueuedChat(true);
+          else if (id !== 'minecraft:internal/go_to_restrictions_screen') this.game.send(C.customClickAction(c.id, c.payloadTag ?? null));
         }
         return true;
       }

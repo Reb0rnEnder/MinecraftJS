@@ -1,4 +1,7 @@
 import {serverCraftResult} from './server-recipes.js';
+import {ITEM_DEFAULTS_26_3} from '../net/item-defaults-26.3.js';
+
+const ITEM_ID_BY_NAME = new Map(ITEM_DEFAULTS_26_3.items.map((item, id) => [item.name, id]));
 // Client-side crafting result computation (vanilla 1.8 computes this on the client too).
 
 let recipesByResult = null;
@@ -7,7 +10,9 @@ let allShapeless = [];
 
 function norm(ing) {
   if (ing === null || ing === undefined) return null;
+  if (Array.isArray(ing)) return { any: ing.map(norm).filter(Boolean) };
   if (typeof ing === 'number') return { id: ing, meta: -1 };
+  if (Array.isArray(ing.any)) return { any: ing.any.map(norm).filter(Boolean) };
   return { id: ing.id, meta: ing.metadata === undefined ? -1 : ing.metadata };
 }
 
@@ -33,6 +38,7 @@ export function initRecipes(json) {
 const matchIng = (ing, item) => {
   if (!ing) return !item;
   if (!item) return false;
+  if (ing.any) return ing.any.some(candidate => matchIng(candidate, item));
   return item.id === ing.id && (ing.meta === -1 || ing.meta === 32767 || ing.meta === item.damage);
 };
 
@@ -92,15 +98,12 @@ export function craftResult(grid, n, items) {
   return null;
 }
 
-// Items left in the grid after crafting (buckets etc.)
-export function containerItem(item, items = null) {
+// Items left in the grid after crafting. 26.3 exposes the remainder through the item's
+// use_remainder component (milk bucket -> bucket) instead of the old 1.8 item ids.
+export function containerItem(item) {
   if (!item) return null;
-  const name = items?.name?.(item.id);
-  if (name === 'water_bucket' || name === 'lava_bucket' || name === 'milk_bucket') {
-    const bucketId = items.byName?.get?.('bucket');
-    if (bucketId !== undefined) return { id: bucketId, count: 1, damage: 0, nbt: null };
-  }
-  if (item.id === 326 || item.id === 327 || item.id === 335) return { id: 325, count: 1, damage: 0, nbt: null };
-  if (item.id === 373 && false) return { id: 374, count: 1, damage: 0, nbt: null };
-  return null;
+  const remainder = ITEM_DEFAULTS_26_3.items[item.id]?.defaults?.use_remainder;
+  const name = String(remainder?.id || '').replace(/^minecraft:/, '');
+  const id = ITEM_ID_BY_NAME.get(name);
+  return id === undefined ? null : { id, count: 1, damage: 0, nbt: null };
 }

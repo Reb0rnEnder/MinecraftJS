@@ -1,14 +1,17 @@
-import { animateBat774 } from './bat-1.21.11.js';
-import { shieldArmPose774 } from './shield-pose-1.21.11.js';
-import { brushArmPose774 } from '../game/brushing-1.21.11.js';
-import { PAWS_DATA_774 } from '../game/paws-data-1.21.11.js';
-import { mcCos } from '../game/physics.js';
-import { animateArmadillo774 } from './armadillo-1.21.11.js';
+import{animateBat766}from'./bat-1.20.6.js';
+import{shieldArmPose766}from'./shield-pose-1.20.6.js';
+import{brushArmPose766}from'../game/brushing-1.20.6.js';
+import{PAWS_DATA_766}from'../game/paws-data-1.20.6.js';
+import{mcCos}from'../game/physics.js';
+import{animateArmadillo766}from'./armadillo-1.20.6.js';
 import {animateWildMob} from './wild-mobs-1.19.4.js';
+import {NATIVE_ANIMATIONS_26_3} from './animations-26.3.js';
+import {animateKeyframes762} from './keyframes-1.19.4.js';
 import { spyglassArmPitch } from './spyglass-pose.js';
 import { animateAxolotl } from './axolotl-pose.js';
 import {animateHoglin,animatePiglin,animateStrider} from './nether-poses.js';
 import {animateFox} from './fox-pose.js';
+import {spearThirdPersonHandUse, spearThirdPersonAttackArm} from './spear-animations-26.3.js';
 // Entity models (native 1.14.4). Their boxes come from the Minecraft client jar at build time (lib/modelextract.js runs the
 // game's model constructors and records every part: bundles/entity-models.json); this file names the parts and holds
 // the animation (ports of setRotationAngles / setLivingAnimations).
@@ -41,7 +44,15 @@ export function J(name, names) {
     p.rx = q.r[0]; p.ry = q.r[1]; p.rz = q.r[2];
     if(q.s)[p.sx,p.sy,p.sz]=q.s;
     made.set(i, p);
-    for (const c of q.children) { const cp = mk(c); if (cp) p.add(cp); }
+    const byName = {};
+    Object.defineProperty(p, 'namedChildren', { value: byName, enumerable: false });
+    for (const [name, c] of Object.entries(q.namedChildren || {})) {
+      const cp = mk(c);
+      if (cp) { p.add(cp); byName[name] = cp; }
+    }
+    for (const c of q.children) {
+      if (!Object.values(byName).some((part) => made.get(c) === part)) { const cp = mk(c); if (cp) p.add(cp); }
+    }
     return p;
   };
   const out = {};
@@ -148,16 +159,18 @@ export function animateBiped(m, a) {
   }
   const rp = a.rightPose || (a.heldRight ? 'item' : 'empty'), lp = a.leftPose || 'empty';
   p.rightArm.ry = 0; p.leftArm.ry = 0;
-  if (lp === 'block') shieldArmPose774(p.leftArm, p.head, false);
+  if (lp === 'block')shieldArmPose766(p.leftArm,p.head,false);
   else if (lp === 'item') p.leftArm.rx = p.leftArm.rx * 0.5 - PI / 10;
   else if (lp === 'spyglass') { p.leftArm.rx = spyglassArmPitch(p.head.rx, a.sneak); p.leftArm.ry = p.head.ry + .2617994; }
-  else if (lp === 'brush') brushArmPose774(p.leftArm);
-  else if (lp === 'spear') { p.leftArm.rx = p.leftArm.rx * 0.5 - PI; p.leftArm.ry = 0; }
-  if (rp === 'block') shieldArmPose774(p.rightArm, p.head, true);
+  else if(lp==='brush')brushArmPose766(p.leftArm);
+  else if (lp === 'trident') { p.leftArm.rx = p.leftArm.rx * 0.5 - PI; p.leftArm.ry = 0; }
+  else if (lp === 'spear') spearThirdPersonHandUse(p.leftArm, p.head, -1, a.kineticWeapon, a.useTicks, {fallFlying: a.elytra, swimAmount: swim});
+  if (rp === 'block')shieldArmPose766(p.rightArm,p.head,true);
   else if (rp === 'item') p.rightArm.rx = p.rightArm.rx * 0.5 - PI / 10;
   else if (rp === 'spyglass') { p.rightArm.rx = spyglassArmPitch(p.head.rx, a.sneak); p.rightArm.ry = p.head.ry - .2617994; }
-  else if (rp === 'brush') brushArmPose774(p.rightArm);
-  else if (rp === 'spear') { p.rightArm.rx = p.rightArm.rx * 0.5 - PI; p.rightArm.ry = 0; }
+  else if(rp==='brush')brushArmPose766(p.rightArm);
+  else if (rp === 'trident') { p.rightArm.rx = p.rightArm.rx * 0.5 - PI; p.rightArm.ry = 0; }
+  else if (rp === 'spear') spearThirdPersonHandUse(p.rightArm, p.head, 1, a.kineticWeapon, a.useTicks, {fallFlying: a.elytra, swimAmount: swim});
   p.body.ry = 0;
   p.rightArm.pz = 0; p.rightArm.px = -5; p.leftArm.pz = 0; p.leftArm.px = 5;
   if (swing > -9990) {
@@ -168,12 +181,15 @@ export function animateBiped(m, a) {
     p.rightArm.pz = sin(p.body.ry) * 5; p.rightArm.px = -cos(p.body.ry) * 5;
     p.leftArm.pz = -sin(p.body.ry) * 5; p.leftArm.px = cos(p.body.ry) * 5;
     p.rightArm.ry += p.body.ry; p.leftArm.ry += p.body.ry; p.leftArm.rx += p.body.ry;
-    f1 = 1 - swing; f1 *= f1; f1 *= f1; f1 = 1 - f1;
-    const f2 = sin(f1 * PI);
-    const f3 = sin(swing * PI) * -(p.head.rx - 0.7) * 0.75;
-    arm.rx = arm.rx - (f2 * 1.2 + f3);
-    arm.ry += p.body.ry * 2;
-    arm.rz += sin(swing * PI) * -0.4;
+    if (a.swingType === 'stab') spearThirdPersonAttackArm({rightArm: p.rightArm, leftArm: p.leftArm, body: p.body}, swing, side);
+    else if (a.swingType !== 'none') {
+      f1 = 1 - swing; f1 *= f1; f1 *= f1; f1 = 1 - f1;
+      const f2 = sin(f1 * PI);
+      const f3 = sin(swing * PI) * -(p.head.rx - 0.7) * 0.75;
+      arm.rx = arm.rx - (f2 * 1.2 + f3);
+      arm.ry += p.body.ry * 2;
+      arm.rz += sin(swing * PI) * -0.4;
+    }
   }
   const yOff = m.yOff || 0;
   if (a.sneak) {
@@ -206,7 +222,7 @@ export function animateBiped(m, a) {
     }else{main.ry=-.3*sign+p.head.ry;off.ry=.6*sign+p.head.ry;main.rx=-PI/2+p.head.rx+.1;off.rx=-1.5+p.head.rx;}
   }
   if (swim > 0) animateSwim(p, a, swim);
-  p.headwear.copyAngles(p.head);
+  if (!p.head.children.includes(p.headwear)) p.headwear.copyAngles(p.head);
 }
 
 // ModelBiped (cot): a 26-tick breaststroke with pulls at 0..14,
@@ -248,18 +264,28 @@ export function playerModel(slim, tw = 64, th = 64) {
     m.slim = false;
     return m;
   }
-  const p = J(slim ? 'playerSlim' : 'player', [...BIPED, 'leftArmwear', 'rightArmwear', 'leftLegwear', 'rightLegwear', 'bodywear', 'cape', 'ears']);
+  const p = J(slim ? 'playerSlim' : 'player', [...BIPED, 'leftArmwear', 'rightArmwear', 'leftLegwear', 'rightLegwear', 'bodywear', 'cape']);
+  const attachedLayers = p.rightArm.children.includes(p.rightArmwear);
+  // The native cape is a child of the body, but the renderer owns its sway as a separate
+  // holder. Detach it so it is not drawn twice, then render it from p.cape.
+  if (attachedLayers && p.cape) p.body.children = p.body.children.filter((part) => part !== p.cape);
+  const roots = [p.head, p.body, p.rightArm, p.leftArm, p.rightLeg, p.leftLeg];
+  if (!attachedLayers) roots.push(p.leftLegwear, p.rightLegwear, p.leftArmwear, p.rightArmwear, p.bodywear, p.cape);
   const m = {
     parts: p, slim,
-    roots: [p.head, p.headwear, p.body, p.rightArm, p.leftArm, p.rightLeg, p.leftLeg, p.leftLegwear, p.rightLegwear, p.leftArmwear, p.rightArmwear, p.bodywear],
+    roots,
   };
   m.animate = (mm, a) => {
     animateBiped(mm, a);
     const q = mm.parts;
-    q.leftLegwear.copyAngles(q.leftLeg); q.rightLegwear.copyAngles(q.rightLeg);
-    q.leftArmwear.copyAngles(q.leftArm); q.rightArmwear.copyAngles(q.rightArm);
-    q.bodywear.copyAngles(q.body);
-    if (slim) { q.rightArm.py = 2.5; q.leftArm.py = 2.5; q.rightArmwear.py = 2.5; q.leftArmwear.py = 2.5; }
+    // 26.3 keeps the sleeve/pant/jacket layers as children of their limbs, so they inherit the
+    // pose. The 1.20.6 fallback kept them as separate parts and copied the angles once.
+    if (!attachedLayers) {
+      q.leftLegwear.copyAngles(q.leftLeg); q.rightLegwear.copyAngles(q.rightLeg);
+      q.leftArmwear.copyAngles(q.leftArm); q.rightArmwear.copyAngles(q.rightArm);
+      q.bodywear.copyAngles(q.body);
+      if (slim) { q.rightArm.py = 2.5; q.leftArm.py = 2.5; q.rightArmwear.py = 2.5; q.leftArmwear.py = 2.5; }
+    }
   };
   return m;
 }
@@ -422,13 +448,14 @@ export function ocelot() {
 }
 
 export function rabbit() {
-  const p = J('rabbit', ['leftFoot', 'rightFoot', 'leftThigh', 'rightThigh', 'body', 'leftArm', 'rightArm', 'head', 'rightEar', 'leftEar', 'tail', 'nose']);
+  // 26.3's rabbit rig names the hind foot "haunch" and has no separate nose part.
+  const p = J('rabbit', ['leftFoot', 'rightFoot', 'leftThigh', 'rightThigh', 'body', 'leftArm', 'rightArm', 'head', 'rightEar', 'leftEar', 'tail']);
   return {
     parts: p, roots: Object.values(p), modelScale: 0.6, modelTranslateY: 16 * 0.0625 * (1 / 0.6 - 1) * 0.6,
     animate: (m, a) => {
       const q = m.parts;
       const yaw = a.yaw * PI / 180, pitch = a.pitch * PI / 180;
-      for (const k of ['head', 'nose', 'rightEar', 'leftEar']) { q[k].rx = pitch; q[k].ry = yaw; }
+      for (const k of ['head', 'rightEar', 'leftEar']) { q[k].rx = pitch; q[k].ry = yaw; }
       q.rightEar.ry = yaw - 0.2617994; q.leftEar.ry = yaw + 0.2617994;
       const jump = a.onGround ? 0 : sin(a.age * 0.5) * 0.5 + 0.5;
       q.leftThigh.rx = (jump * 50 - 21) * PI / 180; q.rightThigh.rx = q.leftThigh.rx;
@@ -469,17 +496,24 @@ export function horse(type = 0, layer = null) {
     q.tail.rx = PI / 6 + a.lsa * 0.75;
     q.tail.py = -5 + a.lsa; q.tail.pz = 2 + a.lsa * 2;
     q.tail.ry = a.tailWag ? cos(a.age * 0.7) : 0;
-    q.saddleParts.forEach((part) => { part.visible = !!a.saddled; });
-    q.reins.forEach((part) => { part.visible = !!a.saddled && !!a.hasRider; });
+    if (q.saddleParts) q.saddleParts.forEach((part) => { part.visible = !!a.saddled; });
+    if (q.reins) q.reins.forEach((part) => { part.visible = !!a.saddled && !!a.hasRider; });
     if (chested) q.leftChest.visible = q.rightChest.visible = !!a.chested && !a.child;
   }, {
     horseType: kind, modelScale: kind === 'donkey' ? 0.87 : kind === 'mule' ? 0.92 : 1,
     texture: 'entity/horse/' + ({ horse: 'horse_white', zombie_horse: 'horse_zombie', skeleton_horse: 'horse_skeleton' }[kind] || kind) + '.png',
   });
   const p = m.parts;
-  [p.head, p.mane, p.muzzle, p.leftEar, p.rightEar] = p.neck.children;
-  [p.saddle, p.leftBit, p.rightBit, p.faceRopes, p.noseBand] = p.saddleParts;
-  [p.leftRein, p.rightRein] = p.reins;
+  // Native 26.3 hangs the head/mane/mouth from head_parts by name and adds the saddle
+  // children there; the 1.20.6 fallback used positional children.
+  const hc = p.neck.namedChildren || {};
+  p.head = hc.head || p.neck.children[0];
+  p.mane = hc.mane || p.neck.children[1];
+  p.muzzle = hc.upper_mouth || hc.muzzle || p.neck.children[2];
+  p.leftEar = hc.left_ear || p.neck.children[3];
+  p.rightEar = hc.right_ear || p.neck.children[4];
+  if (p.saddleParts) [p.saddle, p.leftBit, p.rightBit, p.faceRopes, p.noseBand] = p.saddleParts;
+  if (p.reins) [p.leftRein, p.rightRein] = p.reins;
   return m;
 }
 
@@ -504,7 +538,7 @@ export function llama(decor = false) {
   return jarAdapter(decor ? 'llamaDecor' : 'llama', [...QUADRUPED, 'rightChest', 'leftChest'], (m, a) => {
     animateQuadruped(m, a);
     m.parts.rightChest.visible = m.parts.leftChest.visible = !!a.chested && !a.child;
-  }, { texture: decor ? 'entity/equipment/llama_body/white.png' : 'entity/llama/creamy.png', quadruped: true, childY: 8, childZ: 6 });
+  }, { texture: decor ? 'entity/llama/decor/white.png' : 'entity/llama/creamy.png', quadruped: true, childY: 8, childZ: 6 });
 }
 
 // age is ticks, flap is the renderer's interpolated wing amplitude (not ageInTicks). If omitted,
@@ -565,33 +599,89 @@ export function vex() {
 // Native model roots for newly registered families. Their animation state
 // adapters are implemented separately; retaining native hierarchy avoids
 // incorrectly treating a different release's model as a biped.
-export const WILD_MOB_TEXTURES = {
-  armadillo: 'entity/armadillo.png',
-  allay: 'entity/allay/allay.png',
-  frog: 'entity/frog/temperate_frog.png',
-  tadpole: 'entity/tadpole/tadpole.png',
-  warden: 'entity/warden/warden.png',
-  camel: 'entity/camel/camel.png',
-  camel_husk: 'entity/camel/camel_husk.png',
-  sniffer: 'entity/sniffer/sniffer.png',
-};
-export function wildMob(name) {
-  const modelName = name === 'camel_husk' ? 'camel' : name;
-  if (name === 'armadillo') {
-    return jarAdapter(name, JAR[name].slotNames, animateArmadillo774, {
-      texture: WILD_MOB_TEXTURES[name],
-      nativeAgeable: {
-        bodyOnly: true, scaleHead: false, headY: 0, headZ: 0, headScale: 1,
-        bodyScale: 1 / PAWS_DATA_774.armadilloAgeable.scale, bodyY: PAWS_DATA_774.armadilloAgeable.bodyY
-      }
-    });
+export const WILD_MOB_TEXTURES={armadillo:'entity/armadillo/armadillo.png',allay:'entity/allay/allay.png',frog:'entity/frog/temperate_frog.png',tadpole:'entity/tadpole/tadpole.png',warden:'entity/warden/warden.png',camel:'entity/camel/camel.png',sniffer:'entity/sniffer/sniffer.png'};
+// New 26.3 humanoids keep the native skeleton-family layer rather than borrowing the
+// 1.20.6 skeleton part tree. Their hats are children of the head, so animateBiped leaves
+// the attached layer alone instead of copying angles twice.
+export const BIPED_MOB_TEXTURES={bogged:'entity/skeleton/bogged.png',parched:'entity/skeleton/parched.png'};
+export function nativeBipedMob(name){return jarAdapter(name,BIPED,animateBiped,{texture:BIPED_MOB_TEXTURES[name]});}
+// The remaining 26.3-only mobs have native layer trees but their keyframe clips have not been
+// ported yet. Bind the real hierarchy at its rest pose instead of borrowing an unrelated rig;
+// animateNativeMob only adds the head tracking that every one of these families uses.
+export const NATIVE_MOB_TEXTURES={breeze:'entity/breeze/breeze.png',creaking:'entity/creaking/creaking.png',copper_golem:'entity/copper_golem/copper_golem.png',happy_ghast:'entity/ghast/happy_ghast.png',nautilus:'entity/nautilus/nautilus.png',zombie_nautilus:'entity/nautilus/zombie_nautilus.png',sulfur_cube:'entity/sulfur_cube/sulfur_cube_outer.png'};
+const nativeClamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+// Animation channels address bones by name, including nested head/arm children that are not
+// top-level fields in the model spec.
+function nativePartMap(model){
+  const map={};
+  const visit=(part,name)=>{if(!part||map[name]===part)return;map[name]=part;for(const [child,value] of Object.entries(part.namedChildren||{}))visit(value,child);};
+  for(const [name,part] of Object.entries(model.parts))visit(part,name);
+  if(model.roots.length===1)map.$root=model.roots[0];
+  return map;
+}
+function animateNativeMob(model,a){
+  model.resetPose();
+  const p=model.parts,D=Math.PI/180;
+  if(p.head){p.head.rx=a.pitch*D;p.head.ry=a.yaw*D;}
+  // NautilusModel.applyBodyRotation clamps body look to +/-10 degrees and rotates the body,
+  // not the shell. The swim clip still needs porting.
+  if(model.jarModel==='nautilus'||model.jarModel==='zombie_nautilus'){
+    const body=p.root?.namedChildren?.body;
+    if(body){body.ry=nativeClamp(a.yaw,-10,10)*D;body.rx=nativeClamp(a.pitch,-10,10)*D;}
   }
-  return jarAdapter(modelName, JAR[modelName].slotNames, (m, a) => {
-    animateWildMob(m, a);
-    if (modelName === 'camel' && a.saddled === false && m.parts.saddle) {
-      m.parts.saddle.visible = m.parts.bridle.visible = m.parts.reins.visible = false;
+  // GhastModel.animateTentacles: 0.2*sin(age*0.3+i)+0.4 radians, index in tentacle order.
+  if(model.jarModel==='happy_ghast'){
+    const tentacles=p.body?.namedChildren;
+    for(let i=0;i<9;i++){const t=tentacles?.['tentacle'+i];if(t)t.rx=0.2*Math.sin(a.age*0.3+i)+0.4;}
+  }
+  // Native keyframe clips generated from the jar. Clips are additive in the same order as the
+  // native model (walk, idle, interactions); one-shot states start from their sync timestamp.
+  const clips=NATIVE_ANIMATIONS_26_3[model.jarModel];
+  if(clips){
+    const names=Object.keys(clips),parts=nativePartMap(model),e=a.entity||{};
+    const play=(key,time,weight=1)=>animateKeyframes762(parts,clips[key],time,weight);
+    const since=start=>Math.max(0,(a.age-(start??0))*50);
+    const within=(key,time)=>{const clip=clips[key];return clip&&time<=clip.length*1000+50;};
+    const walk=names.find(n=>n.endsWith('_WALK'))||names.find(n=>n.endsWith('_SWIMMING'));
+    const moving=a.moving||a.lsa>0.02;
+    if(model.jarModel==='breeze'){
+      play('IDLE',a.age*50);
+      if(e.pose===16&&within('SHOOT',since(e.poseStart)))play('SHOOT',since(e.poseStart));
+      else if(e.pose===17)play('INHALE',since(e.poseStart));
+      else if(e.pose===15&&within('SLIDE',since(e.poseStart)))play('SLIDE',since(e.poseStart));
+      else if(e.pose===6&&within('JUMP',since(e.poseStart)))play('JUMP',since(e.poseStart));
+      if(e.pose!==15&&e.slideBackStart!==undefined&&within('SLIDE_BACK',since(e.slideBackStart)))play('SLIDE_BACK',since(e.slideBackStart));
+    }else if(model.jarModel==='copper_golem'){
+      const holding=(a.rightPose&&a.rightPose!=='empty')||(a.leftPose&&a.leftPose!=='empty');
+      const base=holding?'COPPER_GOLEM_WALK_ITEM':'COPPER_GOLEM_WALK';
+      if(moving&&clips[base])play(base,a.ls*100,Math.min(1,a.lsa*2.5));
+      if(e.copperGolemState===0&&e.ticks!==undefined){
+        // CopperGolem.setupAnimationStates waits 200-239 ticks between non-looping idles.
+        const cycle=200+((e.id||0)*37%40),phase=((e.ticks||0)+(e.id||0)*53)%cycle;
+        if(phase<70)play('COPPER_GOLEM_IDLE',phase*50);
+      }else if(e.copperGolemState>0){
+        // CopperGolemModel maps its four AnimationStates in this order; the names describe the
+        // item that is already in hand, not the state that triggers them.
+        const key={1:'COPPER_GOLEM_CHEST_INTERACTION_NOITEM_GET',2:'COPPER_GOLEM_CHEST_INTERACTION_NOITEM_NOGET',3:'COPPER_GOLEM_CHEST_INTERACTION_ITEM_DROP',4:'COPPER_GOLEM_CHEST_INTERACTION_ITEM_NODROP'}[e.copperGolemState];
+        if(key&&clips[key])play(key,since(e.copperStateStart));
+      }
+    }else if(model.jarModel==='creaking'){
+      if(e.canMove!==false&&moving&&clips.CREAKING_WALK)play('CREAKING_WALK',a.ls*100,Math.min(1,a.lsa*2.5));
+      if(e.creakingAttackStart!==undefined&&since(e.creakingAttackStart)<750)play('CREAKING_ATTACK',since(e.creakingAttackStart));
+      if(e.creakingInvulnerableStart!==undefined&&within('CREAKING_INVULNERABLE',since(e.creakingInvulnerableStart)))play('CREAKING_INVULNERABLE',since(e.creakingInvulnerableStart));
+      if(e.tearingDown&&within('CREAKING_DEATH',since(e.creakingDeathStart)))play('CREAKING_DEATH',since(e.creakingDeathStart));
+    }else if(walk){
+      const idle=names.find(n=>n.endsWith('_IDLE'))||walk;
+      const forced=model.jarModel==='nautilus'||model.jarModel==='zombie_nautilus';
+      if((forced||moving)&&walk)play(walk,a.ls*100,Math.min(1,a.lsa*2.5));
+      else play(idle,a.age*50);
     }
-  }, { texture: WILD_MOB_TEXTURES[name] });
+  }
+}
+export function nativeMob(name){return jarAdapter(name,JAR[name].slotNames,animateNativeMob,{texture:NATIVE_MOB_TEXTURES[name]});}
+export function wildMob(name) {
+ if(name==='armadillo')return jarAdapter(name,JAR[name].slotNames,animateArmadillo766,{texture:WILD_MOB_TEXTURES[name],nativeAgeable:{bodyOnly:true,scaleHead:false,headY:0,headZ:0,headScale:1,bodyScale:1/PAWS_DATA_766.armadilloAgeable.scale,bodyY:PAWS_DATA_766.armadilloAgeable.bodyY}});
+ return jarAdapter(name,JAR[name].slotNames,animateWildMob,{texture:WILD_MOB_TEXTURES[name]});
 }
 
 // pose: crossed (default), attacking, spellcasting, bow. Illusioners show the constructor-hidden hat.
@@ -785,7 +875,7 @@ export function guardian() {
 }
 
 export function bat() {
-  return jarAdapter('bat', ['$root', 'head', 'body', 'right_wing', 'left_wing', 'right_wing_tip', 'left_wing_tip', 'feet'], animateBat774);
+  return jarAdapter('bat',['$root','head','body','right_wing','left_wing','right_wing_tip','left_wing_tip','feet'],animateBat766);
 }
 
 export function squid(name = 'squid') {
@@ -1104,21 +1194,43 @@ export function armorModel(inflate) {
   return biped(inflate < 0.75 ? 'armorInner' : 'armorOuter');
 }
 
-// ModelDragon (256x256 texture). The neck and tail reuse one spine segment many times, so this returns factories;
-// RenderDragon posing lives in the entity renderer.
+// 26.3 EnderDragonModel (256x256 texture). Every neck/tail segment, wing and
+// limb is a named part in the native hierarchy; the renderer poses them in place.
 export function dragonParts() {
-  const names = ['head', 'spine', 'jaw', 'body', 'rearLeg', 'frontLeg', 'rearLegTip', 'frontLegTip', 'rearFoot', 'frontFoot', 'wing', 'wingTip'];
-  const p = J('dragon', names);
-  const spine = () => J('dragon', names).spine;
-  const limbs = () => {
-    const q = J('dragon', names);
-    return { wing: q.wing, wingTip: q.wingTip, frontLeg: q.frontLeg, frontLegTip: q.frontLegTip, frontFoot: q.frontFoot, rearLeg: q.rearLeg, rearLegTip: q.rearLegTip, rearFoot: q.rearFoot };
-  };
-  return { head: p.head, jaw: p.jaw, body: p.body, spine, limbs };
+  const names = [
+    'head', 'neck0', 'neck1', 'neck2', 'neck3', 'neck4',
+    'tail0', 'tail1', 'tail2', 'tail3', 'tail4', 'tail5',
+    'tail6', 'tail7', 'tail8', 'tail9', 'tail10', 'tail11',
+    'jaw', 'body', 'left_wing', 'left_wing_tip', 'left_front_leg',
+    'left_front_leg_tip', 'left_front_foot', 'left_hind_leg',
+    'left_hind_leg_tip', 'left_hind_foot', 'right_wing', 'right_wing_tip',
+    'right_front_leg', 'right_front_leg_tip', 'right_front_foot',
+    'right_hind_leg', 'right_hind_leg_tip', 'right_hind_foot'
+  ];
+  return J('dragon', names);
 }
 
 // Block entity and small entity models, by jar model name and field names
 export function blockModel(name, names) { return J(name, names); }
+
+// CushionModel: one 16x4x16 box with a -0.005 deformation, pivot (23,4,-7).
+export function cushion() {
+  const p = J('cushion', ['cushion']);
+  // CushionModel's CubeDeformation(-0.005); the layer extractor records min/max only.
+  p.cushion.boxes[0].inflate = -0.005;
+  return { parts: p, roots: [p.cushion], animate() {} };
+}
+
+// WindChargeModel (64x32): wind_charge spins one way inside bone, the wind shell the other.
+export function windCharge() {
+  const p = J('windCharge', ['bone']);
+  const bone = p.bone, wind = bone.namedChildren.wind, charge = bone.namedChildren.wind_charge;
+  return { parts: p, roots: [bone], animate(m, a) {
+    const spin = (a.age || 0) * 16 * D2R;
+    charge.ry = -spin;
+    wind.ry = spin;
+  } };
+}
 
 // Nether Update geometry is extracted from the target jar, including ears/bristles.
 export function hoglin(){return jarAdapter('hoglin',['head','rightEar','leftEar','body','frontRightLeg','frontLeftLeg','backRightLeg','backLeftLeg','mane'],animateHoglin,{hoglinAgeable:true});}
@@ -1138,76 +1250,4 @@ export function goat() {
 }
 export function axolotl() {
   return jarAdapter('axolotl', ['body','head','tail','rightFrontLeg','leftFrontLeg','rightHindLeg','leftHindLeg','topGills','leftGills','rightGills'], animateAxolotl, {nativeAgeable:{scaleHead:true,headY:8,headZ:3.35,headScale:2,bodyScale:2,bodyY:24,bodyOnly:true}});
-}
-
-export function bogged() {
-  return jarAdapter('bogged', [...BIPED, 'mushrooms'], (m, a) => {
-    animateBiped(m, { ...a, rightPose: a.armsRaised && a.rightPose === 'item' ? 'bow' : a.rightPose });
-    m.parts.mushrooms.visible = !a.sheared;
-  }, { texture: 'entity/skeleton/bogged.png' });
-}
-export function boggedOuter() {
-  return biped('boggedOuter');
-}
-export function parched() {
-  return jarAdapter('parched', BIPED, (m, a) => {
-    animateBiped(m, { ...a, rightPose: a.armsRaised && a.rightPose === 'item' ? 'bow' : a.rightPose });
-  }, { texture: 'entity/skeleton/parched.png' });
-}
-export function breeze() {
-  return jarAdapter('breeze', ['body', 'head', 'eyes', 'windBody', 'rods'], (m, a) => {
-    const p = m.parts;
-    p.head.ry = a.yaw * D2R; p.head.rx = a.pitch * D2R;
-    p.rods.ry = a.age * 0.25;
-  }, { texture: 'entity/breeze/breeze.png' });
-}
-export function breezeWind() {
-  return jarAdapter('breezeWind', ['windBody'], (m, a) => {
-    m.parts.windBody.ry = -a.age * 0.15;
-  }, { texture: 'entity/breeze/breeze_wind.png' });
-}
-export function creaking() {
-  return jarAdapter('creaking', ['$root', 'upperBody', 'head', 'body', 'rightArm', 'leftArm', 'rightLeg', 'leftLeg'], (m, a) => {
-    const p = m.parts;
-    p.head.rx = a.pitch * D2R; p.head.ry = a.yaw * D2R;
-    if (a.entity?.canMove !== false) {
-      p.rightLeg.rx = cos(a.ls * 0.6662) * 1.4 * a.lsa;
-      p.leftLeg.rx = cos(a.ls * 0.6662 + PI) * 1.4 * a.lsa;
-      p.rightArm.rx = cos(a.ls * 0.6662 + PI) * 1.4 * a.lsa;
-      p.leftArm.rx = cos(a.ls * 0.6662) * 1.4 * a.lsa;
-    }
-  }, { texture: 'entity/creaking/creaking.png' });
-}
-export function happyGhast() {
-  return jarAdapter('happyGhast', ['body', 'tentacles'], (m, a) => {
-    const ts = m.parts.tentacles || [];
-    for (let i = 0; i < ts.length; i++) if (ts[i]) ts[i].rx = 0.2 * sin(a.age * 0.3 + i) + 0.4;
-  }, { texture: 'entity/ghast/happy_ghast.png', modelScale: 4, childScale: 0.2375 });
-}
-export function copperGolem() {
-  return jarAdapter('copperGolem', ['head', 'body', 'rightArm', 'leftArm', 'rightLeg', 'leftLeg'], (m, a) => {
-    const p = m.parts;
-    p.head.rx = a.pitch * D2R; p.head.ry = a.yaw * D2R;
-    p.rightLeg.rx = cos(a.ls * 0.6662) * 1.4 * a.lsa;
-    p.leftLeg.rx = cos(a.ls * 0.6662 + PI) * 1.4 * a.lsa;
-    p.rightArm.rx = cos(a.ls * 0.6662 + PI) * 1.4 * a.lsa;
-    p.leftArm.rx = cos(a.ls * 0.6662) * 1.4 * a.lsa;
-  }, { texture: 'entity/copper_golem/copper_golem.png' });
-}
-export function nautilus(variant = 'nautilus') {
-  return jarAdapter(variant, ['$root', 'shell', 'body', 'upperMouth', 'lowerMouth', 'innerMouth'], (m, a) => {
-    const p = m.parts;
-    p.body.ry = clamp(a.yaw, -10, 10) * D2R;
-    p.body.rx = clamp(a.pitch, -10, 10) * D2R;
-  }, { texture: variant === 'zombieNautilus' ? 'entity/nautilus/zombie_nautilus.png' : 'entity/nautilus/nautilus.png' });
-}
-export function zombieNautilus() {
-  return nautilus('zombieNautilus');
-}
-export function windCharge() {
-  return jarAdapter('windCharge', ['bone', 'windCharge', 'wind'], (m, a) => {
-    const rad = a.age * 16 * D2R;
-    m.parts.windCharge.ry = -rad;
-    m.parts.wind.ry = rad;
-  }, { texture: 'entity/projectiles/wind_charge.png' });
 }

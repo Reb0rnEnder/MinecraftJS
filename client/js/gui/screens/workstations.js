@@ -1,4 +1,5 @@
-import{itemBannerLayers774,bannerLayers774,loomPatterns774}from'../../render/banner-1.21.11.js';
+import {createSmithingScreen26_3} from './smithing-26.3.js';
+import{itemBannerLayers766,bannerLayers766,loomPatterns766}from'../../render/banner-1.20.6.js';
 import {WORKSTATIONS_754} from '../../game/workstations-1.16.5.js';
 import {stonecutterRecipes,tradeCost} from '../../game/workstations-1.14.4.js';
 import {C} from '../../net/packets.js';
@@ -13,6 +14,7 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
   const definition=WORKSTATIONS_754[win.type];
   if(win.type==='minecraft:lectern')return new LecternScreen(game,win);
   if(win.type==='minecraft:villager')return createMerchantScreen(game,win);
+  if(win.type==='minecraft:smithing')return createSmithingScreen26_3(game,win,SimpleScreen); // 26.3 template/base/addition layout
   if(!definition)return null;
   class WorkstationScreen extends SimpleScreen {
     constructor(){
@@ -41,10 +43,7 @@ export function createWorkstationScreen(game,win,SimpleScreen,ContainerScreen) {
     drawBackground(gui,mx,my){
       super.drawBackground(gui);
       const x=this.guiLeft,y=this.guiTop;
-      if(win.type==='minecraft:smithing'){
-        gui.blit(this.tex,x+59,y+20,0,this.ySize+(win.get(0)?16:0),110,16);
-        if((win.get(0)||win.get(1))&&!win.get(2))gui.blit(this.tex,x+99,y+45,this.xSize,0,28,21);
-      }else if(win.type==='minecraft:grindstone'){
+      if(win.type==='minecraft:grindstone'){
         if((win.get(0)||win.get(1))&&!win.get(2))gui.blit(this.tex,x+92,y+31,176,0,28,21);
       }else if(win.type==='minecraft:cartography'){
         const second=win.get(1),name=second?game.items.name(second.id):'',input=win.get(0);

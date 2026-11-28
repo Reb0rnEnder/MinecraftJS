@@ -37,6 +37,7 @@ async function boot() {
     await assets.load((msg, pct) => { splash.setProgress(pct); console.log('[loading]', msg); });
     if (assets.data.recipes) initRecipes(assets.data.recipes);
     const game = new Game(assets, settings, device,{deferStart:true});
+    globalThis.game = game; // debugging handle, available before the startup screen finishes
     game.proxies = proxies;
     game.shaderLibrary=new ShaderLibrary(game.shaderPack);
     const title = new TitleScreen(game), loading = new ResourceLoadingScreen(game,title,{startup:true,progress:splash.progress});

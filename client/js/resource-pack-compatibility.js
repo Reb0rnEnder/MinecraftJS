@@ -1,38 +1,53 @@
-// 1.20.2+ PackMetadataSection.supported_formats uses InclusiveRange (int, [min, max],
-// or { min_inclusive, max_inclusive }); 1.21.9+ PackMetadataSection supports min_format/max_format
-// major or [major, minor] tuples compared lexicographically against [format, minor].
-function tuple(v) {
-  if (Number.isInteger(v)) return [v, 0];
-  if (Array.isArray(v) && v.length >= 1 && Number.isInteger(v[0])) {
-    return [v[0], Number.isInteger(v[1]) ? v[1] : 0];
+// 26.3 PackFormat is a major.minor pair; the native PackCompatibility.forVersion compares
+// both components. 26.3 pack.mcmeta may use min_format/max_format (the compact list codec) or
+// the legacy integer pack_format/supported_formats fields. Older targets keep their integer
+// thresholds, so the current format is selected by protocol instead of one shared constant.
+export const PACK_FORMAT_26_3 = Object.freeze({major: 97, minor: 1});
+export const PACK_FORMAT_1_20_6 = Object.freeze({major: 32, minor: 0});
+
+export function packFormatForProtocol(protocol) {
+  return Number(protocol) === 777 ? PACK_FORMAT_26_3 : PACK_FORMAT_1_20_6;
+}
+
+function asFormat(value) {
+  if (Number.isInteger(value) && value >= 0) return {major: value, minor: 0};
+  // PackFormat.fullCodec is ExtraCodecs.compactListCodec: [major] or [major, minor].
+  if (Array.isArray(value) && (value.length === 1 || value.length === 2) && value.every(part => Number.isInteger(part) && part >= 0)) {
+    return {major: value[0], minor: value[1] ?? 0};
+  }
+  if (value && typeof value === 'object' && Number.isInteger(value.major) && Number.isInteger(value.minor)) {
+    return {major: value.major, minor: value.minor};
   }
   return null;
 }
 
-function cmpTuple(a, b) {
-  return a[0] !== b[0] ? a[0] - b[0] : a[1] - b[1];
+// IntermediaryFormat.packCodec maps a legacy InclusiveRange<Integer> to a range of
+// PackFormat.of(value) (minor 0). min_format/max_format are already PackFormat values.
+function packRange(pack) {
+  if (!pack) return null;
+  const min = asFormat(pack.minFormat), max = asFormat(pack.maxFormat);
+  if (min && max) return {min, max};
+  let supported = pack.supportedFormats;
+  let a, b;
+  if (Number.isInteger(supported)) a = b = supported;
+  else if (Array.isArray(supported) && supported.length === 2) [a, b] = supported;
+  else if (supported && typeof supported === 'object') ({min_inclusive: a, max_inclusive: b} = supported);
+  if (Number.isInteger(a) && Number.isInteger(b) && a <= b) return {min: asFormat(a), max: asFormat(b)};
+  const single = asFormat(pack.format);
+  return single ? {min: single, max: single} : null;
 }
 
-export function packCompatibility(pack, format, minor = 0) {
-  if (!pack) return 'compatible';
-  const cur = tuple(format) || [Number(format) || 0, Number(minor) || 0];
-  if (minor && !Array.isArray(format)) cur[1] = Number(minor) || 0;
-  const minFmt = tuple(pack.minFormat ?? pack.min_format);
-  const maxFmt = tuple(pack.maxFormat ?? pack.max_format);
-  if (minFmt || maxFmt) {
-    const lo = minFmt || maxFmt;
-    const hi = maxFmt || minFmt;
-    if (cmpTuple(lo, hi) <= 0) {
-      if (cmpTuple(hi, cur) < 0) return 'old';
-      if (cmpTuple(lo, cur) > 0) return 'new';
-      return 'compatible';
-    }
-  }
-  const range = pack.supportedFormats;
-  let min, max;
-  if (Number.isInteger(range)) min = max = range;
-  else if (Array.isArray(range) && range.length === 2) [min, max] = range;
-  else if (range && typeof range === 'object') ({ min_inclusive: min, max_inclusive: max } = range);
-  if (!Number.isInteger(min) || !Number.isInteger(max) || min > max) min = max = pack.format;
-  return max < cur[0] ? 'old' : min > cur[0] ? 'new' : 'compatible';
+function compare(a, b) {
+  return a.major - b.major || a.minor - b.minor;
+}
+
+// Native values are TOO_OLD, TOO_NEW and COMPATIBLE; an absent/unknown range is treated as
+// compatible because the selection screen only distinguishes the three incompatibility keys.
+export function packCompatibility(pack, format = PACK_FORMAT_26_3) {
+  const range = packRange(pack);
+  if (!range) return 'compatible';
+  const current = asFormat(format) ?? PACK_FORMAT_26_3;
+  if (compare(range.max, current) < 0) return 'old';
+  if (compare(current, range.min) < 0) return 'new';
+  return 'compatible';
 }

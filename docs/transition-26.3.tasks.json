@@ -1,0 +1,355 @@
+{
+  "schemaVersion": 1,
+  "updatedOn": "2026-11-27",
+  "target": "26.3",
+  "branch": "26.3",
+  "baselineVersion": "1.20.6",
+  "baselineCommit": "761970ed38eedd69effb38a1bfedf912cb26e30c",
+  "fullParity": false,
+  "nativeGraphicalGameplayAccepted": false,
+  "nextTask": "P08",
+  "authorization": "Port 26.3 from the public 1.20.6 branch using the creator's pinned-input, gated-task method.",
+  "executionRule": "Follow dependency order; native evidence and gate completion are required before marking done. Push validated batches and review shared backports as they land, not only at P16.",
+  "tasks": [
+    {
+      "id": "P00",
+      "title": "Verify pinned inputs and preserve the forwarded baseline",
+      "status": "done",
+      "dependsOn": [],
+      "releaseRefs": [
+        "26.3"
+      ],
+      "acceptance": "Every native input hash and embedded version field matches; the jar layout is native and unobfuscated; existing worktrees and local inputs remain intact.",
+      "evidence": [
+        "prepare:26.3 on 2026-11-25: metadata 8696584e, client e877b6a0 (41,483,720 bytes), server 33680f5f (62,294,556 bytes), asset index 7b1c46ec (id 34).",
+        "Native version.json: id 26.3, protocol 777, world_version 5023, pack 97.1/121.0, java 25, stable true, build 2026-09-15.",
+        "Layout 10,737 classes / 11,604 assets / 9,884 data entries; net/minecraft/client/main/Main.class resolves, so the jar is unobfuscated.",
+        "User-supplied client(2).jar is byte-identical to Mojang's pinned client object; no repack."
+      ]
+    },
+    {
+      "id": "P01",
+      "title": "Triage all 17 release histories between 1.20.6 and 26.3",
+      "status": "done",
+      "dependsOn": [
+        "P00"
+      ],
+      "releaseRefs": [
+        "1.21",
+        "1.21.1",
+        "1.21.2",
+        "1.21.3",
+        "1.21.4",
+        "1.21.5",
+        "1.21.6",
+        "1.21.7",
+        "1.21.8",
+        "1.21.9",
+        "1.21.10",
+        "1.21.11",
+        "26.1",
+        "26.1.1",
+        "26.1.2",
+        "26.2",
+        "26.3"
+      ],
+      "acceptance": "Every release topic/fix has a native-client, server-owned, experiment, product-outside-scope or experiment-gated disposition; sources record URL, retrieval method and SHA-256; challenge pages are never treated as articles.",
+      "evidence": [
+        "All 17 crosswalk articles fetched with direct curl on 2026-11-25: HTTP 200, 277,902-954,712 bytes each, treated as articles after an mw-content-text check; URL, status, bytes and SHA-256 recorded in docs/transition-26.3.release-index.json.",
+        "First-pass additions read from each article and summarised in the crosswalk table (1.21 copper/tuff/crafter; 1.21.2 bundles; 1.21.4 creaking heart; 1.21.5 leaf litter/firefly bush; 1.21.6 dried ghast/harness; 1.21.9 copper bars/chains/chest; 26.1 golden dandelion; 26.2 cinnabar/sulfur caves; 26.3 poplar/dappled forest/straw bed/abandoned camps/cushion).",
+        "Resolved on 2026-11-27 by the per-topic crosswalk below; this line is retained only as the earlier gap it replaced.",
+        "Per-topic crosswalk completed on 2026-11-27: 4,703 top-level release-note topics across the 17 articles, each assigned native-client, experiment-gated, server-owned or product-outside-scope by the documented rules. Counts: 4,572 native-client, 69 experiment-gated, 5 server-owned, 57 product-outside-scope. docs/transition-26.3.crosswalk.{json,md} records every topic with its release, section, area, disposition and reason; tools/port-26.3/release-crosswalk.mjs --check reproduces it from the cached articles.",
+        "All 17 pages were re-fetched on 2026-11-27 after wiki chrome changed the full-page bytes; the release index now records the new full-page SHA-256 plus a separate extracted-article SHA-256 and topic count, and retains the earlier full-page hash as previousSha256. The official version manifest confirms all 17 ids are type=release; docs/transition-26.3.official-versions.json pins their release times and manifest row SHA-1."
+      ]
+    },
+    {
+      "id": "P02",
+      "title": "Extract native reports, registries, packets and resource inventory",
+      "status": "done",
+      "dependsOn": [
+        "P00"
+      ],
+      "releaseRefs": [
+        "26.3"
+      ],
+      "acceptance": "Reproducible reports and hashes reject mixed-version data; client data tables are regenerated from them; resource inventory resolves from the jar without an external asset download.",
+      "evidence": [
+        "Client block table rebuilt from the 26.3 client jar itself (tools/port-26.3/ExtractBlocks26_3.java): 1,286 blocks / 35,723 states, every state id owned by exactly one block, and every property set, state count and default state cross-checked against the native blocks report by blocks:26.3. Item stack sizes fall back to 64 for 1,129 blocks until the data-pack reload supplies item components.",
+        "Mob-effect registry completed from the native report and MobEffects bytecode: 40 contiguous ids, with the new breath_of_the_nautilus at 39 (MobEffectCategory.BENEFICIAL, colour 65518, no attribute modifiers). client/data/effects.json now has 40 entries and Items merges the native 26.3 metadata over the unchanged 1.20.6 ids, so HUD labels, colours, blending and the jar's mob_effect sprite resolve for id 39.",
+        "Biome fallback table regenerated from the 26.3 jar (tools/port-26.3/build-biomes.mjs): 67 biomes in native alphabetical registry order, including dappled_forest (id 8), pale_garden and sulfur_caves; climate, precipitation and visual colours come from the jar data and display names from en_us.json. biomes:26.3 --check is part of test:26.3.",
+        "Enchantment table regenerated from the jar (tools/port-26.3/build-enchantments.mjs): 43 native alphabetical registry ids (aqua_affinity 0, lunge 21, wind_burst 42), with levels, costs, slots, supported items, exclusivity, membership tags and effects. enchantments:26.3 --check is part of test:26.3.",
+        "Food table regenerated from the native item-component reports (tools/port-26.3/build-foods.mjs): 44 foods with native item ids, nutrition and saturation, including the four 26.3 edible fish buckets and excluding the ominous bottle. foods:26.3 --check is part of test:26.3.",
+        "The local crafting table is now native 26.3: build-recipes.mjs reads all 2042 files in the jar's singular data/minecraft/recipe directory and resolves item ids and 198 tag-alternative sets against the native item table. 1185 shaped/shapeless recipes with component-free results feed the local crafting fallback; the 857 stonecutting/smelting/smithing/special/component-result recipes stay server-authoritative. test-recipes-26.3.mjs pins native shaped and shapeless results (including coal/charcoal alternatives), and build-recipes:26.3 --check is part of test:26.3.",
+        "The entity table is now native 26.3: ExtractEntities263 boots the pinned client and dumps all 161 EntityTypes in registry order with native width, height, eye height and MobCategory; entity-registry.mjs generates both the runtime registry and client/data/entities.json from that dump, and test-entity-registry-26.3.mjs rejects a drift back to the 1.20.6 id order. Results: 161 types in the native order, 86 mob categories, 26.3 wood boats/rafts and split potions still map onto the existing object renderers.",
+        "The Creative table is now native 26.3: ExtractCreative263 boots the pinned client, binds the jar's item/painting/instrument tags and DATA_COMPONENT_INITIALIZERS, and rebuilds CreativeModeTabs for all eight feature-flag combinations. creative-data.mjs encodes every tab icon and stack with ItemStack.OPTIONAL_STREAM_CODEC, decodes the bytes with the JavaScript item codec, and checks the exact patch round-trip through writeItemStack26_3. The committed catalogue has 2034 unique stacks (405 component-patched), 14 tabs per combination and deterministic sorted dynamic-registry holder ids; creative-data:26.3 --check is part of test:26.3.",
+        "Table reproducibility pinned on 2026-11-27: docs/transition-26.3.table-manifest.json records 31 committed tables/fixtures (6,445,503 bytes), each with its SHA-256, byte size and generator/check command, plus the pinned client/server SHA-1s, native version.json identity (26.3/777/5023) and SHA-256 of the blocks/registries/packets/commands reports. It rejects a different Minecraft version or protocol and probes 26.3-only items/blocks/biomes; tools/port-26.3/table-manifest.mjs --check is now part of test:26.3.",
+        "Open limitation: client/data/effects.json is pinned by hash and native registry/VERSION probes but its display names are still hand-maintained; MobEffects bytecode supplies ids, categories and colours. This does not affect P02 report/table reproducibility for the generated files."
+      ]
+    },
+    {
+      "id": "P03",
+      "title": "Binary primitives, text and component codecs",
+      "status": "done",
+      "dependsOn": [
+        "P02"
+      ],
+      "releaseRefs": [
+        "1.21.2",
+        "1.21.5",
+        "26.3"
+      ],
+      "acceptance": "Byte fixtures round-trip against native codecs, including the 26.3 component and dialog/waypoint families; complete packet consumption is asserted.",
+      "evidence": [
+        "Native frames captured on 2026-11-25 from a disposable 26.3 server into tools/port-26.3/fixtures/login-config-26.3.json (30 frames, payload hex including the packet id).",
+        "byte-fixtures.mjs decodes them with the client's own Reader: compression threshold 256, Login Success uuid/name/properties, brand 'minecraft:brand'='vanilla', Update Enabled Features ['minecraft:vanilla'], Select Known Packs [minecraft:core:26.3]; every packet must be fully consumed.",
+        "Login Success re-encodes through the client's Writer to the exact native bytes.",
+        "Native change found by javap, not guessed: 26.3 renames the class to ClientboundLoginFinishedPacket and its STREAM_CODEC is composite(GAME_PROFILE, UUIDUtil.STREAM_CODEC), so Login Success carries a session UUID after the profile. The fixture asserts it (085cf48d-...).",
+        "Play codecs now cover Play Login, level_chunk_with_light, LpVec3 movement (add_entity, set_entity_motion), VecDelta movement (move_entity_pos/rot), PositionPath (entity_position_sync), light_update and the shared common packets.",
+        "Configuration codecs decode registry_data (Identifier + Optional anonymous NBT), update_tags (VarInt id lists), store_cookie, transfer, resource packs, code_of_conduct, show_dialog (inline anonymous NBT or registry id-1) and server_links (either a known link-type id or a component, then URL). The decoded Play dialog holder is presented by the 26.3 dialog screen; component serialization remains read-only.",
+        "Codec tail closed on 2026-11-27: every readable native component sample (61) is decoded, sliced at the exact consumed offset and decoded again to the same value with zero leftover bytes. The outbound text component writer round-trips string, styled, translatable-with-arguments, score, selector, NBT, keybind, nested extra/separator, array and all non-dialog click actions byte-for-byte; the missing NBT `interpret` boolean coercion was fixed so a BOOLEAN tag no longer re-encodes as INT. tools/test-component-codecs-26.3.mjs is part of test:26.3.",
+        "Dialog and tracked-waypoint are server-to-client families: the 26.3 client never sends them, so there is no outbound re-encoder to add. Their inbound gates assert complete byte consumption (show_dialog direct/registry branches, tracked waypoint operation/icon/payload shapes), and the dialog parser tests cover notice/confirmation/multi_action/dialog_list/server_links plus the inline and registry holder paths. Chat and item-stack outbound paths are the ones the client actually sends; both have native writers and byte gates (component/text above, captured/canonical item patches in P08)."
+      ]
+    },
+    {
+      "id": "P04",
+      "title": "Item components and stacks",
+      "status": "done",
+      "dependsOn": [
+        "P03"
+      ],
+      "releaseRefs": [
+        "1.21.2",
+        "1.21.5",
+        "1.21.9",
+        "26.3"
+      ],
+      "acceptance": "All 122 component types have a codec; patches and removals are preserved; defaults come from the native component reports.",
+      "evidence": [
+        "Native codec manifest: component-codecs:26.3 runs javap on DataComponents and pins the networkSynchronized expression of all 122 registered component types; 7 are server-only (custom_data, intangible_projectile, map_decorations, debug_stick_state, recipes, lock, container_loot) and cannot appear in a patch.",
+        "ItemStack, ItemStackTemplate and DataComponentPatch decode from the javap layouts: VarInt count, VarInt item id, VarInt added/removed counts, values then removed ids. All 115 wire components have verified readers. can_place_on/can_break use AdventureModePredicate.STREAM_CODEC (javap): list of BlockPredicate{optional holderSet<Block>, optional StatePropertiesPredicate (exact/ranged either), optional NbtPredicate CompoundTag, DataComponentMatchers}. DataComponentMatchers is exact TypedDataComponent list plus list(64) of Type.STREAM_CODEC (either predicate-type or component-type id) followed by TypeBase's fromCodecWithRegistries anonymous CompoundTag. A byte-built gate covers direct holder sets, state property matchers, NBT, exact components and an explicit partial predicate.",
+        "Thirty previously fail-closed component readers joined: use_effects, attribute_modifiers (attribute holder, Identifier/double/operation modifier, slot group, default|hidden|override display), food, consumable (ItemUseAnimation, sound holder, five ConsumeEffect types), use_remainder, use_cooldown, damage_resistant, tool, weapon, attack_range, enchantable, equippable, repairable, tooltip_style, death_protection, blocks_attacks, piercing_weapon, kinetic_weapon, attack_animation, interact_animation, block_transformer, villager_food, profile (full GameProfile or partial plus PlayerSkin.Patch), compostable, cooking_fuel, brewing_fuel, mob_visibility, sign_text_front/back and cushion/color. DumpComponents26_3 binds the native item components, harvests a real value per item component and encodes it with Mojang's own stream codec; components:26.3 requires each reader to consume exactly those bytes (61 codecs checked, 29 of the 30 new readers oracle-verified; block_transformer is a dynamic-registry holder proven by javap).",
+        "Live 26.3 server, zero decode errors: a diamond_sword with damage=10 and a custom name, a diamond_pickaxe with enchantments [{enchantment:33,level:3}], two potions with potion_contents potion 13, a chest whose container component is [apple x5, null, null, diamond x2], and a bundle with [apple x3, stick x8] all landed in the player inventory with the native component values.",
+        "window_items, set_slot and the 26.3-only set_player_inventory packet (aliased onto the existing windowId -2 path), close_window and craft_progress_bar are decoded and adapted; the pinned native window_items frame is consumed exactly by adapter:26.3.",
+        "Native enchantment holder ids resolve through client/js/net/enchantment-names-26.3.js, and the 43-entry table replaces the stale 766 order; Items keeps numeric 766 ids on the legacy mapping while resource-name ids use the native table. Gate coverage asserts the resolved names.",
+        "Native default components are generated from the 1658 native item reports by item-defaults:26.3 (client/js/net/item-defaults-26.3.js, 40 attributes ordered by protocol id) and checked in test:26.3. itemComponentValues26_3 merges the decoded patch over those defaults, deletes removed component ids and converts report/network shape differences (text NBT to components, attribute holder ids to names, rarity id to name, dyed colour, custom model data, potion holder id); Items.components selects it for every version 26.3 stack. The item-codec gate asserts diamond_sword max_damage 1561 with patched stack size 16/damage 42, removed unbreakable, apple food 4 and the scalar conversions. Adapted inventory slots carry the same version/defaults/removals (asserted on the native window frame), and the item view resolves an adapted slot's componentPatch additions and removals as well as raw stacks', so re-reading a slot never loses its patch. Native consumable animation ids map to names and drive useAction/useDuration: potion -> drink/32 ticks, apple -> eat/32 ticks. Item.getUseAnimation/getUseDuration are mirrored for the non-component classes (bow/trident 72000, crossbow charge, spyglass 1200, brush/bundle 200, goat horn instrument time) and the component branches (blocks_attacks -> block, kinetic_weapon -> spear, both 72000), so native item ids no longer consult the shifted 766 use table. Native items without an attribute_modifiers component also skip the 766 default-attribute fallback, so plain blocks cannot acquire armor or attack lines from an unrelated old id; the gate checks stone stairs. Native firework shape ids map to the tooltip shape names and hasFlicker becomes the tooltip twinkle flag, including explosions nested in a firework rocket. block-tags:26.3 resolves the jar's 300 block tag files into the 16 tag families used by native tool rules (nested tags expanded), and Items.strVsBlock applies the first matching tool rule: diamond pickaxe stone 8, sword cobweb 15/leaves 1.5, wooden axe stone 1. Native tooltip_display converts hidden component ids to names and suppresses the whole tooltip or the selected sections (enchantments, attributes, lore, dye, unbreakable and content-specific lines); the item gate covers hidden attributes and a fully hidden tooltip. Native equippable slot ids map to names and drive armorType (head/chest/legs/feet); body and saddle equipment stay out of player armor slots. Non-tool native items no longer consult the shifted 766 speed table. block-tools:26.3 runs a Java oracle over the native block registry to dump the 470 blocks whose default state requires the correct tool; with the native tool rules, canHarvest rejects wooden-on-iron-ore and hand-on-stone while accepting wooden-on-stone and diamond-on-obsidian. Nested ItemStackTemplates in bundle_contents, container, charged_projectiles, use_remainder and pot_decorations are adapted to decorated stack views, so bundle fullness and crossbow projectile tooltips read native contents. The gate covers a native bundle with two entries."
+      ]
+    },
+    {
+      "id": "P05",
+      "title": "Login and Configuration lifecycle at protocol 777",
+      "status": "done",
+      "dependsOn": [
+        "P03"
+      ],
+      "evidence": [
+        "The client's own socket (client/js/net/tcp-26.3.js + configuration-26.3.js) joins a disposable native 26.3 server on 2026-11-25: Hello/Login Finished, Login Acknowledged, Configuration (brand, update_enabled_features, select_known_packs, 30+ registry_data frames with anonymous-NBT payloads, update_tags, finish_configuration) and Play Login.",
+        "client-net.mjs drives VanillaSocket26_3 over Node TCP against 127.0.0.1:25568 and asserts the profile UUID, the 26.3 session UUID, 30+ registries with no elided payloads, 100+ tags, Play Login fields and byte-exact consumption of every decoded frame; login-config-frames.mjs replays 30 committed native frames through the same codecs, 23 of them registry_data.",
+        "Native behaviour proven, not assumed: claiming minecraft:core/26.3 without owning the pack makes the server omit every registry payload, so the client claims no packs and receives full data. A bad frame is still rejected with 'Badly compressed packet - size of 3 is below server threshold of 256'.",
+        "Open: the browser build still selects 766 through PROTOCOL_VERSION until the Play layer and client data are rebuilt."
+      ],
+      "acceptance": "A disposable native 26.3 server accepts the offline join and completes Configuration with no mixed-version identity."
+    },
+    {
+      "id": "P06",
+      "title": "Complete essential Play path",
+      "status": "partial",
+      "dependsOn": [
+        "P04",
+        "P05"
+      ],
+      "acceptance": "Every one of the 144 inbound Play IDs has a body and handler, and each of the 69 outbound IDs has a real sender or a recorded scope decision.",
+      "evidence": [
+        "Play Login (id 50) decoded from the native fixture with zero trailing bytes on 2026-11-25: playerId 62, hardcore false, levels [overworld, the_end, the_nether], maxPlayers 5, chunkRadius 3, simulationDistance 3, showDeathScreen true, spawn dimension minecraft:overworld, seed 3819442548323920269, gamemode 0, isFlat false, portalCooldown 0, seaLevel 63, onlineMode false, enforcesSecureChat false.",
+        "Field order taken from javap on the native ClientboundLoginPacket, not from an older protocol schema; the seaLevel field is 26.3-era and is asserted.",
+        "Nine of the twelve captured Play frames now decode with exact consumption: change_difficulty, player_abilities, set_held_slot, entity_event, server_data, player_info_update, player_position, recipe_book_settings, commands. Still raw: update_recipes, recipe_book_add and the separately decoded login.",
+        "26.3 redesign found in the commands packet: argument types are a registry id into minecraft:command_argument_type (0-61, read from the native registries report) followed by ArgumentTypeInfo.deserializeFromNetwork properties, not the 1.20.6 parser name string. A new restricted flag (bit 32) exists. The captured 26-node tree decodes to zero leftover and resolves int_range, message, string, entity, objective and integer parsers.",
+        "26.3 network NBT confirmed from NbtIo.writeAnyTag bytecode: tag id only, no root name. Reading server_data with the named-root reader underflowed; the anonymous reader consumes it exactly.",
+        "Player info update actions are a fixed 1-byte bitset over the eight actions (FriendlyByteBuf.writeFixedBitSet), not a VarInt mask.",
+        "Chunk path landed: level_chunk_with_light decodes all 9 captured native chunks with zero leftover (24 sections, heightmaps, block entities, light byte-array layers). Validated against the jar's own registry: every section nonEmptyBlockCount equals the number of non-air states unpacked, and all state ids are below the native 35,723.",
+        "26.3 chunk findings from bytecode: a section now carries two shorts (nonEmptyBlockCount, fluidCount); BitStorage packs floor(64/bits) values per long, so 5-bit sections are 342 longs and not 320; biome containers hold 64 entries; BIT_SET is a byte array, not a long array. Name mapping shows 26.2 cinnabar and sulfur in the caves at y=0.",
+        "Live-world layer added: set_time (26.3 clock map), game_event, chunk batch start/finished, chunk cache center, spawn position, health, experience, border (now includes warningTime), block_update, section_blocks_update (VarLong state<<12|pos). Forty-three of 51 captured startup frames decode with zero leftover and a live join decodes 100+ Play frames across 30+ types; 46 inbound IDs have javap-verified decoders.",
+        "Native redesigns recorded from the jar: LpVec3 (48-bit packed vector), VecDelta packed as (stepCount<<1)|onGround with Linear/Stepped steps, PositionPath stepped paths carrying only steps, 26.3 serverbound accept_teleportation echoing position and rotation, and horizontalCollision on move packets.",
+        "Join context is built from native configuration data (session-26.3.js): 35,723 block states and the air set from the block report, biome holder ids, dimension types decoded from registry NBT with 26.3's Skybox/attributes replacing effects, feature flags and tag registries. client-net.mjs asserts the overworld type is min_y -64 / height 384 / skylight.",
+        "Open: 46 of 144 inbound Play IDs decoded; entity metadata/equipment, item-stack components, advancements and the redesigned recipes remain raw. No Play handlers, no chunk/entity/registry consumers, and entity_position_sync's stepped path was proven by a 39-byte native frame.",
+        "Play adapter (play-adapter-26.3.js) maps decoded 26.3 packets onto real on_<handler> names from game.js; adapter:26.3 replays 53 pinned native frames and asserts 22 packets across 16 handlers, including two 24-section chunks loaded through world.loadChunk26_3 and native light masks.",
+        "Live 26.3 server session: the native server accepted the client after the serverbound bodies were corrected from bytecode - accept_teleportation now echoes position and rotation, movement packets carry the packed onGround/horizontalCollision flags byte, every client tick ends with client_tick_end (which clears the server's per-tick position flag), and keep_alive/ping are adapted back to the game handlers. The session stayed connected past the keepalive timeout with no invalid-packet disconnect.",
+        "Entity Play path landed on 2026-11-26: add_entity resolves the native minecraft:entity_type registry (161 dense ids) to names, set_entity_data decodes the native EntityDataSerializers table (44 ids dumped from getSerializedId after Bootstrap) and set_equipment reads the continuation-bit slot list. 49 of 144 inbound Play IDs now have bytecode-verified decoders; adapter:26.3 replays 53 pinned frames, adapting 29 packets across 18 handlers and asserting both native bats plus five metadata frames.",
+        "Particle metadata closed the last live join decode gap: entity metadata serializer 17 (PARTICLES) decodes all 128 registered particle types through their native StreamCodecs, so a fresh 26.3 join loads 81 chunks and 26 entities with zero skipped frames (the same join previously skipped 56 frames, all [set_entity_data#101] serializer 17).",
+        "Outbound click and attack are live-accepted: container_click round-trips the menu state id (1 -> 2) and moves a stack, and the native attack body removes a summoned pig after 8 hits.",
+        "Inbound batch on 2026-11-26: 73 of 144 Play IDs now decode with bytecode-verified bodies and 51 have adapters. Added animate, take_item_entity, hurt_animation, block_event, level_event, player_rotation, set_title_text/subtitle/action bar, set_titles_animation, clear_titles, system_chat, disguised_chat, tab_list, set_passengers, set_entity_link, player_info_remove, set_cursor_item and teleport_entity; inbound-gate.mjs pins each byte layout and the adapted handler fields.",
+        "Live 26.3 checks: server /say arrived as disguised_chat and rendered in chat, /title rendered the gold component in the HUD, an item summoned at the player was collected through take_item_entity (stone 8 -> 9), and the session stayed at zero skipped frames.",
+        "Vehicle movement (PositionAndRotation), block-change acknowledgements and remote block destruction joined the inbound set (76 of 144 decode). Live /gamemode survival arrived as game_event id 3 and switched the client from creative to survival with zero skipped frames.",
+        "Distance, camera, pong and combat-event frames followed (82 of 144 decode, 60 adapters). The local 26.3 server reports view-distance=3 and simulation-distance=3, and a fresh join now sets both client values from the decoded packets with zero skipped frames.",
+        "Boss-event frames joined the inbound set (83 of 144 decode, 61 adapters): all six operations read the native UUID + VarInt action layout, with anonymous-NBT name, f32 progress, colour/overlay VarInts and the flags byte. Live 26.3 check: /bossbar add plus /bossbar set ... players delivered operation 0 and hud.bossBars held BOSS5 with progress, colour, overlay and flags; the update operations are byte-gated only, not yet exercised live.",
+        "Sound, cooldown and mob-effect frames joined the inbound set (89 of 144 decode, 67 adapters). Bytecode established that sound and effect registries travel as holders with wire id = protocol id + 1 (0 = inline value), that sound events also carry a 26.3 UI source (11 categories), and that effect flags are ambient/visible/icon/blend. The native sound-event and mob-effect name tables are generated and checked by generate-ids; the adapter maps effects onto the 1.20.6 ids the HUD uses and cooldowns through the native item table. Verified by byte fixtures and by client-net:26.3 decoding a real 33-chunk session against the local 26.3 server; browser quest for live /playsound, /effect and /stopsound was started but the page did not reach Play in this low-disk environment.",
+        "Chunk unload, block-entity data, sign editor and advancement-tab selection followed (93 of 144 decode, 71 adapters). ChunkPos is one packed long (x low 32 bits, z high 32 bits) after javap showed readChunkPos/writeChunkPos delegating to pack/unpack; block-entity data carries the registry type id and an anonymous compound tag, and SignTextSlot is BACK=0/FRONT=1. All four are byte-gated and the real-server client-net run decodes 29 chunks with zero leftover frames.",
+        "Respawn, player-look-at, open-book and command-suggestions frames followed (97 of 144 decode, 75 adapters). CommonPlayerSpawnInfo's GameType is a VarInt with an OPTIONAL_VAR_INT previous type (0 = none), verified from GameType's own codec, and respawn reuses the 766 spawn-info vocabulary so the existing dimension resolver and death screen apply; suggestions carry VarInt id/start/length plus text and optional component tooltips. Byte-gated and the full test, adapter and real-server client-net suites stayed green.",
+        "Custom chat completions, tag-query responses and display-objective frames followed (100 of 144 decode, 78 adapters). The completion Action enum is ADD/REMOVE/SET in native order, tag queries carry transaction id + network NBT for the inspect path, and DisplaySlot is the VarInt the scoreboard handler already consumes. Gate, test, adapter and real-server client-net all stayed green.",
+        "Container windows, chat deletion and custom payloads joined the adapted set (102 of 144 decode, 80 adapters). open_screen needed no renumbering table: the 26.3 menu registry report has the same 25 identifiers in the same order as protocol 766, so the native registry id is also the menuInfo766 id and on_open_window resolves slot counts unchanged. delete_chat follows MessageSignature.Packed (VarInt id+1, 0 means a full 256-byte signature) and the adapter shifts the 0-based packed id onto the 1-based MessageSignatureCache762. custom_payload was already decoded as channel + rest bytes but had no adapter, so minecraft:brand never reached on_custom_payload; it now does. All three are byte-gated, including a full 256-byte signature and both brand and opaque payloads.",
+        "Adapter audit closed the decoded-but-unwired gameplay set (102 decode, 91 adapters): commands, player_info_update, server_data, change_difficulty, entity_event, section_blocks_update, level_particles, ticking_state, ticking_step, set_chunk_cache_center and initialize_border now reach on_declare_commands, on_player_info, on_server_data, on_difficulty, on_entity_status, on_multi_block_change, on_world_particles, on_set_ticking_state, on_step_tick, on_update_view_position and on_initialize_world_border. section_blocks_update unpacks SectionPos x(22)/z(22)/y(20) and the section-relative short layout x(8)/z(4)/y(0); initialize_border maps initialise sizes onto WorldBorder's action-3 vocabulary. Only six socket/lifecycle packets plus player_rotation, recipe_book_settings, bundle_delimiter and post_effects remain unwired from the decoded set. Gate and real-server client-net stayed green (27 chunks).",
+        "The death-screen path joined (103 decode, 92 adapters): player_combat_kill is playerId VarInt + trusted NBT message, adapted onto a new on_death_combat_event that reuses the existing combat-event death branch. Byte-gated with a string message.",
+        "Scoreboard and teams joined (107 decode, 96 adapters): set_score, set_objective, reset_score and set_player_team decode the native optional NumberFormat dispatch (blank/fixed supported; styled stays fail-closed) and the team Parameters order (three components, visibility/collision enums, optional TeamColor, friendly-fire byte). reset_score and teams get thin Game handlers so the generated handled map includes them; the scoreboard vocabulary is unchanged. Gate, test and real-server client-net stayed green.",
+        "World border family closed (116 decode, 105 adapters): initialize plus the five setters now decode native fields and feed the existing 0-5 world-border vocabulary, with diameters halved exactly as the 766 handler expects. Gate, test and real-server client-net stayed green.",
+        "Player chat joined (111 decode, 100 adapters): the native packet reads the optional 256-byte signature, packed body with last-seen signature ids, optional unsigned component, filter mask (byte-array bitset only when partially filtered) and bound chat type (holder id, name, optional target). The adapter feeds the existing chat handler. Gate, test and real-server client-net stayed green.",
+        "Maps and swing animation joined (110 decode, 99 adapters): map_item_data reads the optional decoration list and optional MapPatch, flattening both into the existing item-map update shape; swing_animation reads the VarInt entity id and byte action through an on_swing_animation bridge. Gate, test and real-server client-net stayed green.",
+        "Biome updates joined (108 decode, 97 adapters): chunks_biomes reads the native list of packed ChunkPos longs plus VarInt-prefixed section buffers and hands the existing palette path the exact byte payload. Gate, test and real-server client-net stayed green.",
+        "Server links and clear-dialog joined (130 decode, 109 adapters): each ServerLinks entry is a boolean-tagged Either (true = KnownLinkType idMapper id, false = trusted context-free component) followed by the URL string; clear_dialog is a unit codec. A live Chrome join on the local 26.3 server rendered terrain, health/hunger and the hotbar with no decode error, and the advancement/statistics screens stay honestly empty until their raw packets are ported. Gate, test and real-server client-net stayed green.",
+        "The recipe family joined (134 decode, 109 adapters): update_recipes is a VarInt map of RecipePropertySet Identifiers to item-id lists plus the stonecutter SingleInputSet; recipe_book_add is a list of RecipeDisplayEntry (VarInt display id, RecipeDisplay registry-dispatch payload, optional group, RecipeBookCategory id, optional Ingredient holder-set list) with a flags byte and replace boolean; recipe_book_remove is a list of VarInt display ids; place_ghost_recipe is a container id and a RecipeDisplay. The SLOT_DISPLAY and RECIPE_DISPLAY orders come from the 26.3 generated report, and the live burst's update_recipes and recipe_book_add frames consume exactly with zero leftover.",
+        "Tags, game rules, report details, disk warning, transient blocks, mount screens, debug samples and test frames joined (128 decode, 109 adapters): update_tags maps a registry Identifier to a tag payload of tag Identifiers and VarInt entry ids and is flattened onto the 766 tag list; game_rule_values is an Identifier/string map; custom_report_details is a string/string map; low_disk_space_warning is a unit codec; add_transient_block is a BlockPos plus block-state id; mount_screen_open is writeContainerId, VarInt columns and a full writeInt entityId; debug_sample is a long array plus the sample-type ordinal and feeds the existing tick-time handler; game_test_highlight_pos is two BlockPos values; test_instance_block_status is a component plus an optional Vec3i. Gate, test and real-server client-net stayed green.",
+        "Damage events and projectile power joined (119 decode, 107 adapters): damage_event is VarInt entityId plus a DamageType holder, the cause/direct ids as id+1 (0 absent) and an optional Vec3; the adapter undoes the +1 for the existing handler. projectile_power is now a VarInt id and a single double accelerationPower, so it stays decoded without an adapter instead of inventing a Vec3 direction for the 766 fireball path. Gate, test and real-server client-net stayed green.",
+        "Merchant offers joined (117 decode, 106 adapters): ClientboundMerchantOffersPacket is the container id (writeContainerId), the MerchantOffers list, then VarInt villagerLevel, VarInt villagerXp and the showProgress/canRestock booleans; MerchantOffer.writeToStream is ItemCost, ItemStack, optional ItemCost, isOutOfStock, then uses/maxUses/xp/specialPriceDiff as writeInt (a 26.3 change from 766 VarInts), float priceMultiplier and writeInt demand. ItemCost is a VarInt item holder, VarInt count and a DataComponentExactPredicate list of TypedDataComponent pairs; the adapter feeds the existing trade_list screen shape. Gate, test and real-server client-net stayed green.",
+        "Advancements joined (135 decode, 110 adapters): ClientboundUpdateAdvancementsPacket is the reset flag, a list of PositionedAdvancement (Identifier, Advancement, float x/y), a removed Identifier set, an Identifier -> AdvancementProgress map and the show flag. Advancement.STREAM_CODEC sends only optional parent, optional DisplayInfo, AdvancementRequirements and the telemetry flag (no rewards or criteria map); DisplayInfo writes title/description components, an ItemStackTemplate icon, the AdvancementType ordinal and one flags int (background/toast/hidden) with the background Identifier when bit 0 is set; each criterion progress is an optional epoch-millis instant. DumpAdvancements26_3 encodes the packet with Mojang's own StreamCodec and the gate decodes those 224 bytes field for field, then the adapter feeds the existing advancement manager. The live-burst adapter count rose from 41 to 42 packets and 29 to 30 handlers. Gate and test stayed green.",
+        "Explosions joined (136 decode, 111 adapters): ClientboundExplodePacket is a Vec3 centre, float radius, int blockCount, an optional Vec3 knockback, the explosion ParticleOptions, a sound holder, a WeightedList<ExplosionParticleInfo> (value then VarInt weight) and a playSound flag; 26.3 no longer sends destroyed-block offsets. The gate decodes 82 bytes encoded by Mojang's own StreamCodec. Client behaviour changed with it: Game.on_explosion plays the packet sound only when playSound is set, spawns one explosion particle with velocity (1,0,0), applies the optional knockback and feeds ClientExplosionTracker, ported to client/js/game/explosion-tracker.js (512-particle cap, weighted picks, particle-setting clearing, solid-block rejection) and ticked with the client tick. Gate, test and the existing 1.20.6-shaped explosion playback test stayed green.",
+        "Statistics and minecart steps joined (138 decode, 112 adapters). award_stats is a VarInt map whose key is Stat.STREAM_CODEC: the STAT_TYPE registry id followed by the id in that type's value registry; DumpStats26_3 encodes 13 bytes with Mojang's codec and also dumps the native stat_type and custom_stat orders. The 26.3 custom registry inserts happy_ghast_one_cm (17), nautilus_one_cm (22) and sleep_in_straw_bed (61), so StatsCounter now accepts native type/custom tables and the statistics screen uses them instead of the shifted 1.20.6 list. move_minecart_along_track decodes a VarInt entity id and MinecartStep entries (position Vec3, movement Vec3, two rotation bytes, float weight); it has no 766 handler, so it is decoded-only rather than given an invented adapter. Gate and test stayed green.",
+        "Tracked waypoint joined the client surface on 2026-11-27: the native packet body (operation, Either<UUID,String>, icon style + optional RGB, four payload shapes) is decoded and adapted, ClientWaypointManager track/update/untrack is ported, and the native locator bar draws the 60-degree window, distance sprites and pitch arrows. A browser-injected tracked waypoint rendered the bar; a real server /waypoint command was not exercised.",
+        "Respawn was fixed against a live death on the 26.3 server: the packet carries a dimension-type holder id, so the adapter now resolves it through the join context registry. The client returned to the overworld with 20 health and no respawn exception; the previous build threw Missing or invalid 762 dimension 0.",
+        "show_dialog joined the decoded set on 2026-11-27: Dialog.STREAM_CODEC is ByteBufCodecs.holder(Registries.DIALOG, fromCodecWithRegistriesTrusted(DIRECT_CODEC)), so the body is VarInt 0 plus one unnamed NBT tag for a direct dialog, otherwise registry id-1. The gate covers both branches. The dialog graph now has a native parser and screen for notice/confirmation/multi_action/dialog_list/server_links; dialog inputs and plain-message body click/tooltip spans are now implemented; only live acceptance remains.",
+        "P06 inbound wire coverage closed on 2026-11-27: all 144 inbound Play IDs decode with zero trailing bytes and 0 raw; 135 have generated adapters and two reuse shared handlers, while four are consumed by the connection layer and three are explicit scope decisions (add_transient_block and the two game-test frames). Recipe-display add/remove/settings and update_recipes are handled natively; the stonecutter consumes the server's ingredient/SlotDisplay list and the pinned adapter gate skips nothing. The final four are debug/block_value, debug/chunk_value, debug/entity_value and debug/event. debug-subscriptions-26.3.js ports the native 16-entry minecraft:debug_subscription registry (dedicated_server_tick_time has a null value codec and stays fail-closed) and all 15 value codecs: bee/hive/POI data, brain and goal dumps, breeze targets, debug paths/nodes, block intersections, redstone orientation ids, village sections, raids, structures, game-event listeners, neighbour updates and game events. inbound-gate.mjs pins each native byte layout and the adapted handlers; adapter:26.3, test:26.3, generate-ids and inbound-gate are green. Values are kept as data and debug-overlay.js now renders the active block/chunk/entity subscriptions and the bounded event stream in the F3 screen, with oversized payloads truncated instead of growing the HUD. The remaining P06 acceptance gap is outbound sender coverage, not an inbound wire gap. Outbound coverage is now closed: all 69 serverbound IDs have a sender or a recorded scope decision, 26.3 chat/command/ack share the native `chat`, `chat_command` and `chat_ack` ids, every chat packet carries the LastSeenMessages checksum byte, and `test-outbound-26.3.mjs` pins the coverage and bytes. Only the gametest block editor is intentionally scoped out. Live acceptance of the rare senders remains.",
+    "Live 2026-11-27 dimension acceptance: after fixing the chunk section count, the signed-in client travelled overworld -> nether -> end -> overworld with 117 chunks in each 256/384-height dimension and zero decode errors; nether/end chunks are native 16-section buffers, not overworld 24.",
+    "Live 2026-11-27 creative acceptance: the Creative search tab produced diamond_block; a creative window click swapped it into server slot 0 and the server's own data get entity nickgencs Inventory reported {Slot:0b, diamond_block} and {Slot:1b, diamond}."
+      ]
+    },
+    {
+      "id": "P07",
+      "title": "Graphical join on a disposable 26.3 server",
+      "status": "done",
+      "dependsOn": [
+        "P06"
+      ],
+      "acceptance": "Terrain, entities, HUD, movement, death/respawn and reconnect in a real Chrome client against 26.3 only.",
+      "evidence": [
+        "Connection opens VanillaSocket26_3 for protocol 777, builds the join context on play_login and adapts every Play packet before the game sees it. The browser build still selects 766 until the 26.3 model/shape data lands.",
+        "Native graphical join in Chrome on 2026-11-26: the 26.3 client built its join context from the native registry report, spawned at (4.4747, 70.0, 5.1511), streamed and rendered 81 chunks with terrain, tall grass and sky, and showed the full HUD (10 hearts, hunger bar, hotbar). The server logged the join with no movement or keepalive disconnect, and the client reported inWorld=true, doneLoadingTerrain=true and crashed=false.",
+        "P07 acceptance is complete: terrain, entities, HUD, movement, death/respawn and reconnect were all exercised live. The browser now serves 26.3 block models, textures and the 26.3 panorama; entity rigs 26.3 restructured still use the 1.20.6 part trees (P10).",
+        "Live 26.3 entity rendering verified in Chrome on 2026-11-26: the client tracked 83 entities with sane coordinates (max |x|/|z| = 56), including pigs, sheep, cows, chickens, bats, villagers, glow squid and the 26.3 sulfur_cube (raw identity, no 1.20.6 model). Cow, sheep, pig and chicken models rendered in-world; health and bat flags decoded from native set_entity_data frames.",
+        "Movement verified against the 26.3 server: holding forward for 1.6 s moved the player 6.9 blocks (+Z 1.56 -> 8.46) and the server accepted every move packet. The embedded preview webview cannot grant pointer lock (WrongDocumentError), so input state was driven directly instead of through a locked mouse.",
+        "Death/respawn and reconnect verified: a summoned zombie killed the player (server logged \"was slain by Zombie\"), the DeathScreen respawn round-tripped client_command and restored health 20 in creative, and repeated disconnect/reconnect joins all reached Play."
+      ]
+    },
+    {
+      "id": "P08",
+      "title": "Inventory and interaction",
+      "status": "partial",
+      "dependsOn": [
+        "P07"
+      ],
+      "acceptance": "Click, state-id and rejection sequences pass against the native server, including the newer container/menu families.",
+      "evidence": [
+        "Serverbound bodies rewritten from 26.3 bytecode: lp-vec3-26.3.js read/write (extended scale 4*ceil(max/4)), HashedStack/HashedPatchMap writers, container_click/container_close, player_action direction byte, use_item_on with insideBlock and worldBorderHit booleans, attack. serverbound:26.3 pins every body as bytes.",
+        "Live 26.3 server accepted a pickup+place click: inventory state id went 1 -> 2 and dirt moved from slot 43 to 44 and stayed there; the server sent no rejection or resync.",
+        "Live attack verified: interaction.attackEntity sent the native attack body and the summoned pig (id 2500, 1.85 blocks away) left the entity map after 8 hits.",
+        "Native Creative slots are no longer blocked on the item table: ExtractCreative263 rebuilds CreativeModeTabs with the pinned 26.3 client for all eight feature-flag combinations, ItemStack.OPTIONAL_STREAM_CODEC emits 2034 unique stacks (405 component-patched), creative-data.mjs decodes each through the JavaScript item codec and round-trips the exact patch through writeItemStack26_3, and creative-data-26.3.js selects the native tab rows from the enabled features. The serverbound creative-slot packet uses OPTIONAL_UNTRUSTED_STREAM_CODEC and now carries those raw native patches.",
+        "Creative window-click hashes are native: ExtractCreative263 calls HashedStack.create with the client's RegistryOps<HashCode> over HashOps.CRC32C_INSTANCE, stores sorted added type/hash pairs and removed ids, and encodes Mojang's own HashedStack wire. creative-data.mjs verifies writeHashedStack26_3 byte-for-byte for all 405 patched stacks; catalog stacks now carry valid HashedPatchMap data through container clicks.",
+        "Open: general HashedPatchMap hashing for arbitrary server-provided component values (Creative catalog stacks are covered; other patched stacks still fail closed until a full component hash encoder exists), and live acceptance for the remaining container/menu families (merchant, enchanting, stonecutter, loom). Their screens exist, but no live menu session has exercised them.",
+        "Live block break and place verified: player_action removed the ground block server-side (execute if block reported air) and use_item_on placed stone on the clicked face (target state became stone).",
+    "Live creative-window acceptance on 2026-11-27: the server confirmed serverbound creative slots and the resulting inventory after adding diamond_block and diamond; the same session then travelled to the nether and end with the native 16-section chunk fix."
+      ]
+    },
+    {
+      "id": "P09",
+      "title": "Authenticated lifecycle, transfer and packs",
+      "status": "partial",
+      "dependsOn": [
+        "P07"
+      ],
+      "acceptance": "Evidence only with a real account; transfer, cookies and dialog flows are exercised end to end.",
+      "evidence": [
+        "2026-11-27 live online-mode acceptance: the signed-in Microsoft account nickgencs joined a disposable native 26.3 server with online-mode=true. The server authenticated UUID 055e7568-156d-4bb8-9771-dcbd7144f2c9 and logged the player into Play; the client loaded 81 chunks with zero decode errors. This run exposed and now verifies the 26.3 hello.challenge -> RSA verify-token mapping (the old mapping encrypted undefined).",
+        "Transfer acceptance: /transfer 127.0.0.1 25570 from the same online-mode server disconnected the player and the client reconnected with transfer intent (no new credential prompt); the server authenticated the same UUID and logged the new connection into Play. Dialog acceptance: a live 26.3 datapack notice dialog rendered in DialogScreen263, its Run button sent run_command `say dialog-ok` to the server, and the screen closed. Open: a server-issued store_cookie/cookie_request round trip has not been observed on a live server."
+      ]
+    },
+    {
+      "id": "P10",
+      "title": "Resources, fonts, atlases and item models",
+      "status": "partial",
+      "dependsOn": [
+        "P07"
+      ],
+      "acceptance": "Default jar resources resolve with no custom pack, including the reworked item-model and GUI sprite systems.",
+      "evidence": [
+        "Native client tables built from the jar without minecraft-data: blocks:26.3 (1,286 blocks / 35,723 states, partition-checked) and items:26.3 (1,658 items, contiguous protocol ids, stack sizes from the item component reports, names from the jar en_us.json).",
+        "26.3 equipment renders from `entity/equipment/humanoid/<asset>.png` and `humanoid_leggings/<asset>.png` (not 1.20.6 `models/armor`), reading the native `equippable.assetId`. Armor trims use native trim material/pattern ids, `item/<item>_<material>_trim` models and generated palette textures; because 26.3 defines atlases in code, the blocks atlas synthesizes the native `trims/items/*_trim` paletted permutations from `palettes/trim_base` (verified in-browser for all four armor pieces and iron_darker). The smithing screen uses the native `container/slot/*` sprites with native template icons (including nautilus armor and spear). tests: `test-armor-trims-26.3.mjs`; screens/visual acceptance remains P13.",
+        "26.3 boats are per-wood entity types, not a Boat.Type metadata index. The client now resolves the wood from the native entity name (oak through pale_oak/poplar plus bamboo rafts), reads the shifted AbstractBoat paddle/bubble accessors, picks the matching chest-boat/raft item, and extracts native 26.3 boat and chest-boat layers for all eleven woods. `test-boat-26.3.mjs` pins the identities; model extraction checks all 22 boat models resolve from `minecraft:boat/*` layers. Rabbit, horse/donkey, camel, sniffer, horse-armor, player, ender dragon and end-crystal rigs now use native 26.3 layers too, including merged player cape/ears, horse/camel saddle layers, the dragon five-neck/twelve-tail chain and the nested end-crystal glass/core hierarchy; `test-entity-rigs-26.3.mjs` pins those bindings. 26.3's per-family/equipment texture moves resolve through `entity-textures-26.3.js`, and new 26.3 mobs without renderers are explicitly deferred by the visual gate."
+      ]
+    },
+    {
+      "id": "P11",
+      "title": "New content families from the release crosswalk",
+      "status": "todo",
+      "dependsOn": [
+        "P08",
+        "P10"
+      ],
+      "acceptance": "Per-family live/visual scenario; a registry entry or present model is not acceptance.",
+      "evidence": []
+    },
+    {
+      "id": "P12",
+      "title": "Content effects: particles, sounds, animations",
+      "status": "partial",
+      "dependsOn": [
+        "P11"
+      ],
+      "acceptance": "Behavior acceptance with real triggers, not registry equality.",
+      "evidence": [
+        "All 128 26.3 particle types and the 22 data-carrying StreamCodecs pinned from ParticleTypes BootstrapMethods and the option classes with javap: block states, geyser INT, geyser_base INT+FLOAT, power FLOAT, spell INT+FLOAT, color INT, item ItemStackTemplate, dust INT+FLOAT, dust_color_transition INT+INT+FLOAT, sculk_charge FLOAT, shriek VarInt, trail Vec3+INT+VarInt.",
+        "Wolf wet-shake and interested-head formulas, splash and powered dragon/piglin head animation are ported with the upstream fixes; `test-wolf-shake-1.20.6.mjs` and `test-skull-animation-26.3.mjs` pin the formulas against the pinned 26.3 jar models. Live trigger acceptance remains open.",
+        "Entity metadata serializers PARTICLE and PARTICLES decode through particles-26.3.js; particle-types-26.3.js is generated by tools/port-26.3/particle-codecs.mjs and particle-codecs-gate.mjs pins the byte layouts, including a live-captured set_entity_data frame.",
+        "Vibration now decodes both native PositionSource branches: block (packed BlockPos) and entity (VarInt id + float eye offset), followed by arrival ticks. particle-codecs-gate.mjs pins both branches and rejects unknown source types. level_particles already dispatches through game.on_world_particles to Particles.onPacket; remaining P12 work is the rendering/consumer acceptance for individual particle behaviours, not wire decoding.",
+        "26.3 formula parity pass on 2026-11-27: WolfModel sitting now uses left front leg x = 0.49 (the native -0.01 age-scaled offset), matching the decompiled AdultWolfModel; AbstractPiglinModel ears now use the native left=-30deg-cos(1.2*phase)*amp / right=+30deg+cos(phase)*amp (baby rest 5deg) instead of the swapped signs, dance ears/arm heights/head and body offsets are native, and zombified arms follow AnimationUtils.animateZombieArms including the baby held-item raiseArms branch, spear-pose early return and native y-rotation signs. EnderDragonModel head-part offsets now implement the native phase branches (normal flight head=0, neck=history delta, sitting=part index, hovering=sitting, landing/takeoff=part/max(distanceToEggSqr/4,1) when the render state supplies the distance; the fight origin is not client-synchronised, so the term is zero without it). test-animations-26.3.mjs pins these formulas and part of test:26.3."
+      ]
+    },
+    {
+      "id": "P13",
+      "title": "GUI, dialogs, chat and commands",
+      "status": "partial",
+      "dependsOn": [
+        "P09",
+        "P10"
+      ],
+      "acceptance": "Screens and option rows match native 26.3, including dialog and waypoint UI.",
+      "evidence": [
+        "Player-list hearts use the native HealthState blink/catch-up and `hud/heart/*` sprites; name tags lift for the below-name objective only within 10 blocks; the smithing screen is now 26.3-native (slot sprites, template icons, error panel, armor-stand preview); the title screen uses the native 26.3 layout (Friends/language/accessibility icon columns, Options/Quit row, splash at width/2+123,69, and the clamped two-second widget fade while the panorama stays visible). The Friends button is present in its native disabled state because MinecraftJS has no friends backend. The dialog screen parses both `show_dialog` holder branches, resolves the configuration `minecraft:dialog` registry, presents notice/confirmation/multi_action/dialog_list/server_links with native common/button/action fields and compact bodies, and executes static and custom click actions; `clear_dialog` shares the same screen path. Tests: `test-name-tags.mjs`, `test-tab-hearts-1.20.6.mjs`, `test-title-26.3.mjs`, `test-dialog-26.3.mjs` (15 dialog/parser/input cases). Server-link buttons are populated from the last Play server_links payload, including the native known-type labels. The four native input controls are parsed and rendered (text/EditBox with multiline, boolean Checkbox, number_range slider with native start/end/initial/step scaling, single_option cycle), dynamic/run_command templates substitute $(key) values with native StringTag escaping, and dynamic/custom merges the input NBT tags into its additions. Item bodies draw their icon and count, the native warning button opens the Back/Disconnect warning screen, and styled plain-message segments retain click actions and show-text tooltips. Live 2026-11-27: a 26.3 datapack notice dialog (`live:acceptance`) was shown through `show_dialog`; DialogScreen263 parsed the title/body/button and the Run button's static run_command reached the server as `dialog-ok`, then the screen closed. Open: full GUI visual acceptance beyond this dialog path."
+      ]
+    },
+    {
+      "id": "P14",
+      "title": "Inherited 1.20.6 parity repairs",
+      "status": "done",
+      "dependsOn": [
+        "P13"
+      ],
+      "acceptance": "Every inherited finding has an explicit disposition; nothing is silently dropped by the version jump.",
+      "evidence": [
+        "Every one of the 83 inherited 1.20.6 checkpoints now has exactly one 26.3 disposition in docs/transition-26.3.inherited-findings.{json,md}: 31 implemented-26.3, 37 carried-open, 6 blocked-visual, 5 blocked-account and 4 out-of-scope. tools/port-26.3/inherited-findings.mjs --check is part of test:26.3, so a checkpoint cannot be dropped by a later checklist edit.",
+        "Resource-pack/font findings are resolved one by one in docs/resource-pack-font-26.3.md. The concrete 26.3 fix is pack compatibility: protocol 777 now uses native PackFormat 97.1 instead of 1.20.6 format 32, parses min_format/max_format compact lists and legacy pack_format/supported_formats, and compares major then minor like PackFormat.compareTo. tools/test-resource-pack-format-26.3.mjs covers 97.0 -> old, [97,1] -> compatible, 98 -> new, legacy ranges and the 1.20.6 threshold.",
+        "26.3 font inputs were checked against the jar: default/alt/uniform/illageralt/include-default/include-space are byte-identical; include/unifont.json is the installed asset-index override with the 26.3 unifont_jp.zip size_overrides (the jar copy is intentionally empty). All 26.3 provider types (reference, space, bitmap, unihex, ttf) are handled by the inherited provider stack.",
+        "Open dispositions are explicit, not passes: PACK-03/04 interactions, live font/backend comparison, authenticated WebMC pack delivery and complex-script/CFF coverage remain carried-open or blocked."
+      ]
+    },
+    {
+      "id": "P15",
+      "title": "Whole-target acceptance",
+      "status": "todo",
+      "dependsOn": [
+        "P11",
+        "P12",
+        "P14"
+      ],
+      "acceptance": "Open findings accounted for; no mixed-version data; honest partial/unverified list published.",
+      "evidence": []
+    },
+    {
+      "id": "P16",
+      "title": "Backports and distributions",
+      "status": "done",
+      "dependsOn": [
+        "P15"
+      ],
+      "acceptance": "Source SHAs, manifest and checksums match builds; no Mojang jars or built assets are published.",
+      "evidence": [
+        "Clean handoff packaging added on 2026-11-27: tools/port-26.3/package-handoff.mjs builds a deterministic zip from tracked sources, records a per-file SHA-256 manifest and the archive digest, and rejects tracked jars/screenshots/logs/caches. Test archive MinecraftJS-26.3-995458cae0e6.zip: 1,358 files / 18,168,584 uncompressed bytes / 3.6 MiB, SHA-256 3f7b250976da9973fbafba78eb3ea258d289fa7d9b626aa7f5eca62f1a241f09; no jar, cache or docs/*.png entries. The final archive is rebuilt after the batch commit."
+      ]
+    }
+  ]
+}

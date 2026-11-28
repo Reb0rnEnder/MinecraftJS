@@ -136,6 +136,22 @@ export function quadIndices(quads) {
 }
 
 // Box-filtered mip chain (RGBA). Returns [{width, height, data}, ...] excluding level 0.
+// Native 26.3 MipmapGenerator uses two details that a plain GL box filter misses:
+// colour is averaged in linear space, and cutout alpha keeps its coverage instead of
+// being averaged below the alpha test (which made distant grass vanish and leaves darken).
+// Alpha-weighted linear colour plus a max-alpha cutout filter matches that result for the
+// binary-alpha block atlas without a per-sprite pass.
+const SRGB_TO_LINEAR = new Float32Array(256);
+const LINEAR_TO_SRGB = new Uint8Array(4096);
+for (let i = 0; i < 256; i++) {
+  const c = i / 255;
+  SRGB_TO_LINEAR[i] = c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+}
+for (let i = 0; i < 4096; i++) {
+  const c = i / 4095;
+  LINEAR_TO_SRGB[i] = Math.round(255 * (c <= 0.0031308 ? c * 12.92 : 1.055 * c ** (1 / 2.4) - 0.055));
+}
+
 export function buildMips(width, height, data, maxLevels = 4) {
   const out = [];
   let w = width, h = height, src = data;
@@ -144,16 +160,22 @@ export function buildMips(width, height, data, maxLevels = 4) {
     const dst = new Uint8Array(nw * nh * 4);
     for (let y = 0; y < nh; y++) {
       for (let x = 0; x < nw; x++) {
-        let r = 0, g = 0, b = 0, a = 0, n = 0;
+        let r = 0, g = 0, b = 0, a = 0, maxA = 0;
         for (let dy = 0; dy < 2; dy++) for (let dx = 0; dx < 2; dx++) {
           const sx = Math.min(w - 1, x * 2 + dx), sy = Math.min(h - 1, y * 2 + dy);
           const i = (sy * w + sx) * 4;
           const al = src[i + 3];
-          r += src[i] * al; g += src[i + 1] * al; b += src[i + 2] * al; a += al; n++;
+          r += SRGB_TO_LINEAR[src[i]] * al; g += SRGB_TO_LINEAR[src[i + 1]] * al; b += SRGB_TO_LINEAR[src[i + 2]] * al;
+          a += al; if (al > maxA) maxA = al;
         }
         const o = (y * nw + x) * 4;
-        if (a > 0) { dst[o] = r / a; dst[o + 1] = g / a; dst[o + 2] = b / a; }
-        dst[o + 3] = a / n;
+        if (a > 0) {
+          const inv = 4095 / a;
+          dst[o] = LINEAR_TO_SRGB[Math.min(4095, Math.round(r * inv))];
+          dst[o + 1] = LINEAR_TO_SRGB[Math.min(4095, Math.round(g * inv))];
+          dst[o + 2] = LINEAR_TO_SRGB[Math.min(4095, Math.round(b * inv))];
+        }
+        dst[o + 3] = maxA;
       }
     }
     out.push({ width: nw, height: nh, data: dst });

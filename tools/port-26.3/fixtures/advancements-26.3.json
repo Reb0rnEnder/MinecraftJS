@@ -1,0 +1,42 @@
+{
+  "hex": "0001156d696e6563726166743a73746f72792f73746f6e65000108000953746f6e652041676508000a4d696e652073746f6e65010100000000000003226d696e6563726166743a74657874757265732f626c6f636b2f73746f6e652e706e670201096765745f73746f6e6502086765745f646972740a6765745f67726176656c013fc000004010000001136d696e6563726166743a73746f72792f6f6c6401156d696e6563726166743a73746f72792f73746f6e6503096765745f73746f6e65010000018bcfe56800086765745f64697274000a6765745f67726176656c0001",
+  "expected": {
+    "reset": false,
+    "show": true,
+    "id": "minecraft:story/stone",
+    "x": 1.5,
+    "y": 2.25,
+    "parent": null,
+    "title": "Stone Age",
+    "description": "Mine stone",
+    "frame": 0,
+    "background": "minecraft:textures/block/stone.png",
+    "showToast": true,
+    "hidden": false,
+    "iconItem": "minecraft:stone",
+    "iconCount": 1,
+    "requirements": [
+      [
+        "get_stone"
+      ],
+      [
+        "get_dirt",
+        "get_gravel"
+      ]
+    ],
+    "telemetry": true,
+    "removed": [
+      "minecraft:story/old"
+    ],
+    "progress": [
+      {
+        "criterion": "get_stone",
+        "obtained": 1700000000000
+      },
+      {
+        "criterion": "get_dirt",
+        "obtained": null
+      }
+    ]
+  }
+}

@@ -240,8 +240,8 @@ export class FontRenderer {
     g.popMatrix();
   }
 
-  drawCentered(text, cx, y, color = 0xffffff, shadow = true) {
-    return this.draw(text, cx - Math.floor(this.width(text) / 2), y, color, shadow); // int maths like vanilla
+  drawCentered(text, cx, y, color = 0xffffff, shadow = true, alpha = 1) {
+    return this.draw(text, cx - Math.floor(this.width(text) / 2), y, color, shadow, alpha); // int maths like vanilla
   }
 
   // Formatting pairs are indivisible. Carry the style at the actual line break,
