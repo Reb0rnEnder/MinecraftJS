@@ -1,7 +1,7 @@
 {
   "name": "minecraftjs",
   "version": "1.0.0",
-  "description": "MinecraftJS 1.20.6 port; graphical native-server milestone with parity work continuing",
+  "description": "MinecraftJS 26.3 port; parity work continuing",
   "scripts": {
     "start": "node proxy.js",
     "dev": "node proxy.js",
