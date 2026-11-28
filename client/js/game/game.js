@@ -1,4 +1,5 @@
 import { TickRateManager, clientTickMillis } from './tick-rate.js';
+import { setDnsServers } from '../net/dns.js';
 import { EntityOutline } from '../render/entity-outline.js';
 import {EFFECT_766,createEffectBlend766,tickEffectBlend766} from './effects-1.20.6.js';
 import {bindingResolver} from './keybind-components.js';
@@ -145,6 +146,7 @@ export class Game {
   constructor(assets, settings, device, {deferStart=false}={}) {
     this.assets = assets;
     this.settings = settings;
+    setDnsServers(settings.dnsServers);
     this.device = device;
     setModelDevice(device);
     setTranslator((k, a) => assets.translate(k, a),(key,fallback)=>componentTemplate(assets.lang,key,fallback));
