@@ -60,6 +60,7 @@ const DEFAULTS = {
   graphicsApi: 'webgl2', // 'webgl2' | 'webgpu' | 'software'
   superPotato: false, // lower internal resolution, single-pass menu panorama (always on with the CPU rasteriser)
   skinProxy: '', // Optional HTTP/CORS proxy template for public skin/profile URLs.
+  dnsServers: ['1.1.1.1', '8.8.8.8'], // DNS over HTTPS for the _minecraft._tcp SRV lookup (Network Settings > DNS Servers)
   skinProxyHttp: false, // false: download skins over the client's own HTTP(S) through the raw TCP proxy route
   resourcePacks: [], // active pack ids, highest priority first
   entityShadows: true,
@@ -101,11 +102,13 @@ export class Settings {
     if (Array.isArray(config.servers)) defaults.servers = configServers(config.servers);
     if (typeof config.skinProxy === 'string') defaults.skinProxy = config.skinProxy.trim();
     if (typeof config.skinProxyHttp === 'boolean') defaults.skinProxyHttp = config.skinProxyHttp;
+    if (Array.isArray(config.dnsServers) && config.dnsServers.length) defaults.dnsServers = config.dnsServers.map(String);
     Object.assign(this, defaults, saved);
     // Function-key chords used to be on by default and held every F press until release (no instant or repeated
     // swap-hands, as native F does); settings saved before then start with them off once
     if (!saved.functionKeyChordsReset) { this.functionKeyChords = false; this.functionKeyChordsReset = 1; }
     this.skinProxy = typeof this.skinProxy === 'string' ? this.skinProxy.trim() : '';
+    if (!Array.isArray(this.dnsServers) || !this.dnsServers.length) this.dnsServers = defaults.dnsServers.slice();
     if (!Object.prototype.hasOwnProperty.call(saved, 'lodDistance') && Number.isFinite(saved.lodChunks)) this.lodDistance = Math.max(0, saved.lodChunks * 16);
     if (!Number.isFinite(this.lodDistance) || this.lodDistance < 0) this.lodDistance = 128;
     delete this.lodChunks;
