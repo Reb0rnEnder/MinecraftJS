@@ -77,6 +77,8 @@ import { SoundManager } from '../audio/sound.js';
 import { Scoreboard } from './scoreboard.js';
 import { Interaction } from './interaction.js';
 import { Accounts } from './accounts.js';
+import { Cosmetics } from './cosmetics.js';
+import { scheduleAutoLogin, cancelAutoLogin } from './auto-login.js';
 import { platform } from '../platform/platform.js';
 import { buildSlice } from '../world/slice.js';
 import { setModelDevice } from '../render/boxmodel.js';
@@ -132,6 +134,7 @@ export class Game {
     this.itemRenderer = new ItemRenderer(this);
     this.entityRenderer = new EntityRenderer(this);
     this.eaglerTextures = new EaglerTextures(this);
+    this.cosmetics = new Cosmetics(this);
     this.handRenderer = new HandRenderer(this);
     this.tileRenderer = new TileEntityRenderer(this);
     this.renderer.breakContext=()=>({world:this.world,tileRenderer:this.tileRenderer,tileProps:this.tileProps,alternatives:this.settings.blockAlternatives!==false,fancy:!!this.settings.fancyGraphics});
@@ -613,7 +616,7 @@ export class Game {
     let auth = null;
     if (!username) {
       let acc = this.accounts.active();
-      // Eaglercraft servers log in by name only (no Mojang session check)
+      // MCJS WebSocket servers log in by name only (no Mojang session check)
       if (acc.type === 'microsoft' && !isEaglerAddress(host)) {
         try { acc = await this.accounts.ensureFresh(acc); } catch (e) {
           if(attempt!==this.connectAttempt)return;
@@ -626,7 +629,7 @@ export class Game {
     }
     if(attempt!==this.connectAttempt)return;
     this.username = username;
-    const conn = this.conn = new Connection();
+    const conn = this.conn = new Connection(this);
     conn.on('control', (m) => this.onControl(m, conn));
     conn.on('packet', (p) => { if (this.conn === conn) this.handlePacket(p); });
     conn.on('close', () => { if (this.conn === conn) this.onConnectionClosed(); });
@@ -639,6 +642,7 @@ export class Game {
   }
 
   disconnect(silent = false, reason) {
+    cancelAutoLogin();
     this.connectAttempt=(this.connectAttempt||0)+1;
     if (this.conn) {
       const c = this.conn;
@@ -707,6 +711,7 @@ export class Game {
   }
 
   onConnectionClosed() {
+    cancelAutoLogin();
     const reason = this.kickReason || (this.lastError ? this.lastError : tr('disconnect.closed'));
     const title = this.inWorld || this.connected ? tr('disconnect.lost') : tr('connect.failed');
     this.conn = null;
@@ -768,6 +773,7 @@ export class Game {
     this.inWorld = true;
     this.sendSettings();
     this.send(C.customPayload('MC|Brand', new Writer().string('vanilla').build()));
+    scheduleAutoLogin(this);
   }
 
   sendSettings() {
