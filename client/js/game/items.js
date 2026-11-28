@@ -233,6 +233,31 @@ export class Items {
     return e ? e.lvl : 0;
   }
 
+  // ShulkerBoxBlock.appendHoverText: "???????" for an unopened loot table, then the BlockEntityTag items placed by
+  // slot (27), the first five as "Name xN" and an italic "and N more..."
+  shulkerTooltip(item, lines) {
+    const bet = item.nbt?.v?.BlockEntityTag?.v;
+    if (!bet) return;
+    if (bet.LootTable?.t === 8) lines.push('???????');
+    const list = bet.Items;
+    if (list?.t !== 9) return;
+    const slots = new Array(27).fill(null);
+    for (const e of list.v?.items || []) {
+      const slot = Number(e.Slot?.v) & 255, def = this.byName.get(String(e.id?.v || '').replace(/^minecraft:/, '')), count = Number(e.Count?.v) || 0;
+      if (slot >= 27 || !def || count <= 0) continue;
+      slots[slot] = { id: def.id, count, damage: Number(e.Damage?.v) || 0, nbt: e.tag?.t === 10 ? e.tag : null };
+    }
+    let shown = 0, total = 0;
+    for (const stack of slots) {
+      if (!stack) continue;
+      total++;
+      if (shown > 4) continue;
+      shown++;
+      lines.push(this.displayName(stack) + ' x' + stack.count);
+    }
+    if (total - shown > 0) lines.push('§o' + this.assets.translate('container.shulkerBox.more', [total - shown]));
+  }
+
   tooltip(item, advanced = false) {
     const lines = [];
     let name = this.displayName(item);
@@ -249,7 +274,9 @@ export class Items {
     if (registryName === 'potion' || registryName === 'splash_potion') this.potionTooltip(item, lines, 1);
     else if (registryName === 'lingering_potion') this.potionTooltip(item, lines, 0.25);
     else if (registryName === 'tipped_arrow') this.potionTooltip(item, lines, 0.125);
-    if (tag && tag.author && registryName === 'written_book') lines.push('§7' + t('book.byAuthor', tag.author));
+    // WrittenBookItem.appendHoverText: any tag shows the author (when set) and the generation
+    if (tag && registryName === 'written_book') { if (tag.author) lines.push('§7' + t('book.byAuthor', tag.author)); lines.push('§7' + t('book.generation.' + (Number(tag.generation) | 0))); }
+    if (/(^|_)shulker_box$/.test(this.name(item.id))) this.shulkerTooltip(item, lines);
     if (registryName.startsWith('music_disc_')) lines.push('§7' + t(translationKey('item', registryName) + '.desc'));
     if (!(tooltipHideFlags(item) & 1)) for (const e of this.enchantments(item)) lines.push('§7' + this.enchantmentName(e.id, e.lvl));
     if (tag && tag.display) {
