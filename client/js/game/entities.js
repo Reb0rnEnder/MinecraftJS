@@ -1,3 +1,4 @@
+import { tickProjectile766 } from './projectile-physics-1.20.6.js';
 import{tickBat766}from'../render/bat-1.20.6.js';
 import {applyPawsMetadata,tickArmadillo766,tickWolf766,wolfEvent766} from './paws-1.20.6.js';
 import {EFFECT_766} from './effects-1.20.6.js';
@@ -334,10 +335,11 @@ export class EntityManager {
     else if (e.kind === 'minecart') e.inc = inc + 2;
     // Display.lerpTo: posRotInterpolationDuration steps (0 applies on the next tick)
     else if (e.kind === 'display') { e.inc = Math.max(1, e.display?.posRotDuration || 0); return; }
-    if (SNAP_KINDS.has(e.kind)) {
-      // Non-living entities snap like vanilla's setPositionAndRotation for these
-      e.inc = 1;
-    }
+    if (SNAP_KINDS.has(e.kind) && e.kind !== 'fishhook') {
+      // Entity.lerpTo for non-living entities: setPos + setRot at once (the previous-tick position stays, so the
+      // frame interpolates into the correction); the next tick still simulates
+      e.x = x; e.y = y; e.z = z; e.yaw = yaw; e.pitch = pitch; e.inc = 0;
+    } else if (e.kind === 'fishhook') e.inc = 1;
   }
 
   relMove(p, move, look) {
@@ -1057,20 +1059,8 @@ export class EntityManager {
       } else if(e.kind==='falling'){
         tickFallingBlock(e,g.world);
       } else if (SNAP_KINDS.has(e.kind) && e.kind !== 'fishhook' && e.entityName !== 'firework_rocket') {
-        // Client-side motion between server updates
-        if (!ARROWS.has(e.entityName) || !e.inGround) {
-          e.x += e.motionX; e.y += e.motionY; e.z += e.motionZ;
-          const fireball = FIREBALLS.has(e.entityName), bullet = e.entityName === 'shulker_bullet';
-          const drag = fireball ? 0.95 : e.kind === 'item' || e.kind === 'xp' ? 0.98 : 0.99;
-          const gravity = e.noGravity || fireball || bullet ? 0 : ARROWS.has(e.entityName) ? 0.05 : e.entityName === 'llama_spit' ? 0.06 : e.kind === 'projectile' || e.kind === 'xp' ? 0.03 : 0.04;
-          e.motionX = (e.motionX + (e.accelX || 0)) * drag;
-          e.motionY = (e.motionY + (e.accelY || 0) - gravity) * (fireball || bullet ? drag : 0.98);
-          e.motionZ = (e.motionZ + (e.accelZ || 0)) * drag;
-          // stop at the ground
-          const st = g.world.getState(Math.floor(e.x), Math.floor(e.y), Math.floor(e.z));
-          const b = getBlock(st);
-          if (b && b.opaque) { e.y = Math.floor(e.y) + 1; e.motionY = 0; e.motionX *= 0.5; e.motionZ *= 0.5; }
-        }
+        // Client-side motion between server updates: each type's native tick (projectile-physics-1.20.6.js)
+        tickProjectile766(e, g.world, e.kind === 'xp' ? [g.player, ...[...this.map.values()].filter(o => o.kind === 'player')].filter(Boolean) : []);
       }
       tickEntityEffects(e, this);
       if (e.entityName === 'ender_dragon') this._dragonUpdate(e);
