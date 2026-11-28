@@ -12,7 +12,7 @@ import { VanillaSocket } from './tcp.js';
 import { VanillaSocket766 } from './tcp-1.20.6.js';
 import { EaglerSocket766 } from './eagler-1.20.6.js';
 
-const NO_PROXY = 'No proxy selected: add one in Proxy Servers on the title screen (or join an Eaglercraft wss:// server)';
+const NO_PROXY = 'No proxy selected: add one in Proxy Servers on the title screen (or join an MCJS wss:// server)';
 
 // A socket to the selected proxy (MinecraftJS proxy, or a relay / Wisp link handled in the client)
 async function openProxySocket(protocol = PROTOCOL_VERSION, options = {}) {
@@ -30,8 +30,9 @@ async function openProxySocket(protocol = PROTOCOL_VERSION, options = {}) {
 }
 
 export class Connection {
-  constructor(options = {}) {
+  constructor(options = {}, game = null) {
     this.options = options;
+    this.game = game;
     this.ws = null;
     this.handlers = {};
     this.state = 'idle';
@@ -48,7 +49,7 @@ export class Connection {
   async open(eagler) {
     if (this.ws) return;
     let sock;
-    if (eagler) sock = PROTOCOL_VERSION === 766 ? await new EaglerSocket766(eagler,{...this.options,autoPlayAcks:false}).open() : await openEaglerSocket(eagler);
+    if (eagler) sock = PROTOCOL_VERSION === 766 ? await new EaglerSocket766(eagler,{...this.options,autoPlayAcks:false},this.game).open() : await openEaglerSocket(eagler, this.game);
     else sock = await openProxySocket(PROTOCOL_VERSION, this.options);
     this.ws = sock;
     sock.on('close', () => {
