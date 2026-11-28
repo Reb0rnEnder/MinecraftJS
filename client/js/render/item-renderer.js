@@ -92,7 +92,7 @@ export class ItemRenderer {
       const b = g.items.blockFor(item.id);
       const bm = b ? this.store.resolveModel('block/' + b.name) : null;
       if (bm && bm.elements) m = { kind: 'block', baked: this.store.bakeModel('block/' + b.name), display: {}, name: b.name };
-      else m = { kind: 'generated', layers: ['block/stone'], display: {}, name: 'missing' };
+      else m = { kind: 'generated', layers: ['missingno'], display: {}, name: 'missing' };
     }
     m.itemName = name;
     m.path = path;
