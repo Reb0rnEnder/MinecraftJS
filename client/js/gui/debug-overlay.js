@@ -70,6 +70,30 @@ export function soundStats(sound){
  // WebAudio has no OpenAL source-pool limit. Do not invent Java/OpenAL hardware values.
  return `Sounds: ${regular}/${sound?.audio?.maxStaticVoices??'∞'} + ${streaming}/${sound?.audio?.maxStreamingVoices??'∞'}`;
 }
+const debugValueText=value=>{
+ if(value===null||value===undefined)return 'null';
+ if(typeof value!=='object')return String(value);
+ let text;try{text=JSON.stringify(value);}catch{text=String(value);}
+ return text.length>160?text.slice(0,157)+'...':text;
+};
+// Native DebugScreen renders each active DebugSubscription next to its target. The packet layer
+// keeps block/chunk/entity maps plus a bounded event stream, so show the same values without
+// inventing subscription-specific layouts: scope key, subscription name and the decoded value.
+export function debugSubscriptionLines(game,limit=24){
+ const values=game.debugValues;if(!values)return [];
+ const lines=[];
+ for(const scope of ['block','chunk','entity']){
+  for(const [key,entry] of values[scope]||[]){
+   lines.push(`${entry.subscriptionName} [${scope} ${key}]: ${debugValueText(entry.value)}`);
+   if(lines.length>=limit)return lines;
+  }
+ }
+ for(const entry of (values.events||[]).slice(-limit)){
+  lines.push(`${entry.subscriptionName} [event]: ${debugValueText(entry.value)}`);
+  if(lines.length>=limit)return lines;
+ }
+ return lines;
+}
 export function debugLeft(hud){
  const g=hud.game,s=g.settings,r=g.renderer,pl=g.player,w=g.world,er=g.entityRenderer?.stats||{total:0,culled:0};
  const distance=s.renderDistance||0,loaded=w.chunks?.size||0,entities=g.entities.count?.()??g.entities.map?.size??0;
@@ -119,5 +143,6 @@ export function debugLeft(hud){
  if(since(13)&&!since(16)){const targets=hud.debugTargets;if(targets?.block){const t=targets.block;lines.push(`Looking at block: ${t.x} ${t.y} ${t.z}`);}if(targets?.fluid){const t=targets.fluid;lines.push(`Looking at liquid: ${t.x} ${t.y} ${t.z}`);}}
  else if(!since(13)){const t=g.interaction.target;if(t?.type==='block')lines.push(`Looking at: ${t.x} ${t.y} ${t.z}`);}
  if(since(14))lines.push(soundStats(g.sound)+(since(16)?` (Mood ${Math.round((g.sound?.biomeSounds?.mood||0)*100)}%)`:''));
+ const subscriptions=debugSubscriptionLines(g);if(subscriptions.length)lines.push(...subscriptions);
  return footer();
 }

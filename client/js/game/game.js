@@ -55,6 +55,8 @@ import {CameraEye} from '../render/camera-eye.js';
 import { menuInfo774 } from './menus-1.21.11.js';
 import { paintingVariantList774 } from './painting-1.21.11.js';
 import { RegistryTags } from './tags.js';
+import {WaypointManager26_3} from './waypoints-26.3.js';
+import {DialogScreen263} from '../gui/screens/dialog-26.3.js';
 import { CommandTree } from './commands.js';
 import { startSleeping, stopSleeping, updateSleeping, sleepingCamera } from './bed-sleep.js';
 import { jarSelectionBox } from '../world/blocks.js';
@@ -82,6 +84,7 @@ import { Advancements } from './advancements.js';
 import { RecipeBook } from './recipebook.js';
 import { Input } from './input.js';
 import {StatsCounter} from './stats-counter.js';
+import {STAT_TYPES_26_3,CUSTOM_STATS_26_3} from './stat-registry-26.3.js';
 import { Renderer } from '../render/renderer.js';
 import { Gui } from '../gui/gui.js';
 import { chatToLegacy, chatComponentString, setTranslator } from '../gui/chat.js';
@@ -109,6 +112,7 @@ import { MenuBlur } from '../render/menu-blur.js';
 import { PostEffects, entityShaderName } from '../render/post.js';
 import { TileEntityRenderer } from '../render/tile-renderer.js';
 import { Particles } from '../render/particles.js';
+import { ExplosionTracker } from './explosion-tracker.js';
 import { Weather } from '../render/weather.js';
 import { SoundManager } from '../audio/sound.js';
 import { Scoreboard } from './scoreboard.js';
@@ -184,6 +188,7 @@ export class Game {
     this.menuBlur = new MenuBlur(this.device);
     this.shaderPack = new ShaderPackFinal(this);
     this.particles = new Particles(this);
+    this.explosionTracker = new ExplosionTracker(this);
     this.debugLines = new DebugLines(this);
     this.borderRenderer = new BorderRenderer(this,{mode:'modern',fadeAtEntity:false});
     this.weather = new Weather(this);
@@ -204,6 +209,8 @@ export class Game {
     this.player.onWaterEnter = () => this._waterSplash();
     this.player.onSwim = (vol) => this.sound.playAtPlayer('entity.player.swim', vol, 1 + (Math.random() - Math.random()) * 0.4);
     this.entities = new EntityManager(this);
+    this.waypoints = new WaypointManager26_3(this);
+    this.serverLinks = [];
     this.scoreboard = new Scoreboard(this);
     this.advancements = new Advancements(this);
     this.recipeBook = new RecipeBook(this);
@@ -263,6 +270,8 @@ export class Game {
     this.xpBar = 0;
     this.xpLevel = 0;
     this.xpTotal = 0;
+    this.xpDisplayStartTick = -1000;
+    this.waypoints?.reset();
     this.heldSlot = 0;
     this.spawnPos = null;
     this.spawnAngle = 0;
@@ -748,6 +757,17 @@ export class Game {
       // ClientConfigurationPacketListener: minecraft:brand is the server brand shown by F3
       if (packet.name === 'custom_payload') this.on_custom_payload(packet);
     });
+    // 26.3 configuration sends its resource-pack push/pop as its own packets; route them
+    // through the same repository (prompt, cached download, SHA-1 check) as 1.20.6.
+    conn.on('resource_pack', packet => {
+      if (this.conn !== conn) return;
+      this.serverPacks.handle(packet.url, packet.hash, status => {
+        if (this.conn === conn) conn.ws?.sendResourcePackStatus?.(packet.uuid, status);
+      }, !!packet.forced, packet.prompt == null ? null : JSON.stringify(packet.prompt));
+    });
+    conn.on('resource_pack_remove', packet => {
+      if (this.conn === conn && !packet.uuid) this.serverPacks.clear();
+    });
     try {
       await conn.connect(host, port, username, auth, transfer);
     } catch (e) {
@@ -906,18 +926,41 @@ export class Game {
     samples.push(p.sample.slice());
     if (samples.length > 240) samples.shift();
   }
+  // ClientboundDebug*ValuePacket / ClientboundDebugEventPacket. These only arrive after a
+  // debug_subscription_request; keep the values keyed by subscription so the optional update
+  // can also clear one entry, and cap the event stream instead of growing without bound.
+  resetDebugValues() {
+    this.debugValues = {block:new Map(),chunk:new Map(),entity:new Map(),events:[]};
+  }
+  recordDebugValue(scope,key,p) {
+    const values = (this.debugValues ??= {block:new Map(),chunk:new Map(),entity:new Map(),events:[]});
+    if (scope === 'event') {
+      values.events.push({subscription:p.subscription,subscriptionName:p.subscriptionName,value:p.value});
+      if (values.events.length > 256) values.events.shift();
+      return;
+    }
+    const id = p.subscription + ':' + key;
+    if (p.value === null) values[scope].delete(id);
+    else values[scope].set(id,{subscription:p.subscription,subscriptionName:p.subscriptionName,value:p.value});
+  }
+  on_debug_block_value(p) {
+    this.recordDebugValue('block',p.position.x + ',' + p.position.y + ',' + p.position.z,p);
+  }
+  on_debug_chunk_value(p) { this.recordDebugValue('chunk',p.chunkX + ',' + p.chunkZ,p); }
+  on_debug_entity_value(p) { this.recordDebugValue('entity',p.entityId,p); }
+  on_debug_event(p) { this.recordDebugValue('event',null,p); }
 
   on_simulation_distance(p) { this.serverSimulationDistance=p.distance; }
 
   on_update_view_distance(p) { this.serverViewDistance=p.viewDistance; }
   on_update_view_position(p) { this.serverChunkCenter={x:p.chunkX,z:p.chunkZ}; }
-  // ClientboundTickingStatePacket / ClientboundTickingStepPacket (fields as the 774 schema names them)
+  // ClientboundTickingStatePacket / ClientboundTickingStepPacket (26.3 native fields)
   on_set_ticking_state(p) {
-    const rate = p.tick_rate ?? p.tickRate, frozen = !!(p.is_frozen ?? p.isFrozen);
+    const rate = p.tickRate ?? p.tick_rate, frozen = !!(p.isFrozen ?? p.is_frozen);
     this.serverTickRate = rate; this.serverFrozen = frozen;
     this.tickRate.setTickRate(rate); this.tickRate.setFrozen(frozen);
   }
-  on_step_tick(p) { const steps = p.tick_steps ?? p.tickSteps; this.serverStepTicks = steps; this.tickRate.setFrozenTicksToRun(steps); }
+  on_step_tick(p) { const steps = p.tickSteps ?? p.tick_steps; this.serverStepTicks = steps; this.tickRate.setFrozenTicksToRun(steps); }
 
   on_chat_suggestions(p) {
     const entries=this.customChatCompletions??=new Set();
@@ -928,6 +971,7 @@ export class Game {
 
   on_login(p) {
     this.customChatCompletions=new Set();
+    this.resetDebugValues();
     this.chunkBatch = null;
     this.pingSamples = []; this.serverTickSamples = [];
     this.spawnPos = null; this.spawnAngle = 0; this.spawnPitch = 0; this.spawnDimension = null;
@@ -935,8 +979,8 @@ export class Game {
     this.serverData=null;this.enforcesSecureChat=!!p.enforcesSecureChat;this.chatSignatures=new MessageSignatureCache762();this.chatVerifier?.reset();
     this.enabledFeatures=new Set(p.enabledFeatures||['minecraft:vanilla']);this.commandTags=p.commandTags||{};
     if(p.registryTags)this.tags?.replace(p.registryTags);
-    this.blockPrediction?.reset(); chatState774.reset();
-    this._lastInputBits = 0;
+    this.blockPrediction?.reset();chatState762.reset();
+    this.explosionTracker?.clear();
     resetPlayerView(this);
     this.interaction?.predictedDoors?.clear();
     this.serverSimulationDistance=p.simulationDistance;
@@ -1068,7 +1112,9 @@ export class Game {
 
   on_update_time(p) {
     this.world.worldAge = Number(p.age);
-    let t = Number(p.time);
+    // 26.3 set_time may carry only gameTime; the day clock is updated only when present.
+    if(p.time == null) return;
+    const t = Number(p.time);
     this.world.doDaylightCycle = t >= 0;
     this.world.timeOfDay = Math.abs(t);
   }
@@ -1178,10 +1224,17 @@ export class Game {
     pl.prevX = x; pl.prevY = y; pl.prevZ = z;
     pl.prevYaw = yaw; pl.prevPitch = pitch;
     pl.yaw = Math.fround(yaw % 360); pl.pitch = Math.fround(pitch % 360);
-    this.send(C.teleportConfirm(p.teleportId));
-    this.send(C.positionLook(pl.x, pl.y, pl.z, pl.yaw, pl.pitch, false, !!pl.collidedHorizontally));
+    // 26.3's acknowledgement carries the accepted position itself; sending a second
+    // position packet in the same tick makes the server reject the duplicate.
+    this.send(C.teleportConfirm(p.teleportId, pl.x, pl.y, pl.z, pl.yaw, pl.pitch));
+    const lr = this.lastReported;
+    lr.x = pl.x; lr.y = pl.y; lr.z = pl.z; lr.yaw = pl.yaw; lr.pitch = pl.pitch; lr.onGround = false;
+    this.positionUpdateTicks = 0;
+    // the last reported position stays: the next tick reports the new position again (onUpdateWalkingPlayer)
     if (!this.doneLoadingTerrain) {
       this.doneLoadingTerrain = true;
+      // 26.3 ServerboundPlayerLoadedPacket: the terrain/chunk batch is ready.
+      this.send(C.playerLoaded());
       pl.prevX = pl.x; pl.prevY = pl.y; pl.prevZ = pl.z;
       if (this.screens.current instanceof DownloadingTerrainScreen) this.screens.current.terrainReady = true;
       this.send(C.playerLoaded());
@@ -1223,6 +1276,8 @@ export class Game {
     }
     this.entities.onBed(p);
   }
+
+  on_swing_animation(p) { this.on_animation(p); }
 
   on_animation(p) {
     if (p.entityId === this.entityId && p.animation === 2) {
@@ -1340,7 +1395,15 @@ export class Game {
     this.player.levitation = lev ? lev.amplifier : -1;
   }
 
-  on_experience(p) { this.xpBar = p.experienceBar; this.xpLevel = p.level; this.xpTotal = p.totalExperience; }
+  on_experience(p) {
+    this.xpBar = p.experienceBar; this.xpLevel = p.level; this.xpTotal = p.totalExperience;
+    this.xpDisplayStartTick = this.ticks;
+  }
+
+  on_waypoint(p) { this.waypoints.accept(p); }
+  on_show_dialog(p) { this.screens.open(new DialogScreen263(this, p.dialog)); }
+  on_server_links(p) { this.serverLinks = p.links || []; }
+  on_clear_dialog() { if (this.screens.current?.isDialog263) this.screens.close(); }
 
   on_update_attributes(p) {
     if (p.entityId === this.entityId) {
@@ -1367,7 +1430,9 @@ export class Game {
   }
 
   on_map_chunk(p) {
-    this.world.loadChunk774(p);
+    // 26.3 chunks arrive with their sections already decoded by the native chunk reader.
+    if(p.sections)this.world.loadChunk26_3(p);
+    else this.world.loadChunk762(p);
     for (const nbt of p.blockEntities) this.applyBlockEntity(nbt);
   }
 
@@ -1422,94 +1487,33 @@ export class Game {
 
   on_block_break_animation(p) { this.interaction.setRemoteBreak(p.entityId, p.location, p.destroyStage); }
 
+  // ClientPacketListener.handleExplosion in 26.3: an optional sound, one explosion particle with
+  // velocity (1,0,0), the weighted block-particle tracker, and an optional player knockback.
+  // The packet no longer carries destroyed-block offsets, so no blocks are cleared here.
   on_explosion(p) {
-    const native = p.nativeExplosion;
-    if (native) {
-      const name = native.soundName?.replace(/^minecraft:/, '') || this.assets?.soundNames?.[native.soundId];
-      if (name) this.sound.play(name, p.x, p.y, p.z, 4, (1 + (Math.random() - Math.random()) * 0.2) * 0.7, { category: 'block' });
-    } else {
-      this.sound.playExplosion(p.x, p.y, p.z);
-    }
-    if ((!native || native.interaction === 1 || native.interaction === 2) && Array.isArray(p.records)) {
-      for (const r of p.records) this.world.setState(Math.floor(p.x) + r.x, Math.floor(p.y) + r.y, Math.floor(p.z) + r.z, 0);
-    }
-    if (this.player) {
-      this.player.motionX += p.motionX ?? 0;
-      this.player.motionY += p.motionY ?? 0;
-      this.player.motionZ += p.motionZ ?? 0;
-    }
-    const particle = native
-      ? (native.particle ?? (p.radius >= 2 && native.interaction !== 0 ? native.large : native.small))
-      : null;
-    if (particle) {
-      this.particles.onPacket({
-        ...particle,
-        x: p.x,
-        y: p.y,
-        z: p.z,
-        particles: 0,
-        offsetX: 1,
-        offsetY: 0,
-        offsetZ: 0,
-        particleData: 1
-      });
-    } else if (!native) {
-      this.particles.explosion(p.x, p.y, p.z, p.radius);
-    }
-    if (native && (native.blockCount ?? 0) > 0 && Array.isArray(native.blockParticles) && native.blockParticles.length && (this.settings?.particles ?? 0) === 0) {
-      this._emitExplosionBlockParticles(p.x, p.y, p.z, native.radius ?? p.radius ?? 0, native.blockCount, native.blockParticles);
-    }
-  }
-
-  _emitExplosionBlockParticles(cx, cy, cz, radius, blockCount, blockParticles) {
-    if (!(radius > 0)) return;
-    let totalWeight = 0;
-    for (const entry of blockParticles) totalWeight += Math.max(0, entry.weight ?? 0);
-    if (!(totalWeight > 0)) return;
-    const count = Math.min(blockCount, 512);
-    for (let i = 0; i < count; i++) {
-      const dx0 = Math.random() * 2 - 1, dy0 = Math.random() * 2 - 1, dz0 = Math.random() * 2 - 1;
-      const len = Math.hypot(dx0, dy0, dz0);
-      if (!len) continue;
-      const dx = dx0 / len, dy = dy0 / len, dz = dz0 / len;
-      const dist = Math.cbrt(Math.random()) * radius;
-      const ox = dx * dist, oy = dy * dist, oz = dz * dist;
-      if (typeof this.world?.getState === 'function') {
-        const block = getBlock(this.world.getState(Math.floor(cx + ox), Math.floor(cy + oy), Math.floor(cz + oz)));
-        if (block && !block.isAir && block.name !== 'air' && block.name !== 'cave_air' && block.name !== 'void_air') continue;
+    const native=p.nativeExplosion;
+    if(native?.blockParticles){
+      const name=native.sound?.name?.replace(/^minecraft:/,'');
+      if(native.playSound&&name)this.sound.play(name,p.x,p.y,p.z,4,(1+(Math.random()-Math.random())*.2)*.7,{category:'block'});
+      if(native.particle)this.particles.at(native.particle,p.x,p.y,p.z,1,0,0);
+      this.explosionTracker.track({x:p.x,y:p.y,z:p.z},p.radius,p.blockCount,native.blockParticles);
+      const k=p.knockback;
+      if(k&&Number.isFinite(k.x)&&Number.isFinite(k.y)&&Number.isFinite(k.z)){
+        this.player.motionX+=k.x;this.player.motionY+=k.y;this.player.motionZ+=k.z;
       }
-      let r = Math.random() * totalWeight, picked = blockParticles[blockParticles.length - 1];
-      for (const entry of blockParticles) {
-        const w = Math.max(0, entry.weight ?? 0);
-        if (w <= 0) continue;
-        r -= w;
-        if (r < 0) { picked = entry; break; }
-      }
-      const info = picked.data || picked;
-      let bp = picked.particle;
-      if (!bp) {
-        const raw = info.particle;
-        if (raw?.particleId !== undefined) bp = raw;
-        else if (raw?.type && Array.isArray(this.assets?.data?.particles)) {
-          const particleId = this.assets.data.particles.findIndex((pt) => pt?.name === String(raw.type).replace(/^minecraft:/, ''));
-          if (particleId >= 0) bp = { particleId, data: raw.data ?? {} };
-        }
-      }
-      if (!bp || bp.particleId === undefined) continue;
-      const speed = (0.5 / (dist / radius + 0.1) * Math.random() * Math.random() + 0.3) * (info.speed ?? 1);
-      const scaling = info.scaling ?? 1;
-      this.particles.onPacket({
-        ...bp,
-        x: cx + ox * scaling,
-        y: cy + oy * scaling,
-        z: cz + oz * scaling,
-        particles: 0,
-        offsetX: dx * speed,
-        offsetY: dy * speed,
-        offsetZ: dz * speed,
-        particleData: 1
-      });
+      return;
     }
+    if(native){
+      const name=native.soundName?.replace(/^minecraft:/,'') || this.assets.soundNames[native.soundId];
+      if(name)this.sound.play(name,p.x,p.y,p.z,4,(1+(Math.random()-Math.random())*.2)*.7,{category:'block'});
+    }else this.sound.playExplosion(p.x, p.y, p.z);
+    if(!native || native.interaction===1 || native.interaction===2)for (const r of p.records) this.world.setState(Math.floor(p.x) + r.x, Math.floor(p.y) + r.y, Math.floor(p.z) + r.z, 0);
+    this.player.motionX += p.motionX;
+    this.player.motionY += p.motionY;
+    this.player.motionZ += p.motionZ;
+    if(native)this.particles.onPacket({...(p.radius>=2 && native.interaction!==0?native.large:native.small),
+      x:p.x,y:p.y,z:p.z,particles:0,offsetX:1,offsetY:0,offsetZ:0,particleData:1});
+    else this.particles.explosion(p.x, p.y, p.z, p.radius);
   }
 
   on_sculk_vibration_signal(p) { this.particles.vibration(p); }
@@ -1595,6 +1599,44 @@ export class Game {
 
   on_set_player_inventory(p) { this.inventory?.setPlayerSlotByInventoryIndex?.(p.slotId, p.contents); }
 
+  // ClientboundUpdateRecipesPacket in 26.3: recipe property sets plus the stonecutter's
+  // native (ingredient, display) list. The stonecutter screen consumes this before falling
+  // back to the pre-26.3 server recipe table.
+  on_update_recipes(p) {
+    this.recipePropertySets = p.itemSets || {};
+    this.stonecutterRecipes = p.stonecutter || [];
+    const screen = this.screens.current;
+    if (screen?.recipesUpdated) screen.recipesUpdated();
+  }
+
+  // Native recipe-book state. The display graph is stored by its VarInt id and resolved into
+  // book records by RecipeBook; the old local string-id parser is only a fallback before the
+  // first native add packet.
+  on_recipe_book_add(p) {
+    this.nativeRecipeDisplays ??= new Map();
+    if (p.replace) this.nativeRecipeDisplays.clear();
+    for (const entry of p.entries || []) this.nativeRecipeDisplays.set(entry.contents.id, entry);
+    this.recipeBook.onNativeAdd(p.entries || []);
+  }
+  on_recipe_book_remove(p) {
+    this.nativeRecipeDisplays ??= new Map();
+    for (const id of p.recipes || []) this.nativeRecipeDisplays.delete(id);
+    this.recipeBook.onNativeRemove();
+  }
+  on_recipe_book_settings(p) {
+    this.nativeRecipeBookSettings = p;
+    this.recipeBook.onNativeSettings(p);
+  }
+
+  // Server-provided crash-report fields and the low-disk notice are client diagnostics, not
+  // world state. Keep the details for the report screen and surface the warning once.
+  on_custom_report_details(p) { this.customReportDetails = p.details || {}; }
+  on_low_disk_space_warning() {
+    if (this.lowDiskSpace) return;
+    this.lowDiskSpace = true;
+    console.warn('[client] server reports low disk space');
+  }
+
   on_trade_list(p) {
     if(this.window?.id!==p.windowId)return;
     this.window.tradeData=p;
@@ -1608,6 +1650,10 @@ export class Game {
       this.screens.closeContainer();
     }
   }
+
+  // ClientboundSetCursorItemPacket: 26.3 sends the carried stack as its own packet instead
+  // of a set_slot with window -1 / slot -1.
+  on_set_cursor_item(p) { this.inventory.cursor = p.item; }
 
   on_set_slot(p) {
     if(p.windowId===0)this.inventory.stateId=p.stateId;
@@ -1642,9 +1688,9 @@ export class Game {
   // ItemCooldowns (1.21.2+: keyed by cooldownGroup string, falling back to numeric ID for legacy fixtures)
   on_set_cooldown(p) {
     if (!this.cooldowns) this.cooldowns = new Map();
-    const key = p.cooldownGroup ?? (p.itemID ?? p.itemId);
-    if (p.cooldownTicks > 0) this.cooldowns.set(key, { start: this.ticks, end: this.ticks + p.cooldownTicks });
-    else this.cooldowns.delete(key);
+    const item = p.itemID ?? p.itemId; // 766 names it itemID; the 26.3 adapter emits itemId
+    if (p.cooldownTicks > 0) this.cooldowns.set(item, { start: this.ticks, end: this.ticks + p.cooldownTicks });
+    else this.cooldowns.delete(item);
   }
 
   cooldownFraction(itemOrId, partial = 0) {
@@ -1672,7 +1718,7 @@ export class Game {
 
   // ClientboundAwardStatsPacket only carries changed stats; keep the running StatsCounter and hand it to screens
   on_statistics(p) {
-    this.statsCounter ||= new StatsCounter(this.assets.data);
+    this.statsCounter ||= new StatsCounter(this.assets.data,{statTypes:STAT_TYPES_26_3,customStats:CUSTOM_STATS_26_3});
     this.statsCounter.apply(p.entries);
     this.screens.current?.onStats?.(this.statsCounter);
   }
@@ -1711,8 +1757,10 @@ export class Game {
 
   on_scoreboard_objective(p) { this.scoreboard.onObjective(p); }
   on_scoreboard_score(p) { this.scoreboard.onScore(p); }
+  on_reset_score(p) { this.scoreboard.onScore({...p,action:1}); }
   on_scoreboard_display_objective(p) { this.scoreboard.onDisplay(p); }
   on_scoreboard_team(p) { this.scoreboard.onTeam(p); }
+  on_teams(p) { this.on_scoreboard_team(p); }
 
   on_stop_sound(p) {
     const category = p.source === null || p.source === undefined ? null : SOUND_CATEGORIES[p.source] || null;
@@ -1737,9 +1785,32 @@ export class Game {
     this.cameraEntity = p.cameraId === this.entityId ? null : p.cameraId;
   }
 
+  on_death_combat_event(p) { this.on_combat_event({event:2,playerId:p.playerId,message:p.message}); }
   on_world_border(p) { this.worldBorder.apply(p); }
+  // 26.3 initializes the border with centre, both sizes and the transition timer in one packet;
+  // WorldBorder.apply takes the same fields under its action-3 vocabulary.
+  on_initialize_world_border(p) { this.worldBorder.apply(p); }
+  on_world_border_center(p) { this.on_world_border(p); }
+  on_world_border_lerp_size(p) { this.on_world_border(p); }
+  on_world_border_size(p) { this.on_world_border(p); }
+  on_world_border_warning_delay(p) { this.on_world_border(p); }
+  on_world_border_warning_reach(p) { this.on_world_border(p); }
 
   on_face_player(p) { applyLookAt(this,p); }
+
+  // ClientboundPlayerRotationPacket: absolute or relative yaw/pitch without a position change.
+  on_player_rotation(p) {
+    const pl = this.player;
+    const yaw = Math.fround(p.relativeYaw ? pl.yaw + p.yaw : p.yaw);
+    const pitch = Math.max(-90, Math.min(90, Math.fround(p.relativePitch ? pl.pitch + p.pitch : p.pitch)));
+    pl.prevYaw = pl.yaw; pl.prevPitch = pl.pitch;
+    pl.yaw = Math.fround(yaw % 360); pl.pitch = Math.fround(pitch % 360);
+  }
+
+  // Packet boundaries only matter to bundles; the client already dispatches each frame in order.
+  on_bundle_delimiter() {}
+  on_post_effects(p) { this.postEffects = p.effects || []; }
+  on_game_rule_values(p) { Object.assign(this.gameRules ??= {}, p.values || {}); }
 
   on_title(p) { this.hud.onTitle(p); }
 
@@ -1752,11 +1823,16 @@ export class Game {
   on_recipe_book_remove(p) { this.recipeBook.onRemove(p); }
   on_recipe_book_settings(p) { this.recipeBook.onSettings(p); }
 
+  // ClientboundPlaceGhostRecipePacket: the server could not fill the grid; show what the
+  // display needs. 26.3 carries the RecipeDisplay graph, while the old path carried an id.
   on_craft_recipe_response(p) {
     const s = this.screens.current;
     const win = s && s.container;
     const id = win ? (win.windowId !== undefined ? win.windowId : win.id) : -1;
-    if (s && s.recipeBook && id === p.windowId) s.recipeBook.setupGhost(p.recipeDisplay ?? p.recipe);
+    const packetWindow = p.containerId !== undefined ? p.containerId : p.windowId;
+    if (!s || !s.recipeBook || id !== packetWindow) return;
+    if (p.display) s.recipeBook.setupGhostDisplay(p.display);
+    else s.recipeBook.setupGhost(p.recipe);
   }
   on_select_advancement_tab(p) { this.advancements.onSelectTab(p.id); }
 
@@ -2089,7 +2165,7 @@ export class Game {
       const v = this.entities.get(this.ridingEntityId);
       if (v && !v.controlled) this.player.setPosition(...this.entities.riderPos(v, this.entityId, 'player'));
     }
-    if (runs) this.particles.tick();
+    if (runs) { this.particles.tick(); this.explosionTracker.tick(); }
     this.weather.tick();
     this.sound.tick();
     this.tileRenderer.tick();
@@ -2125,7 +2201,7 @@ export class Game {
       if (e.duration > 0) e.duration--;
       tickEffectBlend774(e);
     }
-    this.send(C.tickEnd());
+    this.send(C.clientTickEnd());
   }
 
   portalTick() { tickPortal(this); }
@@ -2463,7 +2539,7 @@ export class Game {
       fullBright:!!this.settings.fullBright,dynamicLights:collectDynamicLights(this,[ex,ey,ez],partial),
       hideLightningFlashes:!!this.settings.hideLightningFlashes,
       minY:this.world.minY,minSection:this.world.minSection,sectionCount:this.world.sectionCount,
-      worldTime: this.world.timeOfDay, partial: worldPartial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,biomeFog:sampleBiomeFog(this.world,ex,ey,ez),biomeSky:biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).effects?.sky_color,fireResistance:this.effects.has(EFFECT_774.fire_resistance),
+      worldTime: this.world.timeOfDay, worldAge: this.world.worldAge, partial: worldPartial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,biomeFog:sampleBiomeFog(this.world,ex,ey,ez),biomeSky:biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).effects?.sky_color,fireResistance:this.effects.has(EFFECT_766.fire_resistance),
       inPowderSnow: getBlock(this.world.getState(Math.floor(ex), Math.floor(ey), Math.floor(ez))).name === 'powder_snow', spectator: pl.spectator,
       camPos: [ex, ey, ez], lookDir: look, dimension: this.dimension, underwater, inLava, biomeId:this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey)), waterVision:pl.waterVision(), conduitPower:this.effects.has(EFFECT_774.conduit_power),
       darkness:darkness762(this.effects.get(EFFECT_774.darkness),partial,this.ticks,this.settings.darknessEffectScale),

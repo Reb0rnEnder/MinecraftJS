@@ -6,7 +6,7 @@ import { powderSnowCollision } from './powder-snow.js';
 import {BiomeZoom} from './biome-zoom.js';
 import {scaffoldingCollision} from './scaffolding.js';
 import {decodeChunkData762} from './chunk-1.19.4.js';
-import {decodeChunkData774} from './chunk-1.21.11.js';
+import {lightTo758} from './light-26.3.js';
 import { getFluidState, fluidHeightAt } from './fluids.js';
 // Client world: chunk storage, block access, light propagation, collision and raycasting.
 import { biomeInfo } from './biomes.js';
@@ -129,25 +129,33 @@ export class World {
     return c;
   }
 
-  loadChunk762(packet) {
-    if (packet?.protocol === 774 || this.protocol === 774) return this.loadChunk774(packet);
-    const decoded = decodeChunkData762(packet, {
-      sectionCount: this.sectionCount,
-      biomeCount: this.biomeRegistrySize,
-      stateCount: this.blockStateRegistrySize,
-      airStates: this.airStates,
-    });
-    return this._applyDecodedChunk(packet, decoded);
-  }
-
-  loadChunk774(packet) {
-    const decoded = decodeChunkData774(packet, {
-      sectionCount: this.sectionCount,
-      biomeCount: this.biomeRegistrySize,
-      stateCount: this.blockStateRegistrySize,
-      airStates: this.airStates,
-    });
-    return this._applyDecodedChunk(packet, decoded);
+  // 26.3: sections arrive already unpacked by the native chunk decoder, so no second decode.
+  loadChunk26_3(packet) {
+    const {x,z,sections}=packet,chunkX=packet.chunkX??x,chunkZ=packet.chunkZ??z;
+    this.updateLight758({...lightTo758(packet.light),chunkX,chunkZ});
+    let c=this.getChunk(chunkX,chunkZ);
+    if(!c){c=new Chunk(chunkX,chunkZ,this.hasSky,this);this.chunks.set(World.key(chunkX,chunkZ),c);this._gen++;}
+    c.nativeLight=this._lightColumn(chunkX,chunkZ);c.heightmaps=packet.heightmaps;c.debugHeightRevision=(c.debugHeightRevision||0)+1;
+    for(let index=0;index<this.sectionCount;index++){
+      const sy=this.minSection+index,data=sections[index];
+      // The native non-empty count is authoritative; an empty section is cleared outright.
+      if(!data||data.nonEmptyBlockCount===0){c.setSection(sy,null);continue;}
+      const sec=new Section(false,data.stateIds);
+      sec.nonAir=data.nonEmptyBlockCount;
+      sec.skyLight=c.nativeLight.sky[index+1]||=new Uint8Array(2048);
+      sec.blockLight=c.nativeLight.block[index+1]||=new Uint8Array(2048);
+      c.setSection(sy,sec);
+    }
+    if(sections.some(section=>section)){
+      c.biomes=new Uint32Array(this.sectionCount*64);
+      sections.forEach((section,index)=>{if(section)c.biomes.set(section.biomeIds,index*64);});
+      c.biomes3D=true;
+    }
+    this._computeHeights(c);
+    const bitMap=(1n<<BigInt(this.sectionCount))-1n;
+    this.emit('chunkLoaded',c,bitMap,true);
+    for(let sy=this.minSection;sy<this.maxSection;sy++)for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)this.emit('sectionDirty',chunkX+dx,sy,chunkZ+dz);
+    return c;
   }
 
   updateLight758(packet) {

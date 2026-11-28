@@ -1,0 +1,128 @@
+{
+  "target": "26.3",
+  "recordedOn": "2026-11-27",
+  "url": "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json",
+  "method": "curl with a descriptive user agent",
+  "manifestSha256": "90fa9a7b3a689d41384138dd7a73f856fbf4ed23565b9c78dc10edae0cd44796",
+  "releases": [
+    {
+      "id": "1.21",
+      "type": "release",
+      "releaseTime": "2024-06-13T08:24:03+00:00",
+      "sha1": "f773a8163c8b7b47c7b7c15fc8ff02ccfadf87b8",
+      "complianceLevel": 1
+    },
+    {
+      "id": "1.21.1",
+      "type": "release",
+      "releaseTime": "2024-08-08T12:24:45+00:00",
+      "sha1": "dfd8a7b2515a97eeea2c32af7645bc7794911eec",
+      "complianceLevel": 1
+    },
+    {
+      "id": "1.21.2",
+      "type": "release",
+      "releaseTime": "2024-10-22T09:58:55+00:00",
+      "sha1": "152f5a94b6300eafa001a7d72ee17d4e1edef685",
+      "complianceLevel": 1
+    },
+    {
+      "id": "1.21.3",
+      "type": "release",
+      "releaseTime": "2024-10-23T12:28:15+00:00",
+      "sha1": "f04da6da6d4a1bbf25afb028d454a08a6a4e8d47",
+      "complianceLevel": 1
+    },
+    {
+      "id": "1.21.4",
+      "type": "release",
+      "releaseTime": "2024-12-03T10:12:57+00:00",
+      "sha1": "bc751a219238bf1acdf4ca82b77bc5b19e6fc60b",
+      "complianceLevel": 1
+    },
+    {
+      "id": "1.21.5",
+      "type": "release",
+      "releaseTime": "2025-03-25T12:14:58+00:00",
+      "sha1": "ba6b1560f374644944d17e9b15dbc234df4819df",
+      "complianceLevel": 1
+    },
+    {
+      "id": "1.21.6",
+      "type": "release",
+      "releaseTime": "2025-06-17T11:10:28+00:00",
+      "sha1": "f8d4e4edd5a74ab64e293ddf96b3b31e5011b8ef",
+      "complianceLevel": 1
+    },
+    {
+      "id": "1.21.7",
+      "type": "release",
+      "releaseTime": "2025-06-30T09:32:16+00:00",
+      "sha1": "ed7218d53c8769d42202a904e82871b204c208aa",
+      "complianceLevel": 1
+    },
+    {
+      "id": "1.21.8",
+      "type": "release",
+      "releaseTime": "2025-07-17T12:04:02+00:00",
+      "sha1": "e41741935dd49b18206d2ff23f942363ab6338eb",
+      "complianceLevel": 1
+    },
+    {
+      "id": "1.21.9",
+      "type": "release",
+      "releaseTime": "2025-09-30T11:58:43+00:00",
+      "sha1": "a3c310f2479e1ec6ebcb698dcf6b63b171d7e540",
+      "complianceLevel": 1
+    },
+    {
+      "id": "1.21.10",
+      "type": "release",
+      "releaseTime": "2025-10-07T09:17:23+00:00",
+      "sha1": "5381624d5077fc9ad71a8d5c6e10857a0a77a819",
+      "complianceLevel": 1
+    },
+    {
+      "id": "1.21.11",
+      "type": "release",
+      "releaseTime": "2025-12-09T12:23:30+00:00",
+      "sha1": "956b9b8bbce1d125e058b3f9a813f3fd448f1793",
+      "complianceLevel": 1
+    },
+    {
+      "id": "26.1",
+      "type": "release",
+      "releaseTime": "2026-03-24T12:11:04+00:00",
+      "sha1": "b8f6498ca1d64b8bdec8f9fa2c639b910121e574",
+      "complianceLevel": 1
+    },
+    {
+      "id": "26.1.1",
+      "type": "release",
+      "releaseTime": "2026-04-01T09:06:36+00:00",
+      "sha1": "5600da20e0cfb0d749bdf737e9911e95356557f2",
+      "complianceLevel": 1
+    },
+    {
+      "id": "26.1.2",
+      "type": "release",
+      "releaseTime": "2026-04-09T10:12:23+00:00",
+      "sha1": "fe16af51181f0517f35969b56e125d21c21bdf3f",
+      "complianceLevel": 1
+    },
+    {
+      "id": "26.2",
+      "type": "release",
+      "releaseTime": "2026-06-16T12:03:33+00:00",
+      "sha1": "dac648b20a6ee96e94654edc70c44738031e432e",
+      "complianceLevel": 1
+    },
+    {
+      "id": "26.3",
+      "type": "release",
+      "releaseTime": "2026-09-15T11:23:02+00:00",
+      "sha1": "daeed026145a189ff7234dcd8ed5b916dc18fa9b",
+      "complianceLevel": 1
+    }
+  ]
+}

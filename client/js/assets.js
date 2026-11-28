@@ -1,6 +1,7 @@
+import { palettedPermutationSprites } from './render/paletted-permutations.js';
 import {OverlayZip,overlayDirectories,resourceFilter,readResourceStack,readResourceBytes,resourceMetadata,resourceNamespaces,resourceBlockedAbove} from './resource-layers.js';
 import{preloadTextures}from'./render/texture-preload.js';
-import {applyPackModels,applyPackTextures,applyPackDefinitions} from './resource-models.js';
+import {applyPackModels,applyPackTextures} from './resource-models.js';
 // Asset manager: base game assets (an assets/ folder next to the page, or the zip embedded in a single-file build)
 // layered under user resource packs.
 import {VILLAGER_HATS} from './game/villager-data.js';
@@ -19,11 +20,8 @@ import { decodeUtf8 } from './util/utf8.js';
 import { chatToLegacy } from './gui/chat.js';
 import { loadFontSets } from './gui/font-providers.js';
 import { loadParticleSprites } from './render/particle-sprites.js';
-import {CORE_GUI_SPRITES} from './gui/sprites-1.21.11.js';
-import { runAtlasSources } from './render/atlas-sources.js';
-import { palettedPermutationSprites } from './render/paletted-permutations.js';
+import {CORE_GUI_SPRITES} from './gui/sprites-1.20.6.js';
 
-export const VANILLA_PACK_ID = 'vanilla';
 const MC = 'assets/minecraft/';
 const PACK_PREFIX = 'packs/';
 
@@ -39,12 +37,14 @@ export class ResourcePack {
       const meta = JSON.parse(this.zip.readText(this.prefix + 'pack.mcmeta'));
       const d = meta.pack && meta.pack.description;
       this.description = chatToLegacy(d, { parsed: true });
-      this.format = meta.pack && (meta.pack.pack_format ?? (Array.isArray(meta.pack.max_format) ? meta.pack.max_format[0] : meta.pack.max_format));
-      this.supportedFormats = meta.pack?.supported_formats;
+      this.format = meta.pack && meta.pack.pack_format;
+      // 26.3 PackFormat: min_format/max_format are compact lists such as [97,1]. Keep the
+      // raw values here; resource-pack-compatibility.js applies the native major.minor rule.
       this.minFormat = meta.pack?.min_format;
       this.maxFormat = meta.pack?.max_format;
+      this.supportedFormats = meta.pack?.supported_formats;
       try{this.blocksResource=resourceFilter(meta.filter);}catch(e){console.warn('Bad resource filter in',id,e.message);}
-      try{this.zip=new OverlayZip(this.zip,this.prefix,overlayDirectories(meta.overlays,75));}catch(e){console.warn('Bad resource overlays in',id,e.message);}
+      try{this.zip=new OverlayZip(this.zip,this.prefix,overlayDirectories(meta.overlays,32));}catch(e){console.warn('Bad resource overlays in',id,e.message);}
       if (meta.language && typeof meta.language === 'object') this.languages = meta.language;
     } catch (e) { /* pack.mcmeta missing or malformed */ }
     try { const icon = this.zip.read(this.prefix + 'pack.png'); this.icon = icon ? decodePng(icon) : null; } catch (e) { this.icon = null; }
@@ -62,8 +62,7 @@ export class Assets {
     this.guiSpriteScaling = new Map();this.guiSpriteLoads = new Map();
     this.textures = new Map(); // rel -> device texture
     this.data = {};
-    this.packs = [];           // active packs above Default, highest priority first
-    this.lowerPacks = [];      // active packs below Default, highest priority first
+    this.packs = [];           // active packs, highest priority first
     this.serverPack = null;    // the current server's resource pack (serverpacks.js), first in packs while set
     this.serverPacks = [];     // 1.20.3+: pushed packs, highest priority first
     this.device = null;
@@ -107,10 +106,7 @@ export class Assets {
 
   async activatePacks(ids) {
     const all = await this.listPacks();
-    const at = ids.indexOf(VANILLA_PACK_ID);
-    const pick = (list) => list.map((id) => all.find((p) => p.id === id)).filter(Boolean);
-    this.packs = pick(at < 0 ? ids : ids.slice(0, at));
-    this.lowerPacks = at < 0 ? [] : pick(ids.slice(at + 1));
+    this.packs = ids.map((id) => all.find((p) => p.id === id)).filter(Boolean);
     this.packs.unshift(...(this.serverPacks.length ? this.serverPacks : this.serverPack ? [this.serverPack] : []));
   }
 
@@ -245,79 +241,37 @@ export class Assets {
 
     step('Loading block models...', 15);
     const models = await this.source.models();
-    const under = { models: {}, blockstates: {}, items: {}, equipment: {} };
-    if (this.lowerPacks.length) {
-      const lowerFirst = [...this.lowerPacks].reverse();
-      applyPackModels(lowerFirst, under.models, under.blockstates);
-      applyPackDefinitions(lowerFirst, 'items', under.items);
-      applyPackDefinitions(lowerFirst, 'equipment', under.equipment);
-    }
-    this.models = { ...under.models, ...models.models };
-    this.blockstates = { ...under.blockstates, ...models.blockstates };
-    this.itemModels = { ...under.items, ...(models.items || {}) };
-    this.equipmentModels = { ...under.equipment, ...(models.equipment || {}) };
+    this.models = models.models;
+    this.blockstates = models.blockstates;
     applyPackModels(packsLowFirst,this.models,this.blockstates,this);
-    applyPackDefinitions(packsLowFirst, 'items', this.itemModels, this);
-    applyPackDefinitions(packsLowFirst, 'equipment', this.equipmentModels, this);
 
     step('Loading textures...', 35);
     const { files, mcmeta } = await this.source.blockTextures();
-    if (this.lowerPacks.length) {
-      const underFiles = new Map(), underMeta = {};
-      applyPackTextures([...this.lowerPacks].reverse(), underFiles, underMeta, this.models);
-      for (const [key, value] of underFiles) if (!files.has(key)) {
-        files.set(key, value);
-        if (underMeta[key] && !Object.hasOwn(mcmeta, key)) mcmeta[key] = underMeta[key];
-      }
-    }
     applyPackTextures(packsLowFirst,files,mcmeta,this.models,this);
     step('Building texture atlas...', 50);
     const textures = [];
     for (const [name, get] of files) {
       try { textures.push({ name, image: decodePng(get()) }); } catch (e) { /* undecodable texture */ }
     }
-    // SpriteSourceList sources can contribute atlas sprites outside block/ and item/ (bells, conduits, trims, etc.).
-    // Definitions are layered lowest-first, while active resource packs retain their usual high-first lookup order.
+    // 26.3 defines its atlases in code, so the armor-trim item overlays are not an atlases/blocks.json
+    // source in the jar. Synthesize the native paletted_permutations source (the same textures, palette
+    // key and permutations 1.20.6's blocks.json used); a pack-supplied definition still wins by name.
+    const trimSource = {
+      type: 'paletted_permutations',
+      textures: ['trims/items/helmet_trim', 'trims/items/chestplate_trim', 'trims/items/leggings_trim', 'trims/items/boots_trim'],
+      palette_key: 'palettes/trim_base',
+      permutations: Object.fromEntries(['quartz', 'iron', 'netherite', 'redstone', 'copper', 'gold', 'emerald', 'diamond', 'lapis', 'amethyst', 'resin',
+        'iron_darker', 'copper_darker', 'gold_darker', 'diamond_darker', 'netherite_darker'].map((n) => [n, 'palettes/trim/' + n])),
+    };
+    const definitions = [];
     try {
-      const definitions = [];
-      for (const atlasName of ['blocks', 'items']) {
-        const stack = await this.readResourceStack('minecraft:atlases/' + atlasName + '.json');
-        definitions.push(...stack.reverse().map(({ bytes }) => {
-          try { return JSON.parse(decodeUtf8(bytes)); } catch { return null; }
-        }));
-      }
-      const index = await this.source.textureIndex?.() || [];
-      const vanillaPaths = index.map((entry) => String(Array.isArray(entry) ? entry[0] : entry)
-        .replace(/^minecraft\/textures\//, '').replace(/\.png$/, ''));
-      const list = async (directory) => {
-        const paths = new Set(vanillaPaths.filter((name) => name.startsWith(directory + '/'))
-          .map((name) => name.slice(directory.length + 1)));
-        const prefix = 'textures/' + directory + '/';
-        for (const pack of [...this.packs, ...this.lowerPacks]) for (const name of pack.list(prefix)) {
-          if (name.endsWith('.png')) paths.add(name.slice(prefix.length, -4));
-        }
-        return [...paths];
-      };
-      const sources = await runAtlasSources(definitions, {
-        names: new Set(textures.map(({ name }) => name)),
-        list,
-        load: (path) => this.imageAsync(path + '.png').catch(() => null),
-      });
-      if (sources.remove.size) {
-        for (let i = textures.length - 1; i >= 0; i--) if (sources.remove.has(textures[i].name)) textures.splice(i, 1);
-      }
-      for (const [name, load] of sources.add) {
-        const image = await load();
-        if (!image) continue;
-        const existing = textures.findIndex((texture) => texture.name === name);
-        if (existing < 0) textures.push({ name, image });
-        else textures[existing] = { name, image };
-      }
-      const have = new Set(textures.map(({ name }) => name));
-      for (const sprite of await palettedPermutationSprites(definitions, (path) => this.imageAsync(path + '.png').catch(() => null))) {
-        if (!have.has(sprite.name)) { textures.push(sprite); have.add(sprite.name); }
-      }
-    } catch (e) { /* an unreadable atlas definition leaves the ordinary block/item sprites intact */ }
+      definitions.push(...(await this.readResourceStack('minecraft:atlases/blocks.json')).reverse().map((r) => { try { return JSON.parse(decodeUtf8(r.bytes)); } catch { return null; } }));
+    } catch (e) { /* 26.3 has no atlas JSON; the native source below still runs */ }
+    definitions.push({ sources: [trimSource] }); // pack-generated trim sprites come first and win by name
+    try {
+      const have = new Set(textures.map((t) => t.name));
+      for (const sprite of await palettedPermutationSprites(definitions, (p) => this.imageAsync(p + '.png').catch(() => null))) if (!have.has(sprite.name)) textures.push(sprite);
+    } catch (e) { /* an unreadable atlas definition leaves the directory sprites */ }
     this.atlas = new Atlas();
     this.atlas.build(textures, mcmeta);
     if (this.atlasTexture) this.device.destroyTexture(this.atlasTexture);
@@ -325,16 +279,11 @@ export class Assets {
     await loadParticleSprites(this);
 
     step('Loading colour maps...', 65);
-    const [grass, foliage, dryFoliage] = await Promise.all([
-      this.imageAsync('colormap/grass.png'),
-      this.imageAsync('colormap/foliage.png'),
-      this.imageAsync('colormap/dry_foliage.png').catch(() => null),
-    ]);
+    const [grass, foliage] = await Promise.all([this.imageAsync('colormap/grass.png'), this.imageAsync('colormap/foliage.png')]);
     this.grassPixels = grass.data;
     this.foliagePixels = foliage.data;
-    this.dryFoliagePixels = dryFoliage ? dryFoliage.data : null;
     initBlocks(this.data.blocks, this.data.blockCollisionShapes);
-    initBiomes(this.data.biomes, this.grassPixels, this.foliagePixels, this.dryFoliagePixels);
+    initBiomes(this.data.biomes, this.grassPixels, this.foliagePixels);
     this.modelStore = new ModelStore(this.models, this.blockstates, this.atlas);
 
     step('Loading language...', 70);
@@ -345,21 +294,20 @@ export class Assets {
     step('Loading interface...', 75);
     await Promise.all([
       'font/ascii.png', 'font/ascii_sga.png', 'gui/menu_background.png', 'gui/title/minecraft.png', 'gui/title/edition.png',
-      'gui/container/inventory.png', 'environment/celestial/sun.png', 'environment/celestial/moon/full_moon.png', 'environment/clouds.png',
+      'gui/container/inventory.png', 'environment/sun.png', 'environment/moon_phases.png', 'environment/clouds.png',
       'misc/vignette.png', 'misc/shadow.png',
     ].map((p) => this.imageAsync(p).catch(() => null)));
     this.glyphSizes = null; // The native target removed legacy glyph_sizes.bin.
     this.fontSets = await loadFontSets(this);
 
     step('Preparing title textures...',78);
-    const nativeSprites=[...CORE_GUI_SPRITES,...['widget/button','widget/button_highlighted','widget/button_disabled','widget/slider','widget/slider_highlighted','widget/slider_handle','widget/slider_handle_highlighted','icon/accessibility','icon/language','widget/scroller','widget/scroller_background','container/creative_inventory/scroller','container/creative_inventory/scroller_disabled',...['top','bottom'].flatMap(row=>['selected','unselected'].flatMap(state=>Array.from({length:7},(_,i)=>'container/creative_inventory/tab_'+row+'_'+state+'_'+(i+1)))),...['select','unselect','move_up','move_down'].flatMap(n=>['transferable_list/'+n,'transferable_list/'+n+'_highlighted'])].map(name=>'gui/sprites/'+name+'.png')];
+    const nativeSprites=['widget/button','widget/button_highlighted','widget/button_disabled','widget/slider','widget/slider_highlighted','widget/slider_handle','widget/slider_handle_highlighted','icon/accessibility','icon/language','widget/scroller','widget/scroller_background','container/creative_inventory/scroller','container/creative_inventory/scroller_disabled',...['top','bottom'].flatMap(row=>['selected','unselected'].flatMap(state=>Array.from({length:7},(_,i)=>'container/creative_inventory/tab_'+row+'_'+state+'_'+(i+1)))),...['select','unselect','move_up','move_down'].flatMap(n=>['transferable_list/'+n,'transferable_list/'+n+'_highlighted']),'hud/locator_bar_background','hud/locator_bar_arrow_up','hud/locator_bar_arrow_down',...['default_0','default_1','default_2','default_3','bowtie'].map(n=>'hud/locator_bar_dot/'+n),...['container','container_blinking','full','full_blinking','half','half_blinking','absorbing_full_blinking','absorbing_half_blinking'].map(n=>'hud/heart/'+n),...['ping_1','ping_2','ping_3','ping_4','ping_5','ping_unknown'].map(n=>'icon/'+n)].map(name=>'gui/sprites/'+name+'.png');
     await Promise.all(nativeSprites.map(path=>this.loadGuiSprite(path)));
-    const required=Array.from({length:6},(_,i)=>'gui/title/background/panorama_'+i+'.png').concat(['gui/title/minecraft.png','gui/title/minceraft.png','gui/title/edition.png','gui/menu_background.png','gui/inworld_menu_background.png','gui/menu_list_background.png','gui/inworld_menu_list_background.png','gui/header_separator.png','gui/footer_separator.png','gui/inworld_header_separator.png','gui/inworld_footer_separator.png','misc/credits_vignette.png','font/ascii.png','gui/title/mojangstudios.png'],nativeSprites);
+    const required=Array.from({length:6},(_,i)=>'gui/title/background/panorama_'+i+'.png').concat(['gui/title/minecraft.png','gui/title/minceraft.png','gui/title/edition.png','gui/menu_background.png','gui/inworld_menu_background.png','gui/menu_list_background.png','gui/inworld_menu_list_background.png','gui/header_separator.png','gui/footer_separator.png','gui/inworld_header_separator.png','gui/inworld_footer_separator.png','misc/credits_vignette.png','font/ascii.png','gui/title/mojangstudios.png']);
     this.preloadReport={required:await preloadTextures(this,required,{budget:Infinity})};
     const missingPanorama=this.preloadReport.required.failed.filter(p=>/panorama_[0-5]\.png$/.test(p));if(missingPanorama.length)throw Error('Missing panorama textures: '+missingPanorama.join(', '));
     if(this.preloadWorldTextures!==false){
       const index=await this.source.textureIndex?.()||[],all=new Map(index.map(e=>[e[0],e]));
-      for(const pack of [...this.lowerPacks].reverse())for(const name of pack.list('textures/'))if(name.endsWith('.png')){const bytes=pack.read(name);if(bytes?.length>=24){const d=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);all.set(name.slice(9),[name.slice(9),d.getUint32(16),d.getUint32(20)]);}}
       for(const pack of packsLowFirst)for(const name of pack.list('textures/'))if(name.endsWith('.png')){const bytes=pack.read(name);if(bytes?.length>=24){const d=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);all.set(name.slice(9),[name.slice(9),d.getUint32(16),d.getUint32(20)]);}}
       const entries=[...all.values()].filter(([path])=>! /^(block|blocks|item|items)\//.test(path)&&!required.includes(path)).sort(([a],[b])=>Number(a.startsWith('font/unicode_page_'))-Number(b.startsWith('font/unicode_page_')));
       this.preloadReport.world=await preloadTextures(this,entries,{yieldFrame:()=>new Promise(resolve=>platform().requestFrame(resolve)),progress:(done,total)=>step('Preloading textures...',78+6*done/Math.max(1,total))});
@@ -392,7 +340,6 @@ export class Assets {
       biomesJson: this.data.biomes,
       grass: this.grassPixels,
       foliage: this.foliagePixels,
-      dryFoliage: this.dryFoliagePixels,
     });
   }
 
@@ -410,9 +357,7 @@ export class Assets {
 
   // All languages: the game's list plus the "language" sections of active resource packs
   async loadLanguageList() {
-    const list = {};
-    for (const p of [...this.lowerPacks].reverse()) if (p.languages) Object.assign(list, p.languages);
-    Object.assign(list, this.defaultPackMeta?.language || {});
+    const list = { ...((this.defaultPackMeta && this.defaultPackMeta.language) || {}) };
     if (!list.en_us) list.en_us = { name: 'English', region: 'US', bidirectional: false };
     for (const p of [...this.packs].reverse()) if (p.languages) Object.assign(list, p.languages);
     this.languages = list;
@@ -423,7 +368,7 @@ export class Assets {
   // the selected language and every active pack's .json files are layered on top.
   async loadVillagerHats(){
     const names=new Set(Object.keys(VILLAGER_HATS));
-    for(const pack of [...this.packs,...this.lowerPacks])for(const path of pack.list('textures/entity/'))if(/\/(villager|zombie_villager)\/.*\.png\.mcmeta$/.test(path))names.add(path.slice(9,-7));
+    for(const pack of this.packs)for(const path of pack.list('textures/entity/'))if(/\/(villager|zombie_villager)\/.*\.png\.mcmeta$/.test(path))names.add(path.slice(9,-7));
     const hats={};
     for(const path of names){const meta=await this.resourceMetadata('minecraft:textures/'+path);if(meta.bytes)try{hats[path]=JSON.parse(decodeUtf8(meta.bytes)).villager?.hat||'none';}catch{}else if(meta.base&&!meta.filtered)hats[path]=VILLAGER_HATS[path];}
     this.villagerHats=hats;

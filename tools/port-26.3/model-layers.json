@@ -1,0 +1,820 @@
+{
+  "sheepWool": {
+    "layer": "minecraft:sheep#wool",
+    "fields": [
+      "head",
+      "body",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg"
+    ]
+  },
+  "armorInner": {
+    "combine": [
+      "minecraft:player#leggings",
+      "minecraft:player#boots"
+    ],
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
+  "armorOuter": {
+    "combine": [
+      "minecraft:player#helmet",
+      "minecraft:player#chestplate"
+    ],
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
+  "piglinArmorOuter": {
+    "combine": [
+      "minecraft:piglin#helmet",
+      "minecraft:piglin#chestplate"
+    ],
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
+  "banner": {
+    "append": [
+      "minecraft:standing_banner#main",
+      "minecraft:standing_banner#flag"
+    ],
+    "fields": [
+      "flag",
+      "pole",
+      "bar"
+    ]
+  },
+  "boat_oak": {
+    "append": [
+      "minecraft:boat/oak#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "chest_boat_oak": {
+    "append": [
+      "minecraft:chest_boat/oak#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "chest_bottom",
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "boat_spruce": {
+    "append": [
+      "minecraft:boat/spruce#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "chest_boat_spruce": {
+    "append": [
+      "minecraft:chest_boat/spruce#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "chest_bottom",
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "boat_birch": {
+    "append": [
+      "minecraft:boat/birch#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "chest_boat_birch": {
+    "append": [
+      "minecraft:chest_boat/birch#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "chest_bottom",
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "boat_jungle": {
+    "append": [
+      "minecraft:boat/jungle#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "chest_boat_jungle": {
+    "append": [
+      "minecraft:chest_boat/jungle#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "chest_bottom",
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "boat_acacia": {
+    "append": [
+      "minecraft:boat/acacia#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "chest_boat_acacia": {
+    "append": [
+      "minecraft:chest_boat/acacia#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "chest_bottom",
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "boat_cherry": {
+    "append": [
+      "minecraft:boat/cherry#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "chest_boat_cherry": {
+    "append": [
+      "minecraft:chest_boat/cherry#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "chest_bottom",
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "boat_dark_oak": {
+    "append": [
+      "minecraft:boat/dark_oak#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "chest_boat_dark_oak": {
+    "append": [
+      "minecraft:chest_boat/dark_oak#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "chest_bottom",
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "boat_pale_oak": {
+    "append": [
+      "minecraft:boat/pale_oak#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "chest_boat_pale_oak": {
+    "append": [
+      "minecraft:chest_boat/pale_oak#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "chest_bottom",
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "boat_mangrove": {
+    "append": [
+      "minecraft:boat/mangrove#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "chest_boat_mangrove": {
+    "append": [
+      "minecraft:chest_boat/mangrove#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "chest_bottom",
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "boat_poplar": {
+    "append": [
+      "minecraft:boat/poplar#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "chest_boat_poplar": {
+    "append": [
+      "minecraft:chest_boat/poplar#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "chest_bottom",
+        "bottom",
+        "back",
+        "front",
+        "right",
+        "left"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "boat_bamboo": {
+    "append": [
+      "minecraft:boat/bamboo#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "bottom"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "chest_boat_bamboo": {
+    "append": [
+      "minecraft:chest_boat/bamboo#main",
+      "minecraft:boat#water_patch"
+    ],
+    "fields": [
+      [
+        "chest_bottom",
+        "bottom"
+      ],
+      [
+        "left_paddle",
+        "right_paddle"
+      ],
+      "water_patch"
+    ]
+  },
+  "rabbit": {
+    "layer": "minecraft:rabbit#main",
+    "fields": [
+      "left_haunch",
+      "right_haunch",
+      "left_hind_leg",
+      "right_hind_leg",
+      "body",
+      "left_front_leg",
+      "right_front_leg",
+      "head",
+      "right_ear",
+      "left_ear",
+      "tail"
+    ]
+  },
+  "rabbitBaby": {
+    "layer": "minecraft:rabbit_baby#main",
+    "fields": [
+      "left_haunch",
+      "right_haunch",
+      "left_hind_leg",
+      "right_hind_leg",
+      "body",
+      "left_front_leg",
+      "right_front_leg",
+      "head",
+      "right_ear",
+      "left_ear",
+      "tail"
+    ]
+  },
+  "camel": {
+    "merge": [
+      "minecraft:camel#main",
+      "minecraft:camel#saddle"
+    ],
+    "fields": [
+      "$root",
+      "right_front_leg",
+      "right_hind_leg",
+      "left_hind_leg",
+      "body",
+      "left_front_leg",
+      "head",
+      "hump",
+      "saddle",
+      "tail",
+      "bridle",
+      "right_ear",
+      "reins",
+      "left_ear"
+    ]
+  },
+  "sniffer": {
+    "layer": "minecraft:sniffer#main",
+    "fields": [
+      "$root",
+      "bone",
+      "right_front_leg",
+      "right_hind_leg",
+      "right_mid_leg",
+      "left_hind_leg",
+      "body",
+      "left_mid_leg",
+      "left_front_leg",
+      "head",
+      "nose",
+      "lower_beak",
+      "right_ear",
+      "left_ear"
+    ]
+  },
+  "horse": {
+    "merge": [
+      "minecraft:horse#main",
+      "minecraft:horse#saddle"
+    ],
+    "fields": [
+      "body",
+      "head_parts",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "tail",
+      [
+        "saddle",
+        "head_saddle",
+        "mouth_saddle_wrap",
+        "left_saddle_mouth",
+        "right_saddle_mouth"
+      ],
+      [
+        "left_saddle_line",
+        "right_saddle_line"
+      ]
+    ]
+  },
+  "donkey": {
+    "merge": [
+      "minecraft:donkey#main",
+      "minecraft:donkey#saddle"
+    ],
+    "fields": [
+      "body",
+      "head_parts",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "tail",
+      [
+        "saddle",
+        "head_saddle",
+        "mouth_saddle_wrap",
+        "left_saddle_mouth",
+        "right_saddle_mouth"
+      ],
+      [
+        "left_saddle_line",
+        "right_saddle_line"
+      ],
+      "left_chest",
+      "right_chest"
+    ]
+  },
+  "player": {
+    "merge": [
+      "minecraft:player#main",
+      "minecraft:player#cape",
+      "minecraft:player#ears"
+    ],
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg",
+      "left_sleeve",
+      "right_sleeve",
+      "left_pants",
+      "right_pants",
+      "jacket",
+      "cape"
+    ]
+  },
+  "playerSlim": {
+    "merge": [
+      "minecraft:player_slim#main",
+      "minecraft:player#cape",
+      "minecraft:player#ears"
+    ],
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg",
+      "left_sleeve",
+      "right_sleeve",
+      "left_pants",
+      "right_pants",
+      "jacket",
+      "cape"
+    ]
+  },
+  "horseArmor": {
+    "layer": "minecraft:horse_armor#main",
+    "fields": [
+      "body",
+      "head_parts",
+      "right_hind_leg",
+      "left_hind_leg",
+      "right_front_leg",
+      "left_front_leg",
+      "tail",
+      [],
+      []
+    ]
+  },
+  "bogged": {
+    "layer": "minecraft:bogged#main",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
+  "parched": {
+    "layer": "minecraft:parched#main",
+    "fields": [
+      "head",
+      "hat",
+      "body",
+      "right_arm",
+      "left_arm",
+      "right_leg",
+      "left_leg"
+    ]
+  },
+  "breeze": {
+    "layer": "minecraft:breeze#main",
+    "fields": ["body", "wind_body"]
+  },
+  "creaking": {
+    "layer": "minecraft:creaking#main",
+    "fields": ["root"]
+  },
+  "copper_golem": {
+    "layer": "minecraft:copper_golem#main",
+    "fields": ["left_leg", "right_leg", "body"]
+  },
+  "happy_ghast": {
+    "layer": "minecraft:happy_ghast#main",
+    "fields": ["body"]
+  },
+  "nautilus": {
+    "layer": "minecraft:nautilus#main",
+    "fields": ["root"]
+  },
+  "zombie_nautilus": {
+    "layer": "minecraft:zombie_nautilus#main",
+    "fields": ["root"]
+  },
+  "sulfur_cube": {
+    "layer": "minecraft:sulfur_cube#main",
+    "fields": ["cube"]
+  },
+  "dragon": {
+    "layer": "minecraft:ender_dragon#main",
+    "fields": [
+      "head",
+      "neck0",
+      "neck1",
+      "neck2",
+      "neck3",
+      "neck4",
+      "tail0",
+      "tail1",
+      "tail2",
+      "tail3",
+      "tail4",
+      "tail5",
+      "tail6",
+      "tail7",
+      "tail8",
+      "tail9",
+      "tail10",
+      "tail11",
+      "jaw",
+      "body",
+      "left_wing",
+      "left_wing_tip",
+      "left_front_leg",
+      "left_front_leg_tip",
+      "left_front_foot",
+      "left_hind_leg",
+      "left_hind_leg_tip",
+      "left_hind_foot",
+      "right_wing",
+      "right_wing_tip",
+      "right_front_leg",
+      "right_front_leg_tip",
+      "right_front_foot",
+      "right_hind_leg",
+      "right_hind_leg_tip",
+      "right_hind_foot"
+    ]
+  },
+  "enderCrystal": {
+    "layer": "minecraft:end_crystal#main",
+    "fields": [
+      "outer_glass",
+      "inner_glass",
+      "cube",
+      "base"
+    ]
+  },
+  "enderCrystalNoBase": {
+    "layer": "minecraft:end_crystal#main",
+    "fields": [
+      "outer_glass",
+      "inner_glass",
+      "cube",
+      "base"
+    ]
+  },
+  "cushion": {
+    "layer": "minecraft:cushion#main",
+    "fields": [
+      "cushion"
+    ]
+  },
+  "windCharge": {
+    "layer": "minecraft:wind_charge#main",
+    "fields": [
+      "bone"
+    ]
+  }
+}

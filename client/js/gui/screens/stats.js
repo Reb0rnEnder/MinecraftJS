@@ -100,7 +100,9 @@ class GeneralList extends StatsList {
   constructor(screen) {
     super(screen, 14);
     // Comparator.comparing(I18n.get(...)): Java String order (UTF-16 code units)
-    this.stats = customStats().sort((a, b) => { const x = tr(statKey(a)), y = tr(statKey(b)); return x < y ? -1 : x > y ? 1 : 0; });
+    // Prefer the counter's native registry order; fall back before the first stats packet.
+    const names = screen.counter?.customStats?.() || customStats();
+    this.stats = names.sort((a, b) => { const x = tr(statKey(a)), y = tr(statKey(b)); return x < y ? -1 : x > y ? 1 : 0; });
   }
   size() { return this.stats.length; }
   drawSlot(gui, i, x, y, h) {

@@ -1,6 +1,7 @@
 // Port of vanilla ModelRenderer/ModelBox (texture-offset box models) onto the gfx scene graph.
 import { FORMAT, EntityParams } from '../gfx/device.js';
 import { Node, material } from '../gfx/scene.js';
+import { entityTexture263 } from './entity-textures-26.3.js';
 
 let device = null;
 const boxCache = new Map();
@@ -13,6 +14,7 @@ export function modelDevice() { return device; }
 
 // Entity material: pipeline 'entity', texture (Texture or texture path), EntityParams
 export function entityMaterial(tex, opts = {}) {
+  if (typeof tex === 'string') tex = entityTexture263(tex);
   const params = new EntityParams();
   params.setAlphaTest(opts.alphaTest !== undefined ? opts.alphaTest : 0.1);
   if (opts.noLighting) params.setNoLighting(true);

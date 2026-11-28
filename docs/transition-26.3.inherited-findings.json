@@ -1,0 +1,1029 @@
+{
+  "schemaVersion": 1,
+  "target": "26.3",
+  "inheritedTarget": "1.20.6",
+  "source": "docs/parity-checklist-1.20.6.json",
+  "recordedOn": "2026-11-27",
+  "checkpoints": 83,
+  "counts": {
+    "implemented-26.3": 31,
+    "carried-open": 37,
+    "blocked-visual": 6,
+    "blocked-account": 5,
+    "out-of-scope": 4
+  },
+  "rows": [
+    {
+      "id": "BASE-01",
+      "area": "Foundation",
+      "inheritedStatus": "accepted",
+      "title": "Pinned target identity and native inputs",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "BASE-02",
+      "area": "Foundation",
+      "inheritedStatus": "accepted",
+      "title": "Native registries, visual shapes and model extraction",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "BASE-03",
+      "area": "Foundation",
+      "inheritedStatus": "accepted",
+      "title": "Anonymous NBT and native text component codecs",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "BASE-04",
+      "area": "Foundation",
+      "inheritedStatus": "partial",
+      "title": "All 56 item-component wire types and native defaults",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "BASE-05",
+      "area": "Foundation",
+      "inheritedStatus": "accepted",
+      "title": "Configuration, exact known packs and registry replacement",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "BASE-06",
+      "area": "Foundation",
+      "inheritedStatus": "accepted",
+      "title": "All 122 clientbound Play packet body decoders",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "BASE-07",
+      "area": "Foundation",
+      "inheritedStatus": "accepted",
+      "title": "Graphical native join, movement and death/respawn milestone",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "BASE-08",
+      "area": "Foundation",
+      "inheritedStatus": "accepted",
+      "title": "Creative tab populations and component-preserving stack transfer",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "BASE-09",
+      "area": "Foundation",
+      "inheritedStatus": "accepted",
+      "title": "Grass/cherry/azalea and native biome color correction",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "BASE-10",
+      "area": "Foundation",
+      "inheritedStatus": "accepted",
+      "title": "Menu redesign foundation and six-pass blur",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "BASE-11",
+      "area": "Foundation",
+      "inheritedStatus": "accepted",
+      "title": "UUID server-pack lifecycle implementation",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "BASE-12",
+      "area": "Foundation",
+      "inheritedStatus": "accepted",
+      "title": "Selection arrows, title-icon centering and decoder presentation",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "FONT-01",
+      "area": "Fonts and resources",
+      "inheritedStatus": "accepted",
+      "title": "Recursive font reference providers",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "FONT-02",
+      "area": "Fonts and resources",
+      "inheritedStatus": "accepted",
+      "title": "Unihex providers and asset-index font resources",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "FONT-03",
+      "area": "Fonts and resources",
+      "inheritedStatus": "accepted",
+      "title": "Uniform/Japanese filters and native Font Settings navigation",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "PACK-01",
+      "area": "Fonts and resources",
+      "inheritedStatus": "partial",
+      "title": "Resource-pack overlays and resource filters",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "PACK-02",
+      "area": "Fonts and resources",
+      "inheritedStatus": "missing",
+      "title": "Native atlas source JSON and paletted permutations",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "PACK-03",
+      "area": "Fonts and resources",
+      "inheritedStatus": "partial",
+      "title": "Default-pack priority, pack import and focus behavior",
+      "disposition": "carried-open",
+      "note": "Pack priority, import and overlays are implemented; native drag/drop confirmation and the full focus transition remain open.",
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "PACK-04",
+      "area": "Fonts and resources",
+      "inheritedStatus": "unverified",
+      "title": "Live multi-pack reload and Configuration/Play lifecycle matrix",
+      "disposition": "blocked-visual",
+      "note": "Live multi-pack reload and Configuration/Play pack lifecycle need a human/server run.",
+      "evidence": [
+        "P15 visual/scenario acceptance requires a human comparison against native 26.3."
+      ]
+    },
+    {
+      "id": "ITEM-01",
+      "area": "Items and inventory",
+      "inheritedStatus": "partial",
+      "title": "Connect damage, names and stack metadata to actual item consumers",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "ITEM-02",
+      "area": "Items and inventory",
+      "inheritedStatus": "partial",
+      "title": "Native potion/effect, spawn-egg and instrument metadata",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "ITEM-03",
+      "area": "Items and inventory",
+      "inheritedStatus": "partial",
+      "title": "Enchantments, attributes, food, use duration and cooldown consumers",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "ITEM-04",
+      "area": "Items and inventory",
+      "inheritedStatus": "partial",
+      "title": "Dye, potion, firework, map and glint item colors from components",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "ITEM-05",
+      "area": "Items and inventory",
+      "inheritedStatus": "partial",
+      "title": "Books, skull profiles, banners, bundles and container item contents",
+      "disposition": "carried-open",
+      "note": "Books, skull profiles, banners, bundles and container contents are adapted; visual/tooltip acceptance remains open.",
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "ITEM-06",
+      "area": "Items and inventory",
+      "inheritedStatus": "partial",
+      "title": "Dynamic registry holders in Creative stacks",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "MENU-01",
+      "area": "Items and inventory",
+      "inheritedStatus": "partial",
+      "title": "All workstation slot layouts, actions and component-bearing clicks",
+      "disposition": "carried-open",
+      "note": "Native layouts and component-bearing clicks exist; live merchant/enchanting/stonecutter/loom acceptance remains.",
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "MENU-02",
+      "area": "Items and inventory",
+      "inheritedStatus": "partial",
+      "title": "Recipes, recipe book, ghost recipes and result previews",
+      "disposition": "carried-open",
+      "note": "Native RecipeDisplay graph and recipe book are implemented; live visual acceptance remains.",
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "ACT-01",
+      "area": "Interaction and physics",
+      "inheritedStatus": "partial",
+      "title": "Native can_break/can_place_on Adventure components",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "ACT-02",
+      "area": "Interaction and physics",
+      "inheritedStatus": "partial",
+      "title": "Contextual placement and prediction side effects",
+      "disposition": "carried-open",
+      "note": "Placement/prediction paths exist; the complete side-effect matrix is not live-accepted.",
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "ACT-03",
+      "area": "Interaction and physics",
+      "inheritedStatus": "unverified",
+      "title": "1.20.5 physics/interaction attribute combinations",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "UI-01",
+      "area": "Menus and input",
+      "inheritedStatus": "partial",
+      "title": "Title initial fade and exceptional menu/loading backgrounds",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "UI-02",
+      "area": "Menus and input",
+      "inheritedStatus": "partial",
+      "title": "Options, GUI scale, tooltips and native child-page layouts",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "UI-03",
+      "area": "Menus and input",
+      "inheritedStatus": "partial",
+      "title": "Pause, multiplayer/safety, Controls, Chat and Accessibility screen matrix",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "UI-04",
+      "area": "Menus and input",
+      "inheritedStatus": "unverified",
+      "title": "Keyboard focus, narration, clipboard and touchscreen defaults",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "UI-05",
+      "area": "Menus and input",
+      "inheritedStatus": "partial",
+      "title": "Credits interpolation and End-poem behavior",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "UI-06",
+      "area": "Menus and input",
+      "inheritedStatus": "accepted",
+      "title": "Native jigsaw editor fields and packet values",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "UI-07",
+      "area": "Menus and input",
+      "inheritedStatus": "partial",
+      "title": "F3, HUD, bossbars, toast and advancement presentation acceptance",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "CHAT-01",
+      "area": "Text, commands and accounts",
+      "inheritedStatus": "partial",
+      "title": "Command syntax for target component items and new argument types",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "CHAT-02",
+      "area": "Text, commands and accounts",
+      "inheritedStatus": "partial",
+      "title": "Scoreboard number formats and per-score display text",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "CHAT-03",
+      "area": "Text, commands and accounts",
+      "inheritedStatus": "partial",
+      "title": "Incoming chat trust, deletion, filtering and registry decorations on 766",
+      "disposition": "carried-open",
+      "note": "Incoming chat trust/deletion/filtering is decoded; live hover/click/narration acceptance remains.",
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "CHAT-04",
+      "area": "Text, commands and accounts",
+      "inheritedStatus": "missing",
+      "title": "Authenticated outgoing chat and signed command arguments",
+      "disposition": "blocked-account",
+      "note": null,
+      "evidence": [
+        "P09 requires a real Microsoft/Mojang session; no offline substitute is accepted."
+      ]
+    },
+    {
+      "id": "CHAT-05",
+      "area": "Text, commands and accounts",
+      "inheritedStatus": "missing",
+      "title": "Reportable logs and authenticated report submission",
+      "disposition": "blocked-account",
+      "note": null,
+      "evidence": [
+        "P09 requires a real Microsoft/Mojang session; no offline substitute is accepted."
+      ]
+    },
+    {
+      "id": "CHAT-06",
+      "area": "Text, commands and accounts",
+      "inheritedStatus": "partial",
+      "title": "Social history, account blocking and narrated interactions",
+      "disposition": "blocked-account",
+      "note": null,
+      "evidence": [
+        "P09 requires a real Microsoft/Mojang session; no offline substitute is accepted."
+      ]
+    },
+    {
+      "id": "NET-01",
+      "area": "Network and session acceptance",
+      "inheritedStatus": "partial",
+      "title": "Packet-to-consumer coverage for all 122 Play IDs",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "NET-02",
+      "area": "Network and session acceptance",
+      "inheritedStatus": "unverified",
+      "title": "Real authenticated/encrypted 1.20.6 account login",
+      "disposition": "blocked-account",
+      "note": null,
+      "evidence": [
+        "P09 requires a real Microsoft/Mojang session; no offline substitute is accepted."
+      ]
+    },
+    {
+      "id": "NET-03",
+      "area": "Network and session acceptance",
+      "inheritedStatus": "unverified",
+      "title": "Real transfer/reconfiguration/custom-registry server sequence",
+      "disposition": "blocked-account",
+      "note": null,
+      "evidence": [
+        "P09 requires a real Microsoft/Mojang session; no offline substitute is accepted."
+      ]
+    },
+    {
+      "id": "NET-04",
+      "area": "Network and session acceptance",
+      "inheritedStatus": "unverified",
+      "title": "Cancellation, timeouts, disconnects and reconnect stress",
+      "disposition": "carried-open",
+      "note": "Offline reconnect paths are exercised; cancellation/timeout/stress acceptance remains open.",
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "CONTENT-01",
+      "area": "Trails and Tales",
+      "inheritedStatus": "partial",
+      "title": "Two-sided and hanging sign rendering/editing/wax state",
+      "disposition": "carried-open",
+      "note": "Sign rendering/editing is ported; the complete two-sided/wax live matrix remains open.",
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "CONTENT-02",
+      "area": "Trails and Tales",
+      "inheritedStatus": "partial",
+      "title": "Archaeology brushing and suspicious-block client presentation",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "CONTENT-03",
+      "area": "Trails and Tales",
+      "inheritedStatus": "partial",
+      "title": "Decorated pot textures, contents, wobble and events",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "CONTENT-04",
+      "area": "Trails and Tales",
+      "inheritedStatus": "partial",
+      "title": "Chiseled bookshelf hit-slot/contents interactions",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "CONTENT-05",
+      "area": "Trails and Tales",
+      "inheritedStatus": "partial",
+      "title": "Smithing templates, trim previews and worn armor layers",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "CONTENT-06",
+      "area": "Trails and Tales",
+      "inheritedStatus": "partial",
+      "title": "Camel poses, transitions, dash and two-passenger riding",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "CONTENT-07",
+      "area": "Trails and Tales",
+      "inheritedStatus": "partial",
+      "title": "Sniffer states, eggs/plants and associated effects",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "CONTENT-08",
+      "area": "Trails and Tales",
+      "inheritedStatus": "unverified",
+      "title": "Cherry/bamboo construction, rafts and new block placement families",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "CONTENT-09",
+      "area": "Trails and Tales",
+      "inheritedStatus": "partial",
+      "title": "Calibrated sensors, resonance and target vibration effects",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "CONTENT-10",
+      "area": "Trails and Tales",
+      "inheritedStatus": "partial",
+      "title": "Updated bat, shield pose, entity names and pearl feedback",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "PAWS-01",
+      "area": "Armored Paws",
+      "inheritedStatus": "partial",
+      "title": "Armadillo model, metadata, roll/unroll and brushing effects",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "PAWS-02",
+      "area": "Armored Paws",
+      "inheritedStatus": "partial",
+      "title": "All wolf variants and variant-specific textures/layers",
+      "disposition": "carried-open",
+      "note": "Wolf variants and textures are native; live visual comparison remains.",
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "PAWS-03",
+      "area": "Armored Paws",
+      "inheritedStatus": "partial",
+      "title": "Wolf armor, dye and damage layers with repair/removal feedback",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "PAWS-04",
+      "area": "Armored Paws",
+      "inheritedStatus": "unverified",
+      "title": "Horse/llama body equipment and final 1.20.6 inventory hotfix",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "RENDER-01",
+      "area": "Inherited rendering and effects",
+      "inheritedStatus": "missing",
+      "title": "Block/item/text display entities and interpolation",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "RENDER-02",
+      "area": "Inherited rendering and effects",
+      "inheritedStatus": "missing",
+      "title": "Powered dragon/piglin head animation",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "RENDER-03",
+      "area": "Inherited rendering and effects",
+      "inheritedStatus": "unverified",
+      "title": "Exact 1.20.6 Fabulous routing/composition and resource overrides",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "RENDER-04",
+      "area": "Inherited rendering and effects",
+      "inheritedStatus": "unverified",
+      "title": "Floating boat/chest-boat walking and constrained camera behavior",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "RENDER-05",
+      "area": "Inherited rendering and effects",
+      "inheritedStatus": "unverified",
+      "title": "Sky, fog, weather, water, altitude and lighting transitions",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "FX-01",
+      "area": "Inherited rendering and effects",
+      "inheritedStatus": "partial",
+      "title": "Every client-owned sound trigger and target sound mappings",
+      "disposition": "carried-open",
+      "note": "Client-owned sound triggers are mapped; live per-trigger acceptance remains.",
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "FX-02",
+      "area": "Inherited rendering and effects",
+      "inheritedStatus": "partial",
+      "title": "Particle parameters, physics, new effects and item-use bursts",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "FX-03",
+      "area": "Inherited rendering and effects",
+      "inheritedStatus": "partial",
+      "title": "Server tick/freeze/step presentation",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "VERIFY-01",
+      "area": "Acceptance and release",
+      "inheritedStatus": "partial",
+      "title": "Disposition every release topic and fix reference",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "VERIFY-02",
+      "area": "Acceptance and release",
+      "inheritedStatus": "unverified",
+      "title": "Whole-target native server scenario matrix",
+      "disposition": "blocked-visual",
+      "note": null,
+      "evidence": [
+        "P15 visual/scenario acceptance requires a human comparison against native 26.3."
+      ]
+    },
+    {
+      "id": "VERIFY-03",
+      "area": "Acceptance and release",
+      "inheritedStatus": "unverified",
+      "title": "WebGL2, WebGPU and software visual acceptance",
+      "disposition": "blocked-visual",
+      "note": null,
+      "evidence": [
+        "P15 visual/scenario acceptance requires a human comparison against native 26.3."
+      ]
+    },
+    {
+      "id": "VERIFY-04",
+      "area": "Acceptance and release",
+      "inheritedStatus": "unverified",
+      "title": "Frame-time, memory and rendering performance on representative hardware",
+      "disposition": "blocked-visual",
+      "note": null,
+      "evidence": [
+        "P15 visual/scenario acceptance requires a human comparison against native 26.3."
+      ]
+    },
+    {
+      "id": "VERIFY-05",
+      "area": "Acceptance and release",
+      "inheritedStatus": "partial",
+      "title": "Every shared fix reviewed/backported to native eligible targets",
+      "disposition": "carried-open",
+      "note": "Shared fixes are reviewed per batch; not every target has a final backport receipt.",
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "VERIFY-06",
+      "area": "Acceptance and release",
+      "inheritedStatus": "missing",
+      "title": "Coherent static/offline distributions from validated source heads",
+      "disposition": "implemented-26.3",
+      "note": null,
+      "evidence": [
+        "npm run test:26.3",
+        "npm run adapter:26.3",
+        "docs/parity-checklist-26.3.md"
+      ]
+    },
+    {
+      "id": "EXP-01",
+      "area": "Enabled native experiments",
+      "inheritedStatus": "partial",
+      "title": "Bundles and trade-rebalance experiment acceptance",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "EXP-02",
+      "area": "Enabled native experiments",
+      "inheritedStatus": "partial",
+      "title": "Update 1.21 content available inside the 1.20.6 jar",
+      "disposition": "carried-open",
+      "note": null,
+      "evidence": [
+        "docs/parity-checklist-26.3.md",
+        "docs/transition-26.3.tasks.json"
+      ]
+    },
+    {
+      "id": "PRODUCT-01",
+      "area": "Other product scope",
+      "inheritedStatus": "missing",
+      "title": "Integrated singleplayer, world creation and local simulation",
+      "disposition": "out-of-scope",
+      "note": null,
+      "evidence": [
+        "Product/optional scope decision; not part of native multiplayer parity."
+      ]
+    },
+    {
+      "id": "PRODUCT-02",
+      "area": "Other product scope",
+      "inheritedStatus": "missing",
+      "title": "Native Realms and account-backed services outside multiplayer baseline",
+      "disposition": "out-of-scope",
+      "note": null,
+      "evidence": [
+        "Product/optional scope decision; not part of native multiplayer parity."
+      ]
+    },
+    {
+      "id": "EXTRA-01",
+      "area": "Optional compatibility",
+      "inheritedStatus": "partial",
+      "title": "Full OptiFine shader-pack render graphs/reflections/shadows",
+      "disposition": "out-of-scope",
+      "note": null,
+      "evidence": [
+        "Product/optional scope decision; not part of native multiplayer parity."
+      ]
+    },
+    {
+      "id": "EXTRA-02",
+      "area": "Optional compatibility",
+      "inheritedStatus": "partial",
+      "title": "Eagler/Wisp/proxy interoperability outside native protocol",
+      "disposition": "out-of-scope",
+      "note": null,
+      "evidence": [
+        "Product/optional scope decision; not part of native multiplayer parity."
+      ]
+    },
+    {
+      "id": "FONT-04",
+      "area": "Fonts and resources",
+      "inheritedStatus": "unverified",
+      "title": "Live font-pack/backend and complex-script acceptance",
+      "disposition": "blocked-visual",
+      "note": "Provider stacks are tested; live font-pack/backend and complex-script visual acceptance remain.",
+      "evidence": [
+        "P15 visual/scenario acceptance requires a human comparison against native 26.3."
+      ]
+    },
+    {
+      "id": "UI-06-LIVE",
+      "area": "Menus and input",
+      "inheritedStatus": "unverified",
+      "title": "Jigsaw live server edits and generation acceptance",
+      "disposition": "blocked-visual",
+      "note": null,
+      "evidence": [
+        "P15 visual/scenario acceptance requires a human comparison against native 26.3."
+      ]
+    }
+  ]
+}

@@ -211,7 +211,8 @@ test("holder and holder-set inline/named encodings round-trip", () => {
       data: {
         assetName: "gold",
         ingredientId: 1,
-        overrideArmorAssets: [{ key: "minecraft:iron", value: "gold_darker" }],
+        itemModelIndex: 0.6,
+        overrideArmorMaterials: [{ armorMaterialId: 2, assetName: "gold_darker" }],
         description: componentToNbt("Gold")
       }
     },
@@ -222,6 +223,8 @@ test("holder and holder-set inline/named encodings round-trip", () => {
   writeComponentData766(writer, "trim", holder);
   const decoded = readComponentData766(new Reader766(writer.build()), "trim");
   assert.equal(decoded.material.data.assetName, "gold");
+  assert.equal(decoded.material.data.itemModelIndex, Math.fround(0.6), "native float item model index");
+  assert.deepEqual(decoded.material.data.overrideArmorMaterials, [{ armorMaterialId: 2, assetName: "gold_darker" }]);
   assert.equal(decoded.material.data.description.v, "Gold");
   const rewritten = new Writer766();
   writeComponentData766(rewritten, "trim", decoded);

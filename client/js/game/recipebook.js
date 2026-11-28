@@ -1,5 +1,8 @@
-import { serverRecipe } from './server-recipes.js';
-import { DEFAULT_TAGS } from './default-tags.js';
+import {serverRecipe} from './server-recipes.js';
+// Recipe book (1.12): RecipeBook (known / new recipes, open and filtering flags), RecipeBookClient (recipe lists per
+// tab, grouped by the recipe's "group") and RecipeList craftability against the player's items.
+import {DEFAULT_TAGS} from './default-tags.js';
+import {nativeRecipeBookEntries} from './recipe-displays-26.3.js';
 
 export const FIRST_JSON_ID = 11;
 export const BOOK_TABS = ['search', 'tools', 'buildingBlocks', 'misc', 'redstone'];
@@ -16,8 +19,8 @@ export class RecipeBook {
   constructor(game) {
     this.game = game;
     this.known = new Set();
-    this.fresh = new Set();
-    this.serverDisplays = new Map();
+    this.fresh = new Set(); // RecipeBook.newRecipes (highlighted until seen)
+    this.seenNative = new Set(); // native display ids already shown on screen
     this.open = false;
     this.filtering = false;
     this.cookingStates = {
@@ -33,60 +36,56 @@ export class RecipeBook {
     if (this.recipes) return;
     const g = this.game;
     this.recipes = {};
-    if (this.serverDisplays.size) {
-      for (const [id, rec] of this.serverDisplays) this.recipes[id] = rec;
-    } else if (Array.isArray(g.serverRecipes)) {
-      for (const record of g.serverRecipes) {
-        const rec = serverRecipe(record, g);
-        if (rec) this.recipes[rec.id] = rec;
+    // A native 26.3 display graph is authoritative once it has arrived. Keep showing an empty
+    // book after a remove-all instead of falling back to bundled JSON recipes.
+    if(g.nativeRecipeDisplays instanceof Map){
+      for(const rec of nativeRecipeBookEntries(g,[...g.nativeRecipeDisplays.values()])){
+        this.recipes[rec.id]=rec;this.known.add(rec.id);if(rec.highlight&&!this.seenNative.has(rec.id))this.fresh.add(rec.id);
       }
-    } else {
-      const list = Array.isArray(g.assets.recipes) ? g.assets.recipes : [];
-      list.forEach((r) => {
-        if (!r?.name || !r?.type) return;
-        const id = r.name.includes(':') ? r.name : 'minecraft:' + r.name;
-        const ing = (v) => (Array.isArray(v) ? v : [v]).flatMap((x) => {
-          if (x?.tag) {
-            const ids = g.tags?.registries.items.get(x.tag) || DEFAULT_TAGS.items[x.tag] || [];
-            return ids.map((tid) => ({ id: tid, data: 0, count: 1 }));
-          }
-          const item = x && stackOf(g, x);
-          return item ? [item] : [];
-        });
-        const result = stackOf(g, r.result || {});
-        if (!result) return;
-        const rec = {
-          id, type: r.type, name: r.name, group: r.group || '',
-          category: r.category ?? 'misc', result,
-          shaped: r.type.replace(/^minecraft:/, '') === 'crafting_shaped'
-        };
-        if (rec.shaped) {
-          rec.height = r.pattern.length;
-          rec.width = Math.max(...r.pattern.map((row) => row.length));
-          rec.cells = [];
-          for (let y = 0; y < rec.height; y++) {
-            for (let x = 0; x < rec.width; x++) {
-              const c = r.pattern[y][x];
-              rec.cells.push(!c || c === ' ' ? null : ing(r.key[c]));
-            }
-          }
-        } else {
-          rec.cells = (r.ingredients || (r.ingredient ? [r.ingredient] : [])).map(ing);
-          rec.width = rec.height = Math.ceil(Math.sqrt(rec.cells.length));
-        }
-        this.recipes[id] = rec;
-      });
+      this._buildLists();
+      return;
     }
+    if(Array.isArray(g.serverRecipes)){for(const record of g.serverRecipes){const rec=serverRecipe(record);if(rec)this.recipes[rec.id]=rec;}}
+    else (g.assets.recipes || []).forEach((r, i) => {
+      const id = r.name.includes(':') ? r.name : 'minecraft:' + r.name;
+      const ing = (v) => (Array.isArray(v) ? v : [v]).flatMap(x=>{
+        if(x?.tag){const ids=g.tags?.registries.items.get(x.tag)||DEFAULT_TAGS.items[x.tag]||[];return ids.map(id=>({id,data:0,count:1}));}
+        const item=x&&stackOf(g,x);return item?[item]:[];
+      });
+      const result = stackOf(g, r.result || {});
+      if (!result) return;
+      const rec = { id, type:r.type, name: r.name, group: r.group || '', category:r.category??'misc', result, shaped: r.type.replace(/^minecraft:/,'') === 'crafting_shaped' };
+      if (rec.shaped) {
+        rec.height = r.pattern.length;
+        rec.width = Math.max(...r.pattern.map((row) => row.length));
+        rec.cells = [];
+        for (let y = 0; y < rec.height; y++) {
+          for (let x = 0; x < rec.width; x++) {
+            const c = r.pattern[y][x];
+            rec.cells.push(!c || c === ' ' ? null : ing(r.key[c]));
+          }
+        }
+      } else {
+        rec.cells = (r.ingredients || (r.ingredient?[r.ingredient]:[])).map(ing);
+        rec.width = rec.height = Math.ceil(Math.sqrt(rec.cells.length));
+      }
+      this.recipes[id] = rec;
+    });
+    this._buildLists();
+  }
+
+  // RecipeBookClient.rebuildTable: lists per tab, one per group (or per ungrouped recipe), in id order
+  _buildLists() {
     this.lists = {};
     for (const t of [...BOOK_TABS, 'food']) this.lists[t] = [];
     const groups = new Map();
     for (const rec of Object.values(this.recipes)) {
       if (!rec) continue;
-      const tab = this.categoryOf(rec);
-      let list = rec.group ? groups.get(tab + '|' + rec.group) : null;
+      const tab = rec.tab || this.categoryOf(rec);
+      let list = rec.group != null ? groups.get(tab + '|' + rec.group) : null;
       if (!list) {
         list = { recipes: [], tab };
-        if (rec.group) groups.set(tab + '|' + rec.group, list);
+        if (rec.group != null) groups.set(tab + '|' + rec.group, list);
         this.lists[tab].push(list);
         this.lists.search.push(list);
       }
@@ -94,7 +93,42 @@ export class RecipeBook {
     }
   }
 
-  stateFor(kind = 'crafting') { return kind === 'crafting' ? this : this.cookingStates[kind]; }
+  // A native add/remove replaces the parsed view. Known and fresh are rebuilt from the display
+  // graph, because the server only sends recipes the player has unlocked.
+  invalidate() {
+    this.recipes = null; this.lists = null; this.known.clear(); this.fresh.clear();
+  }
+  recipesUpdated() {
+    const scr = this.game.screens?.current;
+    if (scr && scr.recipesUpdated) scr.recipesUpdated();
+  }
+  onNativeAdd(entries) {
+    this.invalidate(); this._parse();
+    const toast = [];
+    for (const entry of entries || []) {
+      const id = entry?.contents?.id;
+      if (!Number.isInteger(id)) continue;
+      const rec = this.recipes['native:' + id];
+      if (rec && (entry.flags & 1)) toast.push(rec);
+    }
+    if (toast.length) this.game.hud?.addRecipeToast?.(toast);
+    this.recipesUpdated();
+  }
+  onNativeRemove() { this.invalidate(); this._parse(); this.recipesUpdated(); }
+  markSeen(rec) {
+    this.fresh.delete(rec.id);
+    if (rec.native) this.seenNative.add(rec.id);
+  }
+  onNativeSettings(p) {
+    this.open = !!p.crafting?.open; this.filtering = !!p.crafting?.filtering;
+    this.cookingStates.smelting.open = !!p.furnace?.open; this.cookingStates.smelting.filtering = !!p.furnace?.filtering;
+    this.cookingStates.blasting.open = !!p.blastFurnace?.open; this.cookingStates.blasting.filtering = !!p.blastFurnace?.filtering;
+    this.cookingStates.smoking.open = !!p.smoker?.open; this.cookingStates.smoking.filtering = !!p.smoker?.filtering;
+    this.recipesUpdated();
+  }
+
+  // RecipeBookClient.getItemCategory: tools / building blocks / redstone, combat with tools, the rest misc
+  stateFor(kind='crafting'){return kind==='crafting'?this:this.cookingStates[kind];}
 
   categoryOf(rec) {
     const rawCat = String(rec.category ?? 'misc');
@@ -189,8 +223,7 @@ export class RecipeBook {
       for (const id of p.recipes) { this.known.add(id); this.fresh.add(id); const r = this.recipe(id); if (r) added.push(r); }
       if (added.length) this.game.hud.addRecipeToast(added);
     }
-    const scr = this.game.screens.current;
-    if (scr && scr.recipesUpdated) scr.recipesUpdated();
+    this.recipesUpdated();
   }
 
   stackedContents(gridItems) {
@@ -202,20 +235,14 @@ export class RecipeBook {
   }
 
   canCraft(rec, counts) {
-    const left = new Map(counts), cells = rec.cells.filter(Boolean).sort((a, b) => a.length - b.length);
-    const search = (index) => {
-      if (index === cells.length) return true;
-      for (const [key, count] of left) {
-        if (count <= 0) continue;
-        const [id, damage] = key.split(':').map(Number);
-        if (!cells[index].some((s) => s.id === id && (s.data === 32767 || s.data === damage))) continue;
-        left.set(key, count - 1);
-        if (search(index + 1)) return true;
-        left.set(key, count);
-      }
-      return false;
-    };
-    return search(0);
+    const left=new Map(counts),cells=(rec.craftCells||rec.cells).filter(Boolean).sort((a,b)=>a.length-b.length);
+    const search=index=>{
+      if(index===cells.length)return true;
+      for(const [key,count]of left){if(count<=0)continue;const [id,damage]=key.split(':').map(Number);
+        if(!cells[index].some(s=>s.id===id&&(s.data===32767||s.data===damage)))continue;
+        left.set(key,count-1);if(search(index+1))return true;left.set(key,count);
+      }return false;
+    };return search(0);
   }
 
   evaluate(list, counts, gw, gh) {

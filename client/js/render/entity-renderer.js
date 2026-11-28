@@ -1,15 +1,14 @@
-import { horseArmor774 } from './horse-armor-1.21.11.js';
-import { PAWS_DATA_774 } from '../game/paws-data-1.21.11.js';
-import { wolfTexture774, wolfArmor774 } from './wolf-1.21.11.js';
-import { wolfTailAngle774 } from '../game/paws-1.21.11.js';
-import { updateGolemCracks } from './iron-golem-cracks.js';
-import { updateGuiEquipment, guiHandPoses } from './gui-player-equipment.js';
-import { paintingTiles, paintingTileLight } from './painting.js';
-import { defaultSkin, DEFAULT_SKIN, uuidHash, profileDefaultSkin } from './default-skins.js';
-import { BOAT_TYPES_774 as BOAT_TYPES } from '../game/boat-types-1.21.11.js';
-import { KNOWN_PACK_774 } from '../net/known-pack-1.21.11.js';
-import { simplify } from '../net/nbt.js';
-import { registryEntries } from '../net/registry-codec.js';
+import { itemTrim, trimTextureName, armorTrimTexture } from './armor-trims-26.3.js';
+import {horseArmor766} from './horse-armor-1.20.6.js';
+import{PAWS_DATA_766}from'../game/paws-data-1.20.6.js';
+import{wolfTexture766,wolfArmor766}from'./wolf-1.20.6.js';
+import{wolfTailAngle766,wolfHeadRoll766,wolfBodyRoll766,wolfWetShade766}from'../game/paws-1.20.6.js';
+import {updateGolemCracks} from './iron-golem-cracks.js';
+import{updateGuiEquipment,guiHandPoses}from'./gui-player-equipment.js';
+import{paintingTiles,paintingTileLight}from'./painting.js';
+import {defaultSkin,DEFAULT_SKIN,uuidHash,profileDefaultSkin} from './default-skins.js';
+import {profileTextureValue,profileUuid,skinPatchAsset} from '../net/resolvable-profile-26.3.js';
+import {boatWoodFor} from '../game/boat-types-1.19.4.js';
 import {isSquid,squidTentacle,squidMatrix} from '../game/squid-animation.js';
 import { scaleAgeableGroups } from './ageable-pose.js';
 import { attachSpyglassHolder } from './spyglass-pose.js';
@@ -19,11 +18,13 @@ import {foxAnimationArgs} from '../game/fox.js';
 import {scaleFoxChild} from './fox-pose.js';
 import {nameUuid} from '../util/uuid-md5.js';
 import {shadowGeometry} from './shadows.js';
+import {entityTexture263} from './entity-textures-26.3.js';
 import {PANDA_VARIANTS} from '../game/panda-variants-1.19.4.js';
 import {villagerLayers} from './villager-layers.js';
 import { updateRiptide } from './riptide-layer.js';
-import { EntityEffects, dragonCorpseMatrix } from './entity-effects.js';
+import { EntityEffects, dragonCorpseMatrix, dragonHeadOffset } from './entity-effects.js';
 import { poseInterval } from './lod.js';
+const isAvatar=e=>e.kind==='player'||e.kind==='mannequin';
 // Entity rendering (RenderManager + Render* classes) on the gfx scene graph.
 import * as M from './entity-models.js';
 
@@ -37,6 +38,7 @@ import { isPointInFluid } from '../world/fluids.js';
 import { resolveState } from '../world/blockstates.js';
 import { FORMAT, colorParams, EntityParams } from '../gfx/device.js';
 import { mat4, D2R, aabbInFrustum } from '../gfx/math.js';
+import {spearThirdPersonAttackItem, spearThirdPersonUseItem} from './spear-animations-26.3.js';
 import { Node, material, drawTree, toDraw, Batcher } from '../gfx/scene.js';
 import { JavaRandom } from '../util/jrandom.js';
 import { decodePng } from '../util/png.js';
@@ -212,19 +214,38 @@ export class EntityRenderer {
   // from the server, the local player falls back to its own Mojang profile when the server's UUID is the account's.
   skinFor(e) {
     const streamed=this.game.eaglerTextures?.request(e.uuid);if(streamed)return streamed;
-    const value = this._texturesProp(e.uuid);
+    const profile = e.kind === 'mannequin' ? (e.profile || {}) : null;
+    const value = profile ? profileTextureValue(profile) : this._texturesProp(e.uuid);
+    const skinUuid = profile ? profileUuid(profile) : e.uuid;
+    const profileKey = profile ? profileUuid(profile)+':'+(profile.name||'')+':'+JSON.stringify(e.skinPatch||null) : '';
     let s = this.skins.get(e.uuid);
-    if (s && (s.propValue === value || (value === null && s.propValue !== undefined && s.fromSession))) return s;
-    const fresh = { ...defaultSkin(e.uuid), texture: null, propValue: value };
+    if (s && s.profileKey === profileKey && (s.propValue === value || (value === null && s.propValue !== undefined && s.fromSession))) return s;
+    const fresh = { ...defaultSkin(skinUuid), texture: null, propValue: value, profileKey };
     if (s) this._rebuild(e.uuid);
     s = fresh;
     this.skins.set(e.uuid, s);
+    if (profile) this._applyMannequinPatch(s, e.skinPatch);
     if (value) this._loadTextures(s, e.uuid, value);
-    else {
+    else if (!profile) {
       if(e.uuid&&uuidSkinProxyAvailable())this._loadSkin(s,e.uuid,null);
       if(e.uuid&&e.uuid===this.game.playerUuid)this._sessionTextures(s,e.uuid);
     }
     return s;
+  }
+
+  // PlayerSkin.Patch overrides the profile skin with a resource texture and/or model type.
+  // The native profile cache applies the patch after the profile lookup, so a patch body wins
+  // over a late-arriving profile texture too.
+  _applyMannequinPatch(s, patch){
+    if(!patch)return;
+    const body=skinPatchAsset(patch.body);
+    if(body)s.patchBody=this.game.assets.texture(body);
+    const cape=skinPatchAsset(patch.cape);
+    if(cape){s.patchCape=this.game.assets.texture(cape);s.cape=s.patchCape;}
+    const elytra=skinPatchAsset(patch.elytra);
+    if(elytra){s.patchElytra=this.game.assets.texture(elytra);s.elytra=s.patchElytra;}
+    if(patch.model){s.patchModel=patch.model;s.slim=patch.model==='slim';}
+    if(s.patchBody)s.texture=s.patchBody;
   }
 
   // Decorative player-head blocks/items carry a full GameProfile in SkullOwner.
@@ -261,7 +282,7 @@ export class EntityRenderer {
           const img = parseUserSkin(decodePng(bytes));
           s.legacy = false;
           s.image = img;
-          s.texture = this.game.assets.makeTexture('skin:' + uuid, img.width, img.height, img.data);
+          s.texture = s.patchBody || this.game.assets.makeTexture('skin:' + uuid, img.width, img.height, img.data);
           this._rebuild(uuid);
         }).catch(() => {});
   }
@@ -272,7 +293,7 @@ export class EntityRenderer {
       const skin = tj.textures && tj.textures.SKIN;
       if(!skin?.url&&uuidSkinProxyAvailable())this._loadSkin(s,uuid,null);
       if (skin && skin.url) {
-        s.slim = !!(skin.metadata && skin.metadata.model === 'slim');
+        s.slim = s.patchModel ? s.patchModel === 'slim' : !!(skin.metadata && skin.metadata.model === 'slim');
         this._loadSkin(s, uuid, skin.url);
       }
       // Mojang capes (LayerCape, and LayerElytra without an elytra texture) and elytra textures, used as downloaded
@@ -282,7 +303,7 @@ export class EntityRenderer {
         fetchSkin(t.url, uuid, key).then((bytes) => {
           if (this.skins.get(uuid) !== s) return;
           const img = decodePng(bytes);
-          s[key] = this.game.assets.makeTexture(key + ':' + uuid, img.width, img.height, img.data);
+          s[key] = (key === 'cape' ? s.patchCape : key === 'elytra' ? s.patchElytra : null) || this.game.assets.makeTexture(key + ':' + uuid, img.width, img.height, img.data);
           this._rebuild(uuid);
         }).catch(() => {});
       }
@@ -317,9 +338,14 @@ export class EntityRenderer {
   // ---------------------------------------------------------------- building visuals
 
   _texFor(e) {
-    if (e.entityName === 'frog') return variantTexture(this.game, 'minecraft:frog_variant', e.frogVariant, 'minecraft:temperate');
-    if (['armadillo', 'allay', 'tadpole', 'warden', 'camel', 'camel_husk', 'sniffer'].includes(e.entityName)) return M.WILD_MOB_TEXTURES[e.entityName];
-    if (e.kind === 'player' || e.kind === 'mannequin') return null;
+    if(e.entityName==='frog')return 'entity/frog/frog_'+(['temperate','warm','cold'][e.frogVariant||0]||'temperate')+'.png';
+    if(M.BIPED_MOB_TEXTURES?.[e.entityName])return M.BIPED_MOB_TEXTURES[e.entityName];
+    if(e.entityName==='camel_husk')return 'entity/camel/camel_husk.png';
+    if(e.entityName==='copper_golem')return 'entity/copper_golem/copper_golem'+(['','_exposed','_weathered','_oxidized'][e.copperWeather||0]||'')+'.png';
+    if(M.NATIVE_MOB_TEXTURES?.[e.entityName])return M.NATIVE_MOB_TEXTURES[e.entityName];
+    if(['armadillo','allay','tadpole','warden','camel','sniffer'].includes(e.entityName))return M.WILD_MOB_TEXTURES[e.entityName];
+    if (e.kind === 'mannequin' || e.entityName === 'mannequin') return defaultSkin(profileUuid(e.profile)).path;
+    if (e.kind === 'player') return null;
     if (e.kind === 'armorstand') return 'entity/armorstand/wood.png';
     const t = e.type;
     switch (t) {
@@ -351,8 +377,8 @@ export class EntityRenderer {
       case 'goat': return 'entity/goat/goat.png';
       case 'axolotl': return 'entity/axolotl/axolotl_'+(['lucy','wild','gold','cyan','blue'][e.axolotlVariant]||'lucy')+'.png';
       case 'glow_squid': return 'entity/squid/glow_squid.png';
-      case 95: return wolfTexture774(this.game, e);
-      case 96: return 'entity/cow/'+(e.mooshroomType==='brown'?'brown':'red')+'_mooshroom.png';
+      case 95: return wolfTexture766(this.game,e);
+      case 96: return 'entity/cow/mooshroom_'+(e.mooshroomType==='brown'?'brown':'red')+'.png';
       case 97: return 'entity/snow_golem.png';
       case 98: return 'entity/cat/' + (CAT_TEX[e.catType || 0] || 'ocelot') + '.png';
       case 99: return 'entity/iron_golem/iron_golem.png';
@@ -404,8 +430,12 @@ export class EntityRenderer {
   }
 
   _modelFor(e) {
-    if (['armadillo', 'allay', 'frog', 'tadpole', 'warden', 'camel', 'camel_husk', 'sniffer'].includes(e.entityName)) return M.wildMob(e.entityName);
-    if (e.kind === 'player' || e.kind === 'mannequin') {
+    if(e.kind==='mannequin'||e.entityName==='mannequin'){const s=this.skins?.get(e.uuid)||defaultSkin(profileUuid(e.profile));return M.playerModel(s.slim,64,64);}
+    if(['bogged','parched'].includes(e.entityName))return M.nativeBipedMob(e.entityName);
+    if(e.entityName==='camel_husk')return M.wildMob('camel');
+    if(M.NATIVE_MOB_TEXTURES?.[e.entityName])return M.nativeMob(e.entityName);
+    if(['armadillo','allay','frog','tadpole','warden','camel','sniffer'].includes(e.entityName))return M.wildMob(e.entityName);
+    if (e.kind === 'player') {
       const s = this.skinFor(e);
       return M.playerModel(s.slim, 64, 64);
     }
@@ -481,6 +511,7 @@ export class EntityRenderer {
   // Metadata can change geometry/layers without changing the base texture (puff
   // size, fish patterns, phantom size, horse markings). Don't leave stale models.
   _livingKey(e) {
+    if(e.kind==='mannequin')return ['mannequin',profileUuid(e.profile),profileTextureValue(e.profile)||'',JSON.stringify(e.skinPatch||null)].join('|');
     return [e.type, this._texFor(e), e.puffState || 0, e.fishVariant || 0, e.phantomSize || 0,
       e.horseVariant || 0, e.horseType || 0, !!e.foxSleeping, e.villagerType ?? 2, e.profession ?? 0, e.villagerLevel ?? 1, !!e.child,
       e.weatherState || 0, e.zombieNautilusVariant || 0].join('|');
@@ -488,8 +519,9 @@ export class EntityRenderer {
 
   _visualKey(e) {
     if(e.kind==='painting')return ['painting',e.paintingName,e.width,e.height].join(':');
-    if (e.kind === 'mob') return this._livingKey(e);
-    if (e.kind === 'boat') return 'boat:' + (e.entityName || e.boatType || 0) + ':' + !!e.chestBoat;
+    if(e.kind==='cushion')return 'cushion:'+(e.cushionColor||0);
+    if (e.kind === 'mob' || e.kind === 'mannequin') return this._livingKey(e);
+    if (e.kind === 'boat') return 'boat:' + (e.boatWood || boatWoodFor(e.entityName))+':'+!!e.chestBoat;
     if (e.kind === 'minecart') return ['cart', e.cartType, e.customDisplay, e.displayBlock, e.displayOffset, e.furnacePowered].join(':');
     if (e.kind === 'crystal') return 'crystal:' + (e.showBottom !== false);
     if (e.kind === 'projectile') return ['projectile', e.entityName || e.type, e.invulnerable,
@@ -551,12 +583,12 @@ export class EntityRenderer {
   _buildLiving(e) {
     const v = { root: new Node(), materials: [], layers: [], kind: 'living', uuid: e.uuid };
     const texPath = this._texFor(e);
-    const tex = (e.kind === 'player' || e.kind === 'mannequin') ? this.skinTex(this.skinFor(e)) : texPath;
+    const tex = isAvatar(e) ? this.skinTex(this.skinFor(e)) : texPath;
     v.texPath = texPath;
     v.modelKey = this._livingKey(e);
     const model = this._modelFor(e);
     if (!model || !tex) throw new Error('Unsupported living entity renderer: ' + (e.entityName || e.type));
-    const mat = this._mat(v, tex, { alphaTest: 0.1, cull: !(e.kind === 'player' || e.kind === 'mannequin' || e.type === 68), ...model.materialOptions });
+    const mat = this._mat(v, tex, { alphaTest: 0.1, cull: !(isAvatar(e) || e.type === 68), ...model.materialOptions });
     v.mainMat = mat;
     v.model = model;
     // Entity space: rotate Y (180 - bodyYaw), scale(-1,-1,1), translate(0,-1.5078125,0), parts in 1/16 units
@@ -622,12 +654,12 @@ export class EntityRenderer {
       if (e.type === 51 || e.type === 53 || e.type === 54 || e.type === 57 || e.type === 'drowned' || e.type === 'bogged' || e.type === 'parched' || ['piglin','piglin_brute','zombified_piglin'].includes(e.type)) this._addArmorLayers(v, e);
       if (e.type === 96) v.mushroomLayer = true;
     }
-    if (e.kind === 'player' || e.kind === 'mannequin' || e.kind === 'armorstand') {
+    if (isAvatar(e) || e.kind === 'armorstand') {
       this._addArmorLayers(v, e);
       // LayerElytra: translate(0, 0, 0.125) in model space
       const em = M.elytra();
       // LayerElytra: the player's own elytra texture, else their cape (while the cape part is shown), else the default
-      const esk = e.kind === 'player' ? this.skinFor(e) : null;
+      const esk = isAvatar(e) ? this.skinFor(e) : null;
       const emat = this._mat(v, () => {
         if (esk && esk.elytra) return esk.elytra;
         const flags = e.skinFlags !== undefined ? e.skinFlags : 0x7f;
@@ -639,7 +671,7 @@ export class EntityRenderer {
       v.modelGroup.add(eobj);
       v.elytra = { model: em, obj: eobj };
     }
-    if (e.kind === 'player') {
+    if (isAvatar(e)) {
       // LayerCape: ModelPlayer.bipedCape, translate(0, 0, 0.125) then the sway rotations (set each frame)
       const sk = this.skinFor(e);
       if (sk.cape && model.parts.cape) {
@@ -668,7 +700,7 @@ export class EntityRenderer {
       model.parts.leftArm.obj.add(h);
       v.leftHolder = h;
     }
-    if (model.parts && model.parts.head && model.parts.head.obj && (e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand' || e.kind === 'mannequin')) {
+    if (model.parts && model.parts.head && model.parts.head.obj && (isAvatar(e) || e.kind === 'mob' || e.kind === 'armorstand')) {
       const h = new Node();
       h.scale.set(16, 16, 16);
       model.parts.head.obj.add(h);
@@ -689,22 +721,11 @@ export class EntityRenderer {
     unit.scale.set(1 / 16, 1 / 16, 1 / 16);
     const add = (part, parent) => { parent.add(part.build()); part.setMaterial(mat); return part; };
     v.neck = []; v.tail = [];
-    for (let i = 0; i < 5; i++) v.neck.push(add(M.spine(), unit));
+    for (let i = 0; i < 5; i++) v.neck.push(add(M['neck' + i], unit));
     v.head = add(M.head, unit);
     v.jaw = M.jaw;
-    v.bodyFrame = new Node();
-    unit.add(v.bodyFrame);
-    add(M.body, v.bodyFrame);
-    v.sides = [];
-    const mirror = new Node();
-    mirror.scale.set(-1, 1, 1);
-    for (const holder of [v.bodyFrame, mirror]) {
-      const L = M.limbs();
-      for (const k of ['wing', 'frontLeg', 'rearLeg']) add(L[k], holder);
-      v.sides.push(L);
-    }
-    v.bodyFrame.add(mirror);
-    for (let i = 0; i < 12; i++) v.tail.push(add(M.spine(), unit));
+    v.body = add(M.body, unit);
+    for (let i = 0; i < 12; i++) v.tail.push(add(M['tail' + i], unit));
     v.dragonMask = this._mat(v, 'entity/enderdragon/dragon_exploding.png', { colorWrite: false, cull: false });
     v.dragonSkin = mat; v.dragonEyes = eyes; v.dragonMaskDraws = [];
     unit.traverse(n => { for (const d of [...n.drawables]) {
@@ -719,7 +740,7 @@ export class EntityRenderer {
     v.root.add(v.corpse);
     v.corpse.add(v.offset);
     v.offset.add(unit);
-    v.all = [M.head, ...v.neck, ...v.tail, M.body, ...v.sides.flatMap((L) => [L.wing, L.frontLeg, L.rearLeg])];
+    v.all = [M.head, M.body, ...v.neck, ...v.tail];
     return v;
   }
 
@@ -743,6 +764,8 @@ export class EntityRenderer {
     v.dragonEyes.state.depthFunc = dying ? 'equal' : undefined;
     // ModelDragon.render
     const f = e.prevAnimTime + (e.animTime - e.prevAnimTime) * partial;
+    const phase = e.dragonPhase | 0;
+    const headOffset = (part, body, point) => dragonHeadOffset(phase, part, body[1], point[1], e.distanceToEggSqr);
     const TAU = Math.PI * 2;
     v.jaw.rx = (Math.sin(f * TAU) + 1) * 0.2;
     let f1 = Math.sin(f * TAU - 1) + 1;
@@ -760,7 +783,7 @@ export class EntityRenderer {
     for (let i = 0; i < 5; i++) {
       const a = off(5 - i), s = v.neck[i];
       s.ry = wrap(a[0] - a6[0]) * D2R * f5;
-      s.rx = Math.cos(i * 0.45 + f8) * 0.15 + (a[1] - a6[1]) * D2R * f5 * 5;
+      s.rx = Math.cos(i * 0.45 + f8) * 0.15 + headOffset(i, a6, a) * D2R * f5 * 5;
       s.rz = -wrap(a[0] - f7) * D2R * f5;
       s.px = x; s.py = y; s.pz = z;
       y += Math.sin(s.rx) * 10; z -= Math.cos(s.ry) * Math.cos(s.rx) * 10; x -= Math.sin(s.ry) * Math.cos(s.rx) * 10;
@@ -768,17 +791,24 @@ export class EntityRenderer {
     const a0 = off(0), H = v.head;
     H.px = x; H.py = y; H.pz = z;
     H.ry = wrap(a0[0] - a6[0]) * D2R;
+    H.rx = headOffset(6, a6, a0) * D2R * f5 * 5;
     H.rz = -wrap(a0[0] - f7) * D2R;
-    const bm = mat4.create();
-    mat4.translate(bm, bm, 0, 16, 0);
-    mat4.rotateZ(bm, bm, -f6 * f5 * D2R);
-    mat4.translate(bm, bm, 0, -16, 0);
-    v.bodyFrame.matrix = bm;
-    for (const L of v.sides) {
-      L.wing.rx = 0.125 - Math.cos(f8) * 0.2; L.wing.ry = 0.25; L.wing.rz = (Math.sin(f8) + 0.125) * 0.8;
-      L.wingTip.rz = -(Math.sin(f8 + 2) + 0.5) * 0.75;
-      L.rearLeg.rx = 1 + f1 * 0.1; L.rearLegTip.rx = 0.5 + f1 * 0.1; L.rearFoot.rx = 0.75 + f1 * 0.1;
-      L.frontLeg.rx = 1.3 + f1 * 0.1; L.frontLegTip.rx = -0.5 - f1 * 0.1; L.frontFoot.rx = 0.75 + f1 * 0.1;
+    v.body.rz = -f6 * f5 * D2R;
+    M.left_wing.rx = 0.125 - Math.cos(f8) * 0.2;
+    M.left_wing.ry = -0.25;
+    M.left_wing.rz = -(Math.sin(f8) + 0.125) * 0.8;
+    M.left_wing_tip.rz = (Math.sin(f8 + 2) + 0.5) * 0.75;
+    M.right_wing.rx = M.left_wing.rx;
+    M.right_wing.ry = 0.25;
+    M.right_wing.rz = -M.left_wing.rz;
+    M.right_wing_tip.rz = -M.left_wing_tip.rz;
+    for (const side of ['left', 'right']) {
+      M[side + '_hind_leg'].rx = 1 + f1 * 0.1;
+      M[side + '_hind_leg_tip'].rx = 0.5 + f1 * 0.1;
+      M[side + '_hind_foot'].rx = 0.75 + f1 * 0.1;
+      M[side + '_front_leg'].rx = 1.3 + f1 * 0.1;
+      M[side + '_front_leg_tip'].rx = -0.5 - f1 * 0.1;
+      M[side + '_front_foot'].rx = 0.75 + f1 * 0.1;
     }
     let f10 = 0;
     y = 10; z = 60; x = 0;
@@ -803,18 +833,23 @@ export class EntityRenderer {
     const piglin = e.type === 57 || ['piglin', 'piglin_brute', 'zombified_piglin'].includes(e.type);
     for (let slot = 1; slot <= 4; slot++) {
       const inner = slot === 2;
-      const dir = inner ? 'humanoid_leggings' : 'humanoid';
-      const m = piglin && !inner ? M.biped('piglinArmorOuter') : M.armorModel(inner ? 0.5 : 1.0); m.piglinAgeable = piglin;
-      const mat = this._mat(v, `entity/equipment/${dir}/iron.png`, { alphaTest: 0.1 });
+      const m = piglin&&!inner?M.biped('piglinArmorOuter'):M.armorModel(inner ? 0.5 : 1.0);m.piglinAgeable=piglin;
+      const mat = this._mat(v, 'entity/equipment/humanoid/iron.png', { alphaTest: 0.1 });
       const obj = this._makeModelObject(m, mat);
       obj.visible = false;
       v.modelGroup.add(obj);
-      const overlayMat = this._mat(v, `entity/equipment/${dir}/leather_overlay.png`, { alphaTest: 0.1 });
-      const m2 = piglin && !inner ? M.biped('piglinArmorOuter') : M.armorModel(inner ? 0.5 : 1.0); m2.piglinAgeable = piglin;
+      const overlayMat = this._mat(v, 'entity/equipment/humanoid/leather_overlay.png', { alphaTest: 0.1 });
+      const m2 = piglin&&!inner?M.biped('piglinArmorOuter'):M.armorModel(inner ? 0.5 : 1.0);m2.piglinAgeable=piglin;
       const obj2 = this._makeModelObject(m2, overlayMat);
       obj2.visible = false;
       v.modelGroup.add(obj2);
-      v.armor[slot] = { model: m, obj, mat, slot, inner, overlay: { model: m2, obj: obj2, mat: overlayMat }, key: null };
+      // HumanoidArmorLayer.renderTrim: the same model again with the armor_trims sprite, untinted
+      const trimMat = this._mat(v, 'entity/equipment/humanoid/iron.png', { alphaTest: 0.1 });
+      const m3 = piglin&&!inner?M.biped('piglinArmorOuter'):M.armorModel(inner ? 0.5 : 1.0);m3.piglinAgeable=piglin;
+      const obj3 = this._makeModelObject(m3, trimMat);
+      obj3.visible = false;
+      v.modelGroup.add(obj3);
+      v.armor[slot] = { model: m, obj, mat, slot, inner, overlay: { model: m2, obj: obj2, mat: overlayMat }, trim: { model: m3, obj: obj3, mat: trimMat }, key: null };
     }
     void e;
   }
@@ -857,11 +892,17 @@ export class EntityRenderer {
       return vv;
     };
     switch (e.kind) {
-      case 'player': case 'mob': case 'armorstand': case 'mannequin': v = e.kind === 'mob' && e.type === 63 ? this._buildDragon(e) : this._buildLiving(e); break;
+      case 'player': case 'mannequin': case 'mob': case 'armorstand': v = e.kind === 'mob' && e.type === 63 ? this._buildDragon(e) : this._buildLiving(e); break;
       case 'item': {
         v = atlasOnly('item');
         v.itemKey = null;
         this._addShadow(v);
+        break;
+      }
+      case 'ominous_item_spawner': {
+        v = atlasOnly('ominous_item_spawner');
+        v.itemKey = null;
+        // OminousItemSpawnerRenderer does not set shadowRadius (EntityRenderer default 0).
         break;
       }
       case 'xp': {
@@ -873,7 +914,7 @@ export class EntityRenderer {
         const sp = new Node();
         sp.billboard = true;
         sp.scale.setScalar(0.3);
-        sp.addDrawable(mesh, material('color', 'entity/experience_orb.png', v.params, { blend: 'add', depthWrite: false }), { order: 4 });
+        sp.addDrawable(mesh, material('color', entityTexture263('entity/experience_orb.png'), v.params, { blend: 'add', depthWrite: false }), { order: 4 });
         v.sprite = sp;
         v.root.add(sp);
         break;
@@ -940,6 +981,18 @@ export class EntityRenderer {
         v.root.add(v.inner);
         break;
       }
+      case 'wind_charge': case 'breeze_wind_charge': {
+        const model = M.windCharge();
+        v = { root: new Node(), kind: 'jar_projectile', materials: [], model };
+        v.windMat = this._mat(v, 'entity/projectiles/wind_charge.png', { transparent: true });
+        // RenderTypes.breezeWind samples with GL_REPEAT; the UV offset would smear at the
+        // texture edge if this scrolling texture used the atlas default of clamp-to-edge.
+        v.windMat.tex = () => this.game.assets.texture('entity/projectiles/wind_charge.png', { wrap: 'repeat' });
+        v.inner = new Node();
+        v.inner.add(this._makeModelObject(model, v.windMat));
+        v.root.add(v.inner);
+        break;
+      }
       case 'dragon_fireball': {
         v = { root: new Node(), kind: 'dragon_fireball', materials: [] };
         const sp = new Node(); sp.billboard = true;
@@ -984,10 +1037,10 @@ export class EntityRenderer {
       }
       case 'boat': case 'minecart': {
         v = atlasOnly(e.kind);
-        const wood = e.entityName ? e.entityName.replace(/_chest_(boat|raft)$/, '').replace(/_(boat|raft)$/, '') : (BOAT_TYPES[e.boatType || 0] || 'oak');
-        const model = e.kind === 'boat' ? M.boat(wood, !!e.chestBoat) : M.minecart();
-        // EntityBoat.Type: 1.13+ uses the wood name directly, including dark_oak and pale_oak.
-        const mat = this._mat(v, e.kind === 'boat' ? 'entity/' + (e.chestBoat ? 'chest_boat/' : 'boat/') + wood + '.png' : 'entity/minecart.png');
+        const wood = e.kind === 'boat' ? (e.boatWood || boatWoodFor(e.entityName)) : 'oak';
+        const model = e.kind === 'boat' ? M.boat(wood,!!e.chestBoat) : M.minecart();
+        // 26.3 has one entity type and one texture per wood, including pale_oak and poplar.
+        const mat = this._mat(v, e.kind === 'boat' ? 'entity/'+(e.chestBoat?'chest_boat/':'boat/') + wood + '.png' : 'entity/minecart.png');
         v.inner = new Node();
         const mg = new Node();
         mg.scale.set(-1 / 16, -1 / 16, 1 / 16);
@@ -1025,6 +1078,22 @@ export class EntityRenderer {
         });
         e.width=art[0]/16;e.height=art[1]/16;break;
       }
+      case 'cushion': {
+        v = { root: new Node(), kind: 'cushion', materials: [], ownMeshes: [] };
+        const model = M.cushion();
+        const mat = this._mat(v, () => this._cushionTexture(e), { alphaTest: 0.1, cull: false });
+        const yaw = new Node(), flip = new Node(), translate = new Node(), unit = new Node();
+        unit.scale.set(1 / 16, 1 / 16, 1 / 16);
+        unit.add(this._makeModelObject(model, mat));
+        // CushionRenderer: rotate Y (180 - direction), rotate X 180, translate(0,-0.25,0)
+        translate.position.y = -0.25; translate.add(unit);
+        flip.rotation.x = Math.PI; flip.add(translate);
+        yaw.add(flip); v.root.add(yaw);
+        v.yawGroup = yaw;
+        // CushionRenderer does not set shadowRadius (EntityRenderer default 0); the cushion
+        // is a thin block-attached entity and vanilla draws no drop shadow under it.
+        break;
+      }
       case 'itemframe': {
         v = atlasOnly('itemframe');
         const bm = this.game.assets.modelStore.bakeVariant(e.entityName==='glow_item_frame'?'glow_item_frame':'item_frame', { map: 'false' }, null, 0);
@@ -1039,18 +1108,18 @@ export class EntityRenderer {
       case 'crystal': {
         v = { root: new Node(), kind: 'crystal', materials: [] };
         const mat = this._mat(v, 'entity/end_crystal/end_crystal.png', { fullBright: true });
-        // ModelEnderCrystal (RenderEnderCrystal builds it with the base): base scaled 2, then glass, glass and cube
-        const cm = M.blockModel(e.showBottom === false ? 'enderCrystalNoBase' : 'enderCrystal', ['cube', 'glass', 'base']);
-        if (cm.base) {
-          const bg = new Node(); bg.add(cm.base.build()); cm.base.setMaterial(mat);
-          bg.scale.set(2 / 16, 2 / 16, 2 / 16); bg.position.set(0, -1, 0);
-          v.root.add(bg);
-        }
-        v.cubes = [];
-        for (const pp of [cm.glass, M.blockModel('enderCrystal', ['cube', 'glass']).glass, cm.cube]) {
-          const o = pp.build(); pp.setMaterial(mat);
-          const g = new Node(); g.add(o); v.cubes.push(g); v.root.add(g);
-        }
+        // 26.3 EndCrystalModel: outer_glass -> inner_glass -> cube, plus base.
+        const cm = M.blockModel('enderCrystal', ['outer_glass', 'inner_glass', 'cube', 'base']);
+        const group = new Node();
+        group.scale.set(2 / 16, 2 / 16, 2 / 16); group.position.set(0, -1, 0);
+        v.root.add(group);
+        const outer = cm.outer_glass; outer.setMaterial(mat);
+        const outerNode = outer.build(); outerNode.position.set(0, 0, 0);
+        v.outerPivot = new Node(); v.outerPivot.add(outerNode); group.add(v.outerPivot);
+        v.inner = cm.inner_glass; v.inner.setMaterial(mat);
+        v.cube = cm.cube; v.cube.setMaterial(mat);
+        v.base = cm.base; v.base.setMaterial(mat);
+        group.add(v.base.build());
         break;
       }
       case 'lightning': {
@@ -1118,7 +1187,7 @@ export class EntityRenderer {
       // RenderArmorStand.canRenderName ignores invisibility: invisible stands with a visible custom name are
       // how servers float text. Equipped items remain visible independently of the body.
       const floatingTag = e.kind === 'armorstand' && e.customName && e.nameVisible;
-      const living = e.kind === 'mob' && e.type !== 63 || e.kind === 'player' || e.kind === 'armorstand' || e.kind === 'mannequin';
+      const living = e.kind === 'mob' && e.type !== 63 || isAvatar(e) || e.kind === 'armorstand';
       const size=((e.width||.6)*2+(e.height||1.8))/3,far=(size*64*viewScale*(['arrow','spectral_arrow','trident'].includes(e.kind)?10:1))**2;
       if (e.kind === 'display') {
         // Display entities have their own view range and culling box, and draw only once they have a render state
@@ -1160,6 +1229,7 @@ export class EntityRenderer {
           case 'living': this._renderLiving(e, v, p, partial); updateRiptide(e, v, partial); break;
           case 'dragon': this._renderDragon(e, v, partial); break;
           case 'item': this._renderItem(e, v, p, partial); break;
+          case 'ominous_item_spawner': this._renderOminousItemSpawner(e, v, p, partial); break;
           case 'xp': this._renderXp(e, v, partial); break;
           case 'arrow': this._renderArrow(e, v, partial); break;
           case 'jar_projectile': this._renderJarProjectile(e, v, partial); break;
@@ -1170,6 +1240,7 @@ export class EntityRenderer {
           case 'tnt': this._renderTnt(e, v, partial); break;
           case 'boat': case 'minecart': this._renderVehicle(e, v, p, partial); break;
           case 'painting': this._renderPainting(e, v); break;
+          case 'cushion': this._renderCushion(e, v); break;
           case 'itemframe': this._renderFrame(e, v); break;
           case 'crystal': this._renderCrystal(e, v, partial); break;
           case 'lightning': this._renderLightning(e, v); break;
@@ -1275,7 +1346,7 @@ export class EntityRenderer {
       }
       v.yawGroup.matrix = m;
     }
-    if (e.kind === 'player' && e.elytraFlying) {
+    if (isAvatar(e) && e.elytraFlying) {
       // RenderPlayer.applyRotations: pitch into the glide, then turn towards the direction of travel
       const m = mat4.create();
       mat4.rotateY(m, m, (180 - body) * D2R);
@@ -1296,7 +1367,7 @@ export class EntityRenderer {
       v.yawGroup.matrix = m;
     }
     const swimAmount = (e.prevSwimAmount ?? e.swimAmount ?? 0) + ((e.swimAmount ?? (e.swimming ? 1 : 0)) - (e.prevSwimAmount ?? e.swimAmount ?? 0)) * partial;
-    if ((e.kind === 'player' || e.kind === 'mob') && swimAmount > 0.001 && !e.elytraFlying && !e.riptide) {
+    if ((isAvatar(e) || e.kind === 'mob') && swimAmount > 0.001 && !e.elytraFlying && !e.riptide) {
       // PlayerRenderer.setupRotations: land crawling stays horizontal; water
       // swimming follows look pitch. Translation follows pose, not sprint flags.
       const m = mat4.create();
@@ -1307,7 +1378,7 @@ export class EntityRenderer {
       if (e.visuallySwimming ?? e.swimming) mat4.translate(m, m, 0, -1, 0.3);
       v.yawGroup.matrix = m;
     }
-    if (e.riptide && (e.kind === 'player' || e.kind === 'mob')) {
+    if (e.riptide && (isAvatar(e) || e.kind === 'mob')) {
       const m = mat4.create();
       mat4.rotateY(m, m, (180 - body) * D2R);
       mat4.rotateX(m, m, (-90 - pitch) * D2R);
@@ -1327,7 +1398,7 @@ export class EntityRenderer {
     }
     if(isSquid(e))v.yawGroup.matrix=squidMatrix(e,body,partial);
     let yOffset = 0;
-    if (e.kind === 'player' && e.sneaking && !e.sleeping) yOffset = -0.125;
+    if (isAvatar(e) && e.sneaking && !e.sleeping) yOffset = -0.125;
     v.root.position.y += yOffset;
     v.scaleGroup.rotation.set(0, 0, -deathRot * D2R * (e.kind === 'mob' && (e.type === 52 || e.type === 59) ? 2 : 1));
     // Pre-render scaling
@@ -1355,7 +1426,7 @@ export class EntityRenderer {
           if (v.flash > 0.6) v.flash = 0.6;
           break;
         }
-        case 66: sx = sy = sz = 0.9375; break;
+        case 66: case 'mannequin': sx = sy = sz = 0.9375; break;
         case 120: case 'wandering_trader': sx = sy = sz = 0.9375; break;
         case 68: if (e.elder) sx = sy = sz = 2.35; break;
         case 69: sx = sy = sz = 0.999; break;
@@ -1375,14 +1446,15 @@ export class EntityRenderer {
     // Animate
     const held = e.equipment[0];
     // RenderPlayer.setModelVisibilities / RenderBiped: arm poses from both hands (main hand on the primary side)
-    const primaryRight = e.kind === 'player' || e.kind === 'mannequin' ? e.mainHand !== 0 : !e.leftHanded;
+    const primaryRight = isAvatar(e) ? e.mainHand !== 0 : !e.leftHanded;
     const poseOf = (stack, hand) => {
       if (!stack) return 'empty';
       if (e.usingItem && (e.activeHand || 0) === hand) {
         const name = g.items.name(stack.id);
         if (name === 'shield') return 'block';
         if (name === 'bow') return 'bow';
-        if (name === 'trident') return 'spear';
+        if (name === 'trident') return 'trident';
+        if (g.items.useAction(stack) === 'spear') return 'spear';
         if (name === 'spyglass') return 'spyglass';
         if (name === 'crossbow') return 'crossbow_charge';
         if(name==='brush')return 'brush';
@@ -1394,17 +1466,23 @@ export class EntityRenderer {
     const skeletonAim = (e.kind === 'mob' && e.type === 51 && e.armsRaised && held && g.items.name(held.id) === 'bow');
     const speedSq = (e.motionX || 0) ** 2 + (e.motionY || 0) ** 2 + (e.motionZ || 0) ** 2;
     const args = {
-      entity:e,
+      entity:e, held,
       ...foxAnimationArgs(e,partial),ls, lsa, age, yaw: head - body, pitch, swing: swing > 0 ? swing : -9999, partial,
       sneak: !e.sleeping && !!e.sneaking, riding: e.riding >= 0,
       useTicks:e.useTicks||0,crossbowChargeDuration:held&&g.items.name(held.id)==='crossbow'?g.items.crossbowChargeDuration(held):25,
       rightPose: skeletonAim ? 'bow' : primaryRight ? mainPose : offPose, leftPose: primaryRight ? offPose : mainPose,
       swingSide: ((e.swingHand || 0) === 0) === primaryRight ? 1 : -1,
+      swingType: e.swingType || 'whack',
+      kineticWeapon: g.items.kineticWeapon(mainPose === 'spear' ? held : offPose === 'spear' ? e.offhand : null),
       elytra: (e.elytraTicks || 0) > 4, speedSq,
       onGround: e.onGround, eatingGrass: e.eatingGrass || 0, sitting: e.sitting, angry: e.angry, hanging: e.hanging,
       carrying: !!e.carried, screaming: e.screaming, horseType: e.horseType, saddled: !!(e.horseFlags & 4) || e.saddled,
-      tailRotation: wolfTailAngle774(e),
-      sheared: !!e.sheared,
+      tailRotation: wolfTailAngle766(e),
+      // WolfModel.prepareMobModel: begging head tilt plus the wet shake rolling head, upper body, body and tail
+      headRoll: e.entityName === 'wolf' ? wolfHeadRoll766(e, partial) + wolfBodyRoll766(e, partial, 0) : undefined,
+      maneRoll: e.entityName === 'wolf' ? wolfBodyRoll766(e, partial, -0.08) : undefined,
+      bodyRoll: e.entityName === 'wolf' ? wolfBodyRoll766(e, partial, -0.16) : undefined,
+      tailRoll: e.entityName === 'wolf' ? wolfBodyRoll766(e, partial, -0.2) : undefined,
       witchDrinking: e.kind === 'mob' && e.type === 66 && e.usingItem,
       squish: 0, tentacleAngle:isSquid(e)?squidTentacle(e,partial):undefined,
       peek: e.type === 69 ? (e.prevPeek || 0) + ((e.peek || 0) - (e.prevPeek || 0)) * partial : 0,
@@ -1412,7 +1490,7 @@ export class EntityRenderer {
       playingDead: !!e.playingDead, rammingHeadRotation: (e.goatRammingTicks || 0) / 20 * 30 * D2R,
       moving: speedSq > 1e-7 || e.x !== e.prevX || e.z !== e.prevZ || e.yaw !== e.prevYaw || e.pitch !== e.prevPitch,
       axolotlRotations: e.entityName === 'axolotl' ? (e.axolotlRotations ||= {}) : undefined,
-      entityId: e.id, child: !!e.child, leftHanded: !!e.leftHanded,
+      entityId: e.id, child: !!e.child, leftHanded: isAvatar(e) ? e.mainHand === 0 : !!e.leftHanded,
       inWater: isPointInFluid(g.world, e.x, e.y + e.height / 2, e.z),
       swimming: !e.sleeping && !!e.swimming, swimAmount: e.sleeping ? 0 : swimAmount, armsRaised: !!e.armsRaised,
       rearing: e.type === 'polar_bear' ? (e.standing ? 1 : 0) : (e.horseFlags & 64 ? 1 : 0),
@@ -1431,8 +1509,10 @@ export class EntityRenderer {
     }
     // Health and invisibility changes must apply even when distant poses are throttled.
     if (v.golemCracks) updateGolemCracks(e, v.golemCracks);
-    if(v.horseArmor){const armor=horseArmor774(g.items,e.bodyEquipment);v.horseArmor.obj.visible=!!armor&&!e.invisible;if(armor){v.horseArmor.mat.tex=armor.texture;v.horseArmor.mat.params.setTint(...armor.color,1);}}
-    if(v.wolfCollar){const armor=wolfArmor774(g.items,e.bodyEquipment),color=PAWS_DATA_774.dyes[e.collar??14]??PAWS_DATA_774.dyes[14];v.wolfCollar.obj.visible=!!e.tamed&&!armor&&!e.invisible;v.wolfCollar.mat.params.setTint(...color,1);v.wolfArmor.obj.visible=!!armor;v.wolfArmorDye.obj.visible=!!armor?.color;v.wolfArmorCracks.obj.visible=!!armor?.crack;if(armor?.color)v.wolfArmorDye.mat.params.setTint(...armor.color,1);if(armor?.crack)v.wolfArmorCracks.mat.tex='entity/wolf/wolf_armor_crackiness_'+armor.crack+'.png';}
+    if(v.horseArmor){const armor=horseArmor766(g.items,e.bodyEquipment);v.horseArmor.obj.visible=!!armor&&!e.invisible;if(armor){v.horseArmor.mat.tex=armor.texture;v.horseArmor.mat.params.setTint(...armor.color,1);}}
+    if(v.wolfCollar){const armor=wolfArmor766(g.items,e.bodyEquipment),color=PAWS_DATA_766.dyes[e.collar??14]??PAWS_DATA_766.dyes[14];v.wolfCollar.obj.visible=!!e.tamed&&!armor&&!e.invisible;v.wolfCollar.mat.params.setTint(...color,1);v.wolfArmor.obj.visible=!!armor;v.wolfArmorDye.obj.visible=!!armor?.color;v.wolfArmorCracks.obj.visible=!!armor?.crack;if(armor?.color)v.wolfArmorDye.mat.params.setTint(...armor.color,1);if(armor?.crack)v.wolfArmorCracks.mat.tex='entity/wolf/wolf_armor_crackiness_'+armor.crack+'.png';}
+    // WolfRenderer: a wet wolf's model (and the layers drawn through it) is darkened by getWetShade
+    if(v.wolfCollar){const shade=wolfWetShade766(e,partial),dye=PAWS_DATA_766.dyes[e.collar??14]??PAWS_DATA_766.dyes[14];v.mainMat.params.setTint(shade,shade,shade,1);v.wolfCollar.mat.params.setTint(dye[0]*shade,dye[1]*shade,dye[2]*shade,1);}
     if (v.lodSkip && v.posed && v.wasInvisible === !!e.invisible) {
       // Keep the previous pose; only the transforms above were updated
       this._updateHeld(e, v, held, args);
@@ -1448,7 +1528,7 @@ export class EntityRenderer {
     // alive for attached equipment, and keep hologram-only stands bodyless.
     for (const draw of v.bodyDrawables) draw.visible = !e.invisible&&!draw.modelPart?.skipDraw;
     // Player-specific visibility
-    if (e.kind === 'player' || e.kind === 'mannequin') {
+    if (isAvatar(e)) {
       const pp = model.parts;
       const flags = e.skinFlags !== undefined ? e.skinFlags : 0x7f;
       if (pp.headwear) pp.headwear.obj.visible = !!(flags & 0x40);
@@ -1466,7 +1546,7 @@ export class EntityRenderer {
       if (show) {
         const t = M.elytraAngles(!!e.elytraFlying, !!e.sneaking, [e.motionX || 0, e.motionY || 0, e.motionZ || 0]);
         // AbstractClientPlayer.rotateElytraX/Y/Z ease 10% towards the target each render; armor stands snap
-        if (e.kind === 'player') {
+        if (isAvatar(e)) {
           const r = e.rotElytra || (e.rotElytra = [t[0], t[1], t[2]]);
           r[0] += (t[0] - r[0]) * 0.1; r[1] += (t[1] - r[1]) * 0.1; r[2] += (t[2] - r[2]) * 0.1;
           v.elytra.model.animate(v.elytra.model, { rot: r, py: t[3] });
@@ -1528,25 +1608,39 @@ export class EntityRenderer {
     for (let slot = 1; slot <= 4; slot++) {
       const A = v.armor[slot];
       const item = e.equipment[slot];
+      const equip = item ? this.game.items.component?.(item, 'equippable') : null;
+      const armorSlot = equip?.slot ?? equip?.slotName;
       const idx = item ? armorMaterialIndex(this.game.items.name(item.id)) : -1;
-      const visible = idx >= 0;
+      // 26.3 equipment assets: the equippable component names the texture family
+      const asset = String(equip?.assetId ?? equip?.asset_id ?? ARMOR_MATS[idx] ?? '').replace(/^minecraft:/, '');
+      const visible = !!asset && ['head', 'chest', 'legs', 'feet'].includes(armorSlot)
+        && ['leather', 'chainmail', 'copper', 'iron', 'gold', 'diamond', 'netherite', 'turtle_scute'].includes(asset);
+      const layerName = slot === 2 ? 'humanoid_leggings' : 'humanoid';
       A.obj.visible = visible;
-      A.overlay.obj.visible = visible && idx === 0;
+      A.overlay.obj.visible = visible && asset === 'leather';
+      A.trim.obj.visible = false;
       if (!visible) continue;
-      const dir = slot === 2 ? 'humanoid_leggings' : 'humanoid';
-      const key = idx + ':' + slot;
+      const key = asset + ':' + slot;
       if (A.key !== key) {
         A.key = key;
-        A.mat.tex = `entity/equipment/${dir}/${ARMOR_MATS[idx]}.png`;
-        A.overlay.mat.tex = `entity/equipment/${dir}/leather_overlay.png`;
+        A.mat.tex = `entity/equipment/${layerName}/${asset}.png`;
+        A.overlay.mat.tex = `entity/equipment/${layerName}/${asset}_overlay.png`;
       }
-      if (idx === 0) {
-        const dye = this.game.items.component(item, 'dyed_color');
-        const tag = dye === undefined ? this.game.items.nbt(item) : null;
-        const c = dye !== undefined ? (typeof dye === 'number' ? dye : (dye?.rgb ?? dye?.color ?? 0)) : (tag && tag.display && tag.display.color !== undefined ? tag.display.color : 10511680);
+      if (asset === 'leather') {
+        // DyedItemColor.getOrDefault(stack, 0xA06540); 26.3 reads the component directly
+        const dye = this.game.items.component?.(item, 'dyed_color');
+        const c = (typeof dye === 'number' ? dye : dye?.rgb ?? dye?.color ?? 10511680) >>> 0;
         A.mat.params.setTint(((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255, 1);
       } else A.mat.params.setTint(1, 1, 1, 1);
-      for (const M2 of idx===0?[A.model,A.overlay.model]:[A.model]) {
+      // HumanoidArmorLayer: the trim layer uses the paletted trims/entity texture
+      const trimName = trimTextureName(this.game, item, A.inner);
+      const trimTex = trimName ? armorTrimTexture(this.game, trimName, item) : null;
+      A.trim.obj.visible = !!trimTex;
+      if (trimTex) {
+        A.trim.mat.tex = trimTex;
+        A.trim.mat.state = { ...A.trim.mat.state, polygonOffset: !!itemTrim(this.game, item)?.decal };
+      }
+      for (const M2 of [A.model, ...(asset === 'leather' ? [A.overlay.model] : []), ...(trimTex ? [A.trim.model] : [])]) {
         if(M2.piglinAgeable)scalePiglinChild(M2.childGroups,!!e.child);
         M2.animate(M2, args);
         copyPose(model, M2);
@@ -1563,7 +1657,7 @@ export class EntityRenderer {
   // LayerHeldItem (1.9+): main hand item in the primary arm, off hand item in the other
   _updateHeld(e, v, held, args) {
     if(v.foxMouth){this._foxHeld(e,v,held,args);return;}
-    const primaryRight = e.kind === 'player' || e.kind === 'mannequin' ? e.mainHand !== 0 : !e.leftHanded;
+    const primaryRight = isAvatar(e) ? e.mainHand !== 0 : !e.leftHanded;
     const right = primaryRight ? held : e.offhand, left = primaryRight ? e.offhand : held;
     this._heldIn(v, 'r', v.itemHolder, right, false, args, e);
     this._heldIn(v, 'l', v.leftHolder, left, true, args, e);
@@ -1594,14 +1688,14 @@ export class EntityRenderer {
   // then the THIRD_PERSON_RIGHT_HAND / LEFT_HAND transform (mirrored for the left hand)
   _heldIn(v, k, holder, stack, leftHand, args, entity) {
     if (!holder) return;
-    const eye = entity.kind === 'player' && stack && this.game.items.name(stack.id) === 'spyglass' && (leftHand ? args.leftPose : args.rightPose) === 'spyglass' && args.swing <= 0;
+    const eye = isAvatar(entity) && stack && this.game.items.name(stack.id) === 'spyglass' && (leftHand ? args.leftPose : args.rightPose) === 'spyglass' && args.swing <= 0;
     attachSpyglassHolder(holder, v.model.parts.head, eye);
     const key = stack ? stack.id + ':' + stack.damage + ':' + this.game.itemRenderer.iconKey(stack, true, entity) + ':' + eye : null;
     const st = v['held' + k] || (v['held' + k] = { key: undefined, root: null, glint: null });
     if (key !== st.key) {
       st.key = key;
       holder.clear();
-      st.root = null; st.glint = null;
+      st.root = null; st.glint = null; st.fx = null;
       if (stack) {
         const io = this.game.itemRenderer.objectFor(stack, v.atlasMat, true, entity);
         if (io) {
@@ -1613,16 +1707,29 @@ export class EntityRenderer {
           if (eye) off.position.set((leftHand ? -2.5 : 2.5) / 16, -.0625, 0);
           else off.position.set((leftHand ? -1 : 1) / 16, 0.125, -0.625);
           const t = new Node();
+          const fx = new Node();
           const d = io.model.display || {};
           applyTransform(t, eye ? d.head : leftHand ? d.thirdperson_lefthand || d.thirdperson_righthand : d.thirdperson_righthand, eye ? false : leftHand);
-          t.add(io.obj); off.add(t); turn.add(off); root.add(turn);
+          t.add(io.obj); fx.add(t); off.add(fx); turn.add(off); root.add(turn);
           holder.add(root);
-          st.root = root;
+          st.root = root; st.fx = fx;
           st.glint = io.obj.userData.glint ? io.obj : null;
         } else st.key = undefined;
       }
     }
     if (st.root) st.root.position.y = !eye && args.sneak ? 0.2 : 0;
+    if (st.fx) {
+      const kinetic = stack ? this.game.items.kineticWeapon(stack) : null;
+      const armSide = leftHand ? -1 : 1;
+      const usingSpear = args.kineticWeapon && (leftHand ? args.leftPose === 'spear' : args.rightPose === 'spear') && args.useTicks > 0;
+      const attack = args.swing > 0 && args.swingSide === armSide && args.swingType === 'stab';
+      if ((usingSpear && kinetic) || attack) {
+        const m = mat4.create();
+        if (attack && kinetic) spearThirdPersonAttackItem(m, kinetic, args.swing);
+        if (usingSpear && kinetic) spearThirdPersonUseItem(m, kinetic, args.useTicks, armSide, 0, Math.max(0, args.swing));
+        st.fx.matrix = m;
+      } else st.fx.matrix = null;
+    }
     if (st.glint) this.glints.push(st.glint);
   }
 
@@ -1691,11 +1798,11 @@ export class EntityRenderer {
     if (e.id === -1 || e.id === g.entityId || g.hideGui || (e.kind !== 'armorstand' && e.passenger !== undefined && e.passenger >= 0)) name = null;
     const cam = this.r.camPos;
     const dist = Math.hypot(cam[0] - p.x, cam[1] - p.y, cam[2] - p.z);
-    if (!name || dist >= 64) { if (v.tag) v.tag.visible = false; if (v.tagBelow) v.tagBelow.visible = false; return; }
     const sneak = !!e.sneaking;
     // PlayerRenderer.renderNameTag: within 10 blocks the below-name objective's "<score> <objective>" label takes the
     // tag position and the name moves up by 9 * 1.15 font pixels
-    const below = e.kind === 'player' && dist < 10 ? this._belowNameText(e) : null;
+    const below = dist < 10 && !g.hideGui && e.id !== g.entityId ? (e.kind === 'player' ? this._belowNameText(e) : e.kind === 'mannequin' ? e.mannequinDescription : null) : null;
+    if ((!name && below === null) || dist >= 64) { if (v.tag) v.tag.visible = false; if (v.tagBelow) v.tagBelow.visible = false; return; }
     if (below !== null) {
       if (!v.tagBelow || v.tagBelowText !== below || v.tagBelowSneak !== sneak) {
         if (v.tagBelow) v.root.remove(v.tagBelow);
@@ -1706,15 +1813,17 @@ export class EntityRenderer {
       }
       v.tagBelow.visible = true;
     } else if (v.tagBelow) v.tagBelow.visible = false;
-    if (!v.tag || v.tagText !== name || v.tagSneak !== sneak) {
-      if (v.tag) v.root.remove(v.tag);
-      destroyTextMeshes(this.device, v.tagMeshes);
-      const { node, meshes } = this.makeLabel(name, sneak);
-      v.tag = node; v.tagMeshes = meshes;
-      v.tagText = name; v.tagSneak = sneak;
-      v.root.add(v.tag);
-    }
-    v.tag.visible = true;
+    if (name !== null) {
+      if (!v.tag || v.tagText !== name || v.tagSneak !== sneak) {
+        if (v.tag) v.root.remove(v.tag);
+        destroyTextMeshes(this.device, v.tagMeshes);
+        const { node, meshes } = this.makeLabel(name, sneak);
+        v.tag = node; v.tagMeshes = meshes;
+        v.tagText = name; v.tagSneak = sneak;
+        v.root.add(v.tag);
+      }
+      v.tag.visible = true;
+    } else if (v.tag) v.tag.visible = false;
     const base = e.height + 0.5 - (NAME_TAG.sneakOffset && sneak ? 0.25 : 0) - (v.root.position.y - p.y);
     if (below !== null) v.tagBelow.position.set(0, base, 0);
     v.tag.position.set(0, base + (below !== null ? 9 * 1.15 * NAME_TAG.scale : 0), 0);
@@ -1812,6 +1921,51 @@ export class EntityRenderer {
     void p;
   }
 
+  // OminousItemSpawnerRenderer: the ground item cluster scales in over 50 ticks and
+  // spins at 40 degrees per tick until the trial-spawner item is released.
+  _renderOminousItemSpawner(e, v, p, partial) {
+    const it = e.item;
+    const copiesFor = count => count > 48 ? 5 : count > 32 ? 4 : count > 16 ? 3 : count > 1 ? 2 : 1;
+    const key = it ? this.game.itemRenderer.iconKey(it) + ':' + copiesFor(it.count) + ':' + (this.game.items.hasEffect(it) ? 1 : 0) : null;
+    if (key !== v.itemKey) {
+      v.itemKey = key;
+      if (v.inner) v.root.remove(v.inner);
+      v.inner = null;
+      v.glintNode = null;
+      if (it) {
+        const io = this._itemObject(it, v.atlasMat);
+        if (io) {
+          const copies = copiesFor(it.count);
+          const ground = (io.model.display || {}).ground;
+          const gs = (ground && ground.scale) || [1, 1, 1];
+          v.inner = new Node();
+          let z = 0;
+          for (let i = 0; i < copies; i++) {
+            const c = i === 0 ? io.obj : io.obj.clone();
+            const holder = new Node();
+            const j = io.gui3d ? 0.15 : 0.15 * 0.5;
+            if (i > 0) holder.position.set((Math.random() * 2 - 1) * j, (Math.random() * 2 - 1) * j, (Math.random() * 2 - 1) * j);
+            if (!io.gui3d) { holder.position.z += z; z += 0.09375 * gs[2]; }
+            const t = new Node();
+            applyTransform(t, ground);
+            t.add(c);
+            holder.add(t);
+            v.inner.add(holder);
+          }
+          v.root.add(v.inner);
+          if (io.obj.userData.glint) v.glintNode = v.inner;
+        } else v.itemKey = null; // retry next frame (textures still loading)
+      }
+    }
+    if (!v.inner) return;
+    const age = e.ticks + partial;
+    const scale = age <= 50 ? Math.min(age, 50) / 50 : 1;
+    v.inner.scale.setScalar(scale);
+    v.inner.rotation.set(0, (((age * 40) % 360) * D2R), 0);
+    if (v.glintNode) this.glints.push(v.glintNode);
+    void p;
+  }
+
   _renderXp(e, v, partial) {
     const t = (e.ticks + partial) / 2;
     const r = (Math.sin(t) + 1) * 0.5;
@@ -1834,6 +1988,8 @@ export class EntityRenderer {
     const scale = (model.modelScale ?? 1) / 16;
     v.inner.scale.setScalar(scale);
     v.inner.position.set(0, 0, 0);
+    // RenderTypes.breezeWind scrolls the 64x32 texture by age * 0.03 (WindChargeRenderer.xOffset).
+    if (v.windMat) v.windMat.params.setUvTransform(((e.ticks + partial) * 0.03) % 1, 0, 0);
     if (e.kind === 'trident' || e.kind === 'llama_spit') {
       v.inner.rotation.set(0, (yaw - 90) * D2R, (pitch + (e.kind === 'trident' ? 90 : 0)) * D2R, 'YZX');
     } else if (e.kind === 'shulker_bullet') {
@@ -1973,6 +2129,19 @@ export class EntityRenderer {
     for(const tile of v.tiles){const light=paintingTileLight((a,b,c)=>this._light(a,b,c),x,y,z,f,tile);tile.front.params.setLight(...light);tile.back.params.setLight(...light);}
   }
 
+  _cushionTexture(e) {
+    const color = ENTITY_DYES[e.cushionColor || 0] || ENTITY_DYES[0];
+    return 'entity/cushion/' + color + '_cushion.png';
+  }
+
+  _renderCushion(e, v) {
+    // CushionRenderer.extractRenderState: Direction.fromYRot(getYRot()), then the
+    // renderer rotates by 180 - direction.toYRot().
+    const yaw = ((e.yaw % 360) + 360) % 360;
+    const toYRot = [0, 270, 180, 90][Math.floor((yaw + 45) / 90) % 4];
+    v.yawGroup.rotation.y = (180 - toYRot) * D2R;
+  }
+
   _renderFrame(e, v) {
     const f = e.facing;
     const bx = Math.floor(e.x), by = Math.floor(e.y), bz = Math.floor(e.z);
@@ -2064,12 +2233,25 @@ export class EntityRenderer {
   _renderCrystal(e, v, partial) {
     const t = e.ticks + partial;
     const f1 = Math.sin(t * 0.2) / 2 + 0.5;
-    const y = f1 * f1 + f1;
-    v.cubes.forEach((c, i) => {
-      c.position.set(0, y + 0.5, 0);
-      c.rotation.set(Math.PI / 3 * (i + 1) * 0.3, t * 3 * D2R * (i + 1), Math.PI / 4);
-      c.scale.setScalar(2 / 16 * (1 - i * 0.125));
-    });
+    const crystalY = ((f1 * f1 + f1) * 0.4 - 1.4) * 8;
+    const angle = t * 3 * D2R;
+    const axis = Math.sin(Math.PI / 4);
+    const OM = mat4.create();
+    mat4.translate(OM, OM, 0, 24 + crystalY, 0);
+    mat4.rotateY(OM, OM, angle);
+    mat4.rotate(OM, OM, Math.PI / 3, axis, 0, axis);
+    v.outerPivot.matrix = OM;
+    const IM = mat4.create();
+    mat4.rotate(IM, IM, Math.PI / 3, axis, 0, axis);
+    mat4.rotateY(IM, IM, angle);
+    mat4.scale(IM, IM, 0.875, 0.875, 0.875);
+    v.inner.obj.matrix = IM;
+    const CM = mat4.create();
+    mat4.rotate(CM, CM, Math.PI / 3, axis, 0, axis);
+    mat4.rotateY(CM, CM, angle);
+    mat4.scale(CM, CM, 0.765625, 0.765625, 0.765625);
+    v.cube.obj.matrix = CM;
+    v.base.obj.visible = e.showBottom !== false;
   }
 
   // RenderLightningBolt: 4 layers x 3 branches of jagged additive triangle strips
@@ -2175,6 +2357,43 @@ export class EntityRenderer {
     gui.clearScissor();
     v.root.position.set(...saved.pos); v.yawGroup.rotation.y = saved.yaw;
     if (v.shadow) v.shadow.visible = saved.shadow; if (v.tag) v.tag.visible = saved.tag;
+    return true;
+  }
+
+  // SmithingScreen's armor stand (1.20+): arms shown, no base plate, body yaw 210, pitch 25, wearing the result
+  // (armor in its slot, anything else in the off hand), drawn by InventoryScreen.renderEntityInInventory at
+  // (x, y) with scale 25 and rotationXYZ(25 degrees, 0, 180 degrees)
+  drawArmorStandPreview(gui, x, y, scale, item, partial = 0) {
+    const g = this.game;
+    if (!this._smithingStand) {
+      const e = g.entities._base(-1001, 0, 0, 0, 0, 25);
+      Object.assign(e, { kind: 'armorstand', entityName: 'armor_stand', typeName: 'armor_stand', showArms: true, noBasePlate: true, armorFlags: 4 | 8,
+        width: 0.5, height: 1.975, bodyYaw: 210, prevBodyYaw: 210, headYaw: 0, prevHeadYaw: 0, pitch: 25, prevPitch: 25 });
+      const v = this._build(e);
+      if (!v) return false;
+      this.group.remove(v.root); this.visuals.delete(e.id);
+      this._smithingStand = { e, v };
+    }
+    const { e, v } = this._smithingStand;
+    e.equipment = [null, null, null, null, null]; e.offhand = null;
+    if (item && item.id) {
+      const equip = g.items.component?.(item, 'equippable');
+      const asset = String(equip?.assetId ?? equip?.asset_id ?? '').replace(/^minecraft:/, '');
+      const armorSlot = { head: 4, chest: 3, legs: 2, feet: 1 }[equip?.slot ?? equip?.slotName];
+      if (armorSlot && ['leather', 'chainmail', 'copper', 'iron', 'gold', 'diamond', 'netherite', 'turtle_scute'].includes(asset)) e.equipment[armorSlot] = item;
+      else e.offhand = item;
+    }
+    this._renderLiving(e, v, { x: 0, y: 0, z: 0 }, partial);
+    v.root.position.set(0, 0, 0);
+    if (v.shadow) v.shadow.visible = false;
+    if (v.tag) v.tag.visible = false;
+    for (const m of v.materials || []) m.params.setLight(15, 15);
+    const mm = mat4.create();
+    mat4.translate(mm, mm, x, y, 50);
+    mat4.scale(mm, mm, scale, scale, -scale);
+    mat4.rotateX(mm, mm, 0.43633232);
+    mat4.rotateZ(mm, mm, Math.PI);
+    gui.drawNode(v.root, mm);
     return true;
   }
 

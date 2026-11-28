@@ -20,6 +20,7 @@ const {proxyOptions,resolveTarget,openPack}=require('./lib/proxy-options');
 const options=proxyOptions();
 if(options.help){console.log('Usage: npm start -- [--proxy-only] [--allow-loopback]\nPROXY_ONLY=1 disables client/assets hosting. Loopback targets are blocked unless ALLOW_LOOPBACK=1.');process.exit(0);}
 const PORT = parseInt(process.env.PORT, 10) || 3000;
+const HOST = process.env.HOST || undefined;
 const CLIENT_DIR = path.join(__dirname, 'client');
 const PROXY_VERSION = require('./package.json').version || '';
 
@@ -33,6 +34,12 @@ let validBuiltModels=false;
 let validBuiltAssets=false;
 let assetIndex = null; // mcassets.loadAssetIndex(): { objects, read(name) }
 const bundleCache = new Map();
+
+// This tree targets 26.3 assets, but the client UI is still 1.20.6-era and asks for
+// sprite/model paths 26.3 reorganised. Serve the 26.3 file when it exists and fall
+// back to the pinned 1.20.6 file only for paths 26.3 dropped, so the new textures
+// are used wherever both versions share a path.
+let fallbackJar = null, fallbackIndex = null;
 
 function jarJson(name) {
   const b = jar.read(name);
@@ -110,7 +117,9 @@ async function readAsset(rel) {
   if (rel === 'pack.mcmeta') return defaultPackMeta();
   if (rel === 'pack.png') return jar.read('pack.png');
   if (rel.startsWith('minecraft/')) {
-    return readDefaultAsset(jar,assetIndex,rel);
+    const own = await readDefaultAsset(jar,assetIndex,rel);
+    if (own || !fallbackJar) return own;
+    return readDefaultAsset(fallbackJar,fallbackIndex,rel);
   }
   return null;
 }
@@ -296,6 +305,19 @@ async function resolveServer(host, port) {
   return {...await resolveTarget(target.host,target.port,options),serverHost:target.host};
 }
 
+// 1.20.2 and newer Login Start carries the profile UUID after the name. The proxy performs
+// the login itself, so it must supply one (the authenticated UUID when available, otherwise
+// the vanilla offline UUID derived from the name).
+function loginStartUuid(username, auth) {
+  if (auth && /^[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}$/i.test(auth.uuid || '')) {
+    return Buffer.from(auth.uuid.replace(/-/g, ''), 'hex');
+  }
+  const digest = crypto.createHash('md5').update('OfflinePlayer:' + username, 'utf8').digest();
+  digest[6] = (digest[6] & 0x0f) | 0x30;
+  digest[8] = (digest[8] & 0x3f) | 0x80;
+  return digest;
+}
+
 // protocol: the client's game protocol (762 = 1.19.4)
 function handshake(host, port, nextState, protocol = 762) {
   return Buffer.concat([
@@ -458,7 +480,8 @@ wss.on('connection', (ws) => {
         mc.setNoDelay(true);
         sendJson({ type: 'status', key: 'connect.authorizing', message: 'Logging in...' });
         writeMc(frame(handshake(target.serverHost, target.port, 2, protocol), -1));
-        writeMc(frame(Buffer.concat([writeVarInt(0x00), mcString(username), ...(protocol===762?[Buffer.from([0])]:[])]), -1));
+        const profileUuid = protocol >= 764 ? loginStartUuid(username, auth) : protocol === 762 ? Buffer.from([0]) : Buffer.alloc(0);
+        writeMc(frame(Buffer.concat([writeVarInt(0x00), mcString(username), profileUuid]), -1));
         state = 'login';
       });
 
@@ -556,6 +579,18 @@ wss.on('connection', (ws) => {
     console.error('Could not load game assets:', e.message);
     console.error(`Set MC_JAR to the location of the ${mcassets.MC_VERSION} client if it is installed somewhere unusual.`);
   }
+  if (mcassets.MC_VERSION !== '1.20.6') {
+    try {
+      fallbackJar = new ZipFile(path.join(__dirname,'cache','port-1.20.6','client.jar'));
+      fallbackIndex = JSON.parse(fs.readFileSync(path.join(__dirname,'cache','port-1.20.6','assets-16.json'),'utf8'));
+      fallbackIndex.read = async (name) => {
+        const object = fallbackIndex.objects[name];
+        if (!object) return null;
+        const file = path.join(__dirname,'cache','port-1.20.6','objects',object.hash.slice(0,2),object.hash);
+        return fs.existsSync(file) ? fs.readFileSync(file) : null;
+      };
+    } catch (e) { console.error('1.20.6 asset fallback unavailable:', e.message); fallbackJar = null; }
+  }
   try {
     assetIndex = await mcassets.loadAssetIndex();
     try {
@@ -569,9 +604,9 @@ wss.on('connection', (ws) => {
     console.error('Could not load sound asset index (sounds disabled):', e.message);
   }
   }
-  server.listen(PORT, () => {
+  server.listen(PORT, HOST, () => {
     console.log(options.proxyOnly?'MinecraftJS proxy-only mode (client/assets hosting disabled)':'MinecraftJS client and proxy');
     console.log('Loopback connections: '+(options.allowLoopback?'allowed':'blocked'));
-    console.log(`MinecraftJS server running at http://localhost:${PORT}`);
+    console.log(`MinecraftJS server running at http://${HOST||'localhost'}:${PORT}`);
   });
 })();

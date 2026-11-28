@@ -9,8 +9,11 @@ import { parseAddress } from './address.js';
 import { openEaglerSocket, pingEagler } from './eagler.js';
 import { currentProxy, proxyType } from './proxies.js';
 import { VanillaSocket } from './tcp.js';
-import { VanillaSocket774 } from './tcp-1.21.11.js';
-import { EaglerSocket774 } from './eagler-1.21.11.js';
+import { VanillaSocket766 } from './tcp-1.20.6.js';
+import { EaglerSocket766 } from './eagler-1.20.6.js';
+import { VanillaSocket26_3 } from './tcp-26.3.js';
+import { adaptPlay26_3 } from './play-adapter-26.3.js';
+import { loginContext26_3 } from './session-26.3.js';
 
 const NO_PROXY = 'No proxy selected: add one in Proxy Servers on the title screen (or join an Eaglercraft wss:// server)';
 
@@ -19,8 +22,14 @@ async function openProxySocket(protocol = PROTOCOL_VERSION, options = {}) {
   const p = currentProxy();
   if (!p) throw new Error(NO_PROXY);
   const type = proxyType(p);
-  if (protocol === 774) {
-    return new VanillaSocket774(
+  if (protocol === 777) {
+    return new VanillaSocket26_3(
+      { ...p, type: type === "minecraftjs" ? "minecraftjs-raw" : type },
+      { ...options, autoPlayAcks: false }
+    );
+  }
+  if (protocol === 766) {
+    return new VanillaSocket766(
       { ...p, type: type === "minecraftjs" ? "minecraftjs-raw" : type },
       { ...options, autoPlayAcks: false }
     );
@@ -83,6 +92,29 @@ export class Connection {
         this._receivePacket(packet);
       });
       sock.on("binary", (bytes) => { this.bytesIn += bytes.length; });
+    } else if (PROTOCOL_VERSION === 777) {
+      sock.on('play_login', (login) => {
+        this.joinContext = loginContext26_3(sock.configuration, login);
+      });
+      sock.on('configuration', (packet) => {
+        this.emit('configuration', packet);
+        if (packet.name === 'add_resource_pack') this.emit('packet', { ...packet, promptMessage: packet.prompt == null ? null : JSON.stringify(packet.prompt) });
+        else if (packet.name === 'remove_resource_pack') this.emit('packet', packet);
+      });
+      sock.on('configuration_complete', (configuration) => {
+        this.state = 'play';
+        this.emit('configuration_complete', configuration);
+      });
+      sock.on('transfer', (packet) => this.emit('transfer', packet));
+      sock.on('resource_pack', (packet) => this.emit('resource_pack', packet));
+      sock.on('resource_pack_remove', (packet) => this.emit('resource_pack_remove', packet));
+      sock.on('play', (packet) => {
+        this.packetsIn++;
+        const adapted = adaptPlay26_3(packet, this.joinContext);
+        if (!adapted) { this.emit('play_unported', packet); return; }
+        this._receivePacket(adapted);
+      });
+      sock.on('binary', (bytes) => { this.bytesIn += bytes.length; });
     } else {
       sock.on('binary', (bytes) => {
         this.bytesIn += bytes.length;
@@ -112,7 +144,8 @@ export class Connection {
     const eagler = a && a.kind === 'eagler' ? a : null;
     await this.open(eagler);
     this.state = 'login';
-    if (transfer && this.ws instanceof VanillaSocket774) {
+    this.joinContext = null;
+    if (transfer && (this.ws instanceof VanillaSocket766 || this.ws instanceof VanillaSocket26_3)) {
       this.ws.cookies = new Map([...transfer.cookies].map(([key, value]) => [key, value.slice()]));
     }
     this.ws.sendText(JSON.stringify({ type: 'connect', host, port, username, auth: eagler ? null : auth, protocol: PROTOCOL_VERSION, transferred: !!transfer }));

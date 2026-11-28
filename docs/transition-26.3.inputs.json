@@ -1,0 +1,52 @@
+{
+  "target": "26.3",
+  "recordedOn": "2026-11-25",
+  "retrieval": "direct curl, HTTP 200, byte length checked against Mojang metadata",
+  "targetPins": "tools/port-26.3/target.json",
+  "metadata": {
+    "url": "https://piston-meta.mojang.com/v1/packages/8696584e8d2da5726487597e6c5777480387ec22/26.3.json",
+    "sha1": "8696584e8d2da5726487597e6c5777480387ec22",
+    "manifest": "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json",
+    "latestReleaseAtCheck": "26.3",
+    "releaseType": "release"
+  },
+  "downloads": {
+    "client": {"sha1": "e877b6a07acd633fb3bb475002175cec036e7b87", "size": 41483720},
+    "server": {"sha1": "33680f5f2ac32864d6d7cf5e56a705fdb3e05f4c", "size": 62294556},
+    "client_mappings": null,
+    "server_mappings": null
+  },
+  "assetIndex": {"id": "34", "sha1": "7b1c46ecb5292e80d36be4ccd18118f3d7b555aa", "size": 597235, "totalSize": 487865386},
+  "nativeVersionJson": {
+    "id": "26.3",
+    "name": "26.3",
+    "world_version": 5023,
+    "series_id": "main",
+    "protocol_version": 777,
+    "pack_version": {"resource_major": 97, "resource_minor": 1, "data_major": 121, "data_minor": 0},
+    "build_time": "2026-09-15T11:20:48+00:00",
+    "java_component": "java-runtime-epsilon",
+    "java_version": 25,
+    "stable": true,
+    "use_editor": false
+  },
+  "jarLayout": {
+    "classes": 10737,
+    "assets": 11604,
+    "data": 9884,
+    "assetsMarker": "assets/.mcassetsroot",
+    "dataMarker": "data/.mcassetsroot",
+    "obfuscated": false,
+    "proof": "net/minecraft/client/main/Main.class present under its native name"
+  },
+  "generated": {
+    "command": "npm run reports:26.3",
+    "baseline": "tools/port-26.3/baseline.json",
+    "packetIds": "cache/port-26.3/packet-ids.json (ignored cache; regenerate with reports:26.3)",
+    "log": "cache/port-26.3/data-generator.log"
+  },
+  "unavailable": [
+    "No 26.3 client/server mappings exist; P00 asserts none are pinned rather than inventing them.",
+    "Release articles and official notes for the 17 crosswalk releases are not yet fetched; P01 records URL, retrieval method and SHA-256 before they are cited as sources."
+  ]
+}

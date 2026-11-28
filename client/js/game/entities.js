@@ -1,7 +1,6 @@
-import { tickBat774 } from '../render/bat-1.21.11.js';
-import { applyPawsMetadata774, tickArmadillo774, tickWolf774 } from './paws-1.21.11.js';
-import { BOAT_TYPES_774 } from './boat-types-1.21.11.js';
-import {EFFECT_774} from './effects-1.21.11.js';
+import{tickBat766}from'../render/bat-1.20.6.js';
+import {applyPawsMetadata,tickArmadillo766,tickWolf766,wolfEvent766} from './paws-1.20.6.js';
+import {EFFECT_766} from './effects-1.20.6.js';
 import {encodeEntityPosition,relativeEntityPosition} from './entity-position.js';
 import {playPickupSound} from '../audio/client-sound-triggers.js';
 import { tickDroppedItem } from './dropped-item.js';
@@ -12,7 +11,8 @@ import {detachRemovedEntities} from './riding-lifecycle.js';
 import {applyNetherMetadata} from './nether-metadata.js';
 import {applyFoxFlags,tickFox} from './fox.js';
 import {tickBeeSound,stopBeeSound} from './bee-sound.js';
-import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.21.11.js';
+import {NATIVE_METADATA as WIRE_METADATA} from './entity-metadata-1.20.6.js';
+import {NATIVE_METADATA_26_3 as WIRE_METADATA_26_3} from './entity-metadata-26.3.js';
 import {placeLeashKnot} from './leash-knot.js';
 import {NATIVE_METADATA} from './entity-metadata-1.14.4.js';
 import {playerPoseDimensions} from './player-poses-1.19.4.js';
@@ -23,6 +23,7 @@ import { simplify } from '../net/nbt.js';
 import { getBlock } from '../world/blocks.js';
 import { isPointInFluid } from '../world/fluids.js';
 import { mcSin, mcCos } from './physics.js';
+import { boatWoodFor } from './boat-types-1.19.4.js';
 import { chatToLegacy } from '../gui/chat.js';
 import { initDisplay, applyDisplayMeta, tickDisplay } from './display-entity.js';
 import { applyEntityScale, setScaleAttribute } from './entity-scale.js';
@@ -65,26 +66,16 @@ const MOB_NAMES = {
   97: 'SnowMan', 98: 'Ozelot', 99: 'VillagerGolem', 100: 'EntityHorse', 101: 'Rabbit', 120: 'Villager',
 };
 
-// Resolve wire identities from the target registry; retain its special eye heights.
+// Resolve wire identities from the native 26.3 registry; the display table is generated from
+// the same dump, so it must not override these dimensions through an older entity id order.
 export function nativeEntityDefinition(game, id) {
-  const definition=ENTITY_TYPES[id],supplied=game?.assets?.data?.entities?.find(e=>e.id===id);
-  if(supplied&&definition&&supplied.name!==definition.name)throw Error('Entity registry does not match runtime: '+id);
-  return definition;
+  return ENTITY_TYPES[id];
 }
 
 export function nativeEntityDefinitionByName(game,name){
   const canonical=String(name||"").replace(/^minecraft:/,"");
   const renderer=ENTITIES_BY_NAME[canonical];
-  const supplied=game?.assets?.data?.entities?.find(e=>e.name===canonical);
-  if(!renderer&&!supplied)return null;
-  const height=supplied?.height??renderer?.height??0;
-  return{
-    ...renderer,
-    ...supplied,
-    name:canonical,
-    eyeHeight:renderer?.eyeHeight??height*0.85,
-    mob:renderer?.mob??false
-  };
+  return renderer ? {...renderer, name:canonical} : null;
 }
 
 const wrap = (a) => { a %= 360; if (a >= 180) a -= 360; if (a < -180) a += 360; return a; };
@@ -144,7 +135,7 @@ export class EntityManager {
       packetX:x,packetY:y,packetZ:z,
       newX: x, newY: y, newZ: z, newYaw: yaw, newPitch: pitch, inc: 0,
       yaw, pitch, prevYaw: yaw, prevPitch: pitch, headYaw: yaw, prevHeadYaw: yaw, bodyYaw: yaw, prevBodyYaw: yaw,
-      limbSwing: 0, limbSwingAmount: 0, prevLimbSwingAmount: 0, swingProgress: 0, prevSwingProgress: 0, swingTicks: 0, swinging: false,
+      limbSwing: 0, limbSwingAmount: 0, prevLimbSwingAmount: 0, swingProgress: 0, prevSwingProgress: 0, swingTicks: 0, swinging: false, swingType: 'whack', swingDuration: 6,
       onGround: false, metadata: {}, equipment: [null, null, null, null, null], ticks: 0, hurtTime: 0, deathTime: 0,
       motionX: 0, motionY: 0, motionZ: 0, pickable: true, width: 0.6, height: 1.8, eyeHeight: 1.62, riding: -1, passenger: -1,
       health: 20, maxHealth: 20, effects: new Map(), dead: false,
@@ -190,7 +181,7 @@ export class EntityManager {
     if (e.type === 99) e.health = e.maxHealth = 100;
     if(e.entityName==='wolf')e.health=e.maxHealth=8;
     if(e.entityName==='armadillo')e.health=e.maxHealth=12;
-    e.kind = e.entityName === 'armor_stand' ? 'armorstand' : def && def.mob ? 'mob' : 'unknown_mob';
+    e.kind = e.entityName === 'mannequin' ? 'mannequin' : e.entityName === 'armor_stand' ? 'armorstand' : def && def.mob ? 'mob' : 'unknown_mob';
     e.typeName = MOB_NAMES[e.type] || e.entityName || 'Unknown entity';
     e.headYaw = e.prevHeadYaw = p.headPitch; // packet's "headPitch" is the head yaw
     e.width = def ? def.width : 0; e.height = def ? def.height : 0; e.eyeHeight = def ? def.eyeHeight : 0;
@@ -198,7 +189,8 @@ export class EntityManager {
     if (e.entityName === 'shulker') e.shulkerColor = 16;
     if (e.entityName === 'snow_golem') e.hasPumpkin = true;
     if (e.kind === 'armorstand') e.armorFlags = 0;
-    e.motionX = p.velocity.x; e.motionY = p.velocity.y; e.motionZ = p.velocity.z;
+    if (e.kind === 'mannequin') { e.mainHand = 1; e.skinFlags = 0x7f; e.skinPatch = null; e.mannequinDescription = 'Mannequin'; }
+    e.motionX = p.velocity.x / 8000; e.motionY = p.velocity.y / 8000; e.motionZ = p.velocity.z / 8000;
     e.metadata = p.metadata;
     this._applyMeta(e);
     this.add(e);
@@ -217,14 +209,13 @@ export class EntityManager {
     e.type = p.type;
     e.typeName = e.entityName || 'Unknown object';
     e.objectData = p.objectData;
-    if (e.kind === 'boat' && e.entityName) {
-      e.chestBoat = e.entityName === 'chest_boat' || e.entityName.endsWith('_chest_boat') || e.entityName.endsWith('_chest_raft');
-      const wood = e.entityName.replace(/_chest_(boat|raft)$/, '').replace(/_(boat|raft)$/, '');
-      e.boatType = Math.max(0, BOAT_TYPES_774.indexOf(wood));
-    }
+    if(/_chest_(boat|raft)$/.test(e.entityName||''))e.chestBoat=true;
+    // 26.3 has one entity type per wood and no Boat.Type metadata value.
+    if(e.kind==='boat')e.boatWood=boatWoodFor(e.entityName);
     if(e.kind==='minecart')e.cartType=Math.max(0,MINECART_NAMES.indexOf(e.entityName));
+    if(e.kind==='cushion')e.cushionColor=0;
     e.width = def ? def.width : 0; e.height = def ? def.height : 0; e.eyeHeight = def ? def.eyeHeight : 0;
-    e.pickable = ['boat', 'minecart', 'crystal', 'itemframe', 'leash', 'armorstand', 'shulker_bullet', 'mannequin'].includes(e.kind) || e.entityName === 'fireball';
+    e.pickable = ['boat', 'minecart', 'crystal', 'itemframe', 'leash', 'armorstand', 'shulker_bullet', 'cushion'].includes(e.kind) || e.entityName === 'fireball';
     // Interaction defines its own dimensions, independent of EntityType's zero
     // registration size. Native bfs defaults to 1x1 and is always pickable.
     if (e.kind === 'display') { initDisplay(e, WIRE_METADATA[e.entityName]); e.noPhysics = true; }
@@ -422,19 +413,23 @@ export class EntityManager {
   _applyMeta(e, m = e.metadata) {
     // Preserve native metadata on e.metadata. Adapt the unchanged consumers below
     // around 1.14's base pose and living sleeping-position insertions.
-    const wire = m, compat = Object.fromEntries(Object.entries(wire).filter(([i]) => Number(i) !== 7).map(([i, v]) => [Number(i) > 7 ? Number(i) - 1 : Number(i), v])), living498 = e.kind === 'mob' || e.kind === 'player' || e.kind === 'armorstand' || e.kind === 'mannequin';
-    const native = living498 ? Object.fromEntries(Object.entries(compat).filter(([i]) => Number(i) !== 12).map(([i, v]) => [Number(i) > 12 ? Number(i) - 1 : Number(i), v])) : compat;
-    if (living498 && compat[12] !== undefined) e.stingerCount = compat[12];
-    if (wire[7] !== undefined) e.frozenTicks = wire[7];
-    if (native[6] !== undefined) {
-      if (e.pose !== native[6]) e.wildAnimationStart = e.ticks;
-      e.pose = native[6];
-      if (e.kind === 'player' || e.kind === 'mannequin') {
-        const pose = ['standing', 'fall_flying', 'sleeping', 'swimming', 'spin_attack', 'sneaking', 'long_jumping', 'dying'][e.pose];
-        const size = playerPoseDimensions(pose);
-        if (size) { e.width = Math.fround(size[0]); e.height = Math.fround(size[1]); }
-        e.visuallySwimming = pose === 'swimming';
-        e.eyeHeight = pose === 'sneaking' ? 1.27 : ['swimming', 'fall_flying', 'spin_attack'].includes(pose) ? 0.4 : pose === 'sleeping' ? 0.2 : 1.62;
+    const wire=m,compat=Object.fromEntries(Object.entries(wire).filter(([i])=>Number(i)!==7).map(([i,v])=>[Number(i)>7?Number(i)-1:Number(i),v])),living498=e.kind==='mob'||e.kind==='player'||e.kind==='mannequin'||e.kind==='armorstand';
+    const native=living498?Object.fromEntries(Object.entries(compat).filter(([i])=>Number(i)!==12).map(([i,v])=>[Number(i)>12?Number(i)-1:Number(i),v])):compat;
+    if(living498&&compat[12]!==undefined)e.stingerCount=compat[12];
+    if(wire[7]!==undefined)e.frozenTicks=wire[7];
+    if(native[6]!==undefined){
+      if(e.pose!==native[6]){
+        if(e.pose===15)e.slideBackStart=e.ticks;
+        e.wildAnimationStart=e.ticks;
+        e.poseStart=e.ticks;
+      }
+      e.pose=native[6];
+      if(e.kind==='player'||e.kind==='mannequin'){
+        const pose=['standing','fall_flying','sleeping','swimming','spin_attack','sneaking','long_jumping','dying'][e.pose];
+        const size=playerPoseDimensions(pose);
+        if(size){e.width=Math.fround(size[0]);e.height=Math.fround(size[1]);}
+        e.visuallySwimming=pose==='swimming';
+        e.eyeHeight=pose==='sneaking'?1.27:['swimming','fall_flying','spin_attack'].includes(pose)?.4:pose==='sleeping'?.2:1.62;
       }
     }
     const villagerData = Object.values(native).find(v => v && typeof v === 'object' && Number.isInteger(v.villagerProfession));
@@ -444,13 +439,37 @@ export class EntityManager {
     } else if (native[6] !== undefined && native[6] !== 2) { e.sleeping = false; e.bedPos = null; e.sleepingPosition = null; }
     m = {}; for (const [key, value] of Object.entries(native)) { const i = Number(key); if (i === 6 || (living498 && i === 12)) continue; m[i - (i >= 7 ? living498 && i >= 13 ? 2 : 1 : 0)] = value; }
     const name = e.entityName;
-    if (name === 'painting') {
-      if (wire[PAINTING_DIRECTION_INDEX_774] !== undefined) e.facing = paintingFacing774(wire[PAINTING_DIRECTION_INDEX_774]);
-      if (wire[PAINTING_VARIANT_INDEX_774] !== undefined || wire[PAINTING_DIRECTION_INDEX_774] !== undefined) {
-        configurePainting774(e, wire[PAINTING_VARIANT_INDEX_774], this.game.paintingVariants);
+    if(name==='painting'&&wire[PAINTING_VARIANT_INDEX_762]!==undefined)configurePainting762(e,wire[PAINTING_VARIANT_INDEX_762]);
+    const own=WIRE_METADATA[name]||{},assign=(symbol,key)=>{const id=own[symbol];if(id!==undefined&&wire[id]!==undefined){if(['snifferState','dashing'].includes(key)&&e[key]!==wire[id])e.wildAnimationStart=e.ticks;e[key]=wire[id];}};
+    const own263=WIRE_METADATA_26_3[name]||{},assign263=(symbol,key)=>{const id=own263[symbol];if(id!==undefined&&wire[id]!==undefined)e[key]=wire[id];};
+    if(name==='mannequin'){
+      const id=own263;
+      if(wire[id.DATA_PROFILE]!==undefined){const rp=wire[id.DATA_PROFILE];e.profile=rp?.profile??rp;e.skinPatch=rp?.skinPatch??null;}
+      if(wire[id.DATA_IMMOVABLE]!==undefined)e.immovable=!!wire[id.DATA_IMMOVABLE];
+      if(wire[id.DATA_DESCRIPTION]!==undefined)e.mannequinDescription=wire[id.DATA_DESCRIPTION]===null?null:chatToLegacy(wire[id.DATA_DESCRIPTION]);
+      if(wire[id.DATA_PLAYER_MAIN_HAND]!==undefined)e.mainHand=wire[id.DATA_PLAYER_MAIN_HAND];
+      if(wire[id.DATA_PLAYER_MODE_CUSTOMISATION]!==undefined)e.skinFlags=wire[id.DATA_PLAYER_MODE_CUSTOMISATION];
+    }
+    if(name==='cushion'){const colorId=WIRE_METADATA_26_3.cushion?.DATA_COLOR;if(colorId!==undefined&&wire[colorId]!==undefined)e.cushionColor=wire[colorId];}
+    // OminousItemSpawner.DATA_ITEM is the first accessor above Entity's base 0-7.
+    if(name==='ominous_item_spawner'&&wire[8]!==undefined)e.item=wire[8];
+    if(name==='copper_golem'){
+      const stateId=own263.COPPER_GOLEM_STATE;
+      if(stateId!==undefined&&wire[stateId]!==undefined&&e.copperGolemState!==wire[stateId]){
+        e.copperGolemState=wire[stateId];e.copperStateStart=e.ticks;
+      }
+      assign263('DATA_WEATHER_STATE','copperWeather');
+    }
+    if(name==='creaking'){
+      assign263('CAN_MOVE','canMove');
+      assign263('IS_ACTIVE','creakingActive');
+      const tearId=own263.IS_TEARING_DOWN;
+      if(tearId!==undefined&&wire[tearId]!==undefined){
+        if(wire[tearId]&&!e.tearingDown)e.creakingDeathStart=e.ticks;
+        e.tearingDown=!!wire[tearId];
       }
     }
-    const own = WIRE_METADATA[name] || {}, assign = (symbol, key) => { const id = own[symbol]; if (id !== undefined && wire[id] !== undefined) { if (['snifferState', 'dashing'].includes(key) && e[key] !== wire[id]) e.wildAnimationStart = e.ticks; e[key] = wire[id]; } };
+    if(name==='nautilus'||name==='zombie_nautilus')assign263('DASH','dashing');
     if (e.kind === 'display') applyDisplayMeta(e, wire, own);
     if (name === 'interaction') {
       assign('DATA_WIDTH_ID', 'width'); assign('DATA_HEIGHT_ID', 'height');
@@ -574,26 +593,23 @@ export class EntityManager {
       assign('DATA_ID_PADDLE_RIGHT', 'paddleRight');
       assign('DATA_ID_BUBBLE_TIME', 'bubbleTime');
     }
+    if (e.kind === 'boat') {
+      // AbstractBoat adds three accessors after VehicleEntity: left/right paddle, bubble time.
+      set(6, 'timeSinceHit'); set(7, 'forwardDirection'); set(8, 'damageTaken');
+      set(9, 'paddleLeft'); set(10, 'paddleRight'); set(11, 'bubbleTime');
+    }
     switch (name) {
-      case 'item': assign('DATA_ITEM', 'item'); break;
-      case 'potion': case 'splash_potion': case 'lingering_potion': assign('DATA_ITEM_STACK', 'item'); break;
-      case 'glow_item_frame': case 'item_frame':
-        if (own.DATA_DIRECTION !== undefined && wire[own.DATA_DIRECTION] !== undefined) {
-          e.facing = wire[own.DATA_DIRECTION];
-          const p = e.blockPos || { x: Math.floor(e.x), y: Math.floor(e.y), z: Math.floor(e.z) };
-          e.box = itemFrameBox(p.x, p.y, p.z, e.facing);
-        }
-        assign('DATA_ITEM', 'item');
-        assign('DATA_ROTATION', 'rotation');
-        break;
-      case 'firework_rocket': assign('DATA_ID_FIREWORKS_ITEM', 'item'); assign('DATA_ATTACHED_TO_TARGET', 'boostedId'); assign('DATA_SHOT_AT_ANGLE', 'shotAtAngle'); break;
-      case 'fishing_bobber': if (own.DATA_HOOKED_ENTITY !== undefined && wire[own.DATA_HOOKED_ENTITY] !== undefined) e.hookedEntityId = wire[own.DATA_HOOKED_ENTITY] - 1; break;
-      case 'falling_block': assign('DATA_START_POS', 'origin'); break;
-      case 'tnt': assign('DATA_FUSE_ID', 'fuse'); assign('DATA_BLOCK_STATE_ID', 'blockState'); break;
-      case 'wither_skull': assign('DATA_DANGEROUS', 'invulnerable'); break;
-      case 'end_crystal': assign('DATA_BEAM_TARGET', 'beamTarget'); assign('DATA_SHOW_BOTTOM', 'showBottom'); break;
-      case 'furnace_minecart': assign('DATA_ID_FUEL', 'furnacePowered'); break;
-      case 'command_block_minecart': assign('DATA_ID_COMMAND_NAME', 'command'); assign('DATA_ID_LAST_OUTPUT', 'lastOutput'); break;
+      case 'item': case 'potion': set(6, 'item'); break;
+      case 'glow_item_frame': case 'item_frame': set(6, 'item'); set(7, 'rotation'); break;
+      case 'firework_rocket': set(6, 'item'); set(7, 'boostedId'); break;
+      case 'fishing_bobber': if (m[6] !== undefined) e.hookedEntityId = m[6] - 1; break;
+      case 'falling_block': set(6, 'origin'); break;
+      case 'tnt': set(6, 'fuse'); break;
+      case 'wither_skull': set(6, 'invulnerable'); break;
+      case 'end_crystal': set(6, 'beamTarget'); set(7, 'showBottom'); break;
+      case 'furnace_minecart': set(12, 'furnacePowered'); break;
+      case 'command_block_minecart': set(12, 'command'); set(13, 'lastOutput'); break;
+      // AreaEffectCloud (1.20.5+): radius, waiting, particle; the colour rides inside an entity_effect particle
       case 'area_effect_cloud': {
         if (wire[own.DATA_RADIUS] !== undefined) { e.radius = wire[own.DATA_RADIUS]; e.width = e.radius * 2; e.height = 0.5; }
         if (wire[own.DATA_WAITING] !== undefined) e.singlePoint = !!wire[own.DATA_WAITING];
@@ -730,12 +746,21 @@ export class EntityManager {
   onAnimation(p) {
     const e = this.map.get(p.entityId);
     const g = this.game;
-    if (p.entityId === g.entityId) { if (p.animation === 0) g.interaction.swing && (g.interaction.swinging = true, g.interaction.swingTicks = -1); return; }
+    if (p.entityId === g.entityId) {
+      if (p.animation === 0) g.interaction.swing && g.interaction.startSwing(p.swing, 0, false);
+      return;
+    }
     if (!e) return;
     switch (p.animation) {
-      case 0: case 3: // swing main hand / off hand
-        if (!e.swinging || e.swingTicks >= 3 || e.swingTicks < 0) { e.swingTicks = -1; e.swinging = true; e.swingHand = p.animation === 3 ? 1 : 0; }
+      case 0: case 3: { // swing main hand / off hand
+        const type = ['none', 'whack', 'stab'][p.swing?.type ?? 1] || 'whack';
+        const duration = p.swing?.duration ?? 6;
+        if (!e.swinging || e.swingTicks > (e.swingDuration || 6) / 2 || e.swingTicks <= 0) {
+          e.swingTicks = -1; e.swinging = true; e.swingHand = p.animation === 3 ? 1 : 0;
+          e.swingType = type; e.swingDuration = duration;
+        }
         break;
+      }
       case 1: e.hurtTime = 10; break;
       case 2: e.sleeping = false; break;
       case 4: g.particles.crit(e); break;
@@ -749,6 +774,8 @@ export class EntityManager {
     const g = this.game;
     if (!e) return;
     if(e.entityName==='warden'){if(p.entityStatus===4)e.wildAttackStart=e.ticks;if(p.entityStatus===62)e.sonicBoomStart=e.ticks;if(p.entityStatus===61)e.tendrilStart=e.ticks;}
+    if(e.entityName==='creaking'){if(p.entityStatus===4)e.creakingAttackStart=e.ticks;if(p.entityStatus===66)e.creakingInvulnerableStart=e.ticks;}
+    if(e.entityName==='wolf'&&wolfEvent766(e,p.entityStatus))return;
     if(e.entityName==='armadillo'&&p.entityStatus===64){e.armadilloPeekReceived=true;g.sound.play('entity.armadillo.peek',e.x,e.y,e.z,1,1,{category:'neutral'});}
     switch (p.entityStatus) {
       case 2: e.hurtTime = 10; g.sound.playEntityHurt(e); break;
@@ -798,6 +825,15 @@ export class EntityManager {
     }
   }
 
+  // Entity.isInWaterRainOrBubble for a remote entity: fluid at its feet or middle, or rain at its feet or head
+  _wetAt(e) {
+    const w = this.game.world;
+    if (isPointInFluid(w, e.x, e.y, e.z) || isPointInFluid(w, e.x, e.y + (e.height || 0) / 2, e.z)) return true;
+    const b = getBlock(w.getState(Math.floor(e.x), Math.floor(e.y), Math.floor(e.z)));
+    if (b?.name === 'bubble_column') return true;
+    return !!(w.isRainingAt?.(e.x, e.y, e.z) || w.isRainingAt?.(e.x, e.y + (e.height || 0), e.z));
+  }
+
   // Entity.countPlayerPassengers > 0: a player anywhere among the (indirect) passengers
   carriesPlayer(e, depth = 0) {
     if (depth > 8) return false;
@@ -844,7 +880,7 @@ export class EntityManager {
   }
 
   mountedOffset(v) {
-    if (v.kind === 'boat') return v.entityName?.endsWith('_raft') || v.boatType === 8 ? 0.3 : -0.1; // native bamboo raft offset
+    if (v.kind === 'boat') return v.boatWood==='bamboo'?0.3:-0.1; // native bamboo raft offset
     if (v.kind === 'minecart') return 0;    // EntityMinecart.getMountedYOffset (1.9+)
     if (v.kind === 'mob') {
       if(v.entityName==='strider')return v.height-.19+.24*Math.cos((v.limbSwing||0)*1.5)*Math.min(.25,v.limbSwingAmount||0);
@@ -1093,9 +1129,9 @@ export class EntityManager {
       if (e.id !== g.entityId) g.particles?.sprint?.(e);
       if(e.entityName==='goat') e.goatRammingTicks = Math.max(0, Math.min(20, (e.goatRammingTicks || 0) + (e.goatRamming ? 1 : -2)));
       if(e.entityName==='glow_squid'&&e.darkTicks>0)e.darkTicks--;
-      if (e.entityName === 'armadillo') tickArmadillo774(e);
-      if (e.entityName === 'wolf' || e.entityName === 'bee') tickWolf774(e, g.world?.worldAge ?? 0);
-      if (e.entityName === 'bat') tickBat774(e);
+      if(e.entityName==='armadillo')tickArmadillo766(e);
+      if(e.entityName==='wolf')tickWolf766(e,this._wetAt(e),(dx,dz)=>g.particles?.splash?.(e.x+dx,e.y+0.8,e.z+dz,e.motionX||0,e.motionY||0,e.motionZ||0));
+      if(e.entityName==='bat')tickBat766(e);
       if(e.entityName==='fox')tickFox(e);
       if(e.entityName==='bee'){tickBeeSound(this,e);e.prevBeeRoll=e.beeRoll||0;e.beeRoll=Math.fround(e.beeRolling?Math.min(1,Math.fround(e.prevBeeRoll+Math.fround(.2))):Math.max(0,Math.fround(e.prevBeeRoll-Math.fround(.24))));}
       if (e.boostedId && e.boostedId === g.entityId) this._fireworkBoost(e);
@@ -1181,18 +1217,19 @@ export class EntityManager {
       }
       if (e.eatingGrass > 0) e.eatingGrass--;
       // Swing progress
+      const swingDuration = e.swingDuration || 6;
       if (e.swinging) {
         e.swingTicks++;
-        if (e.swingTicks >= 6) { e.swingTicks = 0; e.swinging = false; }
+        if (e.swingTicks >= swingDuration) { e.swingTicks = 0; e.swinging = false; }
       } else e.swingTicks = 0;
-      e.swingProgress = e.swingTicks / 6;
-      if (e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand' || e.kind === 'mannequin') this._livingUpdate(e);
+      e.swingProgress = e.swingTicks / swingDuration;
+      if (e.kind === 'player' || e.kind === 'mannequin' || e.kind === 'mob' || e.kind === 'armorstand') this._livingUpdate(e);
       if(isSquid(e))tickSquid(e,squidInWater(e,g.world));
       if(e.entityName==='glow_squid')g.particles.nativeParticle('glow',e.x+(Math.random()-.5)*e.width*.6,e.y+Math.random()*e.height,e.z+(Math.random()-.5)*e.width*.6);
-      if (e.kind === 'player') this._updateCape(e);
+      if (e.kind === 'player' || e.kind === 'mannequin') this._updateCape(e);
       if (e.onFire && Math.random() < 0.3) g.particles.entityFire && g.particles.entityFire(e);
       // LivingEntity.tickEffects (1.20.5+): one of the effect particles, 1 in (invisible ? 15 : 4) * (ambient ? 5 : 1)
-      const living = e.kind === 'player' || e.kind === 'mob' || e.kind === 'armorstand' || e.kind === 'mannequin';
+      const living = e.kind === 'player' || e.kind === 'mannequin' || e.kind === 'mob' || e.kind === 'armorstand';
       const list = living ? e.effectParticles || [] : [];
       if (list.length) {
         const ambient = !!e.potionAmbient;

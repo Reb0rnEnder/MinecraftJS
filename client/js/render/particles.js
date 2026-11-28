@@ -813,6 +813,13 @@ export class Particles {
 
   vibration(data) { return vibrationParticle(this, data); }
 
+  // Spawn one particle with an exact velocity, the way Level.addParticle does; the
+  // count-0 packet path already threads the velocity through without any Gaussian spread.
+  at(particle, x, y, z, mx = 0, my = 0, mz = 0) {
+    this.onPacket({particleName: particle.name, x, y, z, particles: 0,
+      offsetX: mx, offsetY: my, offsetZ: mz, particleData: 1, data: particle.data || {}});
+  }
+
   onPacket(p) {
     const n = p.particles;
     const emit = (fn) => {
@@ -825,7 +832,7 @@ export class Particles {
         }
       }
     };
-    const type = this.game.assets.data.particles[p.particleId]?.name;
+    const type = p.particleName || this.game.assets.data.particles[p.particleId]?.name;
     if(type==='shriek'){emit((x,y,z)=>shriekParticle762(this,x,y,z,p.data));return;}
     if (CAVES_PARTICLES.has(type)) { emit((x,y,z,mx,my,mz)=>this.nativeParticle(type,x,y,z,mx,my,mz,p.data)); return; }
     switch (type) {

@@ -1,0 +1,1075 @@
+{
+  "0": {
+    "name": "custom_data",
+    "codec": null,
+    "synced": false
+  },
+  "1": {
+    "name": "max_stack_size",
+    "codec": [
+      "util.ExtraCodecs.intRange",
+      "core.component.DataComponentType$Builder.persistent",
+      "network.codec.ByteBufCodecs.VAR_INT"
+    ],
+    "synced": true
+  },
+  "2": {
+    "name": "max_damage",
+    "codec": [
+      "util.ExtraCodecs.POSITIVE_INT",
+      "core.component.DataComponentType$Builder.persistent",
+      "network.codec.ByteBufCodecs.VAR_INT"
+    ],
+    "synced": true
+  },
+  "3": {
+    "name": "damage",
+    "codec": [
+      "util.ExtraCodecs.NON_NEGATIVE_INT",
+      "core.component.DataComponentType$Builder.persistent",
+      "core.component.DataComponentType$Builder.ignoreSwapAnimation",
+      "network.codec.ByteBufCodecs.VAR_INT"
+    ],
+    "synced": true
+  },
+  "4": {
+    "name": "unbreakable",
+    "codec": [
+      "util.Unit.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "util.Unit.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "5": {
+    "name": "use_effects",
+    "codec": [
+      "world.item.component.UseEffects.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.UseEffects.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "6": {
+    "name": "custom_name",
+    "codec": [
+      "network.chat.ComponentSerialization.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "network.chat.ComponentSerialization.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "7": {
+    "name": "minimum_attack_charge",
+    "codec": [
+      "util.ExtraCodecs.floatRange",
+      "core.component.DataComponentType$Builder.persistent",
+      "network.codec.ByteBufCodecs.FLOAT"
+    ],
+    "synced": true
+  },
+  "8": {
+    "name": "damage_type",
+    "codec": [
+      "world.damagesource.DamageType.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.damagesource.DamageType.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "9": {
+    "name": "item_name",
+    "codec": [
+      "network.chat.ComponentSerialization.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "network.chat.ComponentSerialization.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "10": {
+    "name": "item_model",
+    "codec": [
+      "resources.Identifier.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "resources.Identifier.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "11": {
+    "name": "lore",
+    "codec": [
+      "world.item.component.ItemLore.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.ItemLore.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "12": {
+    "name": "rarity",
+    "codec": [
+      "world.item.Rarity.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.Rarity.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "13": {
+    "name": "enchantments",
+    "codec": [
+      "world.item.enchantment.ItemEnchantments.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.enchantment.ItemEnchantments.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "14": {
+    "name": "can_place_on",
+    "codec": [
+      "world.item.AdventureModePredicate.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.AdventureModePredicate.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "15": {
+    "name": "can_break",
+    "codec": [
+      "world.item.AdventureModePredicate.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.AdventureModePredicate.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "16": {
+    "name": "attribute_modifiers",
+    "codec": [
+      "world.item.component.ItemAttributeModifiers.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.ItemAttributeModifiers.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "17": {
+    "name": "custom_model_data",
+    "codec": [
+      "world.item.component.CustomModelData.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.CustomModelData.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "18": {
+    "name": "tooltip_display",
+    "codec": [
+      "world.item.component.TooltipDisplay.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.TooltipDisplay.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "19": {
+    "name": "repair_cost",
+    "codec": [
+      "util.ExtraCodecs.NON_NEGATIVE_INT",
+      "core.component.DataComponentType$Builder.persistent",
+      "network.codec.ByteBufCodecs.VAR_INT"
+    ],
+    "synced": true
+  },
+  "20": {
+    "name": "creative_slot_lock",
+    "codec": [
+      "util.Unit.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "21": {
+    "name": "enchantment_glint_override",
+    "codec": [
+      "com.mojang.serialization.Codec.BOOL",
+      "core.component.DataComponentType$Builder.persistent",
+      "network.codec.ByteBufCodecs.BOOL"
+    ],
+    "synced": true
+  },
+  "22": {
+    "name": "intangible_projectile",
+    "codec": null,
+    "synced": false
+  },
+  "23": {
+    "name": "food",
+    "codec": [
+      "world.food.FoodProperties.DIRECT_CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.food.FoodProperties.DIRECT_STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "24": {
+    "name": "consumable",
+    "codec": [
+      "world.item.component.Consumable.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.Consumable.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "25": {
+    "name": "use_remainder",
+    "codec": [
+      "world.item.component.UseRemainder.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.UseRemainder.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "26": {
+    "name": "use_cooldown",
+    "codec": [
+      "world.item.component.UseCooldown.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.UseCooldown.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "27": {
+    "name": "damage_resistant",
+    "codec": [
+      "world.item.component.DamageResistant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.DamageResistant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "28": {
+    "name": "tool",
+    "codec": [
+      "world.item.component.Tool.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.Tool.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "29": {
+    "name": "weapon",
+    "codec": [
+      "world.item.component.Weapon.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.Weapon.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "30": {
+    "name": "attack_range",
+    "codec": [
+      "world.item.component.AttackRange.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.AttackRange.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "31": {
+    "name": "enchantable",
+    "codec": [
+      "world.item.enchantment.Enchantable.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.enchantment.Enchantable.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "32": {
+    "name": "equippable",
+    "codec": [
+      "world.item.equipment.Equippable.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.equipment.Equippable.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "33": {
+    "name": "repairable",
+    "codec": [
+      "world.item.enchantment.Repairable.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.enchantment.Repairable.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "34": {
+    "name": "glider",
+    "codec": [
+      "util.Unit.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "util.Unit.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "35": {
+    "name": "tooltip_style",
+    "codec": [
+      "resources.Identifier.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "resources.Identifier.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "36": {
+    "name": "death_protection",
+    "codec": [
+      "world.item.component.DeathProtection.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.DeathProtection.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "37": {
+    "name": "blocks_attacks",
+    "codec": [
+      "world.item.component.BlocksAttacks.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.BlocksAttacks.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "38": {
+    "name": "piercing_weapon",
+    "codec": [
+      "world.item.component.PiercingWeapon.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.PiercingWeapon.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "39": {
+    "name": "kinetic_weapon",
+    "codec": [
+      "world.item.component.KineticWeapon.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.KineticWeapon.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "40": {
+    "name": "attack_animation",
+    "codec": [
+      "world.item.component.SwingAnimation.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.SwingAnimation.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "41": {
+    "name": "interact_animation",
+    "codec": [
+      "world.item.component.SwingAnimation.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.SwingAnimation.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "42": {
+    "name": "additional_trade_cost",
+    "codec": [
+      "network.codec.ByteBufCodecs.VAR_INT"
+    ],
+    "synced": true
+  },
+  "43": {
+    "name": "block_transformer",
+    "codec": [
+      "core.component.BlockTransformer.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "core.component.BlockTransformer.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "44": {
+    "name": "villager_food",
+    "codec": [
+      "world.food.VillagerFood.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.food.VillagerFood.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "45": {
+    "name": "stored_enchantments",
+    "codec": [
+      "world.item.enchantment.ItemEnchantments.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.enchantment.ItemEnchantments.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "46": {
+    "name": "dye",
+    "codec": [
+      "world.item.DyeColor.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.DyeColor.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "47": {
+    "name": "dyed_color",
+    "codec": [
+      "world.item.component.DyedItemColor.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.DyedItemColor.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "48": {
+    "name": "map_id",
+    "codec": [
+      "world.level.saveddata.maps.MapId.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.level.saveddata.maps.MapId.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "49": {
+    "name": "map_decorations",
+    "codec": null,
+    "synced": false
+  },
+  "50": {
+    "name": "map_post_processing",
+    "codec": [
+      "world.item.component.MapPostProcessing.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "51": {
+    "name": "charged_projectiles",
+    "codec": [
+      "world.item.component.ChargedProjectiles.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.ChargedProjectiles.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "52": {
+    "name": "bundle_contents",
+    "codec": [
+      "world.item.component.BundleContents.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.BundleContents.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "53": {
+    "name": "potion_contents",
+    "codec": [
+      "world.item.alchemy.PotionContents.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.alchemy.PotionContents.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "54": {
+    "name": "potion_duration_scale",
+    "codec": [
+      "util.ExtraCodecs.NON_NEGATIVE_FLOAT",
+      "core.component.DataComponentType$Builder.persistent",
+      "network.codec.ByteBufCodecs.FLOAT"
+    ],
+    "synced": true
+  },
+  "55": {
+    "name": "suspicious_stew_effects",
+    "codec": [
+      "world.item.component.SuspiciousStewEffects.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.SuspiciousStewEffects.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "56": {
+    "name": "writable_book_content",
+    "codec": [
+      "world.item.component.WritableBookContent.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.WritableBookContent.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "57": {
+    "name": "written_book_content",
+    "codec": [
+      "world.item.component.WrittenBookContent.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.WrittenBookContent.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "58": {
+    "name": "trim",
+    "codec": [
+      "world.item.equipment.trim.ArmorTrim.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.equipment.trim.ArmorTrim.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "59": {
+    "name": "debug_stick_state",
+    "codec": null,
+    "synced": false
+  },
+  "60": {
+    "name": "entity_data",
+    "codec": [
+      "world.entity.EntityType.CODEC",
+      "world.item.component.TypedEntityData.codec",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.EntityType.STREAM_CODEC",
+      "world.item.component.TypedEntityData.streamCodec"
+    ],
+    "synced": true
+  },
+  "61": {
+    "name": "bucket_entity_data",
+    "codec": [
+      "world.item.component.CustomData.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.CustomData.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "62": {
+    "name": "block_entity_data",
+    "codec": [
+      "core.registries.BuiltInRegistries.BLOCK_ENTITY_TYPE",
+      "core.Registry.byNameCodec",
+      "world.item.component.TypedEntityData.codec",
+      "core.component.DataComponentType$Builder.persistent",
+      "core.registries.Registries.BLOCK_ENTITY_TYPE",
+      "network.codec.ByteBufCodecs.registry",
+      "world.item.component.TypedEntityData.streamCodec"
+    ],
+    "synced": true
+  },
+  "63": {
+    "name": "instrument",
+    "codec": [
+      "world.item.component.InstrumentComponent.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.InstrumentComponent.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "64": {
+    "name": "provides_trim_material",
+    "codec": [
+      "world.item.equipment.trim.TrimMaterial.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.equipment.trim.TrimMaterial.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "65": {
+    "name": "ominous_bottle_amplifier",
+    "codec": [
+      "world.item.component.OminousBottleAmplifier.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.OminousBottleAmplifier.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "66": {
+    "name": "jukebox_playable",
+    "codec": [
+      "world.item.JukeboxPlayable.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.JukeboxPlayable.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "67": {
+    "name": "provides_banner_patterns",
+    "codec": [
+      "core.registries.Registries.BANNER_PATTERN",
+      "core.registries.codec.RegistryCodecs.holderSet",
+      "core.component.DataComponentType$Builder.persistent",
+      "core.registries.Registries.BANNER_PATTERN",
+      "network.codec.ByteBufCodecs.holderSet"
+    ],
+    "synced": true
+  },
+  "68": {
+    "name": "recipes",
+    "codec": null,
+    "synced": false
+  },
+  "69": {
+    "name": "lodestone_tracker",
+    "codec": [
+      "world.item.component.LodestoneTracker.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.LodestoneTracker.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "70": {
+    "name": "firework_explosion",
+    "codec": [
+      "world.item.component.FireworkExplosion.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.FireworkExplosion.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "71": {
+    "name": "fireworks",
+    "codec": [
+      "world.item.component.Fireworks.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.Fireworks.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "72": {
+    "name": "profile",
+    "codec": [
+      "world.item.component.ResolvableProfile.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.ResolvableProfile.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "73": {
+    "name": "note_block_sound",
+    "codec": [
+      "resources.Identifier.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "resources.Identifier.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "74": {
+    "name": "banner_patterns",
+    "codec": [
+      "world.level.block.entity.BannerPatternLayers.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.level.block.entity.BannerPatternLayers.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "75": {
+    "name": "base_color",
+    "codec": [
+      "world.item.DyeColor.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.DyeColor.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "76": {
+    "name": "pot_decorations",
+    "codec": [
+      "world.level.block.entity.PotDecorations.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.level.block.entity.PotDecorations.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "77": {
+    "name": "container",
+    "codec": [
+      "world.item.component.ItemContainerContents.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.ItemContainerContents.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "78": {
+    "name": "block_state",
+    "codec": [
+      "world.item.component.BlockItemStateProperties.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.BlockItemStateProperties.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "79": {
+    "name": "bees",
+    "codec": [
+      "world.item.component.Bees.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.Bees.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "80": {
+    "name": "sulfur_cube_content",
+    "codec": [
+      "world.item.component.SulfurCubeContent.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.SulfurCubeContent.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "81": {
+    "name": "lock",
+    "codec": null,
+    "synced": false
+  },
+  "82": {
+    "name": "container_loot",
+    "codec": null,
+    "synced": false
+  },
+  "83": {
+    "name": "break_sound",
+    "codec": [
+      "sounds.SoundEvent.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "sounds.SoundEvent.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "84": {
+    "name": "compostable",
+    "codec": [
+      "world.item.component.Compostable.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.Compostable.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "85": {
+    "name": "cooking_fuel",
+    "codec": [
+      "world.item.component.CookingFuel.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.CookingFuel.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "86": {
+    "name": "brewing_fuel",
+    "codec": [
+      "world.item.component.BrewingFuel.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.BrewingFuel.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "87": {
+    "name": "mob_visibility",
+    "codec": [
+      "world.item.component.MobVisibility.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.component.MobVisibility.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "88": {
+    "name": "villager/variant",
+    "codec": [
+      "world.entity.npc.villager.VillagerType.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.npc.villager.VillagerType.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "89": {
+    "name": "wolf/variant",
+    "codec": [
+      "world.entity.animal.wolf.WolfVariant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.wolf.WolfVariant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "90": {
+    "name": "wolf/sound_variant",
+    "codec": [
+      "world.entity.animal.wolf.WolfSoundVariant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.wolf.WolfSoundVariant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "91": {
+    "name": "wolf/collar",
+    "codec": [
+      "world.item.DyeColor.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.DyeColor.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "92": {
+    "name": "fox/variant",
+    "codec": [
+      "world.entity.animal.fox.Fox$Variant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.fox.Fox$Variant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "93": {
+    "name": "salmon/size",
+    "codec": [
+      "world.entity.animal.fish.Salmon$Variant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.fish.Salmon$Variant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "94": {
+    "name": "parrot/variant",
+    "codec": [
+      "world.entity.animal.parrot.Parrot$Variant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.parrot.Parrot$Variant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "95": {
+    "name": "tropical_fish/pattern",
+    "codec": [
+      "world.entity.animal.fish.TropicalFish$Pattern.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.fish.TropicalFish$Pattern.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "96": {
+    "name": "tropical_fish/base_color",
+    "codec": [
+      "world.item.DyeColor.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.DyeColor.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "97": {
+    "name": "tropical_fish/pattern_color",
+    "codec": [
+      "world.item.DyeColor.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.DyeColor.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "98": {
+    "name": "mooshroom/variant",
+    "codec": [
+      "world.entity.animal.cow.MushroomCow$Variant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.cow.MushroomCow$Variant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "99": {
+    "name": "rabbit/variant",
+    "codec": [
+      "world.entity.animal.rabbit.Rabbit$Variant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.rabbit.Rabbit$Variant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "100": {
+    "name": "pig/variant",
+    "codec": [
+      "world.entity.animal.pig.PigVariant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.pig.PigVariant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "101": {
+    "name": "pig/sound_variant",
+    "codec": [
+      "world.entity.animal.pig.PigSoundVariant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.pig.PigSoundVariant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "102": {
+    "name": "cow/variant",
+    "codec": [
+      "world.entity.animal.cow.CowVariant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.cow.CowVariant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "103": {
+    "name": "cow/sound_variant",
+    "codec": [
+      "world.entity.animal.cow.CowSoundVariant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.cow.CowSoundVariant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "104": {
+    "name": "chicken/variant",
+    "codec": [
+      "world.entity.animal.chicken.ChickenVariant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.chicken.ChickenVariant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "105": {
+    "name": "chicken/sound_variant",
+    "codec": [
+      "world.entity.animal.chicken.ChickenSoundVariant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.chicken.ChickenSoundVariant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "106": {
+    "name": "zombie_nautilus/variant",
+    "codec": [
+      "world.entity.animal.nautilus.ZombieNautilusVariant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.nautilus.ZombieNautilusVariant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "107": {
+    "name": "frog/variant",
+    "codec": [
+      "world.entity.animal.frog.FrogVariant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.frog.FrogVariant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "108": {
+    "name": "horse/variant",
+    "codec": [
+      "world.entity.animal.equine.Variant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.equine.Variant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "109": {
+    "name": "painting/variant",
+    "codec": [
+      "world.entity.decoration.painting.PaintingVariant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.decoration.painting.PaintingVariant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "110": {
+    "name": "llama/variant",
+    "codec": [
+      "world.entity.animal.equine.Llama$Variant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.equine.Llama$Variant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "111": {
+    "name": "axolotl/variant",
+    "codec": [
+      "world.entity.animal.axolotl.Axolotl$Variant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.axolotl.Axolotl$Variant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "112": {
+    "name": "cat/variant",
+    "codec": [
+      "world.entity.animal.feline.CatVariant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.feline.CatVariant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "113": {
+    "name": "cat/sound_variant",
+    "codec": [
+      "world.entity.animal.feline.CatSoundVariant.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.entity.animal.feline.CatSoundVariant.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "114": {
+    "name": "cat/collar",
+    "codec": [
+      "world.item.DyeColor.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.DyeColor.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "115": {
+    "name": "sheep/color",
+    "codec": [
+      "world.item.DyeColor.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.DyeColor.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "116": {
+    "name": "shulker/color",
+    "codec": [
+      "world.item.DyeColor.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.DyeColor.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "117": {
+    "name": "provides_pottery_pattern",
+    "codec": [
+      "world.level.block.entity.DecoratedPotPatterns.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.level.block.entity.DecoratedPotPatterns.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "118": {
+    "name": "sign_text_front",
+    "codec": [
+      "world.level.block.entity.SignText.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.level.block.entity.SignText.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "119": {
+    "name": "sign_text_back",
+    "codec": [
+      "world.level.block.entity.SignText.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.level.block.entity.SignText.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "120": {
+    "name": "waxed",
+    "codec": [
+      "util.Unit.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "util.Unit.STREAM_CODEC"
+    ],
+    "synced": true
+  },
+  "121": {
+    "name": "cushion/color",
+    "codec": [
+      "world.item.DyeColor.CODEC",
+      "core.component.DataComponentType$Builder.persistent",
+      "world.item.DyeColor.STREAM_CODEC"
+    ],
+    "synced": true
+  }
+}

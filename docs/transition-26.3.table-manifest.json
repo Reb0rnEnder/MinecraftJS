@@ -1,0 +1,261 @@
+{
+  "schemaVersion": 1,
+  "target": "26.3",
+  "protocol": 777,
+  "dataVersion": 5023,
+  "recordedOn": "2026-11-27",
+  "native": {
+    "clientSha1": "e877b6a07acd633fb3bb475002175cec036e7b87",
+    "serverSha1": "33680f5f2ac32864d6d7cf5e56a705fdb3e05f4c",
+    "metadataSha1": "8696584e8d2da5726487597e6c5777480387ec22",
+    "assetIndexSha1": "7b1c46ecb5292e80d36be4ccd18118f3d7b555aa",
+    "version": {
+      "id": "26.3",
+      "protocol": 777,
+      "worldVersion": 5023,
+      "resourcePackFormat": 97,
+      "dataPackFormat": 121
+    }
+  },
+  "nativeReports": {
+    "blocks": {
+      "bytes": 7330564,
+      "sha256": "7a0de8aaf7b04d00c40b8ffdc4cfe75184cff2e821d336a020573201867105a4"
+    },
+    "registries": {
+      "bytes": 536272,
+      "sha256": "51f62d56f8bd0e9134ee88dd9226b64e9e56cf6a32377540d44291bf47ecdac6"
+    },
+    "packets": {
+      "bytes": 19023,
+      "sha256": "2f0486311f18b7d3ec232028f3bff82c657d2f0240d2d65a3df40408db926886"
+    },
+    "commands": {
+      "bytes": 583592,
+      "sha256": "776c67b0209b88fabc20cd609d9e9967e147194f1f6dc165daaf2972fa1eae6e"
+    }
+  },
+  "counts": {
+    "tables": 31,
+    "bytes": 6445502
+  },
+  "tables": [
+    {
+      "path": "client/data/blocks.json",
+      "label": "block table",
+      "verify": "node tools/port-26.3/build-blocks.mjs",
+      "bytes": 552982,
+      "sha256": "27dbd5931d875a59f3d4a44b6a3262bc382a16d7e9f8de27c1a5b7090ee9320b"
+    },
+    {
+      "path": "client/data/blockCollisionShapes.json",
+      "label": "collision shapes",
+      "verify": "node tools/port-26.3/build-runtime.mjs --check",
+      "bytes": 2871260,
+      "sha256": "79644c23818c61a41392ac227d9ee4a4214564a9bb5fb69c10b636fac4ed138a"
+    },
+    {
+      "path": "client/data/biomes.json",
+      "label": "biomes",
+      "verify": "node tools/port-26.3/build-biomes.mjs --check",
+      "bytes": 34017,
+      "sha256": "bbc0e5db1c137f51036c799c9efa86641a88f2da85279aa450271808656f3611"
+    },
+    {
+      "path": "client/data/enchantments.json",
+      "label": "enchantments",
+      "verify": "node tools/port-26.3/build-enchantments.mjs --check",
+      "bytes": 34844,
+      "sha256": "565b520e602bd2d98c11394136fbfc2291e0295f6ee897b7b80dad67186349b3"
+    },
+    {
+      "path": "client/data/foods.json",
+      "label": "foods",
+      "verify": "node tools/port-26.3/build-foods.mjs --check",
+      "bytes": 7924,
+      "sha256": "aa78ab6476e8c916088c551d4dd4958d41c0208fa7e2e2811576a4435d37d6d1"
+    },
+    {
+      "path": "client/data/items.json",
+      "label": "items",
+      "verify": "node tools/port-26.3/build-recipes.mjs --check",
+      "bytes": 138865,
+      "sha256": "8654156ffc3ff400103ae35f6cc3bc88adf4cb7364ca5cbb7648b7372727a2a4"
+    },
+    {
+      "path": "client/data/recipes.json",
+      "label": "recipes",
+      "verify": "node tools/port-26.3/build-recipes.mjs --check",
+      "bytes": 110253,
+      "sha256": "95433c770f34368333a708db911297c300bfeb2e307b174a736a0f076d1dc1f7"
+    },
+    {
+      "path": "client/data/effects.json",
+      "label": "mob effects",
+      "verify": "native MobEffects bytecode + registries report (see components/items gates)",
+      "bytes": 2798,
+      "sha256": "cb0eeae36338e9fbb86cc911489df04412bdc04c88fbc10888b0a1678268e502"
+    },
+    {
+      "path": "client/data/sounds.json",
+      "label": "sound events",
+      "verify": "node tools/port-26.3/registry-tables.mjs --check",
+      "bytes": 88702,
+      "sha256": "75cda1911a174264a576b4a9be97c45f6207e6a9790b399bd60cdaada06995f9"
+    },
+    {
+      "path": "client/data/particles.json",
+      "label": "particle types",
+      "verify": "node tools/port-26.3/registry-tables.mjs --check",
+      "bytes": 4079,
+      "sha256": "5484fb1218cef26300b453985c2e54977eaaa7f5b5a474cd0a58602094d004c0"
+    },
+    {
+      "path": "client/data/entities.json",
+      "label": "entity display table",
+      "verify": "node tools/port-26.3/entity-registry.mjs --check",
+      "bytes": 34620,
+      "sha256": "e6feefe0d669e76e75924e0dc8c15c798f9040e32ccc0e4d7e1c7e44c236e908"
+    },
+    {
+      "path": "client/js/net/item-defaults-26.3.js",
+      "label": "item defaults",
+      "verify": "node tools/port-26.3/build-item-defaults.mjs --check",
+      "bytes": 781488,
+      "sha256": "97824e3946907b304fa9708db7b4da5580bd25d93a33b1661ec86fdbf1b8fd50"
+    },
+    {
+      "path": "client/js/net/enchantment-names-26.3.js",
+      "label": "enchantment names",
+      "verify": "node tools/port-26.3/build-enchantments.mjs --check",
+      "bytes": 1121,
+      "sha256": "6b9fb642ccff46fda74421d3deca04eb7d5192344f220cf9ab738c0c3e406725"
+    },
+    {
+      "path": "client/js/net/items-26.3.js",
+      "label": "item names",
+      "verify": "node tools/port-26.3/build-items.mjs",
+      "bytes": 32699,
+      "sha256": "6be8a35a85ae15f59fc0cc773737344e313852a7812b22dafec4cc1b51080f6d"
+    },
+    {
+      "path": "client/js/net/blocks-26.3.js",
+      "label": "block names",
+      "verify": "node tools/port-26.3/build-blocks.mjs",
+      "bytes": 170,
+      "sha256": "64d70677dc99f01f52ef636cbae0ec394ea90aeb535df9ec397ae561047473b9"
+    },
+    {
+      "path": "client/js/game/entity-registry-26.3.js",
+      "label": "entity registry",
+      "verify": "node tools/port-26.3/entity-registry.mjs --check",
+      "bytes": 6422,
+      "sha256": "56d97b9280208038a27ada0453fb346de04c848bed4fb46ecdde876bcd4f1250"
+    },
+    {
+      "path": "client/js/game/entity-metadata-26.3.js",
+      "label": "entity metadata",
+      "verify": "node tools/port-26.3/entity-metadata.mjs --check",
+      "bytes": 5196,
+      "sha256": "c94d7c6c8270263aeba1d9818b44cc45c0614fa3f1ab8da7bacc19ad4443c8bb"
+    },
+    {
+      "path": "client/js/net/entity-data-26.3.js",
+      "label": "entity data serializers",
+      "verify": "node tools/port-26.3/entity-data.mjs --check",
+      "bytes": 3175,
+      "sha256": "3a9fbfa4eff5b0e8a0b4292fcea8a39702ff2c991a3b166d4d64d8248b285d0a"
+    },
+    {
+      "path": "client/js/render/animations-26.3.js",
+      "label": "keyframe animations",
+      "verify": "node tools/port-26.3/extract-keyframe-animations.mjs",
+      "bytes": 63239,
+      "sha256": "7736f9debc67cf4f9f1d6526a57d016679cbfcb59180cccbd8455a0681087ee2"
+    },
+    {
+      "path": "client/js/game/block-tags-26.3.js",
+      "label": "block tags",
+      "verify": "node tools/port-26.3/build-block-tags.mjs --check",
+      "bytes": 25973,
+      "sha256": "d74c57927abb513c4d0144a566c3a8834bd025ffda9fa5b8a717fcd715edd38a"
+    },
+    {
+      "path": "client/js/game/block-tools-26.3.js",
+      "label": "block tools",
+      "verify": "node tools/port-26.3/build-block-tools.mjs --check",
+      "bytes": 14744,
+      "sha256": "cb67b088393e76a1fbcde1b2d53f1f5d2bc05316fe52d433b8cf8fd93f33bb5d"
+    },
+    {
+      "path": "client/js/game/stat-registry-26.3.js",
+      "label": "stat registry",
+      "verify": "node tools/port-26.3/stats-oracle.mjs --check",
+      "bytes": 1736,
+      "sha256": "56d01e4505069adc7872dc36abaacd4d727065e4641b18641628d2a0a8af9f7c"
+    },
+    {
+      "path": "tools/port-26.3/fixtures/data-component-codecs-26.3.json",
+      "label": "component codec manifest",
+      "verify": "node tools/port-26.3/component-codecs.mjs --check",
+      "bytes": 29404,
+      "sha256": "a85e8272c75a3374bf4ed362afebe0be9e58384640a705c57b92d009805bc2a7"
+    },
+    {
+      "path": "tools/port-26.3/fixtures/data-particle-codecs-26.3.json",
+      "label": "particle codec manifest",
+      "verify": "node tools/port-26.3/particle-codecs.mjs --check",
+      "bytes": 10475,
+      "sha256": "75189c61fb8d604b929c34e06894b02f9f60825ba5914595b180a4ff84947f41"
+    },
+    {
+      "path": "tools/port-26.3/fixtures/entity-metadata-26.3.json",
+      "label": "entity metadata fixture",
+      "verify": "node tools/port-26.3/entity-metadata.mjs --check",
+      "bytes": 6501,
+      "sha256": "e0b511ec377784fe71be1e08bddf269b9ce3de79b329f9aefa940aaed2aed728"
+    },
+    {
+      "path": "tools/port-26.3/fixtures/components-26.3.json",
+      "label": "component oracle fixture",
+      "verify": "node tools/port-26.3/components-oracle.mjs",
+      "bytes": 4462,
+      "sha256": "ad36d38133fd8e383b13e1f80db4ed1e09ee0b74223a2919b0fc289c3f551bac"
+    },
+    {
+      "path": "tools/port-26.3/fixtures/advancements-26.3.json",
+      "label": "advancement oracle",
+      "verify": "node tools/port-26.3/advancements-oracle.mjs --check",
+      "bytes": 1218,
+      "sha256": "48d1eb74a6b9df4982d2adad798cf412fab32c38f4e405d8866397718b2fb0fa"
+    },
+    {
+      "path": "tools/port-26.3/fixtures/explode-26.3.json",
+      "label": "explosion oracle",
+      "verify": "node tools/port-26.3/explode-oracle.mjs --check",
+      "bytes": 706,
+      "sha256": "ed0a9dabe589c79b979c3439fc912ccc9920b86bb03e690e380cd20c1371c10f"
+    },
+    {
+      "path": "tools/port-26.3/fixtures/stats-26.3.json",
+      "label": "stat oracle",
+      "verify": "node tools/port-26.3/stats-oracle.mjs --check",
+      "bytes": 2282,
+      "sha256": "a24886f43202bb10cc3d06ad5459d97269d845a15817c4567e6eb97aab976525"
+    },
+    {
+      "path": "docs/transition-26.3.release-index.json",
+      "label": "release source index",
+      "verify": "node tools/port-26.3/release-crosswalk.mjs --check",
+      "bytes": 8984,
+      "sha256": "fd4346cb1622becf5798ed90830f3fe23fa62a94aa0d839c14266e2b8d75bbf1"
+    },
+    {
+      "path": "docs/transition-26.3.crosswalk.json",
+      "label": "release topic crosswalk",
+      "verify": "node tools/port-26.3/release-crosswalk.mjs --check",
+      "bytes": 1565163,
+      "sha256": "b1c5c1904b84a9032b5afa0744ff8737676dea81e4df8f7823b62da9fb5d8d65"
+    }
+  ]
+}

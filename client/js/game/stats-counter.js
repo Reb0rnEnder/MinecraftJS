@@ -41,14 +41,19 @@ export function formatStat(format,v){
 export function entityTypes(data){return (data.entities||[]).filter(e=>e.type!=='object').map(e=>({...e,id:e.internalId??e.id}));}
 
 export class StatsCounter {
-  constructor(data){
+  // statTypes/customStats default to the 1.20.6 tables; the 26.3 client passes its native
+  // registry order, where happy_ghast, nautilus and straw-bed stats shift the custom ids.
+  constructor(data, {statTypes = STAT_TYPES, customStats = CUSTOM_STATS} = {}) {
     const byId=list=>new Map((list||[]).map(d=>[d.id,d.name]));
-    this.registries={block:byId(data.blocks),item:byId(data.items),entity_type:byId(entityTypes(data)),custom_stat:new Map(CUSTOM_STATS.map((n,i)=>[i,n]))};
+    this.statTypes=statTypes;
+    this.customStatsList=[...customStats];
+    this.registries={block:byId(data.blocks),item:byId(data.items),entity_type:byId(entityTypes(data)),custom_stat:new Map(customStats.map((n,i)=>[i,n]))};
     this.values=new Map();
   }
+  customStats(){return this.customStatsList.slice();}
   static key(type,name){return type+':'+name;}
   resolve(categoryId,statisticId){
-    const type=STAT_TYPES[categoryId],registry=type&&this.registries[TYPE_REGISTRY[type]],name=registry?.get(statisticId);
+    const type=this.statTypes[categoryId],registry=type&&this.registries[TYPE_REGISTRY[type]],name=registry?.get(statisticId);
     return name==null?null:{type,name};
   }
   apply(entries){

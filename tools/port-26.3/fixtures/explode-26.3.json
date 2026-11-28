@@ -1,0 +1,32 @@
+{
+  "hex": "3ff80000000000004050100000000000c008000000000000408000000000000c013fb999999999999a3fc999999999999a3fd33333333333331ec00502453f8000003f80000003483f0000003e8000000101",
+  "expected": {
+    "x": 1.5,
+    "y": 64.25,
+    "z": -3,
+    "radius": 4,
+    "blockCount": 12,
+    "knockback": {
+      "x": 0.1,
+      "y": 0.2,
+      "z": 0.3
+    },
+    "particle": "explosion",
+    "sound": "minecraft:entity.generic.explode",
+    "blockParticles": [
+      {
+        "particle": "poof",
+        "scaling": 1,
+        "speed": 1,
+        "weight": 3
+      },
+      {
+        "particle": "smoke",
+        "scaling": 0.5,
+        "speed": 0.25,
+        "weight": 1
+      }
+    ],
+    "playSound": true
+  }
+}

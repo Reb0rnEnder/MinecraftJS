@@ -1,5 +1,5 @@
 import {EndPortalFill} from '../end-portal-fill.js';
-import {titleFade} from '../title-fade.js';
+import {titleFade263} from '../title-fade.js';
 // Title, multiplayer, connecting, disconnected and loading screens.
 import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
@@ -15,11 +15,28 @@ import { parseAddress, formatAddress } from '../../net/address.js';
 import { ensureTested } from '../../net/proxies.js';
 import { PROTOCOL_VERSION } from '../../net/packets.js';
 
+// 26.3 TitleScreen.init: three 200px menu rows, then three 20px icon columns, then Options/Quit.
+// getHorizontalPosition(1..3, 3, 20) centres the 68px icon row at width/2.
+export function titleLayout(width, height) {
+  const cx = Math.floor(width / 2);
+  const top = Math.floor(height / 4) + 48;
+  const icon = (i) => [cx - 34 + i * 24, top + 72, 20, 20];
+  return {
+    singleplayer: [cx - 100, top, 200, 20],
+    multiplayer: [cx - 100, top + 24, 200, 20],
+    realms: [cx - 100, top + 48, 200, 20],
+    friends: icon(0), language: icon(1), accessibility: icon(2),
+    options: [cx - 100, top + 96, 98, 20],
+    quit: [cx + 2, top + 96, 98, 20],
+  };
+}
+
 export class TitleScreen extends Screen {
   constructor(game, reason) {
     super(game);
     this.background = 'none';
     this.panorama = true;
+    this.panoramaBackground = true;
     this.splash = null;
     this.fading = !game.titleScreenShown;
     game.titleScreenShown = true;
@@ -39,31 +56,50 @@ export class TitleScreen extends Screen {
       else if (d.getMonth() === 0 && d.getDate() === 1) this.splash = 'Happy new year!';
       else this.splash = splashes[Math.floor(Math.random() * splashes.length)];
     }
-    const cx = Math.floor(this.width / 2);
-    const y = Math.floor(this.height / 4) + 48;
-    const sp = new Button(1, cx - 100, y, 200, 20, tr('menu.singleplayer'));
+    const layout = titleLayout(this.width, this.height);
+    const sp = new Button(1, ...layout.singleplayer, tr('menu.singleplayer'));
     sp.enabled = false;
     this.buttons.push(sp);
-    this.buttons.push(new Button(2, cx - 100, y + 24, 200, 20, tr('menu.multiplayer'), () => openMultiplayer(g,this)));
-    const realms = new Button(14, cx - 100, y + 48, 200, 20, tr('menu.online'));
+    this.buttons.push(new Button(2, ...layout.multiplayer, tr('menu.multiplayer'), () => openMultiplayer(g,this)));
+    const realms = new Button(14, ...layout.realms, tr('menu.online'));
     realms.enabled = false;
     this.buttons.push(realms);
-    this.buttons.push(new Button(0, cx - 100, y + 72 + 12, 98, 20, tr('menu.options'), () => {
-      import('./options.js').then((m) => g.screens.open(new m.OptionsScreen(g, this)));
-    }));
-    const quit = new Button(4, cx + 2, y + 72 + 12, 98, 20, tr('menu.quit'), () => { if (platform().quit) platform().quit(); });
-    this.buttons.push(quit);
-    // GuiButtonLanguage: 20x20 globe left of Options
-    const lang = new Button(5, cx - 124, y + 72 + 12, 20, 20, '', () => {
+    // FriendsButton: the native sprite is active only when the player social manager has a
+    // friends service. MinecraftJS has no friends backend, so render the native offline state.
+    const friends = new Button(3, ...layout.friends, tr('gui.friends.open'));
+    friends.enabled = false;
+    friends.narration = () => tr('gui.friends.open.narration');
+    friends.render = (gui, mx, my) => {
+      gui.button(friends.x, friends.y, 20, 20, '', false, false);
+      gui.sprite('friends/friends', friends.x + 3, friends.y + 3, 15, 15);
+    };
+    this.buttons.push(friends);
+    const lang = new Button(5, ...layout.language, tr('options.language'), () => {
       import('./options.js').then((m) => g.screens.open(new m.LanguageScreen(g, this)));
     });
-    lang.narration=()=>tr('narrator.button.language');
-    lang.render = (gui, mx, my) => {gui.button(lang.x,lang.y,20,20,'',lang.focused||lang.hovered(mx,my));gui.sprite('icon/language',lang.x+3,lang.y+3,15,15);};
+    lang.narration=()=>tr('options.language.narration');
+    lang.render = (gui, mx, my) => {
+      const active = lang.focused || lang.hovered(mx, my);
+      gui.button(lang.x, lang.y, 20, 20, '', active);
+      gui.sprite('icon/language', lang.x + 3, lang.y + 3, 15, 15);
+      if (active) this.hoverText = tr('options.language.tooltip');
+    };
     this.buttons.push(lang);
-    const accessibility=new Button(6,cx+104,y+84,20,20,'',()=>import('./options.js').then(m=>g.screens.open(new m.AccessibilityScreen(g,this))));
-    accessibility.narration=()=>tr('narrator.button.accessibility');
-    accessibility.render=(gui,mx,my)=>{gui.button(accessibility.x,accessibility.y,20,20,'',accessibility.focused||accessibility.hovered(mx,my));gui.sprite('icon/accessibility',accessibility.x+3,accessibility.y+3,15,15);};
+    const accessibility = new Button(6, ...layout.accessibility, tr('options.accessibility'), () =>
+      import('./options.js').then(m=>g.screens.open(new m.AccessibilityScreen(g,this))));
+    accessibility.narration=()=>tr('accessibility.onboarding.accessibility.button.narration');
+    accessibility.render=(gui,mx,my)=>{
+      const active = accessibility.focused || accessibility.hovered(mx, my);
+      gui.button(accessibility.x, accessibility.y, 20, 20, '', active);
+      gui.sprite('icon/accessibility', accessibility.x + 3, accessibility.y + 3, 15, 15);
+      if (active) this.hoverText = tr('options.accessibility.tooltip');
+    };
     this.buttons.push(accessibility);
+    this.buttons.push(new Button(0, ...layout.options, tr('menu.options'), () => {
+      import('./options.js').then((m) => g.screens.open(new m.OptionsScreen(g, this)));
+    }));
+    const quit = new Button(4, ...layout.quit, tr('menu.quit'), () => { if (platform().quit) platform().quit(); });
+    this.buttons.push(quit);
     // Account manager (top right): current account's face and name
     const acct = new Button(20, this.width - 104, 4, 100, 20, '', () => g.screens.open(new AccountsScreen(g, this)));
     acct.render = (gui, mx, my) => {
@@ -108,15 +144,13 @@ export class TitleScreen extends Screen {
   presentation(now=platform().now()) {
     if(!this.fading)return {panorama:1,widgets:1,fading:false};
     this.fadeStart??=now;
-    const state=titleFade(now-this.fadeStart);
+    const state=titleFade263(now-this.fadeStart);
     this.fading=state.fading;
     return state;
   }
 
   render(gui, mx, my, partial) {
     const fade=this.presentation();
-    if(fade.panorama<1)gui.rect(0,0,this.width,this.height,(Math.round((1-fade.panorama)*255)<<24)>>>0);
-    if(Math.ceil(fade.widgets*255)<4)return;
     gui.setAlpha(fade.widgets);
     const logo=this.minceraftRoll<1e-4?'gui/title/minceraft.png':'gui/title/minecraft.png';
     // Exact LogoRenderer virtual texture dimensions; the native PNGs are 4x.
@@ -124,7 +158,7 @@ export class TitleScreen extends Screen {
     gui.blit('gui/title/edition.png',Math.floor(this.width/2)-64,67,0,0,128,14,128,16);
     if (this.splash && !this.game.settings.hideSplashTexts) {
       gui.pushMatrix();
-      gui.translate(this.width / 2 + 90, 70);
+      gui.translate(this.width / 2 + 123, 69);
       gui.rotate(-20 * Math.PI / 180);
       let f = 1.8 - Math.abs(Math.sin((platform().now() % 1000) / 1000 * Math.PI * 2) * 0.1);
       f = f * 100 / (gui.textWidth(this.splash) + 32);
@@ -137,7 +171,7 @@ export class TitleScreen extends Screen {
     this.hoverText = null;
     const multiplayer=this.buttons.find(b=>b.id===2);if(multiplayer){multiplayer.enabled=this.game.accountPrivileges?.multiplayerServer!==false;if(!multiplayer.enabled&&multiplayer.hovered(mx,my))this.hoverText=tr('title.multiplayer.disabled');}
     for (const b of this.buttons) b.render(gui, mx, my);
-    if (this.hoverText) gui.tooltip([this.hoverText], mx, my);
+    if (fade.widgets > 0 && this.hoverText) gui.tooltip([this.hoverText], mx, my);
     gui.resetColor();
   }
 
