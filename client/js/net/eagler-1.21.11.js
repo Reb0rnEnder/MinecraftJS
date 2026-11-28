@@ -2,14 +2,15 @@ import { VanillaSocket774 } from './tcp-1.21.11.js';
 import { openEaglerSocket } from './eagler.js';
 
 export class EaglerSocket774 extends VanillaSocket774 {
-  constructor(address, options = {}) {
+  constructor(address, options = {}, game = null) {
     super({}, options);
     this.address = address;
+    this.game = game;
     this.isEagler = true;
   }
 
   async open() {
-    this.link = await openEaglerSocket(this.address);
+    this.link = await openEaglerSocket(this.address, this.game);
     this.stream = { close: () => this.link.close() };
     this.link.on('close', () => this.close());
     this.link.on('text', (text) => {

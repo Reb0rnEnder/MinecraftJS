@@ -114,6 +114,8 @@ import { SoundManager } from '../audio/sound.js';
 import { Scoreboard } from './scoreboard.js';
 import { Interaction } from './interaction.js';
 import { Accounts } from './accounts.js';
+import { Cosmetics } from './cosmetics.js';
+import { scheduleAutoLogin, cancelAutoLogin } from './auto-login.js';
 import { platform } from '../platform/platform.js';
 import { buildSlice } from '../world/slice.js';
 import { setModelDevice } from '../render/boxmodel.js';
@@ -173,6 +175,7 @@ export class Game {
     this.gui.itemRenderer=this.itemRenderer;
     this.entityRenderer = new EntityRenderer(this);
     this.eaglerTextures = new EaglerTextures(this);
+    this.cosmetics = new Cosmetics(this);
     this.handRenderer = new HandRenderer(this);
     this.tileRenderer = new TileEntityRenderer(this);
     this.renderer.breakContext=()=>({world:this.world,tileRenderer:this.tileRenderer,tileProps:this.tileProps,alternatives:this.settings.blockAlternatives!==false,fancy:!!this.settings.fancyGraphics,smooth:(this.settings.smoothLighting|0)>0});
@@ -705,7 +708,7 @@ export class Game {
     let auth = transfer?.auth || null;
     if (!username && !transfer) {
       let acc = this.accounts.active();
-      // Eaglercraft servers log in by name only (no Mojang session check)
+      // MCJS WebSocket servers log in by name only (no Mojang session check)
       if (acc.type === 'microsoft' && !isEaglerAddress(host)) {
         try { acc = await this.accounts.ensureFresh(acc); } catch (e) {
           if(attempt!==this.connectAttempt)return;
@@ -723,7 +726,7 @@ export class Game {
     this.username = username;
     const s = this.settings;
     const conn = this.conn = new Connection({locale:this.assets?.language || 'en_us',distance:s?.renderDistance ?? 8,
-      chatVisibility:s?.chatVisibility,chatColors:s?.chatColors,skinParts:s?.skinParts,mainHand:s?.mainHand === 'left' ? 0 : 1,allowServerListing:s?.allowServerListing??true});
+      chatVisibility:s?.chatVisibility,chatColors:s?.chatColors,skinParts:s?.skinParts,mainHand:s?.mainHand === 'left' ? 0 : 1,allowServerListing:s?.allowServerListing??true}, this);
     conn.on('control', (m) => this.onControl(m, conn));
     conn.on('packet', (p) => { if (this.conn === conn) this.handlePacket(p); });
     conn.on('close', () => { if (this.conn === conn) this.onConnectionClosed(); });
@@ -757,6 +760,7 @@ export class Game {
   }
 
   disconnect(silent = false, reason) {
+    cancelAutoLogin();
     this.connectAttempt=(this.connectAttempt||0)+1;
     if (this.conn) {
       const c = this.conn;
@@ -836,6 +840,7 @@ export class Game {
   }
 
   onConnectionClosed() {
+    cancelAutoLogin();
     const reason = this.kickReason || (this.lastError ? this.lastError : tr('disconnect.closed'));
     const title = this.inWorld || this.connected ? tr('disconnect.lost') : tr('connect.failed');
     this.conn = null;
@@ -990,6 +995,7 @@ export class Game {
     this.updateWindowTitle?.();
     this.sendSettings();
     this.send(C.customPayload('minecraft:brand', new Writer().string('vanilla').build()));
+    scheduleAutoLogin(this);
   }
 
   sendSettings() {
