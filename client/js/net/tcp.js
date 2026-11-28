@@ -1,4 +1,5 @@
 import {networkExceptionReason} from './network-errors.js';
+import { lookupSrv } from './dns.js';
 // Raw TCP to Minecraft servers through WebSocket relays that only carry bytes, with the Minecraft protocol
 // (handshake, login, compression, encryption) done here in the client:
 //
@@ -118,22 +119,9 @@ async function openWisp(entry, host, port) {
 
 // _minecraft._tcp SRV record over DNS-over-HTTPS (relays and the raw bridge resolve plain hostnames)
 export async function resolveSrv(host, port) {
-  // Google's JSON endpoint sends CORS headers, so it works from a browser; Cloudflare's
-  // DNS-over-HTTPS endpoint is kept as a fallback (it is used by non-browser callers).
-  const urls = [
-    'https://dns.google/resolve?name=' + encodeURIComponent('_minecraft._tcp.' + host) + '&type=SRV',
-    'https://cloudflare-dns.com/dns-query?ct=application/dns-json&type=SRV&name=' + encodeURIComponent('_minecraft._tcp.' + host),
-  ];
-  let answered = false;
-  for (const url of urls) {
-    try {
-      const j = JSON.parse(decodeUtf8(await platform().fetchBytes(url)));
-      answered = true;
-      const recs = (j.Answer || []).filter((a) => a.type === 33).map((a) => a.data.split(/\s+/)).map(([pr, w, p, t]) => ({ pr: +pr, w: +w, port: +p, host: t.replace(/\.$/, '') }));
-      recs.sort((a, b) => a.pr - b.pr || b.w - a.w);
-      if (recs[0]) return { host: recs[0].host, port: recs[0].port };
-    } catch (e) { /* try the next resolver, then the plain host */ }
-  }
+  // DNS over HTTPS through the Network Settings > DNS Servers list (net/dns.js)
+  const { records, answered } = await lookupSrv('_minecraft._tcp.' + host);
+  if (records[0]) return { host: records[0].target.replace(/\.$/, ''), port: records[0].port };
   return answered ? { host, port } : { host, port, lookupFailed: true };
 }
 
