@@ -133,3 +133,38 @@ export function parseItemPredicate(text, start, { items, itemTags }) {
   return { end: i + 1 };
 }
 export { normalize as normalizeItemId };
+
+// ItemParser.SuggestionsVisitor: what the last parse step would suggest at the end of `word`
+// -> { offset (within word), values } or null to fall back to item ids
+export function itemStackSuggestions(word, items) {
+  const rl = readRl(word, 0);
+  if (rl.error || rl.end < word.length && word[rl.end] !== '[') return null;
+  if (rl.end === word.length) return items?.includes(rl.id) ? { offset: word.length, values: ['['] } : null;
+  let i = rl.end + 1;
+  const seen = new Set();
+  for (;;) {
+    i = skipWs(word, i);
+    const typeStart = i, type = readRl(word, i);
+    if (type.end === word.length && !type.error && DATA_COMPONENT_TYPES.includes(type.id) && !TRANSIENT_COMPONENTS.has(type.id) && !seen.has(type.id)) return { offset: type.end, values: ['='] };
+    if (type.end === word.length) return { offset: typeStart, values: DATA_COMPONENT_TYPES.filter((t) => !TRANSIENT_COMPONENTS.has(t) && !seen.has(t)).map((t) => t + '=') };
+    if (type.error || !DATA_COMPONENT_TYPES.includes(type.id)) return { offset: word.length, values: [] };
+    seen.add(type.id);
+    i = skipWs(word, type.end);
+    if (i === word.length) return { offset: i, values: ['='] };
+    if (word[i] !== '=') return { offset: word.length, values: [] };
+    const v = readValue(word, skipWs(word, i + 1));
+    if (v.error) return { offset: word.length, values: [] };
+    i = skipWs(word, v.end);
+    if (i === word.length) return { offset: i, values: [',', ']'] };
+    if (word[i] !== ',') return { offset: word.length, values: [] };
+    i++;
+  }
+}
+// Inside an item predicate's brackets after "[", ",", "|" or "!": component and sub-predicate types
+export function itemPredicateSuggestions(word) {
+  const open = word.indexOf('[');
+  if (open < 0 || word.includes(']')) return null;
+  const m = /[[,|!]\s*([0-9a-z_:/.-]*)$/.exec(word);
+  if (!m) return { offset: word.length, values: [] };
+  return { offset: word.length - m[1].length, values: [...new Set([COUNT, ...DATA_COMPONENT_TYPES.filter((t) => !TRANSIENT_COMPONENTS.has(t)), ...ITEM_SUB_PREDICATES])] };
+}

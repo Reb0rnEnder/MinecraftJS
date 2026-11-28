@@ -35,3 +35,14 @@ test('through the command tree: /give accepts components and rejects 1.20.4 NBT 
   const nbt=tree.parse('/give stone{display:{}}');assert.ok(nbt.error||nbt.cursor<'/give stone{display:{}}'.length);
   const bad=tree.parse('/give stone[damage=-1]');assert.equal(bad.error?.key,'arguments.item.component.malformed');
 });
+test('suggestions follow ItemParser: [ after a complete id, component= names, = after a name, then , and ]',async()=>{
+  const {itemStackSuggestions,itemPredicateSuggestions}=await import('../client/js/game/command-items-1.20.6.js');
+  const items=['minecraft:stone','minecraft:stone_bricks'];
+  assert.equal(itemStackSuggestions('ston',items),null);
+  assert.deepEqual(itemStackSuggestions('stone',items),{offset:5,values:['[']});
+  const names=itemStackSuggestions('stone[da',items);assert.equal(names.offset,6);assert.ok(names.values.includes('minecraft:damage='));assert.ok(!names.values.includes('minecraft:creative_slot_lock='));
+  assert.ok(!itemStackSuggestions('stone[damage=1,',items).values.includes('minecraft:damage='));
+  assert.deepEqual(itemStackSuggestions('stone[damage',items),{offset:12,values:['=']});
+  assert.deepEqual(itemStackSuggestions('stone[damage=1',items),{offset:14,values:[',',']']});
+  const p=itemPredicateSuggestions('*[!dam');assert.equal(p.offset,3);assert.ok(p.values.includes('minecraft:count')&&p.values.includes('minecraft:enchantments'));
+});

@@ -1,5 +1,5 @@
 import {COMMAND_ARGUMENT_VALUES} from './command-arguments-1.19.4.js';
-import {parseItemStack,parseItemPredicate} from './command-items-1.20.6.js';
+import {parseItemStack,parseItemPredicate,itemStackSuggestions,itemPredicateSuggestions} from './command-items-1.20.6.js';
 import {registryEntries} from '../net/registry-codec.js';
 import {simplify} from '../net/nbt.js';
 import {PROTOCOL_VERSION} from '../net/packets.js';
@@ -314,6 +314,10 @@ export class CommandTree {
       if(parser==='minecraft:entity_anchor')names.push('eyes','feet');
       if(parser==='minecraft:dimension')names.push('minecraft:overworld','minecraft:the_nether','minecraft:the_end');
       const kind=(['minecraft:resource','minecraft:resource_or_tag','minecraft:resource_key','minecraft:resource_or_tag_key'].includes(parser)?RESOURCE_KINDS[node.properties?.registry]:null)||{'minecraft:block_state':'blocks','minecraft:block_predicate':'blocks','minecraft:item_stack':'items','minecraft:item_predicate':'items','minecraft:mob_effect':'effects','minecraft:item_enchantment':'enchantments','minecraft:entity_summon':'entities'}[parser];
+      if(parser==='minecraft:item_stack'||parser==='minecraft:item_predicate'){
+        const items=this.registry('items'),sug=parser==='minecraft:item_stack'?itemStackSuggestions(word,items):itemPredicateSuggestions(word);
+        if(sug){const start=context.start+sug.offset,typed=prefix.slice(start);return {start,end:cursor,matches:sug.values.filter(v=>!typed||matches(v,typed)||v.startsWith('minecraft:')&&matches(v.slice(10),typed)).sort().map(match=>({match})),askServer:false,parsed};}
+      }
       if(kind==='blocks'&&word.includes('[')) {
         const bracket=word.indexOf('['),def=this.game.assets.data.blocks.find(b=>normalize(b.name)===normalize(word.slice(0,bracket)));
         if(def&&!word.includes(']')) {
