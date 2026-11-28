@@ -37,7 +37,7 @@
   },
   "counts": {
     "tables": 31,
-    "bytes": 6445503
+    "bytes": 6445502
   },
   "tables": [
     {
@@ -93,8 +93,8 @@
       "path": "client/data/effects.json",
       "label": "mob effects",
       "verify": "native MobEffects bytecode + registries report (see components/items gates)",
-      "bytes": 2799,
-      "sha256": "3ac0b944adb3578ff883eac9b46ea075135b0f37fb62483020356f8d1a29e011"
+      "bytes": 2798,
+      "sha256": "cb0eeae36338e9fbb86cc911489df04412bdc04c88fbc10888b0a1678268e502"
     },
     {
       "path": "client/data/sounds.json",
