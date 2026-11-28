@@ -8,6 +8,7 @@ import { platform } from '../../platform/platform.js';
 import { SlotList } from '../slot-list.js';
 import { ConfirmScreen } from './menus.js';
 import { parseProxyUrl } from '../../net/address.js';
+import { DEFAULT_DNS_SERVERS, setDnsServers, validDnsServer } from '../../net/dns.js';
 import { proxyTests, ensureTested, forgetTest, proxyType, PROXY_TYPES, validSkinProxyTemplate } from '../../net/proxies.js';
 
 export class ProxiesScreen extends Screen {
@@ -25,7 +26,6 @@ export class ProxiesScreen extends Screen {
 
   init() {
     const g = this.game, cx = this.width / 2;
-    this.buttons.push(new Button(9, this.width - 105, 8, 100, 20, tr('minecraftjs.skinProxy.title'), () => g.screens.open(new SkinProxyScreen(g, this))));
     const prevScroll = this.list ? this.list.amountScrolled : 0;
     this.list = new ProxyList(this);
     this.list.amountScrolled = prevScroll;
@@ -271,5 +271,50 @@ export class SkinProxyScreen extends Screen {
     }
     for(const line of gui.font.wrap(tr(this.viaHttp?'minecraftjs.skinProxy.viaHttpOn':'minecraftjs.skinProxy.viaHttpOff'),this.width-40)){gui.textCentered(line,this.width/2,y+6,0x808080);y+=10;}
     if(!this.doneBtn.enabled)gui.textCentered(tr('minecraftjs.skinProxy.invalid'),this.width/2,this.height-76,0xff5555);
+  }
+}
+
+// Network Settings: Proxies (Relays), Skin Proxy and DNS Servers, laid out like Credits & Attribution
+export class NetworkSettingsScreen extends Screen {
+  constructor(game, parent) { super(game); this.parent = parent; this.background = game.inWorld ? 'world' : 'dirt'; }
+  narrationTitle() { return tr('minecraftjs.network.title'); }
+  init() {
+    const g = this.game, y = Math.min(63, this.height - 109);
+    const items = [['proxies', () => g.screens.open(new ProxiesScreen(g, this))], ['skinProxy', () => g.screens.open(new SkinProxyScreen(g, this))], ['dns', () => g.screens.open(new DnsServersScreen(g, this))]];
+    items.forEach(([key, click], i) => this.buttons.push(new Button(i, this.width / 2 - 105, y + 28 * i, 210, 20, tr('minecraftjs.network.' + key), click)));
+    this.buttons.push(new Button(9, this.width / 2 - 100, this.height - 26, 200, 20, tr('gui.done'), () => this.close()));
+  }
+  renderContent(gui) { gui.textCentered(tr('minecraftjs.network.title'), Math.floor(this.width / 2), 12, 0xffffff); }
+  close() { this.game.screens.open(this.parent); }
+}
+
+// DNS Servers: up to six DNS-over-HTTPS servers, tried in order; empty rows are dropped
+export class DnsServersScreen extends Screen {
+  constructor(game, parent) { super(game); this.parent = parent; this.background = 'dirt'; this.values = (game.settings.dnsServers || DEFAULT_DNS_SERVERS).slice(); }
+  narrationTitle() { return tr('minecraftjs.dns.title'); }
+  init() {
+    const cx = this.width / 2, w = Math.min(300, this.width - 40);
+    this.fields = Array.from({ length: 6 }, (_, i) => new TextField(cx - w / 2, 40 + i * 24, w, 20, { maxLength: 512, focused: i === 0, text: this.values[i] || '' }));
+    this.buttons.push(new Button(2, cx - 100, this.height - 62, 200, 20, tr('minecraftjs.dns.reset'), () => { this.values = DEFAULT_DNS_SERVERS.slice(); Screen.prototype.onResize.call(this); }));
+    this.doneBtn = new Button(0, cx - 155, this.height - 38, 150, 20, tr('gui.done'), () => this.done());
+    this.buttons.push(this.doneBtn, new Button(1, cx + 5, this.height - 38, 150, 20, tr('gui.cancel'), () => this.close()));
+  }
+  entries() { return this.fields.map((f) => f.text.trim()).filter(Boolean); }
+  onResize() { if (this.fields?.length) this.values = this.fields.map((f) => f.text); super.onResize(); }
+  done() {
+    const list = this.entries();
+    if (!list.length || !list.every(validDnsServer)) return;
+    const g = this.game;
+    g.settings.dnsServers = list; g.settings.save(); setDnsServers(list);
+    g.screens.open(this.parent);
+  }
+  close() { this.game.screens.open(this.parent); }
+  renderContent(gui) {
+    const list = this.entries(), ok = list.length > 0 && list.every(validDnsServer);
+    this.doneBtn.enabled = ok;
+    gui.textCentered(tr('minecraftjs.dns.title'), this.width / 2, 17, 0xffffff);
+    let y = 40 + 6 * 24 + 4;
+    for (const line of gui.font.wrap(tr('minecraftjs.dns.info'), this.width - 40)) { if (y > this.height - 76) break; gui.textCentered(line, this.width / 2, y, 0xa0a0a0); y += 10; }
+    if (!ok && list.length) gui.textCentered(tr('minecraftjs.dns.invalid'), this.width / 2, this.height - 74, 0xff5555);
   }
 }
