@@ -3,14 +3,19 @@ import {test} from 'node:test';
 import {setPlatform} from '../client/js/platform/platform.js';
 import {VanillaSocket,openStream} from '../client/js/net/tcp.js';
 
-const encode = (value) => new TextEncoder().encode(JSON.stringify(value));
+// An RFC 8484 DNS answer with one SRV record (DNS over HTTPS wire format)
+const dnsName = (s) => [...s.split('.').flatMap((l) => [l.length, ...new TextEncoder().encode(l)]), 0];
+const srvAnswer = (priority, weight, port, target) => {
+  const data = [priority >> 8, priority & 255, weight >> 8, weight & 255, port >> 8, port & 255, ...dnsName(target)];
+  return Uint8Array.from([0, 0, 0x81, 0x80, 0, 1, 0, 1, 0, 0, 0, 0, ...dnsName('_minecraft._tcp.pksmp.test'), 0, 33, 0, 1, 0xc0, 12, 0, 33, 0, 1, 0, 0, 1, 0, data.length >> 8, data.length & 255, ...data]);
+};
 let fetches = [];
 let openedUrl = null;
 setPlatform({
   now: () => 0,
   fetchBytes: async (url) => {
     fetches.push(url);
-    return encode({Answer: [{type: 33, data: '0 5 25603 target.pksmp.test.'}]});
+    return srvAnswer(0, 5, 25603, 'target.pksmp.test');
   },
   openSocket: async (url) => {
     openedUrl = url;
@@ -58,7 +63,7 @@ test('default-port hostnames resolve SRV once and use that endpoint in the hands
   await socket._connect({host: 'pksmp.test', port: 25565, protocol: 762, username: 'Probe'});
   assert.deepEqual(socket.endpoint, ['target.pksmp.test', 25603]);
   assert.equal(fetches.length, 1);
-  assert.match(fetches[0], /_minecraft\._tcp\.pksmp\.test/);
+  assert.match(fetches[0], /^https:\/\/1\.1\.1\.1\/dns-query\?dns=/);
   assert.deepEqual(handshake(socket.writes[0]), {id: 0, protocol: 762, host: 'target.pksmp.test', port: 25603});
 });
 

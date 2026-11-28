@@ -8,7 +8,7 @@ import { decodeBase64 } from '../../util/base64.js';
 import { decodePng } from '../../util/png.js';
 import { AccountsScreen, drawFace } from './accounts.js';
 import { SlotList } from '../slot-list.js';
-import { ProxiesScreen } from './proxies.js';
+import { ProxiesScreen, NetworkSettingsScreen } from './proxies.js';
 import { parseAddress, formatAddress } from '../../net/address.js';
 import { ensureTested } from '../../net/proxies.js';
 import { PROTOCOL_VERSION } from '../../net/packets.js';
@@ -73,13 +73,13 @@ export class TitleScreen extends Screen {
     };
     this.buttons.push(acct);
     // Proxy servers (below the account button), the selected proxy's ping bars on the left (no proxy: failed bars)
-    const prox = new Button(21, this.width - 104, 28, 100, 20, '', () => g.screens.open(new ProxiesScreen(g, this)));
+    const prox = new Button(21, this.width - 104, 28, 100, 20, '', () => g.screens.open(new NetworkSettingsScreen(g, this)));
     prox.render = (gui, mx, my) => {
       const p = g.proxies.current();
       const r = p ? ensureTested(p) : { error: 'none' };
       const hov = prox.hovered(mx, my);
       gui.button(prox.x, prox.y, prox.w, prox.h, '', hov);
-      gui.textCentered(tr('minecraftjs.proxies.title'), prox.x + 14 + (prox.w - 14) / 2 - 2, prox.y + 6, hov ? 0xffffa0 : 0xe0e0e0, true);
+      gui.textCentered(tr('minecraftjs.network.title'), prox.x + 14 + (prox.w - 14) / 2 - 2, prox.y + 6, hov ? 0xffffa0 : 0xe0e0e0, true);
       let k = 0, l, hover;
       if (r.pending) {
         k = 1;

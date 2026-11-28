@@ -1,4 +1,5 @@
 import { EntityOutline } from '../render/entity-outline.js';
+import { setDnsServers } from '../net/dns.js';
 import {bindingResolver} from './keybind-components.js';
 import {setKeybindResolver} from '../gui/chat.js';
 import {componentTemplate} from '../gui/component-translation.js';
@@ -141,6 +142,7 @@ export class Game {
   constructor(assets, settings, device, {deferStart=false}={}) {
     this.assets = assets;
     this.settings = settings;
+    setDnsServers(settings.dnsServers);
     this.device = device;
     setModelDevice(device);
     setTranslator((k, a) => assets.translate(k, a),(key,fallback)=>componentTemplate(assets.lang,key,fallback));
