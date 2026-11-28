@@ -101,10 +101,15 @@ const ADAPTERS={
   login(login,context){
     if(!context)throw Error('Play Login needs the 26.3 join context');
     const spawn=login.spawn;
+    // CommonPlayerSpawnInfo.dimension is a resource location in 26.3. The game and renderer key
+    // ambience/light/fog on the 1.20.6 numeric id, so resolve it from the dimension type the same
+    // way respawn does instead of letting a string reach WorldClient/renderer checks.
+    const effects=context.dimensionData?.effects;
+    const dimension=effects==='minecraft:the_nether'?-1:effects==='minecraft:the_end'?1:0;
     return {
       entityId:login.playerId,
       isHardcore:login.hardcore,
-      dimension:spawn.dimension,
+      dimension,
       worldName:spawn.dimension,
       hashedSeed:spawn.seed,
       gameMode:spawn.gameMode,
@@ -121,7 +126,7 @@ const ADAPTERS={
       doLimitedCrafting:login.doLimitedCrafting,
       enforcesSecureChat:login.enforcesSecureChat,
       onlineMode:login.onlineMode,
-      levelType:'default',
+      levelType:spawn.isFlat?'flat':'default',
       dimensionData:context.dimensionData,
       blockStateRegistrySize:context.blockStateRegistrySize,
       airStates:context.airStates,
@@ -150,7 +155,9 @@ const ADAPTERS={
   },
   set_time(packet){
     const clock=worldClock(packet.clocks);
-    return {age:packet.gameTime,time:clock?clock.totalTicks:packet.gameTime};
+    // The clock map only carries the clocks that changed. A tick without one still updates
+    // gameTime (worldAge), but must not replace the day time with the absolute game time.
+    return {age:packet.gameTime,time:clock?clock.totalTicks:null};
   },
   game_event(packet){return {reason:packet.event,value:packet.param};},
   move_vehicle(packet){return {x:packet.x,y:packet.y,z:packet.z,yaw:packet.yRot};},

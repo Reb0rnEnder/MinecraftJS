@@ -31,6 +31,8 @@ import { mat4 } from '../gfx/math.js';
 
 const ICONS = 'gui/icons.png';
 const WIDGETS = 'gui/widgets.png';
+// Hud.canRenderCrosshairForSpectator: only blocks with a menu (showAsInteractableInSpectatorMode).
+const SPECTATOR_MENU_BLOCKS = new Set(['chest','trapped_chest','ender_chest','crafting_table','furnace','blast_furnace','smoker','anvil','chipped_anvil','damaged_anvil','enchanting_table','brewing_stand','hopper','dispenser','dropper','barrel','beacon','cartography_table','fletching_table','grindstone','lectern','loom','smithing_table','stonecutter','shulker_box','white_shulker_box','orange_shulker_box','magenta_shulker_box','light_blue_shulker_box','yellow_shulker_box','lime_shulker_box','pink_shulker_box','gray_shulker_box','light_gray_shulker_box','cyan_shulker_box','purple_shulker_box','blue_shulker_box','brown_shulker_box','green_shulker_box','red_shulker_box','black_shulker_box']);
 const performanceNow = () => platform().now();
 
 // Java Random-ish deterministic RNG for heart jiggle
@@ -411,7 +413,7 @@ export class Hud {
     else this.renderHotbar(gui, partial);
 
     const debugAxes = g.showDebug && !g.reducedDebug && !g.settings.reducedDebugInfo;
-    const showCross = g.thirdPerson === 0 && !g.screens.current && !(g.gameMode === 3 && !g.interaction.target);
+    const showCross = g.thirdPerson === 0 && !g.screens.current && (g.gameMode !== 3 || this._spectatorCrosshairTarget());
     if (showCross && debugAxes) this._debugAxes(gui, partial);
     else this._crosshair(showCross);
 
@@ -421,8 +423,8 @@ export class Hud {
     if (g.sleeping) {
       gui.rect(0, 0, W, H, 0xb0101020);
     }
-    if (survival) this.renderXp(gui, partial);
-    else if (g.gameMode === 1) { /* no xp bar in creative */ }
+    // Native Hud draws the contextual bar (XP or locator) in every game mode.
+    if (survival || g.waypoints?.hasWaypoints?.()) this.renderXp(gui, partial);
 
     // Held item name
     if (g.gameMode === 3) this.spectatorGui.renderSelectedItem(gui);
@@ -471,6 +473,16 @@ export class Hud {
     this.renderChat(gui);
     if (g.input.isDown('playerlist') && !g.screens.current && (!g.scoreboard.singlePlayer)) this.renderTabList(gui);
     else if (g.input.isDown('playerlist') && !g.screens.current) this.renderTabList(gui);
+  }
+
+  // Hud.canRenderCrosshairForSpectator: blocks/entities that open a menu stay interactive.
+  _spectatorCrosshairTarget() {
+    const g = this.game, t = g.interaction.target;
+    if (!t) return false;
+    if (t.type === 'entity') return ['villager','wandering_trader','chest_boat','chest_minecart','hopper_minecart','donkey','mule','llama','trader_llama'].includes(t.entity?.type);
+    if (t.type !== 'block') return false;
+    const block = getBlock(g.world.getState(t.x, t.y, t.z));
+    return !!block && SPECTATOR_MENU_BLOCKS.has(block.name);
   }
 
   _isBurning() {
@@ -865,21 +877,23 @@ export class Hud {
     const eye = g.eyePosition();
     const sky = g.world.getSkyLight(Math.floor(eye[0]), Math.floor(eye[1]), Math.floor(eye[2]));
     const blk = g.world.getBlockLight(Math.floor(eye[0]), Math.floor(eye[1]), Math.floor(eye[2]));
-    // EntityPlayer.getBrightness ~ lightmap brightness table value
+    // Hud.updateVignetteBrightness (26.3): 1 - Lightmap.getBrightness(dimension ambient light, raw brightness).
+    // The old formula kept 0.5 at full daylight, which darkened the whole screen edge including the sky.
     const lvl = Math.max(sky - this._skySubtract(), blk);
-    const f1 = 1 - lvl / 15;
-    let f = 1 - (1 - f1) * (1 - f1) * 0.5;
-    f = Math.min(1, Math.max(0, f));
-    let target = f;
+    const raw = Math.min(1, Math.max(0, lvl / 15));
+    const curve = raw / (4 - 3 * raw);
+    const ambient = g.dimension === -1 ? 0.1 : 0;
+    const brightness = curve + ambient * (1 - curve);
+    const target = Math.min(1, Math.max(0, 1 - brightness));
     // World border warning tint
     const wb = g.worldBorder;
-    const red = wb?.warning(g.player.x,g.player.z) || 0;
+    const red = Math.min(1, Math.max(0, wb?.warning(g.player.x,g.player.z) || 0));
     this.prevVignette += (target - this.prevVignette) * 0.01;
-    // GuiIngame.renderVignette: blend (ZERO, ONE_MINUS_SRC_COLOR); world border warning tints it (0, f, f)
+    // Hud.extractVignette: pipeline VIGNETTE, blend (ZERO, ONE_MINUS_SRC_COLOR)
     const t = gui.tex('misc/vignette.png');
     if (!t) return;
     const v = Math.min(1, Math.max(0, this.prevVignette));
-    const c = red > 0 ? [0, red, red, 1] : [v, v, v, 1];
+    const c = red > 0 ? [v * (1 - red), v + (1 - v) * red, v + (1 - v) * red, 1] : [v, v, v, 1];
     gui.setBlend('darken');
     gui.quad(t, 0, 0, gui.width, gui.height, 0, 0, 1, 1, c);
     gui.setBlend('alpha');

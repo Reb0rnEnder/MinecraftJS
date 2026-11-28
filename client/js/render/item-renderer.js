@@ -27,7 +27,7 @@ const rgbOf = (c) => [((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255)
 const COLORS = ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray', 'light_gray',
   'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black'];
 const FOLIAGE_ITEMS = new Set(['oak_leaves','jungle_leaves','acacia_leaves','dark_oak_leaves','spruce_leaves','birch_leaves']);
-const GRASS_ITEMS = new Set(['grass_block', 'short_grass', 'fern', 'tall_grass', 'large_fern']);
+const GRASS_ITEMS = new Set(['grass_block', 'short_grass', 'fern', 'tall_grass', 'large_fern', 'bush']);
 const SKULLS = { skeleton_skull: 0, wither_skeleton_skull: 1, zombie_head: 2, player_head: 3, creeper_head: 4, dragon_head: 5, piglin_head: 6 };
 const POTIONS = new Set(['potion', 'splash_potion', 'lingering_potion', 'tipped_arrow']);
 const modelPath = (name) => name.replace(/^minecraft:/, '');

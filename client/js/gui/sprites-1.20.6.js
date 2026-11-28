@@ -41,19 +41,24 @@ for(const [i,count] of [6,10,12,20].entries()){
   region('gui/bars.png',0,80+i*10,182,5,'boss_bar/notched_'+count+'_background');region('gui/bars.png',0,85+i*10,183,5,'boss_bar/notched_'+count+'_progress');
 }
 for(const [u,name] of [[0,'teleport_to_player'],[16,'teleport_to_team'],[128,'close'],[144,'scroll_left'],[160,'scroll_right']])region('gui/spectator_widgets.png',u,0,16,16,'spectator/'+name);
-for(const [x,focused] of [[0,false],[20,true]])for(const [y,selected] of [[0,false],[20,true]])region('gui/checkbox.png',x,y,20,20,'widget/checkbox'+(selected?'_selected':'')+(focused?'_highlighted':''));
+for(const [x,focused] of [[0,false],[20,true]])for(const [y,selected] of [[0,false],[20,true]])region('gui/checkbox.png',x,y,20,20,'widget/checkbox'+(selected?'_selected':'')+(focused?'_highlighted': ''));
 
 // Native 1.20.2+ moved these controls out of the container/book sheets.
+// These are sprite sheet regions within gui/container/inventory.png, not separate textures.
+// They are defined here for reference and will be derived from the sprite sheet.
 region('gui/container/inventory.png',0,166,120,32,'container/inventory/effect_background_large');
 region('gui/container/inventory.png',0,198,32,32,'container/inventory/effect_background_small');
 region('gui/container/inventory.png',141,166,24,24,'hud/effect_background');
 region('gui/container/inventory.png',165,166,24,24,'hud/effect_background_ambient');
+// Note: These are NOT loaded as separate textures - they are regions within the inventory.png sprite sheet.
+// Trying to load them as gui/sprites/...png will fail because they don't exist as separate files.
+
 for(const [sheet,u,v]of [['gui/container/inventory.png',178,0],['gui/container/crafting_table.png',0,168]])for(const [offset,suffix]of [[0,''],[19,'_highlighted']])region(sheet,u,v+offset,20,18,'recipe_book/button'+suffix);
 for(const [u,name]of [[153,'tab'],[188,'tab_selected']])region('gui/recipe_book.png',u,2,35,27,'recipe_book/'+name);
 for(const [u,name]of [[152,'filter_disabled'],[180,'filter_enabled']])for(const [v,suffix]of [[41,''],[59,'_highlighted']])region('gui/recipe_book.png',u,v,26,16,'recipe_book/'+name+suffix);
 for(const [u,craftable]of [[29,true],[54,false]])for(const [v,many]of [[206,false],[231,true]])region('gui/recipe_book.png',u,v,25,25,'recipe_book/slot_'+(many?'many_':'')+(craftable?'craftable':'uncraftable'));
 for(const [u,name]of [[1,'page_forward'],[14,'page_backward']])for(const [v,suffix]of [[208,''],[226,'_highlighted']])region('gui/recipe_book.png',u,v,12,17,'recipe_book/'+name+suffix);
-for(const [u,disabled]of [[152,false],[178,true]])for(const [v,hover]of [[78,false],[104,true]])region('gui/recipe_book.png',u,v,24,24,'recipe_book/crafting_overlay'+(disabled?'_disabled':'')+(hover?'_highlighted':''));
+for(const [u,disabled]of [[152,false],[178,true]])for(const [v,hover]of [[78,false],[104,true]])region('gui/recipe_book.png',u,v,24,24,'recipe_book/crafting_overlay'+(disabled?'_disabled':'')+(hover?'_highlighted': ''));
 
 // Both server lists (including MinecraftJS's proxy list) and pack-style lists
 // still call the old logical rectangles. Native 1.20.6 removed both sheets.
@@ -67,4 +72,9 @@ export function legacyGuiSprite(path,u,v,w,h){
   return r?{path:'gui/sprites/'+r.sprite+'.png',u:(u-r.x)/r.w,v:(v-r.y)/r.h,u1:(u-r.x+w)/r.w,v1:(v-r.y+h)/r.h}:null;
 }
 
-export const CORE_GUI_SPRITES=[...new Set([...sheets.values()].flat().map(r=>'gui/sprites/'+r.sprite+'.png').concat('gui/sprites/recipe_book/overlay_recipe.png'))];
+// CORE_GUI_SPRITES contains sprite sheet region references WITHOUT .png suffix.
+// These are regions within sprite sheets, NOT separate texture files.
+// The .png suffix is omitted to prevent attempts to load them as separate textures,
+// which would fail because they are regions within sprite sheets.
+const spritePaths=[...sheets.values()].flat().map(r=>'gui/sprites/'+r.sprite);
+export const CORE_GUI_SPRITES=[...new Set([...spritePaths,'gui/sprites/recipe_book/overlay_recipe'])];

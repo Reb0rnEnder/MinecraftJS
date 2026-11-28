@@ -1075,7 +1075,9 @@ export class Game {
 
   on_update_time(p) {
     this.world.worldAge = Number(p.age);
-    let t = Number(p.time);
+    // 26.3 set_time may carry only gameTime; the day clock is updated only when present.
+    if(p.time == null) return;
+    const t = Number(p.time);
     this.world.doDaylightCycle = t >= 0;
     this.world.timeOfDay = Math.abs(t);
   }
@@ -2424,7 +2426,7 @@ export class Game {
       fullBright:!!this.settings.fullBright,dynamicLights:collectDynamicLights(this,[ex,ey,ez],partial),
       hideLightningFlashes:!!this.settings.hideLightningFlashes,
       minY:this.world.minY,minSection:this.world.minSection,sectionCount:this.world.sectionCount,
-      worldTime: this.world.timeOfDay, partial: worldPartial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,biomeFog:sampleBiomeFog(this.world,ex,ey,ez),biomeSky:biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).effects?.sky_color,fireResistance:this.effects.has(EFFECT_766.fire_resistance),
+      worldTime: this.world.timeOfDay, worldAge: this.world.worldAge, partial: worldPartial, rain, thunder: this.world.thunderStrength * rain, temperature: temp,biomeFog:sampleBiomeFog(this.world,ex,ey,ez),biomeSky:biomeInfo(this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey))).effects?.sky_color,fireResistance:this.effects.has(EFFECT_766.fire_resistance),
       inPowderSnow: getBlock(this.world.getState(Math.floor(ex), Math.floor(ey), Math.floor(ez))).name === 'powder_snow', spectator: pl.spectator,
       camPos: [ex, ey, ez], lookDir: look, dimension: this.dimension, underwater, inLava, biomeId:this.world.getBiome(Math.floor(ex),Math.floor(ez),Math.floor(ey)), waterVision:pl.waterVision(), conduitPower:this.effects.has(EFFECT_766.conduit_power),
       darkness:darkness762(this.effects.get(EFFECT_766.darkness),partial,this.ticks,this.settings.darknessEffectScale),

@@ -195,8 +195,8 @@ export class Mesher {
     const n = b.name;
     const props = getStateProperties(state);
     switch (n) {
-      case 'pink_petals': if(tint===0)return 0xffffff; // Only the stems use biome tint.
-      case 'grass_block': case 'short_grass': case 'tall_grass': case 'fern': case 'large_fern': case 'sugar_cane': case 'potted_fern':
+      case 'pink_petals': case 'wildflowers': if(tint===0)return 0xffffff; // Only the stems use biome tint.
+      case 'grass_block': case 'short_grass': case 'tall_grass': case 'fern': case 'large_fern': case 'sugar_cane': case 'potted_fern': case 'bush':
         return this.biomeBlend(x, (n==='tall_grass'||n==='large_fern')&&props.half==='upper'?y-1:y, z, grassColor);
       case 'vine': case 'oak_leaves': case 'jungle_leaves': case 'acacia_leaves': case 'dark_oak_leaves': case 'mangrove_leaves': return this.biomeBlend(x, y, z, foliageColor);
       case 'spruce_leaves': return 0x619961;

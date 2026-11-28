@@ -55,7 +55,8 @@ assert.equal(metadata[2][16],1,'native bat hanging flag is the byte 1 at index 1
 
 const login=adapted.find(packet=>packet.name==='login');
 assert.ok(login,'Play Login adapts');
-assert.equal(login.dimension,'minecraft:overworld','login dimension');
+assert.equal(login.dimension,0,'login dimension is the numeric overworld id');
+assert.equal(login.worldName,'minecraft:overworld','login keeps the native world name');
 assert.equal(login.entityId,playLogin.playerId,'login entity id comes from the native player id');
 assert.equal(login.blockStateRegistrySize,35723,'login carries the native block-state count');
 assert.deepEqual(login.airStates,[0,18649,18650].sort((a,b)=>a-b),'login carries the native air states');
@@ -83,7 +84,9 @@ for(const chunk of chunks){
 const time=adapted.find(packet=>packet.name==='update_time');
 if(time){
   assert.ok(Number.isFinite(Number(time.age)),'time age is numeric');
-  assert.ok(Number(time.time)>=0,'daylight cycle is active');
+  // set_time only carries a clock entry when the day clock changed; otherwise the game keeps
+  // its current timeOfDay and only advances worldAge.
+  if(time.time!=null)assert.ok(Number(time.time)>=0,'daylight cycle is active');
 }
 
 const gameNames=new Set(adapted.map(packet=>packet.name));

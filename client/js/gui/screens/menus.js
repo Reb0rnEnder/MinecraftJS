@@ -36,6 +36,7 @@ export class TitleScreen extends Screen {
     super(game);
     this.background = 'none';
     this.panorama = true;
+    this.panoramaBackground = true;
     this.splash = null;
     this.fading = !game.titleScreenShown;
     game.titleScreenShown = true;

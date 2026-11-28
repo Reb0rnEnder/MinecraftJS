@@ -223,7 +223,7 @@ export class Renderer {
   updateEnvironment(state) {
     this.dynamicLights=state.dynamicLights||EMPTY_DYNAMIC_LIGHTS;
     this.fullBright=!!state.fullBright;
-    const { worldTime, partial, rain, thunder, temperature, dimension } = state;
+    const { worldTime, worldAge, partial, rain, thunder, temperature, dimension } = state;
     this.dimension = dimension;
     const angle = celestialAngle(worldTime, partial);
     const sun = sunBrightness(angle, rain, thunder);
@@ -301,55 +301,82 @@ export class Renderer {
     const cloudMode = state.clouds === true ? 2 : state.clouds === false ? 0 : (state.clouds | 0);
     env.cloudMode = this.renderDistance >= 4 ? cloudMode : 0;
     env.cloudsVisible = dimension === 0 && env.cloudMode > 0;
-    if (env.cloudMode === 2) this._updateFancyClouds(state.camPos, partial);
-    // Fast clouds follow the camera; UVs scroll with time
-    if(env.cloudMode!==1)return;
-    const size = renderDistBlocks * 4;
-    const cam = state.camPos;
-    const scrollX = (this.cloudTicks + partial) * 0.03;
-    const u = (cam[0] + scrollX) / 12 / 256, v = cam[2] / 12 / 256, rep = size / 12 / 256;
-    const h = size / 2;
-    const cy = 128.33;
-    const cv = (x, z, uu, vv) => [cam[0] + x, cy, cam[2] + z, uu, vv, 1, 1, 1, 1];
-    const cd = new Float32Array(36);
-    [cv(-h, -h, u - rep / 2, v - rep / 2), cv(-h, h, u - rep / 2, v + rep / 2), cv(h, h, u + rep / 2, v + rep / 2), cv(h, -h, u + rep / 2, v - rep / 2)].forEach((p, i) => cd.set(p, i * 9));
-    this.device.updateMesh(this.cloudMesh, cd, { quads: true });
+    if (env.cloudMode === 2) this._updateFancyClouds(state.camPos, partial, worldAge);
+    else if (env.cloudMode === 1) this._updateFlatClouds(state.camPos, partial, worldAge);
   }
 
-  // RenderGlobal.renderCloudsFancy: 16x16 tiles of 8x8 cloud cells (12 blocks wide, 4 high) around the camera.
-  // Tops/bottoms are whole textured tiles, sides are one strip per cell column; the cloud texture's alpha
-  // cuts out the shapes. The mesh is rebuilt only when the camera crosses a cell or the cloud layer.
-  _updateFancyClouds(cam, partial) {
-    const d0 = this.cloudTicks + partial;
+  // 26.3 FAST clouds: one flat cell face per occupied texture texel (CloudRenderer.buildFlatCell),
+  // using the top colour. The old textured plane sampled transparent pixels and drew almost nothing.
+  _updateFlatClouds(cam, partial, worldAge) {
+    const d0 = (worldAge ?? this.cloudTicks) + partial;
+    const cellX = Math.floor((cam[0] + d0 * 0.03) / 12), cellZ = Math.floor(cam[2] / 12 + 0.33);
+    const key = cellX + ',' + cellZ;
+    let fc = this.flatClouds;
+    if (!fc || fc.key !== key) {
+      const img = this.assets.image('environment/clouds.png');
+      const data = img?.data, W = img?.width || 256, H = img?.height || 256;
+      const occupied = (x, z) => data && data[((((z % H) + H) % H) * W + (((x % W) + W) % W)) * 4 + 3] >= 10;
+      const quads = [];
+      const R = 86;
+      for (let i = -R; i <= R; i++) for (let j = -R; j <= R; j++) {
+        if (i * i + j * j > R * R || !occupied(cellX + i, cellZ + j)) continue;
+        quads.push([[i, 0, j + 1], [i + 1, 0, j + 1], [i + 1, 0, j], [i, 0, j]].map((p) => [p[0] * 12, p[1], p[2] * 12, 0, 0, 1, 1, 1, 1]));
+      }
+      if (fc) this.device.destroyMesh(fc.mesh);
+      fc = this.flatClouds = { key, mesh: colorMesh(this.device, quads), model: mat4.create() };
+    }
+    mat4.identity(fc.model);
+    mat4.translate(fc.model, fc.model, cellX * 12 - d0 * 0.03, 192.33, (cellZ - 0.33) * 12);
+  }
+
+  // 26.3's CloudRenderer no longer samples clouds.png as a flat texture. It reads the image once as a
+  // 256x256 occupancy mask (one texel = one 12-block cell), extrudes occupied cells to 4 blocks and
+  // colours their faces (top 1.0, bottom 0.7, north/south 0.8, west/east 0.9). This rebuilds that cell
+  // mesh around the camera; only faces exposed to an empty neighbour are emitted. Rebuilt when the
+  // camera crosses a cell or the cloud layer.
+  _updateFancyClouds(cam, partial, worldAge) {
+    const d0 = (worldAge ?? this.cloudTicks) + partial;
     const d1 = (cam[0] + d0 * 0.03) / 12, d2 = cam[2] / 12 + 0.33;
     const cellX = Math.floor(d1), cellZ = Math.floor(d2);
-    const f3 = 128.33 - cam[1]; // cloud layer relative to the eye
+    const f3 = 192.33 - cam[1]; // cloud layer relative to the eye
     const band = f3 > 5 ? 1 : f3 <= -5 ? -1 : 0;
     const key = cellX + ',' + cellZ + ',' + band;
     let fc = this.fancyClouds;
     if (!fc || fc.key !== key) {
-      const f4 = 1 / 256, f17 = (((cellX % 256) + 256) % 256) * f4, f18 = (((cellZ % 256) + 256) % 256) * f4;
+      const img = this.assets.image('environment/clouds.png');
+      const data = img?.data, W = img?.width || 256, H = img?.height || 256;
+      const occupied = (x, z) => {
+        if (!data) return false;
+        return data[((((z % H) + H) % H) * W + (((x % W) + W) % W)) * 4 + 3] >= 10;
+      };
       const quads = [];
-      const q = (pts, c) => quads.push(pts.map((p) => [p[0] * 12, p[1], p[2] * 12, p[3], p[4], c, c, c, 1]));
+      const q = (pts, c) => quads.push(pts.map((p) => [p[0] * 12, p[1], p[2] * 12, 0, 0, c, c, c, 1]));
+      // options.txt cloudRange:64 -> ceil(64 * 16 / 12) = 86 cells, the same radius the native
+      // CloudRenderer builds its face buffer for.
+      const R = 86;
       const E = 9.765625e-4;
-      for (let i1 = -7; i1 <= 8; i1++) for (let j1 = -7; j1 <= 8; j1++) {
-        const fx = i1 * 8, fz = j1 * 8;
-        const U = (x) => (fx + x) * f4 + f17, V = (z) => (fz + z) * f4 + f18;
-        if (band >= 0) q([[fx, 0, fz + 8, U(0), V(8)], [fx + 8, 0, fz + 8, U(8), V(8)], [fx + 8, 0, fz, U(8), V(0)], [fx, 0, fz, U(0), V(0)]], 0.7);
-        if (band <= 0) q([[fx, 4 - E, fz + 8, U(0), V(8)], [fx + 8, 4 - E, fz + 8, U(8), V(8)], [fx + 8, 4 - E, fz, U(8), V(0)], [fx, 4 - E, fz, U(0), V(0)]], 1);
-        for (let k = 0; k < 8; k++) {
-          if (i1 > -1) q([[fx + k, 0, fz + 8, U(k + 0.5), V(8)], [fx + k, 4, fz + 8, U(k + 0.5), V(8)], [fx + k, 4, fz, U(k + 0.5), V(0)], [fx + k, 0, fz, U(k + 0.5), V(0)]], 0.9);
-          if (i1 <= 1) q([[fx + k + 1 - E, 0, fz + 8, U(k + 0.5), V(8)], [fx + k + 1 - E, 4, fz + 8, U(k + 0.5), V(8)], [fx + k + 1 - E, 4, fz, U(k + 0.5), V(0)], [fx + k + 1 - E, 0, fz, U(k + 0.5), V(0)]], 0.9);
-          if (j1 > -1) q([[fx, 4, fz + k, U(0), V(k + 0.5)], [fx + 8, 4, fz + k, U(8), V(k + 0.5)], [fx + 8, 0, fz + k, U(8), V(k + 0.5)], [fx, 0, fz + k, U(0), V(k + 0.5)]], 0.8);
-          if (j1 <= 1) q([[fx, 4, fz + k + 1 - E, U(0), V(k + 0.5)], [fx + 8, 4, fz + k + 1 - E, U(8), V(k + 0.5)], [fx + 8, 0, fz + k + 1 - E, U(8), V(k + 0.5)], [fx, 0, fz + k + 1 - E, U(0), V(k + 0.5)]], 0.8);
-        }
+      for (let i = -R; i <= R; i++) for (let j = -R; j <= R; j++) {
+        if (i * i + j * j > R * R) continue;
+        const cx = cellX + i, cz = cellZ + j;
+        if (!occupied(cx, cz)) continue;
+        const x = i, z = j;
+        // Top and bottom are visible from opposite sides; keep both so flying through the layer is correct.
+        if (band <= 0) q([[x, 4 - E, z + 1], [x + 1, 4 - E, z + 1], [x + 1, 4 - E, z], [x, 4 - E, z]], 1);
+        if (band >= 0) q([[x, 0, z + 1], [x + 1, 0, z + 1], [x + 1, 0, z], [x, 0, z]], 0.7);
+        // Sides only where the neighbouring cell is empty (CloudRenderer.packCellData).
+        if (!occupied(cx - 1, cz)) q([[x, 0, z + 1], [x, 4, z + 1], [x, 4, z], [x, 0, z]], 0.9);
+        if (!occupied(cx + 1, cz)) q([[x + 1 - E, 0, z + 1], [x + 1 - E, 4, z + 1], [x + 1 - E, 4, z], [x + 1 - E, 0, z]], 0.9);
+        if (!occupied(cx, cz - 1)) q([[x, 4, z], [x + 1, 4, z], [x + 1, 0, z], [x, 0, z]], 0.8);
+        if (!occupied(cx, cz + 1)) q([[x, 4, z + 1 - E], [x + 1, 4, z + 1 - E], [x + 1, 0, z + 1 - E], [x, 0, z + 1 - E]], 0.8);
       }
       if (fc) this.device.destroyMesh(fc.mesh);
+      // No texture binding: the colour pipeline then uses its white default sampler; the faces carry
+      // the native cloud colours and the occupancy mask already shaped the mesh.
       fc = this.fancyClouds = { key, mesh: colorMesh(this.device, quads), model: mat4.create() };
     }
     // world position: cell grid anchored at cellX/cellZ, sliding with the cloud drift
     mat4.identity(fc.model);
-    mat4.translate(fc.model, fc.model, cellX * 12 - d0 * 0.03, 128.33, (cellZ - 0.33) * 12);
+    mat4.translate(fc.model, fc.model, cellX * 12 - d0 * 0.03, 192.33, (cellZ - 0.33) * 12);
   }
 
   _setMoonPhase(phase) {
@@ -378,7 +405,9 @@ export class Renderer {
     this.skyView.set(r);
     this.camRot = mat4.invert(this.camRot || mat4.create(), r);
     mat4.translate(this.view, r, -x, -y, -z);
-    const far = Math.max(256, this.renderDistance * 16 * 2);
+    // The 26.3 cloud shell spans thousands of blocks past the terrain edge; a terrain-only far
+    // plane (renderDistance * 32) clipped the cloud layer above the horizon.
+    const far = Math.max(4096, this.renderDistance * 16 * 16);
     mat4.perspective(this.proj, fov * D2R, this.aspect, 0.05, far);
     mat4.perspective(this.skyProj, fov * D2R, this.aspect, 0.05, 1000);
     if(projectionWarp){mat4.multiply(this.proj,this.proj,projectionWarp);mat4.multiply(this.skyProj,this.skyProj,projectionWarp);}
@@ -517,14 +546,19 @@ export class Renderer {
     if(fabulous)d.setRenderTarget(fabulous.targets.clouds);
     // Clouds
     if (this.env.cloudsVisible) {
+      // Clouds sit past terrain fog; native cloud rendering does not fade them into the sky.
+      d.setGlobals({ fogMode: 2 });
       const ct = this.assets.texture('environment/clouds.png', { wrap: 'repeat' });
       const cc = this.env.cloudColor;
       if (ct && this.env.cloudMode === 2 && this.fancyClouds) {
         // two passes like vanilla: depth only, then colour where the clouds are frontmost
-        const fc = this.fancyClouds, p = colorParams(cc[0], cc[1], cc[2], 0.8, 0.1, 1);
-        d.draw({ mesh: fc.mesh, pipeline: 'color', textures: [ct], params: p, model: fc.model, state: { blend: 'none', colorWrite: false, cull: false } });
-        d.draw({ mesh: fc.mesh, pipeline: 'color', textures: [ct], params: p, model: fc.model, state: { blend: 'alpha', depthWrite: false, cull: false } });
-      } else if (ct) d.draw({ mesh: this.cloudMesh, pipeline: 'color', textures: [ct], params: colorParams(cc[0], cc[1], cc[2], 0.8, 0.004, 1), state: { blend: 'alpha', depthWrite: !!fabulous } });
+        const fc = this.fancyClouds, p = colorParams(cc[0], cc[1], cc[2], 1, 0.1, 1);
+        d.draw({ mesh: fc.mesh, pipeline: 'color', textures: [], params: p, model: fc.model, state: { blend: 'none', colorWrite: false, cull: false } });
+        d.draw({ mesh: fc.mesh, pipeline: 'color', textures: [], params: p, model: fc.model, state: { blend: 'alpha', depthWrite: false, cull: false } });
+      } else if (this.env.cloudMode === 1 && this.flatClouds) {
+        d.draw({ mesh: this.flatClouds.mesh, pipeline: 'color', textures: [], params: colorParams(cc[0], cc[1], cc[2], 1, 0.004, 1), model: this.flatClouds.model, state: { blend: 'alpha', depthWrite: !!fabulous } });
+      }
+      d.setGlobals({ fogMode: this.fog.mode });
     }
     P.end();
     for (const e of extras) if ((e.order || 0) >= 10 && (e.order||0)<20) {

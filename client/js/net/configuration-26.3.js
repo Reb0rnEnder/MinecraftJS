@@ -9,6 +9,7 @@ import {
   CONFIGURATION_CLIENTBOUND_26_3 as CI,CONFIGURATION_SERVERBOUND_26_3 as CO,
   PLAY_SERVERBOUND_26_3 as PO
 } from './protocol-26.3-ids.js';
+import {KNOWN_PACK_26_3} from './known-pack-26.3.js';
 
 // 26.3 packs BlockPos as x(26)<<38 | z(26)<<12 | y(12); BlockPos.Y_OFFSET=0,
 // Z_OFFSET=PACKED_Y_LENGTH(12), X_OFFSET=Y+PACKED_HORIZONTAL_LENGTH(38).
@@ -211,7 +212,7 @@ export class Configuration26_3{
     this.send=send;
     this.emit=emit;
     this.cookies=cookies;
-    this.knownPacks=options.knownPacks||[];
+    this.knownPacks=options.knownPacks?.length ? options.knownPacks : [KNOWN_PACK_26_3];
     this.selectedKnownPacks=[];
     this.registries=new Map();
     this.tags=new Map();
