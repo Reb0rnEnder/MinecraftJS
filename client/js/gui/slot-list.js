@@ -2,6 +2,7 @@
 // Subclasses override size(), drawSlot(), and optionally isSelected(), clicked(), drawHeader(), headerClicked()
 // and decorations().
 import { platform } from '../platform/platform.js';
+import { stampWidget } from './focus-navigation.js';
 
 export class SlotList {
   constructor(screen, top, bottom, slotHeight, opts = {}) {
@@ -23,6 +24,8 @@ export class SlotList {
     this.scrollMultiplier = 1;
     this.lastClicked = -1;
     this.lastClickTime = 0;
+    this.focused = false;
+    stampWidget(this);
   }
 
   get width() { return this.right - this.left; }

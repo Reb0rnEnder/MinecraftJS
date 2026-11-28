@@ -233,6 +233,16 @@ export class BrowserPlatform extends Emitter {
     window.addEventListener('mousemove', (e) => this.emit('mousemove', { x: e.clientX * (this.pxScale || this.dpr), y: e.clientY * (this.pxScale || this.dpr), dx: e.movementX || 0, dy: e.movementY || 0 }));
     window.addEventListener('mousedown', (e) => { this._userGesture(); this.emit('mousedown', { button: e.button, x: e.clientX * (this.pxScale || this.dpr), y: e.clientY * (this.pxScale || this.dpr), shift: e.shiftKey }); });
     window.addEventListener('mouseup', (e) => this.emit('mouseup', { button: e.button, x: e.clientX * (this.pxScale || this.dpr), y: e.clientY * (this.pxScale || this.dpr), shift: e.shiftKey }));
+    window.addEventListener('dragover', (e) => {
+      if (Array.from(e.dataTransfer?.types || []).includes('Files')) e.preventDefault();
+    });
+    window.addEventListener('drop', (e) => {
+      if (!e.dataTransfer?.files?.length) return;
+      e.preventDefault();
+      // Read only after the active screen accepts the drop and the player confirms it.
+      const files = Array.from(e.dataTransfer.files, (file) => ({ name: file.name, readBytes: async () => new Uint8Array(await file.arrayBuffer()) }));
+      this.emit('filesdrop', files);
+    });
     window.addEventListener('wheel', (e) => {
       e.preventDefault();
       if (e.deltaY) this.emit('wheel', e.deltaY/(e.deltaMode===0?100:e.deltaMode===1?3:1));

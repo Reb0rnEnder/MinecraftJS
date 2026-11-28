@@ -1,8 +1,8 @@
-import{brushTranslation766}from'../game/brushing-1.20.6.js';
-import{savedItem766}from'./saved-item-1.20.6.js';
-import{buildPot766,potFrame766}from'./decorated-pot-1.20.6.js';
-import{signFace766,buildSign766,signOutlineKey766}from'./sign-1.20.6.js';
-import{placedBannerLayers766}from'./banner-1.20.6.js';
+import { brushTranslation774 } from '../game/brushing-1.21.11.js';
+import { savedItem774 } from './saved-item-1.21.11.js';
+import { buildPot774, potFrame774 } from './decorated-pot-1.21.11.js';
+import { signFace774, buildSign774, signOutlineKey774 } from './sign-1.21.11.js';
+import { placedBannerLayers774 } from './banner-1.21.11.js';
 import{isShulkerBox,shulkerTexture}from'./shulker-box.js';
 import { endPortalPasses17, updateEndPortalPasses17, shaderGameTime, PORTAL_LAYERS, GATEWAY_LAYERS } from './end-portal-17.js';
 import {DEFAULT_SKIN} from './default-skins.js';
@@ -28,6 +28,20 @@ const FLOWER_POT = {
   'minecraft:tallgrass': ['dead_bush', 'fern', 'fern'], 'minecraft:cactus': ['cactus'],
 };
 const FLOWER_POT_IDS = { 38: 'minecraft:red_flower', 37: 'minecraft:yellow_flower', 6: 'minecraft:sapling', 40: 'minecraft:red_mushroom', 39: 'minecraft:brown_mushroom', 32: 'minecraft:deadbush', 31: 'minecraft:tallgrass', 81: 'minecraft:cactus' };
+
+const isShelf = (name) => name.endsWith('_shelf') && name !== 'chiseled_bookshelf';
+function chestTexturePrefix(name) {
+  if (name === 'ender_chest') return 'ender';
+  if (name === 'trapped_chest') return 'trapped';
+  if (name === 'chest') return 'normal';
+  const base = name.startsWith('waxed_') ? name.slice(6) : name;
+  return {
+    copper_chest: 'copper',
+    exposed_copper_chest: 'copper_exposed',
+    weathered_copper_chest: 'copper_weathered',
+    oxidized_copper_chest: 'copper_oxidized',
+  }[base] || null;
+}
 
 const key = (x, y, z) => x + ',' + y + ',' + z;
 // Built-in item objects clone geometry but share cached materials. Tile-local
@@ -132,8 +146,9 @@ export class TileEntityRenderer {
     if (t) return t;
     const n = b.name;
     let type = null;
-    if (n === 'chest' || n === 'trapped_chest' || n === 'ender_chest') type = 'chest';
+    if (chestTexturePrefix(n)) type = 'chest';
     else if (isSign(n)) type = 'sign';
+    else if (isShelf(n)) type = 'shelf';
     else if (skullType(n) !== undefined) type = 'skull';
     else if (n.endsWith('_banner') || n.endsWith('_wall_banner')) type = 'banner';
     else if (n === 'enchanting_table') type = 'book';
@@ -176,7 +191,7 @@ export class TileEntityRenderer {
       if (!s || s.nonAir === 0) continue;
        for (let i = 0; i < 4096; i++) {
          const state = s.blocks[i], name = getBlock(state).name;
-         if (name === 'chest' || name === 'trapped_chest' || name === 'ender_chest' || isSign(name) || (name === 'campfire'||name==='soul_campfire') || name === 'lectern' ||
+         if (chestTexturePrefix(name) || isSign(name) || isShelf(name) || (name === 'campfire'||name==='soul_campfire') || name === 'lectern' ||
             name.endsWith('_bed') || name.endsWith('_banner') || name.endsWith('_wall_banner') || skullType(name) !== undefined ||
             name === 'flower_pot' || name === 'end_portal' || name === 'end_gateway' || isShulkerBox(name) ||
            name === 'enchanting_table' || name === 'beacon' || name === 'bell' || name==='decorated_pot' || name==='suspicious_sand' || name==='suspicious_gravel') {
@@ -211,7 +226,7 @@ export class TileEntityRenderer {
     if (!t) return;
     t.data = data;
     if(nbt)t.nbt=nbt;
-    if(t.type==='sign'){t.lines=signFace766(data,true).lines;this.signs.set(key(pos.x,pos.y,pos.z),t.lines);}
+    if(t.type==='sign'){t.lines=signFace774(data,true).lines;this.signs.set(key(pos.x,pos.y,pos.z),t.lines);}
     this._rebuild(t);
   }
 
@@ -226,7 +241,7 @@ export class TileEntityRenderer {
       const t=this._ensure(p.location.x,p.location.y,p.location.z,this.game.world.getState(p.location.x,p.location.y,p.location.z));
       if(t){t.bellTime=0;t.bellDirection=p.byte2;t.bellShaking=true;}
     }
-    if (b.name === 'chest' || b.name === 'trapped_chest' || b.name === 'ender_chest' || isShulkerBox(b.name)) {
+    if (chestTexturePrefix(b.name) || isShulkerBox(b.name)) {
       const t = this._ensure(p.location.x, p.location.y, p.location.z, this.game.world.getState(p.location.x, p.location.y, p.location.z));
       if (t && p.byte1 === 1) {
         const n = (p.byte2 << 24) >> 24; // the event parameter is a signed byte (closing twice sends -1)
@@ -408,17 +423,17 @@ export class TileEntityRenderer {
     t.materials=null;
     switch (t.type) {
       case 'brushable':{
-        const face=t.data?.hit_direction,dusted=Number(props.dusted||0),item=savedItem766(g.items,t.data?.item);
+        const face=t.data?.hit_direction,dusted=Number(props.dusted||0),item=savedItem774(g.items,t.data?.item);
         if(!item||dusted<=0||!Number.isInteger(face)||face<0||face>5)break;
         mat=entityMaterial(()=>g.assets.atlasTexture,{alphaTest:.1});const node=g.itemRenderer.objectFor(item,mat)?.obj;if(!node)break;
         t.materials=privateItemMaterials(node);
         applyTransform(node,g.itemRenderer.modelFor(item).display?.fixed);
-        const holder=new Node(),[x,y,z]=brushTranslation766(face,dusted);holder.position.set(x,.5+y,z);holder.rotation.y=(face>=4?176:86)*D2R;holder.scale.set(.5,.5,.5);holder.add(node);obj.add(holder);t.brushFace=face;
+        const holder=new Node(),[x,y,z]=brushTranslation774(face,dusted);holder.position.set(x,.5+y,z);holder.rotation.y=(face>=4?176:86)*D2R;holder.scale.set(.5,.5,.5);holder.add(node);obj.add(holder);t.brushFace=face;
         break;
       }
       case 'decorated_pot':{
         const list=t.data?.sherds,valid=Array.isArray(list)&&list.length<=4&&list.every(n=>typeof n==='string'&&g.items.byName.has(n.replace(/^minecraft:/,'')));
-        const pot=buildPot766(valid?list:[],props.facing);obj.add(pot.root);t.potRoot=pot.root;t.materials=pot.materials;mat=pot.materials[0];
+        const pot=buildPot774(valid?list:[],props.facing);obj.add(pot.root);t.potRoot=pot.root;t.materials=pot.materials;mat=pot.materials[0];
         break;
       }
       case 'bell': {
@@ -430,10 +445,10 @@ export class TileEntityRenderer {
         break;
       }
       case 'chest': {
-        const id = getBlock(st).id;
-        const isEnder = getBlock(st).name === 'ender_chest';
-        const type=isEnder?'single':(props.type||'single');
-        const prefix=isEnder?'ender':getBlock(st).name==='trapped_chest'?'trapped':'normal';
+        const chestName = getBlock(st).name;
+        const isEnder = chestName === 'ender_chest';
+        const type = isEnder ? 'single' : (props.type || 'single');
+        const prefix = chestTexturePrefix(chestName) || 'normal';
         mat=entityMaterial('entity/chest/'+prefix+(type==='single'?'':'_'+type)+'.png',{alphaTest:.1});
         const {lid,below,knob}=blockModel(type==='single'?'chest':type==='left'?'chestLeft':'chestRight',['lid','below','knob']);
         const model=new Node();model.scale.set(1/16,1/16,1/16);
@@ -463,7 +478,29 @@ export class TileEntityRenderer {
       case 'sign': {
         const name=getBlock(st).name;
         mat=entityMaterial('entity/signs/'+(isHangingSign(name)?'hanging/':'')+signWood(name)+'.png',{alphaTest:.1});
-        obj.add(buildSign766(g,t,name,props,mat));
+        obj.add(buildSign774(g,t,name,props,mat));
+        break;
+      }
+      case 'shelf': {
+        const atlasMat = entityMaterial(() => g.assets.atlasTexture, { alphaTest: 0.1 });
+        mat = atlasMat; t.materials = [];
+        const alignBottom = !!t.data?.align_items_to_bottom;
+        const rot = new Node(); rot.position.set(0.5, 0.5, 0.5);
+        rot.rotation.y = ({ south: 0, west: -90, north: -180, east: -270 }[props.facing] || 0) * D2R;
+        obj.add(rot);
+        for (const entry of t.data?.Items || []) {
+          const slotIdx = Number(entry.Slot ?? 0);
+          const item = savedItem774(g.items, entry);
+          if (!item) continue;
+          const node = g.itemRenderer.objectFor(item, atlasMat)?.obj;
+          if (!node) continue;
+          t.materials.push(...privateItemMaterials(node));
+          const holder = new Node();
+          holder.position.set((slotIdx - 1) * 0.3125, alignBottom ? -0.25 : 0, -0.25);
+          holder.scale.set(0.25, 0.25, 0.25);
+          holder.add(node);
+          rot.add(holder);
+        }
         break;
       }
       case 'skull': {
@@ -504,7 +541,7 @@ export class TileEntityRenderer {
         const atlasMat=entityMaterial(()=>g.assets.atlasTexture,{alphaTest:.1});
         mat=atlasMat;t.materials=[];
         for(const entry of t.data?.Items||[]) {
-          const item=savedItem766(g.items,entry);if(!item)continue;
+          const item=savedItem774(g.items,entry);if(!item)continue;
           const node=g.itemRenderer.objectFor(item,atlasMat)?.obj;if(!node)continue;
           t.materials.push(...privateItemMaterials(node));
           applyTransform(node,g.itemRenderer.modelFor(item).display?.fixed);
@@ -593,7 +630,7 @@ export class TileEntityRenderer {
   // Composite banner texture (base + tinted pattern masks), or null while the images load
   _bannerTexture(t) {
     const data = t.data || {};
-    const layers=placedBannerLayers766(this.game,getBlock(t.state).name,data);
+    const layers=placedBannerLayers774(this.game,getBlock(t.state).name,data);
     const img = composeBanner(this.game.assets, layers);
     if (!img) return null;
     t.texture = this.device.createTexture({ width: img.width, height: img.height, data: img.data });
@@ -687,7 +724,7 @@ export class TileEntityRenderer {
       const top = t.type === 'beacon' ? this.game.world.maxY : t.y + 1.5;
       const seen = t.type === 'beacon' ? aabbInFrustum(g.renderer.frustum, t.x, t.y, t.z, t.x + 1, top, t.z + 1) : g.renderer.boxVisible(t.x - 0.25, t.y, t.z - 0.25, t.x + 1.25, top, t.z + 1.25);
       if (!seen) { if (t.obj) t.obj.visible = false; continue; }
-      if(t.built&&t.type==='sign'&&signOutlineKey766(g,t)!==t.signOutlineKey)this._rebuild(t);
+      if(t.built&&t.type==='sign'&&signOutlineKey774(g,t)!==t.signOutlineKey)this._rebuild(t);
       if (!t.built) this._build(t);
       if (!t.obj) continue;
       t.obj.visible = true;
@@ -709,7 +746,7 @@ export class TileEntityRenderer {
       }
       if(t.type==='decorated_pot'&&t.potRoot){
         const age=Number.isFinite(g.world.worldAge)?g.world.worldAge:this.ticks;
-        t.potRoot.matrix=potFrame766(getStateProperties(t.state).facing,t.wobbleStyle,age-(t.wobbleStart??age),partial);
+        t.potRoot.matrix=potFrame774(getStateProperties(t.state).facing,t.wobbleStyle,age-(t.wobbleStart??age),partial);
       }
       if(t.type==='bell' && t.bellPart){
         const time=(t.bellTime||0)+partial;

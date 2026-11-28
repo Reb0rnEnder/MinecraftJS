@@ -1,0 +1,55 @@
+{
+  "minecraftVersion": "1.21.11",
+  "clientJarSha1": "ba2df812c2d12e0219c489c4cd9a5e1f0760f5bd",
+  "extractorSha256": "01a1fc7c139ae9dba148c6cfd3b48251744ffff0583e8d4fc0549ab2976414a1",
+  "samples": [
+    {
+      "label": "patterned blue banner",
+      "layers": [
+        {
+          "asset": "minecraft:stripe_center",
+          "dye": 14
+        },
+        {
+          "asset": "minecraft:flower",
+          "dye": 4
+        }
+      ],
+      "wire": "Af0JAQBGAiEODQQ="
+    },
+    {
+      "label": "inline banner",
+      "layers": [
+        {
+          "asset": "custom:art",
+          "dye": 5
+        }
+      ],
+      "wire": "AfIJAQBGAQAKY3VzdG9tOmFydA5jdXN0b20ucGF0dGVybgU="
+    },
+    {
+      "label": "patterned red shield",
+      "layers": [
+        {
+          "asset": "minecraft:cross",
+          "dye": 0
+        }
+      ],
+      "wire": "AY8KAgBHDkYBBgA="
+    },
+    {
+      "label": "flow guster banner",
+      "layers": [
+        {
+          "asset": "minecraft:flow",
+          "dye": 9
+        },
+        {
+          "asset": "minecraft:guster",
+          "dye": 0
+        }
+      ],
+      "wire": "AfMJAQBGAgwJEQA="
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 // Rain/snow rendering, rain splashes + sound, and random block display ticks (ambience).
-// Native 1.20.6 LevelRenderer.renderSnowAndRain / tickRain and ClientLevel.animateTick. NATIVE below records what differs between releases; each value was read from this release's jar.
+// Native 1.21.11 WeatherEffectRenderer and ClientLevel.animateTick. NATIVE below records what differs between releases; each value was read from this release's jar.
 import { getBlock, staticCollisionBoxes, jarSelectionBox, getStateProperties } from '../world/blocks.js';
 import { biomeRainType, biomeInfo } from '../world/biomes.js';
 import { FORMAT, litParams } from '../gfx/device.js';
@@ -131,7 +131,7 @@ export class Weather {
     return !!b && b.id !== 0 && (b.boundingBox === 'block' || b.isLiquid || this._fluid(state) !== null);
   }
 
-  _fancy() { const s = this.game.settings; return !!(s.fancyGraphics || s.fabulousGraphics); }
+  _radius() { return Math.max(3, Math.min(MAX_RADIUS, Math.round(this.game.settings.weatherRadius ?? MAX_RADIUS))); }
 
   // Biome precipitation at a position: 'rain', 'snow' or 'none'
   _precipitation(biome, x, y, z) { return biomeRainType(biome, y, x, z); }
@@ -164,7 +164,7 @@ export class Weather {
   _rainParticles() {
     const g = this.game;
     const w = g.world;
-    const f = w.rainStrength / (this._fancy() ? 1 : 2);
+    const f = f32(w.rainStrength);
     if (!(f > 0)) return;
     const random = new JavaRandom(BigInt.asIntN(64, BigInt(this.updateCount) * 312987231n));
     const o = this._tickOrigin();
@@ -174,13 +174,16 @@ export class Weather {
     else this._legacyRain(g, w, random, f, cx, cy, cz, particles);
   }
 
-  // 1.16+: nextInt(21) - 10 offsets; the sound plays at the last block that caught rain
+  // 1.21.11 WeatherEffectRenderer.tickRain: option-sized offsets and float arithmetic before the int cast.
+  // Decreased particles uses integer division; minimal still searches for a rain-sound location.
   _modernRain(g, w, random, f, cx, cy, cz, particles) {
-    const n = Math.trunc(100 * f32(f * f)) / (particles === 1 ? 2 : 1);
+    const radius = this._radius(), size = radius * 2 + 1;
+    const attempts = Math.trunc(f32(f32(f32(f32(0.225) * (size * size)) * f) * f));
+    const n = particles === 1 ? Math.trunc(attempts / 2) : attempts;
     const minY = NATIVE.tickMinY === 'world' ? (w.minY ?? 0) : 0;
     let hit = null;
     for (let i = 0; i < n; i++) {
-      const x = cx + random.nextInt(21) - 10, z = cz + random.nextInt(21) - 10;
+      const x = cx + random.nextInt(size) - radius, z = cz + random.nextInt(size) - radius;
       const top = this.precipHeight(x, z);
       if (top <= minY || top > cy + 10 || top < cy - 10) continue;
       if (!this._rainsAt(x, top, z)) continue;
@@ -292,7 +295,7 @@ export class Weather {
     if (st !== 0) g.particles.randomDisplayTick(x, y, z, st);
     if (!NATIVE.biomeParticles || blockOf(st)?.collisionFull) return;
     const ambient = biomeInfo(w.getBiome(x, z, y)).effects?.particle;
-    if (ambient && Math.random() <= ambient.probability) g.particles.nativeParticle(ambient.options.type.replace(/^minecraft:/, ''), x + Math.random(), y + Math.random(), z + Math.random());
+    if (ambient && Math.random() <= ambient.probability) g.particles.nativeParticle(ambient.options.type.replace(/^minecraft:/, ''), x + Math.random(), y + Math.random(), z + Math.random(), 0, 0, 0, ambient.options);
   }
 
   // Rain and snow quads around the camera
@@ -302,7 +305,7 @@ export class Weather {
     const rain = w.prevRain !== undefined ? w.prevRain + (w.rainStrength - w.prevRain) * partial : w.rainStrength;
     for (const L of Object.values(this.layers)) L.count = 0;
     if (!(rain > 0)) return;
-    const R = this._fancy() ? 10 : 5;
+    const R = this._radius();
     // Up to 1.14 the view entity's (uninterpolated) position anchors the columns; later the camera does
     let ax = cx, ay = cy, az = cz, lightY = Math.floor(cy);
     if (NATIVE.renderOrigin === 'entity' && g.player) {

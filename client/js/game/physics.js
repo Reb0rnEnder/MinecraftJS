@@ -803,8 +803,17 @@ export class LocalPlayer {
     this.sneaking = sneakKey;
     this.updateSize(world);
     if (this.crouching || this.pose === 'swimming' && !this.inWater) { moveStrafe = f32(moveStrafe * 0.3); moveForward = f32(moveForward * 0.3); }
-    if (this.usingItem && !this.ridingEntity) { moveStrafe = f32(moveStrafe * F.p02b); moveForward = f32(moveForward * F.p02b); this.sprintToggleTimer = 0; }
-    this._moveVec = [moveStrafe, moveForward]; // MovementInput.getMoveVector
+    // The existing prediction owner provides the active hand without caching a
+    // stack across slot changes/reset. Vehicle bodies must not read player use.
+    const game = world.prediction?.game;
+    const useEffects = this.usingItem && game?.player === this
+      ? game.items.component(game.inventory.getHand(game.interaction.activeHand), 'use_effects') : undefined;
+    // Native UseEffects.DEFAULT also applies when the component was removed.
+    const itemPreventsSprint = this.usingItem && !(useEffects?.can_sprint ?? false);
+    const useSpeed = this.usingItem && !this.ridingEntity
+      ? f32(useEffects?.speed_multiplier ?? 0.2) : 1;
+    if (itemPreventsSprint && !this.ridingEntity) this.sprintToggleTimer = 0;
+    this._moveVec = [f32(moveStrafe * useSpeed), f32(moveForward * useSpeed)]; // auto-jump movement vector
     this.autoJump = !!input.autoJump;
     if (this.autoJumpTime > 0) { this.autoJumpTime--; jump = true; }
     // vanilla: isSneaking() follows the key, even while flying
@@ -823,11 +832,11 @@ export class LocalPlayer {
     // Sprint logic
     const f = 0.8;
     const foodOk = this.food > 6 || this.allowFlying;
-    if ((this.onGround || this.eyesInWater) && !this.prevSneak && !this.prevForwardHeld && moveForward >= f && !this.sprinting && foodOk && !this.usingItem && !this.blind) {
+    if ((this.onGround || this.eyesInWater) && !this.prevSneak && !this.prevForwardHeld && moveForward >= f && !this.sprinting && foodOk && !itemPreventsSprint && !this.blind) {
       if (this.sprintToggleTimer <= 0 && !input.sprint) this.sprintToggleTimer = 7;
       else this.sprinting = true;
     }
-    if (!this.sprinting && (!this.inWater || this.eyesInWater) && moveForward >= f && foodOk && !this.usingItem && !this.blind && input.sprint) this.sprinting = true;
+    if (!this.sprinting && (!this.inWater || this.eyesInWater) && moveForward >= f && foodOk && !itemPreventsSprint && !this.blind && input.sprint) this.sprinting = true;
     if(this.sprinting) {
       const stopped=moveForward<f||!foodOk;
       if(this.swimming ? (!this.onGround&&!sneakKey&&stopped||!this.inWater) : (stopped||this.collidedH||this.inWater&&!this.eyesInWater))this.sprinting=false;
@@ -877,6 +886,10 @@ export class LocalPlayer {
     }
     moveStrafe = f32(moveStrafe * F.p098);
     moveForward = f32(moveForward * F.p098);
+    // LocalPlayer.modifyInput: sprint checks use unscaled input; item speed is
+    // applied after the native 0.98F factor, with float rounding at each step.
+    moveStrafe = f32(moveStrafe * useSpeed);
+    moveForward = f32(moveForward * useSpeed);
 
     this.moveEntityWithHeading(world, moveStrafe, moveForward);
 

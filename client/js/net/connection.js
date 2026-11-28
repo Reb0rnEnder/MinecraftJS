@@ -57,7 +57,7 @@ export class Connection {
   async open(eagler) {
     if (this.ws) return;
     let sock;
-    if (eagler) sock = PROTOCOL_VERSION === 766 ? await new EaglerSocket766(eagler,{...this.options,autoPlayAcks:false}).open() : await openEaglerSocket(eagler);
+    if (eagler) sock = PROTOCOL_VERSION === 774 ? await new EaglerSocket774(eagler,{...this.options,autoPlayAcks:false}).open() : await openEaglerSocket(eagler);
     else sock = await openProxySocket(PROTOCOL_VERSION, this.options);
     this.ws = sock;
     sock.on('close', () => {
@@ -71,7 +71,7 @@ export class Connection {
       try { msg = JSON.parse(text); } catch (err) { return; }
       this.emit('control', msg);
     });
-    if (PROTOCOL_VERSION === 766) {
+    if (PROTOCOL_VERSION === 774) {
       sock.on('reconfiguration_start', () => {
         this.bundles.reset();
         this.emit('reconfiguration_start');

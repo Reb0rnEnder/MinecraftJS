@@ -22,6 +22,7 @@ export class Reader {
   i16() { this._check(2); const v = this.view.getInt16(this.offset); this.offset += 2; return v; }
   u16() { this._check(2); const v = this.view.getUint16(this.offset); this.offset += 2; return v; }
   i32() { this._check(4); const v = this.view.getInt32(this.offset); this.offset += 4; return v; }
+  u32() { this._check(4); const v = this.view.getUint32(this.offset); this.offset += 4; return v; }
   i64() { this._check(8); const v = this.view.getBigInt64(this.offset); this.offset += 8; return v; }
   f32() { this._check(4); const v = this.view.getFloat32(this.offset); this.offset += 4; return v; }
   f64() { this._check(8); const v = this.view.getFloat64(this.offset); this.offset += 8; return v; }
@@ -178,6 +179,7 @@ export class Writer {
   i16(v) { this._ensure(2); this.view.setInt16(this.offset, v); this.offset += 2; return this; }
   u16(v) { this._ensure(2); this.view.setUint16(this.offset, v); this.offset += 2; return this; }
   i32(v) { this._ensure(4); this.view.setInt32(this.offset, v); this.offset += 4; return this; }
+  u32(v) { this._ensure(4); this.view.setUint32(this.offset, v >>> 0); this.offset += 4; return this; }
   i64(v) { this._ensure(8); this.view.setBigInt64(this.offset, BigInt(v)); this.offset += 8; return this; }
   f32(v) { this._ensure(4); this.view.setFloat32(this.offset, v); this.offset += 4; return this; }
   f64(v) { this._ensure(8); this.view.setFloat64(this.offset, v); this.offset += 8; return this; }

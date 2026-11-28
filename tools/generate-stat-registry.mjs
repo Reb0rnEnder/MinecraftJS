@@ -1,7 +1,7 @@
 // Generate client/js/game/stat-registry.js from this target's native data-generator registries report.
 import {readFile,writeFile} from 'node:fs/promises';
 import {join} from 'node:path';
-const root=new URL('..',import.meta.url).pathname,version='1.20.6';
+const root=new URL('..',import.meta.url).pathname,version='1.21.11';
 const report=join(root,'cache/port-'+version+'/generated/reports/registries.json');
 const r=JSON.parse(await readFile(report,'utf8'));
 const order=k=>Object.entries(r[k].entries).sort((a,b)=>a[1].protocol_id-b[1].protocol_id).map(([n])=>n.replace(/^minecraft:/,''));

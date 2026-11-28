@@ -19,7 +19,7 @@ export class MeshService {
     switch (msg.type) {
       case 'init': {
         initBlocks(msg.blocksJson, msg.shapesJson);
-        initBiomes(msg.biomesJson, msg.grass, msg.foliage);
+        initBiomes(msg.biomesJson, msg.grass, msg.foliage, msg.dryFoliage ?? null);
         const store = new ModelStore(msg.models, msg.blockstates, new AtlasLookup(msg.atlas));
         const opts = this.mesher ? this.mesher.options : this.pendingOptions;
         this.mesher = new Mesher(null, store);

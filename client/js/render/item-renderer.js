@@ -57,10 +57,89 @@ export class ItemRenderer {
 
   // ---------------------------------------------------------------- Model resolution
 
+  _evalItemModel(def, item, holder, pv, ctx = 'gui') {
+    if (!def || typeof def !== 'object') return null;
+    const g = this.game;
+    const kind = String(def.type || '').replace(/^minecraft:/, '');
+    if (kind === 'empty') return null;
+    if (kind === 'model') return { path: modelPath(def.model), tints: def.tints || null, special: null };
+    if (kind === 'special') return { path: modelPath(def.base), tints: null, special: def.model || null };
+    if (kind === 'condition') {
+      const prop = String(def.property || '').replace(/^minecraft:/, '');
+      let on = false;
+      if (prop === 'using_item') on = !!pv._using;
+      else if (prop === 'broken') on = pv.broken >= 1;
+      else if (prop === 'fishing_rod/cast') on = pv.cast >= 1;
+      else if (prop === 'has_component') on = g.items.component(item, String(def.component || '').replace(/^minecraft:/, '')) !== undefined;
+      else if (prop === 'bundle/has_selected_item') on = bundleSelectedIndex(item) >= 0;
+      else if (prop === 'custom_model_data') on = !!(pv._cmdFlags?.[def.index || 0]);
+      return this._evalItemModel(on ? def.on_true : def.on_false, item, holder, pv, ctx);
+    }
+    if (kind === 'select') {
+      const prop = String(def.property || '').replace(/^minecraft:/, '');
+      let val;
+      if (prop === 'display_context') val = ctx;
+      else if (prop === 'charge_type') val = pv.firework ? 'rocket' : pv.charged ? 'arrow' : 'none';
+      else if (prop === 'trim_material') {
+        const trim = g.items.component(item, 'trim');
+        const matName = trim?.material;
+        val = typeof matName === 'string' ? matName : undefined;
+      } else if (prop === 'block_state') {
+        const bs = g.items.component(item, 'block_state');
+        val = bs && def.block_state_property ? String(bs[def.block_state_property] ?? '') : undefined;
+      } else if (prop === 'custom_model_data') val = pv._cmdStrings?.[def.index || 0];
+      const hit = (def.cases || []).find((c) => Array.isArray(c.when) ? c.when.includes(val) : c.when === val);
+      return this._evalItemModel(hit ? hit.model : def.fallback, item, holder, pv, ctx);
+    }
+    if (kind === 'range_dispatch') {
+      const prop = String(def.property || '').replace(/^minecraft:/, '');
+      const scale = def.scale ?? 1;
+      let v = 0;
+      if (prop === 'use_duration') v = (pv._useTicks || 0) * scale;
+      else if (prop === 'crossbow/pull') v = (pv.pull || 0) * scale;
+      else if (prop === 'compass') v = (pv.angle || 0) * scale;
+      else if (prop === 'time') v = (pv.time || 0) * scale;
+      else if (prop === 'use_cycle') v = ((pv._useTicks || 0) % (def.period || 1)) * scale;
+      else if (prop === 'custom_model_data') v = (pv._cmdFloats?.[def.index || 0] ?? 0) * scale;
+      else if (prop === 'damage') v = (pv.damage || 0) * scale;
+      else if (prop === 'count') v = (item.count || 1) * scale;
+      else if (prop === 'cooldown') v = (pv.cooldown || 0) * scale;
+      let chosen = def.fallback;
+      for (const e of def.entries || []) {
+        if (v >= (e.threshold ?? 0)) chosen = e.model;
+      }
+      return this._evalItemModel(chosen, item, holder, pv, ctx);
+    }
+    if (kind === 'composite') {
+      let base = null;
+      const subLayers = [];
+      let selectedItem = null;
+      for (const sub of def.models || []) {
+        const subType = String(sub?.type || '').replace(/^minecraft:/, '');
+        if (subType === 'bundle/selected_item') {
+          const contents = g.items.component(item, 'bundle_contents');
+          const list = Array.isArray(contents) ? contents : contents?.items;
+          const idx = bundleSelectedIndex(item);
+          if (Array.isArray(list) && idx >= 0 && list[idx]) selectedItem = list[idx];
+          continue;
+        }
+        const resolved = this._evalItemModel(sub, item, holder, pv, ctx);
+        if (resolved) {
+          if (!base) base = resolved;
+          subLayers.push(resolved);
+        }
+      }
+      if (!base) return null;
+      return { ...base, composite: subLayers, selectedItem };
+    }
+    return null;
+  }
+
   // holder: the entity holding the item (null: the local player, or no holder for GUI / dropped items)
   modelFor(item, holder = null, held = false) {
     const g = this.game;
     const name = g.items.name(item.id);
+    const ctx = held ? (holder ? 'thirdperson_righthand' : 'firstperson_righthand') : 'gui';
     let path = 'item/' + (held && (name === 'trident' || name === 'spyglass') ? name + '_in_hand' : name);
     // The 26.3 item definition selects <item>_<trim material>_trim for trimmed armor
     const trimmed = trimItemModel(g, item);
@@ -69,14 +148,24 @@ export class ItemRenderer {
     const ov = this.store.resolveModel(path).overrides;
     if (ov && ov.length) {
       const pv = this._predicates(item, holder);
-      for (let i = ov.length - 1; i >= 0; i--) {
-        const o = ov[i];
-        let ok = true;
-        for (const k in o.predicate) if (!((pv[modelPath(k)] ?? -Infinity) >= o.predicate[k])) { ok = false; break; }
-        if (ok) { path = modelPath(o.model); break; }
+      resolvedDef = this._evalItemModel(itemDef, item, holder, pv, ctx);
+      if (resolvedDef?.path) path = resolvedDef.path;
+    } else {
+      // ItemOverrideList.applyOverride: the last override whose predicates all reach their values wins
+      const ov = this.store.resolveModel(path).overrides;
+      if (ov && ov.length) {
+        const pv = this._predicates(item, holder);
+        for (let i = ov.length - 1; i >= 0; i--) {
+          const o = ov[i];
+          let ok = true;
+          for (const k in o.predicate) if (!((pv[modelPath(k)] ?? -Infinity) >= o.predicate[k])) { ok = false; break; }
+          if (ok) { path = modelPath(o.model); break; }
+        }
       }
     }
-    const key = name + '|' + path, mname = path.replace(/^item\//, '');
+    const tintKey = resolvedDef?.tints ? JSON.stringify(resolvedDef.tints) : '';
+    const specKey = resolvedDef?.special ? JSON.stringify(resolvedDef.special) : '';
+    const key = name + '|' + path + '|' + tintKey + '|' + specKey, mname = path.replace(/^item\//, '');
     let m = this.models.get(key);
     if (m) return m;
     const res = this.store.resolveModel(path);
@@ -102,6 +191,8 @@ export class ItemRenderer {
     }
     m.itemName = name;
     m.path = path;
+    if (resolvedDef?.tints) m.tints = resolvedDef.tints;
+    if (resolvedDef?.special) m.special = resolvedDef.special;
     this.models.set(key, m);
     return m;
   }
@@ -111,13 +202,25 @@ export class ItemRenderer {
     const g = this.game, it = g.interaction;
     const local = !holder || holder.id === g.entityId;
     const pv = { lefthanded: holder ? (holder.mainHand === 0 ? 1 : 0) : (g.settings?.mainHand === 'left' ? 1 : 0) };
-    pv.custom_model_data = Number(g.items.component(item,'custom_model_data') || 0);
+    const cmd = g.items.component(item, 'custom_model_data');
+    if (cmd && typeof cmd === 'object') {
+      pv._cmdFloats = cmd.floats || [];
+      pv._cmdFlags = cmd.flags || [];
+      pv._cmdStrings = cmd.strings || [];
+      pv._cmdColors = cmd.colors || [];
+      pv.custom_model_data = Number(cmd.floats?.[0] ?? 0);
+    } else {
+      pv.custom_model_data = Number(cmd || 0);
+    }
     const max = g.items.maxDurability(item);
     const damage = g.items.damage(item);
     if (max > 0) { pv.damaged = g.items.isDamageable(item) && damage > 0 ? 1 : 0; pv.damage = Math.min(1, damage / max); }
     const using = local ? g.player.usingItem && (g.inventory.held() === item || g.inventory.offhand === item) : holder && holder.usingItem;
-    switch (g.items.name(item.id)) {
-      case 'bundle':pv.filled=bundleContentWeight(item,g.items)/64;break;
+    pv._using = !!using;
+    pv._useTicks = local ? (it?.useTicks || 0) : (holder?.useTicks || 0);
+    const itemName = g.items.name(item.id);
+    if (isBundleItem(item, g.items)) pv.filled = bundleContentWeight(item, g.items) / 64;
+    switch (itemName) {
       case 'bow':
         pv.pulling = 0; pv.pull = 0;
         if (using) { pv.pulling = 1; pv.pull = local && it ? Math.min(1, it.useTicks / 20) : 0; }
@@ -126,7 +229,7 @@ export class ItemRenderer {
         const charged = g.items.crossbowCharged(item);
         pv.charged = charged ? 1 : 0;
         pv.pulling = using && !charged ? 1 : 0;
-        pv.pull = using && !charged ? (local ? it?.useTicks || 0 : holder.useTicks || 0) / g.items.crossbowChargeDuration(item) : 0;
+        pv.pull = using && !charged ? pv._useTicks / g.items.crossbowChargeDuration(item) : 0;
         pv.firework = charged && g.items.chargedProjectiles(item).some(p => g.items.name(p.id)==='firework_rocket') ? 1 : 0;
         break;
       }
@@ -145,12 +248,39 @@ export class ItemRenderer {
     return pv;
   }
 
-  layerTint(item, layer) {
+  _resolveTintEntry(entry, item) {
+    if (!entry) return null;
+    const g = this.game;
+    const t = String(entry.type || '').replace(/^minecraft:/, '');
+    if (t === 'constant') return (Number(entry.value ?? 0xffffff) >>> 0) & 0xffffff;
+    if (t === 'dye') {
+      const dye = g.items.component(item, 'dyed_color');
+      if (dye !== undefined) return (typeof dye === 'number' ? dye : (dye?.rgb ?? dye?.color ?? 0)) & 0xffffff;
+      return entry.default !== undefined ? (Number(entry.default) >>> 0) & 0xffffff : 0xa06540;
+    }
+    if (t === 'potion') return g.items.potionColor(item) ?? ((Number(entry.default ?? -13083194) >>> 0) & 0xffffff);
+    if (t === 'map_color') return (g.items.component(item, 'map_color') ?? (entry.default !== undefined ? (Number(entry.default) >>> 0) & 0xffffff : 0x46402e)) & 0xffffff;
+    if (t === 'firework') {
+      const colors = g.items.component(item, 'firework_explosion')?.colors;
+      if (!colors?.length) return entry.default !== undefined ? (Number(entry.default) >>> 0) & 0xffffff : 0x8a8a8a;
+      let r = 0, gg = 0, b = 0;
+      for (const c of colors) { r += (c >> 16) & 255; gg += (c >> 8) & 255; b += c & 255; }
+      return ((Math.trunc(r / colors.length) << 16) | (Math.trunc(gg / colors.length) << 8) | Math.trunc(b / colors.length));
+    }
+    if (t === 'grass') {
+      const pixels = this.assets?.grassPixels, temp = entry.temperature ?? 0.5, rain = (entry.downfall ?? 1.0) * temp;
+      const x = Math.trunc((1 - temp) * 255), y = Math.trunc((1 - rain) * 255), k = (y * 256 + x) * 4;
+      return pixels ? (pixels[k] << 16) | (pixels[k + 1] << 8) | pixels[k + 2] : 0x7cbd6b;
+    }
+    return null;
+  }
+
+  layerTint(item, layer, resolvedTints = null) {
     const g = this.game;
     const name = g.items.name(item.id);
     if (name.startsWith('leather_') && layer === 0) {const dye=g.items.component(item,'dyed_color');return typeof dye === 'number' ? dye : dye?.color??dye?.rgb??10511680;}
     if (POTIONS.has(name) && layer === 0) return g.items.potionColor(item);
-    if (name.endsWith('_spawn_egg')) {const c=g.items.eggInfo(item);return c?c[layer?1:0]:0xffffff;}
+    if (name.endsWith('_spawn_egg')) { const c = g.items.eggInfo(item); return c ? c[layer ? 1 : 0] : 0xffffff; }
     if(name==='firework_star'&&layer===1){const colors=g.items.component(item,'firework_explosion')?.colors;if(!colors?.length)return 0x8a8a8a;let r=0,gg=0,b=0;for(const c of colors){r+=(c>>16)&255;gg+=(c>>8)&255;b+=c&255;}return ((Math.trunc(r/colors.length)<<16)|(Math.trunc(gg/colors.length)<<8)|Math.trunc(b/colors.length));}
     if(name==='filled_map'&&layer===1)return g.items.component(item,'map_color')??0x46402e;
     return this._defaultTint(name);
@@ -161,11 +291,14 @@ export class ItemRenderer {
     let k = name;
     if (POTIONS.has(name) || name.endsWith('_spawn_egg') || name === 'filled_map') k += ':' + this.layerTint(item, 0) + ',' + this.layerTint(item, 1);
     if (name.startsWith('leather_') || name === 'firework_star') k += ':' + this.layerTint(item, 0) + ',' + this.layerTint(item, 1);
-    k += ':' + this.modelFor(item, holder, held).path; // overrides (bow pulling, clock, compass, ...)
+    const m = this.modelFor(item, holder, held);
+    // Declared tints can vary at any index (wolf armor dyes layer 1). These
+    // colors are baked into generated meshes, so include every evaluated tint.
+    k += ':' + m.path + (m.tints ? ':' + m.tints.map((_, i) => this.layerTint(item, i, m.tints)).join(',') : '');
     if (name.endsWith('_banner') || name === 'shield') {
-      k += ':' + JSON.stringify(itemBannerLayers766(this.game,item));
+      k += ':' + JSON.stringify(itemBannerLayers774(this.game, item));
     }
-    if(name==='decorated_pot')k+=':'+JSON.stringify(itemPotDecorations766(this.game,item));
+    if (name === 'decorated_pot') k += ':' + JSON.stringify(itemPotDecorations774(this.game, item));
     if(name==='player_head')k+=':'+JSON.stringify(this.game.items.nbt(item)?.SkullOwner||null);
     return k;
   }
@@ -210,7 +343,7 @@ export class ItemRenderer {
     for (let i = 0; i < m.layers.length; i++) {
       const e = this.atlas.entries.get(m.layers[i]);
       if (!e) continue;
-      const c = rgbOf(this.layerTint(item, i));
+      const c = rgbOf(this.layerTint(item, i, m.tints));
       gui.quad(tex, x, y, x + 16, y + 16, e.uv[0], e.uv[1], e.uv[2], e.uv[3], [c[0], c[1], c[2], 1]);
     }
   }
@@ -254,7 +387,7 @@ export class ItemRenderer {
       gui.rect(x + 2, y + 13, x + 15, y + 15, 0xff000000);
       gui.rect(x + 2, y + 13, x + 2 + i, y + 14, (0xff000000 | hsvToRgb(f2 / 3, 1, 1)) >>> 0);
     }
-    if(g.items.name(item.id)==='bundle'){const bar=bundleBar(item,g.items);if(bar){gui.rect(x+2,y+13,x+15,y+15,0xff000000);gui.rect(x+2,y+13,x+2+bar.width,y+14,(0xff000000|bar.color)>>>0);}}
+    if (isBundleItem(item, g.items)) { const bar = bundleBar(item, g.items); if (bar) { gui.rect(x + 2, y + 13, x + 15, y + 15, 0xff000000); gui.rect(x + 2, y + 13, x + 2 + bar.width, y + 14, (0xff000000 | bar.color) >>> 0); } }
     const cd = g.cooldownFraction ? g.cooldownFraction(item.id, g.partial || 0) : 0;
     if (cd > 0) gui.rect(x, y + Math.floor(16 * (1 - cd)), x + 16, y + Math.floor(16 * (1 - cd)) + Math.ceil(16 * cd), 0x7fffffff);
   }
@@ -296,7 +429,7 @@ export class ItemRenderer {
     let o = 0;
     for (const q of quads) {
       const sh = q.shade && m.guiLight !== 'front' ? SHADE_GUI[q.dir] : 1;
-      const [r, g, b] = rgbOf(q.tint >= 0 ? this._defaultTint(m.itemName || m.name) : 0xffffff);
+      const [r, g, b] = rgbOf(q.tint >= 0 ? (m.tints?.[q.tint]?.value !== undefined ? (Number(m.tints[q.tint].value) >>> 0) & 0xffffff : this._defaultTint(m.itemName || m.name)) : 0xffffff);
       for (let i = 0; i < 4; i++) {
         data[o] = q.pos[i * 3]; data[o + 1] = q.pos[i * 3 + 1]; data[o + 2] = q.pos[i * 3 + 2];
         data[o + 3] = q.uv[i * 2]; data[o + 4] = q.uv[i * 2 + 1];
@@ -311,11 +444,12 @@ export class ItemRenderer {
     if (GRASS_ITEMS.has(name)) {
       // ItemColors/BlockColors without a world: GrassColor.get(0.5, 1.0), including resource packs.
       const pixels = this.assets.grassPixels, k = (127 * 256 + 127) * 4;
-      return pixels ? (pixels[k] << 16) | (pixels[k + 1] << 8) | pixels[k + 2] : 0x91bd59;
+      return pixels ? (pixels[k] << 16) | (pixels[k + 1] << 8) | pixels[k + 2] : 0x7cbd6b;
     }
     if (name === 'lily_pad') return 0x71c35c; // BlockColors with no world/position
     if (name === 'vine') return 0x48b518;
-    if (name === 'mangrove_leaves') return 0x92c648;
+    if (name === 'mangrove_leaves') return 0x48b518;
+    if (name === 'leaf_litter') return 0x5c3c32;
     if (FOLIAGE_ITEMS.has(name)) {
       if (name.startsWith('spruce')) return 0x619961;
       if (name.startsWith('birch')) return 0x80a755;
@@ -329,9 +463,13 @@ export class ItemRenderer {
     const name = m.itemName || m.name;
     const root = new Node();
     const mat = (tex) => entityMaterial(tex, { alphaTest: 0.1, fullBright: gui, guiLighting: gui });
-    if(name==='decorated_pot'){root.add(buildPot766(itemPotDecorations766(this.game,item),'north',mat).root);return root;}
-    if (name === 'chest' || name === 'trapped_chest' || name === 'ender_chest') {
-      const tex = name === 'ender_chest' ? 'entity/chest/ender.png' : name === 'trapped_chest' ? 'entity/chest/trapped.png' : 'entity/chest/normal.png';
+    if (name === 'decorated_pot') { root.add(buildPot774(itemPotDecorations774(this.game, item), 'north', mat).root); return root; }
+    const specialChestTex = m.special?.type === 'minecraft:chest' || m.special?.type === 'chest' ? m.special.texture : null;
+    const chestFile = specialChestTex ? specialChestTex.replace(/^minecraft:/, '')
+      : name === 'ender_chest' ? 'ender' : name === 'trapped_chest' ? 'trapped' : name === 'chest' ? 'normal'
+      : { copper_chest: 'copper', exposed_copper_chest: 'copper_exposed', weathered_copper_chest: 'copper_weathered', oxidized_copper_chest: 'copper_oxidized' }[name.replace(/^waxed_/, '')];
+    if (chestFile) {
+      const tex = 'entity/chest/' + chestFile + '.png';
       const { lid, below, knob } = blockModel('chest', ['lid', 'below', 'knob']); // ModelChest
       const g = new Node();
       for (const p of [lid, knob, below]) g.add(p.build());
@@ -371,8 +509,8 @@ export class ItemRenderer {
     if (name === 'shield' || name === 'shield_blocking') {
       // TileEntityItemStackRenderer: ModelShield under scale(1, -1, -1); the banner design (BannerTextures.SHIELD_DESIGNS,
       // native base_color/banner_patterns components) or the plain shield texture
-      const layers=itemBannerLayers766(this.game,item);
-      let tex='entity/shield_base_nopattern.png';
+      const layers = itemBannerLayers774(this.game, item);
+      let tex = 'entity/shield_base_nopattern.png';
       if(layers){const img=composeBanner(this.assets,layers,true);if(!img)return null;const key='shielditem:'+JSON.stringify(layers);tex=this.assets.textures.get(key)||this.assets.makeTexture(key,img.width,img.height,img.data);}
       const { plate, handle } = blockModel('shield', ['plate', 'handle']);
       const g = new Node();
@@ -384,7 +522,7 @@ export class ItemRenderer {
     }
     if (name.endsWith('_banner')) {
       // TileEntityBannerRenderer with no world: standing, rotation 0, flag at time 0, colours from the item
-      const layers=itemBannerLayers766(this.game,item),img=composeBanner(this.assets,layers);
+      const layers = itemBannerLayers774(this.game, item), img = composeBanner(this.assets, layers);
       if(!img)return null;
       const key='banneritem:'+JSON.stringify(layers);
       const tex = this.assets.textures.get(key) || this.assets.makeTexture(key, img.width, img.height, img.data);
@@ -462,7 +600,7 @@ export class ItemRenderer {
     if (mesh !== undefined) return mesh;
     const pos = [], uv = [], nor = [], col = [];
     for (const q of m.baked.quads) {
-      const [r, g, b] = rgbOf(q.tint >= 0 ? this._defaultTint(m.itemName || m.name) : 0xffffff);
+      const [r, g, b] = rgbOf(q.tint >= 0 ? (m.tints?.[q.tint]?.value !== undefined ? (Number(m.tints[q.tint].value) >>> 0) & 0xffffff : this._defaultTint(m.itemName || m.name)) : 0xffffff);
       for (let i = 0; i < 4; i++) {
         pos.push(q.pos[i * 3] - 0.5, q.pos[i * 3 + 1] - 0.5, q.pos[i * 3 + 2] - 0.5);
         uv.push(q.uv[i * 2], q.uv[i * 2 + 1]);
@@ -482,7 +620,7 @@ export class ItemRenderer {
     for (let li = 0; li < m.layers.length; li++) {
       const e = atlas.entries.get(m.layers[li]);
       if (!e) continue;
-      const [r, g, b] = rgbOf(this.layerTint(item, li));
+      const [r, g, b] = rgbOf(this.layerTint(item, li, m.tints));
       const w = e.w, h = e.h;
       const S = atlas.size;
       const u0 = e.x / S, v0 = e.y / S, du = w / S, dv = h / S;

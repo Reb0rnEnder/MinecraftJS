@@ -7,11 +7,11 @@ const SLICE_VOLUME = SLICE_AREA * SLICE;
 
 // Copy the neighbourhood of section (cx, sy, cz). tileProps: Map 'x,y,z' -> props (flower pots etc.)
 export function buildSlice(world, cx, sy, cz, tileProps, biomeBlendRadius = 2) {
-  const states = new Uint16Array(SLICE_VOLUME);
+  let states = new Uint16Array(SLICE_VOLUME);
   const light = new Uint8Array(SLICE_VOLUME); // sky << 4 | block
   const biomeMargin = Math.max(SLICE_MARGIN, Math.max(0, Math.min(7, Math.round(biomeBlendRadius)))), biomeSize = 16 + biomeMargin * 2;
   const biomeOx = cx * 16 - biomeMargin, biomeOz = cz * 16 - biomeMargin;
-  const biomes = new Uint8Array(SLICE * biomeSize * biomeSize);
+  const biomes = new Uint16Array(SLICE * biomeSize * biomeSize);
   const ox = cx * 16 - SLICE_MARGIN, oy = sy * 16 - SLICE_MARGIN, oz = cz * 16 - SLICE_MARGIN;
   const chunks = [];
   for (let dz = -1; dz <= 1; dz++) for (let dx = -1; dx <= 1; dx++) chunks.push(world.getChunk(cx + dx, cz + dz) || null);
@@ -30,11 +30,19 @@ export function buildSlice(world, cx, sy, cz, tileProps, biomeBlendRadius = 2) {
         const c = chunks[(czOff + 1) * 3 + dx + 1];
         const o = row + lx0;
         if (!c) { light.fill(0xf0, o, o + len); continue; }
-        if(c.nativeLight){
-          const sy=y>>4,s=c.getSection(sy),sky=c.nativeLight.sky[sy+1],block=c.nativeLight.block[sy+1];
-          const base=((y&15)<<8)|(bz<<4);
-          for(let k=0;k<len;k++){const i=base|(bx0+k);states[o+k]=s?s.blocks[i]:0;light[o+k]=(c.getSkyLight(bx0+k,y,bz)<<4)|c.getBlockLight(bx0+k,y,bz);}
-
+        if (c.nativeLight) {
+          const sectionY = y >> 4, s = c.getSection(sectionY);
+          // Validate light section index uses (sectionY - c.minSection + 1) consistently with Chunk/nativeSkyLight.
+          const lightIdx = sectionY - c.minSection + 1;
+          void c.nativeLight.sky[lightIdx];
+          const base = ((y & 15) << 8) | (bz << 4);
+          for (let k = 0; k < len; k++) {
+            const i = base | (bx0 + k);
+            const v = s ? s.blocks[i] : 0;
+            if (v > 65535 && states instanceof Uint16Array) states = new Uint32Array(states);
+            states[o + k] = v;
+            light[o + k] = (c.getSkyLight(bx0 + k, y, bz) << 4) | c.getBlockLight(bx0 + k, y, bz);
+          }
           continue;
         }
         if (y < c.minY) continue; // void: air, no light
@@ -44,7 +52,9 @@ export function buildSlice(world, cx, sy, cz, tileProps, biomeBlendRadius = 2) {
         const base = ((y & 15) << 8) | (bz << 4);
         for (let k = 0; k < len; k++) {
           const i = base | (bx0 + k);
-          states[o + k] = s.blocks[i];
+          const v = s.blocks[i];
+          if (v > 65535 && states instanceof Uint16Array) states = new Uint32Array(states);
+          states[o + k] = v;
           const sh = (i & 1) << 2, j = i >> 1;
           light[o + k] = (((s.skyLight[j] >> sh) & 15) << 4) | ((s.blockLight[j] >> sh) & 15);
         }
@@ -107,7 +117,7 @@ export class SliceWorld {
 
   // Raw states of the section itself (16^3, vanilla index order y, z, x)
   getSectionBlocks() {
-    const out = new Uint16Array(4096);
+    const out = new (this.states instanceof Uint16Array ? Uint16Array : Uint32Array)(4096);
     let empty = true;
     for (let y = 0; y < 16; y++) for (let z = 0; z < 16; z++) {
       const src = (y + SLICE_MARGIN) * SLICE_AREA + (z + SLICE_MARGIN) * SLICE + SLICE_MARGIN;

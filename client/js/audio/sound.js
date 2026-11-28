@@ -433,7 +433,7 @@ export class SoundManager {
     }
     if(p.effectId===3008){
       const name=getBlock(p.data)?.name;
-      if(name==='suspicious_sand'||name==='suspicious_gravel')this.play('item.brush.brushing.'+(name==='suspicious_sand'?'sand':'gravel')+'.complete',cx,cy,cz,1,1,{category:'player'});
+      if(name==='suspicious_sand'||name==='suspicious_gravel')this.play('item.brush.brushing.'+(name==='suspicious_sand'?'sand':'gravel'),cx,cy,cz,1,1,{category:'player'});
       return;
     }
     if(p.effectId===1500){this.play(p.data>0?'block.composter.fill_success':'block.composter.fill',x,y,z,1,1,{category:'block'});return;}

@@ -4,12 +4,13 @@ import {existsSync,readdirSync} from 'node:fs';
 import {readFile,writeFile} from 'node:fs/promises';
 import {createRequire} from 'node:module';
 import {delimiter,join} from 'node:path';
-const VERSION='1.20.6',root=new URL('..',import.meta.url).pathname,cache=join(root,'cache/port-'+VERSION);
+const VERSION='1.21.11',root=new URL('..',import.meta.url).pathname,cache=join(root,'cache/port-'+VERSION);
 const jars=dir=>existsSync(dir)?readdirSync(dir,{recursive:true}).filter(n=>n.endsWith('.jar')).sort().map(n=>join(dir,n)):[];
 let cp;
 if(existsSync(join(root,'lib/native-classpath.js')))cp=createRequire(import.meta.url)(join(root,'lib/native-classpath.js')).nativeClasspath(cache);
 else if(existsSync(join(cache,'bundler')))cp=[join(cache,'client.jar'),...jars(join(cache,'bundler/META-INF/libraries'))].join(delimiter);
 else cp=[join(cache,'client.jar'),join(cache,'server.jar')].join(delimiter); // pre-1.18 servers bundle the libraries
+if(existsSync(join(cache,'client-unsigned.jar'))){const parts=cp.split(delimiter);parts[0]=join(cache,'client-unsigned.jar');cp=parts.join(delimiter);}
 const stdout=execFileSync(process.env.JAVA||'java',['-cp',cp,join(root,'tools/ExtractStatItems.java'),join(cache,'client.txt')],{encoding:'utf8',maxBuffer:1<<24,stdio:['ignore','pipe','ignore']});
 const data=JSON.parse(stdout.slice(stdout.indexOf('{"blockToItem"')).split('\n')[0]);
 const source=`// Native ${VERSION} Block.asItem() / BlockItem.getBlock() pairs whose names differ ("air" = no item, null = not a

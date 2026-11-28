@@ -1,4 +1,5 @@
 // Screen stack (GuiScreen equivalent): routes input and rendering to the active screen.
+import { navigate, children, focused, rectOf, changeFocus, clearFocus, setInitialFocus, inputTypeForKey, INPUT, setLastInputType } from '../focus-navigation.js';
 
 export class Screen {
   constructor(game) {
@@ -15,7 +16,7 @@ export class Screen {
   get width() { return this.game.gui.width; }
   get height() { return this.game.gui.height; }
   init() {}
-  onResize() { this.buttons = []; this.fields = []; this.init(); }
+  onResize() { clearFocus(this); this.buttons = []; this.fields = []; this.init(); setInitialFocus(this); }
   tick() { for (const f of this.fields) f.tick(); }
   render(gui, mx, my, partial) {
     if (this.background === 'world') gui.menuBackground(this.game.inWorld);
@@ -26,27 +27,30 @@ export class Screen {
   }
   renderContent() {}
   mouseDown(mx, my, button) {
-    if (button === 0) {
-      for (const b of this.buttons) if (b.mouseDown(mx, my, this.game)) return true;
+    setLastInputType(INPUT.MOUSE);
+    if (button !== 0) return false;
+    for (const widget of children(this)) {
+      if (widget.visible === false || widget.enabled === false || widget.active === false) continue;
+      let hit = false;
+      if (this.fields.includes(widget)) hit = widget.mouseDown(mx, my, this.gui);
+      else if (this.buttons.includes(widget)) hit = widget.mouseDown(mx, my, this.game);
+      else if (widget === this.list && this.mouseDown === Screen.prototype.mouseDown && widget.mouseDown) {
+        const r = rectOf(widget);
+        if (mx >= r.x && mx < r.x + r.w && my >= r.y && my < r.y + r.h) hit = widget.mouseDown(mx, my, button);
+      }
+      if (hit) { changeFocus(this, widget); return true; }
     }
-    let any = false;
-    for (const f of this.fields) if (f.mouseDown(mx, my, this.gui)) any = true;
-    return any;
+    clearFocus(this);
+    return false;
   }
   mouseUp(mx, my, button) { for (const b of this.buttons) if (b.mouseUp) b.mouseUp(); }
   mouseMove() {}
   key(e) {
-    if(e.code==='Tab') {
-      const widgets=[...this.fields.filter(w=>w.enabled!==false),...this.buttons.filter(w=>w.visible!==false&&w.enabled!==false),...(this.list?[this.list]:[])];
-      if(!widgets.length)return false;
-      const i=widgets.findIndex(w=>w.focused),next=(i+(e.shift?-1:1)+widgets.length)%widgets.length;
-      widgets.forEach(w=>{w.focused=false;});this.focusedWidget=widgets[next];this.focusedWidget.focused=true;
-      return true;
-    }
-    for (const f of this.fields) if (f.key(e)) return true;
-    if(this.focusedWidget&&!this.fields.includes(this.focusedWidget)&&this.focusedWidget.key?.(e,this.game))return true;
+    setLastInputType(inputTypeForKey(e.code));
     if (e.code === 'Escape') { this.close(); return true; }
-    return false;
+    const active = focused(this);
+    if (active?.key?.(e, this.game)) return true;
+    return navigate(this, e);
   }
   keyUp() {}
   char(c) { for (const f of this.fields) if (f.char(c)) return true; return false; }
@@ -68,8 +72,10 @@ export class ScreenManager {
     if (this.current) this.current.onClose();
     this.current = screen;
     if (screen) {
+      clearFocus(screen);
       screen.buttons = []; screen.fields = [];
       screen.init();
+      setInitialFocus(screen);
       if (g.input.locked) { this.ignoreUnlock = true; g.input.unlock(); }
     } else if (g.inWorld) {
       g.input.lock();
@@ -116,15 +122,31 @@ export class ScreenManager {
     for(const field of s.fields)gui.narrator?.widget(field,false,field.label||field.narrationLabel||'', 'editBox');
   }
 
-  onKey(e) { if (this.current) this.current.key(e); }
+  onKey(e) { setLastInputType(inputTypeForKey(e.code)); if (this.current) this.current.key(e); }
   onKeyUp(e) { if (this.current) this.current.keyUp(e); }
   onChar(c) { if (this.current) this.current.char(c); }
   onMove() { if (this.current && this.current.mouseMove) { const [mx, my] = this._mouse(); this.current.mouseMove(mx, my); } }
   onWheel(d) { if (this.current) this.current.wheel(d); }
   onMouse(e) {
     if (!this.current) return;
+    if (e.down) setLastInputType(INPUT.MOUSE);
     const [mx, my] = this._mouse();
-    if (e.down) this.current.mouseDown(mx, my, e.button, e);
-    else this.current.mouseUp(mx, my, e.button, e);
+    if (e.down) {
+      const screen = this.current;
+      const handled = screen.mouseDown(mx, my, e.button, e);
+      // Many screens route list clicks in their own mouseDown override. Keep
+      // those lists in the same focus system after their row handler succeeds.
+      if (handled && e.button === 0) {
+        const within = (widget) => {
+          const r = rectOf(widget);
+          return Number.isFinite(r.x) && Number.isFinite(r.y) && mx >= r.x && mx < r.x + r.w && my >= r.y && my < r.y + r.h;
+        };
+        const currentFocus = focused(screen);
+        if (!currentFocus || !within(currentFocus)) {
+          const list = children(screen).find((widget) => widget.slotHeight !== undefined && within(widget));
+          if (list) changeFocus(screen, list);
+        }
+      }
+    } else this.current.mouseUp(mx, my, e.button, e);
   }
 }

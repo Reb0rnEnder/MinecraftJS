@@ -78,7 +78,7 @@ export class RecipeBookGui {
   // GuiButtonRecipe.getOrderedRecipes: craftable first (only craftable when filtering)
   _ordered(l) { return this.state.filtering ? l.craftable.slice() : [...l.craftable, ...l.valid.filter((r) => !l.craftable.includes(r))]; }
   _shown(l) { const o = this._ordered(l); return o.length ? o[Math.floor(this.time / 30) % o.length] : null; }
-  _stack(rec) { return {...structuredClone(rec.result),damage:rec.result.damage??(rec.result.data===32767?0:rec.result.data??0)}; }
+  _stack(rec) { return structuredClone(rec.result); }
 
   _buttons() {
     const out = [];

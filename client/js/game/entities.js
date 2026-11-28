@@ -5,7 +5,7 @@ import {encodeEntityPosition,relativeEntityPosition} from './entity-position.js'
 import {playPickupSound} from '../audio/client-sound-triggers.js';
 import { tickDroppedItem } from './dropped-item.js';
 import{pickupVisual,pickupPosition,tickPickupVisuals}from'./item-pickup.js';
-import{paintingFacing762,configurePainting762,PAINTING_VARIANT_INDEX_762}from'./painting-1.19.4.js';
+import{paintingFacing774,configurePainting774,PAINTING_VARIANT_INDEX_774,PAINTING_DIRECTION_INDEX_774}from'./painting-1.21.11.js';
 import {isSquid,initSquid,tickSquid,squidInWater} from './squid-animation.js';
 import {detachRemovedEntities} from './riding-lifecycle.js';
 import {applyNetherMetadata} from './nether-metadata.js';
@@ -224,11 +224,10 @@ export class EntityManager {
       e.width = e.height = 1; e.eyeHeight = 0;
       e.pickable = true; e.pickRadius = 0; e.noPhysics = true; e.response = false;
     }
-    // crd.a(iz) consumes velocity in constructors for spit/bullets and acceleration
-    // for fireballs, then clears data for these and several immobile objects.
-    const ignoresVelocity = ['fishing_bobber', 'glow_item_frame', 'item_frame', 'leash_knot', 'potion', 'experience_bottle', 'falling_block'];
+    // Velocity already arrives decoded from lpVec3 in blocks/tick.
+    const ignoresVelocity = ['fishing_bobber', 'glow_item_frame', 'item_frame', 'leash_knot', 'potion', 'splash_potion', 'lingering_potion', 'experience_bottle', 'falling_block'];
     if (p.velocity) {
-      const v = [p.velocity.x / 8000, p.velocity.y / 8000, p.velocity.z / 8000];
+      const v = [p.velocity.x, p.velocity.y, p.velocity.z];
       if (FIREBALLS.has(e.entityName)) {
         const length = Math.hypot(...v);
         [e.accelX, e.accelY, e.accelZ] = v.map(n => length ? n / length * 0.1 : 0);
@@ -248,7 +247,11 @@ export class EntityManager {
         e.blockPos = { x: Math.floor(p.x), y: Math.floor(p.y), z: Math.floor(p.z) };
         e.box = itemFrameBox(p.x, p.y, p.z, e.facing);
         break;
-      case 'painting':e.blockPos={x:Math.floor(p.x),y:Math.floor(p.y),z:Math.floor(p.z)};e.facing=paintingFacing762(p.objectData);configurePainting762(e,0);break;
+      case 'painting':
+        e.blockPos = { x: Math.floor(p.x), y: Math.floor(p.y), z: Math.floor(p.z) };
+        e.facing = paintingFacing774(p.objectData);
+        configurePainting774(e, 0, this.game.paintingVariants);
+        break;
       case 'armor_stand': e.armorFlags = 0; break;
       case 'fishing_bobber': e.owner = p.objectData; break;
       case 'area_effect_cloud': e.radius = 3; break;
@@ -316,11 +319,15 @@ export class EntityManager {
   setVelocity(p) {
     const e = this.map.get(p.entityId);
     if (!e) return;
-    e.motionX = p.velocity.x / 8000; e.motionY = p.velocity.y / 8000; e.motionZ = p.velocity.z / 8000;
+    e.motionX = p.velocity.x; e.motionY = p.velocity.y; e.motionZ = p.velocity.z;
   }
 
   _setTarget(e, x, y, z, yaw, pitch, inc = 3) {
-    if(e.kind==='painting'){e.blockPos={x:Math.floor(x),y:Math.floor(y),z:Math.floor(z)};configurePainting762(e);return;}
+    if (e.kind === 'painting') {
+      e.blockPos = { x: Math.floor(x), y: Math.floor(y), z: Math.floor(z) };
+      configurePainting774(e, undefined, this.game.paintingVariants);
+      return;
+    }
     if(e.kind==='leash'){placeLeashKnot(e,x,y,z);return;}
     e.newX = x; e.newY = y; e.newZ = z;
     e.newYaw = yaw; e.newPitch = pitch;
@@ -371,17 +378,23 @@ export class EntityManager {
     if (e) e.headYaw = p.headYaw;
   }
 
-  // slot: 0 main hand, 1 off hand, 2 feet, 3 legs, 4 chest, 5 head; equipment[] is [held, feet, legs, chest, head]
+  // slot: 0 main hand, 1 off hand, 2 feet, 3 legs, 4 chest, 5 head, 6 body, 7 saddle
   setEquipment(id, slot, item) {
     const e = this.map.get(id);
     if (!e) return;
     if (slot === 0) e.equipment[0] = item;
     else if (slot === 1) e.offhand = item;
     else if (slot >= 2 && slot <= 5) e.equipment[slot - 1] = item;
-    else if(slot===6){
-      e.bodyEquipment=item;
-      // Llamas wear their carpet in the body slot since 1.20.5
-      if(e.entityName==='llama'||e.entityName==='trader_llama'){const n=item?.id?this.game.items?.def?.(item.id)?.name:null,dye=n?.endsWith('_carpet')?n.slice(0,-7):null;e.llamaCarpet=dye?CARPET_DYES.indexOf(dye):-1;}
+    else if (slot === 6) {
+      e.bodyEquipment = item;
+      if (e.entityName === 'llama' || e.entityName === 'trader_llama') {
+        const n = item?.id ? this.game.items?.def?.(item.id)?.name : null;
+        const dye = n?.endsWith('_carpet') ? n.slice(0, -7) : null;
+        e.llamaCarpet = dye ? CARPET_DYES.indexOf(dye) : -1;
+      }
+    } else if (slot === 7) {
+      e.saddleEquipment = item;
+      e.saddled = !!item && (item.count ?? 1) > 0;
     }
   }
 
@@ -419,12 +432,12 @@ export class EntityManager {
         e.eyeHeight=pose==='sneaking'?1.27:['swimming','fall_flying','spin_attack'].includes(pose)?.4:pose==='sleeping'?.2:1.62;
       }
     }
-    const villagerData=Object.values(native).find(v=>v&&typeof v==='object'&&Number.isInteger(v.villagerProfession));
-    if(villagerData){e.villagerData=villagerData;e.profession=villagerData.villagerProfession;e.villagerProfession=e.profession;e.villagerType=villagerData.villagerType;e.villagerLevel=villagerData.level;}
-    if(living498&&Object.hasOwn(native,12)){
-      e.sleepingPosition=native[12];e.bedPos=native[12];e.sleeping=!!native[12];
-    } else if(native[6]!==undefined&&native[6]!==2){e.sleeping=false;e.bedPos=null;e.sleepingPosition=null;}
-    m={};for(const [key,value] of Object.entries(native)){const i=Number(key);if(i===6||living498&&i===12)continue;m[i-(i>=7?living498&&i>=13?2:1:0)]=value;}
+    const villagerData = Object.values(native).find(v => v && typeof v === 'object' && Number.isInteger(v.villagerProfession));
+    if (villagerData) { e.villagerData = villagerData; e.profession = villagerData.villagerProfession; e.villagerProfession = e.profession; e.villagerType = villagerData.villagerType; e.villagerLevel = villagerData.level; }
+    if (living498 && Object.hasOwn(native, 12)) {
+      e.sleepingPosition = native[12]; e.bedPos = native[12]; e.sleeping = !!native[12];
+    } else if (native[6] !== undefined && native[6] !== 2) { e.sleeping = false; e.bedPos = null; e.sleepingPosition = null; }
+    m = {}; for (const [key, value] of Object.entries(native)) { const i = Number(key); if (i === 6 || (living498 && i === 12)) continue; m[i - (i >= 7 ? living498 && i >= 13 ? 2 : 1 : 0)] = value; }
     const name = e.entityName;
     if(name==='painting'&&wire[PAINTING_VARIANT_INDEX_762]!==undefined)configurePainting762(e,wire[PAINTING_VARIANT_INDEX_762]);
     const own=WIRE_METADATA[name]||{},assign=(symbol,key)=>{const id=own[symbol];if(id!==undefined&&wire[id]!==undefined){if(['snifferState','dashing'].includes(key)&&e[key]!==wire[id])e.wildAnimationStart=e.ticks;e[key]=wire[id];}};
@@ -462,29 +475,43 @@ export class EntityManager {
       assign('DATA_WIDTH_ID', 'width'); assign('DATA_HEIGHT_ID', 'height');
       assign('DATA_RESPONSE_ID', 'response');
     }
-    if(name==='frog'){assign('DATA_VARIANT_ID','frogVariant');assign('DATA_TONGUE_TARGET_ID','tongueTarget');}
-    if(name==='allay'){assign('DATA_DANCING','dancing');assign('DATA_CAN_DUPLICATE','canDuplicate');}
-    if(name==='warden')assign('CLIENT_ANGER_LEVEL','angerLevel');
-    if(name==='sniffer')assign('DATA_STATE','snifferState');
-    if(name==='camel'){assign('DASH','dashing');assign('LAST_POSE_CHANGE_TICK','lastPoseChangeTick');assign('DATA_ID_FLAGS','horseFlags');}
-    if(name==='goat'){assign('DATA_HAS_LEFT_HORN','hasLeftHorn');assign('DATA_HAS_RIGHT_HORN','hasRightHorn');}
-    if(name==='cat'){assign('DATA_VARIANT_ID','catType');assign('IS_LYING','catLying');assign('RELAX_STATE_ONE','catRelaxing');assign('DATA_COLLAR_COLOR','collar');}
-
-    applyNetherMetadata(e,wire);
-    const ids=NATIVE_METADATA[name];
-    if(ids){
-      const assignments={cat:{DATA_TYPE_ID:'catType',IS_LYING:'catLying',RELAX_STATE_ONE:'catRelaxing',DATA_COLLAR_COLOR:'collar'},fox:{DATA_TYPE_ID:'foxType'},panda:{MAIN_GENE_ID:'pandaGene',HIDDEN_GENE_ID:'pandaHiddenGene'},villager:{DATA_UNHAPPY_COUNTER:'unhappyCounter'}}[name]||{};
-      for(const [field,key] of Object.entries(assignments))if(native[ids[field]]!==undefined)e[key]=native[ids[field]];
+    if (name === 'frog') { assign('DATA_VARIANT_ID', 'frogVariant'); assign('DATA_TONGUE_TARGET_ID', 'tongueTarget'); }
+    if (name === 'allay') { assign('DATA_DANCING', 'dancing'); assign('DATA_CAN_DUPLICATE', 'canDuplicate'); }
+    if (name === 'warden') assign('CLIENT_ANGER_LEVEL', 'angerLevel');
+    if (name === 'sniffer') assign('DATA_STATE', 'snifferState');
+    if (name === 'camel' || name === 'camel_husk') { assign('DASH', 'dashing'); assign('LAST_POSE_CHANGE_TICK', 'lastPoseChangeTick'); assign('DATA_ID_FLAGS', 'horseFlags'); }
+    if (name === 'goat') { assign('DATA_HAS_LEFT_HORN', 'hasLeftHorn'); assign('DATA_HAS_RIGHT_HORN', 'hasRightHorn'); }
+    if (name === 'cat') { assign('DATA_VARIANT_ID', 'catType'); assign('IS_LYING', 'catLying'); assign('RELAX_STATE_ONE', 'catRelaxing'); assign('DATA_COLLAR_COLOR', 'collar'); }
+    if (name === 'cow' || name === 'chicken' || name === 'pig') assign('DATA_VARIANT_ID', name + 'Variant');
+    if (name === 'happy_ghast') { assign('IS_LEASH_HOLDER', 'leashHolder'); assign('STAYS_STILL', 'staysStill'); }
+    if (name === 'copper_golem') { assign('DATA_WEATHER_STATE', 'weatherState'); assign('COPPER_GOLEM_STATE', 'copperGolemState'); }
+    if (name === 'creaking') { assign('CAN_MOVE', 'canMove'); assign('IS_ACTIVE', 'creakingActive'); assign('IS_TEARING_DOWN', 'tearingDown'); assign('HOME_POS', 'homePos'); }
+    if (name === 'nautilus' || name === 'zombie_nautilus') {
+      if (own.DATA_FLAGS_ID !== undefined && wire[own.DATA_FLAGS_ID] !== undefined) {
+        e.sitting = !!(wire[own.DATA_FLAGS_ID] & 1);
+        e.tamed = !!(wire[own.DATA_FLAGS_ID] & 4);
+      }
+      assign('DATA_OWNERUUID_ID', 'ownerUuid'); assign('DASH', 'dashing');
+      if (name === 'zombie_nautilus') assign('DATA_VARIANT_ID', 'zombieNautilusVariant');
     }
-    if(name==='fox'&&wire[WIRE_METADATA.fox.DATA_FLAGS_ID]!==undefined)applyFoxFlags(e,wire[WIRE_METADATA.fox.DATA_FLAGS_ID]);
-    if(name==='mooshroom')e.mooshroomType=Object.values(native).find(v=>v==='brown'||v==='red')||e.mooshroomType||'red';
-    if(name==='bee'){
-      // Bee's own 1.15.2 accessors are the byte at 16 and anger-time int at
-      // 17. Read the native snapshot; `m` below is the compatibility view
-      // with the inherited 1.14.4 living-index shift applied.
-      const flags=wire[WIRE_METADATA.bee.DATA_FLAGS_ID];
-      if(flags!==undefined){e.hasNectar=!!(flags&8);e.hasStung=!!(flags&4);e.beeRolling=!!(flags&2);}
-      if(wire[WIRE_METADATA.bee.DATA_REMAINING_ANGER_TIME]!==undefined){e.angerTime=wire[WIRE_METADATA.bee.DATA_REMAINING_ANGER_TIME];e.angry=e.angerTime>0;}
+
+    applyNetherMetadata(e, wire);
+    const ids = NATIVE_METADATA[name];
+    if (ids) {
+      const assignments = { cat: { DATA_TYPE_ID: 'catType', IS_LYING: 'catLying', RELAX_STATE_ONE: 'catRelaxing', DATA_COLLAR_COLOR: 'collar' }, fox: { DATA_TYPE_ID: 'foxType' }, panda: { MAIN_GENE_ID: 'pandaGene', HIDDEN_GENE_ID: 'pandaHiddenGene' }, villager: { DATA_UNHAPPY_COUNTER: 'unhappyCounter' } }[name] || {};
+      for (const [field, key] of Object.entries(assignments)) if (native[ids[field]] !== undefined) e[key] = native[ids[field]];
+    }
+    if (name === 'fox' && wire[WIRE_METADATA.fox.DATA_FLAGS_ID] !== undefined) applyFoxFlags(e, wire[WIRE_METADATA.fox.DATA_FLAGS_ID]);
+    if (name === 'mooshroom') e.mooshroomType = Object.values(native).find(v => v === 'brown' || v === 'red') || e.mooshroomType || 'red';
+    if (name === 'bee') {
+      const flags = wire[WIRE_METADATA.bee.DATA_FLAGS_ID];
+      if (flags !== undefined) { e.hasNectar = !!(flags & 8); e.hasStung = !!(flags & 4); e.beeRolling = !!(flags & 2); }
+      if (wire[WIRE_METADATA.bee.DATA_ANGER_END_TIME] !== undefined) {
+        e.angerEndTime = wire[WIRE_METADATA.bee.DATA_ANGER_END_TIME];
+        const worldAge = BigInt(Math.trunc(Number(this.game.world?.worldAge ?? 0)));
+        const end = typeof e.angerEndTime === 'bigint' ? e.angerEndTime : BigInt(Math.trunc(Number(e.angerEndTime) || 0));
+        e.angry = end > 0n && end > worldAge;
+      }
     }
     const set = (index, key) => { if (m[index] !== undefined) e[key] = m[index]; };
     const bit = (index, mask, key) => { if (m[index] !== undefined) e[key] = !!(m[index] & mask); };
@@ -498,14 +525,12 @@ export class EntityManager {
       e.glowing = !!(m[0] & 64);
       e.elytraFlying = !!(m[0] & 128);
     }
-    // 1.13 index 2 is optional chat (metadata type 5), including null to clear.
-    // Keep metadata raw; renderers consume only the converted display property.
     if (m[2] !== undefined) e.customName = chatToLegacy(m[2]);
     if (m[3] !== undefined) e.nameVisible = !!m[3];
     if (m[4] !== undefined) e.silent = !!m[4];
     if (m[5] !== undefined) e.noGravity = !!m[5];
     set(1, 'air');
-    const living = e.kind === 'mob' || e.kind === 'player' || e.kind === 'armorstand';
+    const living = e.kind === 'mob' || e.kind === 'player' || e.kind === 'armorstand' || e.kind === 'mannequin';
     if (living) {
       if (m[6] !== undefined) {
         e.usingItem = !!(m[6] & 1); e.activeHand = m[6] & 2 ? 1 : 0; e.riptide = !!(m[6] & 4);
@@ -515,13 +540,23 @@ export class EntityManager {
         e.health = m[7];
         if (e.health <= 0 && prev > 0) e.dead = true;
       }
-      // LivingEntity.DATA_EFFECT_PARTICLES (1.20.5+): the particle options of the active effects, not a colour
-      { const id=WIRE_METADATA[name]?.DATA_EFFECT_PARTICLES; if(id!==undefined&&wire[id]!==undefined)e.effectParticles=Array.isArray(wire[id])?wire[id]:[]; }
+      { const id = WIRE_METADATA[name]?.DATA_EFFECT_PARTICLES; if (id !== undefined && wire[id] !== undefined) e.effectParticles = Array.isArray(wire[id]) ? wire[id] : []; }
       set(9, 'potionAmbient'); set(10, 'arrowCount');
     }
     if (name === 'player' || e.kind === 'player') {
-      set(11, 'absorption'); set(12, 'score'); set(13, 'skinFlags'); set(14, 'mainHand');
-      set(15, 'leftShoulder'); set(16, 'rightShoulder'); // NBT, not optional block states
+      assign('DATA_PLAYER_ABSORPTION_ID', 'absorption');
+      assign('DATA_SCORE_ID', 'score');
+      assign('DATA_PLAYER_MODE_CUSTOMISATION', 'skinFlags');
+      assign('DATA_PLAYER_MAIN_HAND', 'mainHand');
+      assign('DATA_SHOULDER_PARROT_LEFT', 'leftShoulder');
+      assign('DATA_SHOULDER_PARROT_RIGHT', 'rightShoulder');
+    }
+    if (name === 'mannequin' || e.kind === 'mannequin') {
+      assign('DATA_PLAYER_MAIN_HAND', 'mainHand');
+      assign('DATA_PLAYER_MODE_CUSTOMISATION', 'skinFlags');
+      assign('DATA_PROFILE', 'profile');
+      assign('DATA_IMMOVABLE', 'immovable');
+      assign('DATA_DESCRIPTION', 'description');
     }
     if (name === 'armor_stand' || e.kind === 'armorstand') {
       if (m[11] !== undefined) {
@@ -537,13 +572,26 @@ export class EntityManager {
       }
     }
     if (ARROWS.has(name)) {
-      bit(6, 1, 'critical'); set(7, 'ownerUuid');
-      if (name === 'arrow') set(8, 'arrowColor');
-      if (name === 'trident') set(8, 'loyalty');
+      if (own.ID_FLAGS !== undefined && wire[own.ID_FLAGS] !== undefined) e.critical = !!(wire[own.ID_FLAGS] & 1);
+      assign('IN_GROUND', 'inGround');
+      if (name === 'arrow') assign('ID_EFFECT_COLOR', 'arrowColor');
+      if (name === 'trident') { assign('ID_LOYALTY', 'loyalty'); assign('ID_FOIL', 'foil'); }
     }
     if (e.kind === 'minecart') {
-      set(6, 'rollingAmplitude'); set(7, 'rollingDirection'); set(8, 'cartDamage');
-      set(9, 'displayBlock'); set(10, 'displayOffset'); set(11, 'customDisplay'); // direct block state
+      assign('DATA_ID_HURT', 'rollingAmplitude');
+      assign('DATA_ID_HURTDIR', 'rollingDirection');
+      assign('DATA_ID_DAMAGE', 'cartDamage');
+      assign('DATA_ID_DISPLAY_BLOCK', 'displayBlock');
+      assign('DATA_ID_DISPLAY_OFFSET', 'displayOffset');
+      assign('DATA_ID_CUSTOM_DISPLAY_BLOCK', 'customDisplay');
+    }
+    if (e.kind === 'boat') {
+      assign('DATA_ID_HURT', 'timeSinceHit');
+      assign('DATA_ID_HURTDIR', 'forwardDirection');
+      assign('DATA_ID_DAMAGE', 'damageTaken');
+      assign('DATA_ID_PADDLE_LEFT', 'paddleLeft');
+      assign('DATA_ID_PADDLE_RIGHT', 'paddleRight');
+      assign('DATA_ID_BUBBLE_TIME', 'bubbleTime');
     }
     if (e.kind === 'boat') {
       // AbstractBoat adds three accessors after VehicleEntity: left/right paddle, bubble time.
@@ -563,107 +611,120 @@ export class EntityManager {
       case 'command_block_minecart': set(12, 'command'); set(13, 'lastOutput'); break;
       // AreaEffectCloud (1.20.5+): radius, waiting, particle; the colour rides inside an entity_effect particle
       case 'area_effect_cloud': {
-        const own=WIRE_METADATA.area_effect_cloud;
         if (wire[own.DATA_RADIUS] !== undefined) { e.radius = wire[own.DATA_RADIUS]; e.width = e.radius * 2; e.height = 0.5; }
         if (wire[own.DATA_WAITING] !== undefined) e.singlePoint = !!wire[own.DATA_WAITING];
         if (wire[own.DATA_PARTICLE] !== undefined) { e.cloudParticle = wire[own.DATA_PARTICLE]; e.cloudColor = effectParticleColor(e.cloudParticle) ?? 0; }
         break;
       }
-      default: break; // no additional data parameters for other object classes
+      default: break;
     }
     if (e.kind === 'mob') {
-      bit(11, 1, 'noAI'); bit(11, 2, 'leftHanded'); bit(11, 4, 'aggressive'); // Mob.DATA_MOB_FLAGS_ID
+      bit(11, 1, 'noAI'); bit(11, 2, 'leftHanded'); bit(11, 4, 'aggressive');
       if ((AGEABLE.has(name) || ZOMBIES.has(name)) && m[12] !== undefined) {
         e.child = !!m[12];
-        const def = ENTITIES_BY_NAME[name], scale = e.child ? 0.5 : 1;
+        const def = ENTITIES_BY_NAME[name], scale = name === 'happy_ghast' ? (e.child ? 0.2375 : 1) : (e.child ? 0.5 : 1);
         e.width = def.width * scale; e.height = def.height * scale; e.eyeHeight = def.eyeHeight * scale;
         if (ZOMBIES.has(name) && e.child) e.eyeHeight = 0.93;
         if ((name === 'cow' || name === 'mooshroom') && e.child) e.eyeHeight = e.height;
         if (name === 'turtle' && e.child) { e.width = 0.36; e.height = 0.12; e.eyeHeight = 0.102; }
       }
       if (ZOMBIES.has(name)) {
-        // Zombie (1.14+): arms follow Mob.isAggressive; DATA_DROWNED_CONVERSION_ID / DATA_CONVERTING_ID shake the model
         set(13, 'zombieSpecialType'); e.armsRaised = !!e.aggressive;
         assign('DATA_DROWNED_CONVERSION_ID', 'convertingToDrowned');
         if (name === 'zombie_villager') assign('DATA_CONVERTING_ID', 'curing');
         e.converting = !!(e.convertingToDrowned || e.curing);
       }
-      if (FISH.has(name)) set(12, 'fromBucket'); // NOT EntityAgeable's baby flag
+      if (FISH.has(name)) assign('FROM_BUCKET', 'fromBucket');
       if (name === 'wolf' || name === 'ocelot' || name === 'cat' || name === 'parrot') {
-        bit(13, 1, 'sitting'); bit(13, 4, 'tamed'); set(14, 'ownerUuid');
+        if (own.DATA_FLAGS_ID !== undefined && wire[own.DATA_FLAGS_ID] !== undefined) {
+          e.sitting = !!(wire[own.DATA_FLAGS_ID] & 1);
+          e.tamed = !!(wire[own.DATA_FLAGS_ID] & 4);
+        } else {
+          bit(13, 1, 'sitting'); bit(13, 4, 'tamed');
+        }
+        assign('DATA_OWNERUUID_ID', 'ownerUuid');
       }
       if (HORSES.has(name)) {
-        bit(13, 2, 'tamed'); bit(13, 4, 'saddled'); bit(13, 8, 'horseBred');
-        // 1.19.4+ AbstractHorse has no owner field; chested horses keep DATA_ID_CHEST
         if (name === 'donkey' || name === 'mule' || name === 'llama' || name === 'trader_llama') assign('DATA_ID_CHEST', 'horseChest');
-        if (m[13] !== undefined || m[15] !== undefined) {
-          const f = native[15] || 0;
-          // Preserve the existing renderer's horse flag layout at this boundary.
-          e.horseFlags = (f & 2) | (f & 4) | (e.horseChest ? 8 : 0) | (f & 16 ? 32 : 0) | (f & 32 ? 64 : 0) | (f & 64 ? 128 : 0);
+        const hf = own.DATA_ID_FLAGS !== undefined ? wire[own.DATA_ID_FLAGS] : undefined;
+        if (hf !== undefined) {
+          e.tamed = !!(hf & 2);
+          e.saddled = !!(hf & 4);
+          e.horseBred = !!(hf & 8);
+          e.horseFlags = (hf & 2) | (hf & 4) | (e.horseChest ? 8 : 0) | (hf & 16 ? 32 : 0) | (hf & 32 ? 64 : 0) | (hf & 64 ? 128 : 0);
         }
       }
       switch (name) {
-        case 'bat': bit(12, 1, 'hanging'); break;
-        case 'blaze': bit(12, 1, 'blazeOnFire'); break;
-        case 'creeper': set(12, 'creeperState'); set(13, 'powered'); set(14, 'ignited'); break;
-        // AbstractSkeleton: the aim pose follows Mob.isAggressive; Skeleton.DATA_STRAY_CONVERSION_ID shakes the model
-        case 'skeleton': case 'wither_skeleton': case 'stray': e.armsRaised = !!e.aggressive; assign('DATA_STRAY_CONVERSION_ID', 'strayConverting'); e.converting = !!e.strayConverting; break;
-        case 'spider': case 'cave_spider': bit(12, 1, 'climbing'); break;
+        case 'bat': if (own.DATA_ID_FLAGS !== undefined && wire[own.DATA_ID_FLAGS] !== undefined) e.hanging = !!(wire[own.DATA_ID_FLAGS] & 1); break;
+        case 'blaze': if (own.DATA_FLAGS_ID !== undefined && wire[own.DATA_FLAGS_ID] !== undefined) e.blazeOnFire = !!(wire[own.DATA_FLAGS_ID] & 1); break;
+        case 'creeper': assign('DATA_SWELL_DIR', 'creeperState'); assign('DATA_IS_POWERED', 'powered'); assign('DATA_IS_IGNITED', 'ignited'); break;
+        case 'skeleton': case 'wither_skeleton': case 'stray': case 'bogged': case 'parched':
+          e.armsRaised = !!e.aggressive;
+          if (name === 'skeleton') assign('DATA_STRAY_CONVERSION_ID', 'strayConverting');
+          if (name === 'bogged') assign('DATA_SHEARED', 'sheared');
+          e.converting = !!e.strayConverting;
+          break;
+        case 'spider': case 'cave_spider': if (own.DATA_FLAGS_ID !== undefined && wire[own.DATA_FLAGS_ID] !== undefined) e.climbing = !!(wire[own.DATA_FLAGS_ID] & 1); break;
         case 'slime': case 'magma_cube':
-          if (m[12] !== undefined) {
-            e.size = m[12]; e.width = e.height = 0.51000005 * e.size; e.eyeHeight = e.height * 0.625;
+          if (own.ID_SIZE !== undefined && wire[own.ID_SIZE] !== undefined) {
+            e.size = wire[own.ID_SIZE]; e.width = e.height = 0.51000005 * e.size; e.eyeHeight = e.height * 0.625;
           }
           break;
-        case 'enderman':
-          set(12, 'carriedBlockState'); set(12, 'carried'); set(13, 'screaming'); break;
-        case 'ender_dragon': set(12, 'dragonPhase'); break;
-        case 'ghast': set(12, 'attacking'); break;
-        case 'guardian': case 'elder_guardian': set(12, 'guardianMoving'); if (m[13] !== undefined && e.guardianTarget !== m[13]) { e.guardianTarget = m[13]; e.guardianBeamTicks = 0; } break;
-        case 'shulker':
-          assign('DATA_ATTACH_FACE_ID', 'attachFace'); assign('DATA_PEEK_ID', 'peekTick'); assign('DATA_COLOR_ID', 'shulkerColor'); break;
+        case 'enderman': assign('DATA_CARRY_STATE', 'carriedBlockState'); assign('DATA_CARRY_STATE', 'carried'); assign('DATA_CREEPY', 'screaming'); break;
+        case 'ender_dragon': assign('DATA_PHASE', 'dragonPhase'); break;
+        case 'ghast': assign('DATA_IS_CHARGING', 'attacking'); break;
+        case 'guardian': case 'elder_guardian':
+          assign('DATA_ID_MOVING', 'guardianMoving');
+          if (own.DATA_ID_ATTACK_TARGET !== undefined && wire[own.DATA_ID_ATTACK_TARGET] !== undefined && e.guardianTarget !== wire[own.DATA_ID_ATTACK_TARGET]) {
+            e.guardianTarget = wire[own.DATA_ID_ATTACK_TARGET]; e.guardianBeamTicks = 0;
+          }
+          break;
+        case 'shulker': assign('DATA_ATTACH_FACE_ID', 'attachFace'); assign('DATA_PEEK_ID', 'peekTick'); assign('DATA_COLOR_ID', 'shulkerColor'); break;
         case 'wither':
-          if ([12, 13, 14].some(i => m[i] !== undefined)) e.witherTargets = [14, 15, 16].map(i => e.metadata[i] || 0);
-          set(15, 'invulTime'); break;
-        case 'witch': assign('DATA_USING_ITEM', 'witchAggressive'); break; // Witch.isDrinkingPotion
-        case 'evoker': case 'illusioner': set(13, 'spell'); // fall through: AbstractIllager flags
-        case 'vindicator': bit(12, 1, 'armsRaised'); set(12, 'illagerFlags'); break;
-        case 'vex': bit(12, 1, 'charging'); break;
-        case 'pig': set(13, 'saddled');if(m[14]!==undefined){e.boostDuration=m[14];e.boostTicks=0;e.boosting=m[14]>0;}break;
-        case 'sheep': if (m[13] !== undefined) { e.fleece = m[13] & 15; e.sheared = !!(m[13] & 16); } break;
-        case 'wolf': break; // Native 1.20.6 accessors are consumed by applyPawsMetadata below.
-        case 'ocelot': set(15, 'catType'); break;
-        case 'parrot': set(15, 'parrotVariant'); break;
-        case 'rabbit': set(13, 'rabbitType'); break;
-        case 'villager': if(!e.villagerData)set(13, 'profession'); break;
-        case 'horse': assign('DATA_ID_TYPE_VARIANT', 'horseVariant'); break; // armour is BODY equipment since 1.20.5
-        // by native symbol: 1.20.5 removed DATA_SWAG_ID (the carpet is body equipment now)
-        case 'llama': case 'trader_llama': assign('DATA_ID_CHEST','horseChest'); assign('DATA_STRENGTH_ID','llamaStrength'); assign('DATA_VARIANT_ID','llamaVariant'); break;
-        case 'polar_bear': set(13, 'standing'); break;
-        case 'snow_golem': bit(12, 16, 'hasPumpkin'); break;
-        case 'iron_golem': bit(12, 1, 'playerCreated'); break;
-        case 'dolphin': set(12, 'treasurePosition'); set(13, 'gotFish'); set(14, 'moistness'); break;
-        case 'turtle':
-          set(13, 'homePosition'); set(14, 'hasEgg'); set(15, 'layingEgg'); set(16, 'travelPosition');
-          set(17, 'goingHome'); set(18, 'travelling'); break;
+          if (own.DATA_TARGET_A !== undefined && [own.DATA_TARGET_A, own.DATA_TARGET_B, own.DATA_TARGET_C].some(i => wire[i] !== undefined)) {
+            e.witherTargets = [own.DATA_TARGET_A, own.DATA_TARGET_B, own.DATA_TARGET_C].map(i => e.metadata[i] || 0);
+          }
+          assign('DATA_ID_INV', 'invulTime');
+          break;
+        case 'witch': assign('DATA_USING_ITEM', 'witchAggressive'); break;
+        case 'evoker': case 'illusioner': assign('DATA_SPELL_CASTING_ID', 'spell'); // falls through
+        case 'vindicator': if (own.IS_CELEBRATING !== undefined && wire[own.IS_CELEBRATING] !== undefined) e.illagerFlags = wire[own.IS_CELEBRATING]; e.armsRaised = !!e.aggressive; break;
+        case 'vex': if (own.DATA_FLAGS_ID !== undefined && wire[own.DATA_FLAGS_ID] !== undefined) e.charging = !!(wire[own.DATA_FLAGS_ID] & 1); break;
+        case 'pig':
+          if (own.DATA_BOOST_TIME !== undefined && wire[own.DATA_BOOST_TIME] !== undefined) {
+            e.boostDuration = wire[own.DATA_BOOST_TIME]; e.boostTicks = 0; e.boosting = e.boostDuration > 0;
+          }
+          break;
+        case 'sheep': if (own.DATA_WOOL_ID !== undefined && wire[own.DATA_WOOL_ID] !== undefined) { e.fleece = wire[own.DATA_WOOL_ID] & 15; e.sheared = !!(wire[own.DATA_WOOL_ID] & 16); } break;
+        case 'wolf': break;
+        case 'ocelot': assign('DATA_TRUSTING', 'trusting'); break;
+        case 'parrot': assign('DATA_VARIANT_ID', 'parrotVariant'); break;
+        case 'rabbit': assign('DATA_TYPE_ID', 'rabbitType'); break;
+        case 'villager': if (!e.villagerData) assign('DATA_VILLAGER_DATA', 'villagerData'); break;
+        case 'horse': assign('DATA_ID_TYPE_VARIANT', 'horseVariant'); break;
+        case 'llama': case 'trader_llama': assign('DATA_STRENGTH_ID', 'llamaStrength'); assign('DATA_VARIANT_ID', 'llamaVariant'); break;
+        case 'polar_bear': assign('DATA_STANDING_ID', 'standing'); break;
+        case 'snow_golem': if (own.DATA_PUMPKIN_ID !== undefined && wire[own.DATA_PUMPKIN_ID] !== undefined) e.hasPumpkin = !!(wire[own.DATA_PUMPKIN_ID] & 16); break;
+        case 'iron_golem': if (own.DATA_FLAGS_ID !== undefined && wire[own.DATA_FLAGS_ID] !== undefined) e.playerCreated = !!(wire[own.DATA_FLAGS_ID] & 1); break;
+        case 'dolphin': assign('GOT_FISH', 'gotFish'); assign('MOISTNESS_LEVEL', 'moistness'); break;
+        case 'turtle': assign('HAS_EGG', 'hasEgg'); assign('LAYING_EGG', 'layingEgg'); break;
         case 'pufferfish':
-          if (m[13] !== undefined) {
-            e.puffState = m[13]; e.width = e.height = 0.7 * (e.puffState === 0 ? 0.5 : e.puffState === 1 ? 0.7 : 1);
+          if (own.PUFF_STATE !== undefined && wire[own.PUFF_STATE] !== undefined) {
+            e.puffState = wire[own.PUFF_STATE]; e.width = e.height = 0.7 * (e.puffState === 0 ? 0.5 : e.puffState === 1 ? 0.7 : 1);
             e.eyeHeight = e.height * 0.65;
           }
           break;
-        case 'tropical_fish': set(13, 'fishVariant'); break;
+        case 'tropical_fish': assign('DATA_ID_TYPE_VARIANT', 'fishVariant'); break;
         case 'phantom':
-          if (m[12] !== undefined) {
-            e.phantomSize = m[12]; e.width = 0.9 + 0.2 * e.phantomSize; e.height = 0.5 + 0.1 * e.phantomSize;
+          if (own.ID_SIZE !== undefined && wire[own.ID_SIZE] !== undefined) {
+            e.phantomSize = wire[own.ID_SIZE]; e.width = 0.9 + 0.2 * e.phantomSize; e.height = 0.5 + 0.1 * e.phantomSize;
             e.eyeHeight = e.height * 0.35;
           }
           break;
-        // Chicken, cow, mooshroom, horses without subclass fields, squid,
-        // silverfish, endermite, cod, salmon, giant: inherited parameters only.
         default: break;
       }
     }
-    applyPawsMetadata(e,wire);
+    applyPawsMetadata774(e, wire, this.game.world?.worldAge ?? 0);
   }
 
   setAttributes(p) {
@@ -671,8 +732,8 @@ export class EntityManager {
     if (!e) return;
     e.attributes = e.attributes || {};
     for (const prop of p.properties) {
-      if (prop.key === 'generic.maxHealth') e.maxHealth = prop.value;
-      if (prop.key === 'generic.scale') setScaleAttribute(e, prop);
+      if (prop.key === 'generic.maxHealth' || prop.key === 'minecraft:max_health' || prop.key === 'max_health') e.maxHealth = prop.value;
+      if (prop.key === 'generic.scale' || prop.key === 'minecraft:scale' || prop.key === 'scale') setScaleAttribute(e, prop);
       e.attributes[prop.key] = prop; // movement speed and jump strength drive a ridden horse
     }
   }
@@ -889,7 +950,7 @@ export class EntityManager {
     s.hurtTime = g.hurtTime; s.deathTime = g.dead ? Math.min(20, (s.deathTime || 0) + 1) : 0;
     s.metadata = g.selfMetadata || s.metadata;
     if (s.metadata && s.metadata[WIRE_METADATA.player.DATA_PLAYER_MODE_CUSTOMISATION] !== undefined) s.skinFlags = s.metadata[WIRE_METADATA.player.DATA_PLAYER_MODE_CUSTOMISATION]; else s.skinFlags = g.settings.skinParts;
-    s.invisible = !!(g.selfMetadata && (g.selfMetadata[0] & 32)) || g.effects.has(EFFECT_766.invisibility);
+    s.invisible = !!(g.selfMetadata && (g.selfMetadata[0] & 32)) || g.effects.has(EFFECT_774.invisibility);
     s.onFire = g.selfMetadata ? !!(g.selfMetadata[0] & 1) : false;
     // LayerCape's sway from the view bobbing of the local player
     s.prevCameraYaw = pl.prevCameraYaw; s.cameraYaw = pl.cameraYaw;

@@ -141,7 +141,7 @@ async function collectAssets(opts) {
   const index = await mcassets.loadAssetIndex();
   const meta = await index.read('pack.mcmeta');
   const mcmeta = meta ? JSON.parse(meta.toString('utf8')) : {};
-  mcmeta.pack = { pack_format: mcassets.PACK_FORMAT, description: "The default look and feel of Minecraft" };
+  mcmeta.pack = { pack_format: mcassets.PACK_FORMAT, min_format: mcassets.PACK_FORMAT, max_format: mcassets.PACK_FORMAT, description: "The default look and feel of Minecraft" };
   files.set('pack.mcmeta', Buffer.from(JSON.stringify(mcmeta)));
 
   const names = indexedClientAssets(index)
@@ -184,7 +184,7 @@ function recipeBundle(files) {
 // (u32 headerLength, JSON header { files: [[name, offset, length]], mcmeta }, then the PNG bytes)
 function buildBundles(files) {
   const dec = (b) => JSON.parse(b.toString('utf8'));
-  const models = { blockstates: {}, models: {} };
+  const models = { blockstates: {}, models: {}, items: {}, equipment: {} };
   const tex = [], blobs = [], mcmeta = {}, guiSprites = {};
   let offset = 0;
   for (const [name, buf] of files) {
@@ -193,6 +193,8 @@ function buildBundles(files) {
     }
     if (name.startsWith('minecraft/blockstates/') && name.endsWith('.json')) models.blockstates[name.slice(22, -5)] = dec(buf);
     else if (name.startsWith('minecraft/models/') && name.endsWith('.json')) models.models[name.slice(17, -5)] = dec(buf);
+    else if (name.startsWith('minecraft/items/') && name.endsWith('.json')) models.items[name.slice(16, -5)] = dec(buf);
+    else if (name.startsWith('minecraft/equipment/') && name.endsWith('.json')) models.equipment[name.slice(20, -5)] = dec(buf);
     else if (/^minecraft\/textures\/(block|item)\//.test(name)) {
       const rel = name.slice('minecraft/textures/'.length);
       if (name.endsWith('.png')) { tex.push([rel.slice(0, -4), offset, buf.length]); blobs.push(buf); offset += buf.length; }

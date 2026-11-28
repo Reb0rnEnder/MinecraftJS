@@ -86,21 +86,23 @@ export const C = {
   pingRequest: id => packet('ping_request').i64(id).build(),
   debugSampleSubscription: type => packet('debug_sample_subscription').varint(type).build(),
   setSlotState: (slot, windowId, enabled) => packet('set_slot_state').varint(slot).varint(windowId).bool(enabled).build(),
-  generateStructure: (pos, levels, keepJigsaws) => packet('generate_structure').position(pos.x,pos.y,pos.z).varint(levels).bool(keepJigsaws).build(),
+  generateStructure: (pos, levels, keepJigsaws) => packet('generate_structure').position(pos.x, pos.y, pos.z).varint(levels).bool(keepJigsaws).build(),
   editBook: (slot, pages, title = null) => {
     const w = packet('edit_book').varint(slot).varint(pages.length);
     for (const page of pages) w.string(page);
     w.bool(title !== null); if (title !== null) w.string(title);
     return w.build();
   },
-  chatSession: ({sessionUUID, expireTime, publicKey, signature}) => packet('chat_session_update')
+  chatSession: ({ sessionUUID, expireTime, publicKey, signature }) => packet('chat_session_update')
     .uuid(sessionUUID).i64(expireTime).varint(publicKey.length).raw(publicKey).varint(signature.length).raw(signature).build(),
-  signedCommand: (command, {timestamp, salt, argumentSignatures = [], messageCount = 0, acknowledged}) => {
+  signedCommand: (command, { timestamp, salt, argumentSignatures = [], messageCount = 0, acknowledged, checksum = undefined }) => {
     if (!(acknowledged instanceof Uint8Array) || acknowledged.length !== 3) throw Error('Chat acknowledgement must be 3 bytes');
     const w = packet('chat_command_signed').string(command).i64(timestamp).i64(salt).varint(argumentSignatures.length);
-    for (const {argumentName, signature} of argumentSignatures) {
+    const sigs = [];
+    for (const { argumentName, signature } of argumentSignatures) {
       if (!(signature instanceof Uint8Array) || signature.length !== 256) throw Error('Chat argument signature must be 256 bytes');
       w.string(argumentName).raw(signature);
+      sigs.push(signature);
     }
     return w.varint(messageCount).raw(acknowledged).u8(0).build();
   },
@@ -110,6 +112,12 @@ export const C = {
   chunkBatchReceived: (chunksPerTick) => packet("chunk_batch_received").f32(chunksPerTick).build(),
   keepAlive: (id) => packet("keep_alive").i64(id).build(),
   pong: (id) => packet("pong").i32(id).build(),
+  playerLoaded: () => packet("player_loaded").build(),
+  tickEnd: () => packet("tick_end").build(),
+  customClickAction: (id, payload = null) => {
+    const body = writeAnonymousNbt(new Writer774(), payload).build();
+    return packet("custom_click_action").string(id).varint(body.length).raw(body).build();
+  },
 
   // 26.3 ClientInformation: string, VarInt viewDistance, ChatVisiblity, bool chatColors,
   // byte modelCustomisation, HumanoidArm, bool textFiltering, bool allowsListing, ParticleStatus.
@@ -121,7 +129,7 @@ export const C = {
       .bool(chatColors)
       .u8(skinParts)
       .varint(mainHand)
-      .bool(false)
+      .bool(!!textFiltering)
       .bool(allowServerListing)
       .varint(0)
       .build(),
@@ -160,14 +168,31 @@ export const C = {
       .f32(yaw).f32(pitch)
       .u8((onGround?1:0)|(horizontalCollision?2:0))
       .build(),
-  vehicleMove: (x, y, z, yaw, pitch) =>
-    packet("vehicle_move").f64(x).f64(y).f64(z).f32(yaw).f32(pitch).build(),
+  vehicleMove: (x, y, z, yaw, pitch, onGround = true) =>
+    packet("vehicle_move").f64(x).f64(y).f64(z).f32(yaw).f32(pitch).bool(!!onGround).build(),
   steerBoat: (left, right) => packet("steer_boat").bool(left).bool(right).build(),
   abilities: (flags) => packet("abilities").i8(flags).build(),
   entityAction: (entityId, action, jumpBoost = 0) =>
     packet("entity_action").varint(entityId).varint(action).varint(jumpBoost).build(),
+  playerInput: ({ forward = false, backward = false, left = false, right = false, jump = false, shift = false, sprint = false } = {}) =>
+    packet("player_input").u8(
+      (forward ? 1 : 0) |
+      (backward ? 2 : 0) |
+      (left ? 4 : 0) |
+      (right ? 8 : 0) |
+      (jump ? 16 : 0) |
+      (shift ? 32 : 0) |
+      (sprint ? 64 : 0)
+    ).build(),
   steerVehicle: (sideways, forward, flags) =>
-    packet("steer_vehicle").f32(sideways).f32(forward).u8(flags).build(),
+    packet("player_input").u8(
+      (forward > 0 ? 1 : 0) |
+      (forward < 0 ? 2 : 0) |
+      (sideways > 0 ? 4 : 0) |
+      (sideways < 0 ? 8 : 0) |
+      (flags & 1 ? 16 : 0) |
+      (flags & 2 ? 32 : 0)
+    ).build(),
   heldItemSlot: (slot) => packet("held_item_slot").i16(slot).build(),
   armAnimation: () => packet("arm_animation").build(),
   // ServerboundPlayerActionPacket.Action.STAB (ordinal 8): 26.3 piercing-weapon attack.
@@ -249,8 +274,8 @@ export const C = {
   // then ServerboundChatCommandPacket. Clicked commands need not start with a slash.
   command: (command) => packet('chat_command').string(String(command).replace(/^\//, '').slice(0, 256)).build(),
   resourcePackStatus: (uuid, result) => packet("resource_pack_receive").uuid(uuid).varint(result).build(),
-  enchantItem: (windowId, enchantment) => packet("enchant_item").i8(windowId).i8(enchantment).build(),
-  menuButton: (windowId, button) => packet("enchant_item").i8(windowId).i8(button).build(),
+  enchantItem: (windowId, enchantment) => packet("enchant_item").varint(windowId).i8(enchantment).build(),
+  menuButton: (windowId, button) => packet("enchant_item").varint(windowId).i8(button).build(),
   seenAdvancements: (tabId) => {
     const writer = packet("advancement_tab").varint(tabId == null ? 1 : 0);
     if (tabId != null) writer.string(String(tabId));
@@ -287,4 +312,4 @@ export const C = {
       .build()
 };
 
-export const mcStringBytes = (value) => new Writer766().string(value).build();
+export const mcStringBytes = (value) => new Writer774().string(value).build();

@@ -23,16 +23,17 @@ export class ResourcePacksScreen extends Screen {
     this.loaded = false;
     this.message = '';
     this.icons = new Map();
-    this._load();
+    this.loadPromise = this._load();
   }
 
   async _load() {
     const A = this.game.assets;
     const all = await A.listPacks();
     const active = this.game.settings.resourcePacks || [];
-    this.selected = active.map((id) => all.find((p) => p.id === id)).filter(Boolean);
+    this.selected = active.map((id) => id === VANILLA_PACK_ID ? DEFAULT_PACK : all.find((p) => p.id === id)).filter(Boolean);
+    if (!this.selected.includes(DEFAULT_PACK)) this.selected.push(DEFAULT_PACK);
     this.available = all.filter((p) => !active.includes(p.id));
-    this.initial = this.selected.map((p) => p.id).join('\n');
+    this.initial = this._ids().join('\n');
     // PackSelectionScreen reads the default pack.png synchronously; wait for it so the first frame is not a placeholder.
     this._defaultIcon();await this.defaultIconLoad;
     this.loaded = true;
@@ -45,7 +46,7 @@ export class ResourcePacksScreen extends Screen {
     // Native TransferableSelectionList: 200 wide, 33-pixel header/footer, 36-pixel rows.
     const old = this.lists;
     this.lists = [0, 1].map((side) => {
-      const items = () => (side ? [...this.selected, null] : this.available);
+      const items = () => (side ? this.selected : this.available);
       const L = { side, title: tr(side ? 'pack.selected.title' : 'pack.available.title') };
       L.list = new ListOf(this, 33, this.height - 33, ENTRY_H, {
         size: () => (this.loaded ? items().length : 0),
@@ -76,8 +77,29 @@ export class ResourcePacksScreen extends Screen {
     }
   }
 
+  onFilesDrop(files) {
+    if (!files?.length) return;
+    const game = this.game, names = files.map((file) => file.name).join(', ');
+    game.screens.open(new ConfirmScreen(game, async (yes) => {
+      if (!yes) { game.screens.open(this); return; }
+      await this.loadPromise;
+      const rejected = [];
+      for (const file of files) {
+        try {
+          const bytes = file.readBytes ? await file.readBytes() : file.bytes;
+          const pack = await game.assets.addPack(file.name, bytes);
+          this.available = this.available.filter((entry) => entry.id !== pack.id);
+          this.selected = this.selected.filter((entry) => entry.id !== pack.id);
+          this.available.unshift(pack);
+        } catch { rejected.push(file.name); }
+      }
+      if (rejected.length) game.screens.open(new AlertScreen(game, () => game.screens.open(this), tr('pack.dropRejected.title'), tr('pack.dropRejected.message', rejected.join(', '))));
+      else game.screens.open(this);
+    }, tr('pack.dropConfirm'), names));
+  }
+
   async done() {
-    const ids = this.selected.map((p) => p.id);
+    const ids = this._ids();
     const g = this.game;
     if (ids.join('\n') === this.initial) { g.screens.open(this.parent); return; }
     g.settings.resourcePacks = ids;
@@ -97,6 +119,11 @@ export class ResourcePacksScreen extends Screen {
 
   close() { this.done(); }
 
+  _ids() {
+    const ids = this.selected.map((pack) => pack.id);
+    return ids.at(-1) === VANILLA_PACK_ID ? ids.slice(0, -1) : ids;
+  }
+
   // Default pack: vanilla shows pack.png from the root of the game jar
   _defaultIcon() {
     const A = this.game.assets;
@@ -114,7 +141,7 @@ export class ResourcePacksScreen extends Screen {
 
   _icon(pack) {
     const A = this.game.assets;
-    if (!pack) return this._defaultIcon();
+    if (!pack || pack.isDefault) return this._defaultIcon();
     const k = pack.id + '@' + A.version;
     if (!this.icons.has(k)) {
       this.icons.set(k, pack.icon ? A.makeTexture('packicon:' + pack.id, pack.icon.width, pack.icon.height, pack.icon.data) : null);
@@ -146,7 +173,7 @@ export class ResourcePacksScreen extends Screen {
       const rx = mx - x, ry = my - y;
       if (L.side === 0) gui.sprite('transferable_list/select'+(rx<32?'_highlighted':''),x,y,32,32);
       else {
-        gui.sprite('transferable_list/unselect'+(rx<16?'_highlighted':''),x,y,32,32);
+        if (!pack.required) gui.sprite('transferable_list/unselect'+(rx<16?'_highlighted':''),x,y,32,32);
         if (idx > 0) gui.sprite('transferable_list/move_up'+(rx<32&&rx>16&&ry<16?'_highlighted':''),x,y,32,32);
         if (idx < this.selected.length - 1) gui.sprite('transferable_list/move_down'+(rx<32&&rx>16&&ry>16?'_highlighted':''),x,y,32,32);
       }
@@ -178,7 +205,7 @@ export class ResourcePacksScreen extends Screen {
       } else add();
     } else {
       if (rx > 32) return false;
-      if (rx < 16) { this.selected.splice(idx, 1); this.available.unshift(pack); }
+      if (rx < 16) { if (pack.required) return false; this.selected.splice(idx, 1); this.available.unshift(pack); }
       else if (rx>16 && ry < 16 && idx > 0) { this.selected.splice(idx, 1); this.selected.splice(idx - 1, 0, pack); }
       else if (rx>16 && ry > 16 && idx < this.selected.length - 1) { this.selected.splice(idx, 1); this.selected.splice(idx + 1, 0, pack); }
       else return false;
@@ -201,7 +228,7 @@ export class ResourcePacksScreen extends Screen {
     }
     const L=this.lists.find(L=>L.list.focused);
     if(L){
-      const i=L.list.focusedIndex??0,items=L.side?[...this.selected,null]:this.available,pack=items[i];
+      const i=L.list.focusedIndex??0,items=L.side?this.selected:this.available,pack=items[i];
       if(e.shift&&L.side&&pack&&['ArrowUp','ArrowDown'].includes(e.code)){
         const to=i+(e.code==='ArrowUp'?-1:1);
         if(to>=0&&to<this.selected.length){this.selected.splice(i,1);this.selected.splice(to,0,pack);L.list.focusedIndex=to;}
@@ -226,7 +253,7 @@ export class ResourcePacksScreen extends Screen {
   mouseMove(mx, my) { for (const L of this.lists) L.list.mouseMove(mx, my); }
 
   async _delete(pack) {
-    if(pack.builtin)return;
+    if(pack.builtin || pack.isDefault)return;
     await this.game.assets.removePack(pack.id);
     this.available = this.available.filter((p) => p !== pack);
     this.message = '§e' + tr('minecraftjs.packs.deleted', pack.name);

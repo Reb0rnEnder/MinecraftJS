@@ -7,8 +7,8 @@ import {FontRenderer} from '../client/js/gui/font.js';
 import {Game} from '../client/js/game/game.js';
 import {buildTextMeshes} from '../client/js/render/text-mesh.js';
 import {loadFontSets,trueTypeProvider,bitmapProvider,FontSet} from '../client/js/gui/font-providers.js';
-import {fontBytes} from './port-1.20.6/font-inputs.mjs';
-const jar=new ZipFile(new URL('../cache/port-1.20.6/client.jar',import.meta.url));
+const jar=new ZipFile(new URL('../cache/port-1.21.11/client.jar',import.meta.url));
+const fontBytes=name=>{try{return readFileSync(new URL('../client/assets/'+name,import.meta.url));}catch{return jar.read('assets/'+name);}};
 function assets(){const a={version:1,packs:[],textures:new Map(),source:{bytes:async name=>fontBytes(name)},image:()=>null,texture:()=>null,
  device:{updateTexture:(tex,data,x,y,w,h)=>{tex.upload={data,x,y,w,h};}},makeTexture:(key,width,height,data)=>{const tex={width,height,data};a.textures.set(key,tex);return tex;}};return a;}
 

@@ -104,7 +104,13 @@ function nativeOption(screen,key) {
       const field=key==='key.sneak'?'toggleCrouch':'toggleSprint';
       return {label:()=>trOption(key,tr(s[field]?'options.key.toggle':'options.key.hold')),click:()=>{s[field]=!s[field];}};
     }
-    case 'options.invertMouse':return toggle(key,'invertMouse');
+    case 'options.invertMouse':case 'options.invertMouseY':return toggle(key,'invertMouse');
+    case 'options.invertMouseX':return toggle(key,'invertMouseX');
+    case 'options.allowCursorChanges':return toggle(key,'allowCursorChanges');
+    case 'options.rawMouseInput':return toggle(key,'rawMouseInput');
+    case 'options.viewBobbing':return toggle(key,'viewBobbing');
+    case 'options.rotateWithMinecart':return toggle(key,'rotateWithMinecart');
+    case 'options.accessibility.high_contrast_block_outline':return toggle(key,'highContrastBlockOutline');
     case 'options.touchscreen':return toggle(key,'touchscreen');
     case 'options.discrete_mouse_scroll':return toggle(key,'discreteMouseScroll');
     case 'options.sensitivity':return {slider:true,label:v=>trOption(key,v===0?tr('options.sensitivity.min'):v===1?tr('options.sensitivity.max'):Math.round(v*200)+'%'),value:()=>s.sensitivity,set:v=>{s.sensitivity=v;}};
@@ -252,6 +258,16 @@ class VideoScreen extends OptionsBase {
       ...['options.screenEffectScale','options.fovEffectScale','options.accessibility.menu_background_blurriness'].map(key=>({key,...nativeOption(this,key)})),
       {key:'options.entityDistanceScaling',slider:true,label:v=>trOption('options.entityDistanceScaling',Math.round((.5+v*4.5)*100)+'%'),value:()=>((s.entityDistanceScaling??1)-.5)/4.5,set:v=>{s.entityDistanceScaling=Math.round((.5+v*4.5)*4)/4;}},
       { key: 'options.graphics', label: () => trOption('options.graphics', tr(s.fabulousGraphics?'options.graphics.fabulous':s.fancyGraphics?'options.graphics.fancy':'options.graphics.fast')), click: () => { if(s.fabulousGraphics){s.fabulousGraphics=false;s.fancyGraphics=false;}else if(s.fancyGraphics)s.fabulousGraphics=true;else s.fancyGraphics=true; } },
+      { key: 'options.graphics.preset', label: () => trOption('options.graphics.preset', tr(s.fabulousGraphics?'options.graphics.fabulous':s.fancyGraphics?'options.graphics.fancy':'options.graphics.fast')), tip: () => tr('options.graphics.preset.tooltip'), click: () => { if(s.fabulousGraphics){s.fabulousGraphics=false;s.fancyGraphics=false;}else if(s.fancyGraphics)s.fabulousGraphics=true;else s.fancyGraphics=true; } },
+      { key: 'options.inactivityFpsLimit', label: () => trOption('options.inactivityFpsLimit', tr('options.inactivityFpsLimit.'+(s.inactivityFpsLimit==='afk'?'afk':'minimized'))), tip: () => tr('options.inactivityFpsLimit.'+(s.inactivityFpsLimit==='afk'?'afk':'minimized')+'.tooltip'), click: () => { s.inactivityFpsLimit = s.inactivityFpsLimit==='afk'?'minimized':'afk'; } },
+      { key: 'options.renderCloudsDistance', slider: true, label: v => trOption('options.renderCloudsDistance', Math.round(2+v*126)+' chunks'), value: () => ((s.renderCloudsDistance??128)-2)/126, set: v => { s.renderCloudsDistance = Math.round(2+v*126); } },
+      { key: 'options.cutoutLeaves', label: () => trOption('options.cutoutLeaves', onOff(s.cutoutLeaves!==false)), tip: () => tr('options.cutoutLeaves.tooltip'), click: () => { s.cutoutLeaves = s.cutoutLeaves===false; } },
+      { key: 'options.improvedTransparency', label: () => trOption('options.improvedTransparency', onOff(!!s.improvedTransparency)), tip: () => tr('options.improvedTransparency.tooltip'), click: () => { s.improvedTransparency = !s.improvedTransparency; } },
+      { key: 'options.textureFiltering', label: () => trOption('options.textureFiltering', tr('options.textureFiltering.'+(s.textureFiltering||'none'))), tip: () => tr('options.textureFiltering.'+(s.textureFiltering||'none')+'.tooltip'), click: () => { const m=['none','rgss','anisotropic']; s.textureFiltering = m[(m.indexOf(s.textureFiltering||'none')+1)%3]; } },
+      { key: 'options.maxAnisotropy', slider: true, label: v => trOption('options.maxAnisotropy', (1<<Math.round(v*4))+'x'), tip: () => tr('options.maxAnisotropy.tooltip'), value: () => Math.log2(Math.max(1,s.maxAnisotropy||1))/4, set: v => { s.maxAnisotropy = 1<<Math.round(v*4); } },
+      { key: 'options.weatherRadius', slider: true, label: v => trOption('options.weatherRadius', tr('options.blocks', [Math.round(3+v*7)])), tip: () => tr('options.weatherRadius.tooltip'), value: () => ((s.weatherRadius??10)-3)/7, set: v => { s.weatherRadius = Math.round(3+v*7); } },
+      { key: 'options.vignette', label: () => trOption('options.vignette', onOff(s.vignette!==false)), tip: () => tr('options.vignette.tooltip'), click: () => { s.vignette = s.vignette===false; } },
+      { key: 'options.chunkFade', slider: true, label: v => { const sec=(v*5).toFixed(1); return Number(sec)===0?tr('options.chunkFade.none'):tr('options.chunkFade.seconds',sec); }, tip: () => tr('options.chunkFade.tooltip'), value: () => Math.min(1,Math.max(0,(s.chunkFade||0)/5)), set: v => { s.chunkFade = Math.round(v*50)/10; } },
       { key: 'options.renderDistance', slider: true, label: (v) => trOption('options.renderDistance', Math.round(2 + v * 30) + ' chunks'), value: () => (s.renderDistance - 2) / 30, set: (v) => { s.renderDistance = Math.round(2 + v * 30); } },
       { key: 'options.ao', label: () => trOption('options.ao', onOff(s.smoothLighting > 0)), click: () => { s.smoothLighting = s.smoothLighting > 0 ? 0 : 2; } },
       { key: 'options.framerateLimit', slider: true, label: (v) => { const f = Math.round(1 + v * 25)*10; return trOption('options.framerateLimit', f >= 260 ? tr('options.framerateLimit.max') : f + ' fps'); }, value: () => (s.maxFps ? (s.maxFps - 10) / 250 : 1), set: (v) => { const f = Math.round(1 + v * 25)*10; s.maxFps = f >= 260 ? 0 : f; } },

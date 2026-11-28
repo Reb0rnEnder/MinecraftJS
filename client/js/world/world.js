@@ -93,27 +93,39 @@ export class World {
     return light;
   }
 
-  loadChunk762(packet) {
-    const decoded=decodeChunkData762(packet,{sectionCount:this.sectionCount,biomeCount:this.biomeRegistrySize,stateCount:this.blockStateRegistrySize,airStates:this.airStates}),{x,z,groundUp}=packet;const bitMap=(1n<<BigInt(this.sectionCount))-1n;
-    this.updateLight758({...packet,chunkX:x,chunkZ:z});
-    let c=this.getChunk(x,z);
-    if(!c){c=new Chunk(x,z,this.hasSky,this);this.chunks.set(World.key(x,z),c);this._gen++;}
-    c.nativeLight=this._lightColumn(x,z);c.heightmaps=packet.heightmaps;c.debugHeightRevision=(c.debugHeightRevision||0)+1;
-    for(let index=0;index<this.sectionCount;index++) {
-      const sy=this.minSection+index,data=decoded.sections[index];
-      if(!data){if(groundUp)c.setSection(sy,null);continue;}
+  _applyDecodedChunk(packet, decoded) {
+    const { x, z } = packet;
+    const groundUp = packet.groundUp ?? true;
+    const bitMap = (1n << BigInt(this.sectionCount)) - 1n;
+    this.updateLight758({ ...packet, chunkX: x, chunkZ: z });
+    let c = this.getChunk(x, z);
+    if (!c) { c = new Chunk(x, z, this.hasSky, this); this.chunks.set(World.key(x, z), c); this._gen++; }
+    c.nativeLight = this._lightColumn(x, z);
+    c.heightmaps = packet.heightmaps ?? null;
+    c.debugHeightRevision = (c.debugHeightRevision || 0) + 1;
+    for (let index = 0; index < this.sectionCount; index++) {
+      const sy = this.minSection + index, data = decoded.sections[index];
+      if (!data) { if (groundUp) c.setSection(sy, null); continue; }
       // Canonical air can be implicit; retain cave/void-air IDs and separate light columns.
-      if(data.nonAir===0&&data.blocks.every(state=>state===0)){c.setSection(sy,null);continue;}
-      const sec=new Section(false,data.blocks);sec.nonAir=data.nonAir;sec.wireNonAir=data.wireNonAir;
-      sec.skyLight=c.nativeLight.sky[sy-this.minSection+1] ||= new Uint8Array(2048);
-      sec.blockLight=c.nativeLight.block[sy-this.minSection+1] ||= new Uint8Array(2048);
-      c.setSection(sy,sec);
+      if (data.nonAir === 0 && data.blocks.every(state => state === 0)) { c.setSection(sy, null); continue; }
+      const sec = new Section(false, data.blocks); sec.nonAir = data.nonAir; sec.wireNonAir = data.wireNonAir;
+      sec.skyLight = c.nativeLight.sky[sy - this.minSection + 1] ||= new Uint8Array(2048);
+      sec.blockLight = c.nativeLight.block[sy - this.minSection + 1] ||= new Uint8Array(2048);
+      c.setSection(sy, sec);
     }
-    if(decoded.biomes){c.biomes=new Uint32Array(this.sectionCount*64);c.biomes.set(decoded.biomes.slice(0,c.biomes.length));c.biomes3D=true;}
+    if (decoded.biomes) {
+      c.biomes = new Uint32Array(this.sectionCount * 64);
+      c.biomes.set(decoded.biomes.subarray(0, c.biomes.length));
+      c.biomes3D = true;
+    }
     this._computeHeights(c);
-    this.emit('chunkLoaded',c,bitMap,groundUp);
+    this.emit('chunkLoaded', c, bitMap, groundUp);
     // Include cleared sections so previous geometry cannot survive a full reload.
-    for(let sy=this.minSection;sy<this.maxSection;sy++)if(groundUp||maskHas(bitMap,sy-this.minSection))for(let dx=-1;dx<=1;dx++)for(let dz=-1;dz<=1;dz++)this.emit('sectionDirty',x+dx,sy,z+dz);
+    for (let sy = this.minSection; sy < this.maxSection; sy++) {
+      if (groundUp || maskHas(bitMap, sy - this.minSection)) {
+        for (let dx = -1; dx <= 1; dx++) for (let dz = -1; dz <= 1; dz++) this.emit('sectionDirty', x + dx, sy, z + dz);
+      }
+    }
     return c;
   }
 

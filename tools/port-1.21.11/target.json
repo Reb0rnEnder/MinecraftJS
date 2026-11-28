@@ -1,0 +1,186 @@
+{
+  "minecraftVersion": "1.21.11",
+  "protocol": 774,
+  "dataVersion": 4671,
+  "resourcePackFormat": 75,
+  "resourcePackMinorFormat": 0,
+  "dataPackFormat": 94,
+  "dataPackMinorFormat": 1,
+  "javaVersion": 21,
+  "baselineVersion": "1.20.6",
+  "baselineCommit": "ac2a04b6c48ae8d5c5796a5554a2dedbee614589",
+  "metadata": {
+    "url": "https://piston-meta.mojang.com/v1/packages/673208434aebac19a7317e40f6b1588169e4e1f1/1.21.11.json",
+    "sha1": "673208434aebac19a7317e40f6b1588169e4e1f1",
+    "size": 42248
+  },
+  "downloads": {
+    "client": {
+      "sha1": "ba2df812c2d12e0219c489c4cd9a5e1f0760f5bd",
+      "size": 31152600,
+      "url": "https://piston-data.mojang.com/v1/objects/ba2df812c2d12e0219c489c4cd9a5e1f0760f5bd/client.jar"
+    },
+    "client_mappings": {
+      "sha1": "031a68bebf55d824f66d6573d8c752f0e1bf232a",
+      "size": 11779287,
+      "url": "https://piston-data.mojang.com/v1/objects/031a68bebf55d824f66d6573d8c752f0e1bf232a/client.txt"
+    },
+    "server": {
+      "sha1": "64bb6d763bed0a9f1d632ec347938594144943ed",
+      "size": 56327581,
+      "url": "https://piston-data.mojang.com/v1/objects/64bb6d763bed0a9f1d632ec347938594144943ed/server.jar"
+    },
+    "server_mappings": {
+      "sha1": "5621e9253f05fd57872bbe7f8ddf5f9a7d525955",
+      "size": 8678606,
+      "url": "https://piston-data.mojang.com/v1/objects/5621e9253f05fd57872bbe7f8ddf5f9a7d525955/server.txt"
+    }
+  },
+  "assetIndex": {
+    "id": "29",
+    "sha1": "2cad63b294a82994828491a126a38598833e7303",
+    "size": 530166,
+    "totalSize": 455714066,
+    "url": "https://piston-meta.mojang.com/v1/packages/2cad63b294a82994828491a126a38598833e7303/29.json"
+  },
+  "minecraftData": {
+    "revision": "57dfcb6f904ad3ae60279285c7799705684dfa6c",
+    "inputs": {
+      "upstream/1.20.6-protocol.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.20.5/protocol.json",
+        "sha1": "679f1149cdc45510cd167e5bffc506b0468bad20",
+        "size": 242450
+      },
+      "upstream/dataPaths.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/dataPaths.json",
+        "sha1": "a0418ac1eb4260e871b67a0a0256d7db067f2b7c",
+        "size": 92466
+      },
+      "upstream/attributes.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/attributes.json",
+        "sha1": "c5f5a4fd65d67edd1063498940a32256865af783",
+        "size": 4859
+      },
+      "upstream/biomes.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/biomes.json",
+        "sha1": "f366550eb6d4b3a09af97e16a1250bdc3b9b94aa",
+        "size": 14099
+      },
+      "upstream/blockCollisionShapes.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/blockCollisionShapes.json",
+        "sha1": "278bbfccf79821d4f5dbb6ea227e1b6a86ca1641",
+        "size": 1800338
+      },
+      "upstream/blockLoot.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.20/blockLoot.json",
+        "sha1": "31b1d6ae8129b1bfa1d65819e9ac6199fc5dfeb2",
+        "size": 207762
+      },
+      "upstream/blocks.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/blocks.json",
+        "sha1": "637af0f4567076db7890c0b0722f2ad44dea1230",
+        "size": 859248
+      },
+      "upstream/commands.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.6/commands.json",
+        "sha1": "9bc39299b20b66f183ec286606bcd8996892edae",
+        "size": 798643
+      },
+      "upstream/effects.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/effects.json",
+        "sha1": "3ab14f83f1c924b798d27f80cd6efb835e752e2b",
+        "size": 3999
+      },
+      "upstream/enchantments.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/enchantments.json",
+        "sha1": "7df05ba19ff1d7200388bacb80dbc8a90fe3ae1b",
+        "size": 16721
+      },
+      "upstream/entities.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/entities.json",
+        "sha1": "5d2f3a6447324a410b72d60ecf023339023ff110",
+        "size": 87002
+      },
+      "upstream/entityLoot.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.20/entityLoot.json",
+        "sha1": "2d37a44e4d1450a0ea2e5e18de092f165a3063d6",
+        "size": 19091
+      },
+      "upstream/foods.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/foods.json",
+        "sha1": "ec70b2554ecdc4196c22c162f7b4545f50e42a3a",
+        "size": 9364
+      },
+      "upstream/instruments.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/instruments.json",
+        "sha1": "767af4b5e8ca26704daa2b8889cff465fcf5e521",
+        "size": 1023
+      },
+      "upstream/items.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/items.json",
+        "sha1": "6c65a94b47a6ce11742986910eaa3b457e9d4faa",
+        "size": 189280
+      },
+      "upstream/language.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/language.json",
+        "sha1": "33ad14bf428ba5135be5942842bb5aef8073ffe4",
+        "size": 492707
+      },
+      "upstream/loginPacket.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/loginPacket.json",
+        "sha1": "2d19e9bbdc93c6cc89cfeada7228443ca025184f",
+        "size": 645760
+      },
+      "upstream/mapIcons.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.20.2/mapIcons.json",
+        "sha1": "0793442b142b6c895efd52d52e514e31809397e3",
+        "size": 3957
+      },
+      "upstream/materials.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/materials.json",
+        "sha1": "e4e58ed8d29a2e965531023f9bd1fbf03b60224e",
+        "size": 3687
+      },
+      "upstream/particles.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/particles.json",
+        "sha1": "f1ca30b312f962b36a8671c4f443edfc48ba9d19",
+        "size": 5690
+      },
+      "upstream/proto.yml": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/proto.yml",
+        "sha1": "1c9786eeded532a8fe4c49fd531e4fa8a5ecbc39",
+        "size": 114909
+      },
+      "upstream/protocol.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/protocol.json",
+        "sha1": "39158e28155bdbc28c50e2937aaf45303edb48c8",
+        "size": 330084
+      },
+      "upstream/recipes.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/recipes.json",
+        "sha1": "6d431d969fb63130e37f0884299fa7ed7c4dce9e",
+        "size": 403798
+      },
+      "upstream/sounds.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/sounds.json",
+        "sha1": "37746cfe2d02f2238d2e735f0ddafd71edae6136",
+        "size": 114586
+      },
+      "upstream/tints.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/tints.json",
+        "sha1": "97bc36d22c886ebefb001014fdd51a0aa2026735",
+        "size": 8862
+      },
+      "upstream/version.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.21.11/version.json",
+        "sha1": "742c255397ef089b09bcb3d8f095a2c7384267b8",
+        "size": 107
+      },
+      "upstream/windows.json": {
+        "url": "https://raw.githubusercontent.com/PrismarineJS/minecraft-data/57dfcb6f904ad3ae60279285c7799705684dfa6c/data/pc/1.16.1/windows.json",
+        "sha1": "b742a8ab61b82aac67e5b203f08fc083c761db42",
+        "size": 3472
+      }
+    }
+  }
+}

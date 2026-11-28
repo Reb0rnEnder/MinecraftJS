@@ -1,7 +1,7 @@
 import { palettedPermutationSprites } from './render/paletted-permutations.js';
 import {OverlayZip,overlayDirectories,resourceFilter,readResourceStack,readResourceBytes,resourceMetadata,resourceNamespaces,resourceBlockedAbove} from './resource-layers.js';
 import{preloadTextures}from'./render/texture-preload.js';
-import {applyPackModels,applyPackTextures} from './resource-models.js';
+import {applyPackModels,applyPackTextures,applyPackDefinitions} from './resource-models.js';
 // Asset manager: base game assets (an assets/ folder next to the page, or the zip embedded in a single-file build)
 // layered under user resource packs.
 import {VILLAGER_HATS} from './game/villager-data.js';
@@ -20,8 +20,11 @@ import { decodeUtf8 } from './util/utf8.js';
 import { chatToLegacy } from './gui/chat.js';
 import { loadFontSets } from './gui/font-providers.js';
 import { loadParticleSprites } from './render/particle-sprites.js';
-import {CORE_GUI_SPRITES} from './gui/sprites-1.20.6.js';
+import {CORE_GUI_SPRITES} from './gui/sprites-1.21.11.js';
+import { runAtlasSources } from './render/atlas-sources.js';
+import { palettedPermutationSprites } from './render/paletted-permutations.js';
 
+export const VANILLA_PACK_ID = 'vanilla';
 const MC = 'assets/minecraft/';
 const PACK_PREFIX = 'packs/';
 
@@ -43,8 +46,10 @@ export class ResourcePack {
       this.minFormat = meta.pack?.min_format;
       this.maxFormat = meta.pack?.max_format;
       this.supportedFormats = meta.pack?.supported_formats;
+      this.minFormat = meta.pack?.min_format;
+      this.maxFormat = meta.pack?.max_format;
       try{this.blocksResource=resourceFilter(meta.filter);}catch(e){console.warn('Bad resource filter in',id,e.message);}
-      try{this.zip=new OverlayZip(this.zip,this.prefix,overlayDirectories(meta.overlays,32));}catch(e){console.warn('Bad resource overlays in',id,e.message);}
+      try{this.zip=new OverlayZip(this.zip,this.prefix,overlayDirectories(meta.overlays,75));}catch(e){console.warn('Bad resource overlays in',id,e.message);}
       if (meta.language && typeof meta.language === 'object') this.languages = meta.language;
     } catch (e) { /* pack.mcmeta missing or malformed */ }
     try { const icon = this.zip.read(this.prefix + 'pack.png'); this.icon = icon ? decodePng(icon) : null; } catch (e) { this.icon = null; }
@@ -62,7 +67,8 @@ export class Assets {
     this.guiSpriteScaling = new Map();this.guiSpriteLoads = new Map();
     this.textures = new Map(); // rel -> device texture
     this.data = {};
-    this.packs = [];           // active packs, highest priority first
+    this.packs = [];           // active packs above Default, highest priority first
+    this.lowerPacks = [];      // active packs below Default, highest priority first
     this.serverPack = null;    // the current server's resource pack (serverpacks.js), first in packs while set
     this.serverPacks = [];     // 1.20.3+: pushed packs, highest priority first
     this.device = null;
@@ -106,7 +112,10 @@ export class Assets {
 
   async activatePacks(ids) {
     const all = await this.listPacks();
-    this.packs = ids.map((id) => all.find((p) => p.id === id)).filter(Boolean);
+    const at = ids.indexOf(VANILLA_PACK_ID);
+    const pick = (list) => list.map((id) => all.find((p) => p.id === id)).filter(Boolean);
+    this.packs = pick(at < 0 ? ids : ids.slice(0, at));
+    this.lowerPacks = at < 0 ? [] : pick(ids.slice(at + 1));
     this.packs.unshift(...(this.serverPacks.length ? this.serverPacks : this.serverPack ? [this.serverPack] : []));
   }
 
@@ -241,12 +250,31 @@ export class Assets {
 
     step('Loading block models...', 15);
     const models = await this.source.models();
-    this.models = models.models;
-    this.blockstates = models.blockstates;
+    const under = { models: {}, blockstates: {}, items: {}, equipment: {} };
+    if (this.lowerPacks.length) {
+      const lowerFirst = [...this.lowerPacks].reverse();
+      applyPackModels(lowerFirst, under.models, under.blockstates);
+      applyPackDefinitions(lowerFirst, 'items', under.items);
+      applyPackDefinitions(lowerFirst, 'equipment', under.equipment);
+    }
+    this.models = { ...under.models, ...models.models };
+    this.blockstates = { ...under.blockstates, ...models.blockstates };
+    this.itemModels = { ...under.items, ...(models.items || {}) };
+    this.equipmentModels = { ...under.equipment, ...(models.equipment || {}) };
     applyPackModels(packsLowFirst,this.models,this.blockstates,this);
+    applyPackDefinitions(packsLowFirst, 'items', this.itemModels, this);
+    applyPackDefinitions(packsLowFirst, 'equipment', this.equipmentModels, this);
 
     step('Loading textures...', 35);
     const { files, mcmeta } = await this.source.blockTextures();
+    if (this.lowerPacks.length) {
+      const underFiles = new Map(), underMeta = {};
+      applyPackTextures([...this.lowerPacks].reverse(), underFiles, underMeta, this.models);
+      for (const [key, value] of underFiles) if (!files.has(key)) {
+        files.set(key, value);
+        if (underMeta[key] && !Object.hasOwn(mcmeta, key)) mcmeta[key] = underMeta[key];
+      }
+    }
     applyPackTextures(packsLowFirst,files,mcmeta,this.models,this);
     step('Building texture atlas...', 50);
     const textures = [];
@@ -279,11 +307,16 @@ export class Assets {
     await loadParticleSprites(this);
 
     step('Loading colour maps...', 65);
-    const [grass, foliage] = await Promise.all([this.imageAsync('colormap/grass.png'), this.imageAsync('colormap/foliage.png')]);
+    const [grass, foliage, dryFoliage] = await Promise.all([
+      this.imageAsync('colormap/grass.png'),
+      this.imageAsync('colormap/foliage.png'),
+      this.imageAsync('colormap/dry_foliage.png').catch(() => null),
+    ]);
     this.grassPixels = grass.data;
     this.foliagePixels = foliage.data;
+    this.dryFoliagePixels = dryFoliage ? dryFoliage.data : null;
     initBlocks(this.data.blocks, this.data.blockCollisionShapes);
-    initBiomes(this.data.biomes, this.grassPixels, this.foliagePixels);
+    initBiomes(this.data.biomes, this.grassPixels, this.foliagePixels, this.dryFoliagePixels);
     this.modelStore = new ModelStore(this.models, this.blockstates, this.atlas);
 
     step('Loading language...', 70);
@@ -294,7 +327,7 @@ export class Assets {
     step('Loading interface...', 75);
     await Promise.all([
       'font/ascii.png', 'font/ascii_sga.png', 'gui/menu_background.png', 'gui/title/minecraft.png', 'gui/title/edition.png',
-      'gui/container/inventory.png', 'environment/sun.png', 'environment/moon_phases.png', 'environment/clouds.png',
+      'gui/container/inventory.png', 'environment/celestial/sun.png', 'environment/celestial/moon/full_moon.png', 'environment/clouds.png',
       'misc/vignette.png', 'misc/shadow.png',
     ].map((p) => this.imageAsync(p).catch(() => null)));
     this.glyphSizes = null; // The native target removed legacy glyph_sizes.bin.
@@ -308,6 +341,7 @@ export class Assets {
     const missingPanorama=this.preloadReport.required.failed.filter(p=>/panorama_[0-5]\.png$/.test(p));if(missingPanorama.length)throw Error('Missing panorama textures: '+missingPanorama.join(', '));
     if(this.preloadWorldTextures!==false){
       const index=await this.source.textureIndex?.()||[],all=new Map(index.map(e=>[e[0],e]));
+      for(const pack of [...this.lowerPacks].reverse())for(const name of pack.list('textures/'))if(name.endsWith('.png')){const bytes=pack.read(name);if(bytes?.length>=24){const d=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);all.set(name.slice(9),[name.slice(9),d.getUint32(16),d.getUint32(20)]);}}
       for(const pack of packsLowFirst)for(const name of pack.list('textures/'))if(name.endsWith('.png')){const bytes=pack.read(name);if(bytes?.length>=24){const d=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);all.set(name.slice(9),[name.slice(9),d.getUint32(16),d.getUint32(20)]);}}
       const entries=[...all.values()].filter(([path])=>! /^(block|blocks|item|items)\//.test(path)&&!required.includes(path)).sort(([a],[b])=>Number(a.startsWith('font/unicode_page_'))-Number(b.startsWith('font/unicode_page_')));
       this.preloadReport.world=await preloadTextures(this,entries,{yieldFrame:()=>new Promise(resolve=>platform().requestFrame(resolve)),progress:(done,total)=>step('Preloading textures...',78+6*done/Math.max(1,total))});
@@ -340,6 +374,7 @@ export class Assets {
       biomesJson: this.data.biomes,
       grass: this.grassPixels,
       foliage: this.foliagePixels,
+      dryFoliage: this.dryFoliagePixels,
     });
   }
 
@@ -357,7 +392,9 @@ export class Assets {
 
   // All languages: the game's list plus the "language" sections of active resource packs
   async loadLanguageList() {
-    const list = { ...((this.defaultPackMeta && this.defaultPackMeta.language) || {}) };
+    const list = {};
+    for (const p of [...this.lowerPacks].reverse()) if (p.languages) Object.assign(list, p.languages);
+    Object.assign(list, this.defaultPackMeta?.language || {});
     if (!list.en_us) list.en_us = { name: 'English', region: 'US', bidirectional: false };
     for (const p of [...this.packs].reverse()) if (p.languages) Object.assign(list, p.languages);
     this.languages = list;
@@ -368,7 +405,7 @@ export class Assets {
   // the selected language and every active pack's .json files are layered on top.
   async loadVillagerHats(){
     const names=new Set(Object.keys(VILLAGER_HATS));
-    for(const pack of this.packs)for(const path of pack.list('textures/entity/'))if(/\/(villager|zombie_villager)\/.*\.png\.mcmeta$/.test(path))names.add(path.slice(9,-7));
+    for(const pack of [...this.packs,...this.lowerPacks])for(const path of pack.list('textures/entity/'))if(/\/(villager|zombie_villager)\/.*\.png\.mcmeta$/.test(path))names.add(path.slice(9,-7));
     const hats={};
     for(const path of names){const meta=await this.resourceMetadata('minecraft:textures/'+path);if(meta.bytes)try{hats[path]=JSON.parse(decodeUtf8(meta.bytes)).villager?.hat||'none';}catch{}else if(meta.base&&!meta.filtered)hats[path]=VILLAGER_HATS[path];}
     this.villagerHats=hats;

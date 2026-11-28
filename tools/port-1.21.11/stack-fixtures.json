@@ -1,0 +1,44 @@
+{
+  "minecraftVersion": "1.21.11",
+  "protocol": 774,
+  "clientSha1": "ba2df812c2d12e0219c489c4cd9a5e1f0760f5bd",
+  "registryCount": 23,
+  "fixtures": {
+    "empty": {
+      "trusted": "00",
+      "untrusted": "00"
+    },
+    "stone": {
+      "trusted": "01010000",
+      "untrusted": "01010000"
+    },
+    "damaged_sword": {
+      "trusted": "01a80701000325",
+      "untrusted": "01a8070100030125"
+    },
+    "named_removed_sword": {
+      "trusted": "01a807020103250608000c50617269747920426c61646513",
+      "untrusted": "01a8070201030125060f08000c50617269747920426c61646513"
+    },
+    "stone_remove_max_stack": {
+      "trusted": "0101000101",
+      "untrusted": "0101000101"
+    },
+    "bundle_nested": {
+      "trusted": "018c080100300101a80701000305",
+      "untrusted": "018c08010030080101a80701000305"
+    },
+    "kinetic_weapon": {
+      "trusted": "01010100270a0401143fc000003f00000000010f3e8000003f8000003dcccccd3fc000000000",
+      "untrusted": "0101010027210a0401143fc000003f00000000010f3e8000003f8000003dcccccd3fc000000000"
+    },
+    "equippable": {
+      "trusted": "0101010020044700011a6d696e6563726166743a6d6973632f70756d706b696e626c7572000100010000e70a",
+      "untrusted": "010101002027044700011a6d696e6563726166743a6d6973632f70756d706b696e626c7572000100010000e70a"
+    },
+    "tooltip_display": {
+      "trusted": "01a8070100120002030d",
+      "untrusted": "01a807010012040002030d"
+    }
+  }
+}

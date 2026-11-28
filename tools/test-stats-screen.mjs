@@ -12,7 +12,7 @@ setPlatform({now:()=>0,loadSetting:()=>null,saveSetting(){}});
 setTranslator((k,a)=>a?.length?k+'('+a.join(',')+')':k);
 const json=n=>JSON.parse(readFileSync(new URL('../client/data/'+n+'.json',import.meta.url),'utf8'));
 const data={items:json('items'),blocks:json('blocks'),entities:json('entities')};
-const MODERN=STAT_REGISTRY_VERSION==='1.20.6',minor=Number(STAT_REGISTRY_VERSION.split('.')[1]);
+const minor=Number(STAT_REGISTRY_VERSION.split('.')[1]),MODERN=STAT_REGISTRY_VERSION==='1.20.6'||minor>=21;
 const id=(list,name)=>{const e=data[list].find(x=>x.name===name&&x.type!=='object');assert.ok(e,name);return e.internalId??e.id;};
 const type=n=>STAT_TYPES.indexOf(n);
 function entries(){

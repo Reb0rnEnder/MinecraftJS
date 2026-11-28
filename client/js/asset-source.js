@@ -8,7 +8,7 @@ import { decodeUtf8 } from './util/utf8.js';
 
 export class FolderSource {
   constructor(base = 'assets/') { this.base = base; this.kind = 'folder'; }
-  url(rel) { return this.base + rel + "?v=1.20.6-native-v2"; }
+  url(rel) { return this.base + rel + "?v=1.21.11-native-v1"; }
   bytes(rel) { return platform().fetchBytes(this.url(rel)).catch(() => null); }
   data(name) { return platform().fetchJson(`data/${name}.json`); }
   textureIndex(){return platform().fetchJson(this.url('bundles/texture-index.json')).catch(()=>[]);}
@@ -52,9 +52,11 @@ export class ZipSource {
   }
 
   async models() {
-    const out = { blockstates: {}, models: {} };
+    const out = { blockstates: {}, models: {}, items: {}, equipment: {} };
     for (const n of this.zip.list('minecraft/blockstates/')) if (n.endsWith('.json')) out.blockstates[n.slice(22, -5)] = JSON.parse(this.zip.readText(n));
     for (const n of this.zip.list('minecraft/models/')) if (n.endsWith('.json')) out.models[n.slice(17, -5)] = JSON.parse(this.zip.readText(n));
+    for (const n of this.zip.list('minecraft/items/')) if (n.endsWith('.json')) out.items[n.slice(16, -5)] = JSON.parse(this.zip.readText(n));
+    for (const n of this.zip.list('minecraft/equipment/')) if (n.endsWith('.json')) out.equipment[n.slice(20, -5)] = JSON.parse(this.zip.readText(n));
     return out;
   }
 

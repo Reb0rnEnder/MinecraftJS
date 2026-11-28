@@ -2,7 +2,7 @@ import {calculateGuiScale} from './gui-scale.js';
 import{bundleTooltipLayout,drawBundleTooltip}from'./bundle-tooltip.js';
 import{EMPTY_DYNAMIC_LIGHTS}from'../gfx/dynamic-lighting.js';
 import {VANILLA_UI} from './vanilla-layout.js';
-import {legacyGuiSprite} from './sprites-1.20.6.js';
+import {legacyGuiSprite} from './sprites-1.21.11.js';
 // 2D GUI layer rendered through the graphics device (vanilla-like drawing helpers).
 // Quads are accumulated for the whole frame and drawn in order at end() (one vertex upload per frame).
 import { FontRenderer } from './font.js';
@@ -182,7 +182,11 @@ export class Gui {
   // drawTexturedModalRect equivalent; texture coordinates are in a texW x texH space
   blit(path, x, y, u, v, w, h, texW = 256, texH = 256, dw = w, dh = h) {
     const sprite=typeof path==='string'?legacyGuiSprite(path,u,v,w,h):null;
-    if(sprite){const t=this.tex(sprite.path);if(t&&w>0&&h>0)this.quad(t,x,y,x+dw,y+dh,sprite.u,sprite.v,sprite.u1,sprite.v1,WHITE);return;}
+    if(sprite){
+      const scaling=sprite.spriteName&&this.assets.guiSpriteScaling?.get(sprite.path);
+      if(scaling&&scaling.type!=='stretch'&&sprite.u===0&&sprite.v===0&&sprite.u1===1&&sprite.v1===1){this.sprite(sprite.spriteName,x,y,dw,dh);return;}
+      const t=this.tex(sprite.path);if(t&&w>0&&h>0)this.quad(t,x,y,x+dw,y+dh,sprite.u,sprite.v,sprite.u1,sprite.v1,WHITE);return;
+    }
     const t = this.tex(path);
     if (!t || w <= 0 || h <= 0) return;
     this.quad(t, x, y, x + dw, y + dh, u / texW, v / texH, (u + w) / texW, (v + h) / texH, WHITE);
@@ -305,7 +309,7 @@ export class Gui {
     for (let i = 0; i < lines.length; i++) {
       this.text(lines[i], x, y, 0xffffff, true);
       y += i === 0 ? 12 : 10;
-      if(i===0&&image){drawBundleTooltip(this,image,x,y);y+=layout.height;}
+      if(i===0&&image){drawBundleTooltip(this,image,x,y,w);y+=layout.height;}
     }
   }
 

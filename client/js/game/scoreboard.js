@@ -1,4 +1,4 @@
-import{formatScore766}from'./score-format-1.20.6.js';
+import{formatScore774}from'./score-format-1.21.11.js';
 // Player list (tab), scoreboard objectives/scores and teams.
 import { chatToLegacy } from '../gui/chat.js';
 
@@ -68,7 +68,7 @@ export class Scoreboard {
   }
 
   scoreText(objective,owner,context='sidebar'){
-    return formatScore766(objective.scores.get(owner)??0,objective.scoreInfo?.get(owner)?.numberFormat??objective.numberFormat,context);
+    return formatScore774(objective.scores.get(owner)??0,objective.scoreInfo?.get(owner)?.numberFormat??objective.numberFormat,context);
   }
 
   scoreDisplayName(objective,owner){

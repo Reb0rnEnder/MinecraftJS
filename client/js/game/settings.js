@@ -13,8 +13,8 @@ export const DEFAULT_KEYS = {
 };
 
 const DEFAULTS = {
-  preloadTextures:false,microprofiler:false,microprofilerOverlay:'compact',hideBundleTutorial:false,skipUndisplayedFrames:true,functionKeyChords:true,zoomEnabled:true,dynamicLights:false,dynamicLightsOthers:true,fullBright:false,
-  operatorItemsTab:false,onlyShowSecureChat:false,panoramaSpeed:1,notificationDisplayTime:1,darknessEffectScale:1,damageTiltStrength:1,glintSpeed:.5,glintStrength:.75,rawMouseInput:true,
+  preloadTextures:false,microprofiler:false,microprofilerOverlay:'compact',hideBundleTutorial:false,skipUndisplayedFrames:true,functionKeyChords:false,functionKeyChordsReset:1,zoomEnabled:true,dynamicLights:true,dynamicLightsOthers:true,fullBright:false,
+  operatorItemsTab:false,onlyShowSecureChat:false,panoramaSpeed:1,notificationDisplayTime:1,darknessEffectScale:1,damageTiltStrength:1,glintSpeed:.5,glintStrength:.75,rawMouseInput:true,invertMouseX:false,allowCursorChanges:true,rotateWithMinecart:false,highContrastBlockOutline:false,chatDrafts:false,inactivityFpsLimit:'minimized',renderCloudsDistance:128,cutoutLeaves:true,improvedTransparency:false,textureFiltering:'none',maxAnisotropy:1,weatherRadius:10,vignette:true,chunkFade:0,
   menuBackgroundBlur: .5, hideSplashTexts: false, narratorHotkey: true, allowServerListing: true,
   skipMultiplayerWarning: false,
   darkMojangStudiosBackground: false,
@@ -115,6 +115,8 @@ export class Settings {
     if (Array.isArray(config.servers)) defaults.servers = configServers(config.servers);
     if (typeof config.skinProxy === 'string') defaults.skinProxy = config.skinProxy.trim();
     Object.assign(this, defaults, saved);
+    // Function-key chords delayed plain F and prevented native key-repeat behavior. Disable them once for old saves.
+    if (!saved.functionKeyChordsReset) { this.functionKeyChords = false; this.functionKeyChordsReset = 1; }
     this.skinProxy = typeof this.skinProxy === 'string' ? this.skinProxy.trim() : '';
     if (!Object.prototype.hasOwnProperty.call(saved, 'lodDistance') && Number.isFinite(saved.lodChunks)) this.lodDistance = Math.max(0, saved.lodChunks * 16);
     if (!Number.isFinite(this.lodDistance) || this.lodDistance < 0) this.lodDistance = 128;

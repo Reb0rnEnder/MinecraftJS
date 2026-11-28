@@ -4,17 +4,15 @@ import {serverRecipe} from './server-recipes.js';
 import {DEFAULT_TAGS} from './default-tags.js';
 import {nativeRecipeBookEntries} from './recipe-displays-26.3.js';
 
-export const FIRST_JSON_ID = 11; // CraftingManager: ids 0 - 10 are the special (dynamic) recipes
+export const FIRST_JSON_ID = 11;
 export const BOOK_TABS = ['search', 'tools', 'buildingBlocks', 'misc', 'redstone'];
 
-// "minecraft:planks" + data -> { id, data } (data 32767 = any)
 function stackOf(game, j) {
-  if(typeof j==='string')j={item:j};
+  if (typeof j === 'string') j = { item: j };
   const name = String(j.item || '').replace(/^minecraft:/, '');
   const def = game.assets.itemsByName.get(name);
   if (!def) return null;
-  const id = def.id;
-  return { id, data: j.data === undefined ? 0 : j.data, count: j.count || 1 };
+  return { id: def.id, data: j.data === undefined ? 0 : j.data, count: j.count || 1 };
 }
 
 export class RecipeBook {
@@ -25,12 +23,15 @@ export class RecipeBook {
     this.seenNative = new Set(); // native display ids already shown on screen
     this.open = false;
     this.filtering = false;
-    this.cookingStates={smelting:{open:false,filtering:false},blasting:{open:false,filtering:false},smoking:{open:false,filtering:false}};
-    this.recipes = null;   // parsed, by id
-    this.lists = null;     // tab -> [RecipeList]
+    this.cookingStates = {
+      smelting: { open: false, filtering: false },
+      blasting: { open: false, filtering: false },
+      smoking: { open: false, filtering: false }
+    };
+    this.recipes = null;
+    this.lists = null;
   }
 
-  // Parse the JSON recipes once (shaped: width / height / cells, shapeless: ingredient list)
   _parse() {
     if (this.recipes) return;
     const g = this.game;
@@ -76,7 +77,7 @@ export class RecipeBook {
   // RecipeBookClient.rebuildTable: lists per tab, one per group (or per ungrouped recipe), in id order
   _buildLists() {
     this.lists = {};
-    for (const t of [...BOOK_TABS,'food']) this.lists[t] = [];
+    for (const t of [...BOOK_TABS, 'food']) this.lists[t] = [];
     const groups = new Map();
     for (const rec of Object.values(this.recipes)) {
       if (!rec) continue;
@@ -129,46 +130,102 @@ export class RecipeBook {
   // RecipeBookClient.getItemCategory: tools / building blocks / redstone, combat with tools, the rest misc
   stateFor(kind='crafting'){return kind==='crafting'?this:this.cookingStates[kind];}
 
-  // ClientRecipeBook categorizes the recipe itself, not its output's creative tab.
   categoryOf(rec) {
-    const kind=rec.type?.replace(/^minecraft:/,''),category=rec.category;
-    const cooking=['food','blocks','misc'],crafting=['building','redstone','equipment','misc'];
-    if(['smelting','blasting','smoking','campfire_cooking'].includes(kind)){
-      if(kind==='smoking'||kind==='campfire_cooking')return 'food';
-      const name=typeof category==='number'?cooking[category]:category;
-      if(kind==='blasting')return name==='blocks'?'buildingBlocks':'misc';
-      return name==='food'?'food':name==='blocks'?'buildingBlocks':'misc';
+    const rawCat = String(rec.category ?? 'misc');
+    if (rawCat.startsWith('crafting_')) {
+      const sub = rawCat.slice(9);
+      return { building_blocks: 'buildingBlocks', redstone: 'redstone', equipment: 'tools' }[sub] || 'misc';
     }
-    const name=typeof category==='number'?crafting[category]:category;
-    return {building:'buildingBlocks',redstone:'redstone',equipment:'tools'}[name]||'misc';
+    if (rawCat === 'furnace_food' || rawCat === 'smoker_food' || rawCat === 'campfire') return 'food';
+    if (rawCat === 'furnace_blocks' || rawCat === 'blast_furnace_blocks') return 'buildingBlocks';
+    if (rawCat.startsWith('furnace_') || rawCat.startsWith('blast_furnace_')) return 'misc';
+
+    const kind = rec.type?.replace(/^minecraft:/, ''), category = rec.category;
+    const cooking = ['food', 'blocks', 'misc'], crafting = ['building', 'redstone', 'equipment', 'misc'];
+    if (['smelting', 'blasting', 'smoking', 'campfire_cooking', 'furnace'].includes(kind)) {
+      if (kind === 'smoking' || kind === 'campfire_cooking') return 'food';
+      const name = typeof category === 'number' ? cooking[category] : category;
+      if (kind === 'blasting') return name === 'blocks' ? 'buildingBlocks' : 'misc';
+      return name === 'food' ? 'food' : name === 'blocks' ? 'buildingBlocks' : 'misc';
+    }
+    const name = typeof category === 'number' ? crafting[category] : category;
+    return { building: 'buildingBlocks', redstone: 'redstone', equipment: 'tools' }[name] || 'misc';
   }
 
   recipe(id) { this._parse(); return this.recipes[id] || null; }
   tabLists(tab) { this._parse(); return this.lists[tab] || []; }
 
-  // SPacketRecipeBook (NetHandlerPlayClient.handleRecipeBook)
+  // 1.21.2+ recipe_book_settings
+  onSettings(p) {
+    if (p.crafting) {
+      this.open = !!p.crafting.open;
+      this.filtering = !!p.crafting.filtering;
+    }
+    if (p.furnace) this.cookingStates.smelting = { open: !!p.furnace.open, filtering: !!p.furnace.filtering };
+    if (p.blast) this.cookingStates.blasting = { open: !!p.blast.open, filtering: !!p.blast.filtering };
+    if (p.smoker) this.cookingStates.smoking = { open: !!p.smoker.open, filtering: !!p.smoker.filtering };
+    this.game.screens?.current?.recipesUpdated?.();
+  }
+
+  // 1.21.2+ recipe_book_add
+  onAdd(p) {
+    if (p.replace) {
+      this.known.clear();
+      this.fresh.clear();
+      this.serverDisplays.clear();
+    }
+    const added = [];
+    for (const entry of p.entries || []) {
+      const r = entry?.recipe;
+      if (!r) continue;
+      const parsed = serverRecipe(r, this.game);
+      if (parsed) this.serverDisplays.set(r.displayId, parsed);
+      this.known.add(r.displayId);
+      if (entry.flags?.highlight) this.fresh.add(r.displayId);
+      if (entry.flags?.notification && parsed) added.push(parsed);
+    }
+    this.recipes = null;
+    this.lists = null;
+    this._parse();
+    if (added.length) this.game.hud?.addRecipeToast?.(added);
+    this.game.screens?.current?.recipesUpdated?.();
+  }
+
+  // 1.21.2+ recipe_book_remove
+  onRemove(p) {
+    for (const id of p.recipeIds || []) {
+      this.known.delete(id);
+      this.fresh.delete(id);
+      this.serverDisplays.delete(id);
+    }
+    if (this.serverDisplays.size || this.recipes) {
+      this.recipes = null;
+      this.lists = null;
+    }
+    this.game.screens?.current?.recipesUpdated?.();
+  }
+
+  // Legacy unlock_recipes handler kept for fixture compatibility
   onPacket(p) {
     this._parse();
     this.open = p.craftingBookOpen;
     this.filtering = p.filteringCraftable;
-    this.cookingStates.smelting.open=!!p.smeltingBookOpen;this.cookingStates.smelting.filtering=!!p.filteringSmeltable;
-    this.cookingStates.blasting.open=!!p.blastFurnaceOpen;this.cookingStates.blasting.filtering=!!p.filteringBlastFurnace;
-    this.cookingStates.smoking.open=!!p.smokerBookOpen;this.cookingStates.smoking.filtering=!!p.filteringSmoker;
+    this.cookingStates.smelting.open = !!p.smeltingBookOpen; this.cookingStates.smelting.filtering = !!p.filteringSmeltable;
+    this.cookingStates.blasting.open = !!p.blastFurnaceOpen; this.cookingStates.blasting.filtering = !!p.filteringBlastFurnace;
+    this.cookingStates.smoking.open = !!p.smokerBookOpen; this.cookingStates.smoking.filtering = !!p.filteringSmoker;
     if (p.action === 2) for (const id of p.recipes) this.known.delete(id);
     else if (p.action === 0) {
-      this.known.clear();this.fresh.clear();
+      this.known.clear(); this.fresh.clear();
       for (const id of p.recipes) this.known.add(id);
       for (const id of p.recipesToHighlight || []) this.fresh.add(id);
     } else if (p.action === 1) {
       const added = [];
       for (const id of p.recipes) { this.known.add(id); this.fresh.add(id); const r = this.recipe(id); if (r) added.push(r); }
-      // RecipeToast.addOrUpdate
       if (added.length) this.game.hud.addRecipeToast(added);
     }
     this.recipesUpdated();
   }
 
-  // Items the player can use: the main inventory and the crafting grid (RecipeItemHelper)
   stackedContents(gridItems) {
     const counts = new Map();
     const add = (it) => { if (!it || it.count <= 0) return; const k = it.id + ':' + it.damage; counts.set(k, (counts.get(k) || 0) + it.count); };
@@ -177,7 +234,6 @@ export class RecipeBook {
     return counts;
   }
 
-  // Match all ingredient alternatives; a greedy choice can consume another cell's only item.
   canCraft(rec, counts) {
     const left=new Map(counts),cells=(rec.craftCells||rec.cells).filter(Boolean).sort((a,b)=>a.length-b.length);
     const search=index=>{
@@ -189,7 +245,6 @@ export class RecipeBook {
     };return search(0);
   }
 
-  // RecipeList.canCraft for a grid: per recipe whether it is known, fits and can be made now
   evaluate(list, counts, gw, gh) {
     list.known = list.recipes.filter((r) => this.known.has(r.id));
     list.valid = list.known.filter((r) => r.width <= gw && r.height <= gh);

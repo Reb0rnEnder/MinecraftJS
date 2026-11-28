@@ -246,12 +246,27 @@ export class ContainerScreen extends Screen {
     this.dragSplitting = false;
   }
 
+  wheel(d) {
+    if (this.inv.cursor || this.hovered === null) return;
+    const item = this.container.get(this.hovered);
+    const items = item && isBundleItem(item, this.game.items) ? bundleContents(item, this.game.items) : null;
+    if (!items?.length) return;
+    const shown = Math.min(12, items.length);
+    const cur = bundleSelectedIndex(item);
+    const step = d > 0 ? 1 : -1;
+    const next = cur < 0 ? (step > 0 ? 0 : shown - 1) : ((cur + step + shown) % shown);
+    selectBundleItem(item, next);
+    this.game.send(C.selectBundleItem(this.hovered, next));
+  }
+
   key(e) {
     const g = this.game;
     for (const f of this.fields) if (f.focused && f.key(e)) return true;
     if (this.fields.some((f) => f.focused) && e.code !== 'Escape') return true;
     if (e.code === 'Escape' || e.code === g.settings.keys.inventory) { this.close(); return true; }
     if (this.hovered !== null && !this.inv.cursor) {
+      // AbstractContainerScreen.checkHotbarKeyPressed: swap-hands swaps the hovered slot with the offhand.
+      if (e.code === g.settings.keys.swapHands) { this.handleClick(this.hovered, this.hovered, 40, 2); return true; }
       for (let i = 0; i < 9; i++) {
         if (e.code === g.settings.keys['hotbar' + (i + 1)]) { this.handleClick(this.hovered, this.hovered, i, 2); return true; }
       }
@@ -383,12 +398,12 @@ export function drawModernEffects(game, gui, screen, mx, my) {
  const x=screen.guiLeft+screen.xSize+2,available=gui.width-x;
  if(available<32||!game.effects.size)return;
  const wide=available>=120,entries=[...game.effects],dy=entries.length>5?Math.floor(132/(entries.length-1)):33;
- entries.sort((a,b)=>compareEffects766(a,b,game.items.effects));
+ entries.sort((a,b)=>compareEffects774(a,b,game.items.effects));
  let y=screen.guiTop;
  for(const[id,e]of entries){
   gui.blit('gui/container/inventory.png',x,y,0,wide?166:198,wide?120:32,32);
   drawEffectIcon(game,gui,id,x+(wide?6:7),y+7);
-  const name=effectLabel766(game,id,e.amplifier),duration=effectDuration766(e.duration,k=>game.assets.translate(k),game.tickRate?.tickrate??20);
+  const name=effectLabel774(game,id,e.amplifier),duration=effectDuration774(e.duration,k=>game.assets.translate(k),game.tickRate?.tickrate??20);
   if(wide){gui.text(name,x+28,y+6,0xffffff,true);gui.text(duration,x+28,y+16,0x7f7f7f,true);}
   else if(mx>=x&&mx<=x+33&&my>=y&&my<=y+dy)gui.tooltip([name,duration],mx,my);
   y+=dy;
@@ -817,7 +832,7 @@ export function openContainerScreen(game, win) {
       break;
     }
     case 'minecraft:blast_furnace': case 'minecraft:smoker': case 'minecraft:furnace': s = new FurnaceScreen(game, win); {const kind=win.type==='minecraft:smoker'?'smoking':win.type==='minecraft:blast_furnace'?'blasting':'smelting';withRecipeBook(s,{kind,tabs:kind==='smoking'?['search','food']:kind==='blasting'?['search','buildingBlocks','misc']:['search','food','buildingBlocks','misc'],slots:[2,0],gridW:1,gridH:1,button:[20,-49,0,0,'gui/recipe_button.png']});} break;
-    case 'minecraft:dispenser': case 'minecraft:dropper': {
+    case 'minecraft:crafter_3x3': case 'minecraft:dispenser': case 'minecraft:dropper': {
       const slots = [];
       for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) slots.push([j + i * 3, 62 + j * 18, 17 + i * 18]);
       s = new SimpleScreen(game, win, 'gui/container/dispenser.png', slots);
@@ -884,7 +899,7 @@ function creativeCatalog(game) {
 
 // HotbarSnapshot storage (CreativeSettings, hotbar.nbt): nine saved toolbars, kept in the browser
 // Never read/write the unversioned 1.12 key: its numeric IDs cannot be safely reinterpreted.
-const HOTBARS_KEY = "minecraftjs.hotbars.1.20.6.v1";
+const HOTBARS_KEY = "minecraftjs.hotbars.1.21.11.v1";
 const toJson = (v) => JSON.stringify(v, (k, x) => (ArrayBuffer.isView(x) ? { $ta: x.constructor.name, a: Array.from(x, (n) => (typeof n === 'bigint' ? String(n) : n)) } : typeof x === 'bigint' ? { $big: String(x) } : x));
 const savedArrays = { Int8Array, Uint8Array, Int32Array, BigInt64Array };
 const fromJson = (s) => JSON.parse(s, (k, x) => {
@@ -898,15 +913,15 @@ const emptyHotbars = () => Array.from({ length: 9 }, () => new Array(9).fill(nul
 export function hotbarSnapshots() {
   try {
     const saved = fromJson(localStorage.getItem(HOTBARS_KEY) || 'null');
-    if (saved?.version !== 1 || saved.minecraftVersion !== '1.20.6' || saved.protocol !== 766 || saved.dataVersion !== 3839) return emptyHotbars();
+    if (saved?.version !== 1 || saved.minecraftVersion !== '1.21.11' || saved.protocol !== 774 || saved.dataVersion !== 4671) return emptyHotbars();
     if (!Array.isArray(saved.bars) || saved.bars.length !== 9) return emptyHotbars();
     return saved.bars.map(bar => {
       if (!Array.isArray(bar) || bar.length !== 9) return new Array(9).fill(null);
       return bar.map(it => {
-        if (!it || !Number.isInteger(it.id) || it.id < 1 || it.id >= ITEM_DEFAULTS_766.items.length || !Number.isInteger(it.count) || it.count < 1 || it.count > 127 || creativeLocked(it)) return null;
+        if (!it || !Number.isInteger(it.id) || it.id < 1 || it.id >= ITEM_DEFAULTS_774.items.length || !Number.isInteger(it.count) || it.count < 1 || it.count > 127 || creativeLocked(it)) return null;
         const copied = creativeCopy(it);
         // Check that persisted typed NBT is serializable before it reaches a live click.
-        new Writer766().slot(copied).build();
+        new Writer774().slot(copied).build();
         return copied;
       });
     });
@@ -914,7 +929,7 @@ export function hotbarSnapshots() {
 }
 function saveHotbarSnapshots(list) {
   try {
-    localStorage.setItem(HOTBARS_KEY, toJson({ version: 1, minecraftVersion: '1.20.6', protocol: 766, dataVersion: 3839, bars: list }));
+    localStorage.setItem(HOTBARS_KEY, toJson({ version: 1, minecraftVersion: '1.21.11', protocol: 774, dataVersion: 4671, bars: list }));
     return true;
   } catch (e) { return false; /* storage unavailable */ }
 }
@@ -1163,6 +1178,10 @@ export class CreativeScreen extends ContainerScreen {
   }
 
   wheel(d) {
+    if (!this.inv.cursor && this.hovered !== null && isBundleItem(this.container.get(this.hovered), this.game.items)) {
+      super.wheel(d);
+      return;
+    }
     const max = this.maxScrollRows();
     if (!max) return;
     this.scroll = Math.min(1, Math.max(0, this.scroll + d / max));

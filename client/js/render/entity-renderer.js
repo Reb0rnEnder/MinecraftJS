@@ -48,7 +48,38 @@ import { fetchSkin, fetchSkinProfile, uuidSkinProxyAvailable } from '../net/prox
 import { EntityFire } from './entity-fire.js';
 import { decodeUtf8 } from '../util/utf8.js';
 
-const ARMOR_MATS = ['leather', 'chainmail', 'iron', 'diamond', 'gold', 'turtle', 'netherite'];
+const ARMOR_MATS = ['leather', 'chainmail', 'copper', 'iron', 'diamond', 'gold', 'turtle_scute', 'netherite'];
+const variantCache = new WeakMap();
+const vanillaVariantCache = new Map();
+function variantTexture(game, registryName, variantId, fallbackKey) {
+  const source = game?.dimensionCodec;
+  let entries;
+  if (source) {
+    let byReg = variantCache.get(source);
+    if (!byReg) variantCache.set(source, byReg = new Map());
+    entries = byReg.get(registryName);
+    if (!entries) {
+      entries = registryEntries(simplify(source), registryName);
+      byReg.set(registryName, entries);
+    }
+  } else {
+    entries = vanillaVariantCache.get(registryName);
+    if (!entries) {
+      entries = (KNOWN_PACK_774.registries[registryName] || []).map((entry, id) => ({
+        id,
+        name: entry.key,
+        element: simplify(entry.value)
+      }));
+      vanillaVariantCache.set(registryName, entries);
+    }
+  }
+  const hit = variantId === undefined || variantId === null
+    ? entries.find((v) => v.name === fallbackKey)
+    : entries.find((v) => v.id === variantId) || entries.find((v) => v.name === fallbackKey);
+  const asset = hit?.element?.asset_id;
+  if (typeof asset !== 'string') return null;
+  return (asset.replace(/^minecraft:/, '') + '.png').replace(/\.png\.png$/, '.png');
+}
 
 // Vanilla 1.8.9 MapColor base colors (r, g, b). Index 0 = NONE (transparent).
 const MAP_BASE_COLORS = [
@@ -326,7 +357,7 @@ export class EntityRenderer {
         : e.husk ? 'entity/zombie/husk.png' : 'entity/zombie/zombie.png';
       case 55: return 'entity/slime/slime.png';
       case 56: return e.attacking ? 'entity/ghast/ghast_shooting.png' : 'entity/ghast/ghast.png';
-      case 57: return 'entity/zombie_pigman.png';
+      case 57: return 'entity/piglin/zombified_piglin.png';
       case 58: return 'entity/enderman/enderman.png';
       case 59: return 'entity/spider/cave_spider.png';
       case 60: return 'entity/silverfish.png';
@@ -338,10 +369,10 @@ export class EntityRenderer {
       case 67: return 'entity/endermite.png';
       case 68: return e.elder ? 'entity/guardian_elder.png' : 'entity/guardian.png';
       case 69: return 'entity/shulker/shulker' + (ENTITY_DYES[e.shulkerColor] ? '_' + ENTITY_DYES[e.shulkerColor] : '') + '.png';
-      case 90: return 'entity/pig/pig.png';
+      case 90: return variantTexture(this.game, 'minecraft:pig_variant', e.pigVariant, 'minecraft:temperate');
       case 91: return 'entity/sheep/sheep.png';
-      case 92: return 'entity/cow/cow.png';
-      case 93: return 'entity/chicken.png';
+      case 92: return variantTexture(this.game, 'minecraft:cow_variant', e.cowVariant, 'minecraft:temperate');
+      case 93: return variantTexture(this.game, 'minecraft:chicken_variant', e.chickenVariant, 'minecraft:temperate');
       case 94: return 'entity/squid/squid.png';
       case 'goat': return 'entity/goat/goat.png';
       case 'axolotl': return 'entity/axolotl/axolotl_'+(['lucy','wild','gold','cyan','blue'][e.axolotlVariant]||'lucy')+'.png';
@@ -363,7 +394,7 @@ export class EntityRenderer {
       case 120: return 'entity/villager/villager.png';
       case 'wandering_trader': return 'entity/wandering_trader.png';
       case 'trader_llama': return 'entity/llama/' + (LLAMA_TEX[e.llamaVariant] || LLAMA_TEX[0]) + '.png';
-      case 'cat': return 'entity/cat/'+(['tabby','black','red','siamese','british_shorthair','calico','persian','ragdoll','white','jellie','all_black'][e.catType||0]||'tabby')+'.png';
+      case 'cat': return variantTexture(this.game, 'minecraft:cat_variant', e.catType, 'minecraft:tabby');
       case 'fox': return 'entity/fox/'+(e.foxType===1?'snow_fox':'fox')+(e.foxSleeping?'_sleep':'')+'.png';
       case 'panda': {
         const variant=PANDA_VARIANTS[e.pandaGene||0]?.[e.pandaHiddenGene||0]||'normal';
@@ -386,6 +417,14 @@ export class EntityRenderer {
       case 'strider': return 'entity/strider/strider'+(e.striderCold?'_cold':'')+'.png';
       case 'bee': return 'entity/bee/' + (e.angry ? (e.hasNectar ? 'bee_angry_nectar' : 'bee_angry') : (e.hasNectar ? 'bee_nectar' : 'bee')) + '.png';
       case 'phantom': return 'entity/phantom.png';
+      case 'bogged': return 'entity/skeleton/bogged.png';
+      case 'parched': return 'entity/skeleton/parched.png';
+      case 'breeze': return 'entity/breeze/breeze.png';
+      case 'creaking': return 'entity/creaking/creaking.png';
+      case 'happy_ghast': return e.child ? 'entity/ghast/happy_ghast_baby.png' : 'entity/ghast/happy_ghast.png';
+      case 'copper_golem': return 'entity/copper_golem/' + (['copper_golem', 'exposed_copper_golem', 'weathered_copper_golem', 'oxidized_copper_golem'][e.weatherState || 0] || 'copper_golem') + '.png';
+      case 'nautilus': return e.child ? 'entity/nautilus/nautilus_baby.png' : 'entity/nautilus/nautilus.png';
+      case 'zombie_nautilus': return variantTexture(this.game, 'minecraft:zombie_nautilus_variant', e.zombieNautilusVariant, 'minecraft:temperate');
       default: return null;
     }
   }
@@ -406,7 +445,7 @@ export class EntityRenderer {
       case 51: return M.skeleton();
       case 52: case 59: return M.spider();
       case 53: case 54: return M.zombie(64, 64, !!e.villagerZombie);
-      case 57: return M.zombie(64, 64);
+      case 57: return M.piglin(true);
       case 55: return M.slime(false);
       case 56: return M.ghast();
       case 58: return M.enderman();
@@ -457,6 +496,14 @@ export class EntityRenderer {
       case 'hoglin': case 'zoglin': return M.hoglin();
       case 'piglin': case 'piglin_brute': case 'zombified_piglin': return M.piglin(e.type==='zombified_piglin');
       case 'strider': return M.strider();
+      case 'bogged': return M.bogged();
+      case 'parched': return M.parched();
+      case 'breeze': return M.breeze();
+      case 'creaking': return M.creaking();
+      case 'happy_ghast': return M.happyGhast();
+      case 'copper_golem': return M.copperGolem();
+      case 'nautilus': return M.nautilus('nautilus');
+      case 'zombie_nautilus': return M.zombieNautilus();
       default: return null;
     }
   }
@@ -466,7 +513,8 @@ export class EntityRenderer {
   _livingKey(e) {
     if(e.kind==='mannequin')return ['mannequin',profileUuid(e.profile),profileTextureValue(e.profile)||'',JSON.stringify(e.skinPatch||null)].join('|');
     return [e.type, this._texFor(e), e.puffState || 0, e.fishVariant || 0, e.phantomSize || 0,
-      e.horseVariant || 0, e.horseType || 0,!!e.foxSleeping,e.villagerType??2,e.profession??0,e.villagerLevel??1,!!e.child].join('|');
+      e.horseVariant || 0, e.horseType || 0, !!e.foxSleeping, e.villagerType ?? 2, e.profession ?? 0, e.villagerLevel ?? 1, !!e.child,
+      e.weatherState || 0, e.zombieNautilusVariant || 0].join('|');
   }
 
   _visualKey(e) {
@@ -476,7 +524,7 @@ export class EntityRenderer {
     if (e.kind === 'boat') return 'boat:' + (e.boatWood || boatWoodFor(e.entityName))+':'+!!e.chestBoat;
     if (e.kind === 'minecart') return ['cart', e.cartType, e.customDisplay, e.displayBlock, e.displayOffset, e.furnacePowered].join(':');
     if (e.kind === 'crystal') return 'crystal:' + (e.showBottom !== false);
-    if (e.kind === 'projectile') return ['projectile', e.type, e.invulnerable,
+    if (e.kind === 'projectile') return ['projectile', e.entityName || e.type, e.invulnerable,
       e.item ? this.game.itemRenderer.iconKey(e.item) : ''].join(':');
     return e.kind;
   }
@@ -568,32 +616,42 @@ export class EntityRenderer {
         const layerModel=e.villagerZombie?M.zombie(64,64,true):M.villager();
         addLayer(layerModel,layer.texture,{hideHat:!!layer.hideHat,cull:false});
       }
-      if(e.type==='trader_llama')addLayer(M.llama(true),'entity/llama/decor/trader_llama.png',{cull:false});
-      if(e.type===95){v.wolfCollar=addLayer(M.wolf(),'entity/wolf/wolf_collar.png',{wolfLayer:true});v.wolfArmor=addLayer(M.wolf('wolfArmor'),'entity/wolf/wolf_armor.png',{wolfLayer:true});v.wolfArmorDye=addLayer(M.wolf('wolfArmor'),'entity/wolf/wolf_armor_overlay.png',{wolfLayer:true});v.wolfArmorCracks=addLayer(M.wolf('wolfArmor'),'entity/wolf/wolf_armor_crackiness_low.png',{wolfLayer:true});}
+      if(e.type==='trader_llama')addLayer(M.llama(true),'entity/equipment/llama_body/trader_llama.png',{cull:false});
+      if(e.type===95){v.wolfCollar=addLayer(M.wolf(),'entity/wolf/wolf_collar.png',{wolfLayer:true});v.wolfArmor=addLayer(M.wolf('wolfArmor'),'entity/equipment/wolf_body/armadillo_scute.png',{wolfLayer:true});v.wolfArmorDye=addLayer(M.wolf('wolfArmor'),'entity/equipment/wolf_body/armadillo_scute_overlay.png',{wolfLayer:true});v.wolfArmorCracks=addLayer(M.wolf('wolfArmor'),'entity/wolf/wolf_armor_crackiness_low.png',{wolfLayer:true});}
       if (e.type === 99) v.golemCracks = addLayer(M.ironGolem(), 'entity/iron_golem/iron_golem_crackiness_low.png', { golemCracks: true });
-      if (e.type === 91) v.wool = addLayer(M.sheep(true), 'entity/sheep/sheep_fur.png');
+      if (e.type === 91) v.wool = addLayer(M.sheep(true), 'entity/sheep/sheep_wool.png');
       if (e.type === 52 || e.type === 59) addLayer(M.spider(), 'entity/spider_eyes.png', { fullBright: true, transparent: true, additive: true, depthWrite: false, eyes: true });
       if (e.type === 58) addLayer(M.enderman(), 'entity/enderman/enderman_eyes.png', { fullBright: true, transparent: true, additive: true, depthWrite: false, eyes: true });
       if (e.type === 55) v.slimeOuter = addLayer(M.slime(true), 'entity/slime/slime.png', { transparent: true, depthWrite: true });
-      if (e.type === 'strider') v.saddle=addLayer(M.strider(),'entity/strider/strider_saddle.png');
-      if (e.type === 90) v.saddle = addLayer(M.pig(), 'entity/pig/pig_saddle.png');
+      if (e.type === 'strider') v.saddle=addLayer(M.strider(),'entity/equipment/strider_saddle/saddle.png');
+      if (e.type === 90) v.saddle = addLayer(M.pig(), 'entity/equipment/pig_saddle/saddle.png');
       if (e.type === 50) v.charge = addLayer(M.creeper(), () => this.game.assets.texture('entity/creeper/creeper_armor.png', { wrap: 'repeat' }), { transparent: true, additive: true, fullBright: true, depthWrite: false, charge: true });
       if (e.type === 100) {
         const markings = ['', 'white', 'whitefield', 'whitedots', 'blackdots'][((e.horseVariant || 0) >> 8) & 0xff];
         if (markings && (e.horseType || 0) === 0) addLayer(M.horse(), 'entity/horse/horse_markings_' + markings + '.png');
         // HorseRenderer adds HorseArmorLayer (horses only; donkeys, mules and undead horses have none)
-        if ((e.horseType || 0) === 0) { try { v.horseArmor = addLayer(M.horse(0, 'horseArmor'), 'entity/horse/armor/horse_armor_iron.png'); } catch { v.horseArmor = null; /* bundle built before the horse_armor layer */ } }
+        if ((e.horseType || 0) === 0) { try { v.horseArmor = addLayer(M.horse(0, 'horseArmor'), 'entity/equipment/horse_body/iron.png'); } catch { v.horseArmor = null; /* bundle built before the horse_armor layer */ } }
       }
       if (e.stray) addLayer(M.biped('strayOverlay'), 'entity/skeleton/stray_overlay.png');
+      if (e.type === 'bogged') addLayer(M.boggedOuter(), 'entity/skeleton/bogged_overlay.png');
+      if (e.type === 'breeze') {
+        addLayer(M.breeze(), 'entity/breeze/breeze_eyes.png', { fullBright: true, transparent: true, additive: true, depthWrite: false, eyes: true });
+        addLayer(M.breezeWind(), 'entity/breeze/breeze_wind.png', { transparent: true, depthWrite: false });
+      }
+      if (e.type === 'creaking') addLayer(M.creaking(), 'entity/creaking/creaking_eyes.png', { fullBright: true, transparent: true, additive: true, depthWrite: false, eyes: true });
+      if (e.type === 'copper_golem') {
+        const eyePrefix = ['', 'exposed_', 'weathered_', 'oxidized_'][e.weatherState || 0] || '';
+        addLayer(M.copperGolem(), 'entity/copper_golem/' + eyePrefix + 'copper_golem_eyes.png', { fullBright: true, transparent: true, additive: true, depthWrite: false, eyes: true });
+      }
       if (e.type === 'drowned') addLayer(M.drowned(true), 'entity/zombie/drowned_outer_layer.png', { cull: false });
-      if (e.type === 'llama') v.llamaDecor = addLayer(M.llama(true), 'entity/llama/decor/white.png', { cull: false });
+      if (e.type === 'llama') v.llamaDecor = addLayer(M.llama(true), 'entity/equipment/llama_body/white.png', { cull: false });
       if (e.type === 'tropical_fish') {
         v.fishPattern = addLayer(M.tropicalFish(fishShape(e), true),
           'entity/fish/tropical_' + (fishShape(e) ? 'b' : 'a') + '_pattern_' + fishPattern(e) + '.png', { cull: false });
       }
       if (e.type === 'phantom') addLayer(M.phantom(e.phantomSize || 0), 'entity/phantom_eyes.png',
         { fullBright: true, transparent: true, additive: true, depthWrite: false, eyes: true, cull: false });
-      if (e.type === 51 || e.type === 53 || e.type === 54 || e.type === 57 || e.type === 'drowned' || ['piglin','piglin_brute','zombified_piglin'].includes(e.type)) this._addArmorLayers(v, e);
+      if (e.type === 51 || e.type === 53 || e.type === 54 || e.type === 57 || e.type === 'drowned' || e.type === 'bogged' || e.type === 'parched' || ['piglin','piglin_brute','zombified_piglin'].includes(e.type)) this._addArmorLayers(v, e);
       if (e.type === 96) v.mushroomLayer = true;
     }
     if (isAvatar(e) || e.kind === 'armorstand') {
@@ -606,7 +664,7 @@ export class EntityRenderer {
         if (esk && esk.elytra) return esk.elytra;
         const flags = e.skinFlags !== undefined ? e.skinFlags : 0x7f;
         if (esk && esk.cape && (flags & 1)) return esk.cape;
-        return this.game.assets.texture('entity/elytra.png');
+        return this.game.assets.texture('entity/equipment/wings/elytra.png');
       }, { alphaTest: 0.1, cull: false });
       const eobj = this._makeModelObject(em, emat);
       eobj.position.z = 2;
@@ -772,7 +830,7 @@ export class EntityRenderer {
 
   _addArmorLayers(v, e) {
     v.armor = [];
-    const piglin=['piglin','piglin_brute','zombified_piglin'].includes(e.type);
+    const piglin = e.type === 57 || ['piglin', 'piglin_brute', 'zombified_piglin'].includes(e.type);
     for (let slot = 1; slot <= 4; slot++) {
       const inner = slot === 2;
       const m = piglin&&!inner?M.biped('piglinArmorOuter'):M.armorModel(inner ? 0.5 : 1.0);m.piglinAgeable=piglin;
@@ -873,14 +931,16 @@ export class EntityRenderer {
         // Object IDs became unified registry IDs in 1.14; use the decoded identity.
         const name = e.entityName;
         const itemName = { snowball: 'snowball', egg: 'egg', ender_pearl: 'ender_pearl', eye_of_ender: 'ender_eye',
-          potion: 'splash_potion', experience_bottle: 'experience_bottle', small_fireball: 'fire_charge',
+          potion: 'splash_potion', splash_potion: 'splash_potion', lingering_potion: 'lingering_potion',
+          experience_bottle: 'experience_bottle', small_fireball: 'fire_charge',
           fireball: 'fire_charge', firework_rocket: 'firework_rocket' }[name];
+        const isPotion = name === 'potion' || name === 'splash_potion' || name === 'lingering_potion';
         const itemId = this.game.items.byName.get(itemName)?.id;
         v = { root: new Node(), kind: 'projectile', materials: [] };
         if (itemId) {
           const ir = this.game.itemRenderer;
           // EntityPotion carries its ItemStack (splash or lingering potion) in metadata
-          const item = name === 'potion' && e.item ? e.item : { id: itemId, damage: 0, count: 1 };
+          const item = isPotion && e.item ? e.item : { id: itemId, damage: 0, count: 1 };
           const m = ir.modelFor(item);
           const layer = m.layers && m.layers[m.layers.length > 1 ? 1 : 0];
           const entry = layer ? this.game.assets.atlas.entries.get(layer) : null;
@@ -895,7 +955,7 @@ export class EntityRenderer {
             v.billboard = n;
             v.root.add(n);
             // RenderSnowball draws the whole item: the potion's liquid layer tinted with PotionUtils.getColor
-            const over = name === 'potion' && m.layers.length > 1 ? this.game.assets.atlas.entries.get(m.layers[0]) : null;
+            const over = isPotion && m.layers.length > 1 ? this.game.assets.atlas.entries.get(m.layers[0]) : null;
             if (over) {
               const c = this.game.items.potionColor(item);
               const om = this._cachedMesh('sprite:' + m.layers[0], () => spriteMesh(this.device, over.uv[0], over.uv[1], over.uv[2], over.uv[3]));
@@ -960,6 +1020,19 @@ export class EntityRenderer {
           v.flash = this._blockObject(st, v.flashMat);
           if (v.flash && v.inner) v.inner.add(v.flash);
         }
+        break;
+      }
+      case 'wind_charge': case 'breeze_wind_charge': {
+        const model = M.windCharge();
+        v = { root: new Node(), kind: 'jar_projectile', materials: [], model };
+        const mat = this._mat(v, model.texture, { alphaTest: 0.1, transparent: true, ...model.materialOptions });
+        v.inner = new Node();
+        v.inner.add(this._makeModelObject(model, mat));
+        v.root.add(v.inner);
+        break;
+      }
+      case 'ominous_item_spawner': {
+        v = { root: new Node(), kind: 'ominous_item_spawner', materials: [] };
         break;
       }
       case 'boat': case 'minecart': {
@@ -1055,11 +1128,11 @@ export class EntityRenderer {
       }
       case 'fishhook': {
         v = { root: new Node(), kind: 'fishhook', materials: [], ownMeshes: [] };
-        const mesh = this._cachedMesh('fishhook', () => spriteMesh(this.device, 8 / 128, 16 / 128, 16 / 128, 24 / 128));
+        const mesh = this._cachedMesh('fishhook', () => spriteMesh(this.device, 0, 0, 1, 1));
         const sp = new Node();
         sp.billboard = true;
         sp.scale.setScalar(0.5);
-        sp.addDrawable(mesh, material('color', 'particle/particles.png', colorParams(1, 1, 1, 1, 0.1, 1), { blend: 'none' }));
+        sp.addDrawable(mesh, material('color', 'entity/fishing_hook.png', colorParams(1, 1, 1, 1, 0.1, 1), { blend: 'none' }));
         v.root.add(sp);
         const lineMesh = this.device.createMesh(FORMAT.color, new Float32Array(32 * 9), { dynamic: true });
         v.ownMeshes.push(lineMesh);
@@ -1496,7 +1569,7 @@ export class EntityRenderer {
     if (v.saddle) v.saddle.obj.visible = !!e.saddled && !e.invisible;
     if (v.llamaDecor) {
       v.llamaDecor.obj.visible = !e.invisible && e.llamaCarpet >= 0 && e.llamaCarpet < ENTITY_DYES.length;
-      v.llamaDecor.mat.tex = 'entity/llama/decor/' + (ENTITY_DYES[e.llamaCarpet] || 'white') + '.png';
+      v.llamaDecor.mat.tex = 'entity/equipment/llama_body/' + (ENTITY_DYES[e.llamaCarpet] || 'white') + '.png';
     }
     if (v.fishPattern) {
       const base = FLEECE[((e.fishVariant || 0) >>> 16) & 15];
@@ -2366,8 +2439,8 @@ function copyPose(from, to) {
 }
 
 function armorMaterialIndex(name) {
-  const match = /^(leather|chainmail|iron|diamond|golden|turtle|netherite)_(helmet|chestplate|leggings|boots)$/.exec(name);
-  return match ? ['leather', 'chainmail', 'iron', 'diamond', 'golden', 'turtle', 'netherite'].indexOf(match[1]) : -1;
+  const match = /^(leather|chainmail|copper|iron|diamond|golden|turtle|netherite)_(helmet|chestplate|leggings|boots)$/.exec(name);
+  return match ? ['leather', 'chainmail', 'copper', 'iron', 'diamond', 'golden', 'turtle', 'netherite'].indexOf(match[1]) : -1;
 }
 
 // RenderArrow geometry (in arrow pixel units; scaled by 0.05625 and offset -4 on x)

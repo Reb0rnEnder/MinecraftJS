@@ -69,8 +69,10 @@ function buildBundle(kind) {
   } else if (kind === 'recipes.json') {
     // recipe ids: the reverse of the jar's entry order (see tools/build.js)
     const list = [];
-    for (const f of jar.list('data/minecraft/recipes/')) {
-      if (f.endsWith('.json')) list.push({ name: f.slice(('data/minecraft/recipes/').length, -5), ...jarJson(f) });
+    for (const prefix of ['data/minecraft/recipes/', 'data/minecraft/recipe/']) {
+      for (const f of jar.list(prefix)) {
+        if (f.endsWith('.json')) list.push({ name: f.slice(prefix.length, -5), ...jarJson(f) });
+      }
     }
     raw = Buffer.from(JSON.stringify(list.reverse()));
   } else if (kind === 'textures.bin') {
@@ -418,7 +420,7 @@ wss.on('connection', (ws) => {
 
     // Proxy test from the client's Proxy Servers screen
     if (msg.type === 'info') {
-      sendJson({ type: "info", name: "MinecraftJS proxy", version: PROXY_VERSION, protocols: [762, 766] });
+      sendJson({ type: "info", name: "MinecraftJS proxy", version: PROXY_VERSION, protocols: [762, 766, 774] });
       return;
     }
 
@@ -575,7 +577,7 @@ wss.on('connection', (ws) => {
     console.log(built ? 'Game assets: client/assets/' : 'Game assets loaded (served from the game jar)');
   } catch (e) {
     console.error('Could not load game assets:', e.message);
-    console.error('Set MC_JAR to the location of the 1.19.4 client if it is installed somewhere unusual.');
+    console.error(`Set MC_JAR to the location of the ${mcassets.MC_VERSION} client if it is installed somewhere unusual.`);
   }
   if (mcassets.MC_VERSION !== '1.20.6') {
     try {

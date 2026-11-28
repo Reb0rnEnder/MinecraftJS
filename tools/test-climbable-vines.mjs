@@ -6,7 +6,7 @@ const nativeNames=DEFAULT_TAGS.blocks['minecraft:climbable'].map(id=>json('block
 function scene(name){const world=new World(),chunk=new Chunk(0,0,true,world);world.chunks.set('0,0',chunk);const b=blocksByName[name];for(let y=0;y<24;y++)chunk.setState(1,y,1,b.defaultState);const player=new LocalPlayer();player.setPosition(1.5,8,1.5);return{world,player};}
 test('default climbable membership matches the pinned native jar tag',()=>{
  const target=JSON.parse(readFileSync(new URL('port-'+mcassets.MC_VERSION+'/target.json',import.meta.url))),bytes=readFileSync(new URL('../cache/port-'+mcassets.MC_VERSION+'/client.jar',import.meta.url));assert.equal(createHash('sha1').update(bytes).digest('hex'),target.downloads.client.sha1);
- const jar=new ZipFile(new URL('../cache/port-'+mcassets.MC_VERSION+'/client.jar',import.meta.url).pathname),tag=JSON.parse(jar.read('data/minecraft/tags/blocks/climbable.json'));assert.deepEqual([...nativeNames].sort(),tag.values.map(n=>n.replace('minecraft:','')).sort());
+ const jar=new ZipFile(new URL('../cache/port-'+mcassets.MC_VERSION+'/client.jar',import.meta.url).pathname),tag=JSON.parse(jar.read('data/minecraft/tags/block/climbable.json')??jar.read('data/minecraft/tags/blocks/climbable.json'));assert.deepEqual([...nativeNames].sort(),tag.values.map(n=>n.replace('minecraft:','')).sort());
 });
 test('all target-native climbable tips/stems are recognized; decorative plants are excluded',()=>{
  assert.ok(vineNames.includes('twisting_vines'));assert.ok(vineNames.includes('weeping_vines_plant'));
