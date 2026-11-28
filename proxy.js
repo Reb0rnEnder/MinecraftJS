@@ -138,6 +138,15 @@ app.post('/auth/poll', express.json(), authRoute(async (b) => ({ account: await 
 app.post('/auth/refresh', express.json(), authRoute(async (b) => ({ account: await msauth.refresh(String(b.refreshToken || '')) })));
 app.post('/auth/blocklist', express.json(), authRoute(async (b) => ({ blockedProfiles: await msauth.blockedProfiles(b.accessToken) })));
 app.post('/auth/privileges', express.json(), authRoute(async (b) => ({ privileges: await msauth.socialPrivileges(b.accessToken) })));
+// Mojang profile, skin and cape changes for Microsoft accounts. The browser cannot call these services directly
+// (CORS), so the selected MinecraftJS proxy relays them with the account's Minecraft access token.
+app.post('/auth/profile', express.json(), authRoute(async (b) => ({ profile: await msauth.profile(String(b.accessToken || '')) })));
+app.post('/auth/skin', express.json({ limit: '1mb' }), authRoute(async (b) => ({
+  profile: await msauth.setSkin(String(b.accessToken || ''), String(b.variant || 'classic'), Buffer.from(String(b.png || '').replace(/^data:image\/png;base64,/, ''), 'base64')),
+})));
+app.post('/auth/skin/reset', express.json(), authRoute(async (b) => ({ profile: await msauth.resetSkin(String(b.accessToken || '')) })));
+app.post('/auth/cape', express.json(), authRoute(async (b) => ({ profile: await msauth.setCape(String(b.accessToken || ''), String(b.capeId || '')) })));
+app.post('/auth/cape/hide', express.json(), authRoute(async (b) => ({ profile: await msauth.hideCape(String(b.accessToken || '')) })));
 // Session join for online-mode servers reached through a byte relay (Java relay / Wisp): the client does the
 // protocol and encryption itself, but sessionserver.mojang.com sends no CORS headers
 app.post('/auth/join', express.json(), authRoute(async (b) => {
