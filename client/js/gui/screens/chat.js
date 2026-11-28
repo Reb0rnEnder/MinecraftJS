@@ -5,6 +5,7 @@ import { Screen } from './manager.js';
 import { TextField, Button } from '../widgets.js';
 import { platform } from '../../platform/platform.js';
 import { C } from '../../net/packets.js';
+import { captureAutoLogin } from '../../game/auto-login.js';
 
 export class ChatScreen extends Screen {
   constructor(game, initial) {
@@ -44,6 +45,7 @@ export class ChatScreen extends Screen {
       if (msg) {
         g.hud.sentHistory.push(msg);
         if (g.hud.sentHistory.length > 100) g.hud.sentHistory.shift();
+        if (captureAutoLogin(g, msg)) g.hud.addChat('§a' + tr('minecraftjs.autologin.captured'), null, true);
         g.send(C.chat(msg.slice(0, 100)));
       }
       this.close();
