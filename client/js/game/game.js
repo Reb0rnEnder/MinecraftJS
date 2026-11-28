@@ -1,4 +1,5 @@
 import {replaceRespawnPlayer} from './respawn-player.js';
+import { setDnsServers } from '../net/dns.js';
 import {PLAYER_DATA,respawnPolicy,clampMaxHealth} from './player-native.js';
 import {WorldBorder} from '../world/world-border.js';
 import {BorderRenderer} from '../render/world-border.js';
@@ -91,6 +92,7 @@ export class Game {
   constructor(assets, settings, device, {deferStart=false}={}) {
     this.assets = assets;
     this.settings = settings;
+    setDnsServers(settings.dnsServers);
     this.device = device;
     setModelDevice(device);
     setTranslator((k, a) => assets.translate(k, a));

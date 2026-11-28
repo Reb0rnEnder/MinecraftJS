@@ -8,7 +8,16 @@ import { decodeUtf8 } from './util/utf8.js';
 
 export class FolderSource {
   constructor(base = 'assets/') { this.base = base; this.kind = 'folder'; }
-  bytes(rel) { return platform().fetchBytes(this.base + rel).catch(() => null); }
+  // .mcmeta files exist for only a few textures: with the build's index, ask for those alone (older builds
+  // without bundles/mcmeta-index.json still try each one)
+  async bytes(rel) {
+    if (rel.endsWith('.mcmeta') && rel !== 'pack.mcmeta') {
+      this.mcmetaIndex ??= platform().fetchJson(this.base + 'bundles/mcmeta-index.json').then((list) => (Array.isArray(list) ? new Set(list) : null), () => null);
+      const index = await this.mcmetaIndex;
+      if (index && !index.has(rel)) return null;
+    }
+    return platform().fetchBytes(this.base + rel).catch(() => null);
+  }
   data(name) { return platform().fetchJson(`data/${name}.json`); }
   textureIndex(){return platform().fetchJson((this.url?this.url('bundles/texture-index.json'):this.base+'bundles/texture-index.json')).catch(()=>[]);}
   models() { return platform().fetchJson(this.base + 'bundles/models.json'); }

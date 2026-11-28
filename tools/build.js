@@ -178,6 +178,8 @@ function buildBundles(files) {
   const len = Buffer.alloc(4);
   len.writeUInt32LE(header.length);
   return {
+    // every .mcmeta in the vanilla assets: the folder source only requests these (no 404 per texture)
+    'bundles/mcmeta-index.json':Buffer.from(JSON.stringify([...files].map(([n])=>n).filter(n=>n.endsWith('.mcmeta')&&n!=='pack.mcmeta'))),
     'bundles/texture-index.json':Buffer.from(JSON.stringify([...files].filter(([n])=>n.startsWith('minecraft/textures/')&&n.endsWith('.png')).map(([n,b])=>[n.slice(19),b.readUInt32BE(16),b.readUInt32BE(20)]))),
     'bundles/models.json': Buffer.from(JSON.stringify(models)),
     'bundles/textures.bin': Buffer.concat([len, header, ...blobs]),
