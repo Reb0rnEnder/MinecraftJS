@@ -28,7 +28,7 @@ function entries(game, registry) {
 const holderElement = (game, registry, holder, idField) => (holder?.data ? null : entries(game, registry).find((e) => e.id === holder?.[idField] || e.name === qualified(holder))?.element);
 
 // TropicalFish.Pattern (base | index << 8) and COMMON_VARIANTS (pattern, base color, pattern color)
-const FISH_PATTERNS = { 0: 'kob', 256: 'flopper', 1: 'sunstreak', 257: 'stripey', 2: 'snooper', 258: 'glitter', 3: 'dasher', 259: 'blockfish', 4: 'brinely', 260: 'betty', 5: 'spotty', 261: 'clayfish' };
+const FISH_PATTERNS = { 0: 'kob', 256: 'sunstreak', 512: 'snooper', 768: 'dasher', 1024: 'brinely', 1280: 'spotty', 1: 'flopper', 257: 'stripey', 513: 'glitter', 769: 'blockfish', 1025: 'betty', 1281: 'clayfish' };
 const FISH_COMMON = 'stripey,orange,gray;flopper,gray,gray;flopper,gray,blue;clayfish,white,gray;sunstreak,blue,gray;kob,orange,white;spotty,pink,light_blue;blockfish,purple,yellow;clayfish,white,red;spotty,white,yellow;glitter,white,gray;clayfish,white,orange;dasher,cyan,pink;brinely,lime,light_blue;betty,red,white;snooper,gray,red;blockfish,red,white;flopper,white,yellow;kob,red,white;sunstreak,gray,white;dasher,cyan,yellow;flopper,yellow,yellow'.split(';');
 
 // ArmorTrim.addToTooltip: "Upgrade:", then the pattern in the material's style and the material

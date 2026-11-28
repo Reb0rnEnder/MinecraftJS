@@ -22,7 +22,7 @@ test('templates, spawners, pots, ominous bottles, banner patterns, fish buckets 
   assert.deepEqual(tip('decorated_pot',{pot_decorations:{decorations:[id('brick'),id('angler_pottery_sherd'),id('brick'),id('skull_pottery_sherd')]}}).slice(1),['','Skull Pottery Sherd','Angler Pottery Sherd','Brick','Brick']);
   assert.deepEqual(tip('ominous_bottle',{ominous_bottle_amplifier:2}).slice(1,2),['Bad Omen III (01:40:00)']);
   assert.deepEqual(tip('flower_banner_pattern',{}).slice(1),['Flower Charge']);
-  assert.deepEqual(tip('tropical_fish_bucket',{bucket_entity_data:{BucketVariantTag:1|(1<<16)|(7<<24)}}).slice(1),['Sunstreak','Orange, Gray']);
+  assert.deepEqual(tip('tropical_fish_bucket',{bucket_entity_data:{BucketVariantTag:(1<<8)|(1<<16)|(7<<24)}}).slice(1),['Sunstreak','Orange, Gray']);
   const anemone=1|(1<<8)|(1<<16)|(7<<24);assert.deepEqual(tip('tropical_fish_bucket',{bucket_entity_data:{BucketVariantTag:anemone}}).slice(1),['Anemone']);
   assert.deepEqual(tip('painting',{entity_data:{id:'minecraft:painting',variant:'minecraft:kebab'}}).slice(1),['Kebab med tre pepperoni','Kristoffer Zetterstrand','1x1']);
   assert.deepEqual(tip('painting',{},[false,true]).slice(1),['Random variant']);
