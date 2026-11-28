@@ -94,7 +94,7 @@ export class Configuration766{
 export function decodeBootstrapPlay766(data){const r=new Reader766(data),id=r.varint(),name=playNames[id],p={name:name||'unknown',id};
  if(name==='login'){
   p.entityId=r.i32();p.isHardcore=r.bool();p.worldNames=array(r,r=>r.string(),1024);p.maxPlayers=r.varint();p.viewDistance=r.varint();p.simulationDistance=r.varint();p.reducedDebugInfo=r.bool();p.enableRespawnScreen=r.bool();p.doLimitedCrafting=r.bool();
-  p.dimensionType=r.varint();p.worldName=r.string();p.hashedSeed=r.i64();p.gameMode=r.i8();p.previousGameMode=r.u8();p.isDebug=r.bool();p.isFlat=r.bool();p.death=option(r,r=>({dimension:r.string(),position:r.position()}));p.portalCooldown=r.varint();p.enforcesSecureChat=r.bool();
+  p.dimensionType=r.varint();p.worldName=r.string();p.hashedSeed=r.i64();p.gameMode=r.i8();p.gameMode=p.gameMode>=0&&p.gameMode<=3?p.gameMode:0;p.previousGameMode=r.i8();p.previousGameMode=p.previousGameMode===-1?-1:p.previousGameMode>=0&&p.previousGameMode<=3?p.previousGameMode:0;p.isDebug=r.bool();p.isFlat=r.bool();p.death=option(r,r=>({dimension:r.string(),position:r.position()}));p.portalCooldown=r.varint();p.enforcesSecureChat=r.bool();
  }else if(name==='keep_alive')p.keepAliveId=r.i64();
  else if(name==='position'){p.x=r.f64();p.y=r.f64();p.z=r.f64();p.yaw=r.f32();p.pitch=r.f32();p.flags=r.u8();p.teleportId=r.varint();}
  else if(name==='chunk_batch_finished')p.batchSize=r.varint();

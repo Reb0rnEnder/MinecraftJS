@@ -113,6 +113,17 @@ function readContainer(reader, fields, parent, depth, firstByte = null) {
   return out;
 }
 
+// Enums the native client reads through ByIdMap or a lookup that tolerates unknown ids: GameType, Rarity,
+// AttributeModifier.Operation and EquipmentSlotGroup use the ZERO strategy (the first value), Difficulty wraps,
+// and an unknown ClientboundGameEventPacket type is null, which the handler ignores
+function outOfRange(mappings, raw) {
+  const first = mappings["0"], n = Object.keys(mappings).length;
+  if (first === "survival" || first === "common" || first === "add" || first === "any") return first;
+  if (first === "peaceful") return mappings[String(((Number(raw) % n) + n) % n)];
+  if (first === "no_respawn_block_available") return "unknown";
+  return undefined;
+}
+
 function readType(reader, spec, current = null, depth = 0) {
   if (depth > 128) throw new Error("Protocol-766 Play schema nesting too deep");
   if (typeof spec === "string") {
@@ -147,7 +158,8 @@ function readType(reader, spec, current = null, depth = 0) {
 
   if (kind === "mapper") {
     const raw = readType(reader, args.type, current, depth + 1);
-    const mapped = args.mappings[String(raw)];
+    let mapped = args.mappings[String(raw)];
+    if (mapped === undefined) mapped = outOfRange(args.mappings, raw);
     if (mapped === undefined) throw new Error("Unknown protocol-766 mapped value " + raw);
     return mapped;
   }
@@ -342,7 +354,8 @@ function normalizeWorld(packet, context) {
     worldName: world.name,
     hashedSeed: world.hashedSeed,
     gameMode,
-    previousGameMode: world.previousGamemode === 255 ? -1 : world.previousGamemode,
+    // GameType.byNullableId: -1 is none, other unknown ids fall back to survival
+    previousGameMode: world.previousGamemode === 255 ? -1 : world.previousGamemode <= 3 ? world.previousGamemode : 0,
     isDebug: world.isDebug,
     isFlat: world.isFlat,
     death: world.death,
@@ -635,8 +648,8 @@ function normalize(name, packet, context = null) {
   }
 
   if (name === "game_state_change") {
-    const reason = GAME_STATE_REASON[packet.reason];
-    if (reason === undefined) throw new Error("Unknown protocol-766 game-state reason " + packet.reason);
+    // an unknown event type is ignored by ClientPacketListener.handleGameEvent (-1 matches no case)
+    const reason = GAME_STATE_REASON[packet.reason] ?? -1;
     return { ...packet, reason, value: packet.gameMode };
   }
 
