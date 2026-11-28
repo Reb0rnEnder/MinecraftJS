@@ -1,6 +1,6 @@
-import{buildPot766,itemPotDecorations766}from'./decorated-pot-1.20.6.js';
-import{itemBannerLayers766}from'./banner-1.20.6.js';
-import{bundleBar,bundleContentWeight}from'../game/bundle.js';
+import{buildPot774 as buildPot766,itemPotDecorations774 as itemPotDecorations766}from'./decorated-pot-1.21.11.js';
+import{itemBannerLayers774 as itemBannerLayers766}from'./banner-1.21.11.js';
+import{isBundle as isBundleItem,bundleBar,bundleContentWeight,bundleSelectedIndex}from'../game/bundle.js';
 import { trimItemModel, trimTypePredicate } from './armor-trims-26.3.js';
 import {DEFAULT_SKIN} from './default-skins.js';
 import {blocksByName} from '../world/blocks.js';

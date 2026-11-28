@@ -41,6 +41,10 @@ server1194/
 1.20.6/
 server1206/
 
+# Native 1.21.11 inputs and local server
+1.21.11/
+server12111/
+
 # Native 26.3 local probe server and transient probe output
 server2603/
 probe.out
