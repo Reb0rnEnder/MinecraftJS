@@ -15,6 +15,7 @@ export class SlotList {
     this.right = screen.width;
     this.headerPadding = opts.header || 0;
     this.showSelectionBox = opts.selectionBox !== false;
+    this.noBackground = !!opts.noBackground; // AbstractSelectionList.setRenderBackground(false)
     this.scrollbarDragOnly=!!opts.scrollbarDragOnly;
     this.listWidth = opts.listWidth || 220;
     this.scrollBarOffset = opts.scrollBarOffset || 0;
@@ -71,7 +72,7 @@ export class SlotList {
   render(gui, mx, my) {
     this.clamp();
     const sb = this.scrollBarX(), sbr = sb + 6;
-    this._dirt(gui, this.top, this.bottom, 32, Math.floor(this.amountScrolled));
+    if (!this.noBackground) this._dirt(gui, this.top, this.bottom, 32, Math.floor(this.amountScrolled));
     const x = this.slotLeft(), y = this.top + 4 - Math.floor(this.amountScrolled);
     gui.scissor(this.left, this.top, this.width, this.bottom - this.top);
     if (this.headerPadding) this.drawHeader(gui, x, y, mx, my);

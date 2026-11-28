@@ -3,6 +3,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {readResourceStack,readResourceBytes,resourceMetadata} from '../client/js/resource-layers.js';
 import {SocialInteractionsScreen} from '../client/js/gui/screens/social.js';
+import {ReportingContext,loggedPlayerMessage} from '../client/js/game/reporting.js';
 import {Narrator} from '../client/js/gui/narrator.js';
 import {setPlatform} from '../client/js/platform/platform.js';
 const enc=s=>new TextEncoder().encode(s),dec=b=>new TextDecoder().decode(b);
@@ -18,7 +19,7 @@ test('packs below Default rank under vanilla: they only supply what vanilla lack
   assert.equal(await readResourceBytes(assets,'minecraft:texts/none.txt'),null);
 });
 const socialGame=()=>({scoreboard:{players:new Map([['me',{name:'Me'}],['bob-online',{name:'bob'}],['amy-online',{name:'amy'}]])},playerUuid:'me',hiddenPlayers:new Set(['gone-hidden']),socialNames:new Map(),
-  chatLog:[{uuid:'carl-offline',name:'carl'},{uuid:'bob-online',name:'bob'}]});
+  reporting:(()=>{const r=new ReportingContext({address:'x',clientVersion:'1.19.4',locale:'en-US'});for(const [sender,name] of [['carl-offline','carl'],['bob-online','bob']])r.chatLog.push(loggedPlayerMessage({sender,index:0,signature:new Uint8Array(256),plainMessage:'hi',timestamp:0,salt:0},'s',[],{uuid:sender,name},'secure','hi'));return r;})()});
 test('narration: opening speaks title and usage at once; changes speak only changed entries after the delay',()=>{
   let now=0;setPlatform({now:()=>now});
   const said=[],n=new Narrator({settings:{narrator:1}});Object.defineProperty(n,'active',{get:()=>true});n.saySystem=t=>said.push(t);

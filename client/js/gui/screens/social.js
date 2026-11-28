@@ -1,5 +1,5 @@
 import {ConfirmLinkScreen}from'./chat.js';
-import {Screen}from'./manager.js';import {Button,TextField}from'../widgets.js';import {tr}from'../i18n.js';
+import {Screen}from'./manager.js';import {ChatReportScreen,draftReportHandled}from'./reporting.js';import {ReportBuilder}from'../../game/reporting.js';import {Button,TextField}from'../widgets.js';import {tr}from'../i18n.js';
 const TEX='gui/social_interactions.png';
 export class SocialInteractionsScreen extends Screen {
   narrationTitle() { return tr('gui.socialInteractions.title'); } // Screen.getNarrationMessage
@@ -20,16 +20,19 @@ export class SocialInteractionsScreen extends Screen {
   const hidden=g.hiddenPlayers,blocked=g.blockedPlayers||new Set(),online=[...g.scoreboard.players.keys()];
   const isBlocked=uuid=>!!(g.socialBlocking?.isBlocked(uuid)||blocked.has(uuid));
   const uuids=this.page==='all'?online:this.page==='hidden'?[...hidden].filter(id=>g.scoreboard.players.has(id)):online.filter(isBlocked);
-  const rows=new Map(uuids.map(uuid=>[uuid,{uuid,name:g.socialNames.get(uuid)||uuid,player:g.scoreboard.players.get(uuid),hidden:hidden.has(uuid),blocked:isBlocked(uuid),recent:false}]));
-  const logged=new Map();for(let i=(g.chatLog||[]).length-1;i>=0;i--){const m=g.chatLog[i];if(!logged.has(m.uuid))logged.set(m.uuid,m.name);}
+  const rows=new Map(uuids.map(uuid=>[uuid,{uuid,name:g.socialNames.get(uuid)||uuid,player:g.scoreboard.players.get(uuid),hidden:hidden.has(uuid),blocked:isBlocked(uuid),recent:false,chatReportable:g.chatVerifier?.sessionId?.(uuid)!=null}]));
+  // collectProfilesFromChatLog: senders of signed messages, newest first
+  const logged=new Map(),log=g.reporting?.chatLog;if(log)for(let i=log.end();i>=log.start();i--){const m=log.lookup(i);if(m?.type==='player'&&m.message.signature&&!logged.has(m.profile.uuid))logged.set(m.profile.uuid,m.profile.name);}
   for(const [uuid,name]of logged){
    let row=rows.get(uuid);
-   if(!row&&this.page==='all'){row={uuid,name:name||g.socialNames.get(uuid)||uuid,player:undefined,hidden:hidden.has(uuid),blocked:isBlocked(uuid),recent:false};rows.set(uuid,row);}
+   if(!row&&this.page==='all'){row={uuid,name:name||g.socialNames.get(uuid)||uuid,player:undefined,hidden:hidden.has(uuid),blocked:isBlocked(uuid),recent:false,chatReportable:true};rows.set(uuid,row);}
    if(row)row.recent=true;
   }
   const query=this.search.text.toLowerCase();
   return [...rows.values()].filter(e=>e.name.toLowerCase().includes(query)).sort((a,b)=>{const rank=e=>e.uuid===g.playerUuid?0:String(e.uuid).replace(/-/g,'')[12]==='2'?4:e.recent?2:3,ar=rank(a),br=rank(b);if(ar!==br)return ar-br;const valid=e=>/^[a-z0-9_]/i.test(e.name)?0:1;if(valid(a)!==valid(b))return valid(a)-valid(b);const an=a.name.toLowerCase(),bn=b.name.toLowerCase();return an<bn?-1:an>bn?1:0;});
  }
+ get reportingEnabled(){return this.game.accounts?.active?.()?.type==='microsoft'&&!!this.game.reporting;}
+ report(entry){const g=this.game;g.sound.playUi('ui.button.click');draftReportHandled(g,this,()=>g.screens.open(new ChatReportScreen(g,this,new ReportBuilder('chat',entry.uuid,{},g.reporting.limits))));}
  hide(entry){const g=this.game;if(entry.hidden)g.hiddenPlayers.delete(entry.uuid);else g.hiddenPlayers.add(entry.uuid);g.sound.playUi('ui.button.click');g.hud.addChat(tr(entry.hidden?'gui.socialInteractions.shown_in_chat':'gui.socialInteractions.hidden_in_chat',entry.name),null,true);}
  renderContent(gui,mx,my){
   const x=this.left+3;gui.blit(TEX,x,64,1,1,236,8);for(let y=0;y<this.panelHeight;y+=18)gui.blit(TEX,x,72+y,1,9,236,Math.min(18,this.panelHeight-y));gui.blit(TEX,x,this.bottom,1,27,236,8);gui.blit(TEX,x+10,76,243,1,12,12);
@@ -43,7 +46,10 @@ export class SocialInteractionsScreen extends Screen {
    if(!e.player)gui.rect(this.rowLeft+4,y+4,this.rowLeft+28,y+28,0xbe000000);
    const state=e.blocked?'blocked':e.hidden?'hidden':'';gui.text(e.name,this.rowLeft+32,y+(state||!e.player?7:11),0xffffff);
    if(state||!e.player)gui.text('§o'+tr('gui.socialInteractions.status_'+(state?state+(!e.player?'_offline':''):'offline')),this.rowLeft+32,y+19,0x8cffffff);
-   if(e.uuid!==this.game.playerUuid&&!e.blocked){const bx=this.rowLeft+172,by=y+6,hover=mx>=bx&&mx<bx+20&&my>=by&&my<by+20;gui.blit(TEX,bx,by,e.hidden?20:0,38+(hover?20:0),20,20);this.rows.push({entry:e,x:bx,y:by});const rx=bx+24,rhover=mx>=rx&&mx<rx+20&&my>=by&&my<by+20;gui.blit('gui/report_button.png',rx,by,0,0,20,20,64,64);if(rhover)tooltip=tr('gui.socialInteractions.tooltip.report.disabled');if(hover)tooltip=tr(e.hidden?'gui.socialInteractions.tooltip.show':'gui.socialInteractions.tooltip.hide',e.name);}
+   if(e.uuid!==this.game.playerUuid&&!e.blocked){const bx=this.rowLeft+172,by=y+6,hover=mx>=bx&&mx<bx+20&&my>=by&&my<by+20;gui.blit(TEX,bx,by,e.hidden?20:0,38+(hover?20:0),20,20);this.rows.push({entry:e,x:bx,y:by});const rx=bx+24,rhover=mx>=rx&&mx<rx+20&&my>=by&&my<by+20;const enabled=this.reportingEnabled&&e.chatReportable&&e.recent;gui.blit('gui/report_button.png',rx,by,0,!enabled?40:rhover?20:0,20,20,64,64);this.rows.push({entry:e,x:rx,y:by,report:enabled});
+    // PlayerEntry: the draft-report marker from widgets.png over the button
+    if(this.game.reporting?.hasDraftFor(e.uuid))gui.blit('gui/widgets.png',rx+5,by+1,182,24,15,15);
+    if(rhover)tooltip=!e.chatReportable?tr('gui.socialInteractions.tooltip.report.not_reportable'):!this.reportingEnabled?tr('gui.socialInteractions.tooltip.report.disabled'):!e.recent?tr('gui.socialInteractions.tooltip.report.no_messages',e.name):tr('gui.socialInteractions.tooltip.report');if(hover)tooltip=tr(e.hidden?'gui.socialInteractions.tooltip.show':'gui.socialInteractions.tooltip.hide',e.name);}
   }
   gui.clearScissor();
   const maxScroll=Math.max(0,entries.length*36-height+4);this.scrollbar=null;if(maxScroll>0){const sx=Math.floor(this.width/2)+124,thumb=Math.max(32,Math.min(height-8,Math.floor(height*height/(entries.length*36)))),ty=88+Math.floor(this.scroll)*(height-thumb)/maxScroll;this.scrollbar={x:sx,height,thumb,max:maxScroll};gui.rect(sx,88,sx+6,this.bottom,0xff000000);gui.rect(sx,Math.floor(ty),sx+6,Math.floor(ty)+thumb,0xff808080);gui.rect(sx,Math.floor(ty),sx+5,Math.floor(ty)+thumb-1,0xffc0c0c0);}
@@ -52,7 +58,7 @@ export class SocialInteractionsScreen extends Screen {
   this.tooltip=tooltip;
  }
  render(gui,mx,my,partial){super.render(gui,mx,my,partial);if(!this.search.focused&&!this.search.text)gui.text('§o'+tr('gui.socialInteractions.search_hint'),this.search.x+4,this.search.y+2,0x808080);if(this.tooltip)gui.tooltip(gui.font.wrap(this.tooltip,150),mx,my);}
- mouseDown(mx,my,button){if(button===0&&this.scrollbar&&mx>=this.scrollbar.x&&mx<this.scrollbar.x+6&&my>=88&&my<this.bottom){this.dragY=my;return true;}if(button===0&&my>=88&&my<this.bottom){const row=this.rows?.find(r=>mx>=r.x&&mx<r.x+20&&my>=r.y&&my<r.y+20);if(row){this.hide(row.entry);return true;}}return super.mouseDown(mx,my,button);}
+ mouseDown(mx,my,button){if(button===0&&this.scrollbar&&mx>=this.scrollbar.x&&mx<this.scrollbar.x+6&&my>=88&&my<this.bottom){this.dragY=my;return true;}if(button===0&&my>=88&&my<this.bottom){const row=this.rows?.find(r=>mx>=r.x&&mx<r.x+20&&my>=r.y&&my<r.y+20);if(row){if(row.report!==undefined){if(row.report)this.report(row.entry);}else this.hide(row.entry);return true;}}return super.mouseDown(mx,my,button);}
  mouseUp(mx,my,button){delete this.dragY;super.mouseUp(mx,my,button);}
  mouseMove(mx,my){if(this.dragY===undefined||!this.scrollbar)return;const delta=my-this.dragY;this.dragY=my;const b=this.scrollbar;this.scroll=my<88?0:my>this.bottom?b.max:Math.max(0,Math.min(b.max,this.scroll+delta*Math.max(1,b.max/(b.height-b.thumb))));}
  wheel(delta){this.scroll+=delta*18;}

@@ -17,6 +17,7 @@ export class ChatVerifier762{
  constructor({roots=CHAT_CERTIFICATE_KEYS,now=()=>Date.now()}={}){this.now=now;this.roots=roots.map(k=>parseRsaPublicKey(typeof k==='string'?decode64(k):k));this.sessions=new Map();}
  reset(){this.sessions.clear();}
  remove(sender){this.sessions.delete(uuid(sender));}
+ sessionId(sender){return this.sessions.get(uuid(sender))?.uuid??null;}
  install(sender,session){
   const id=uuid(sender);this.sessions.delete(id);if(!session)return;
   if(BigInt(session.expireTime)+28800000n<BigInt(Math.floor(this.now())))throw invalid('multiplayer.disconnect.expired_public_key');

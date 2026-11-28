@@ -1,4 +1,5 @@
 import {ConfirmLinkScreen} from './chat.js';
+import { draftReportHandled } from './reporting.js';
 // GuiIngameMenu
 import { tr } from '../i18n.js';
 import { Screen } from './manager.js';
@@ -27,7 +28,8 @@ export class PauseScreen extends Screen {
     const lan = new Button(7, cx + 2, y + 96 - 16, 98, 20, tr('menu.shareToLan'));
     lan.enabled = false;
     this.buttons.push(lan);
-    this.buttons.push(new Button(1, cx - 100, y + 120 - 16, 200, 20, tr('menu.disconnect'), () => g.disconnect(false)));
+    // PauseScreen: disconnecting first offers to keep editing an unsent chat report draft
+    this.buttons.push(new Button(1, cx - 100, y + 120 - 16, 200, 20, tr('menu.disconnect'), (b) => { b.enabled = false; draftReportHandled(g, this, () => g.disconnect(false), true); }));
   }
 
   renderContent(gui) {

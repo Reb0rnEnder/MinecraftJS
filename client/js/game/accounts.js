@@ -91,6 +91,15 @@ export class Accounts {
     return r.json.blockedProfiles;
   }
 
+  // AbuseReportSender.Services.send for the active Microsoft account (direct over the client's TLS, else the proxy)
+  async reportAbuse(json,account=this.active()) {
+    if(account?.type!=='microsoft')throw Object.assign(Error('Reporting needs a Microsoft account'),{unavailable:true});
+    const fresh=await this.ensureFresh(account);if(rawRoute())return direct.reportAbuse(fresh.accessToken,json);
+    const r=await authPost('/auth/report',{accessToken:fresh.accessToken,body:json});
+    if(r.status===200)return;
+    throw Object.assign(Error(r.json?.error||'Status: '+r.status),r.json?.status?{status:r.json.status}:{unavailable:true});
+  }
+
   // AccountProfileKeyPairManager: the Mojang-signed chat key pair from player/certificates, reused until its
   // refreshedAfter time (kept in memory only: the private key is not written to settings)
   async profileKeys(account=this.active()) {

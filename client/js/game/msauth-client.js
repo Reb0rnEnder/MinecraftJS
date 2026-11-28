@@ -77,6 +77,17 @@ export async function certificates(accessToken) {
   return { keyPair: { privateKey: data.keyPair.privateKey, publicKey: data.keyPair.publicKey }, publicKeySignatureV2: data.publicKeySignatureV2, expiresAt: data.expiresAt, refreshedAfter: data.refreshedAfter };
 }
 
+// YggdrasilUserApiService.reportAbuse: POST player/report (MinecraftClient: status >= 400 is an HTTP error whose
+// message is the response errorMessage, else error, else "Status: N")
+export async function reportAbuse(accessToken, json) {
+  let r;
+  try { r = await httpsRequest('https://api.minecraftservices.com/player/report', { method: 'POST', headers: { ...bearer(accessToken), 'Content-Type': 'application/json' }, body: json, timeout: 20000 }); }
+  catch (e) { throw Object.assign(Error(e.message || 'Service unavailable'), { unavailable: true }); }
+  if (r.status < 400) return;
+  let data = null; try { data = JSON.parse(r.text() || 'null'); } catch { throw Object.assign(Error('Invalid error response'), { json: true }); }
+  throw Object.assign(Error(data?.errorMessage || data?.error || 'Status: ' + r.status), { status: r.status });
+}
+
 // sessionserver join for online-mode servers (the server hash is computed by the caller)
 export async function joinServer(accessToken, uuid, hash) {
   const r = await postJson('https://sessionserver.mojang.com/session/minecraft/join', { accessToken, selectedProfile: String(uuid).replace(/-/g, ''), serverId: hash });
