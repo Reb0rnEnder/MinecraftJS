@@ -6,9 +6,9 @@ import {openEaglerSocket} from './eagler.js';
 // Payloads are already packet-delimited WebSocket messages: never TCP-frame or
 // compress them a second time.
 export class EaglerSocket766 extends VanillaSocket766 {
-  constructor(address,options={}) {super({},options);this.address=address;this.isEagler=true;}
+  constructor(address,options={},game=null) {super({},options);this.address=address;this.game=game;this.isEagler=true;}
   async open() {
-    this.link=await openEaglerSocket(this.address);
+    this.link=await openEaglerSocket(this.address,this.game);
     this.stream={close:()=>this.link.close()};
     this.link.on('close',()=>this.close());
     this.link.on('text',text=>{

@@ -10,7 +10,7 @@ import * as direct from './msauth-client.js';
 // The proxy's HTTP relay (the Microsoft and Mojang services send no CORS headers for browser fetches)
 function authPost(path, body) {
   const url = proxyRoute(path);
-  if (!url) return Promise.reject(new Error('Signing in needs a MinecraftJS proxy: add one in Proxy Servers'));
+  if (!url) return Promise.reject(new Error('This needs a MinecraftJS proxy: add one in Proxy Servers'));
   return platform().postJson(url, body);
 }
 
@@ -68,10 +68,11 @@ export class Accounts {
   }
 
   // Valid Minecraft token for a Microsoft account (refreshing it when it is about to expire)
-  async ensureFresh(a) {
+  async ensureFresh(a, requireProxy = false) {
     if (a.type !== 'microsoft') return a;
     if (a.accessToken && a.expiresAt - Date.now() > REFRESH_MARGIN) return a;
-    if (rawRoute()) return this.addMicrosoft(await direct.refresh(a.refreshToken));
+    // Skin/cape changes must go through the MCJS relay even when a direct route is configured.
+    if (!requireProxy && rawRoute()) return this.addMicrosoft(await direct.refresh(a.refreshToken));
     const r = await authPost('/auth/refresh', { refreshToken: a.refreshToken });
     if (!r.json || !r.json.account) throw new Error((r.json && r.json.error) || 'Could not refresh the Microsoft session');
     return this.addMicrosoft(r.json.account);
@@ -134,5 +135,70 @@ export class Accounts {
     const r = await authPost('/auth/poll', { deviceCode });
     if (r.status !== 200) throw new Error((r.json && r.json.error) || 'Sign in failed');
     return r.json.account ? this.addMicrosoft(r.json.account) : null;
+  }
+
+  // Mojang profile, skin and cape changes go through the MCJS relay. The browser cannot call
+  // api.minecraftservices.com directly (CORS), and the access token stays in the request body.
+  async profile(account = this.active()) {
+    if (!account || account.type !== 'microsoft') throw new Error('Only Microsoft accounts have a Mojang profile');
+    const fresh = await this.ensureFresh(account, true);
+    const r = await authPost('/auth/profile', { accessToken: fresh.accessToken });
+    if (r.status !== 200 || !r.json?.profile) throw new Error((r.json && r.json.error) || 'Could not load the Minecraft profile');
+    return this.applyProfile(fresh, r.json.profile);
+  }
+
+  applyProfile(account, profile) {
+    const i = this.list.findIndex((a) => a.id === account.id);
+    if (i < 0) return account;
+    const skin = (profile.skins || []).find((s) => s.state === 'ACTIVE') || (profile.skins || [])[0] || null;
+    const capes = Array.isArray(profile.capes) ? profile.capes : [];
+    const cape = capes.find((c) => c.state === 'ACTIVE') || null;
+    const updated = {
+      ...this.list[i],
+      name: profile.name || this.list[i].name,
+      uuid: profile.id || this.list[i].uuid,
+      skinUrl: skin ? skin.url : null,
+      slim: !!(skin && skin.variant === 'SLIM'),
+      capes,
+      capeId: cape ? cape.id : null,
+      capeUrl: cape ? cape.url : null,
+    };
+    this.list[i] = updated;
+    this.save();
+    return updated;
+  }
+
+  async setSkin(account, png, variant = 'classic') {
+    if (!account || account.type !== 'microsoft') throw new Error('Only Microsoft accounts can upload a Mojang skin');
+    const fresh = await this.ensureFresh(account, true);
+    const r = await authPost('/auth/skin', { accessToken: fresh.accessToken, variant: variant === 'slim' ? 'slim' : 'classic', png });
+    if (r.status !== 200 || !r.json?.profile) throw new Error((r.json && r.json.error) || 'Could not change the skin');
+    return this.applyProfile(fresh, r.json.profile);
+  }
+
+  async resetSkin(account) {
+    if (!account || account.type !== 'microsoft') throw new Error('Only Microsoft accounts can reset a Mojang skin');
+    const fresh = await this.ensureFresh(account, true);
+    const r = await authPost('/auth/skin/reset', { accessToken: fresh.accessToken });
+    if (r.status !== 200) throw new Error((r.json && r.json.error) || 'Could not reset the skin');
+    if (r.json && r.json.profile) return this.applyProfile(fresh, r.json.profile);
+    return this.profile(fresh);
+  }
+
+  async setCape(account, capeId) {
+    if (!account || account.type !== 'microsoft') throw new Error('Only Microsoft accounts can change a Mojang cape');
+    const fresh = await this.ensureFresh(account, true);
+    const r = await authPost('/auth/cape', { accessToken: fresh.accessToken, capeId });
+    if (r.status !== 200 || !r.json?.profile) throw new Error((r.json && r.json.error) || 'Could not change the cape');
+    return this.applyProfile(fresh, r.json.profile);
+  }
+
+  async hideCape(account) {
+    if (!account || account.type !== 'microsoft') throw new Error('Only Microsoft accounts can change a Mojang cape');
+    const fresh = await this.ensureFresh(account, true);
+    const r = await authPost('/auth/cape/hide', { accessToken: fresh.accessToken });
+    if (r.status !== 200) throw new Error((r.json && r.json.error) || 'Could not hide the cape');
+    if (r.json && r.json.profile) return this.applyProfile(fresh, r.json.profile);
+    return this.profile(fresh);
   }
 }
