@@ -9,7 +9,7 @@ import { openEaglerSocket, pingEagler } from './eagler.js';
 import { currentProxy, proxyType } from './proxies.js';
 import { VanillaSocket } from './tcp.js';
 
-const NO_PROXY = 'No proxy selected: add one in Proxy Servers on the title screen (or join an Eaglercraft wss:// server)';
+const NO_PROXY = 'No proxy selected: add one in Proxy Servers on the title screen (or join an MCJS wss:// server)';
 
 // A socket to the selected proxy (MinecraftJS proxy, or a relay / Wisp link handled in the client)
 async function openProxySocket() {
@@ -20,7 +20,8 @@ async function openProxySocket() {
 }
 
 export class Connection {
-  constructor() {
+  constructor(game = null) {
+    this.game = game;
     this.ws = null;
     this.handlers = {};
     this.state = 'idle';
@@ -36,7 +37,7 @@ export class Connection {
   async open(eagler) {
     if (this.ws) return;
     let sock;
-    if (eagler) sock = await openEaglerSocket(eagler);
+    if (eagler) sock = await openEaglerSocket(eagler, this.game);
     else sock = await openProxySocket();
     this.ws = sock;
     sock.on('close', () => {
